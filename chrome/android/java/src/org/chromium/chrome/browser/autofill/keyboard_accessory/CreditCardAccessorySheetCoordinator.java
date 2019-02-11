@@ -23,8 +23,9 @@ public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordi
      */
     public CreditCardAccessorySheetCoordinator(
             Context context, @Nullable RecyclerView.OnScrollListener scrollListener) {
-        super( // TODO(crbug.com/926365): Add an appropriate icon, and restructure this class to use
-               // an Icon Provider with a static instance of the resource.
+        super( // TODO(crbug.com/926365): Add an appropriate title, icon, and restructure this class
+               // to use an Icon Provider with a static instance of the resource.
+                context.getString(R.string.autofill_payment_methods),
                 AppCompatResources.getDrawable(context, R.drawable.ic_info_outline_grey),
                 // TODO(crbug.com/926365): Add strings and resources properly.
                 "Open credit card sheet", "Credit card sheet is open",

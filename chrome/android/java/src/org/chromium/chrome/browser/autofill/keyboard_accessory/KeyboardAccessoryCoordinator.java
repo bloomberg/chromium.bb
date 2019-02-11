@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
@@ -122,7 +123,7 @@ public class KeyboardAccessoryCoordinator {
         PropertyModel model =
                 new PropertyModel
                         .Builder(BAR_ITEMS, VISIBLE, BOTTOM_OFFSET_PX, TAB_LAYOUT_ITEM,
-                                KEYBOARD_TOGGLE_VISIBLE, SHOW_KEYBOARD_CALLBACK)
+                                KEYBOARD_TOGGLE_VISIBLE, SHEET_TITLE, SHOW_KEYBOARD_CALLBACK)
                         .with(BAR_ITEMS, new ListModel<>())
                         .with(VISIBLE, false)
                         .with(KEYBOARD_TOGGLE_VISIBLE, false)

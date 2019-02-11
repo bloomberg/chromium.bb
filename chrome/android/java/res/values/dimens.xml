@@ -138,6 +138,7 @@
     <dimen name="keyboard_accessory_shadow">5dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">330dp</dimen>
     <dimen name="keyboard_accessory_sheet_padding">8dp</dimen>
+    <dimen name="keyboard_accessory_sheet_top_margin">16dp</dimen>
     <dimen name="keyboard_accessory_suggestion_padding">16dp</dimen>
     <dimen name="keyboard_accessory_suggestion_top_bottom_margin">8dp</dimen>
     <dimen name="keyboard_accessory_suggestion_offset">12dp</dimen>

@@ -58,7 +58,7 @@ public class KeyboardAccessoryTabLayoutViewTest {
             new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
 
     private KeyboardAccessoryData.Tab createTestTab(String contentDescription) {
-        return new KeyboardAccessoryData.Tab(
+        return new KeyboardAccessoryData.Tab("Passwords",
                 mActivityTestRule.getActivity().getResources().getDrawable(
                         android.R.drawable.ic_lock_lock), // Unused.
                 contentDescription,

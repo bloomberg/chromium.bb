@@ -85,6 +85,7 @@ public class KeyboardAccessoryMetricsRecorder {
             }
             if (propertyKey == KeyboardAccessoryProperties.BOTTOM_OFFSET_PX
                     || propertyKey == KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE
+                    || propertyKey == KeyboardAccessoryProperties.SHEET_TITLE
                     || propertyKey == KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK) {
                 return;
             }

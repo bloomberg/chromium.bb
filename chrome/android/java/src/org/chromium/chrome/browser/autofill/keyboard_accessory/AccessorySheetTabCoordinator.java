@@ -22,6 +22,7 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
 
     /**
      * Creates a keyboard accessory sheet tab coordinator.
+     * @param title A {@link String} permanently displayed in the bar above the keyboard.
      * @param icon The icon that represents this sheet in the keyboard accessory tab switcher.
      * @param contentDescription A description for this sheet used in the tab switcher.
      * @param openingAnnouncement The announced string when opening this sheet.
@@ -29,11 +30,11 @@ public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryD
      * @param tabType The type of this tab as used in histograms.
      * @param scrollListener An optional listener that will be bound to an inflated recycler view.
      */
-    public AccessorySheetTabCoordinator(Drawable icon, String contentDescription,
+    public AccessorySheetTabCoordinator(String title, Drawable icon, String contentDescription,
             String openingAnnouncement, @LayoutRes int layout, @AccessoryTabType int tabType,
             @Nullable RecyclerView.OnScrollListener scrollListener) {
         mTab = new KeyboardAccessoryData.Tab(
-                icon, contentDescription, openingAnnouncement, layout, tabType, this);
+                title, icon, contentDescription, openingAnnouncement, layout, tabType, this);
         mScrollListener = scrollListener;
     }
 

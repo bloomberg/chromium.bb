@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.Type;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
@@ -41,7 +42,9 @@ class PasswordAccessorySheetMediator implements KeyboardAccessoryData.Observer<A
         if (accessorySheetData == null) return new AccessorySheetDataPiece[0];
 
         List<AccessorySheetDataPiece> items = new ArrayList<>();
-        items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
+        if (shouldShowTitle(accessorySheetData.getUserInfoList())) {
+            items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
+        }
         for (UserInfo userInfo : accessorySheetData.getUserInfoList()) {
             items.add(new AccessorySheetDataPiece(userInfo, Type.PASSWORD_INFO));
         }
@@ -50,5 +53,10 @@ class PasswordAccessorySheetMediator implements KeyboardAccessoryData.Observer<A
         }
 
         return items.toArray(new AccessorySheetDataPiece[0]);
+    }
+
+    private boolean shouldShowTitle(List<UserInfo> userInfoList) {
+        return !ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
+                || userInfoList.isEmpty();
     }
 }

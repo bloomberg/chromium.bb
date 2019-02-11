@@ -161,7 +161,7 @@ public class ManualFillingControllerTest {
         assertThat(accessorySheetModel.get(AccessorySheetProperties.TABS).size(), is(0));
 
         mController.getMediatorForTesting().addTab(
-                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+                new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null));
 
         verify(mMockTabListObserver)
                 .onItemRangeInserted(getTabLayout().getModelForTesting().get(TABS), 0, 1);
@@ -458,7 +458,7 @@ public class ManualFillingControllerTest {
 
         // Show the accessory bar to make sure it would be dismissed.
         getTabLayout().getTabSwitchingDelegate().addTab(
-                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+                new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null));
         mediator.getKeyboardAccessory().requestShowing();
         assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
 
@@ -478,7 +478,7 @@ public class ManualFillingControllerTest {
 
         // Show the accessory bar for the default dimensions (300x80@2.f).
         getTabLayout().getTabSwitchingDelegate().addTab(
-                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+                new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null));
         mediator.showWhenKeyboardIsVisible();
         assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
 
@@ -518,7 +518,7 @@ public class ManualFillingControllerTest {
                 mController.getMediatorForTesting().getKeyboardAccessory();
         addTab(mController.getMediatorForTesting(), 1234, null);
         mController.getMediatorForTesting().addTab(
-                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+                new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null));
         accessory.requestShowing();
         assertThat(mController.isFillingViewShown(null), is(false));
 
@@ -640,12 +640,10 @@ public class ManualFillingControllerTest {
         PasswordAccessorySheetCoordinator passwordSheet = mediator.getPasswordAccessorySheet();
         assert passwordSheet != null;
         assert passwordSheet.getSheetDataPiecesForTesting() != null;
-        assert passwordSheet.getSheetDataPiecesForTesting().size() > 1;
-        assert getType(passwordSheet.getSheetDataPiecesForTesting().get(1)) == PASSWORD_INFO;
-        // The 1st element is a title, the 2nd the password info.
+        assert passwordSheet.getSheetDataPiecesForTesting().size() > 0;
+        assert getType(passwordSheet.getSheetDataPiecesForTesting().get(0)) == PASSWORD_INFO;
         UserInfo info =
-                (UserInfo) passwordSheet.getSheetDataPiecesForTesting().get(1).getDataPiece();
-        // The 1st field is the name, the 2nd the password.
+                (UserInfo) passwordSheet.getSheetDataPiecesForTesting().get(0).getDataPiece();
         assert info.getFields().size() > 1;
         return info.getFields().get(1).getDisplayText();
     }

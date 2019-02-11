@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 
@@ -21,6 +22,7 @@ import org.chromium.chrome.R;
  */
 class KeyboardAccessoryModernView extends KeyboardAccessoryView {
     private ImageView mKeyboardToggle;
+    private TextView mSheetTitle;
 
     /**
      * This decoration ensures that the last item is right-aligned.
@@ -99,6 +101,7 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        mSheetTitle = findViewById(R.id.sheet_title);
         mKeyboardToggle = findViewById(R.id.show_keyboard);
         mKeyboardToggle.setImageDrawable(
                 AppCompatResources.getDrawable(getContext(), R.drawable.ic_arrow_back_24dp));
@@ -111,7 +114,12 @@ class KeyboardAccessoryModernView extends KeyboardAccessoryView {
 
     void setKeyboardToggleVisibility(boolean hasActiveTab) {
         mKeyboardToggle.setVisibility(hasActiveTab ? VISIBLE : GONE);
+        mSheetTitle.setVisibility(hasActiveTab ? VISIBLE : GONE);
         mBarItemsView.setVisibility(hasActiveTab ? GONE : VISIBLE);
+    }
+
+    void setSheetTitle(String title) {
+        mSheetTitle.setText(title);
     }
 
     void setShowKeyboardCallback(Runnable showKeyboardCallback) {

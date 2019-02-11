@@ -63,8 +63,9 @@ public class PasswordAccessorySheetModernViewTest {
                             mActivityTestRule.getActivity().findViewById(
                                     R.id.keyboard_accessory_sheet_stub)));
             accessorySheet.addTab(
-                    new KeyboardAccessoryData.Tab(null, null, R.layout.password_accessory_sheet,
-                            AccessoryTabType.ALL, new KeyboardAccessoryData.Tab.Listener() {
+                    new KeyboardAccessoryData.Tab("Passwords", null, null,
+                            R.layout.password_accessory_sheet, AccessoryTabType.ALL,
+                            new KeyboardAccessoryData.Tab.Listener() {
                                 @Override
                                 public void onTabCreated(ViewGroup view) {
                                     mView.set((RecyclerView) view);

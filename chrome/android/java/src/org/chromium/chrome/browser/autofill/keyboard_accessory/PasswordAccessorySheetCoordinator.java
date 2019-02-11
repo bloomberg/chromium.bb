@@ -63,7 +63,8 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
      */
     public PasswordAccessorySheetCoordinator(
             Context context, @Nullable RecyclerView.OnScrollListener scrollListener) {
-        super(IconProvider.getInstance().getIcon(context),
+        super(context.getString(R.string.prefs_saved_passwords_title),
+                IconProvider.getInstance().getIcon(context),
                 context.getString(R.string.password_accessory_sheet_toggle),
                 context.getString(R.string.password_accessory_sheet_opened),
                 R.layout.password_accessory_sheet, AccessoryTabType.PASSWORDS, scrollListener);

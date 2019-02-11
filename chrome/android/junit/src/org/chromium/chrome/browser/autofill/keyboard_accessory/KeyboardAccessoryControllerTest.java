@@ -17,7 +17,9 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryTabLayoutProperties.ACTIVE_TAB;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +68,7 @@ public class KeyboardAccessoryControllerTest {
     private AutofillDelegate mMockAutofillDelegate;
 
     private final KeyboardAccessoryData.Tab mTestTab =
-            new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
+            new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null);
 
     private KeyboardAccessoryCoordinator mCoordinator;
     private PropertyModel mModel;
@@ -117,8 +119,8 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
         // Set a default tab to prevent visibility changes to trigger now:
-        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {
-                new KeyboardAccessoryData.Tab(null, null, 0, AccessoryTabType.PASSWORDS, null)});
+        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {new KeyboardAccessoryData.Tab(
+                "Passwords", null, null, 0, AccessoryTabType.PASSWORDS, null)});
         mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
 
         PropertyProvider<Action[]> testProvider =
@@ -154,8 +156,8 @@ public class KeyboardAccessoryControllerTest {
     public void testModelNotifiesAboutActionsChangedByProviderForRedesign() {
         setAutofillFeature(true);
         // Set a default tab to prevent visibility changes to trigger now:
-        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {
-                new KeyboardAccessoryData.Tab(null, null, 0, AccessoryTabType.PASSWORDS, null)});
+        mCoordinator.setTabs(new KeyboardAccessoryData.Tab[] {new KeyboardAccessoryData.Tab(
+                "Passwords", null, null, 0, AccessoryTabType.PASSWORDS, null)});
         mModel.get(BAR_ITEMS).addObserver(mMockActionListObserver);
 
         PropertyProvider<Action[]> testProvider =
@@ -377,6 +379,20 @@ public class KeyboardAccessoryControllerTest {
         // Adding actions while the keyboard is visible triggers the accessory.
         mCoordinator.addTab(mTestTab);
         assertThat(mModel.get(VISIBLE), is(true));
+    }
+
+    @Test
+    public void testShowsTitleForActiveTabs() {
+        // Add an inactive tab and ensure the sheet title isn't already set.
+        mCoordinator.requestShowing();
+        mCoordinator.addTab(mTestTab);
+        mModel.set(SHEET_TITLE, "");
+        assertThat(mCoordinator.hasActiveTab(), is(false));
+
+        // Changing the active tab should also change the title.
+        mCoordinator.getTabLayoutForTesting().getModelForTesting().set(ACTIVE_TAB, 0);
+        assertThat(mModel.get(SHEET_TITLE), equalTo("Passwords"));
+        assertThat(mCoordinator.hasActiveTab(), is(true));
     }
 
     @Test

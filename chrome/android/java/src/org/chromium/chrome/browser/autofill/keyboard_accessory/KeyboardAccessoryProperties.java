@@ -31,6 +31,8 @@ class KeyboardAccessoryProperties {
             new ReadableObjectPropertyKey<>("bar_items");
     static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey("visible");
     static final WritableIntPropertyKey BOTTOM_OFFSET_PX = new WritableIntPropertyKey("offset");
+    static final WritableObjectPropertyKey<String> SHEET_TITLE =
+            new WritableObjectPropertyKey<>("sheet_title");
     static final WritableBooleanPropertyKey KEYBOARD_TOGGLE_VISIBLE =
             new WritableBooleanPropertyKey("toggle_visible");
     static final WritableObjectPropertyKey<TabLayoutBarItem> TAB_LAYOUT_ITEM =

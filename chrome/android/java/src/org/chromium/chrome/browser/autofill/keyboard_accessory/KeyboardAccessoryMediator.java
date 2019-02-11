@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
@@ -218,8 +219,13 @@ class KeyboardAccessoryMediator
             }
             return;
         }
+        if (propertyKey == KEYBOARD_TOGGLE_VISIBLE) {
+            KeyboardAccessoryData.Tab activeTab = mTabSwitcher.getActiveTab();
+            if (activeTab != null) mModel.set(SHEET_TITLE, activeTab.getTitle());
+            return;
+        }
         if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == SHOW_KEYBOARD_CALLBACK
-                || propertyKey == KEYBOARD_TOGGLE_VISIBLE || propertyKey == TAB_LAYOUT_ITEM) {
+                || propertyKey == TAB_LAYOUT_ITEM || propertyKey == SHEET_TITLE) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

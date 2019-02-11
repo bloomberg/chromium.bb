@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 
@@ -90,6 +91,8 @@ class KeyboardAccessoryModernViewBinder {
             modernView.setKeyboardToggleVisibility(model.get(KEYBOARD_TOGGLE_VISIBLE));
         } else if (propertyKey == SHOW_KEYBOARD_CALLBACK) {
             modernView.setShowKeyboardCallback(model.get(SHOW_KEYBOARD_CALLBACK));
+        } else if (propertyKey == SHEET_TITLE) {
+            modernView.setSheetTitle(model.get(SHEET_TITLE));
         } else if (propertyKey == TAB_LAYOUT_ITEM) {
             // No binding required.
         } else {
