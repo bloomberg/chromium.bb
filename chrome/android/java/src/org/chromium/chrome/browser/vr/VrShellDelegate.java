@@ -828,8 +828,10 @@ public class VrShellDelegate
 
         SimpleConfirmInfoBarBuilder.create(tab, listener,
                 InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID, R.drawable.vr_services,
-                activity.getString(R.string.vr_shell_feedback_infobar_description),
-                activity.getString(R.string.vr_shell_feedback_infobar_feedback_button),
+                ContextUtils.getApplicationContext().getString(
+                        org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_description),
+                ContextUtils.getApplicationContext().getString(
+                        org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_feedback_button),
                 activity.getString(R.string.no_thanks), null /* linkText */,
                 true /* autoExpire  */);
     }
@@ -900,6 +902,7 @@ public class VrShellDelegate
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         ensureLifecycleObserverInitialized();
         if (!mPaused) onResume();
+
         sInstance = this;
     }
 
@@ -982,13 +985,18 @@ public class VrShellDelegate
 
         String infobarText;
         String buttonText;
+
         if (vrCoreCompatibility == VrCoreCompatibility.VR_NOT_AVAILABLE) {
             // Supported, but not installed. Ask user to install instead of upgrade.
-            infobarText = mActivity.getString(R.string.vr_services_check_infobar_install_text);
-            buttonText = mActivity.getString(R.string.vr_services_check_infobar_install_button);
+            infobarText = ContextUtils.getApplicationContext().getString(
+                    org.chromium.chrome.vr.R.string.vr_services_check_infobar_install_text);
+            buttonText = ContextUtils.getApplicationContext().getString(
+                    org.chromium.chrome.vr.R.string.vr_services_check_infobar_install_button);
         } else if (vrCoreCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
-            infobarText = mActivity.getString(R.string.vr_services_check_infobar_update_text);
-            buttonText = mActivity.getString(R.string.vr_services_check_infobar_update_button);
+            infobarText = ContextUtils.getApplicationContext().getString(
+                    org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_text);
+            buttonText = ContextUtils.getApplicationContext().getString(
+                    org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_button);
         } else {
             Log.e(TAG, "Unknown VrCore compatibility: " + vrCoreCompatibility);
             return;

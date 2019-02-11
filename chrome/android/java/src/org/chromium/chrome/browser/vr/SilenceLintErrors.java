@@ -10,12 +10,6 @@ import org.chromium.chrome.R;
 // we have moved resources into VR DFM.
 /* package */ class SilenceLintErrors {
     private int[] mRes = new int[] {
-            R.string.vr_shell_feedback_infobar_feedback_button,
-            R.string.vr_shell_feedback_infobar_description,
-            R.string.vr_services_check_infobar_install_text,
-            R.string.vr_services_check_infobar_update_text,
-            R.string.vr_services_check_infobar_install_button,
-            R.string.vr_services_check_infobar_update_button,
             R.anim.stay_hidden,
             R.drawable.vr_services,
     };

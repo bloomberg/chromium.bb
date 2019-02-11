@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -83,15 +84,15 @@ public class VrInstallUpdateInfoBarTest {
             // Out of date and missing cases are the same, but with different text
             String expectedMessage, expectedButton;
             if (checkerReturnCompatibility == VrCoreCompatibility.VR_OUT_OF_DATE) {
-                expectedMessage = mVrTestRule.getActivity().getString(
-                        R.string.vr_services_check_infobar_update_text);
-                expectedButton = mVrTestRule.getActivity().getString(
-                        R.string.vr_services_check_infobar_update_button);
+                expectedMessage = ContextUtils.getApplicationContext().getString(
+                        org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_text);
+                expectedButton = ContextUtils.getApplicationContext().getString(
+                        org.chromium.chrome.vr.R.string.vr_services_check_infobar_update_button);
             } else {
-                expectedMessage = mVrTestRule.getActivity().getString(
-                        R.string.vr_services_check_infobar_install_text);
-                expectedButton = mVrTestRule.getActivity().getString(
-                        R.string.vr_services_check_infobar_install_button);
+                expectedMessage = ContextUtils.getApplicationContext().getString(
+                        org.chromium.chrome.vr.R.string.vr_services_check_infobar_install_text);
+                expectedButton = ContextUtils.getApplicationContext().getString(
+                        org.chromium.chrome.vr.R.string.vr_services_check_infobar_install_button);
             }
             VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, true);
             TextView tempView = (TextView) decorView.findViewById(R.id.infobar_message);
