@@ -30,7 +30,7 @@ class SystemDisplayCrOSRestrictedFunction : public UIThreadExtensionFunction {
 // rest of this API, it's available on all platforms.
 class SystemDisplayGetInfoFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("system.display.getInfo", SYSTEM_DISPLAY_GETINFO);
+  DECLARE_EXTENSION_FUNCTION("system.display.getInfo", SYSTEM_DISPLAY_GETINFO)
 
  protected:
   ~SystemDisplayGetInfoFunction() override {}
@@ -44,7 +44,7 @@ class SystemDisplayGetDisplayLayoutFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.getDisplayLayout",
-                             SYSTEM_DISPLAY_GETDISPLAYLAYOUT);
+                             SYSTEM_DISPLAY_GETDISPLAYLAYOUT)
 
  protected:
   ~SystemDisplayGetDisplayLayoutFunction() override {}
@@ -58,7 +58,7 @@ class SystemDisplaySetDisplayPropertiesFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.setDisplayProperties",
-                             SYSTEM_DISPLAY_SETDISPLAYPROPERTIES);
+                             SYSTEM_DISPLAY_SETDISPLAYPROPERTIES)
 
  protected:
   ~SystemDisplaySetDisplayPropertiesFunction() override {}
@@ -71,7 +71,7 @@ class SystemDisplaySetDisplayLayoutFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.setDisplayLayout",
-                             SYSTEM_DISPLAY_SETDISPLAYLAYOUT);
+                             SYSTEM_DISPLAY_SETDISPLAYLAYOUT)
 
  protected:
   ~SystemDisplaySetDisplayLayoutFunction() override {}
@@ -84,7 +84,7 @@ class SystemDisplayEnableUnifiedDesktopFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.enableUnifiedDesktop",
-                             SYSTEM_DISPLAY_ENABLEUNIFIEDDESKTOP);
+                             SYSTEM_DISPLAY_ENABLEUNIFIEDDESKTOP)
 
  protected:
   ~SystemDisplayEnableUnifiedDesktopFunction() override {}
@@ -95,7 +95,7 @@ class SystemDisplayOverscanCalibrationStartFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.overscanCalibrationStart",
-                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONSTART);
+                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONSTART)
 
  protected:
   ~SystemDisplayOverscanCalibrationStartFunction() override {}
@@ -106,7 +106,7 @@ class SystemDisplayOverscanCalibrationAdjustFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.overscanCalibrationAdjust",
-                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONADJUST);
+                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONADJUST)
 
  protected:
   ~SystemDisplayOverscanCalibrationAdjustFunction() override {}
@@ -117,7 +117,7 @@ class SystemDisplayOverscanCalibrationResetFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.overscanCalibrationReset",
-                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONRESET);
+                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONRESET)
 
  protected:
   ~SystemDisplayOverscanCalibrationResetFunction() override {}
@@ -128,7 +128,7 @@ class SystemDisplayOverscanCalibrationCompleteFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.overscanCalibrationComplete",
-                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE);
+                             SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE)
 
  protected:
   ~SystemDisplayOverscanCalibrationCompleteFunction() override {}
@@ -139,7 +139,7 @@ class SystemDisplayShowNativeTouchCalibrationFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.showNativeTouchCalibration",
-                             SYSTEM_DISPLAY_SHOWNATIVETOUCHCALIBRATION);
+                             SYSTEM_DISPLAY_SHOWNATIVETOUCHCALIBRATION)
 
  protected:
   ~SystemDisplayShowNativeTouchCalibrationFunction() override {}
@@ -152,7 +152,7 @@ class SystemDisplayStartCustomTouchCalibrationFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.startCustomTouchCalibration",
-                             SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION);
+                             SYSTEM_DISPLAY_STARTCUSTOMTOUCHCALIBRATION)
 
  protected:
   ~SystemDisplayStartCustomTouchCalibrationFunction() override {}
@@ -163,7 +163,7 @@ class SystemDisplayCompleteCustomTouchCalibrationFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.completeCustomTouchCalibration",
-                             SYSTEM_DISPLAY_COMPLETECUSTOMTOUCHCALIBRATION);
+                             SYSTEM_DISPLAY_COMPLETECUSTOMTOUCHCALIBRATION)
 
  protected:
   ~SystemDisplayCompleteCustomTouchCalibrationFunction() override {}
@@ -174,7 +174,7 @@ class SystemDisplayClearTouchCalibrationFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.clearTouchCalibration",
-                             SYSTEM_DISPLAY_CLEARTOUCHCALIBRATION);
+                             SYSTEM_DISPLAY_CLEARTOUCHCALIBRATION)
 
  protected:
   ~SystemDisplayClearTouchCalibrationFunction() override {}
@@ -185,7 +185,7 @@ class SystemDisplaySetMirrorModeFunction
     : public SystemDisplayCrOSRestrictedFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.setMirrorMode",
-                             SYSTEM_DISPLAY_SETMIRRORMODE);
+                             SYSTEM_DISPLAY_SETMIRRORMODE)
 
  protected:
   ~SystemDisplaySetMirrorModeFunction() override {}

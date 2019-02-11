@@ -39,7 +39,7 @@ class ClipboardAPI : public BrowserContextKeyedAPI,
 
 class ClipboardSetImageDataFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("clipboard.setImageData", CLIPBOARD_SETIMAGEDATA);
+  DECLARE_EXTENSION_FUNCTION("clipboard.setImageData", CLIPBOARD_SETIMAGEDATA)
 
  protected:
   ~ClipboardSetImageDataFunction() override;

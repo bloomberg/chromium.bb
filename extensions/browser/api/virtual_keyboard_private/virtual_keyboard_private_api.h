@@ -37,7 +37,7 @@ class VirtualKeyboardPrivateInsertTextFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.insertText",
-                             VIRTUALKEYBOARDPRIVATE_INSERTTEXT);
+                             VIRTUALKEYBOARDPRIVATE_INSERTTEXT)
 
  protected:
   ~VirtualKeyboardPrivateInsertTextFunction() override {}
@@ -50,7 +50,7 @@ class VirtualKeyboardPrivateSendKeyEventFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.sendKeyEvent",
-                             VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT);
+                             VIRTUALKEYBOARDPRIVATE_SENDKEYEVENT)
 
  protected:
   ~VirtualKeyboardPrivateSendKeyEventFunction() override {}
@@ -63,7 +63,7 @@ class VirtualKeyboardPrivateHideKeyboardFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.hideKeyboard",
-                             VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD);
+                             VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD)
 
  protected:
   ~VirtualKeyboardPrivateHideKeyboardFunction() override {}
@@ -76,7 +76,7 @@ class VirtualKeyboardPrivateSetHotrodKeyboardFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setHotrodKeyboard",
-                             VIRTUALKEYBOARDPRIVATE_SETHOTRODKEYBOARD);
+                             VIRTUALKEYBOARDPRIVATE_SETHOTRODKEYBOARD)
 
  protected:
   ~VirtualKeyboardPrivateSetHotrodKeyboardFunction() override {}
@@ -89,7 +89,7 @@ class VirtualKeyboardPrivateLockKeyboardFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.lockKeyboard",
-                             VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD);
+                             VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD)
 
  protected:
   ~VirtualKeyboardPrivateLockKeyboardFunction() override {}
@@ -102,7 +102,7 @@ class VirtualKeyboardPrivateKeyboardLoadedFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.keyboardLoaded",
-                             VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED);
+                             VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED)
 
  protected:
   ~VirtualKeyboardPrivateKeyboardLoadedFunction() override {}
@@ -115,7 +115,7 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.getKeyboardConfig",
-                             VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG);
+                             VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG)
 
  protected:
   ~VirtualKeyboardPrivateGetKeyboardConfigFunction() override {}
@@ -131,7 +131,7 @@ class VirtualKeyboardPrivateOpenSettingsFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.openSettings",
-                             VIRTUALKEYBOARDPRIVATE_OPENSETTINGS);
+                             VIRTUALKEYBOARDPRIVATE_OPENSETTINGS)
 
  protected:
   ~VirtualKeyboardPrivateOpenSettingsFunction() override {}
@@ -144,7 +144,7 @@ class VirtualKeyboardPrivateSetContainerBehaviorFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setContainerBehavior",
-                             VIRTUALKEYBOARDPRIVATE_SETCONTAINERBEHAVIOR);
+                             VIRTUALKEYBOARDPRIVATE_SETCONTAINERBEHAVIOR)
 
  protected:
   ~VirtualKeyboardPrivateSetContainerBehaviorFunction() override = default;
@@ -160,7 +160,7 @@ class VirtualKeyboardPrivateSetDraggableAreaFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setDraggableArea",
-                             VIRTUALKEYBOARDPRIVATE_SETDRAGGABLEAREA);
+                             VIRTUALKEYBOARDPRIVATE_SETDRAGGABLEAREA)
 
  protected:
   ~VirtualKeyboardPrivateSetDraggableAreaFunction() override {}
@@ -173,7 +173,7 @@ class VirtualKeyboardPrivateSetKeyboardStateFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setKeyboardState",
-                             VIRTUALKEYBOARDPRIVATE_SETKEYBOARDSTATE);
+                             VIRTUALKEYBOARDPRIVATE_SETKEYBOARDSTATE)
 
  protected:
   ~VirtualKeyboardPrivateSetKeyboardStateFunction() override {}
@@ -186,7 +186,7 @@ class VirtualKeyboardPrivateSetOccludedBoundsFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setOccludedBounds",
-                             VIRTUALKEYBOARDPRIVATE_SETOCCLUDEDBOUNDS);
+                             VIRTUALKEYBOARDPRIVATE_SETOCCLUDEDBOUNDS)
 
  protected:
   ~VirtualKeyboardPrivateSetOccludedBoundsFunction() override {}
@@ -199,7 +199,7 @@ class VirtualKeyboardPrivateSetHitTestBoundsFunction
     : public VirtualKeyboardPrivateFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setHitTestBounds",
-                             VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS);
+                             VIRTUALKEYBOARDPRIVATE_SETHITTESTBOUNDS)
 
  protected:
   ~VirtualKeyboardPrivateSetHitTestBoundsFunction() override {}

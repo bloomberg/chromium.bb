@@ -84,7 +84,7 @@ class WebcamPrivateOpenSerialWebcamFunction : public UIThreadExtensionFunction {
  public:
   WebcamPrivateOpenSerialWebcamFunction();
   DECLARE_EXTENSION_FUNCTION("webcamPrivate.openSerialWebcam",
-                             WEBCAMPRIVATE_OPENSERIALWEBCAM);
+                             WEBCAMPRIVATE_OPENSERIALWEBCAM)
 
  protected:
   ~WebcamPrivateOpenSerialWebcamFunction() override;
@@ -102,7 +102,7 @@ class WebcamPrivateCloseWebcamFunction : public UIThreadExtensionFunction {
  public:
   WebcamPrivateCloseWebcamFunction();
   DECLARE_EXTENSION_FUNCTION("webcamPrivate.closeWebcam",
-                             WEBCAMPRIVATE_CLOSEWEBCAM);
+                             WEBCAMPRIVATE_CLOSEWEBCAM)
 
  protected:
   ~WebcamPrivateCloseWebcamFunction() override;
@@ -117,7 +117,7 @@ class WebcamPrivateCloseWebcamFunction : public UIThreadExtensionFunction {
 class WebcamPrivateSetFunction : public UIThreadExtensionFunction {
  public:
   WebcamPrivateSetFunction();
-  DECLARE_EXTENSION_FUNCTION("webcamPrivate.set", WEBCAMPRIVATE_SET);
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.set", WEBCAMPRIVATE_SET)
 
  protected:
   ~WebcamPrivateSetFunction() override;
@@ -137,7 +137,7 @@ class WebcamPrivateSetFunction : public UIThreadExtensionFunction {
 class WebcamPrivateGetFunction : public UIThreadExtensionFunction {
  public:
   WebcamPrivateGetFunction();
-  DECLARE_EXTENSION_FUNCTION("webcamPrivate.get", WEBCAMPRIVATE_GET);
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.get", WEBCAMPRIVATE_GET)
 
  protected:
   ~WebcamPrivateGetFunction() override;
@@ -188,7 +188,7 @@ class WebcamPrivateGetFunction : public UIThreadExtensionFunction {
 class WebcamPrivateResetFunction : public UIThreadExtensionFunction {
  public:
   WebcamPrivateResetFunction();
-  DECLARE_EXTENSION_FUNCTION("webcamPrivate.reset", WEBCAMPRIVATE_RESET);
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.reset", WEBCAMPRIVATE_RESET)
 
  protected:
   ~WebcamPrivateResetFunction() override;

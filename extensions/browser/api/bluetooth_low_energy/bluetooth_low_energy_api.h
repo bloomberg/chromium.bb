@@ -144,7 +144,7 @@ class BluetoothLowEnergyConnectFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.connect",
-                             BLUETOOTHLOWENERGY_CONNECT);
+                             BLUETOOTHLOWENERGY_CONNECT)
 
   BluetoothLowEnergyConnectFunction();
 
@@ -168,7 +168,7 @@ class BluetoothLowEnergyDisconnectFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.disconnect",
-                             BLUETOOTHLOWENERGY_DISCONNECT);
+                             BLUETOOTHLOWENERGY_DISCONNECT)
 
   BluetoothLowEnergyDisconnectFunction();
 
@@ -192,7 +192,7 @@ class BluetoothLowEnergyGetServiceFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getService",
-                             BLUETOOTHLOWENERGY_GETSERVICE);
+                             BLUETOOTHLOWENERGY_GETSERVICE)
 
   BluetoothLowEnergyGetServiceFunction();
 
@@ -210,7 +210,7 @@ class BluetoothLowEnergyGetServicesFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getServices",
-                             BLUETOOTHLOWENERGY_GETSERVICES);
+                             BLUETOOTHLOWENERGY_GETSERVICES)
 
   BluetoothLowEnergyGetServicesFunction();
 
@@ -228,7 +228,7 @@ class BluetoothLowEnergyGetCharacteristicFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getCharacteristic",
-                             BLUETOOTHLOWENERGY_GETCHARACTERISTIC);
+                             BLUETOOTHLOWENERGY_GETCHARACTERISTIC)
 
   BluetoothLowEnergyGetCharacteristicFunction();
 
@@ -246,7 +246,7 @@ class BluetoothLowEnergyGetCharacteristicsFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getCharacteristics",
-                             BLUETOOTHLOWENERGY_GETCHARACTERISTICS);
+                             BLUETOOTHLOWENERGY_GETCHARACTERISTICS)
 
   BluetoothLowEnergyGetCharacteristicsFunction();
 
@@ -264,7 +264,7 @@ class BluetoothLowEnergyGetIncludedServicesFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getIncludedServices",
-                             BLUETOOTHLOWENERGY_GETINCLUDEDSERVICES);
+                             BLUETOOTHLOWENERGY_GETINCLUDEDSERVICES)
 
   BluetoothLowEnergyGetIncludedServicesFunction();
 
@@ -282,7 +282,7 @@ class BluetoothLowEnergyGetDescriptorFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getDescriptor",
-                             BLUETOOTHLOWENERGY_GETDESCRIPTOR);
+                             BLUETOOTHLOWENERGY_GETDESCRIPTOR)
 
   BluetoothLowEnergyGetDescriptorFunction();
 
@@ -300,7 +300,7 @@ class BluetoothLowEnergyGetDescriptorsFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.getDescriptors",
-                             BLUETOOTHLOWENERGY_GETDESCRIPTORS);
+                             BLUETOOTHLOWENERGY_GETDESCRIPTORS)
 
   BluetoothLowEnergyGetDescriptorsFunction();
 
@@ -318,7 +318,7 @@ class BluetoothLowEnergyReadCharacteristicValueFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.readCharacteristicValue",
-                             BLUETOOTHLOWENERGY_READCHARACTERISTICVALUE);
+                             BLUETOOTHLOWENERGY_READCHARACTERISTICVALUE)
 
   BluetoothLowEnergyReadCharacteristicValueFunction();
 
@@ -346,7 +346,7 @@ class BluetoothLowEnergyWriteCharacteristicValueFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.writeCharacteristicValue",
-                             BLUETOOTHLOWENERGY_WRITECHARACTERISTICVALUE);
+                             BLUETOOTHLOWENERGY_WRITECHARACTERISTICVALUE)
 
   BluetoothLowEnergyWriteCharacteristicValueFunction();
 
@@ -375,7 +375,7 @@ class BluetoothLowEnergyStartCharacteristicNotificationsFunction
  public:
   DECLARE_EXTENSION_FUNCTION(
       "bluetoothLowEnergy.startCharacteristicNotifications",
-      BLUETOOTHLOWENERGY_STARTCHARACTERISTICNOTIFICATIONS);
+      BLUETOOTHLOWENERGY_STARTCHARACTERISTICNOTIFICATIONS)
 
   BluetoothLowEnergyStartCharacteristicNotificationsFunction();
 
@@ -402,7 +402,7 @@ class BluetoothLowEnergyStopCharacteristicNotificationsFunction
  public:
   DECLARE_EXTENSION_FUNCTION(
       "bluetoothLowEnergy.stopCharacteristicNotifications",
-      BLUETOOTHLOWENERGY_STOPCHARACTERISTICNOTIFICATIONS);
+      BLUETOOTHLOWENERGY_STOPCHARACTERISTICNOTIFICATIONS)
 
   BluetoothLowEnergyStopCharacteristicNotificationsFunction();
 
@@ -427,7 +427,7 @@ class BluetoothLowEnergyReadDescriptorValueFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.readDescriptorValue",
-                             BLUETOOTHLOWENERGY_READDESCRIPTORVALUE);
+                             BLUETOOTHLOWENERGY_READDESCRIPTORVALUE)
 
   BluetoothLowEnergyReadDescriptorValueFunction();
 
@@ -454,7 +454,7 @@ class BluetoothLowEnergyWriteDescriptorValueFunction
     : public BluetoothLowEnergyExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.writeDescriptorValue",
-                             BLUETOOTHLOWENERGY_WRITEDESCRIPTORVALUE);
+                             BLUETOOTHLOWENERGY_WRITEDESCRIPTORVALUE)
 
   BluetoothLowEnergyWriteDescriptorValueFunction();
 
@@ -506,7 +506,7 @@ class BluetoothLowEnergyRegisterAdvertisementFunction
     : public BluetoothLowEnergyAdvertisementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.registerAdvertisement",
-                             BLUETOOTHLOWENERGY_REGISTERADVERTISEMENT);
+                             BLUETOOTHLOWENERGY_REGISTERADVERTISEMENT)
 
   BluetoothLowEnergyRegisterAdvertisementFunction();
 
@@ -528,7 +528,7 @@ class BluetoothLowEnergyUnregisterAdvertisementFunction
     : public BluetoothLowEnergyAdvertisementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.unregisterAdvertisement",
-                             BLUETOOTHLOWENERGY_UNREGISTERADVERTISEMENT);
+                             BLUETOOTHLOWENERGY_UNREGISTERADVERTISEMENT)
 
   BluetoothLowEnergyUnregisterAdvertisementFunction();
 
@@ -552,7 +552,7 @@ class BluetoothLowEnergyResetAdvertisingFunction
     : public BluetoothLowEnergyAdvertisementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.resetAdvertising",
-                             BLUETOOTHLOWENERGY_RESETADVERTISING);
+                             BLUETOOTHLOWENERGY_RESETADVERTISING)
 
   BluetoothLowEnergyResetAdvertisingFunction();
 
@@ -572,7 +572,7 @@ class BluetoothLowEnergySetAdvertisingIntervalFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.setAdvertisingInterval",
-                             BLUETOOTHLOWENERGY_SETADVERTISINGINTERVAL);
+                             BLUETOOTHLOWENERGY_SETADVERTISINGINTERVAL)
 
   BluetoothLowEnergySetAdvertisingIntervalFunction();
 
@@ -594,7 +594,7 @@ class BluetoothLowEnergyCreateServiceFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.createService",
-                             BLUETOOTHLOWENERGY_CREATESERVICE);
+                             BLUETOOTHLOWENERGY_CREATESERVICE)
 
   BluetoothLowEnergyCreateServiceFunction();
 
@@ -615,7 +615,7 @@ class BluetoothLowEnergyCreateCharacteristicFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.createCharacteristic",
-                             BLUETOOTHLOWENERGY_CREATECHARACTERISTIC);
+                             BLUETOOTHLOWENERGY_CREATECHARACTERISTIC)
 
   BluetoothLowEnergyCreateCharacteristicFunction();
 
@@ -634,7 +634,7 @@ class BluetoothLowEnergyNotifyCharacteristicValueChangedFunction
  public:
   DECLARE_EXTENSION_FUNCTION(
       "bluetoothLowEnergy.notifyCharacteristicValueChanged",
-      BLUETOOTHLOWENERGY_NOTIFYCHARACTERISTICVALUECHANGED);
+      BLUETOOTHLOWENERGY_NOTIFYCHARACTERISTICVALUECHANGED)
 
   BluetoothLowEnergyNotifyCharacteristicValueChangedFunction();
 
@@ -654,7 +654,7 @@ class BluetoothLowEnergyCreateDescriptorFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.createDescriptor",
-                             BLUETOOTHLOWENERGY_CREATEDESCRIPTOR);
+                             BLUETOOTHLOWENERGY_CREATEDESCRIPTOR)
 
   BluetoothLowEnergyCreateDescriptorFunction();
 
@@ -672,7 +672,7 @@ class BluetoothLowEnergyRegisterServiceFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.registerService",
-                             BLUETOOTHLOWENERGY_REGISTERSERVICE);
+                             BLUETOOTHLOWENERGY_REGISTERSERVICE)
 
   BluetoothLowEnergyRegisterServiceFunction();
 
@@ -694,7 +694,7 @@ class BluetoothLowEnergyUnregisterServiceFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.unregisterService",
-                             BLUETOOTHLOWENERGY_UNREGISTERSERVICE);
+                             BLUETOOTHLOWENERGY_UNREGISTERSERVICE)
 
   BluetoothLowEnergyUnregisterServiceFunction();
 
@@ -718,7 +718,7 @@ class BluetoothLowEnergyRemoveServiceFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.removeService",
-                             BLUETOOTHLOWENERGY_REMOVESERVICE);
+                             BLUETOOTHLOWENERGY_REMOVESERVICE)
 
   BluetoothLowEnergyRemoveServiceFunction();
 
@@ -736,7 +736,7 @@ class BluetoothLowEnergySendRequestResponseFunction
     : public BLEPeripheralExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.sendRequestResponse",
-                             BLUETOOTHLOWENERGY_SENDREQUESTRESPONSE);
+                             BLUETOOTHLOWENERGY_SENDREQUESTRESPONSE)
 
   BluetoothLowEnergySendRequestResponseFunction();
 

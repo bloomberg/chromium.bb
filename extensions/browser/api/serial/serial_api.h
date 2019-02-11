@@ -91,7 +91,7 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
 
 class SerialUpdateFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("serial.update", SERIAL_UPDATE);
+  DECLARE_EXTENSION_FUNCTION("serial.update", SERIAL_UPDATE)
 
   SerialUpdateFunction();
 
@@ -165,7 +165,7 @@ class SerialGetInfoFunction : public SerialAsyncApiFunction {
 
 class SerialGetConnectionsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("serial.getConnections", SERIAL_GETCONNECTIONS);
+  DECLARE_EXTENSION_FUNCTION("serial.getConnections", SERIAL_GETCONNECTIONS)
 
   SerialGetConnectionsFunction();
 

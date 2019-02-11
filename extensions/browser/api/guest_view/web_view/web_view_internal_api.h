@@ -36,7 +36,7 @@ class WebViewInternalCaptureVisibleRegionFunction
       public WebContentsCaptureClient {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
-                             WEBVIEWINTERNAL_CAPTUREVISIBLEREGION);
+                             WEBVIEWINTERNAL_CAPTUREVISIBLEREGION)
   WebViewInternalCaptureVisibleRegionFunction();
 
  protected:
@@ -63,7 +63,7 @@ class WebViewInternalNavigateFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.navigate",
-                             WEBVIEWINTERNAL_NAVIGATE);
+                             WEBVIEWINTERNAL_NAVIGATE)
   WebViewInternalNavigateFunction() {}
 
  protected:
@@ -147,7 +147,7 @@ class WebViewInternalAddContentScriptsFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.addContentScripts",
-                             WEBVIEWINTERNAL_ADDCONTENTSCRIPTS);
+                             WEBVIEWINTERNAL_ADDCONTENTSCRIPTS)
 
   WebViewInternalAddContentScriptsFunction();
 
@@ -164,7 +164,7 @@ class WebViewInternalRemoveContentScriptsFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.removeContentScripts",
-                             WEBVIEWINTERNAL_REMOVECONTENTSCRIPTS);
+                             WEBVIEWINTERNAL_REMOVECONTENTSCRIPTS)
 
   WebViewInternalRemoveContentScriptsFunction();
 
@@ -180,8 +180,7 @@ class WebViewInternalRemoveContentScriptsFunction
 
 class WebViewInternalSetNameFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.setName",
-                             WEBVIEWINTERNAL_SETNAME);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.setName", WEBVIEWINTERNAL_SETNAME)
 
   WebViewInternalSetNameFunction();
 
@@ -198,7 +197,7 @@ class WebViewInternalSetAllowTransparencyFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setAllowTransparency",
-                             WEBVIEWINTERNAL_SETALLOWTRANSPARENCY);
+                             WEBVIEWINTERNAL_SETALLOWTRANSPARENCY)
 
   WebViewInternalSetAllowTransparencyFunction();
 
@@ -215,7 +214,7 @@ class WebViewInternalSetAllowScalingFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setAllowScaling",
-                             WEBVIEWINTERNAL_SETALLOWSCALING);
+                             WEBVIEWINTERNAL_SETALLOWSCALING)
 
   WebViewInternalSetAllowScalingFunction();
 
@@ -230,8 +229,7 @@ class WebViewInternalSetAllowScalingFunction
 
 class WebViewInternalSetZoomFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.setZoom",
-                             WEBVIEWINTERNAL_SETZOOM);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.setZoom", WEBVIEWINTERNAL_SETZOOM)
 
   WebViewInternalSetZoomFunction();
 
@@ -246,8 +244,7 @@ class WebViewInternalSetZoomFunction : public WebViewInternalExtensionFunction {
 
 class WebViewInternalGetZoomFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.getZoom",
-                             WEBVIEWINTERNAL_GETZOOM);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.getZoom", WEBVIEWINTERNAL_GETZOOM)
 
   WebViewInternalGetZoomFunction();
 
@@ -264,7 +261,7 @@ class WebViewInternalSetZoomModeFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setZoomMode",
-                             WEBVIEWINTERNAL_SETZOOMMODE);
+                             WEBVIEWINTERNAL_SETZOOMMODE)
 
   WebViewInternalSetZoomModeFunction();
 
@@ -281,7 +278,7 @@ class WebViewInternalGetZoomModeFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.getZoomMode",
-                             WEBVIEWINTERNAL_GETZOOMMODE);
+                             WEBVIEWINTERNAL_GETZOOMMODE)
 
   WebViewInternalGetZoomModeFunction();
 
@@ -296,7 +293,7 @@ class WebViewInternalGetZoomModeFunction
 
 class WebViewInternalFindFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.find", WEBVIEWINTERNAL_FIND);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.find", WEBVIEWINTERNAL_FIND)
 
   WebViewInternalFindFunction();
 
@@ -317,7 +314,7 @@ class WebViewInternalStopFindingFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.stopFinding",
-                             WEBVIEWINTERNAL_STOPFINDING);
+                             WEBVIEWINTERNAL_STOPFINDING)
 
   WebViewInternalStopFindingFunction();
 
@@ -334,7 +331,7 @@ class WebViewInternalLoadDataWithBaseUrlFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.loadDataWithBaseUrl",
-                             WEBVIEWINTERNAL_LOADDATAWITHBASEURL);
+                             WEBVIEWINTERNAL_LOADDATAWITHBASEURL)
 
   WebViewInternalLoadDataWithBaseUrlFunction();
 
@@ -349,7 +346,7 @@ class WebViewInternalLoadDataWithBaseUrlFunction
 
 class WebViewInternalGoFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.go", WEBVIEWINTERNAL_GO);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.go", WEBVIEWINTERNAL_GO)
 
   WebViewInternalGoFunction();
 
@@ -364,7 +361,7 @@ class WebViewInternalGoFunction : public WebViewInternalExtensionFunction {
 
 class WebViewInternalReloadFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.reload", WEBVIEWINTERNAL_RELOAD);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.reload", WEBVIEWINTERNAL_RELOAD)
 
   WebViewInternalReloadFunction();
 
@@ -381,7 +378,7 @@ class WebViewInternalSetPermissionFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setPermission",
-                             WEBVIEWINTERNAL_SETPERMISSION);
+                             WEBVIEWINTERNAL_SETPERMISSION)
 
   WebViewInternalSetPermissionFunction();
 
@@ -398,7 +395,7 @@ class WebViewInternalOverrideUserAgentFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.overrideUserAgent",
-                             WEBVIEWINTERNAL_OVERRIDEUSERAGENT);
+                             WEBVIEWINTERNAL_OVERRIDEUSERAGENT)
 
   WebViewInternalOverrideUserAgentFunction();
 
@@ -413,7 +410,7 @@ class WebViewInternalOverrideUserAgentFunction
 
 class WebViewInternalStopFunction : public WebViewInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("webViewInternal.stop", WEBVIEWINTERNAL_STOP);
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.stop", WEBVIEWINTERNAL_STOP)
 
   WebViewInternalStopFunction();
 
@@ -430,7 +427,7 @@ class WebViewInternalSetAudioMutedFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setAudioMuted",
-                             WEBVIEWINTERNAL_SETAUDIOMUTED);
+                             WEBVIEWINTERNAL_SETAUDIOMUTED)
 
   WebViewInternalSetAudioMutedFunction();
 
@@ -447,7 +444,7 @@ class WebViewInternalIsAudioMutedFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.isAudioMuted",
-                             WEBVIEWINTERNAL_ISAUDIOMUTED);
+                             WEBVIEWINTERNAL_ISAUDIOMUTED)
 
   WebViewInternalIsAudioMutedFunction();
 
@@ -464,7 +461,7 @@ class WebViewInternalGetAudioStateFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.getAudioState",
-                             WEBVIEWINTERNAL_GETAUDIOSTATE);
+                             WEBVIEWINTERNAL_GETAUDIOSTATE)
 
   WebViewInternalGetAudioStateFunction();
 
@@ -481,7 +478,7 @@ class WebViewInternalTerminateFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.terminate",
-                             WEBVIEWINTERNAL_TERMINATE);
+                             WEBVIEWINTERNAL_TERMINATE)
 
   WebViewInternalTerminateFunction();
 
@@ -498,7 +495,7 @@ class WebViewInternalClearDataFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.clearData",
-                             WEBVIEWINTERNAL_CLEARDATA);
+                             WEBVIEWINTERNAL_CLEARDATA)
 
   WebViewInternalClearDataFunction();
 
@@ -526,7 +523,7 @@ class WebViewInternalSetSpatialNavigationEnabledFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.setSpatialNavigationEnabled",
-                             WEBVIEWINTERNAL_SETSPATIALNAVIGATIONENABLED);
+                             WEBVIEWINTERNAL_SETSPATIALNAVIGATIONENABLED)
 
   WebViewInternalSetSpatialNavigationEnabledFunction();
 
@@ -543,7 +540,7 @@ class WebViewInternalIsSpatialNavigationEnabledFunction
     : public WebViewInternalExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.isSpatialNavigationEnabled",
-                             WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED);
+                             WEBVIEWINTERNAL_ISSPATIALNAVIGATIONENABLED)
 
   WebViewInternalIsSpatialNavigationEnabledFunction();
 

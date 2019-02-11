@@ -74,7 +74,7 @@ class ManagementGetPermissionWarningsByManifestFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsByManifest",
-                             MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST);
+                             MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST)
 
   // Called when utility process finishes.
   void OnParseSuccess(std::unique_ptr<base::Value> value);
@@ -159,7 +159,7 @@ class ManagementUninstallFunction : public ManagementUninstallFunctionBase {
 class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION("management.uninstallSelf",
-                             MANAGEMENT_UNINSTALLSELF);
+                             MANAGEMENT_UNINSTALLSELF)
   ManagementUninstallSelfFunction();
 
  private:
@@ -170,7 +170,7 @@ class ManagementUninstallSelfFunction : public ManagementUninstallFunctionBase {
 class ManagementCreateAppShortcutFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.createAppShortcut",
-                             MANAGEMENT_CREATEAPPSHORTCUT);
+                             MANAGEMENT_CREATEAPPSHORTCUT)
 
   ManagementCreateAppShortcutFunction();
 
@@ -187,7 +187,7 @@ class ManagementCreateAppShortcutFunction : public UIThreadExtensionFunction {
 class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.setLaunchType",
-                             MANAGEMENT_SETLAUNCHTYPE);
+                             MANAGEMENT_SETLAUNCHTYPE)
 
  protected:
   ~ManagementSetLaunchTypeFunction() override {}
@@ -198,7 +198,7 @@ class ManagementSetLaunchTypeFunction : public UIThreadExtensionFunction {
 class ManagementGenerateAppForLinkFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("management.generateAppForLink",
-                             MANAGEMENT_GENERATEAPPFORLINK);
+                             MANAGEMENT_GENERATEAPPFORLINK)
 
   ManagementGenerateAppForLinkFunction();
 

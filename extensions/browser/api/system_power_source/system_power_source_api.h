@@ -47,7 +47,7 @@ class SystemPowerSourceGetPowerSourceInfoFunction
   SystemPowerSourceGetPowerSourceInfoFunction();
 
   DECLARE_EXTENSION_FUNCTION("system.powerSource.getPowerSourceInfo",
-                             SYSTEM_POWER_SOURCE_GETPOWERSOURCEINFO);
+                             SYSTEM_POWER_SOURCE_GETPOWERSOURCEINFO)
 
  protected:
   ~SystemPowerSourceGetPowerSourceInfoFunction() override;
@@ -64,7 +64,7 @@ class SystemPowerSourceRequestStatusUpdateFunction
   SystemPowerSourceRequestStatusUpdateFunction();
 
   DECLARE_EXTENSION_FUNCTION("system.powerSource.requestStatusUpdate",
-                             SYSTEM_POWER_SOURCE_REQUESTSTATUSUPDATE);
+                             SYSTEM_POWER_SOURCE_REQUESTSTATUSUPDATE)
 
  protected:
   ~SystemPowerSourceRequestStatusUpdateFunction() override;

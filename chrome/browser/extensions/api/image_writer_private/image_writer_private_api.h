@@ -74,14 +74,14 @@ class ImageWriterPrivateDestroyPartitionsFunction
 class ImageWriterPrivateListRemovableStorageDevicesFunction
     : public ChromeAsyncExtensionFunction {
   public:
-    DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.listRemovableStorageDevices",
-                               IMAGEWRITER_LISTREMOVABLESTORAGEDEVICES);
-  ImageWriterPrivateListRemovableStorageDevicesFunction();
+   DECLARE_EXTENSION_FUNCTION("imageWriterPrivate.listRemovableStorageDevices",
+                              IMAGEWRITER_LISTREMOVABLESTORAGEDEVICES)
+   ImageWriterPrivateListRemovableStorageDevicesFunction();
 
- private:
-  ~ImageWriterPrivateListRemovableStorageDevicesFunction() override;
-  bool RunAsync() override;
-  void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list);
+  private:
+   ~ImageWriterPrivateListRemovableStorageDevicesFunction() override;
+   bool RunAsync() override;
+   void OnDeviceListReady(scoped_refptr<StorageDeviceList> device_list);
 };
 
 }  // namespace extensions

@@ -18,7 +18,7 @@ namespace cast {
 // documentation.
 class IdentityGetAuthTokenFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("identity.getAuthToken", UNKNOWN);
+  DECLARE_EXTENSION_FUNCTION("identity.getAuthToken", UNKNOWN)
 
   IdentityGetAuthTokenFunction();
 

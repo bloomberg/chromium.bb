@@ -132,7 +132,7 @@ class UsbGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
 
 class UsbGetConfigurationsFunction : public UsbPermissionCheckingFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("usb.getConfigurations", USB_GETCONFIGURATIONS);
+  DECLARE_EXTENSION_FUNCTION("usb.getConfigurations", USB_GETCONFIGURATIONS)
 
   UsbGetConfigurationsFunction();
 

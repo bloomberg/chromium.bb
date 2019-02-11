@@ -256,7 +256,7 @@ class BookmarksRemoveFunctionBase : public BookmarksFunction {
 
 class BookmarksRemoveFunction : public BookmarksRemoveFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE);
+  DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE)
 
  protected:
   ~BookmarksRemoveFunction() override {}

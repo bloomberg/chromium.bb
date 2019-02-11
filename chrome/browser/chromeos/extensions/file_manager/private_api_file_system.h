@@ -55,7 +55,7 @@ class FileManagerPrivateEnableExternalFileSchemeFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.enableExternalFileScheme",
-                             FILEMANAGERPRIVATE_ENABLEEXTERNALFILESCHEME);
+                             FILEMANAGERPRIVATE_ENABLEEXTERNALFILESCHEME)
 
  protected:
   ~FileManagerPrivateEnableExternalFileSchemeFunction() override = default;

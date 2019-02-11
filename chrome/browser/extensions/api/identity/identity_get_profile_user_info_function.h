@@ -13,7 +13,7 @@ namespace extensions {
 class IdentityGetProfileUserInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getProfileUserInfo",
-                             IDENTITY_GETPROFILEUSERINFO);
+                             IDENTITY_GETPROFILEUSERINFO)
 
   IdentityGetProfileUserInfoFunction();
 

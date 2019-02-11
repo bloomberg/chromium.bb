@@ -12,8 +12,7 @@ namespace extensions {
 
 class IdentityGetAccountsFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("identity.getAccounts",
-                             IDENTITY_GETACCOUNTS);
+  DECLARE_EXTENSION_FUNCTION("identity.getAccounts", IDENTITY_GETACCOUNTS)
 
   IdentityGetAccountsFunction();
 

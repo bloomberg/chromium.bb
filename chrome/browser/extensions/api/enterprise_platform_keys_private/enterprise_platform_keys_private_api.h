@@ -272,7 +272,7 @@ class EnterprisePlatformKeysPrivateChallengeMachineKeyFunction
 
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.platformKeysPrivate.challengeMachineKey",
-      ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEMACHINEKEY);
+      ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEMACHINEKEY)
 };
 
 class EnterprisePlatformKeysPrivateChallengeUserKeyFunction
@@ -294,9 +294,8 @@ class EnterprisePlatformKeysPrivateChallengeUserKeyFunction
   std::unique_ptr<EPKPChallengeUserKey> default_impl_;
   EPKPChallengeUserKey* impl_;
 
-  DECLARE_EXTENSION_FUNCTION(
-      "enterprise.platformKeysPrivate.challengeUserKey",
-      ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEUSERKEY);
+  DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysPrivate.challengeUserKey",
+                             ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEUSERKEY)
 };
 
 }  // namespace extensions
