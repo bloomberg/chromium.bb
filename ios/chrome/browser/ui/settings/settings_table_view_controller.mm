@@ -156,7 +156,7 @@ class IdentityObserverBridge : public identity::IdentityManager::Observer {
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
   __weak SettingsTableViewController* owner_;
@@ -181,7 +181,7 @@ void IdentityObserverBridge::OnPrimaryAccountSet(
 }
 
 void IdentityObserverBridge::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   [owner_ onSignInStateChanged];
 }
 

@@ -42,7 +42,7 @@ SyncedSessionsObserverBridge::~SyncedSessionsObserverBridge() {}
 #pragma mark - identity::IdentityManager::Observer
 
 void SyncedSessionsObserverBridge::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   [owner_ reloadSessions];
 }
 

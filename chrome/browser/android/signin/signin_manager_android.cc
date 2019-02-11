@@ -337,7 +337,7 @@ jboolean SigninManagerAndroid::IsSignedInOnNative(
 }
 
 void SigninManagerAndroid::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
                                      java_signin_manager_);

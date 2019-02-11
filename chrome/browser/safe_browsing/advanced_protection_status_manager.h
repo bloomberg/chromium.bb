@@ -83,7 +83,7 @@ class AdvancedProtectionStatusManager
 
   // IdentityManager::Observer implementations.
   void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
-  void OnPrimaryAccountCleared(const AccountInfo& account_info) override;
+  void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
   void OnAccountUpdated(const AccountInfo& info) override;
   void OnAccountRemovedWithInfo(const AccountInfo& info) override;
 

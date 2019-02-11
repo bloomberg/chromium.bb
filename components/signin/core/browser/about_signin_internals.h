@@ -219,7 +219,7 @@ class AboutSigninInternals
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& primary_account_info) override;
+      const CoreAccountInfo& primary_account_info) override;
 
   void NotifyTimedSigninFieldValueChanged(
       const signin_internals_util::TimedSigninStatusField& field,

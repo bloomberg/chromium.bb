@@ -29,7 +29,7 @@ void PasswordStoreSigninNotifierImpl::UnsubscribeFromSigninEvents() {
 }
 
 void PasswordStoreSigninNotifierImpl::OnPrimaryAccountCleared(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   NotifySignedOut(account_info.email, /* primary_account= */ true);
 }
 

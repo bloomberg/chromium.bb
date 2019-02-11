@@ -527,7 +527,7 @@ void ContentSuggestionsService::OnPrimaryAccountSet(
 }
 
 void ContentSuggestionsService::OnPrimaryAccountCleared(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/false);
 }
 

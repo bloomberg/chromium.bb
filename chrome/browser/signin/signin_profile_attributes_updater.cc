@@ -85,6 +85,6 @@ void SigninProfileAttributesUpdater::OnPrimaryAccountSet(
 }
 
 void SigninProfileAttributesUpdater::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   UpdateProfileAttributes();
 }

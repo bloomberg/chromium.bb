@@ -103,7 +103,7 @@ void AccountTracker::OnPrimaryAccountSet(
 }
 
 void AccountTracker::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   TRACE_EVENT0("identity", "AccountTracker::OnPrimaryAccountCleared");
   DVLOG(1) << "LOGOUT";
   StopTrackingAllAccounts();

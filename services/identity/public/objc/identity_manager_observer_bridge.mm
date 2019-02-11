@@ -29,7 +29,7 @@ void IdentityManagerObserverBridge::OnPrimaryAccountSet(
 }
 
 void IdentityManagerObserverBridge::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   if ([delegate_ respondsToSelector:@selector(onPrimaryAccountCleared:)]) {
     [delegate_ onPrimaryAccountCleared:previous_primary_account_info];
   }
