@@ -182,12 +182,92 @@ MANIFEST_INTERNAL_FILES = {
                                             INCLUDE_EXTERNAL_XML),
 }
 
-# Finally, store the full, parsed manifest XML for TOT.
+# Store the full, parsed manifest XML for TOT.
 FULL_TOT_XML = ManifestXml(DEFAULT_XML,
                            REMOTE_EXTERNAL_XML,
                            REMOTE_INTERNAL_XML,
                            PROJECTS_EXTERNAL_XML,
                            PROJECTS_INTERNAL_XML)
+
+# Now create a branched version of the above XML.
+DEFAULT_BRANCHED_XML = """
+  <default remote="cros"/>
+"""
+
+PROJECTS_EXTERNAL_BRANCHED_XML = """
+  <project name="chromiumos/manifest"
+           path="manifest"
+           revision="refs/heads/old-branch"/>
+
+  <project name="chromiumos/overlays/chromiumos-overlay"
+           path="src/third_party/chromiumos-overlay"
+           revision="refs/heads/old-branch"/>
+
+  <project name="external/implicit-pinned"
+           path="src/third_party/implicit-pinned"
+           revision="refs/heads/implicit-pinned"/>
+
+  <project name="chromiumos/multicheckout"
+           path="src/third_party/multicheckout-a"
+           revision="refs/heads/old-branch-multicheckout-a"/>
+
+  <project name="chromiumos/multicheckout"
+           path="src/third_party/multicheckout-b"
+           revision="refs/heads/old-branch-multicheckout-b"/>
+"""
+
+PROJECTS_INTERNAL_BRANCHED_XML = """
+  <project name="chromeos/manifest-internal"
+           path="manifest-internal"
+           remote="cros-internal"
+           revision="refs/heads/old-branch"/>
+
+  <project name="chromeos/explicit-pinned"
+           path="src/explicit-pinned"
+           revision="refs/heads/explicit-pinned"
+           remote="cros-internal">
+    <annotation name="branch-mode" value="pin"/>
+  </project>
+
+  <project name="chromeos/explicit-branch"
+           path="src/explicit-branch"
+           remote="cros-internal"
+           revision="refs/heads/old-branch">
+    <annotation name="branch-mode" value="create"/>
+  </project>
+
+  <project name="chromeos/explicit-tot"
+           path="src/explicit-tot"
+           remote="cros-internal"
+           revision="refs/heads/master">
+    <annotation name="branch-mode" value="tot"/>
+  </project>
+"""
+
+MANIFEST_BRANCHED_FILES = {
+    EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
+                                    REMOTE_EXTERNAL_XML,
+                                    PROJECTS_EXTERNAL_BRANCHED_XML),
+    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
+    constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
+}
+
+MANIFEST_INTERNAL_BRANCHED_FILES = {
+    EXTERNAL_FILE_NAME: MANIFEST_BRANCHED_FILES[EXTERNAL_FILE_NAME],
+    INTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
+                                    REMOTE_INTERNAL_XML,
+                                    PROJECTS_INTERNAL_BRANCHED_XML),
+    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
+                                             INCLUDE_EXTERNAL_XML),
+    constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
+                                            INCLUDE_EXTERNAL_XML),
+}
+
+FULL_BRANCHED_XML = ManifestXml(DEFAULT_BRANCHED_XML,
+                                REMOTE_INTERNAL_XML,
+                                REMOTE_EXTERNAL_XML,
+                                PROJECTS_INTERNAL_BRANCHED_XML,
+                                PROJECTS_EXTERNAL_BRANCHED_XML)
 
 
 class ManifestTestCase(cros_test_lib.TestCase):
@@ -270,6 +350,10 @@ class ManifestTestCase(cros_test_lib.TestCase):
     # Parse and cache the full TOT manifest to take advantage of the
     # utility functions in repo_manifest.
     self.full_manifest = repo_manifest.Manifest.FromString(FULL_TOT_XML)
+
+    # Ditto for the branched manifest.
+    self.full_branched_manifest = repo_manifest.Manifest.FromString(
+        FULL_BRANCHED_XML)
 
 
 class UtilitiesTest(ManifestTestCase, cros_test_lib.MockTestCase):
@@ -699,105 +783,106 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
                      return_value=VersionInfo('1.2.0'))
     self.bump_version = self.PatchObject(CrosCheckout, 'BumpVersion')
 
-    # The instance under test.
+    # Fake checkouts for each test.
     self.checkout = CrosCheckout('/', manifest=self.full_manifest)
-    self.branch = Branch('the-branch', self.checkout)
+    self.branched_checkout = CrosCheckout(
+        '/', manifest=self.full_branched_manifest)
 
   def testCreateBranchesCorrectProjects(self):
     """Test Create branches the correct projects with correct branch names."""
-    self.branch.Create()
+    Branch('new-branch', self.checkout).Create()
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertProjectBranched(project, 'the-branch')
+      self.AssertProjectBranched(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertProjectBranched(project, 'the-branch-' + project)
+      self.AssertProjectBranched(project, 'new-branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertProjectNotBranched(project)
 
   def testCreateRepairsManifests(self):
     """Test Create commits repairs to manifest repositories."""
-    self.branch.Create()
+    Branch('new-branch', self.checkout).Create()
     self.AssertManifestRepairsCommitted()
 
   def testCreateBumpsBranchNumber(self):
     """Test WhichVersionShouldBump bumps branch number on X.0.0 version."""
     self.SetVersion('1.0.0')
-    self.branch.Create()
+    Branch('new-branch', self.checkout).Create()
     self.assertEqual(
         self.bump_version.call_args_list,
-        [mock.call('branch', 'the-branch', mock.ANY, dry_run=True)])
+        [mock.call('branch', 'new-branch', mock.ANY, dry_run=True)])
 
   def testCreateBumpsPatchNumber(self):
     """Test WhichVersionShouldBump bumps patch number on X.X.0 version."""
     self.SetVersion('1.2.0')
-    self.branch.Create()
+    Branch('new-branch', self.checkout).Create()
     self.assertEqual(self.bump_version.call_args_list,
-                     [mock.call('patch', 'the-branch', mock.ANY, dry_run=True)])
+                     [mock.call('patch', 'new-branch', mock.ANY, dry_run=True)])
 
   def testCreateDiesOnNonzeroPatchNumber(self):
     """Test WhichVersionShouldBump dies on X.X.X version."""
     self.SetVersion('1.2.3')
     with self.assertRaises(BranchError):
-      self.branch.Create()
+      Branch('new-branch', self.checkout).Create()
 
   def testCreatePushesToRemote(self):
     """Test Create pushes new branch to remote."""
-    self.branch.Create(push=True)
+    Branch('new-branch', self.checkout).Create(push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertBranchPushed(project, 'the-branch')
+      self.AssertBranchPushed(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertBranchPushed(project, 'the-branch-' + project)
+      self.AssertBranchPushed(project, 'new-branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertNoPush(project)
 
   def testRenameCreatesNewBranch(self):
     """Test Rename creates a branch with the new name."""
-    self.branch.Rename('original')
+    Branch('new-branch', self.branched_checkout).Rename('old-branch')
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertProjectBranched(project, 'the-branch')
+      self.AssertProjectBranched(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertProjectBranched(project, 'the-branch-' + project)
+      self.AssertProjectBranched(project, 'new-branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertProjectNotBranched(project)
 
   def testRenameRepairsManifests(self):
     """Test Rename commits repairs to manifest repositories."""
-    self.branch.Rename('original')
+    Branch('new-branch', self.branched_checkout).Rename('old-branch')
     self.AssertManifestRepairsCommitted()
 
   def testRenamePushesNewBranch(self):
     """Test Rename pushes the new branch to remote."""
-    self.branch.Rename('original', push=True)
+    Branch('new-branch', self.branched_checkout).Rename('old-branch', push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertBranchPushed(project, 'the-branch')
+      self.AssertBranchPushed(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertBranchPushed(project, 'the-branch-' + project)
+      self.AssertBranchPushed(project, 'new-branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertNoPush(project)
 
   def testRenamePushesDeletionOfOldBranch(self):
     """Test rename deletes old branch on remote."""
-    self.branch.Rename('original', push=True)
+    Branch('new-branch', self.branched_checkout).Rename('old-branch', push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertRemoteBranchDeleted(project, 'original')
+      self.AssertRemoteBranchDeleted(project, 'old-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertRemoteBranchDeleted(project, 'original-' + project)
+      self.AssertRemoteBranchDeleted(project, 'old-branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertNoPush(project)
 
   def testDeleteRequiresForceForRemotePush(self):
     """Verify Delete does nothing when push is True but force is False."""
     with self.assertRaises(BranchError):
-      self.branch.Delete(push=True)
+      Branch('old-branch', self.branched_checkout).Delete(push=True)
     for project in PROJECTS.values():
       self.AssertNoPush(project)
 
   def testDeletePushesDeletions(self):
     """Verify delete deletes remote branches when push=force=True."""
-    self.branch.Delete(push=True, force=True)
+    Branch('old-branch', self.branched_checkout).Delete(push=True, force=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
-      self.AssertRemoteBranchDeleted(project, 'the-branch')
+      self.AssertRemoteBranchDeleted(project, 'old-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
-      self.AssertRemoteBranchDeleted(project, 'the-branch-' + project)
+      self.AssertRemoteBranchDeleted(project, 'old-branch-' + project)
     for project in NON_BRANCHED_PROJECTS:
       self.AssertNoPush(project)
 
@@ -936,86 +1021,6 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test `cros branch delete` calls repo_sync_manifest to sync to branch."""
     self.RunCommandMock(['delete', 'branch'])
     self.AssertSynced(['--branch', 'master'])
-
-
-DEFAULT_BRANCHED_XML = """
-  <default remote="cros"/>
-"""
-
-PROJECTS_EXTERNAL_BRANCHED_XML = """
-  <project name="chromiumos/manifest"
-           path="manifest"
-           revision="refs/heads/old-branch"/>
-
-  <project name="chromiumos/overlays/chromiumos-overlay"
-           path="src/third_party/chromiumos-overlay"
-           revision="refs/heads/old-branch"/>
-
-  <project name="external/implicit-pinned"
-           path="src/third_party/implicit-pinned"
-           revision="refs/heads/implicit-pinned"/>
-
-  <project name="chromiumos/multicheckout"
-           path="src/third_party/multicheckout-a"
-           revision="refs/heads/old-branch-multicheckout-a"/>
-
-  <project name="chromiumos/multicheckout"
-           path="src/third_party/multicheckout-b"
-           revision="refs/heads/old-branch-multicheckout-b"/>
-"""
-
-PROJECTS_INTERNAL_BRANCHED_XML = """
-  <project name="chromeos/manifest-internal"
-           path="manifest-internal"
-           remote="cros-internal"
-           revision="refs/heads/old-branch"/>
-
-  <project name="chromeos/explicit-pinned"
-           path="src/explicit-pinned"
-           revision="refs/heads/explicit-pinned"
-           remote="cros-internal">
-    <annotation name="branch-mode" value="pin"/>
-  </project>
-
-  <project name="chromeos/explicit-branch"
-           path="src/explicit-branch"
-           remote="cros-internal"
-           revision="refs/heads/old-branch">
-    <annotation name="branch-mode" value="create"/>
-  </project>
-
-  <project name="chromeos/explicit-tot"
-           path="src/explicit-tot"
-           remote="cros-internal"
-           revision="refs/heads/master">
-    <annotation name="branch-mode" value="tot"/>
-  </project>
-"""
-
-MANIFEST_BRANCHED_FILES = {
-    EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
-                                    REMOTE_EXTERNAL_XML,
-                                    PROJECTS_EXTERNAL_BRANCHED_XML),
-    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
-    constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
-}
-
-MANIFEST_INTERNAL_BRANCHED_FILES = {
-    EXTERNAL_FILE_NAME: MANIFEST_BRANCHED_FILES[EXTERNAL_FILE_NAME],
-    INTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
-                                    REMOTE_INTERNAL_XML,
-                                    PROJECTS_INTERNAL_BRANCHED_XML),
-    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
-                                             INCLUDE_EXTERNAL_XML),
-    constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
-                                            INCLUDE_EXTERNAL_XML),
-}
-
-FULL_BRANCHED_XML = ManifestXml(DEFAULT_BRANCHED_XML,
-                                REMOTE_INTERNAL_XML,
-                                REMOTE_EXTERNAL_XML,
-                                PROJECTS_INTERNAL_BRANCHED_XML,
-                                PROJECTS_EXTERNAL_BRANCHED_XML)
 
 
 class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):

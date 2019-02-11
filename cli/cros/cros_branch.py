@@ -370,12 +370,13 @@ class Branch(object):
     self.name = name
     self.checkout = checkout
 
-  def _ProjectBranchName(self, branch, project):
+  def _ProjectBranchName(self, branch, project, original=None):
     """Determine's the git branch name for the project.
 
     Args:
       branch: The base branch name.
       project: The repo_manfest.Project in question.
+      original: Original branch name to remove from the branch suffix.
 
     Returns:
       The branch name for the project.
@@ -384,20 +385,28 @@ class Branch(object):
     checkouts = [p.name for p in self.checkout.manifest.Projects()]
     if checkouts.count(project.name) == 1:
       return branch
+
     # Otherwise, the project branch name needs a suffix. We append its
     # upstream or revision to distinguish it from other checkouts.
-    suffix = git.StripRefs(project.upstream or project.Revision())
-    return '%s-%s' % (branch, suffix)
+    suffix = '-' + git.StripRefs(project.upstream or project.Revision())
 
-  def _ProjectBranches(self, branch):
+    # If the revision is itself a branch, we need to strip the old branch name
+    # from the suffix to keep naming consistent.
+    if original:
+      suffix = re.sub('^-%s-' % original, '-', suffix)
+
+    return branch + suffix
+
+  def _ProjectBranches(self, branch, original=None):
     """Return a list of ProjectBranches: one for each branchable project.
 
     Args:
       branch: The base branch name.
+      original: Branch from which this branch of chromiumos stems, if any.
     """
     return [
-        ProjectBranch(project, self._ProjectBranchName(branch, project)) for
-        project in filter(CanBranchProject, self.checkout.manifest.Projects())
+        ProjectBranch(proj, self._ProjectBranchName(branch, proj, original))
+        for proj in filter(CanBranchProject, self.checkout.manifest.Projects())
     ]
 
   def _CreateLocalBranches(self, branches):
@@ -505,12 +514,12 @@ class Branch(object):
       push: Whether to push the new branch to remote.
       force: Whether or not to overwrite an existing branch.
     """
-    new_branches = self._ProjectBranches(self.name)
+    new_branches = self._ProjectBranches(self.name, original=original)
     self._CreateLocalBranches(new_branches)
     self._RepairManifestRepositories(new_branches)
     self._PushBranchesToRemote(new_branches, dry_run=not push, force=force)
 
-    old_branches = self._ProjectBranches(original)
+    old_branches = self._ProjectBranches(original, original=original)
     self._DeleteBranchesOnRemote(old_branches, dry_run=not push)
 
   def Delete(self, push=False, force=False):
@@ -522,7 +531,7 @@ class Branch(object):
     """
     if push and not force:
       raise BranchError('Must set --force to delete remote branches.')
-    branches = self._ProjectBranches(self.name)
+    branches = self._ProjectBranches(self.name, original=self.name)
     self._DeleteBranchesOnRemote(branches, dry_run=not push)
 
 
