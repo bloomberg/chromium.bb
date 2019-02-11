@@ -383,7 +383,7 @@ DeletionInfo::DeletionInfo(const DeletionTimeRange& time_range,
   DCHECK(time_range_.IsValid() || !restrict_urls_.has_value());
   // If restrict_urls_ is defined, it should be non-empty.
   DCHECK(!restrict_urls_.has_value() || !restrict_urls_->empty());
-};
+}
 
 DeletionInfo::~DeletionInfo() = default;
 
