@@ -139,8 +139,8 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  views::Textfield* textfield() const { return textfield_; };
-  views::ImageButton* button() const { return button_; };
+  views::Textfield* textfield() const { return textfield_; }
+  views::ImageButton* button() const { return button_; }
 
  private:
   NotificationInputDelegate* const delegate_;
