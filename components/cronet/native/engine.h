@@ -88,6 +88,6 @@ class Cronet_EngineImpl : public Cronet_Engine {
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineImpl);
 };
 
-};  // namespace cronet
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_NATIVE_ENGINE_H_

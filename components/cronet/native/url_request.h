@@ -128,6 +128,6 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestImpl);
 };
 
-};  // namespace cronet
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_NATIVE_URL_REQUEST_H_

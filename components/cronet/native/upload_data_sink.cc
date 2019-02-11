@@ -287,4 +287,4 @@ void Cronet_UploadDataSinkImpl::NetworkTasks::PostTaskToExecutor(
   Cronet_Executor_Execute(upload_data_provider_executor_, runnable);
 }
 
-};  // namespace cronet
+}  // namespace cronet

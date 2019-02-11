@@ -399,7 +399,7 @@ stream_engine* Cronet_EngineImpl::GetBidirectionalStreamEngine() {
   return stream_engine_.get();
 }
 
-};  // namespace cronet
+}  // namespace cronet
 
 CRONET_EXPORT Cronet_EnginePtr Cronet_Engine_Create() {
   return new cronet::Cronet_EngineImpl();

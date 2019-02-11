@@ -757,7 +757,7 @@ void Cronet_UrlRequestImpl::NetworkTasks::OnStatus(
                      ConvertLoadState(load_state)));
 }
 
-};  // namespace cronet
+}  // namespace cronet
 
 CRONET_EXPORT Cronet_UrlRequestPtr Cronet_UrlRequest_Create() {
   return new cronet::Cronet_UrlRequestImpl();
