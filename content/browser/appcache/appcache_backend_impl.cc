@@ -167,10 +167,4 @@ void AppCacheBackendImpl::RegisterPrecreatedHost(
   hosts_[host->host_id()] = std::move(host);
 }
 
-void AppCacheBackendImpl::RegisterHostForTesting(int32_t id,
-                                                 int32_t render_frame_id) {
-  hosts_[id] = std::make_unique<AppCacheHost>(id, process_id(), render_frame_id,
-                                              frontend_, service_);
-}
-
 }  // namespace content
