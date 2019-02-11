@@ -62,8 +62,6 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
   void UpdateOrientation();
 
-  void DispatchEventTimerFired(TimerBase*);
-
   bool IsActive() const;
   bool IsVisible() const;
   bool IsActiveAndVisible() const;
@@ -73,7 +71,6 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   int GetRequestIdForTests();
 
   Member<ScreenOrientation> orientation_;
-  TaskRunnerTimer<ScreenOrientationControllerImpl> dispatch_event_timer_;
   bool active_lock_ = false;
   ScreenOrientationAssociatedPtr screen_orientation_service_;
   std::unique_ptr<WebLockOrientationCallback> pending_callback_;
