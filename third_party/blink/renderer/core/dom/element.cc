@@ -3750,7 +3750,7 @@ String Element::TextFromChildren() {
     return g_empty_string;
 
   if (first_text_node && !found_multiple_text_nodes) {
-    first_text_node->Atomize();
+    first_text_node->MakeParkableOrAtomize();
     return first_text_node->data();
   }
 
