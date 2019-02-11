@@ -89,7 +89,7 @@ class Coordinator : public mojom::Coordinator {
 
   base::RepeatingClosure on_disconnect_callback_;
   mojo::Binding<mojom::Coordinator> binding_;
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   AgentRegistry* agent_registry_;
   std::string config_;

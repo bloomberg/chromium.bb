@@ -23,10 +23,7 @@ namespace {
 class PerfettoIntegrationTest : public testing::Test {
  public:
   void SetUp() override {
-    perfetto_service_ = std::make_unique<PerfettoService>(
-        base::SequencedTaskRunnerHandle::Get());
-    // The actual Perfetto service is created async on the given task_runner;
-    // wait until that's done.
+    perfetto_service_ = std::make_unique<PerfettoService>();
     RunUntilIdle();
     ProducerClient::ResetTaskRunnerForTesting();
   }
