@@ -79,9 +79,6 @@ std::string GetNonStableAPIKey();
 void SetAPIKey(const std::string& api_key);
 #endif
 
-// Retrieves the key used to sign metrics (UMA/UKM) uploads.
-std::string GetMetricsKey();
-
 // Represents the different sets of client IDs and secrets in use.
 enum OAuth2Client {
   CLIENT_MAIN,         // Several different features use this.
