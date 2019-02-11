@@ -349,6 +349,17 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   // the OperationId for the newly created Operation.
   OperationId EnqueueTaskAndGetOperationId(SmbTask task);
 
+  // Check if the error can be recovered and handled to continue its original
+  // operation. Returns true if error can be handled.
+  bool IsRecoverableError(smbprovider::ErrorType error) const;
+
+  // Runs the StartReadDirectory if |should_retry_start_read_dir| is true. If
+  // false, |callback| will run instead.
+  void RetryStartReadDir(const base::FilePath& directory_path,
+                         OperationId operation_id,
+                         storage::AsyncFileUtil::ReadDirectoryCallback callback,
+                         bool should_retry_start_read_dir);
+
   const file_system_provider::ProvidedFileSystemInfo file_system_info_;
   // opened_files_ is marked const since is currently unsupported.
   const file_system_provider::OpenedFiles opened_files_;
