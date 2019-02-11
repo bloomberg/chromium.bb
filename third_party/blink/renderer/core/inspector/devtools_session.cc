@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -34,6 +35,24 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Runtime.terminateExecution" ||
          method == "Emulation.setScriptExecutionDisabled";
 }
+
+String ParseMessage(const mojom::blink::DevToolsMessagePtr& message) {
+  size_t size = message->data.size();
+  if (!size)
+    return g_empty_string;
+  return WTF::String::FromUTF8(
+      reinterpret_cast<const char*>(message->data.data()), size);
+}
+
+mojom::blink::DevToolsMessagePtr SerializeMessage(const String& message) {
+  WTF::StringUTF8Adaptor adaptor(message);
+  auto result = mojom::blink::DevToolsMessage::New();
+  result->data = mojo_base::BigBuffer(base::make_span(
+      reinterpret_cast<const uint8_t*>(adaptor.Data()), adaptor.length()));
+
+  return result;
+}
+
 }  // namespace
 
 // Created and stored in unique_ptr on UI.
@@ -63,16 +82,17 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
   void DeleteSoon() { io_task_runner_->DeleteSoon(FROM_HERE, this); }
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(int call_id,
-                               const String& method,
-                               const String& message) override {
+  void DispatchProtocolCommand(
+      int call_id,
+      const String& method,
+      mojom::blink::DevToolsMessagePtr message) override {
     DCHECK(ShouldInterruptForMethod(method));
     // Crash renderer.
     if (method == "Page.crash")
       CHECK(false);
-    inspector_task_runner_->AppendTask(
-        CrossThreadBind(&DevToolsSession::DispatchProtocolCommand, session_,
-                        call_id, method, message));
+    inspector_task_runner_->AppendTask(CrossThreadBind(
+        &::blink::DevToolsSession::DispatchProtocolCommandMessage, session_,
+        call_id, method, ParseMessage(message)));
   }
 
  private:
@@ -156,9 +176,17 @@ void DevToolsSession::FlushProtocolNotifications() {
   flushProtocolNotifications();
 }
 
-void DevToolsSession::DispatchProtocolCommand(int call_id,
-                                              const String& method,
-                                              const String& message) {
+void DevToolsSession::DispatchProtocolCommand(
+    int call_id,
+    const String& method,
+    blink::mojom::blink::DevToolsMessagePtr message_ptr) {
+  return DispatchProtocolCommandMessage(call_id, method,
+                                        ParseMessage(message_ptr));
+}
+
+void DevToolsSession::DispatchProtocolCommandMessage(int call_id,
+                                                     const String& method,
+                                                     const String& message) {
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
   // and get posted to main thread to this method.
@@ -233,7 +261,7 @@ void DevToolsSession::SendProtocolResponse(int call_id, const String& message) {
   // protocol response in any of them.
   if (WebTestSupport::IsRunningWebTest())
     agent_->FlushProtocolNotifications();
-  host_ptr_->DispatchProtocolResponse(message, call_id,
+  host_ptr_->DispatchProtocolResponse(SerializeMessage(message), call_id,
                                       session_state_.TakeUpdates());
 }
 
@@ -258,21 +286,21 @@ class DevToolsSession::Notification {
       std::unique_ptr<v8_inspector::StringBuffer> notification)
       : v8_notification_(std::move(notification)) {}
 
-  String Serialize() {
+  mojom::blink::DevToolsMessagePtr Serialize() {
+    String serialized;
     if (blink_notification_) {
-      serialized_ = blink_notification_->serialize();
+      serialized = blink_notification_->serialize();
       blink_notification_.reset();
     } else if (v8_notification_) {
-      serialized_ = ToCoreString(v8_notification_->string());
+      serialized = ToCoreString(v8_notification_->string());
       v8_notification_.reset();
     }
-    return serialized_;
+    return SerializeMessage(serialized);
   }
 
  private:
   std::unique_ptr<protocol::Serializable> blink_notification_;
   std::unique_ptr<v8_inspector::StringBuffer> v8_notification_;
-  String serialized_;
 };
 
 void DevToolsSession::sendProtocolNotification(

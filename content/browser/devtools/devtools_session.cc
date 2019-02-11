@@ -208,12 +208,17 @@ void DevToolsSession::DispatchProtocolMessageToAgent(
     const std::string& method,
     const std::string& message) {
   DCHECK(!browser_only_);
+  auto message_ptr = blink::mojom::DevToolsMessage::New();
+  message_ptr->data = mojo_base::BigBuffer(base::make_span(
+      reinterpret_cast<const uint8_t*>(message.data()), message.length()));
   if (ShouldSendOnIO(method)) {
     if (io_session_ptr_)
-      io_session_ptr_->DispatchProtocolCommand(call_id, method, message);
+      io_session_ptr_->DispatchProtocolCommand(call_id, method,
+                                               std::move(message_ptr));
   } else {
     if (session_ptr_)
-      session_ptr_->DispatchProtocolCommand(call_id, method, message);
+      session_ptr_->DispatchProtocolCommand(call_id, method,
+                                            std::move(message_ptr));
   }
 }
 
@@ -251,20 +256,26 @@ void DevToolsSession::flushProtocolNotifications() {
 }
 
 void DevToolsSession::DispatchProtocolResponse(
-    const std::string& message,
+    blink::mojom::DevToolsMessagePtr message,
     int call_id,
     blink::mojom::DevToolsSessionStatePtr updates) {
   ApplySessionStateUpdates(std::move(updates));
   waiting_for_response_messages_.erase(call_id);
-  client_->DispatchProtocolMessage(agent_host_, message);
+  client_->DispatchProtocolMessage(
+      agent_host_,
+      std::string(reinterpret_cast<const char*>(message->data.data()),
+                  message->data.size()));
   // |this| may be deleted at this point.
 }
 
 void DevToolsSession::DispatchProtocolNotification(
-    const std::string& message,
+    blink::mojom::DevToolsMessagePtr message,
     blink::mojom::DevToolsSessionStatePtr updates) {
   ApplySessionStateUpdates(std::move(updates));
-  client_->DispatchProtocolMessage(agent_host_, message);
+  client_->DispatchProtocolMessage(
+      agent_host_,
+      std::string(reinterpret_cast<const char*>(message->data.data()),
+                  message->data.size()));
   // |this| may be deleted at this point.
 }
 

@@ -4,10 +4,14 @@
 
 module blink.mojom;
 
-import "mojo/public/mojom/base/big_string.mojom";
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
+
+struct DevToolsMessage {
+  mojo_base.mojom.BigBuffer data;
+};
 
 // Debugging interactions are defined in Remote Debugging Protocol.
 // See https://chromedevtools.github.io/devtools-protocol/ for more
@@ -111,7 +115,7 @@ interface DevToolsSession {
   // |method| is a method name as defined in protocol (e.g. "Runtime.evaluate").
   // |call_id| is a command id as defined in protocol, and is going to be
   // reported back to host in a response message (see DevToolsSessionHost).
-  DispatchProtocolCommand(int32 call_id, string method, string message);
+  DispatchProtocolCommand(int32 call_id, string method, DevToolsMessage message);
 };
 
 // A peer of DevToolsSession representing a remote debugging client
@@ -123,12 +127,12 @@ interface DevToolsSessionHost {
   // |updates| are the session state deltas for future reattach (see
   // DevToolsAgent), may be missing if the state did not change since
   // last time.
-  DispatchProtocolResponse(mojo_base.mojom.BigString message,
+  DispatchProtocolResponse(DevToolsMessage message,
                            int32 call_id,
                            DevToolsSessionState? updates);
 
   // Dispatches protocol notification to a remote debugging client.
-  DispatchProtocolNotification(mojo_base.mojom.BigString message,
+  DispatchProtocolNotification(DevToolsMessage message,
                                DevToolsSessionState? updates);
 };
 

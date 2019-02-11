@@ -55,9 +55,13 @@ class CORE_EXPORT DevToolsSession
   class IOSession;
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(int call_id,
-                               const String& method,
-                               const String& message) override;
+  void DispatchProtocolCommand(
+      int call_id,
+      const String& method,
+      mojom::blink::DevToolsMessagePtr message) override;
+  void DispatchProtocolCommandMessage(int call_id,
+                                      const String& method,
+                                      const String& message);
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
