@@ -64,6 +64,11 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Returns true if we're in start-overview animation.
   bool IsInStartAnimation();
 
+  // Pause or unpause the occlusion tracker. Resets the unpause delay if we were
+  // already in the process of unpausing.
+  void PauseOcclusionTracker();
+  void UnpauseOcclusionTracker(int delay);
+
   // Gets the windows list that are shown in the overview windows grids if the
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();

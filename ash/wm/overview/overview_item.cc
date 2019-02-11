@@ -420,7 +420,7 @@ OverviewItem::GetWindowDimensionsType() const {
 }
 
 void OverviewItem::UpdateWindowDimensionsType() {
-  // TODO(oshima|sammiequan|xdai): Use EnableBackdropIfNeeded.
+  // TODO(oshima|sammiequon|xdai): Use EnableBackdropIfNeeded.
   transform_window_.UpdateWindowDimensionsType();
   if (GetWindowDimensionsType() ==
       ScopedOverviewTransformWindow::GridWindowFillMode::kNormal) {
@@ -500,6 +500,7 @@ void OverviewItem::HandlePressEvent(const gfx::Point& location_in_screen) {
 void OverviewItem::HandleReleaseEvent(const gfx::Point& location_in_screen) {
   if (!IsDragItem())
     return;
+
   overview_grid_->SetSelectionWidgetVisibility(true);
   overview_session_->CompleteDrag(this, location_in_screen);
 }
@@ -713,6 +714,11 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
   transform_window_.OnWindowDestroyed();
+
+  if (is_being_dragged_) {
+    Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+        kOcclusionPauseDurationForDragMs);
+  }
 }
 
 void OverviewItem::OnWindowTitleChanged(aura::Window* window) {

@@ -674,7 +674,7 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
   if (IsTabletModeWindowManagerEnabled()) {
     // If we are currently in tablet mode, the internal input events should
     // always be blocked.
-    should_block_internal_events = true;
+    should_block_internal_events = (force_ui_mode_ == UiMode::kNone);
   } else if (HasActiveInternalDisplay() &&
              (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_)) {
     // If we are currently in clamshell mode, the intenral input events should

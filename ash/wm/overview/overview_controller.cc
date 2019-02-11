@@ -50,12 +50,12 @@ bool g_disable_wallpaper_blur_for_tests = false;
 constexpr int kBlurSlideDurationMs = 250;
 
 // It can take up to two frames until the frame created in the UI thread that
-// triggered animation observer is drawn. Wait 50ms in attemp to
-// let its draw and swap finish.
+// triggered animation observer is drawn. Wait 50ms in attempt to let its draw
+// and swap finish.
 constexpr int kOcclusionPauseDurationForStartMs = 50;
 
-// Wait longer when exiting overview mode in case when a user
-// may re-enter overview mode immediately, contents are ready.
+// Wait longer when exiting overview mode in case when a user may re-enter
+// overview mode immediately, contents are ready.
 constexpr int kOcclusionPauseDurationForEndMs = 500;
 
 bool IsBlurAllowed() {
@@ -321,10 +321,7 @@ bool OverviewController::ToggleOverview(
     }
 
     // Suspend occlusion tracker until the exit animation is complete.
-    reset_pauser_task_.Cancel();
-    occlusion_tracker_pauser_ =
-        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-            Shell::Get()->aura_env());
+    PauseOcclusionTracker();
 
     overview_session_->set_enter_exit_overview_type(new_type);
     if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized ||
@@ -359,10 +356,7 @@ bool OverviewController::ToggleOverview(
     delayed_animations_.clear();
 
     // Suspend occlusion tracker until the enter animation is complete.
-    reset_pauser_task_.Cancel();
-    occlusion_tracker_pauser_ =
-        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-            Shell::Get()->aura_env());
+    PauseOcclusionTracker();
 
     overview_session_ = std::make_unique<OverviewSession>(this);
     overview_session_->set_enter_exit_overview_type(new_type);
@@ -384,11 +378,7 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   Shell::Get()->NotifyOverviewModeStartingAnimationComplete(canceled);
   if (overview_session_)
     overview_session_->OnStartingAnimationComplete(canceled);
-  reset_pauser_task_.Reset(base::BindOnce(&OverviewController::ResetPauser,
-                                          weak_ptr_factory_.GetWeakPtr()));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, reset_pauser_task_.callback(),
-      base::TimeDelta::FromMilliseconds(kOcclusionPauseDurationForStartMs));
+  UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
 }
 
 void OverviewController::OnEndingAnimationComplete(bool canceled) {
@@ -399,11 +389,7 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
     overview_blur_controller_->Unblur();
 
   Shell::Get()->NotifyOverviewModeEndingAnimationComplete(canceled);
-  reset_pauser_task_.Reset(base::BindOnce(&OverviewController::ResetPauser,
-                                          weak_ptr_factory_.GetWeakPtr()));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, reset_pauser_task_.callback(),
-      base::TimeDelta::FromMilliseconds(occlusion_pause_duration_for_end_ms_));
+  UnpauseOcclusionTracker(occlusion_pause_duration_for_end_ms_);
 }
 
 void OverviewController::ResetPauser() {
@@ -530,6 +516,24 @@ bool OverviewController::IsInStartAnimation() {
   return !start_animations_.empty();
 }
 
+void OverviewController::PauseOcclusionTracker() {
+  if (occlusion_tracker_pauser_)
+    return;
+
+  reset_pauser_task_.Cancel();
+  occlusion_tracker_pauser_ =
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+          Shell::Get()->aura_env());
+}
+
+void OverviewController::UnpauseOcclusionTracker(int delay) {
+  reset_pauser_task_.Reset(base::BindOnce(&OverviewController::ResetPauser,
+                                          weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, reset_pauser_task_.callback(),
+      base::TimeDelta::FromMilliseconds(delay));
+}
+
 std::vector<aura::Window*>
 OverviewController::GetWindowsListInOverviewGridsForTesting() {
   std::vector<aura::Window*> windows;
@@ -555,12 +559,8 @@ void OverviewController::OnSelectionEnded() {
   if (!IsSelecting())
     return;
 
-  if (!occlusion_tracker_pauser_) {
-    reset_pauser_task_.Cancel();
-    occlusion_tracker_pauser_ =
-        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-            Shell::Get()->aura_env());
-  }
+  if (!occlusion_tracker_pauser_)
+    PauseOcclusionTracker();
 
   if (!start_animations_.empty())
     OnStartingAnimationComplete(/*canceled=*/true);

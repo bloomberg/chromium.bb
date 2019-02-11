@@ -8,6 +8,8 @@
 
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
@@ -44,6 +46,11 @@ constexpr int kMinimumDragDistanceAlreadyInSnapRegionDp = 48;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
+void UnpauseOcclusionTracker() {
+  Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+      kOcclusionPauseDurationForDragMs);
+}
+
 }  // namespace
 
 OverviewWindowDragController::OverviewWindowDragController(
@@ -64,6 +71,7 @@ void OverviewWindowDragController::InitiateDrag(
         GetSnapPosition(location_in_screen) != SplitViewController::NONE;
   }
   current_drag_behavior_ = DragBehavior::kUndefined;
+  Shell::Get()->overview_controller()->PauseOcclusionTracker();
 }
 
 void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
@@ -169,6 +177,7 @@ void OverviewWindowDragController::CompleteDrag(
   did_move_ = false;
   item_ = nullptr;
   current_drag_behavior_ = DragBehavior::kNoDrag;
+  UnpauseOcclusionTracker();
 }
 
 void OverviewWindowDragController::StartSplitViewDragMode(
@@ -202,6 +211,7 @@ void OverviewWindowDragController::Fling(const gfx::Point& location_in_screen,
       did_move_ = false;
       item_ = nullptr;
       current_drag_behavior_ = DragBehavior::kNoDrag;
+      UnpauseOcclusionTracker();
       return;
     }
   }
@@ -231,6 +241,7 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
     split_view_controller_->ShowAppCannotSnapToast();
   }
   current_drag_behavior_ = DragBehavior::kNoDrag;
+  UnpauseOcclusionTracker();
 }
 
 void OverviewWindowDragController::ResetGesture() {
@@ -243,6 +254,7 @@ void OverviewWindowDragController::ResetGesture() {
   // CompleteDrag but stops dragging as well, so reset |item_|.
   item_ = nullptr;
   current_drag_behavior_ = DragBehavior::kNoDrag;
+  UnpauseOcclusionTracker();
 }
 
 void OverviewWindowDragController::ResetOverviewSession() {
