@@ -41,62 +41,16 @@ using blink::WebRuntimeFeatures;
 namespace {
 
 void SetRuntimeFeatureDefaultsForPlatform() {
-#if defined(OS_ANDROID)
-  // Android does not have support for PagePopup
-  WebRuntimeFeatures::EnablePagePopup(false);
-  // No plan to support complex UI for date/time INPUT types.
-  WebRuntimeFeatures::EnableInputMultipleFieldsUI(false);
-  // Android does not yet support SharedWorker. crbug.com/154571
-  WebRuntimeFeatures::EnableSharedWorker(false);
-  // Android does not yet support NavigatorContentUtils.
-  WebRuntimeFeatures::EnableNavigatorContentUtils(false);
-  WebRuntimeFeatures::EnableOrientationEvent(true);
-  WebRuntimeFeatures::EnableFastMobileScrolling(true);
-  WebRuntimeFeatures::EnableMediaCapture(true);
-  // Android won't be able to reliably support non-persistent notifications, the
-  // intended behavior for which is in flux by itself.
-  WebRuntimeFeatures::EnableNotificationConstructor(false);
-  // Android does not yet support switching of audio output devices
-  WebRuntimeFeatures::EnableAudioOutputDevices(false);
-  // Android does not yet support SystemMonitor.
-  WebRuntimeFeatures::EnableOnDeviceChange(false);
-  WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(true);
-  WebRuntimeFeatures::EnableRemotePlaybackBackend(true);
-  WebRuntimeFeatures::EnablePictureInPictureAPI(false);
-  WebRuntimeFeatures::EnableSerial(false);
-#else  // defined(OS_ANDROID)
-  WebRuntimeFeatures::EnableNavigatorContentUtils(true);
-  // Tracking bug for the implementation: https://crbug.com/728609
-  WebRuntimeFeatures::EnableRemotePlaybackBackend(false);
-#endif  // defined(OS_ANDROID)
+  // Please consider setting up feature defaults for different platforms
+  // in runtime_enabled_features.json5 instead of here
 
-#if defined(OS_ANDROID) || defined(USE_AURA)
+#if defined(USE_AURA)
   WebRuntimeFeatures::EnableCompositedSelectionUpdate(true);
 #endif
 
-#if !(defined OS_ANDROID || defined OS_CHROMEOS)
-  // Only Android, ChromeOS support NetInfo downlinkMax, type and ontypechange
-  // now.
-  WebRuntimeFeatures::EnableNetInfoDownlinkMax(false);
-#endif
-
-// Web Bluetooth is shipped on Android, ChromeOS, MacOS and Windows 10,
-// experimental otherwise.
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
-  WebRuntimeFeatures::EnableWebBluetooth(true);
-#endif
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN10)
     WebRuntimeFeatures::EnableWebBluetooth(true);
-#endif
-
-#if defined(OS_CHROMEOS)
-  WebRuntimeFeatures::EnableForceTallerSelectPopup(true);
-#endif
-
-// The Notification Center on Mac OS X does not support content images.
-#if !defined(OS_MACOSX)
-  WebRuntimeFeatures::EnableNotificationContentImage(true);
 #endif
 }
 
