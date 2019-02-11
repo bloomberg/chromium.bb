@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "net/third_party/quic/platform/api/quic_epoll.h"
+#include "net/third_party/quic/platform/api/quic_port_utils.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_loopback.h"
@@ -79,7 +80,7 @@ TEST_F(QuicClientTest, DoNotLeakSocketFDs) {
   const int kNumClients = 50;
   for (int i = 0; i < kNumClients; ++i) {
     std::unique_ptr<QuicClient> client(
-        CreateAndInitializeQuicClient(&eps, kTestPort + i));
+        CreateAndInitializeQuicClient(&eps, QuicPickUnusedPortOrDie()));
 
     // Initializing the client will create a new FD.
     EXPECT_LT(number_of_open_fds, NumOpenSocketFDs());
@@ -94,7 +95,7 @@ TEST_F(QuicClientTest, CreateAndCleanUpUDPSockets) {
   size_t number_of_open_fds = NumOpenSocketFDs();
 
   std::unique_ptr<QuicClient> client(
-      CreateAndInitializeQuicClient(&eps, kTestPort));
+      CreateAndInitializeQuicClient(&eps, QuicPickUnusedPortOrDie()));
   EXPECT_EQ(number_of_open_fds + 1, NumOpenSocketFDs());
   // Create more UDP sockets.
   EXPECT_TRUE(QuicClientPeer::CreateUDPSocketAndBind(client.get()));
