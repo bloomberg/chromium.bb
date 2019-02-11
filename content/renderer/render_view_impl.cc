@@ -1301,6 +1301,10 @@ WebView* RenderViewImpl::CreateView(
       base::FeatureList::IsEnabled(features::kUserActivationV2)
           ? false
           : WebUserGestureIndicator::IsProcessingUserGesture(creator);
+  // TODO(mustaq): Investigate if mimic_user_gesture can wrongly expose presence
+  // of user activation w/o any user interaction, e.g. through
+  // |WebChromeClient#onCreateWindow|. One case to deep-dive: disabling popup
+  // blocker then calling window.open at onload event. crbug.com/929729
   if (GetContentClient()->renderer()->AllowPopup())
     params->mimic_user_gesture = true;
 
@@ -1357,8 +1361,10 @@ WebView* RenderViewImpl::CreateView(
 
   // The browser allowed creation of a new window and consumed the user
   // activation (UAv2 only).
-  WebUserGestureIndicator::ConsumeUserGesture(
+  bool was_consumed = WebUserGestureIndicator::ConsumeUserGesture(
       creator, blink::UserActivationUpdateSource::kBrowser);
+  if (base::FeatureList::IsEnabled(features::kUserActivationV2))
+    opened_by_user_gesture = was_consumed;
 
   // While this view may be a background extension page, it can spawn a visible
   // render view. So we just assume that the new one is not another background

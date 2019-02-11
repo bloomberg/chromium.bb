@@ -359,6 +359,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
       const mojom::CreateNewWindowParams& params,
+      bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) {}
 
   // Show a previously created page with the specified disposition and bounds.

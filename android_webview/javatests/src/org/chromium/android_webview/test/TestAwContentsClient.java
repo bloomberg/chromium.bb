@@ -22,9 +22,10 @@ import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /**
  * AwContentsClient subclass used for testing.
@@ -328,7 +329,7 @@ public class TestAwContentsClient extends NullContentsClient {
             return mIsDialog;
         }
 
-        public boolean getUserAgent() {
+        public boolean getIsUserGesture() {
             assert getCallCount() > 0;
             return mIsUserGesture;
         }
@@ -527,10 +528,10 @@ public class TestAwContentsClient extends NullContentsClient {
      */
     public static class ShouldInterceptRequestHelper extends CallbackHelper {
         private List<String> mShouldInterceptRequestUrls = new ArrayList<String>();
-        private ConcurrentHashMap<String, AwWebResourceResponse> mReturnValuesByUrls =
-                new ConcurrentHashMap<String, AwWebResourceResponse>();
-        private ConcurrentHashMap<String, AwWebResourceRequest> mRequestsByUrls =
-                new ConcurrentHashMap<String, AwWebResourceRequest>();
+        private Map<String, AwWebResourceResponse> mReturnValuesByUrls =
+                Collections.synchronizedMap(new HashMap<String, AwWebResourceResponse>());
+        private Map<String, AwWebResourceRequest> mRequestsByUrls =
+                Collections.synchronizedMap(new HashMap<String, AwWebResourceRequest>());
         // This is read on another thread, so needs to be marked volatile.
         private volatile AwWebResourceResponse mShouldInterceptRequestReturnValue;
         void setReturnValue(AwWebResourceResponse value) {
