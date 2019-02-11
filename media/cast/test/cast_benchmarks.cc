@@ -453,14 +453,14 @@ class TransportClient : public CastTransport::Client {
 
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
-      std::unique_ptr<std::vector<PacketEvent>> packet_events) final{};
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final {}
   void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {
     if (run_one_benchmark_)
       run_one_benchmark_->ReceivePacket(std::move(packet));
-  };
+  }
 
  private:
   RunOneBenchmark* const run_one_benchmark_;
