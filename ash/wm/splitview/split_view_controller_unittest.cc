@@ -1834,6 +1834,26 @@ TEST_F(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
   EXPECT_EQ(0, observer.items_on_last_overview_end());
 }
 
+// Test that resizing ends properly if split view ends during divider dragging.
+TEST_F(SplitViewControllerTest, EndSplitViewWhileDragging) {
+  // Enter split view mode.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+
+  // Start resizing.
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false);
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+
+  // Verify the setup.
+  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  ASSERT_TRUE(split_view_controller()->is_resizing());
+
+  // End split view and check that resizing has ended properly.
+  split_view_controller()->EndSplitView();
+  EXPECT_FALSE(split_view_controller()->is_resizing());
+}
+
 // Test the tab-dragging related functionalities in tablet mode. Tab(s) can be
 // dragged out of a window and then put in split view mode or merge into another
 // window.

@@ -513,6 +513,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   // the resize. This can happen, for example, on the transition back to
   // clamshell mode or when a task is minimized during a resize.
   if (is_resizing_) {
+    is_resizing_ = false;
     FinishWindowResizing(left_window_);
     FinishWindowResizing(right_window_);
   }
