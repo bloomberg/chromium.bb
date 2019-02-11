@@ -5,6 +5,7 @@
 import("//base/android/linker/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//chrome/android/modules/module_names_to_package_ids.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 assert(enable_vr)
@@ -47,5 +48,8 @@ template("vr_module_tmpl") {
 
     # Don't embed more localized strings than required (http://crbug.com/932017)
     aapt_locale_whitelist = locales
+
+    package_name = "vr"
+    package_name_to_id_mapping = resource_packages_id_mapping
   }
 }
