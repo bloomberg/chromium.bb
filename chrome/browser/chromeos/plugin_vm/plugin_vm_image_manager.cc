@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
@@ -36,7 +37,12 @@ void PluginVmImageManager::StartDownload() {
     return;
   }
   processing_image_ = true;
-  download_service_->StartDownload(GetDownloadParams());
+  GURL url = GetPluginVmImageDownloadUrl();
+  if (url.is_empty()) {
+    OnDownloadFailed();
+    return;
+  }
+  download_service_->StartDownload(GetDownloadParams(url));
 }
 
 void PluginVmImageManager::CancelDownload() {
@@ -89,6 +95,8 @@ void PluginVmImageManager::OnProgressUpdated(
 }
 
 void PluginVmImageManager::OnDownloadCompleted(base::FilePath file_path) {
+  // TODO(https://crbug.com/928816): Call OnDownloadFailed() in case download
+  // verification using hashes fails.
   downloaded_plugin_vm_image_archive_ = file_path;
   current_download_guid_.clear();
   if (observer_)
@@ -131,7 +139,20 @@ PluginVmImageManager::PluginVmImageManager(Profile* profile)
       weak_ptr_factory_(this) {}
 PluginVmImageManager::~PluginVmImageManager() = default;
 
-download::DownloadParams PluginVmImageManager::GetDownloadParams() {
+GURL PluginVmImageManager::GetPluginVmImageDownloadUrl() {
+  const base::Value* url_ptr =
+      profile_->GetPrefs()
+          ->GetDictionary(plugin_vm::prefs::kPluginVmImage)
+          ->FindKey("url");
+  if (!url_ptr) {
+    LOG(ERROR) << "Url to PluginVm image is not specified";
+    return GURL();
+  }
+  return GURL(url_ptr->GetString());
+}
+
+download::DownloadParams PluginVmImageManager::GetDownloadParams(
+    const GURL& url) {
   download::DownloadParams params;
 
   // DownloadParams
@@ -144,11 +165,8 @@ download::DownloadParams PluginVmImageManager::GetDownloadParams() {
       net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
 
   // RequestParams
-  std::string url;
-  profile_->GetPrefs()
-      ->GetDictionary(plugin_vm::prefs::kPluginVmImage)
-      ->GetString("url", &url);
-  params.request_params.url = GURL(url);
+
+  params.request_params.url = url;
   params.request_params.method = "GET";
 
   // SchedulingParams
@@ -174,6 +192,21 @@ void PluginVmImageManager::OnStartDownload(
 
 bool PluginVmImageManager::IsDownloading() {
   return !current_download_guid_.empty();
+}
+
+bool PluginVmImageManager::VerifyDownload(std::string downloaded_archive_hash) {
+  const base::Value* plugin_vm_image_hash_ptr =
+      profile_->GetPrefs()
+          ->GetDictionary(plugin_vm::prefs::kPluginVmImage)
+          ->FindKey("hash");
+  if (!plugin_vm_image_hash_ptr) {
+    LOG(ERROR) << "Hash of PluginVm image is not specified";
+    return false;
+  }
+  std::string plugin_vm_image_hash = plugin_vm_image_hash_ptr->GetString();
+
+  return base::EqualsCaseInsensitiveASCII(plugin_vm_image_hash,
+                                          downloaded_archive_hash);
 }
 
 bool PluginVmImageManager::UnzipDownloadedPluginVmImageArchive() {
