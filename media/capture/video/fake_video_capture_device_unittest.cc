@@ -98,7 +98,7 @@ VideoCaptureDevice::Client::Buffer CreateStubBuffer(int buffer_id,
       buffer_id, arbitrary_frame_feedback_id,
       std::make_unique<StubBufferHandleProvider>(mapped_size, buffer),
       std::make_unique<StubReadWritePermission>(buffer));
-};
+}
 
 class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
  public:
@@ -617,4 +617,4 @@ INSTANTIATE_TEST_CASE_P(
                1u,
                FakeVideoCaptureDevice::DisplayMediaType::BROWSER,
                {PIXEL_FORMAT_I420}}));
-};  // namespace media
+}  // namespace media
