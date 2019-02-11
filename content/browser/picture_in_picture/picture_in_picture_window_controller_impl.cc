@@ -80,7 +80,7 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
 
   UpdatePlayPauseButtonVisibility();
   window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
-  window_->Show();
+  window_->ShowInactive();
   initiator_->SetHasPictureInPictureVideo(true);
 
   return window_->GetBounds().size();

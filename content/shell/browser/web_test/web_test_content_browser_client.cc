@@ -65,7 +65,7 @@ class TestOverlayWindow : public OverlayWindow {
 
   bool IsActive() const override { return false; }
   void Close() override {}
-  void Show() override {}
+  void ShowInactive() override {}
   void Hide() override {}
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>& controls)

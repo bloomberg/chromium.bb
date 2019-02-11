@@ -40,7 +40,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   // OverlayWindow:
   bool IsActive() const override;
   void Close() override;
-  void Show() override;
+  void ShowInactive() override;
   void Hide() override;
   bool IsVisible() const override;
   bool IsAlwaysOnTop() const override;
