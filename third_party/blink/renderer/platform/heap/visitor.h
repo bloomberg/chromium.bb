@@ -46,14 +46,11 @@ namespace blink {
 template <typename T>
 class GarbageCollected;
 template <typename T>
-class DOMWrapperMap;
-template <typename T>
 class TraceTrait;
 class ThreadState;
 class Visitor;
 template <typename T>
 class SameThreadCheckedMember;
-class ScriptWrappable;
 template <typename T>
 class TraceWrapperMember;
 template <typename T>
@@ -226,11 +223,6 @@ class PLATFORM_EXPORT Visitor {
                       TraceDescriptorFor(t));
   }
 
-  void Trace(DOMWrapperMap<ScriptWrappable>* wrapper_map,
-             const ScriptWrappable* key) {
-    Visit(wrapper_map, key);
-  }
-
   template <typename V8Type>
   void Trace(const TraceWrapperV8Reference<V8Type>& v8reference) {
     Visit(v8reference.template Cast<v8::Value>());
@@ -259,8 +251,6 @@ class PLATFORM_EXPORT Visitor {
   // Visits cross-component references to V8.
 
   virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
-  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) = 0;
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.

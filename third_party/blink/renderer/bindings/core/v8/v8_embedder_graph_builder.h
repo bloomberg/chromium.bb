@@ -37,7 +37,6 @@ class V8EmbedderGraphBuilder
   // Visitor overrides.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
   void VisitWithWrappers(void*, TraceDescriptor) final;
-  void Visit(DOMWrapperMap<ScriptWrappable>*, const ScriptWrappable*) final;
   void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final;

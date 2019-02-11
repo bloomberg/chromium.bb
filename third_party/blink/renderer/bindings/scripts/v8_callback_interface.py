@@ -126,7 +126,7 @@ def forward_declarations(callback_interface):
             return find_forward_declaration(idl_type.inner_type)
         return None
 
-    declarations = set()
+    declarations = set(["ScriptWrappable"])
     for operation in callback_interface.operations:
         for argument in operation.arguments:
             name = find_forward_declaration(argument.idl_type)
