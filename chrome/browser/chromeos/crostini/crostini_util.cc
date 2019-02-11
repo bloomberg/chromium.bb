@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
@@ -225,6 +226,11 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
 }  // namespace
 
 namespace crostini {
+
+std::string ContainerIdToString(const ContainerId& container_id) {
+  return base::StrCat(
+      {"(", container_id.first, ", ", container_id.second, ")"});
+}
 
 bool IsCrostiniAllowedForProfile(Profile* profile) {
   const user_manager::User* user =

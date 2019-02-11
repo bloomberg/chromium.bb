@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -791,37 +792,34 @@ class CrostiniManager : public KeyedService,
 
   // Pending container started callbacks are keyed by <vm_name, container_name>
   // string pairs.
-  std::multimap<std::pair<std::string, std::string>, StartContainerCallback>
-      start_container_callbacks_;
+  std::multimap<ContainerId, StartContainerCallback> start_container_callbacks_;
 
   // Pending ShutdownContainer callbacks are keyed by <vm_name, container_name>
   // string pairs.
-  std::multimap<std::pair<std::string, std::string>, ShutdownContainerCallback>
+  std::multimap<ContainerId, ShutdownContainerCallback>
       shutdown_container_callbacks_;
 
   // Pending CreateLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. These are used if CreateLxdContainer indicates we need to
   // wait for an LxdContainerCreate signal.
-  std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
+  std::multimap<ContainerId, CrostiniResultCallback>
       create_lxd_container_callbacks_;
 
   // Pending StartLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. These are used if StartLxdContainer indicates we need to
   // wait for an LxdContainerStarting signal.
-  std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
+  std::multimap<ContainerId, CrostiniResultCallback>
       start_lxd_container_callbacks_;
 
   // Pending ExportLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. They are invoked once ExportLxdContainerProgressSignal signal
   // indicates that export is finished.
-  std::map<std::pair<std::string, std::string>, CrostiniResultCallback>
-      export_lxd_container_callbacks_;
+  std::map<ContainerId, CrostiniResultCallback> export_lxd_container_callbacks_;
 
   // Pending ImportLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. They are invoked once ImportLxdContainerProgressSignal signal
   // indicates that import is finished.
-  std::map<std::pair<std::string, std::string>, CrostiniResultCallback>
-      import_lxd_container_callbacks_;
+  std::map<ContainerId, CrostiniResultCallback> import_lxd_container_callbacks_;
 
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are
   // used if StartTerminaVm completes but we need to wait from Tremplin to
@@ -846,7 +844,7 @@ class CrostiniManager : public KeyedService,
   // Restarts by <vm_name, container_name>. Only one restarter flow is actually
   // running for a given container, other restarters will just have their
   // callback called when the running restarter completes.
-  std::multimap<std::pair<std::string, std::string>, CrostiniManager::RestartId>
+  std::multimap<ContainerId, CrostiniManager::RestartId>
       restarters_by_container_;
 
   std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>

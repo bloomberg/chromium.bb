@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_package_notification.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_operation_status.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace crostini {
@@ -77,19 +78,12 @@ class CrostiniPackageService : public KeyedService,
   void QueueUninstallApplication(const std::string& app_id);
 
  private:
-  // A unique identifier for our containers. This is <vm_name, container_name>.
-  using ContainerIdentifier = std::pair<std::string, std::string>;
-
   // The user can request new uninstalls while a different operation is in
   // progress. Rather than sending a request which will fail, just queue the
   // request until the previous one is done.
   struct QueuedUninstall;
 
-  std::string ContainerIdentifierToString(
-      const ContainerIdentifier& container_id) const;
-
-  bool ContainerHasRunningOperation(
-      const ContainerIdentifier& container_id) const;
+  bool ContainerHasRunningOperation(const ContainerId& container_id) const;
 
   // Creates a new notification and adds it to running_notifications_.
   // |app_name| is the name of the application being modified, if any -- for
@@ -98,12 +92,12 @@ class CrostiniPackageService : public KeyedService,
   // If there is a running notification, it will be set to error state. Caller
   // should check before calling this if a different behavior is desired.
   void CreateRunningNotification(
-      const ContainerIdentifier& container_id,
+      const ContainerId& container_id,
       CrostiniPackageNotification::NotificationType notification_type,
       const std::string& app_name);
 
   // Creates a new uninstall notification and adds it to queued_uninstalls_.
-  void CreateQueuedUninstall(const ContainerIdentifier& container_id,
+  void CreateQueuedUninstall(const ContainerId& container_id,
                              const std::string& app_id,
                              const std::string& app_name);
 
@@ -111,7 +105,7 @@ class CrostiniPackageService : public KeyedService,
   // window's current state and updates containers_with_running_operations_.
   // Note that if status is |SUCCEEDED| or |FAILED|, this may kick off another
   // operation from the queued_uninstalls_ list.
-  void UpdatePackageOperationStatus(const ContainerIdentifier& container_id,
+  void UpdatePackageOperationStatus(const ContainerId& container_id,
                                     PackageOperationStatus status,
                                     int progress_percent);
 
@@ -138,32 +132,32 @@ class CrostiniPackageService : public KeyedService,
 
   // Callback when the Crostini container is up and ready to accept messages.
   // Used by the uninstall flow only.
-  void OnCrostiniRunningForUninstall(const ContainerIdentifier& container_id,
+  void OnCrostiniRunningForUninstall(const ContainerId& container_id,
                                      const std::string& desktop_file_id,
                                      CrostiniResult result);
 
   // Callback for CrostiniManager::UninstallPackageOwningFile().
-  void OnUninstallPackageOwningFile(const ContainerIdentifier& container_id,
+  void OnUninstallPackageOwningFile(const ContainerId& container_id,
                                     CrostiniResult result);
 
   // Kick off the next operation in the queue for the given container.
-  void StartQueuedUninstall(const ContainerIdentifier& container_id);
+  void StartQueuedUninstall(const ContainerId& container_id);
 
   std::string GetUniqueNotificationId();
 
   Profile* profile_;
 
   // The notifications in the RUNNING state for each container.
-  std::map<ContainerIdentifier, std::unique_ptr<CrostiniPackageNotification>>
+  std::map<ContainerId, std::unique_ptr<CrostiniPackageNotification>>
       running_notifications_;
 
   // Containers that have an install waiting for its initial response. We don't
   // display notifications for these, but they still need to cause uninstalls
   // to queue.
-  std::set<ContainerIdentifier> containers_with_pending_installs_;
+  std::set<ContainerId> containers_with_pending_installs_;
 
   // Uninstalls we want to run when the current one is done.
-  std::map<ContainerIdentifier, std::queue<QueuedUninstall>> queued_uninstalls_;
+  std::map<ContainerId, std::queue<QueuedUninstall>> queued_uninstalls_;
 
   // Notifications in a finished state (either SUCCEEDED or FAILED). We need
   // to keep notifications around until they are dismissed even if we don't

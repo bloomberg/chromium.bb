@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -90,8 +89,8 @@ void OnConciergeServiceAvailable(
 // Find any callbacks for the specified |vm_name|, invoke them with |result|
 // and erase them from the map.
 void InvokeAndErasePendingCallbacks(
-    std::map<std::pair<std::string, std::string>,
-             CrostiniManager::CrostiniResultCallback>* vm_keyed_map,
+    std::map<ContainerId, CrostiniManager::CrostiniResultCallback>*
+        vm_keyed_map,
     const std::string& vm_name,
     CrostiniResult result) {
   for (auto it = vm_keyed_map->begin(); it != vm_keyed_map->end();) {
