@@ -4012,12 +4012,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
      flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kVaapiJpegImageDecodeAcceleration)},
-
-    {"enable-home-launcher-gestures",
-     flag_descriptions::kEnableHomeLauncherGesturesName,
-     flag_descriptions::kEnableHomeLauncherGesturesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableHomeLauncherGestures)},
 #endif
+
 #if defined(OS_WIN)
     {"calculate-native-win-occlusion",
      flag_descriptions::kCalculateNativeWinOcclusionName,

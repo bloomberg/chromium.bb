@@ -35,10 +35,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 // Enables in-app data search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppDataSearch;
 
-// Enables using gestures to show or hide the home launcher.
-// TODO(crbug.com/872319): Remove this after the feature is launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncherGestures;
-
 // Enables the Settings shortcut search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
 
@@ -63,7 +59,6 @@ bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();

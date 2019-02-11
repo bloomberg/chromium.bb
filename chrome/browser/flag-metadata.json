@@ -1288,11 +1288,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-home-launcher-gestures",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-homepage-tile",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

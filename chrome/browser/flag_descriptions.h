@@ -1985,9 +1985,6 @@ extern const char kEnableGoogleAssistantStereoInputDescription[];
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
-extern const char kEnableHomeLauncherGesturesName[];
-extern const char kEnableHomeLauncherGesturesDescription[];
-
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 

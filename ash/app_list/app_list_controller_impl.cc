@@ -62,7 +62,9 @@ bool IsAssistantEnabled() {
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
-    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)) {
+    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
+      home_launcher_gesture_handler_(
+          std::make_unique<HomeLauncherGestureHandler>(this)) {
   model_.AddObserver(this);
 
   SessionController* session_controller = Shell::Get()->session_controller();
@@ -77,12 +79,6 @@ AppListControllerImpl::AppListControllerImpl()
   Shell::Get()->wallpaper_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
-
-  if (app_list_features::IsHomeLauncherGesturesEnabled()) {
-    home_launcher_gesture_handler_ =
-        std::make_unique<HomeLauncherGestureHandler>(this);
-  }
-
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->mru_window_tracker()->AddObserver(this);
@@ -638,13 +634,8 @@ ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
   if (!IsTabletMode())
     return ToggleAppList(display_id, show_source, event_time_stamp);
 
-  // Whether the this action is handled.
-  bool handled = false;
-
-  if (home_launcher_gesture_handler_) {
-    handled = home_launcher_gesture_handler_->ShowHomeLauncher(
-        Shell::Get()->display_manager()->GetDisplayForId(display_id));
-  }
+  bool handled = home_launcher_gesture_handler_->ShowHomeLauncher(
+      Shell::Get()->display_manager()->GetDisplayForId(display_id));
 
   if (!handled) {
     if (Shell::Get()->overview_controller()->IsSelecting()) {
@@ -852,9 +843,6 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
 bool AppListControllerImpl::ProcessHomeLauncherGesture(
     ui::GestureEvent* event,
     const gfx::Point& screen_location) {
-  if (!home_launcher_gesture_handler_)
-    return false;
-
   switch (event->type()) {
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -881,9 +869,6 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
       overview_controller->IsCompletingShutdownAnimations()) {
     return false;
   }
-
-  if (!home_launcher_gesture_handler_)
-    return true;
 
   return home_launcher_gesture_handler_->mode() !=
          HomeLauncherGestureHandler::Mode::kSlideUpToShow;
