@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_PLATFORM_SPECIFIC_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_PLATFORM_SPECIFIC_H_
 
+#include <memory>
+
 class OpaqueBrowserFrameView;
 class OpaqueBrowserFrameViewLayout;
 
@@ -14,7 +16,7 @@ class OpaqueBrowserFrameViewPlatformSpecific {
   virtual ~OpaqueBrowserFrameViewPlatformSpecific() {}
 
   // Builds an observer for |view| and |layout|.
-  static OpaqueBrowserFrameViewPlatformSpecific* Create(
+  static std::unique_ptr<OpaqueBrowserFrameViewPlatformSpecific> Create(
       OpaqueBrowserFrameView* view,
       OpaqueBrowserFrameViewLayout* layout);
 };

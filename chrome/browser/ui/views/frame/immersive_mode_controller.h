@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -141,7 +143,7 @@ class ImmersiveModeController {
 namespace chrome {
 
 // Implemented in immersive_mode_controller_factory.cc.
-ImmersiveModeController* CreateImmersiveModeController();
+std::unique_ptr<ImmersiveModeController> CreateImmersiveModeController();
 
 }  // namespace chrome
 

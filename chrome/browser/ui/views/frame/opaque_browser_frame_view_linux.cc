@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_linux.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -52,9 +54,9 @@ void OpaqueBrowserFrameViewLinux::OnWindowButtonOrderingChange(
 // OpaqueBrowserFrameViewObserver:
 
 // static
-OpaqueBrowserFrameViewPlatformSpecific*
+std::unique_ptr<OpaqueBrowserFrameViewPlatformSpecific>
 OpaqueBrowserFrameViewPlatformSpecific::Create(
     OpaqueBrowserFrameView* view,
     OpaqueBrowserFrameViewLayout* layout) {
-  return new OpaqueBrowserFrameViewLinux(view, layout);
+  return std::make_unique<OpaqueBrowserFrameViewLinux>(view, layout);
 }
