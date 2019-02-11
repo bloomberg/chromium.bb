@@ -37,6 +37,7 @@ import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -124,13 +125,13 @@ public class ManualFillingUiCaptureTest {
     @EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessoryModern", "LTR", "UiCatalogue"})
     public void testCaptureKeyboardAccessoryV2WithPasswords()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, TimeoutException, ExecutionException {
         mHelper.loadTestPage(false);
+        ManualFillingTestHelper.createAutofillTestProfiles();
         mHelper.cacheTestCredentials();
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
         mHelper.addGenerationButton();
-        mHelper.addAutofillChips();
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();
@@ -156,13 +157,13 @@ public class ManualFillingUiCaptureTest {
     @EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     @Feature({"KeyboardAccessoryModern", "RTL", "UiCatalogue"})
     public void testCaptureKeyboardAccessoryV2WithPasswordsRTL()
-            throws InterruptedException, TimeoutException {
+            throws InterruptedException, TimeoutException, ExecutionException {
         mHelper.loadTestPage(true);
+        ManualFillingTestHelper.createAutofillTestProfiles();
         mHelper.cacheTestCredentials();
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
         mHelper.addGenerationButton();
-        mHelper.addAutofillChips();
 
         waitForActionsInAccessory();
         waitForUnrelatedChromeUi();

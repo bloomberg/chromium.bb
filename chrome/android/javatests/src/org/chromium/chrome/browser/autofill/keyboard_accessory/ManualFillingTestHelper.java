@@ -39,6 +39,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeWindow;
+import org.chromium.chrome.browser.autofill.AutofillTestHelper;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -54,6 +56,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -77,7 +80,7 @@ public class ManualFillingTestHelper {
         return (FakeKeyboard) mActivityTestRule.getKeyboardDelegate();
     }
 
-    ManualFillingTestHelper(ChromeTabbedActivityTestRule activityTestRule) {
+    public ManualFillingTestHelper(ChromeTabbedActivityTestRule activityTestRule) {
         mActivityTestRule = activityTestRule;
     }
 
@@ -86,6 +89,11 @@ public class ManualFillingTestHelper {
     }
 
     public void loadTestPage(String url, boolean isRtl) throws InterruptedException {
+        loadTestPage(url, isRtl, false);
+    }
+
+    public void loadTestPage(String url, boolean isRtl, boolean waitForNode)
+            throws InterruptedException {
         mEmbeddedTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         ChromeWindow.setKeyboardVisibilityDelegateFactory(FakeKeyboard::new);
@@ -108,7 +116,7 @@ public class ManualFillingTestHelper {
             activity.getManualFillingController().registerPasswordProvider(
                     mSheetSuggestionsProvider);
         });
-        DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
+        if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
         cacheCredentials(new String[0], new String[0]); // This caches the empty state.
     }
 
@@ -120,6 +128,10 @@ public class ManualFillingTestHelper {
     // --------------------------------------
     // Helpers interacting with the web page.
     // --------------------------------------
+
+    public WebContents getWebContents() {
+        return mWebContentsRef.get();
+    }
 
     public void focusPasswordField() throws TimeoutException, InterruptedException {
         DOMUtils.focusNode(mActivityTestRule.getWebContents(), PASSWORD_NODE_ID);
@@ -143,7 +155,13 @@ public class ManualFillingTestHelper {
                         .getMediatorForTesting()
                         .showWhenKeyboardIsVisible();
             });
-        };
+        }
+        getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
+    }
+
+    public void clickNodeAndShowKeyboard(String node)
+            throws TimeoutException, InterruptedException {
+        DOMUtils.clickNode(mWebContentsRef.get(), node);
         getKeyboard().showKeyboard(mActivityTestRule.getActivity().getCurrentFocus());
     }
 
@@ -260,6 +278,19 @@ public class ManualFillingTestHelper {
             ManualFillingBridge.cachePasswordSheetData(
                     mActivityTestRule.getWebContents(), usernames, passwords);
         });
+    }
+
+    public static void createAutofillTestProfiles()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
+                "Johnathan Smithonian-Jackson", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco",
+                "", "94102", "", "US", "(415) 888-9999", "john.sj@acme-mail.inc", "en"));
+        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
+                "Jane Erika Donovanova", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "", "US", "(415) 999-0000", "donovanova.j@acme-mail.inc", "en"));
+        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
+                "Marcus McSpartangregor", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "", "US", "(415) 999-0000", "marc@acme-mail.inc", "en"));
     }
 
     // --------------------------------------------------
