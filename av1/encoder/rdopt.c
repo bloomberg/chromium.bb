@@ -11046,7 +11046,6 @@ static void set_params_rd_pick_inter_mode(
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
-    x->mbmi_ext->compound_mode_context[ref_frame] = 0;
     mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
     if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
       if (mbmi->partition != PARTITION_NONE &&
@@ -11184,7 +11183,6 @@ static void set_params_nonrd_pick_inter_mode(
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
-    x->mbmi_ext->compound_mode_context[ref_frame] = 0;
     mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
     if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
       if (mbmi->partition != PARTITION_NONE &&

@@ -1288,7 +1288,7 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
       }
 
       const int16_t mode_ctx =
-          is_comp_ref ? mbmi_ext->compound_mode_context[mbmi->ref_frame[0]]
+          is_comp_ref ? 0
                       : av1_mode_context_analyzer(mbmi_ext->mode_context,
                                                   mbmi->ref_frame);
 
