@@ -656,7 +656,12 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
                     base::Bind(&NetLogQuicStreamFrameCallback, frame));
 }
 
-void QuicConnectionLogger::OnAckFrame(const quic::QuicAckFrame& frame) {
+void QuicConnectionLogger::OnIncomingAck(
+    const quic::QuicAckFrame& frame,
+    quic::QuicTime ack_receive_time,
+    quic::QuicPacketNumber largest_observed,
+    bool rtt_updated,
+    quic::QuicPacketNumber least_unacked_sent_packet) {
   const size_t kApproximateLargestSoloAckBytes = 100;
   if (last_received_packet_number_ - first_received_packet_number_ <
           received_acks_.size() &&

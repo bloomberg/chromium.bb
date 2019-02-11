@@ -231,9 +231,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when a StreamFrame has been parsed.
   virtual void OnStreamFrame(const QuicStreamFrame& frame) {}
 
-  // Called when a AckFrame has been parsed.
-  virtual void OnAckFrame(const QuicAckFrame& frame) {}
-
   // Called when a StopWaitingFrame has been parsed.
   virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {}
 

@@ -50,6 +50,11 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     quic::QuicPacketNumber original_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
+  void OnIncomingAck(const quic::QuicAckFrame& frame,
+                     quic::QuicTime ack_receive_time,
+                     quic::QuicPacketNumber largest_observed,
+                     bool rtt_updated,
+                     quic::QuicPacketNumber least_unacked_sent_packet) override;
   void OnPacketLoss(quic::QuicPacketNumber lost_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime detection_time) override;
@@ -64,7 +69,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
   void OnPacketHeader(const quic::QuicPacketHeader& header) override;
   void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
-  void OnAckFrame(const quic::QuicAckFrame& frame) override;
   void OnStopWaitingFrame(const quic::QuicStopWaitingFrame& frame) override;
   void OnRstStreamFrame(const quic::QuicRstStreamFrame& frame) override;
   void OnConnectionCloseFrame(

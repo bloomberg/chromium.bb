@@ -1008,8 +1008,6 @@ class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
 
   MOCK_METHOD1(OnStreamFrame, void(const QuicStreamFrame&));
 
-  MOCK_METHOD1(OnAckFrame, void(const QuicAckFrame& frame));
-
   MOCK_METHOD1(OnStopWaitingFrame, void(const QuicStopWaitingFrame&));
 
   MOCK_METHOD1(OnRstStreamFrame, void(const QuicRstStreamFrame&));
