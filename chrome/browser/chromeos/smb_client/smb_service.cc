@@ -48,6 +48,7 @@ const char kModeKey[] = "mode";
 const char kModeDropDownValue[] = "drop_down";
 const char kModePreMountValue[] = "pre_mount";
 const char kModeUnknownValue[] = "unknown";
+const base::TimeDelta kHostDiscoveryInterval = base::TimeDelta::FromSeconds(60);
 
 bool ContainsAt(const std::string& username) {
   return username.find('@') != std::string::npos;
@@ -357,6 +358,18 @@ void SmbService::OnHostsDiscovered(
   }
 }
 
+void SmbService::OnHostsDiscoveredForUpdateSharePath(
+    int32_t mount_id,
+    const std::string& share_path,
+    StartReadDirIfSuccessfulCallback reply) {
+  std::string resolved_url;
+  if (share_finder_->TryResolveUrl(SmbUrl(share_path), &resolved_url)) {
+    UpdateSharePath(mount_id, resolved_url, std::move(reply));
+  } else {
+    std::move(reply).Run(false /* should_retry_start_read_dir */);
+  }
+}
+
 void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
   const base::FilePath share_path =
       GetSharePathFromFileSystemId(file_system_info.file_system_id());
@@ -634,7 +647,26 @@ void SmbService::RequestUpdatedSharePath(
     const std::string& share_path,
     int32_t mount_id,
     StartReadDirIfSuccessfulCallback reply) {
-  NOTREACHED();
+  if (ShouldRunHostDiscoveryAgain()) {
+    previous_host_discovery_time_ = tick_clock_->NowTicks();
+    share_finder_->DiscoverHostsInNetwork(
+        base::BindOnce(&SmbService::OnHostsDiscoveredForUpdateSharePath,
+                       AsWeakPtr(), mount_id, share_path, std::move(reply)));
+    return;
+  }
+  // Host discovery did not run, but try to resolve the hostname in case a
+  // previous host discovery found the host.
+  std::string resolved_url;
+  if (share_finder_->TryResolveUrl(SmbUrl(share_path), &resolved_url)) {
+    UpdateSharePath(mount_id, share_path, std::move(reply));
+  } else {
+    std::move(reply).Run(false /* should_retry_start_read_dir */);
+  }
+}
+
+bool SmbService::ShouldRunHostDiscoveryAgain() const {
+  return tick_clock_->NowTicks() >
+         previous_host_discovery_time_ + kHostDiscoveryInterval;
 }
 
 void SmbService::RecordMountCount() const {
