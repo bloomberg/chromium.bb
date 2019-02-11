@@ -220,8 +220,8 @@ QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_no_server_conn_ver_negotiation2,
           false)
 
-// If true, enable QUIC version 46 which adds CRYPTO frames.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_46, false)
+// If true, enable QUIC version 46.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_46, true)
 
 // When true, cache that encryption has been established to save CPU.
 QUIC_FLAG(bool,
@@ -354,5 +354,5 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_clear_probing_mark_after_packet_processing,
     true)
 
-// If true, enable QUIC version 47.
+// If true, enable QUIC version 47 which adds CRYPTO frames.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
