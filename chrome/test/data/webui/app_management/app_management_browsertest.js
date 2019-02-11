@@ -97,3 +97,17 @@ AppManagementReducersTest.prototype = {
 TEST_F('AppManagementReducersTest', 'All', function() {
   mocha.run();
 });
+
+function AppManagementPwaPermissionViewTest() {}
+
+AppManagementPwaPermissionViewTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'pwa_permission_view_test.js',
+  ]),
+};
+
+TEST_F('AppManagementPwaPermissionViewTest', 'All', function() {
+  mocha.run();
+});

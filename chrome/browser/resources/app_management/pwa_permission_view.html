@@ -32,6 +32,7 @@
 
     <div class="permission-list card-container">
       <app-management-permission-item
+        id="notifications"
         class="permission-card-row separated-row header-text"
         permission-label="$i18n{notifications}"
         permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
@@ -53,18 +54,21 @@
 
           <iron-collapse opened="[[listExpanded_]]">
             <app-management-permission-item
+                id="location"
                 class="subpermission-row"
                 icon="cr:location-on"
                 permission-label="$i18n{location}"
                 permission-type="CONTENT_SETTINGS_TYPE_GEOLOCATION">
             </app-management-permission-item>
             <app-management-permission-item
+                id="camera"
                 class="subpermission-row"
                 icon="cr:videocam"
                 permission-label="$i18n{camera}"
                 permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA">
             </app-management-permission-item>
             <app-management-permission-item
+                id="microphone"
                 class="subpermission-row"
                 icon="cr:mic"
                 permission-label="$i18n{microphone}"
