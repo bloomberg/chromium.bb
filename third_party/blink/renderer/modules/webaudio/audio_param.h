@@ -150,7 +150,7 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   AutomationRate GetAutomationRate() const { return automation_rate_; }
   void SetAutomationRate(AutomationRate automation_rate) {
     automation_rate_ = automation_rate;
-  };
+  }
 
   bool IsAutomationRateFixed() const {
     return rate_mode_ == AutomationRateMode::kFixed;
