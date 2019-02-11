@@ -343,7 +343,7 @@ class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DebuggerExtensionApiTest::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
-  };
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest, Debugger) {

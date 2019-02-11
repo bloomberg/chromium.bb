@@ -66,7 +66,7 @@ class MockNetworkContext : public network::TestNetworkContext {
   ~MockNetworkContext() override {
     EXPECT_TRUE(resolve_host_clients_.empty())
         << "Not all resolve host requests were satisfied";
-  };
+  }
 
   void ResolveHost(
       const net::HostPortPair& host_port,

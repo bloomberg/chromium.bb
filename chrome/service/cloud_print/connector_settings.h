@@ -30,9 +30,7 @@ class ConnectorSettings {
 
   void CopyFrom(const ConnectorSettings& source);
 
-  const GURL& server_url() const {
-    return server_url_;
-  };
+  const GURL& server_url() const { return server_url_; }
 
   const std::string& proxy_id() const {
     return proxy_id_;
@@ -52,7 +50,7 @@ class ConnectorSettings {
 
   const base::DictionaryValue* print_system_settings() const {
     return print_system_settings_.get();
-  };
+  }
 
   bool ShouldConnect(const std::string& printer_name) const;
 

@@ -93,7 +93,7 @@ class MediaEngagementAutoplayBrowserTest
 
     // Clear any preloaded MEI data.
     ApplyEmptyPreloadedList();
-  };
+  }
 
   void LoadTestPage(const std::string& page) {
     NavigateParams params(browser()->profile(), http_server_.GetURL("/" + page),

@@ -18,7 +18,7 @@ class PlatformControllerForTesting : public PlatformController {
       ControllerModel* prev_model,
       ControllerModel* cur_model,
       base::TimeTicks last_touchpad_timestamp);
-  ~PlatformControllerForTesting() override{};
+  ~PlatformControllerForTesting() override {}
 
   bool IsButtonDown(PlatformController::ButtonType type) const override;
   bool ButtonUpHappened(PlatformController::ButtonType type) const override;

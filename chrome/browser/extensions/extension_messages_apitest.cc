@@ -1375,4 +1375,4 @@ INSTANTIATE_TEST_SUITE_P(JavaScriptBindings,
 
 }  // namespace
 
-};  // namespace extensions
+}  // namespace extensions

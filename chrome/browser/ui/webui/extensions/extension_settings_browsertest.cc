@@ -250,7 +250,7 @@ class ExtensionsActivityLogTest : public ExtensionSettingsUIBrowserTest {
   // Enable command line flags for test.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
-  };
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {

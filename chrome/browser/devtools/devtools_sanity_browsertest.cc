@@ -271,7 +271,7 @@ class SitePerProcessDevToolsSanityTest : public DevToolsSanityTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevToolsSanityTest::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
-  };
+  }
 
   void SetUpOnMainThread() override {
     DevToolsSanityTest::SetUpOnMainThread();

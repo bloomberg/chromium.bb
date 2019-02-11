@@ -3396,7 +3396,7 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
   SSLUITestWaitForDOMNotification()
       : SSLUITestIgnoreCertErrors(), run_loop_(nullptr) {}
 
-  ~SSLUITestWaitForDOMNotification() override { registrar_.RemoveAll(); };
+  ~SSLUITestWaitForDOMNotification() override { registrar_.RemoveAll(); }
 
   void SetUpOnMainThread() override {
     SSLUITestIgnoreCertErrors::SetUpOnMainThread();

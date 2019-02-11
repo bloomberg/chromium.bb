@@ -30,7 +30,7 @@ class WebRTCInternalsIntegrationBrowserTest;
 namespace content {
 class BrowserContext;
 class NetworkConnectionTracker;
-};
+}  // namespace content
 
 namespace webrtc_event_logging {
 

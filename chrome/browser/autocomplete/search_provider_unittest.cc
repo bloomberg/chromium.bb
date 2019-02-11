@@ -300,7 +300,7 @@ class SearchProviderTest : public BaseSearchProviderTest {
     CustomizableSetUp(
         /* search_url */ "http://defaultturl/{searchTerms}",
         /* suggestions_url */ "http://defaultturl2/{searchTerms}");
-  };
+  }
 };
 
 // InvalidSearchProviderTest --------------------------------------------------
@@ -312,7 +312,7 @@ class InvalidSearchProviderTest : public BaseSearchProviderTest {
     CustomizableSetUp(
         /* search_url */ prefix + "{searchTerms}",
         /* suggestions_url */ prefix + "{searchTerms}");
-  };
+  }
 
  protected:
   static const std::string prefix;

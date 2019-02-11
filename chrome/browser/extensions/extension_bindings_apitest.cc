@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, Nocompile) {
 
 IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, ApiEnums) {
   ASSERT_TRUE(RunExtensionTest("bindings/api_enums")) << message_;
-};
+}
 
 // Regression test for http://crbug.com/504011 - proper access checks on
 // getModuleSystem().

@@ -95,7 +95,7 @@ struct FormInputCollection {
     }                                                                         \
   };                                                                          \
   base::LazyInstance<re2::RE2, LabelPatternLazyInstanceTraits_##NAME> NAME =  \
-      LAZY_INSTANCE_INITIALIZER;
+      LAZY_INSTANCE_INITIALIZER
 
 DECLARE_LAZY_MATCHER(ignored_characters_matcher, R"(\W)");
 DECLARE_LAZY_MATCHER(username_matcher, R"(user(name)?|login)");

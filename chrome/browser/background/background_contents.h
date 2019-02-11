@@ -25,7 +25,7 @@ class Profile;
 
 namespace content {
 class SessionStorageNamespace;
-};
+}
 
 namespace extensions {
 class ExtensionHostDelegate;

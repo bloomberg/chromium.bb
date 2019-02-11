@@ -310,7 +310,7 @@ class TestAnimationDelegateThatDestroysAnimation
     // Detaching animation from the timeline ensures that the timeline doesn't
     // hold a reference to the animation and the animation is destroyed.
     timeline_->DetachAnimation(animation_);
-  };
+  }
 
   void setTimelineAndAnimation(
       scoped_refptr<AnimationTimeline> timeline,

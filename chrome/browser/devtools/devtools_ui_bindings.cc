@@ -164,7 +164,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   void SetOpenNewWindowForPopups(bool value) override {}
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override {}
-  void ShowCertificateViewer(const std::string& cert_chain) override{};
+  void ShowCertificateViewer(const std::string& cert_chain) override {}
 
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);

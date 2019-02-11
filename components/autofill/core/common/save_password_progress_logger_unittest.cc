@@ -40,7 +40,7 @@ class TestLogger : public SavePasswordProgressLogger {
   std::string accumulated_log_;
 };
 
-};  // namespace
+}  // namespace
 
 TEST(SavePasswordProgressLoggerTest, LogPasswordForm) {
   TestLogger logger;

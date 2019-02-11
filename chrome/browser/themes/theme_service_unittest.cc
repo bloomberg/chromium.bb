@@ -437,4 +437,4 @@ TEST_F(ThemeServiceTest, UserThemeTakesPrecedenceOverSystemTheme) {
 #endif // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
-}; // namespace theme_service_internal
+}  // namespace theme_service_internal
