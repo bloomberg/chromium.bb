@@ -10,33 +10,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "media/base/simple_sync_token_client.h"
 #include "media/gpu/fake_command_buffer_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
-
-namespace {
-
-// TODO(sandersd): Should be part of //media, as it is used by
-// MojoVideoDecoderService (production code) as well.
-class StaticSyncTokenClient : public VideoFrame::SyncTokenClient {
- public:
-  explicit StaticSyncTokenClient(const gpu::SyncToken& sync_token)
-      : sync_token_(sync_token) {}
-
-  void GenerateSyncToken(gpu::SyncToken* sync_token) final {
-    *sync_token = sync_token_;
-  }
-
-  void WaitSyncToken(const gpu::SyncToken& sync_token) final {}
-
- private:
-  gpu::SyncToken sync_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticSyncTokenClient);
-};
-
-}  // namespace
 
 class PictureBufferManagerImplTest : public testing::Test {
  public:
@@ -88,7 +66,7 @@ class PictureBufferManagerImplTest : public testing::Test {
     gpu::SyncToken sync_token(gpu::GPU_IO,
                               gpu::CommandBufferId::FromUnsafeValue(1),
                               next_release_count_++);
-    StaticSyncTokenClient sync_token_client(sync_token);
+    SimpleSyncTokenClient sync_token_client(sync_token);
     video_frame->UpdateReleaseSyncToken(&sync_token_client);
     return sync_token;
   }

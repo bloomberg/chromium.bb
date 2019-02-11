@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/simple_sync_token_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 
@@ -467,24 +468,6 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
   EXPECT_FALSE(called_sync_token.HasData());
 }
 
-namespace {
-
-class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
- public:
-  explicit SyncTokenClientImpl(const gpu::SyncToken& sync_token)
-      : sync_token_(sync_token) {}
-  ~SyncTokenClientImpl() override = default;
-  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    *sync_token = sync_token_;
-  }
-  void WaitSyncToken(const gpu::SyncToken& sync_token) override {}
-
- private:
-  gpu::SyncToken sync_token_;
-};
-
-}  // namespace
-
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
 // destroyed with the release sync point, which was updated by clients.
 // (i.e. the compositor, webgl).
@@ -532,7 +515,7 @@ TEST(VideoFrame,
       EXPECT_EQ(sync_token, mailbox_holder.sync_token);
     }
 
-    SyncTokenClientImpl client(release_sync_token);
+    SimpleSyncTokenClient client(release_sync_token);
     frame->UpdateReleaseSyncToken(&client);
     EXPECT_EQ(sync_token,
               frame->mailbox_holder(VideoFrame::kYPlane).sync_token);

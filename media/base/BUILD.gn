@@ -235,6 +235,8 @@ jumbo_source_set("base") {
     "serial_runner.h",
     "silent_sink_suspender.cc",
     "silent_sink_suspender.h",
+    "simple_sync_token_client.cc",
+    "simple_sync_token_client.h",
     "sinc_resampler.cc",
     "sinc_resampler.h",
     "stream_parser.cc",
