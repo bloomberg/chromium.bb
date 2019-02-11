@@ -59,8 +59,8 @@ class WebAppProvider : public KeyedService,
 
   // Create subsystems but do not start them (yet).
   void Init();
-  // Start all subsystems.
-  void Start();
+  // Start registry. All subsystems depend on it.
+  void StartRegistry();
 
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.

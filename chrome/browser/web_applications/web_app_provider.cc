@@ -73,7 +73,7 @@ void WebAppProvider::Init() {
     CreateBookmarkAppsSubsystems(profile_);
 }
 
-void WebAppProvider::Start() {
+void WebAppProvider::StartRegistry() {
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
 
@@ -81,14 +81,6 @@ void WebAppProvider::Start() {
     registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
                                     weak_ptr_factory_.GetWeakPtr()));
   } else {
-    web_app_policy_manager_->Start();
-    system_web_app_manager_->Start();
-
-    // Start ExternalWebApps subsystem:
-    ScanForExternalWebApps(
-        profile_, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
-                                 weak_ptr_factory_.GetWeakPtr()));
-
     extensions::ExtensionSystem::Get(profile_)->ready().Post(
         FROM_HERE, base::BindRepeating(&WebAppProvider::OnRegistryReady,
                                        weak_ptr_factory_.GetWeakPtr()));
@@ -124,6 +116,16 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 void WebAppProvider::OnRegistryReady() {
   DCHECK(!registry_is_ready_);
   registry_is_ready_ = true;
+
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    web_app_policy_manager_->Start();
+    system_web_app_manager_->Start();
+
+    // Start ExternalWebApps subsystem:
+    ScanForExternalWebApps(
+        profile_, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
+                                 weak_ptr_factory_.GetWeakPtr()));
+  }
 
   if (registry_ready_callback_)
     std::move(registry_ready_callback_).Run();

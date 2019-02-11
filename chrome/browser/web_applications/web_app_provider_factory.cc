@@ -40,7 +40,7 @@ KeyedService* WebAppProviderFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   WebAppProvider* provider = new WebAppProvider(profile);
   provider->Init();
-  provider->Start();
+  provider->StartRegistry();
   return provider;
 }
 

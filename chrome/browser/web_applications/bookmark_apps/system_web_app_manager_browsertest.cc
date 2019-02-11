@@ -154,8 +154,8 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   system_apps.emplace_back(GURL("chrome://test-system-app/pwa.html"));
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
-  // Start all subsystems:
-  provider->Start();
+  // Start registry and all dependent subsystems:
+  provider->StartRegistry();
 
   return provider;
 }

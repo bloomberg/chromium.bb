@@ -5878,59 +5878,73 @@ TEST_F(ExtensionServiceTestSimple, Enabledness) {
 
   LoadErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
-  std::unique_ptr<TestingProfile> profile(new TestingProfile());
+
   std::unique_ptr<base::CommandLine> command_line;
-  base::FilePath install_dir =
-      profile->GetPath().AppendASCII(kInstallDirectoryName);
 
-  // By default, we are enabled.
-  command_line.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
-  ExtensionService* service =
-      static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
-          ->CreateExtensionService(command_line.get(), install_dir, false);
-  EXPECT_TRUE(service->extensions_enabled());
-  service->Init();
-  content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(recorder.ready());
+  // The profile lifetimes must not overlap: services may use global variables.
+  {
+    auto profile = std::make_unique<TestingProfile>();
+    base::FilePath install_dir =
+        profile->GetPath().AppendASCII(kInstallDirectoryName);
 
-  // If either the command line or pref is set, we are disabled.
-  recorder.set_ready(false);
-  profile.reset(new TestingProfile());
-  command_line->AppendSwitch(::switches::kDisableExtensions);
-  service =
-      static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
-          ->CreateExtensionService(command_line.get(), install_dir, false);
-  EXPECT_FALSE(service->extensions_enabled());
-  service->Init();
-  content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(recorder.ready());
+    // By default, we are enabled.
+    command_line.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+    ExtensionService* service =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
+            ->CreateExtensionService(command_line.get(), install_dir, false);
+    EXPECT_TRUE(service->extensions_enabled());
+    service->Init();
+    content::RunAllTasksUntilIdle();
+    EXPECT_TRUE(recorder.ready());
+  }
 
-  recorder.set_ready(false);
-  profile.reset(new TestingProfile());
-  profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service =
-      static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
-          ->CreateExtensionService(command_line.get(), install_dir, false);
-  EXPECT_FALSE(service->extensions_enabled());
-  service->Init();
-  content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(recorder.ready());
+  {
+    // If either the command line or pref is set, we are disabled.
+    recorder.set_ready(false);
+    auto profile = std::make_unique<TestingProfile>();
+    base::FilePath install_dir =
+        profile->GetPath().AppendASCII(kInstallDirectoryName);
+    command_line->AppendSwitch(::switches::kDisableExtensions);
+    ExtensionService* service =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
+            ->CreateExtensionService(command_line.get(), install_dir, false);
+    EXPECT_FALSE(service->extensions_enabled());
+    service->Init();
+    content::RunAllTasksUntilIdle();
+    EXPECT_TRUE(recorder.ready());
+  }
 
-  recorder.set_ready(false);
-  profile.reset(new TestingProfile());
-  profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  command_line.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
-  service =
-      static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
-          ->CreateExtensionService(command_line.get(), install_dir, false);
-  EXPECT_FALSE(service->extensions_enabled());
-  service->Init();
-  content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(recorder.ready());
+  {
+    recorder.set_ready(false);
+    auto profile = std::make_unique<TestingProfile>();
+    base::FilePath install_dir =
+        profile->GetPath().AppendASCII(kInstallDirectoryName);
+    profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
+    ExtensionService* service =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
+            ->CreateExtensionService(command_line.get(), install_dir, false);
+    EXPECT_FALSE(service->extensions_enabled());
+    service->Init();
+    content::RunAllTasksUntilIdle();
+    EXPECT_TRUE(recorder.ready());
+  }
 
-  // Explicitly delete all the resources used in this test.
-  profile.reset();
-  service = NULL;
+  {
+    recorder.set_ready(false);
+    auto profile = std::make_unique<TestingProfile>();
+    base::FilePath install_dir =
+        profile->GetPath().AppendASCII(kInstallDirectoryName);
+    profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
+    command_line.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
+    ExtensionService* service =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile.get()))
+            ->CreateExtensionService(command_line.get(), install_dir, false);
+    EXPECT_FALSE(service->extensions_enabled());
+    service->Init();
+    content::RunAllTasksUntilIdle();
+    EXPECT_TRUE(recorder.ready());
+  }
+
   // Execute any pending deletion tasks.
   content::RunAllTasksUntilIdle();
 }
