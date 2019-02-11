@@ -76,6 +76,9 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     AccessibilityManager::SetBrailleControllerForTest(nullptr);
+    // Unload the ChromeVox extension so the browser doesn't try to respond to
+    // in-flight requests during test shutdown. https://crbug.com/923090
+    AccessibilityManager::Get()->EnableSpokenFeedback(false);
     AutomationManagerAura::GetInstance()->Disable();
   }
 
@@ -247,15 +250,8 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
   EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
 }
 
-#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
-// Flaky in debug & asan: http://crbug.com/923090
-#define MAYBE_KeyboardShortcutViewer DISABLED_KeyboardShortcutViewer
-#else
-#define MAYBE_KeyboardShortcutViewer KeyboardShortcutViewer
-#endif
 // Tests the keyboard shortcut viewer, which is an out-of-process mojo app.
-IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
-                       MAYBE_KeyboardShortcutViewer) {
+IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, KeyboardShortcutViewer) {
   EnableChromeVox();
   keyboard_shortcut_viewer_util::ToggleKeyboardShortcutViewer();
 
