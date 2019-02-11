@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SELECTOR_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SELECTOR_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,10 @@ struct Selector {
 
   bool operator<(const Selector& other) const;
   bool operator==(const Selector& other) const;
+
+  // The output operator. The actual selectors are only available in debug
+  // builds.
+  friend std::ostream& operator<<(std::ostream& out, const Selector& selector);
 
   // Checks whether this selector is empty.
   bool empty() const;

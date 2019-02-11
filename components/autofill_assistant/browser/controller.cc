@@ -196,7 +196,7 @@ void Controller::EnterState(AutofillAssistantState state) {
     return;
 
   DCHECK_NE(state_, AutofillAssistantState::STOPPED)
-      << "Unexpected transition from STOPPED to " << static_cast<int>(state);
+      << "Unexpected transition from " << state_ << " to " << state;
 
   state_ = state;
   GetUiController()->OnStateChanged(state);
@@ -540,8 +540,8 @@ void Controller::GetTouchableArea(std::vector<RectF>* area) const {
 void Controller::OnFatalError(const std::string& error_message,
                               Metrics::DropOutReason reason) {
   LOG(ERROR) << "Autofill Assistant has encountered an error and is shutting "
-                "down. Reason: "
-             << static_cast<int>(reason);
+                "down, reason="
+             << reason;
   if (state_ == AutofillAssistantState::STOPPED)
     return;
 
