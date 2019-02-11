@@ -385,6 +385,9 @@ extern const char kDesktopPWAsCustomTabUIDescription[];
 extern const char kDesktopPWAsStayInWindowName[];
 extern const char kDesktopPWAsStayInWindowDescription[];
 
+extern const char kDesktopPWAsOmniboxInstallName[];
+extern const char kDesktopPWAsOmniboxInstallDescription[];
+
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];
 

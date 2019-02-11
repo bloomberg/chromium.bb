@@ -590,6 +590,12 @@ const char kDesktopPWAsStayInWindowDescription[] =
     "Links to sites in a different scope will open inside the PWA window as "
     "opposed to in the browser.";
 
+const char kDesktopPWAsOmniboxInstallName[] =
+    "Desktop PWAs installable from the omnibox";
+const char kDesktopPWAsOmniboxInstallDescription[] =
+    "When on a site that passes PWA installation requirements show a button in "
+    "the omnibox for installing it.";
+
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"

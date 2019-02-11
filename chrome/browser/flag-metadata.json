@@ -1086,6 +1086,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-desktop-pwas-omnibox-install",
+    "owners": [ "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-devtools-experiments",
     "owners": [ "//third_party/blink/renderer/devtools/OWNERS" ],
     // This is a catch-all for ongoing devtools experiments.
