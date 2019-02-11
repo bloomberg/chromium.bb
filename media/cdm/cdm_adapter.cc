@@ -766,6 +766,9 @@ void CdmAdapter::OnSessionMessage(const char* session_id,
   DVLOG(2) << __func__ << ": session_id = " << session_id_str;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  TRACE_EVENT2("media", "CdmAdapter::OnSessionMessage", "session_id",
+               session_id_str, "message_type", message_type);
+
   const uint8_t* message_ptr = reinterpret_cast<const uint8_t*>(message);
   session_message_cb_.Run(
       session_id_str, ToMediaMessageType(message_type),
@@ -780,6 +783,10 @@ void CdmAdapter::OnSessionKeysChange(const char* session_id,
   std::string session_id_str(session_id, session_id_size);
   DVLOG(2) << __func__ << ": session_id = " << session_id_str;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  TRACE_EVENT2("media", "CdmAdapter::OnSessionKeysChange", "session_id",
+               session_id_str, "has_additional_usable_key",
+               has_additional_usable_key);
 
   CdmKeysInfo keys;
   keys.reserve(keys_info_count);
@@ -811,15 +818,20 @@ void CdmAdapter::OnExpirationChange(const char* session_id,
            << ", new_expiry_time = " << new_expiry_time;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  session_expiration_update_cb_.Run(session_id_str,
-                                    base::Time::FromDoubleT(new_expiry_time));
+  base::Time expiration = base::Time::FromDoubleT(new_expiry_time);
+  TRACE_EVENT2("media", "CdmAdapter::OnExpirationChange", "session_id",
+               session_id_str, "new_expiry_time", expiration);
+  session_expiration_update_cb_.Run(session_id_str, expiration);
 }
 
 void CdmAdapter::OnSessionClosed(const char* session_id,
                                  uint32_t session_id_size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  session_closed_cb_.Run(std::string(session_id, session_id_size));
+  std::string session_id_str(session_id, session_id_size);
+  TRACE_EVENT1("media", "CdmAdapter::OnSessionClosed", "session_id",
+               session_id_str);
+  session_closed_cb_.Run(session_id_str);
 }
 
 void CdmAdapter::SendPlatformChallenge(const char* service_id,
