@@ -42,10 +42,10 @@
 #endif
 
 using content::BrowserThread;
+using testing::_;
 using testing::AnyNumber;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
-using testing::_;
 
 namespace em = enterprise_management;
 
@@ -164,9 +164,6 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
     test_url_loader_factory_ =
         std::make_unique<network::TestURLLoaderFactory>();
-    test_shared_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            test_url_loader_factory_.get());
 
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
@@ -174,7 +171,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
 #if defined(OS_CHROMEOS)
     policy_manager()->core()->client()->SetURLLoaderFactoryForTesting(
-        test_shared_loader_factory_);
+        test_url_loader_factory_->GetSafeWeakWrapper());
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
     // the username to the UserCloudPolicyValidator.
@@ -183,18 +180,15 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
     identity::SetPrimaryAccount(identity_manager, "user@example.com");
 
     ASSERT_TRUE(policy_manager());
-    policy_manager()->Connect(g_browser_process->local_state(),
-                              UserCloudPolicyManager::CreateCloudPolicyClient(
-                                  connector->device_management_service(),
-                                  test_shared_loader_factory_));
+    policy_manager()->Connect(
+        g_browser_process->local_state(),
+        UserCloudPolicyManager::CreateCloudPolicyClient(
+            connector->device_management_service(),
+            test_url_loader_factory_->GetSafeWeakWrapper()));
 #endif
   }
 
   void TearDownOnMainThread() override {
-    // Need to detach since |test_url_loader_factory_| will go away after this
-    // destructor, but other code might be referencing
-    // |test_shared_loader_factory_|.
-    test_shared_loader_factory_->Detach();
     // Verify that all the expected requests were handled.
     EXPECT_EQ(0, test_url_loader_factory_->NumPending());
   }
@@ -247,24 +241,21 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
 };
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, Register) {
-  // Accept one register request. The initial request should not include the
-  // reregister flag.
-  em::DeviceRegisterRequest::Type expected_type =
-#if defined(OS_CHROMEOS)
-      em::DeviceRegisterRequest::USER;
-#else
-      em::DeviceRegisterRequest::BROWSER;
-#endif
-  const bool expect_reregister = false;
   test_url_loader_factory_->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        RespondToRegisterWithSuccess(expected_type, expect_reregister, request,
-                                     test_url_loader_factory_.get());
+        // Accept one register request. The initial request should not include
+        // the reregister flag.
+        em::DeviceRegisterRequest::Type expected_type =
+#if defined(OS_CHROMEOS)
+            em::DeviceRegisterRequest::USER;
+#else
+            em::DeviceRegisterRequest::BROWSER;
+#endif
+        RespondToRegisterWithSuccess(expected_type, /*expect_reregister=*/false,
+                                     request, test_url_loader_factory_.get());
       }));
 
   EXPECT_FALSE(policy_manager()->core()->client()->is_registered());
@@ -305,19 +296,18 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterFailsWithRetries) {
 }
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterWithRetry) {
-  em::DeviceRegisterRequest::Type expected_type =
-#if defined(OS_CHROMEOS)
-      em::DeviceRegisterRequest::USER;
-#else
-      em::DeviceRegisterRequest::BROWSER;
-#endif
-  const bool expect_reregister = true;
-
-  // Accept one register request after failing once. The retry request should
-  // set the reregister flag.
-  bool gave_error = false;
   test_url_loader_factory_->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        em::DeviceRegisterRequest::Type expected_type =
+#if defined(OS_CHROMEOS)
+            em::DeviceRegisterRequest::USER;
+#else
+            em::DeviceRegisterRequest::BROWSER;
+#endif
+
+        // Accept one register request after failing once. The retry request
+        // should set the reregister flag.
+        static bool gave_error = false;
         if (!gave_error) {
           gave_error = true;
           network::URLLoaderCompletionStatus status(net::ERR_NETWORK_CHANGED);
@@ -327,8 +317,8 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterWithRetry) {
           return;
         }
 
-        RespondToRegisterWithSuccess(expected_type, expect_reregister, request,
-                                     test_url_loader_factory_.get());
+        RespondToRegisterWithSuccess(expected_type, /*expect_reregister=*/true,
+                                     request, test_url_loader_factory_.get());
       }));
 
   EXPECT_FALSE(policy_manager()->core()->client()->is_registered());
