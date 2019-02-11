@@ -13,9 +13,9 @@ static int ignore1(void* addr,
                    uint8_t tos,
                    uint8_t set_df) {
   return 0;
-};
+}
 
-static void ignore2(const char* format, ...) {};
+static void ignore2(const char* format, ...) {}
 
 struct Environment {
   Environment() {
