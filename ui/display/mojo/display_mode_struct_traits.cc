@@ -19,6 +19,6 @@ bool StructTraits<display::mojom::DisplayModeDataView,
   *out = std::make_unique<display::DisplayMode>(size, data.is_interlaced(),
                                                 data.refresh_rate());
   return true;
-};
+}
 
 }  // namespace mojo
