@@ -402,9 +402,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/context/' +
         'context-attribute-preserve-drawing-buffer.html',
         ['win', 'passthrough', 'vulkan'], bug=2913) # ANGLE bug ID
-    self.Fail('conformance/glsl/misc/' +
-        'shader-with-short-circuiting-operators.html',
-        ['win', 'passthrough', 'vulkan'], bug=2909) # ANGLE bug ID
     self.Fail('conformance/misc/uninitialized-test.html',
         ['win', 'passthrough', 'vulkan'], bug=2987) # ANGLE bug ID
     self.Fail('conformance/more/functions/copyTexSubImage2D.html',
