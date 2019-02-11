@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
+#include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -226,29 +227,10 @@ void ExtensionApps::Uninstall(const std::string& app_id) {
     return;
   }
 
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          app_id);
-
-  if (!extension) {
-    return;
-  }
-
-  // TODO(crbug.com/826982): The UninstallReason should eventually be passed
-  // through from the subscriber. This might involve generalising uninstall
-  // reason into an App Service concept.
-  base::string16 error;
-  bool uninstalled =
-      extensions::ExtensionSystem::Get(profile_)
-          ->extension_service()
-          ->UninstallExtension(
-              app_id,
-              extensions::UninstallReason::UNINSTALL_REASON_USER_INITIATED,
-              &error);
-
-  if (!uninstalled) {
-    LOG(ERROR) << "Couldn't uninstall app with id " << app_id << ". " << error;
-  }
+  // ExtensionUninstaller deletes itself when done or aborted.
+  ExtensionUninstaller* uninstaller =
+      new ExtensionUninstaller(profile_, app_id);
+  uninstaller->Run();
 }
 
 void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
