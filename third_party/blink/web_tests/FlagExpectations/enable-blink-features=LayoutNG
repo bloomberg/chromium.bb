@@ -267,7 +267,6 @@ crbug.com/591099 external/wpt/html/browsers/the-window-object/window-open-noopen
 crbug.com/591099 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_top [ Pass ]
 crbug.com/591099 external/wpt/html/dom/interfaces.worker.html [ Pass ]
 crbug.com/591099 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Pass ]
-crbug.com/591099 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.tentative.html [ Pass Timeout ]
 crbug.com/845902 external/wpt/quirks/line-height-trailing-collapsable-whitespace.html [ Pass ]
 crbug.com/591099 external/wpt/wasm/jsapi/constructor/instantiate.any.html [ Failure ]
 crbug.com/591099 external/wpt/wasm/jsapi/constructor/instantiate.any.worker.html [ Failure ]
