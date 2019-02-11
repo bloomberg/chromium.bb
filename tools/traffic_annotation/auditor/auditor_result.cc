@@ -34,7 +34,7 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::ERROR_INVALID_OS);
   if (!message.empty())
     details_.push_back(message);
-};
+}
 
 AuditorResult::AuditorResult(Type type, const std::string& message)
     : AuditorResult::AuditorResult(type,
@@ -49,7 +49,6 @@ AuditorResult::AuditorResult(Type type)
                                    kNoCodeLineSpecified) {}
 
 AuditorResult::AuditorResult(const AuditorResult& other) = default;
-;
 
 AuditorResult::~AuditorResult() = default;
 

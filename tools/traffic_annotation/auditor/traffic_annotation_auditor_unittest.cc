@@ -88,7 +88,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
   }
 
   const base::FilePath source_path() const { return source_path_; }
-  const base::FilePath tests_folder() const { return tests_folder_; };
+  const base::FilePath tests_folder() const { return tests_folder_; }
   TrafficAnnotationAuditor& auditor() { return *auditor_; }
   TrafficAnnotationIDChecker& id_checker() { return *id_checker_; }
   std::vector<AuditorResult>* errors() { return &errors_; }
