@@ -230,7 +230,7 @@ if (is_android || is_chromeos) {
     check_android_configuration = false
 
     # Enables instantiation of 64-bit browser targets.
-    enable_64_bit_browser = false
+    enable_64_bit_browser = true
   }
 
   assert(!(check_android_configuration && is_java_debug),

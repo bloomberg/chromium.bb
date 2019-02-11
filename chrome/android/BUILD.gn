@@ -1936,7 +1936,11 @@ template("monochrome_public_bundle_tmpl") {
       base_module_target = ":$_base_module_target_name"
       version_code = monochrome_version_code
       version_name = chrome_version_name
-      forward_variables_from(invoker, [ "is_64_bit_browser" ])
+      forward_variables_from(invoker,
+                             [
+                               "is_64_bit_browser",
+                               "include_32_bit_webview",
+                             ])
     }
   }
 
