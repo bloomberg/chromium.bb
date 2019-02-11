@@ -59,7 +59,7 @@ class WakeEventPage::WakeEventPageNativeHandler
         kWakeEventPageFunctionName,
         base::BindRepeating(&WakeEventPageNativeHandler::DoWakeEventPage,
                             base::Unretained(this)));
-  };
+  }
 
   ~WakeEventPageNativeHandler() override {}
 
