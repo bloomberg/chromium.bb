@@ -725,7 +725,7 @@ TEST_F(WorkspaceControllerTest, AutoPlacingMovesTransientChild) {
 
   // |window1| should be horizontally centered.
   int x_window1 = (desktop_area.width() - 300) / 2;
-  EXPECT_EQ(base::IntToString(x_window1) + ",32 300x300",
+  EXPECT_EQ(base::NumberToString(x_window1) + ",32 300x300",
             window1->bounds().ToString());
 
   // Create a |child| window and make it a transient child of |window1|.
@@ -738,7 +738,7 @@ TEST_F(WorkspaceControllerTest, AutoPlacingMovesTransientChild) {
   wm::ActivateWindow(child.get());
 
   // The |child| should be where it was created.
-  EXPECT_EQ(base::IntToString(x_child) + ",20 200x200",
+  EXPECT_EQ(base::NumberToString(x_child) + ",20 200x200",
             child->bounds().ToString());
 
   // Create and show a second window forcing the first window and its child to
@@ -753,10 +753,12 @@ TEST_F(WorkspaceControllerTest, AutoPlacingMovesTransientChild) {
   // Check that both |window1| and |child| have moved left.
   EXPECT_EQ("0,32 300x300", window1->bounds().ToString());
   int x = x_child - x_window1;
-  EXPECT_EQ(base::IntToString(x) + ",20 200x200", child->bounds().ToString());
+  EXPECT_EQ(base::NumberToString(x) + ",20 200x200",
+            child->bounds().ToString());
   // Check that |window2| has moved right.
   x = desktop_area.width() - window2->bounds().width();
-  EXPECT_EQ(base::IntToString(x) + ",48 250x250", window2->bounds().ToString());
+  EXPECT_EQ(base::NumberToString(x) + ",48 250x250",
+            window2->bounds().ToString());
 }
 
 // Test the basic auto placement of one and or two windows in a "simulated
@@ -798,13 +800,13 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   // |window1| should be flush left and |window3| flush right.
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window3->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window3->bounds().width()) +
           ",48 256x512",
       window3->bounds().ToString());
 
   // After removing |window3|, |window1| should be centered again.
   window3.reset();
-  EXPECT_EQ(base::IntToString(
+  EXPECT_EQ(base::NumberToString(
                 (desktop_area.width() - window1->bounds().width()) / 2) +
                 ",32 640x320",
             window1->bounds().ToString());
@@ -819,7 +821,7 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   window4->SetBounds(gfx::Rect(32, 48, 256, 512));
   window1->Show();
   // |window1| should be centered and |window4| untouched.
-  EXPECT_EQ(base::IntToString(
+  EXPECT_EQ(base::NumberToString(
                 (desktop_area.width() - window1->bounds().width()) / 2) +
                 ",32 640x320",
             window1->bounds().ToString());
@@ -832,7 +834,7 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
   window1->Hide();
   window1->Show();
   // |window1| should be centered.
-  EXPECT_EQ(base::IntToString(
+  EXPECT_EQ(base::NumberToString(
                 (desktop_area.width() - window1->bounds().width()) / 2) +
                 ",32 640x320",
             window1->bounds().ToString());
@@ -871,7 +873,7 @@ TEST_F(WorkspaceControllerTest, TestUserMovedWindowRepositioning) {
   // |window1| should be flush left and |window2| flush right.
   EXPECT_EQ("0,32 640x320", window1->bounds().ToString());
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window2->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window2->bounds().width()) +
           ",48 256x512",
       window2->bounds().ToString());
   // FLag should now be reset.
@@ -956,10 +958,10 @@ TEST_F(WorkspaceControllerTest, TestUserHandledWindowRestore) {
   window2->Show();
 
   // |window1| should be flush left and |window2| flush right.
-  EXPECT_EQ("0," + base::IntToString(user_pos.y()) + " 640x320",
+  EXPECT_EQ("0," + base::NumberToString(user_pos.y()) + " 640x320",
             window1->bounds().ToString());
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window2->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window2->bounds().width()) +
           ",48 256x512",
       window2->bounds().ToString());
   window2->Hide();
@@ -1039,7 +1041,7 @@ TEST_F(WorkspaceControllerTest, ToMinimizeRepositionsRemaining) {
   // |window2| should be centered now.
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window2_state->IsNormalStateType());
-  EXPECT_EQ(base::IntToString(
+  EXPECT_EQ(base::NumberToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
                 ",48 256x512",
             window2->bounds().ToString());
@@ -1047,7 +1049,7 @@ TEST_F(WorkspaceControllerTest, ToMinimizeRepositionsRemaining) {
   window1_state->Restore();
   // |window1| should be flush right and |window3| flush left.
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window1->bounds().width()) +
           ",32 640x320",
       window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());
@@ -1071,7 +1073,7 @@ TEST_F(WorkspaceControllerTest, MaxToMinRepositionsRemaining) {
   // |window2| should be centered now.
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window2_state->IsNormalStateType());
-  EXPECT_EQ(base::IntToString(
+  EXPECT_EQ(base::NumberToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
                 ",48 256x512",
             window2->bounds().ToString());
@@ -1096,7 +1098,7 @@ TEST_F(WorkspaceControllerTest, NormToMaxToMinRepositionsRemaining) {
 
   // |window1| should be flush right and |window3| flush left.
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window1->bounds().width()) +
           ",32 640x320",
       window1->bounds().ToString());
   EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
@@ -1107,7 +1109,7 @@ TEST_F(WorkspaceControllerTest, NormToMaxToMinRepositionsRemaining) {
   // |window2| should be centered now.
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window2_state->IsNormalStateType());
-  EXPECT_EQ(base::IntToString(
+  EXPECT_EQ(base::NumberToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
                 ",40 256x512",
             window2->bounds().ToString());
@@ -1131,7 +1133,7 @@ TEST_F(WorkspaceControllerTest, NormToMaxToNormRepositionsRemaining) {
 
   // |window1| should be flush right and |window3| flush left.
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window1->bounds().width()) +
           ",32 640x320",
       window1->bounds().ToString());
   EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
@@ -1141,7 +1143,7 @@ TEST_F(WorkspaceControllerTest, NormToMaxToNormRepositionsRemaining) {
 
   // |window1| should be flush right and |window2| flush left.
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window1->bounds().width()) +
           ",32 640x320",
       window1->bounds().ToString());
   EXPECT_EQ("0,40 256x512", window2->bounds().ToString());
@@ -1179,7 +1181,7 @@ TEST_F(WorkspaceControllerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
   window2->layer()->GetAnimator()->StopAnimating();
   // |window1| should be flush right and |window2| flush left.
   EXPECT_EQ(
-      base::IntToString(desktop_area.width() - window1->bounds().width()) +
+      base::NumberToString(desktop_area.width() - window1->bounds().width()) +
           ",32 640x320",
       window1->bounds().ToString());
   EXPECT_EQ("0,48 256x512", window2->bounds().ToString());

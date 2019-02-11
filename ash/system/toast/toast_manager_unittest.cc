@@ -84,7 +84,7 @@ class ToastManagerTest : public AshTestBase {
   std::string ShowToast(const std::string& text,
                         int32_t duration,
                         bool visible_on_lock_screen = false) {
-    std::string id = "TOAST_ID_" + base::UintToString(serial_++);
+    std::string id = "TOAST_ID_" + base::NumberToString(serial_++);
     manager()->Show(ToastData(id, base::ASCIIToUTF16(text), duration,
                               base::string16(), visible_on_lock_screen));
     return id;
@@ -98,7 +98,7 @@ class ToastManagerTest : public AshTestBase {
     if (dismiss_text.has_value())
       localized_dismiss = base::ASCIIToUTF16(dismiss_text.value());
 
-    std::string id = "TOAST_ID_" + base::UintToString(serial_++);
+    std::string id = "TOAST_ID_" + base::NumberToString(serial_++);
     manager()->Show(
         ToastData(id, base::ASCIIToUTF16(text), duration, localized_dismiss));
     return id;

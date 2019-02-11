@@ -279,7 +279,7 @@ class ShelfViewTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
-  std::string GetNextAppId() { return base::IntToString(id_); }
+  std::string GetNextAppId() { return base::NumberToString(id_); }
 
  protected:
   // Add shelf items of various types, and optionally wait for animations.
@@ -289,7 +289,7 @@ class ShelfViewTest : public AshTestBase {
     if (type == TYPE_APP)
       item.status = STATUS_RUNNING;
 
-    item.id = ShelfID(base::IntToString(id_++));
+    item.id = ShelfID(base::NumberToString(id_++));
     model_->Add(item);
     // Set a delegate; some tests require one to select the item.
     model_->SetShelfItemDelegate(item.id,

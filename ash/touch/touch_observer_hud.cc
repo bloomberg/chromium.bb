@@ -409,7 +409,7 @@ std::unique_ptr<base::DictionaryValue> TouchObserverHUD::GetAllAsDictionary() {
     if (hud) {
       std::unique_ptr<base::ListValue> list = hud->GetLogAsList();
       if (!list->empty())
-        value->Set(base::Int64ToString(hud->display_id_), std::move(list));
+        value->Set(base::NumberToString(hud->display_id_), std::move(list));
     }
   }
   return value;

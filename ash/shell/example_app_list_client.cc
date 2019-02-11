@@ -196,7 +196,7 @@ ExampleAppListClient::~ExampleAppListClient() = default;
 void ExampleAppListClient::PopulateApps() {
   for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {
     WindowTypeShelfItem::Type type = static_cast<WindowTypeShelfItem::Type>(i);
-    const std::string id = base::IntToString(i);
+    const std::string id = base::NumberToString(i);
     auto app = std::make_unique<WindowTypeShelfItem>(id, type);
     controller_->AddItem(app->CloneMetadata());
     apps_.emplace_back(std::move(app));

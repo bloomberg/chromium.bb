@@ -90,7 +90,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   ShelfItem item;
   item.type = TYPE_APP;
   static int shelf_id = 0;
-  item.id = ShelfID(base::IntToString(shelf_id++));
+  item.id = ShelfID(base::NumberToString(shelf_id++));
   id_to_window_[item.id] = new_window;
 
   SkBitmap icon_bitmap;
@@ -98,7 +98,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   constexpr SkColor colors[] = {SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE};
   icon_bitmap.eraseColor(colors[shelf_id % 3]);
   item.image = gfx::ImageSkia(gfx::ImageSkiaRep(icon_bitmap, 1.0f));
-  item.title = base::IntToString16(shelf_id);
+  item.title = base::NumberToString16(shelf_id);
   model->Add(item);
 
   model->SetShelfItemDelegate(

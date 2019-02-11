@@ -384,7 +384,7 @@ base::string16 PowerStatus::GetAccessibleNameString(
       IsBatteryCharging()
           ? IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE
           : IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ACCESSIBLE,
-      base::IntToString16(GetRoundedBatteryPercent()));
+      base::NumberToString16(GetRoundedBatteryPercent()));
   if (!full_description)
     return battery_percentage_accessible;
 
@@ -403,8 +403,8 @@ base::string16 PowerStatus::GetAccessibleNameString(
     int hour = 0, min = 0;
     power_utils::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
     base::string16 minute =
-        min < 10 ? base::ASCIIToUTF16("0") + base::IntToString16(min)
-                 : base::IntToString16(min);
+        min < 10 ? base::ASCIIToUTF16("0") + base::NumberToString16(min)
+                 : base::NumberToString16(min);
     battery_time_accessible = l10n_util::GetStringFUTF16(
         IsBatteryCharging()
             ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_ACCESSIBLE
