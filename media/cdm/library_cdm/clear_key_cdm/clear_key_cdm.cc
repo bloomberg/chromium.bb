@@ -945,7 +945,7 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
   }
 #endif
   OnUnitTestComplete(true);
-};
+}
 
 void ClearKeyCdm::OnStorageId(uint32_t version,
                               const uint8_t* storage_id,
