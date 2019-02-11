@@ -562,8 +562,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     self.debug = debug
     self.payload_test_configs = payload_test_configs
     assert test_env in [constants.ENV_SKYLAB, constants.ENV_AUTOTEST]
-    # TODO (xixuan): A temporary hack before crbug.com/920393 is fixed.
-    self.test_env = constants.ENV_AUTOTEST
+    self.test_env = test_env
     # We don't need the '-channel'suffix.
     if channel.endswith('-channel'):
       channel = channel[0:-len('-channel')]
