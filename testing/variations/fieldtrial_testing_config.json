@@ -5301,9 +5301,6 @@
     "VizDisplayCompositor": [
         {
             "platforms": [
-                "windows",
-                "linux",
-                "mac",
                 "android"
             ],
             "experiments": [
