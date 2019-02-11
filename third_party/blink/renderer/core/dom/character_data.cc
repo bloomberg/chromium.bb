@@ -33,11 +33,23 @@
 #include "third_party/blink/renderer/core/events/mutation_event.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 
 namespace blink {
 
-void CharacterData::Atomize() {
-  data_ = AtomicString(data_);
+void CharacterData::MakeParkableOrAtomize() {
+  if (is_parkable_)
+    return;
+
+  // ParkableStrings have some overhead, don't pay it if we're not going to
+  // park a string at all.
+  if (ParkableStringManager::ShouldPark(*data_.Impl())) {
+    parkable_data_ = ParkableString(data_.ReleaseImpl());
+    data_ = String();
+    is_parkable_ = true;
+  } else {
+    data_ = AtomicString(data_);
+  }
 }
 
 void CharacterData::setData(const String& data) {
@@ -59,20 +71,20 @@ String CharacterData::substringData(unsigned offset,
     return String();
   }
 
-  return data_.Substring(offset, count);
+  return data().Substring(offset, count);
 }
 
 void CharacterData::ParserAppendData(const String& data) {
-  String new_str = data_ + data;
+  String new_str = this->data() + data;
 
-  SetDataAndUpdate(new_str, data_.length(), 0, data.length(),
+  SetDataAndUpdate(new_str, this->data().length(), 0, data.length(),
                    kUpdateFromParser);
 }
 
 void CharacterData::appendData(const String& data) {
-  String new_str = data_ + data;
+  String new_str = this->data() + data;
 
-  SetDataAndUpdate(new_str, data_.length(), 0, data.length(),
+  SetDataAndUpdate(new_str, this->data().length(), 0, data.length(),
                    kUpdateFromNonParser);
 
   // FIXME: Should we call textInserted here?
@@ -90,7 +102,7 @@ void CharacterData::insertData(unsigned offset,
     return;
   }
 
-  String new_str = data_;
+  String new_str = this->data();
   new_str.insert(data, offset);
 
   SetDataAndUpdate(new_str, offset, 0, data.length(), kUpdateFromNonParser);
@@ -131,7 +143,7 @@ void CharacterData::deleteData(unsigned offset,
                            exception_state))
     return;
 
-  String new_str = data_;
+  String new_str = data();
   new_str.Remove(offset, real_count);
 
   SetDataAndUpdate(new_str, offset, real_count, 0, kUpdateFromNonParser);
@@ -148,7 +160,7 @@ void CharacterData::replaceData(unsigned offset,
                            exception_state))
     return;
 
-  String new_str = data_;
+  String new_str = this->data();
   new_str.Remove(offset, real_count);
   new_str.insert(data, offset);
 
@@ -161,11 +173,11 @@ void CharacterData::replaceData(unsigned offset,
 }
 
 String CharacterData::nodeValue() const {
-  return data_;
+  return data();
 }
 
 bool CharacterData::ContainsOnlyWhitespaceOrEmpty() const {
-  return data_.ContainsOnlyWhitespaceOrEmpty();
+  return data().ContainsOnlyWhitespaceOrEmpty();
 }
 
 void CharacterData::setNodeValue(const String& node_value) {
@@ -177,7 +189,11 @@ void CharacterData::SetDataAndUpdate(const String& new_data,
                                      unsigned old_length,
                                      unsigned new_length,
                                      UpdateSource source) {
-  String old_data = data_;
+  String old_data = this->data();
+  if (is_parkable_) {
+    is_parkable_ = false;
+    parkable_data_ = ParkableString();
+  }
   data_ = new_data;
 
   DCHECK(!GetLayoutObject() || IsTextNode());
@@ -217,7 +233,7 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
             Document::kDOMCharacterDataModifiedListener)) {
       DispatchScopedEvent(*MutationEvent::Create(
           event_type_names::kDOMCharacterDataModified, Event::Bubbles::kYes,
-          nullptr, old_data, data_));
+          nullptr, old_data, data()));
     }
     DispatchSubtreeModifiedEvent();
   }

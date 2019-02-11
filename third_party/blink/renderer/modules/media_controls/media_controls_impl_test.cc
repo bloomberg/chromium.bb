@@ -309,7 +309,7 @@ class MediaControlsImplTest : public PageTestBase,
 
   virtual bool EnableDownloadInProductHelp() { return false; }
 
-  const String& GetDisplayedTime(MediaControlTimeDisplayElement* display) {
+  const String GetDisplayedTime(MediaControlTimeDisplayElement* display) {
     return ToText(display->firstChild())->data();
   }
 

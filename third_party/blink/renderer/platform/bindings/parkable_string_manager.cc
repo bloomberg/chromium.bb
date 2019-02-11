@@ -187,7 +187,8 @@ bool ParkableStringManager::ShouldPark(const StringImpl& string) {
   // Don't attempt to park strings smaller than this size.
   static constexpr unsigned int kSizeThreshold = 10000;
   // TODO(lizeb): Consider parking non-main thread strings.
-  return string.length() > kSizeThreshold && IsMainThread();
+  return string.length() > kSizeThreshold && IsMainThread() &&
+         GetCompressionMode() != CompressionMode::kDisabled;
 }
 
 scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
