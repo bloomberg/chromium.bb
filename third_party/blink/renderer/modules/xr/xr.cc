@@ -462,7 +462,7 @@ void XR::AddedEventListener(const AtomicString& event_type,
     // Make sure we have an active device to listen for changes with.
     EnsureDevice();
   }
-};
+}
 
 void XR::ContextDestroyed(ExecutionContext*) {
   Dispose();
