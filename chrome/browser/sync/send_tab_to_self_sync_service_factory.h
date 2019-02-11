@@ -18,13 +18,13 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace send_tab_to_self {
-class SendTabToSelfService;
+class SendTabToSelfSyncService;
 }  // namespace send_tab_to_self
 
 class SendTabToSelfSyncServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static send_tab_to_self::SendTabToSelfService* GetForProfile(
+  static send_tab_to_self::SendTabToSelfSyncService* GetForProfile(
       Profile* profile);
   static SendTabToSelfSyncServiceFactory* GetInstance();
 

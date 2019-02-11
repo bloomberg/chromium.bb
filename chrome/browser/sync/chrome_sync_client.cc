@@ -64,7 +64,7 @@
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/search_engines/search_engine_model_type_controller.h"
-#include "components/send_tab_to_self/send_tab_to_self_service.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"

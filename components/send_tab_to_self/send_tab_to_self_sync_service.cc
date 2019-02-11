@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/send_tab_to_self/send_tab_to_self_service.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 
 #include "base/bind.h"
 #include "base/time/default_clock.h"
@@ -14,7 +14,7 @@
 
 namespace send_tab_to_self {
 
-SendTabToSelfService::SendTabToSelfService(
+SendTabToSelfSyncService::SendTabToSelfSyncService(
     version_info::Channel channel,
     const syncer::LocalDeviceInfoProvider* local_device_info_provider) {
   bridge_ = std::make_unique<send_tab_to_self::SendTabToSelfBridge>(
@@ -24,14 +24,14 @@ SendTabToSelfService::SendTabToSelfService(
       local_device_info_provider, base::DefaultClock::GetInstance());
 }
 
-SendTabToSelfService::~SendTabToSelfService() = default;
+SendTabToSelfSyncService::~SendTabToSelfSyncService() = default;
 
-SendTabToSelfModel* SendTabToSelfService::GetSendTabToSelfModel() {
+SendTabToSelfModel* SendTabToSelfSyncService::GetSendTabToSelfModel() {
   return bridge_.get();
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
-SendTabToSelfService::GetControllerDelegate() {
+SendTabToSelfSyncService::GetControllerDelegate() {
   return bridge_->change_processor()->GetControllerDelegate();
 }
 

@@ -11,14 +11,14 @@
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/send_tab_to_self/send_tab_to_self_service.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info_sync_service.h"
 #include "ui/base/device_form_factor.h"
 
 // static
-send_tab_to_self::SendTabToSelfService*
+send_tab_to_self::SendTabToSelfSyncService*
 SendTabToSelfSyncServiceFactory::GetForProfile(Profile* profile) {
-  return static_cast<send_tab_to_self::SendTabToSelfService*>(
+  return static_cast<send_tab_to_self::SendTabToSelfSyncService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
@@ -47,6 +47,6 @@ KeyedService* SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
 
   // TODO(jeffreycohen): use KeyedService to provide a DeviceInfo ptr.
 
-  return new send_tab_to_self::SendTabToSelfService(chrome::GetChannel(),
-                                                    local_device_info_provider);
+  return new send_tab_to_self::SendTabToSelfSyncService(
+      chrome::GetChannel(), local_device_info_provider);
 }

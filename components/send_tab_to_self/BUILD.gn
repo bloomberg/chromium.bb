@@ -11,8 +11,8 @@ static_library("send_tab_to_self") {
     "send_tab_to_self_model.cc",
     "send_tab_to_self_model.h",
     "send_tab_to_self_model_observer.h",
-    "send_tab_to_self_service.cc",
-    "send_tab_to_self_service.h",
+    "send_tab_to_self_sync_service.cc",
+    "send_tab_to_self_sync_service.h",
   ]
   deps = [
     "//base",

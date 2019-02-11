@@ -6,7 +6,7 @@
 #include "chrome/browser/sync/test/integration/send_tab_to_self_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
-#include "components/send_tab_to_self/send_tab_to_self_service.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
 
   model0->AddEntry(kUrl, kTitle, kTime);
 
-  send_tab_to_self::SendTabToSelfService* service1 =
+  send_tab_to_self::SendTabToSelfSyncService* service1 =
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1));
 
   EXPECT_TRUE(
