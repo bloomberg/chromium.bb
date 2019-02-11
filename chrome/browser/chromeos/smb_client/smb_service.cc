@@ -437,13 +437,6 @@ void SmbService::Premount(const base::FilePath& share_path) {
 void SmbService::OnPremountResponse(const base::FilePath& share_path,
                                     smbprovider::ErrorType error,
                                     int32_t mount_id) {
-  const bool allowed_error = (error == smbprovider::ERROR_OK) ||
-                             (error == smbprovider::ERROR_ACCESS_DENIED);
-  if (!allowed_error) {
-    LOG(ERROR) << "Error mounting preconfigured share in smbprovider.";
-    return;
-  }
-
   DCHECK_GE(mount_id, 0);
 
   file_system_provider::MountOptions mount_options;
