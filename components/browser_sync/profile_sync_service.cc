@@ -197,6 +197,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_client_);
+  DCHECK(IsLocalSyncEnabled() || identity_manager_ != nullptr);
 
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't be instantiated.
