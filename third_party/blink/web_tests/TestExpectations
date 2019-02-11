@@ -5845,6 +5845,33 @@ crbug.com/917284 external/wpt/service-workers/service-worker/claim-fetch-with-ap
 crbug.com/917284 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
 crbug.com/917284 virtual/outofblink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
 
+### virtual/streams-native/external/wpt/streams/piping/
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.serviceworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.sharedworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/abort.any.worker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.serviceworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.sharedworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/close-propagation-forward.any.worker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.serviceworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.sharedworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-backward.any.worker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.serviceworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.sharedworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/error-propagation-forward.any.worker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interception.any.serviceworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interception.any.sharedworker.html [ Timeout ]
+crbug.com/902633 virtual/streams-native/external/wpt/streams/piping/then-interception.any.worker.html [ Timeout ]
+
+### virtual/streams-native/http/tests/streams/chromium/
+crbug.com/902633 virtual/streams-native/http/tests/streams/chromium/touching-global-object.html [ Timeout ]
+
+### virtual/streams-native/http/tests/streams/transferable/
+crbug.com/902633 virtual/streams-native/http/tests/streams/transferable/writable-stream.html [ Timeout ]
+
 # Sheriff 2018-12-27
 crbug.com/917970 [ Mac10.13 Retina ] virtual/mouseevent_fractional/fast/events/popup-blocking-timers5.html [ Pass Failure ]
 crbug.com/917970 [ Mac10.13 Retina ] virtual/user-activation-v2/fast/events/popup-blocking-timers5.html [ Pass Failure ]

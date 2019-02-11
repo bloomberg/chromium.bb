@@ -347,8 +347,14 @@ CORE_EXPORT v8::MaybeLocal<v8::Value> CallOrNoop1(
   DCHECK(method->IsFunction());
 
   // 6. Return ? Call(method, O, args).
-  return method.As<v8::Function>()->Call(script_state->GetContext(), object, 1,
-                                         &arg0);
+  v8::TryCatch try_catch(script_state->GetIsolate());
+  v8::MaybeLocal<v8::Value> result = method.As<v8::Function>()->Call(
+      script_state->GetContext(), object, 1, &arg0);
+  if (result.IsEmpty()) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return v8::MaybeLocal<v8::Value>();
+  }
+  return result;
 }
 
 CORE_EXPORT v8::Local<v8::Promise> PromiseCall(ScriptState* script_state,
