@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -286,19 +287,26 @@ MessageType GetStatusLabelsImpl(const syncer::SyncService* service,
 }  // namespace
 
 MessageType GetStatusLabels(Profile* profile,
-                            const syncer::SyncService* service,
-                            identity::IdentityManager* identity_manager,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type) {
-  DCHECK(service);
-
+  DCHECK(profile);
+  syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   const bool is_user_signout_allowed =
       signin_util::IsUserSignoutAllowedForProfile(profile);
   GoogleServiceAuthError auth_error =
       SigninErrorControllerFactory::GetForProfile(profile)->auth_error();
   return GetStatusLabelsImpl(service, identity_manager, is_user_signout_allowed,
                              auth_error, status_label, link_label, action_type);
+}
+
+MessageType GetStatus(Profile* profile) {
+  ActionType action_type = NO_ACTION;
+  return GetStatusLabels(profile, /*status_label=*/nullptr,
+                         /*link_label=*/nullptr, &action_type);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -374,16 +382,6 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   return NO_SYNC_ERROR;
 }
 #endif  // !defined(OS_CHROMEOS)
-
-MessageType GetStatus(Profile* profile,
-                      const syncer::SyncService* service,
-                      identity::IdentityManager* identity_manager) {
-  DCHECK(service);
-  ActionType action_type = NO_ACTION;
-  return GetStatusLabels(profile, service, identity_manager,
-                         /*status_label=*/nullptr, /*link_label=*/nullptr,
-                         &action_type);
-}
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
   return !service->IsLocalSyncEnabled() &&

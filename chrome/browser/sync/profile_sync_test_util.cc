@@ -72,18 +72,6 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   return init_params;
 }
 
-std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
-  std::unique_ptr<TestingProfile> profile =
-      IdentityTestEnvironmentProfileAdaptor::
-          CreateProfileForIdentityTestEnvironment();
-  auto identity_test_env_profile_adaptor =
-      std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());
-
-  identity_test_env_profile_adaptor->identity_test_env()->SetPrimaryAccount(
-      "test@mail.com");
-  return profile;
-}
-
 std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     content::BrowserContext* context) {
   return std::make_unique<NiceMock<browser_sync::ProfileSyncServiceMock>>(

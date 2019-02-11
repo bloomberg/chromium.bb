@@ -250,9 +250,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   // However, if Sync is in error, clearing cookies should pause it.
   std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion>
       scoped_data_deletion;
-  sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
-      profile_, sync_service_, IdentityManagerFactory::GetForProfile(profile_));
-  if (sync_status == sync_ui_util::SYNCED) {
+  if (sync_ui_util::GetStatus(profile_) == sync_ui_util::SYNCED) {
     scoped_data_deletion = AccountReconcilorFactory::GetForProfile(profile_)
                                ->GetScopedSyncDataDeletion();
   }

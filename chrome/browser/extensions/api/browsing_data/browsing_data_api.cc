@@ -149,13 +149,7 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 // Returns true if Sync is currently running (i.e. enabled and not in error).
 bool IsSyncRunning(Profile* profile) {
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
-  sync_ui_util::MessageType sync_status =
-      sync_ui_util::GetStatus(profile, sync_service, identity_manager);
-  return sync_status == sync_ui_util::SYNCED;
+  return sync_ui_util::GetStatus(profile) == sync_ui_util::SYNCED;
 }
 }  // namespace
 

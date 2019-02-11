@@ -19,7 +19,6 @@
 
 class KeyedService;
 class Profile;
-class TestingProfile;
 
 namespace content {
 class BrowserContext;
@@ -48,10 +47,6 @@ browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
     std::unique_ptr<syncer::SyncClient> sync_client,
     Profile* profile);
-
-// A utility used by sync tests to create a TestingProfile with a Google
-// Services username stored in a (Testing)PrefService.
-std::unique_ptr<TestingProfile> MakeSignedInTestingProfile();
 
 // Helper routine to be used in conjunction with
 // BrowserContextKeyedServiceFactory::SetTestingFactory().
