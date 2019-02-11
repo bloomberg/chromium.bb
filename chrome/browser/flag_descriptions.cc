@@ -1388,6 +1388,14 @@ const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
 const char kOmniboxNewAnswerLayoutDescription[] =
     "Modernize omnibox answers using an enhanced layout with larger icons.";
 
+const char kOmniboxRichEntitySuggestionsName[] =
+    "Omnibox rich entity suggestions";
+const char kOmniboxRichEntitySuggestionsDescription[] =
+    "Display entity suggestions using images and an enhanced layout; showing "
+    "more context and descriptive text about the entity. Has no effect unless "
+    "either the #upcoming-ui-features flag is Enabled or the #top-chrome-md "
+    "flag is set to Refresh or Touchable Refresh.";
+
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
 const char kOmniboxSpareRendererDescription[] =
@@ -2881,14 +2889,6 @@ const char kOmniboxReverseAnswersDescription[] =
     "Display answers with rows reversed (swapped); except definitions. Has no "
     "effect unless either the #upcoming-ui-features flag is Enabled or the "
     "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
-
-const char kOmniboxRichEntitySuggestionsName[] =
-    "Omnibox rich entity suggestions";
-const char kOmniboxRichEntitySuggestionsDescription[] =
-    "Display entity suggestions using images and an enhanced layout; showing "
-    "more context and descriptive text about the entity. Has no effect unless "
-    "either the #upcoming-ui-features flag is Enabled or the #top-chrome-md "
-    "flag is set to Refresh or Touchable Refresh.";
 
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
