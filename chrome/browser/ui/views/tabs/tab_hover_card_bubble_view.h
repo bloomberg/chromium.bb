@@ -10,6 +10,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
+class ImageView;
 class Label;
 class Widget;
 }  // namespace views
@@ -40,6 +41,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   views::Widget* widget_ = nullptr;
   views::Label* title_label_;
   views::Label* domain_label_;
+  views::ImageView* preview_image_ = nullptr;
 
   // Get delay in milliseconds based on tab width.
   base::TimeDelta GetDelay(int tab_width) const;

@@ -7,14 +7,18 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -23,6 +27,18 @@ constexpr base::TimeDelta kMinimumTriggerDelay =
     base::TimeDelta::FromMilliseconds(50);
 constexpr base::TimeDelta kMaximumTriggerDelay =
     base::TimeDelta::FromMilliseconds(1000);
+
+// Hover card and preview image dimensions.
+constexpr int kPreferredTabHoverCardWidth = 240;
+constexpr float kTabHoverCardPreviewImageAspectRatio = 16.0f / 9.0f;
+constexpr gfx::Size kTabHoverCardPreviewImageSize = gfx::Size(
+    kPreferredTabHoverCardWidth,
+    kPreferredTabHoverCardWidth / kTabHoverCardPreviewImageAspectRatio);
+
+bool AreHoverCardImagesEnabled() {
+  return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
+}
+
 }  // namespace
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
@@ -37,16 +53,26 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_ =
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);
-  domain_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                                   ChromeTextStyle::STYLE_SECONDARY);
-
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(false);
+  AddChildView(title_label_);
+
+  domain_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
+                                   ChromeTextStyle::STYLE_SECONDARY);
   domain_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   domain_label_->SetMultiLine(false);
-
-  AddChildView(title_label_);
   AddChildView(domain_label_);
+
+  if (AreHoverCardImagesEnabled()) {
+    preview_image_ = new views::ImageView();
+    preview_image_->SetVisible(AreHoverCardImagesEnabled());
+    preview_image_->SetHorizontalAlignment(views::ImageViewBase::LEADING);
+    constexpr gfx::Insets kPreviewImageMargins(12, 0, 0, 0);
+    preview_image_->SetProperty(views::kMarginsKey,
+                                new gfx::Insets(kPreviewImageMargins));
+    AddChildView(preview_image_);
+  }
+
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
 }
 
@@ -125,9 +151,31 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
           url_formatter::kFormatUrlTrimAfterHost,
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   domain_label_->SetText(domain);
+
+  if (preview_image_) {
+    // Get the largest version of the favicon available.
+    gfx::ImageSkia max_favicon = gfx::ImageSkia::CreateFrom1xBitmap(
+        data.favicon.GetRepresentation(data.favicon.GetMaxSupportedScale())
+            .GetBitmap());
+    preview_image_->SetImage(max_favicon);
+    const gfx::Size favicon_size = max_favicon.size();
+
+    // Scale the favicon to an appropriate size for the tab hover card.
+    //
+    // This is reasonably aesthetic for favicons, though it does not necessarily
+    // fill up the entire width of the hover card. When we move to using
+    // og:images or screenshots, we'll have to do something more sophisticated.
+    if (!favicon_size.IsEmpty()) {
+      float scale = float{kTabHoverCardPreviewImageSize.height()} /
+                    float{favicon_size.height()};
+      preview_image_->SetImageSize(
+          gfx::Size(std::roundf(scale * favicon_size.width()),
+                    kTabHoverCardPreviewImageSize.height()));
+    }
+  }
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
   const gfx::Size size = BubbleDialogDelegateView::CalculatePreferredSize();
-  return gfx::Size(240, size.height());
+  return gfx::Size(kPreferredTabHoverCardWidth, size.height());
 }
