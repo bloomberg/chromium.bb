@@ -111,7 +111,7 @@ class SingleClientHistoryDeleteDirectivesSyncTest : public FeatureToggler,
 };
 
 IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
-                       ShouldCommitDeleteDirective) {
+                       ShouldCommitTimeRangeDeleteDirective) {
   const GURL kPageUrl = GURL("http://foo.com");
   const base::Time kHistoryEntryTime = base::Time::Now();
   base::CancelableTaskTracker task_tracker;
@@ -123,10 +123,27 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
   history_service->AddPage(kPageUrl, kHistoryEntryTime,
                            history::SOURCE_BROWSED);
 
-  history_service->ExpireLocalAndRemoteHistoryBetween(
-      WebHistoryServiceFactory::GetForProfile(GetProfile(0)), std::set<GURL>(),
-      /*begin_time=*/base::Time(), /*end_time=*/base::Time(),
-      /*user_initiated*/ true, base::DoNothing(), &task_tracker);
+  history_service->DeleteLocalAndRemoteHistoryBetween(
+      WebHistoryServiceFactory::GetForProfile(GetProfile(0)),
+      /*begin_time=*/base::Time(), /*end_time=*/base::Time(), base::DoNothing(),
+      &task_tracker);
+
+  EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
+                       ShouldCommitUrlDeleteDirective) {
+  const GURL kPageUrl = GURL("http://foo.com");
+  const base::Time kHistoryEntryTime = base::Time::Now();
+  ASSERT_TRUE(SetupSync());
+
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(GetProfile(0));
+  history_service->AddPage(kPageUrl, kHistoryEntryTime,
+                           history::SOURCE_BROWSED);
+
+  history_service->DeleteLocalAndRemoteUrl(
+      WebHistoryServiceFactory::GetForProfile(GetProfile(0)), kPageUrl);
 
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 }

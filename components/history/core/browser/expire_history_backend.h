@@ -72,11 +72,11 @@ class ExpireHistoryBackend {
   // will continue until the object is deleted.
   void StartExpiringOldStuff(base::TimeDelta expiration_threshold);
 
-  // Deletes everything associated with a URL.
-  void DeleteURL(const GURL& url);
+  // Deletes everything associated with a URL until |end_time|.
+  void DeleteURL(const GURL& url, base::Time end_time);
 
-  // Deletes everything associated with each URL in the list.
-  void DeleteURLs(const std::vector<GURL>& url);
+  // Deletes everything associated with each URL in the list until |end_time|.
+  void DeleteURLs(const std::vector<GURL>& url, base::Time end_time);
 
   // Removes all visits to restrict_urls (or all URLs if empty) in the given
   // time range, updating the URLs accordingly.

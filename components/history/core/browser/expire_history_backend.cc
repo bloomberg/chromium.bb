@@ -183,11 +183,12 @@ void ExpireHistoryBackend::SetDatabases(HistoryDatabase* main_db,
   thumb_db_ = thumb_db;
 }
 
-void ExpireHistoryBackend::DeleteURL(const GURL& url) {
-  DeleteURLs(std::vector<GURL>(1, url));
+void ExpireHistoryBackend::DeleteURL(const GURL& url, base::Time end_time) {
+  DeleteURLs({url}, end_time);
 }
 
-void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
+void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls,
+                                      base::Time end_time) {
   if (!main_db_)
     return;
 
@@ -206,16 +207,26 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     // Collect all the visits and delete them. Note that we don't give up if
     // there are no visits, since the URL could still have an entry that we
     // should delete.
-    VisitVector visits;
-    main_db_->GetVisitsForURL(url_row.id(), &visits);
+    VisitVector visits_to_delete;
+    main_db_->GetVisitsForURL(url_row.id(), &visits_to_delete);
+    size_t total_visits = visits_to_delete.size();
+    if (!end_time.is_null() && !end_time.is_max()) {
+      // Remove all items that should not be deleted from |visits_to_delete|.
+      visits_to_delete.erase(
+          std::remove_if(visits_to_delete.begin(), visits_to_delete.end(),
+                         [=](auto& v) { return v.visit_time > end_time; }),
+          visits_to_delete.end());
+    }
+    DeleteVisitRelatedInfo(visits_to_delete, &effects);
 
-    DeleteVisitRelatedInfo(visits, &effects);
-
-    // We skip ExpireURLsForVisits (since we are deleting from the
-    // URL, and not starting with visits in a given time range). We
-    // therefore need to call the deletion and favicon update
-    // functions manually.
-    DeleteOneURL(url_row, is_pinned, &effects);
+    // Remove the URL if all visits have been removed.
+    if (visits_to_delete.size() == total_visits) {
+      // We skip ExpireURLsForVisits (since we are deleting from the
+      // URL, and not starting with visits in a given time range). We
+      // therefore need to call the deletion and favicon update
+      // functions manually.
+      DeleteOneURL(url_row, is_pinned, &effects);
+    }
   }
 
   DeleteFaviconsIfPossible(&effects);

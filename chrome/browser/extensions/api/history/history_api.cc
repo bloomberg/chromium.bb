@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/history.h"
@@ -359,7 +360,9 @@ ExtensionFunction::ResponseAction HistoryDeleteUrlFunction::Run() {
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
-  hs->DeleteURL(url);
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(GetProfile());
+  hs->DeleteLocalAndRemoteUrl(web_history, url);
 
   // Also clean out from the activity log. If the activity log testing flag is
   // set then don't clean so testers can see what potentially malicious
@@ -386,12 +389,12 @@ ExtensionFunction::ResponseAction HistoryDeleteRangeFunction::Run() {
   base::Time start_time = GetTime(params->range.start_time);
   base::Time end_time = GetTime(params->range.end_time);
 
-  std::set<GURL> restrict_urls;
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
-  hs->ExpireHistoryBetween(
-      restrict_urls, start_time, end_time,
-      /*user_initiated*/ true,
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(GetProfile());
+  hs->DeleteLocalAndRemoteHistoryBetween(
+      web_history, start_time, end_time,
       base::BindOnce(&HistoryDeleteRangeFunction::DeleteComplete,
                      base::Unretained(this)),
       &task_tracker_);
@@ -401,7 +404,7 @@ ExtensionFunction::ResponseAction HistoryDeleteRangeFunction::Run() {
           ::switches::kEnableExtensionActivityLogTesting)) {
     ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
-    activity_log->RemoveURLs(restrict_urls);
+    activity_log->RemoveURLs(/*restrict_urls=*/std::vector<GURL>());
   }
 
   AddRef();               // Balanced in DeleteComplete().
@@ -421,12 +424,12 @@ ExtensionFunction::ResponseAction HistoryDeleteAllFunction::Run() {
   std::set<GURL> restrict_urls;
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
-  // Uninitialized base::Time() means unbounded.
-  hs->ExpireHistoryBetween(
-      restrict_urls,
+  history::WebHistoryService* web_history =
+      WebHistoryServiceFactory::GetForProfile(GetProfile());
+  hs->DeleteLocalAndRemoteHistoryBetween(
+      web_history,
       /*begin_time*/ base::Time(),
-      /*end_time*/ base::Time(),
-      /*user_initiated*/ true,
+      /*end_time*/ base::Time::Max(),
       base::BindOnce(&HistoryDeleteAllFunction::DeleteComplete,
                      base::Unretained(this)),
       &task_tracker_);
@@ -436,7 +439,7 @@ ExtensionFunction::ResponseAction HistoryDeleteAllFunction::Run() {
           ::switches::kEnableExtensionActivityLogTesting)) {
     ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());
     DCHECK(activity_log);
-    activity_log->RemoveURLs(restrict_urls);
+    activity_log->RemoveURLs(/*restrict_urls=*/std::vector<GURL>());
   }
 
   AddRef();               // Balanced in DeleteComplete().

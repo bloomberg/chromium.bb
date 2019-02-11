@@ -17,6 +17,8 @@
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 
+class GURL;
+
 namespace sync_pb {
 class HistoryDeleteDirectiveSpecifics;
 }
@@ -45,6 +47,8 @@ class DeleteDirectiveHandler {
   bool CreateDeleteDirectives(const std::set<int64_t>& global_ids,
                               base::Time begin_time,
                               base::Time end_time);
+
+  bool CreateUrlDeleteDirective(const GURL& url);
 
   // Sends the given |delete_directive| to SyncChangeProcessor (if it exists).
   // Returns any error resulting from sending the delete directive to sync.

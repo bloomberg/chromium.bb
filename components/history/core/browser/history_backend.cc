@@ -2420,7 +2420,7 @@ void HistoryBackend::ProcessDBTaskImpl() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
-  expirer_.DeleteURLs(urls);
+  expirer_.DeleteURLs(urls, base::Time::Max());
 
   db_->GetStartDate(&first_recorded_time_);
   // Force a commit, if the user is deleting something for privacy reasons, we
@@ -2429,8 +2429,19 @@ void HistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
 }
 
 void HistoryBackend::DeleteURL(const GURL& url) {
-  expirer_.DeleteURL(url);
+  expirer_.DeleteURL(url, base::Time::Max());
 
+  db_->GetStartDate(&first_recorded_time_);
+  // Force a commit, if the user is deleting something for privacy reasons, we
+  // want to get it on disk ASAP.
+  Commit();
+}
+
+void HistoryBackend::DeleteURLsUntil(
+    const std::vector<std::pair<GURL, base::Time>>& urls_and_timestamps) {
+  for (const auto& pair : urls_and_timestamps) {
+    expirer_.DeleteURL(pair.first, pair.second);
+  }
   db_->GetStartDate(&first_recorded_time_);
   // Force a commit, if the user is deleting something for privacy reasons, we
   // want to get it on disk ASAP.
@@ -2551,7 +2562,7 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
     // that we can delete all associated icons in the case of deleting an
     // unvisited bookmarked URL.
     if (visits.empty())
-      expirer_.DeleteURL(*i);  // There are no more visits; nuke the URL.
+      expirer_.DeleteURL(*i, base::Time::Max());
   }
 }
 

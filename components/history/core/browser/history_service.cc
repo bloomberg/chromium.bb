@@ -1128,20 +1128,15 @@ void HistoryService::ExpireHistoryBeforeForTesting(
       std::move(callback));
 }
 
-void HistoryService::ExpireLocalAndRemoteHistoryBetween(
+void HistoryService::DeleteLocalAndRemoteHistoryBetween(
     WebHistoryService* web_history,
-    const std::set<GURL>& restrict_urls,
     Time begin_time,
     Time end_time,
-    bool user_initiated,
     base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
-  // TODO(dubroy): This should be factored out into a separate class that
-  // dispatches deletions to the proper places.
+  // TODO(crbug.com/929111): This should be factored out into a separate class
+  // that dispatches deletions to the proper places.
   if (web_history) {
-    // TODO(dubroy): This API does not yet support deletion of specific URLs.
-    DCHECK(restrict_urls.empty());
-
     delete_directive_handler_.CreateDeleteDirectives(std::set<int64_t>(),
                                                      begin_time, end_time);
 
@@ -1174,12 +1169,50 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
               }
             }
           })");
-    web_history->ExpireHistoryBetween(restrict_urls, begin_time, end_time,
-                                      base::Bind(&ExpireWebHistoryComplete),
-                                      partial_traffic_annotation);
+    web_history->ExpireHistoryBetween(
+        /*restrict_urls=*/{}, begin_time, end_time,
+        base::Bind(&ExpireWebHistoryComplete), partial_traffic_annotation);
   }
-  ExpireHistoryBetween(restrict_urls, begin_time, end_time, user_initiated,
-                       std::move(callback), tracker);
+  ExpireHistoryBetween(/*restrict_urls=*/{}, begin_time, end_time,
+                       /*user_initiated=*/true, std::move(callback), tracker);
+}
+
+void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
+                                             const GURL& url) {
+  DCHECK(url.is_valid());
+  // TODO(crbug.com/929111): This should be factored out into a separate class
+  // that dispatches deletions to the proper places.
+  if (web_history) {
+    delete_directive_handler_.CreateUrlDeleteDirective(url);
+
+    // Attempt online deletion from the history server, but ignore the result.
+    // Deletion directives ensure that the results will eventually be deleted.
+    net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+        net::DefinePartialNetworkTrafficAnnotation("web_history_delete_url",
+                                                   "web_history_service", R"(
+          semantics {
+            description:
+              "If a user who syncs their browsing history deletes urls from  "
+              "history, Chrome sends a request to a google.com "
+              "host to execute the corresponding deletion serverside."
+            trigger:
+              "Deleting urls from browsing history, e.g. by an extension."
+            data:
+              "The selected urls, a version info token to resolve transaction "
+              "conflicts, and an OAuth2 token authenticating the user."
+          }
+          policy {
+            chrome_policy {
+              AllowDeletingBrowserHistory {
+                AllowDeletingBrowserHistory: false
+              }
+            }
+          })");
+    web_history->ExpireHistoryBetween(
+        /*restrict_urls=*/{url}, base::Time(), base::Time::Max(),
+        base::Bind(&ExpireWebHistoryComplete), partial_traffic_annotation);
+  }
+  DeleteURL(url);
 }
 
 void HistoryService::OnDBLoaded() {
