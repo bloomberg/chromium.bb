@@ -43,11 +43,11 @@ class TransportClient : public CastTransport::Client {
 
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
-      std::unique_ptr<std::vector<PacketEvent>> packet_events) final{};
-  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final{};
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final {}
+  void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {}
 
   DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };

@@ -175,7 +175,7 @@ class TransportClient : public media::cast::CastTransport::Client {
 
   void OnStatusChanged(media::cast::CastTransportStatus status) final {
     VLOG(1) << "Transport status: " << status;
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
       std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events)
@@ -183,7 +183,7 @@ class TransportClient : public media::cast::CastTransport::Client {
     DCHECK(log_event_dispatcher_);
     log_event_dispatcher_->DispatchBatchOfEvents(std::move(frame_events),
                                                  std::move(packet_events));
-  };
+  }
   void ProcessRtpPacket(std::unique_ptr<media::cast::Packet> packet) final {}
 
  private:

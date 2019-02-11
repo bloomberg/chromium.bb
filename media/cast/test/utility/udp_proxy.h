@@ -21,11 +21,11 @@
 
 namespace net {
 class NetLog;
-};
+}
 
 namespace base {
 class TickClock;
-};
+}
 
 namespace media {
 namespace cast {
