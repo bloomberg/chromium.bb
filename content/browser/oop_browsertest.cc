@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(OOPBrowserTest, Basic) {
       ASSERT_EQ(snapshot.getColor(i, j), SK_ColorBLUE);
     }
   }
-};
+}
 #endif
 
 }  // namespace

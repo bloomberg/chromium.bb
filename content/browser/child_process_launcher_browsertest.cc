@@ -27,11 +27,11 @@ class MockChildProcessLauncherClient
       client_->OnProcessLaunchFailed(content::LAUNCH_RESULT_FAILURE);
     else
       client_->OnProcessLaunched();
-  };
+  }
 
   void OnProcessLaunchFailed(int error_code) override {
     client_->OnProcessLaunchFailed(error_code);
-  };
+  }
 
   content::ChildProcessLauncher::Client* client_;
   bool simulate_failure_;
