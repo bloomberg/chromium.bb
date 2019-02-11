@@ -511,7 +511,7 @@ TEST_F(TrapTest, TrapDataPipeProducerWritable) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(t));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(consumer));
-};
+}
 
 TEST_F(TrapTest, CloseWatchedDataPipeConsumerHandle) {
   constexpr size_t kTestPipeCapacity = 8;
