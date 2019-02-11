@@ -269,9 +269,7 @@ class XCustomCursorCache {
       return false;
     }
 
-    const XcursorImage* image() const {
-      return image_;
-    };
+    const XcursorImage* image() const { return image_; }
 
    private:
     XcursorImage* image_;
