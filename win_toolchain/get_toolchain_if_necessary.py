@@ -408,7 +408,7 @@ def RemoveUnusedToolchains(root):
   for toolchain in valid_toolchains:
     toolchain_age_in_sec = time.time() - toolchain[0]
     if toolchain_age_in_sec > toolchain_expiration_time:
-      print ('Removing version %s of the Win toolchain has it hasn\'t been used'
+      print ('Removing version %s of the Win toolchain as it hasn\'t been used'
              ' in the past %d days.' % (toolchain[1],
                                         toolchain_age_in_sec / 60 / 60 / 24))
       RemoveToolchain(root, toolchain[1], True)
