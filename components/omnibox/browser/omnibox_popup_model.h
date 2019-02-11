@@ -149,6 +149,10 @@ class OmniboxPopupModel {
   // the tab key.
   bool SelectedLineHasButton();
 
+  // If |closes| is set true, the popup will close when the omnibox is blurred.
+  bool popup_closes_on_blur() const { return popup_closes_on_blur_; }
+  void set_popup_closes_on_blur(bool closes) { popup_closes_on_blur_ = closes; }
+
   // The token value for selected_line_ and functions dealing with a "line
   // number" that indicates "no line".
   static const size_t kNoMatch;
@@ -180,6 +184,10 @@ class OmniboxPopupModel {
 
   // The user has manually selected a match.
   bool has_selected_match_;
+
+  // True if the popup should close on omnibox blur. This defaults to true, and
+  // is only false while a bubble related to the popup contents is shown.
+  bool popup_closes_on_blur_ = true;
 
   // Observers.
   base::ObserverList<OmniboxPopupModelObserver>::Unchecked observers_;
