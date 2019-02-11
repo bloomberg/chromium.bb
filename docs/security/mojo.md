@@ -5,7 +5,8 @@ abstractions can make it easier to write code that makes interprocess calls,
 but can also add significant complexity. Below are some recommendation from
 Mojo and IPC reviewers for best practices.
 
-For questions, concerns, or suggestions, reach out to <mojo@chromium.org>.
+For questions, concerns, or suggestions, reach out to
+[chromium-mojo@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-mojo).
 
 > For legacy IPC, please see [security tips for IPC][security-tips-for-ipc].
 
