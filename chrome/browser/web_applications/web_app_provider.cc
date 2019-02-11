@@ -162,24 +162,6 @@ WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
   return tab_helper;
 }
 
-// static
-bool WebAppProvider::CanInstallWebApp(content::WebContents* web_contents) {
-  auto* provider = WebAppProvider::GetForWebContents(web_contents);
-  if (!provider || !provider->install_manager_)
-    return false;
-  return provider->install_manager_->CanInstallWebApp(web_contents);
-}
-
-// static
-void WebAppProvider::InstallWebApp(content::WebContents* web_contents,
-                                   bool force_shortcut_app) {
-  auto* provider = WebAppProvider::GetForWebContents(web_contents);
-  if (!provider || !provider->install_manager_)
-    return;
-  provider->install_manager_->InstallWebApp(web_contents, force_shortcut_app,
-                                            base::DoNothing());
-}
-
 void WebAppProvider::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& detals) {

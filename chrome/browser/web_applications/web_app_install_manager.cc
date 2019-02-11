@@ -36,9 +36,11 @@ bool WebAppInstallManager::CanInstallWebApp(
          IsValidWebAppUrl(web_contents->GetLastCommittedURL());
 }
 
-void WebAppInstallManager::InstallWebApp(content::WebContents* contents,
-                                         bool force_shortcut_app,
-                                         OnceInstallCallback install_callback) {
+void WebAppInstallManager::InstallWebApp(
+    content::WebContents* contents,
+    bool force_shortcut_app,
+    WebAppInstallDialogCallback dialog_callback,
+    OnceInstallCallback install_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(AreWebAppsUserInstallable(profile_));
 
@@ -47,6 +49,7 @@ void WebAppInstallManager::InstallWebApp(content::WebContents* contents,
   CHECK(!install_callback_);
 
   Observe(contents);
+  dialog_callback_ = std::move(dialog_callback);
   install_callback_ = std::move(install_callback);
 
   data_retriever_->GetWebApplicationInfo(
@@ -141,11 +144,13 @@ void WebAppInstallManager::OnDidPerformInstallableCheck(
   data_retriever_->GetIcons(
       web_contents(), icon_urls, skip_page_fav_icons,
       base::BindOnce(&WebAppInstallManager::OnIconsRetrieved,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info),
+                     for_installable_site));
 }
 
 void WebAppInstallManager::OnIconsRetrieved(
     std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
     IconsMap icons_map) {
   // If interrupted, install_callback_ is already invoked or may invoke later.
   if (InstallInterrupted())
@@ -157,6 +162,22 @@ void WebAppInstallManager::OnIconsRetrieved(
       FilterSquareIcons(icons_map, *web_app_info);
   ResizeDownloadedIconsGenerateMissing(std::move(downloaded_icons),
                                        web_app_info.get());
+
+  std::move(dialog_callback_)
+      .Run(web_contents(), std::move(web_app_info), for_installable_site,
+           base::BindOnce(&WebAppInstallManager::OnDialogCompleted,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppInstallManager::OnDialogCompleted(
+    bool user_accepted,
+    std::unique_ptr<WebApplicationInfo> web_app_info) {
+  // If interrupted, install_callback_ is already invoked or may invoke later.
+  if (InstallInterrupted())
+    return;
+
+  if (!user_accepted)
+    return ReturnError(InstallResultCode::kUserInstallDeclined);
 
   install_finalizer_->FinalizeInstall(
       std::move(web_app_info),

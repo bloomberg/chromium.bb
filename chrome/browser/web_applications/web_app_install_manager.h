@@ -40,6 +40,7 @@ class WebAppInstallManager final : public InstallManager,
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebApp(content::WebContents* contents,
                      bool force_shortcut_app,
+                     WebAppInstallDialogCallback dialog_callback,
                      OnceInstallCallback callback) override;
 
   // WebContentsObserver:
@@ -66,10 +67,14 @@ class WebAppInstallManager final : public InstallManager,
       const blink::Manifest& manifest,
       bool is_installable);
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
+                        ForInstallableSite for_installable_site,
                         IconsMap icons_map);
+  void OnDialogCompleted(bool user_accepted,
+                         std::unique_ptr<WebApplicationInfo> web_app_info);
   void OnInstallFinalized(const AppId& app_id, InstallResultCode code);
 
-  // Saved callback:
+  // Saved callbacks:
+  WebAppInstallDialogCallback dialog_callback_;
   OnceInstallCallback install_callback_;
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;

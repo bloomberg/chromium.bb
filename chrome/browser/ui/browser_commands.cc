@@ -103,8 +103,8 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -1291,13 +1291,11 @@ bool CanViewSource(const Browser* browser) {
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
-  web_app::WebAppProvider::InstallWebApp(
-      browser->tab_strip_model()->GetActiveWebContents(), force_shortcut_app);
+  web_app::CreateWebAppFromCurrentWebContents(browser, force_shortcut_app);
 }
 
 bool CanCreateBookmarkApp(const Browser* browser) {
-  return web_app::WebAppProvider::CanInstallWebApp(
-      browser->tab_strip_model()->GetActiveWebContents());
+  return web_app::CanCreateWebApp(browser);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

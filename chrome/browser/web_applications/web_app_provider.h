@@ -62,6 +62,9 @@ class WebAppProvider : public KeyedService,
   // Start registry. All subsystems depend on it.
   void StartRegistry();
 
+  // UIs can use InstallManager for user-initiated Web Apps install.
+  InstallManager& install_manager() { return *install_manager_; }
+
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
   PendingAppManager& pending_app_manager() { return *pending_app_manager_; }
@@ -69,13 +72,6 @@ class WebAppProvider : public KeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static WebAppTabHelperBase* CreateTabHelper(
       content::WebContents* web_contents);
-
-  // Returns true if a bookmark can be installed for a given |web_contents|.
-  static bool CanInstallWebApp(content::WebContents* web_contents);
-
-  // Starts a bookmark installation process for a given |web_contents|.
-  static void InstallWebApp(content::WebContents* web_contents,
-                            bool force_shortcut_app);
 
   // content::NotificationObserver
   void Observe(int type,

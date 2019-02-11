@@ -73,6 +73,22 @@ bool ContainsOneIconOfEachSize(const WebApplicationInfo& web_app_info) {
   return true;
 }
 
+void TestAcceptDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
+  std::move(acceptance_callback).Run(true /*accept*/, std::move(web_app_info));
+}
+
+void TestDeclineDialogCallback(
+    content::WebContents* initiator_web_contents,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    ForInstallableSite for_installable_site,
+    InstallManager::WebAppInstallationAcceptanceCallback acceptance_callback) {
+  std::move(acceptance_callback).Run(false /*accept*/, std::move(web_app_info));
+}
+
 }  // namespace
 
 class WebAppInstallManagerTest : public WebAppTest {
@@ -150,6 +166,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     const bool force_shortcut_app = false;
     install_manager_->InstallWebApp(
         web_contents(), force_shortcut_app,
+        base::BindOnce(TestAcceptDialogCallback),
         base::BindLambdaForTesting(
             [&](const AppId& installed_app_id, InstallResultCode code) {
               EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -192,6 +209,7 @@ TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
 
   install_manager_->InstallWebApp(
       web_contents(), force_shortcut_app,
+      base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -236,6 +254,7 @@ TEST_F(WebAppInstallManagerTest, AlreadyInstalled) {
 
   install_manager_->InstallWebApp(
       web_contents(), force_shortcut_app,
+      base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& already_installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kAlreadyInstalled, code);
@@ -261,6 +280,7 @@ TEST_F(WebAppInstallManagerTest, GetWebApplicationInfoFailed) {
 
   install_manager_->InstallWebApp(
       web_contents(), force_shortcut_app,
+      base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kGetWebApplicationInfoFailed, code);
@@ -284,6 +304,7 @@ TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
 
   install_manager_->InstallWebApp(
       web_contents(), force_shortcut_app,
+      base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
@@ -332,6 +353,7 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
 
   install_manager_->InstallWebApp(
       web_contents(), force_shortcut_app,
+      base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -506,6 +528,7 @@ TEST_F(WebAppInstallManagerTest, WriteDataToDiskFailed) {
 
   install_manager_->InstallWebApp(
       web_contents(), force_shortcut_app,
+      base::BindOnce(TestAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kWriteDataFailed, code);
@@ -523,6 +546,35 @@ TEST_F(WebAppInstallManagerTest, WriteDataToDiskFailed) {
   const AppId app_id = GenerateAppIdFromURL(app_url);
   const base::FilePath app_dir = web_apps_dir.AppendASCII(app_id);
   EXPECT_FALSE(file_utils_->DirectoryExists(app_dir));
+}
+
+TEST_F(WebAppInstallManagerTest, UserInstallDeclined) {
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  CreateRendererAppInfo(url, "Name", "Description");
+  CreateDefaultInstallableManager();
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+  const bool force_shortcut_app = false;
+
+  install_manager_->InstallWebApp(
+      web_contents(), force_shortcut_app,
+      base::BindOnce(TestDeclineDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kUserInstallDeclined, code);
+            EXPECT_EQ(installed_app_id, AppId());
+            callback_called = true;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
+
+  WebApp* web_app = registrar_->GetAppById(app_id);
+  EXPECT_EQ(nullptr, web_app);
 }
 
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
