@@ -244,6 +244,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
   if (state_ == NO_SNAP) {
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
+    Shell::Get()->overview_controller()->AddObserver(this);
     Shell::Get()->activation_client()->AddObserver(this);
     Shell::Get()->NotifySplitViewModeStarting();
 
@@ -521,6 +522,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
 
   // Remove observers when the split view mode ends.
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->overview_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
 
   StopObserving(LEFT);

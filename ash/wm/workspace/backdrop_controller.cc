@@ -73,6 +73,7 @@ BackdropController::BackdropController(aura::Window* container)
     : container_(container) {
   DCHECK(container_);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
@@ -81,6 +82,8 @@ BackdropController::BackdropController(aura::Window* container)
 BackdropController::~BackdropController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  if (Shell::Get()->overview_controller())
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   // AppListController is destroyed early when Shell is being destroyed, it may
   // not exist.
@@ -159,6 +162,14 @@ void BackdropController::UpdateBackdrop() {
   container_->StackChildAbove(window, backdrop_window_);
 }
 
+void BackdropController::OnSplitViewModeStarting() {
+  Shell::Get()->split_view_controller()->AddObserver(this);
+}
+
+void BackdropController::OnSplitViewModeEnded() {
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
+}
+
 void BackdropController::OnOverviewModeStarting() {
   if (backdrop_window_)
     backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
@@ -175,14 +186,6 @@ void BackdropController::OnOverviewModeEndingAnimationComplete(bool canceled) {
   UpdateBackdrop();
   if (backdrop_window_)
     backdrop_window_->ClearProperty(aura::client::kAnimationsDisabledKey);
-}
-
-void BackdropController::OnSplitViewModeStarting() {
-  Shell::Get()->split_view_controller()->AddObserver(this);
-}
-
-void BackdropController::OnSplitViewModeEnded() {
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
 
 void BackdropController::OnAppListVisibilityChanged(bool shown,

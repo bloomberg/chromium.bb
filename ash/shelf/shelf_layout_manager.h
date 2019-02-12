@@ -16,6 +16,7 @@
 #include "ash/system/locale/locale_update_controller.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/lock_state_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/macros.h"
@@ -52,6 +53,7 @@ class ShelfWidget;
 class ASH_EXPORT ShelfLayoutManager
     : public AppListControllerObserver,
       public ShellObserver,
+      public OverviewObserver,
       public ::wm::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
@@ -155,10 +157,12 @@ class ASH_EXPORT ShelfLayoutManager
   // ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
-  void OnOverviewModeStartingAnimationComplete(bool canceled) override;
-  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
   void OnSplitViewModeStarted() override;
   void OnSplitViewModeEnded() override;
+
+  // OverviewObserver:
+  void OnOverviewModeStartingAnimationComplete(bool canceled) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // AppListControllerObserver:
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;

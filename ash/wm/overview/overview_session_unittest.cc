@@ -3698,7 +3698,7 @@ TEST_F(SplitViewOverviewSessionTest,
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   ASSERT_TRUE(split_view_controller()->split_view_divider());
   std::vector<aura::Window*> window_list =
-      overview_controller()->GetWindowsListInOverviewGridsForTesting();
+      overview_controller()->GetWindowsListInOverviewGridsForTest();
   EXPECT_EQ(2u, window_list.size());
   EXPECT_FALSE(base::ContainsValue(window_list, window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
@@ -3714,8 +3714,7 @@ TEST_F(SplitViewOverviewSessionTest,
   // the overview list.
   EXPECT_TRUE(IsSelecting());
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
-  window_list =
-      overview_controller()->GetWindowsListInOverviewGridsForTesting();
+  window_list = overview_controller()->GetWindowsListInOverviewGridsForTest();
   EXPECT_EQ(3u, window_list.size());
   EXPECT_TRUE(base::ContainsValue(window_list, window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));

@@ -10,9 +10,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/aura/window_occlusion_tracker.h"
 
@@ -69,9 +71,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void PauseOcclusionTracker();
   void UnpauseOcclusionTracker(int delay);
 
-  // Gets the windows list that are shown in the overview windows grids if the
-  // overview mode is active for testing.
-  std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();
+  void AddObserver(OverviewObserver* observer);
+  void RemoveObserver(OverviewObserver* observer);
 
   // Post a task to update the shadow and mask of overview windows.
   void DelayedUpdateMaskAndShadow();
@@ -106,6 +107,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Returns wallpaper blur status for testing.
   bool HasBlurForTest() const;
   bool HasBlurAnimationForTest() const;
+
+  // Gets the windows list that are shown in the overview windows grids if the
+  // overview mode is active for testing.
+  std::vector<aura::Window*> GetWindowsListInOverviewGridsForTest();
 
  private:
   class OverviewBlurController;
@@ -147,6 +152,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::unique_ptr<OverviewBlurController> overview_blur_controller_;
 
   base::CancelableOnceClosure reset_pauser_task_;
+
+  base::ObserverList<OverviewObserver> observers_;
 
   base::WeakPtrFactory<OverviewController> weak_ptr_factory_;
 

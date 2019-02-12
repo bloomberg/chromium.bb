@@ -9,6 +9,8 @@
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/metrics/user_metrics.h"
@@ -82,7 +84,7 @@ void WideFrameView::SetCaptionButtonModel(
 
 WideFrameView::WideFrameView(views::Widget* target)
     : target_(target), widget_(std::make_unique<views::Widget>()) {
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 
   aura::Window* target_window = target->GetNativeWindow();
@@ -110,7 +112,8 @@ WideFrameView::WideFrameView(views::Widget* target)
 WideFrameView::~WideFrameView() {
   if (widget_)
     widget_->CloseNow();
-  Shell::Get()->RemoveShellObserver(this);
+  if (Shell::Get()->overview_controller())
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (target_) {
     GetTargetHeaderView()->SetShouldPaintHeader(true);

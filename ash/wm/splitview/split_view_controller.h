@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -46,6 +47,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                                        public ash::wm::WindowStateObserver,
                                        public ::wm::ActivationChangeObserver,
                                        public ShellObserver,
+                                       public OverviewObserver,
                                        public display::DisplayObserver,
                                        public TabletModeObserver,
                                        public AccessibilityObserver,
@@ -171,6 +173,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // ShellObserver:
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
+
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
 

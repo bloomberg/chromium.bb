@@ -6,9 +6,9 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/shell.h"
-#include "ash/shell_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
@@ -34,7 +34,7 @@ gfx::Point CalculateDragPoint(const WindowResizer& resizer,
   return location;
 }
 
-class TestShellObserver : public ShellObserver {
+class TestOverviewObserver : public OverviewObserver {
  public:
   enum AnimationState {
     UNKNOWN,
@@ -42,13 +42,15 @@ class TestShellObserver : public ShellObserver {
     CANCELED,
   };
 
-  explicit TestShellObserver(bool should_monitor_animation_state)
+  explicit TestOverviewObserver(bool should_monitor_animation_state)
       : should_monitor_animation_state_(should_monitor_animation_state) {
-    Shell::Get()->AddShellObserver(this);
+    Shell::Get()->overview_controller()->AddObserver(this);
   }
-  ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
+  ~TestOverviewObserver() override {
+    Shell::Get()->overview_controller()->RemoveObserver(this);
+  }
 
-  // ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override {
     UpdateLastAnimationWasSlide(
         Shell::Get()->overview_controller()->overview_session());
@@ -121,7 +123,7 @@ class TestShellObserver : public ShellObserver {
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestOverviewObserver);
 };
 
 void WaitForOcclusionStateChange(aura::Window* window) {
@@ -158,12 +160,13 @@ TEST_F(OverviewControllerTest,
 TEST_F(OverviewControllerTest, AnimationCallbacks) {
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  TestShellObserver observer(/*should_monitor_animation_state = */ true);
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
   // Enter without windows.
   auto* shell = Shell::Get();
   shell->overview_controller()->ToggleOverview();
   EXPECT_TRUE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::COMPLETED, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::COMPLETED,
+            observer.starting_animation_state());
   auto* overview_controller = shell->overview_controller();
   EXPECT_TRUE(overview_controller->HasBlurForTest());
   EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
@@ -171,12 +174,12 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   // Exit without windows still creates an animation.
   shell->overview_controller()->ToggleOverview();
   EXPECT_FALSE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   EXPECT_TRUE(overview_controller->HasBlurForTest());
   EXPECT_TRUE(overview_controller->HasBlurAnimationForTest());
 
   observer.WaitForEndingAnimationComplete();
-  EXPECT_EQ(TestShellObserver::COMPLETED, observer.ending_animation_state());
+  EXPECT_EQ(TestOverviewObserver::COMPLETED, observer.ending_animation_state());
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 
@@ -187,23 +190,24 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
       CreateTestWindowInShellWithBounds(bounds));
 
   observer.Reset();
-  ASSERT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
-  ASSERT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+  ASSERT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
+  ASSERT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
 
   // Enter with windows.
   shell->overview_controller()->ToggleOverview();
   EXPECT_TRUE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
-  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
 
   // Exit with windows before starting animation ends.
   shell->overview_controller()->ToggleOverview();
   EXPECT_FALSE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::CANCELED,
+            observer.starting_animation_state());
   // No shield so ending animation ends immediately.
-  EXPECT_EQ(TestShellObserver::COMPLETED, observer.ending_animation_state());
+  EXPECT_EQ(TestOverviewObserver::COMPLETED, observer.ending_animation_state());
   // Blur animation never started.
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
@@ -213,8 +217,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   // Enter again before exit animation ends.
   shell->overview_controller()->ToggleOverview();
   EXPECT_TRUE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
-  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.ending_animation_state());
+  EXPECT_EQ(TestOverviewObserver::UNKNOWN, observer.starting_animation_state());
   // Blur animation will start when animation is completed.
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
@@ -222,7 +226,8 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
   // Activating window while entering animation should cancel the overview.
   wm::ActivateWindow(window1.get());
   EXPECT_FALSE(shell->overview_controller()->IsSelecting());
-  EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
+  EXPECT_EQ(TestOverviewObserver::CANCELED,
+            observer.starting_animation_state());
   // Blur animation never started.
   EXPECT_FALSE(overview_controller->HasBlurForTest());
   EXPECT_FALSE(overview_controller->HasBlurAnimationForTest());
@@ -230,7 +235,7 @@ TEST_F(OverviewControllerTest, AnimationCallbacks) {
 
 // Tests the slide animation for overview is never used in clamshell.
 TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
-  TestShellObserver observer(/*should_monitor_animation_state = */ false);
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
   const gfx::Rect bounds(200, 200);
   std::unique_ptr<aura::Window> window(
@@ -253,7 +258,7 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
 // are minimized, and that if overview is exited from the home launcher all
 // windows are minimized.
 TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
-  TestShellObserver observer(/*should_monitor_animation_state = */ false);
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ false);
 
   // Ensure calls to EnableTabletModeWindowManager complete.
   base::RunLoop().RunUntilIdle();
@@ -286,7 +291,7 @@ TEST_F(OverviewControllerTest, OcclusionTest) {
   Shell::Get()
       ->overview_controller()
       ->set_occlusion_pause_duration_for_end_ms_for_test(100);
-  TestShellObserver observer(/*should_monitor_animation_state = */ true);
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   gfx::Rect bounds(0, 0, 100, 100);

@@ -12,6 +12,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ui_controls_factory_ash.h"
 #include "ash/test_screenshot_delegate.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
@@ -57,7 +59,7 @@ class TestNetworkObserver : public NetworkObserver {
 // make sure they work properly. The test is done as an interactive ui test
 // using ui_controls::Send*() functions.
 // This is to catch any future regressions (crbug.com/469235).
-class AcceleratorTest : public AshTestBase, public ShellObserver {
+class AcceleratorTest : public AshTestBase, public OverviewObserver {
  public:
   AcceleratorTest() : is_in_overview_mode_(false) {}
 
@@ -66,7 +68,7 @@ class AcceleratorTest : public AshTestBase, public ShellObserver {
 
     AshTestBase::SetUp();
 
-    Shell::Get()->AddShellObserver(this);
+    Shell::Get()->overview_controller()->AddObserver(this);
 
     chromeos::NetworkHandler::Initialize();
   }
@@ -74,7 +76,7 @@ class AcceleratorTest : public AshTestBase, public ShellObserver {
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
 
-    Shell::Get()->RemoveShellObserver(this);
+    Shell::Get()->overview_controller()->RemoveObserver(this);
 
     AshTestBase::TearDown();
 
@@ -94,7 +96,7 @@ class AcceleratorTest : public AshTestBase, public ShellObserver {
     loop.Run();
   }
 
-  // ash::ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override { is_in_overview_mode_ = true; }
   void OnOverviewModeEnded() override { is_in_overview_mode_ = false; }
 

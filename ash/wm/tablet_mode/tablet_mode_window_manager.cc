@@ -48,6 +48,7 @@ TabletModeWindowManager::~TabletModeWindowManager() {
     window->RemoveObserver(this);
   added_windows_.clear();
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->split_view_controller()->RemoveObserver(this);
   EnableBackdropBehindTopWindowOnEachDisplay(false);
@@ -84,6 +85,35 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
     window_state_map_.erase(it);
 }
 
+void TabletModeWindowManager::OnSplitViewModeEnded() {
+  switch (Shell::Get()->split_view_controller()->end_reason()) {
+    case SplitViewController::EndReason::kNormal:
+    case SplitViewController::EndReason::kUnsnappableWindowActivated:
+      break;
+    case SplitViewController::EndReason::kHomeLauncherPressed:
+    case SplitViewController::EndReason::kActiveUserChanged:
+      // For the case of kHomeLauncherPressed, the home launcher will minimize
+      // the snapped windows after ending splitview, so avoid maximizing them
+      // here. For the case of kActiveUserChanged, the snapped windows will be
+      // used to restore the splitview layout when switching back, and it is
+      // already too late to maximize them anyway (the for loop below would
+      // iterate over windows in the newly activated user session).
+      return;
+  }
+
+  // Maximize all snapped windows upon exiting split view mode. Note the snapped
+  // window might not be tracked in our |window_state_map_|.
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  for (auto* window : windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (window_state->IsSnapped()) {
+      wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
+      window_state->OnWMEvent(&event);
+    }
+  }
+}
+
 void TabletModeWindowManager::OnOverviewModeStarting() {
   for (auto& pair : window_state_map_)
     SetDeferBoundsUpdates(pair.first, /*defer_bounds_updates=*/true);
@@ -114,35 +144,6 @@ void TabletModeWindowManager::OnOverviewModeEnded() {
     // flag. Reset the flag here so that it does not affect window bounds
     // update later.
     pair.second->set_use_zero_animation_type(false);
-  }
-}
-
-void TabletModeWindowManager::OnSplitViewModeEnded() {
-  switch (Shell::Get()->split_view_controller()->end_reason()) {
-    case SplitViewController::EndReason::kNormal:
-    case SplitViewController::EndReason::kUnsnappableWindowActivated:
-      break;
-    case SplitViewController::EndReason::kHomeLauncherPressed:
-    case SplitViewController::EndReason::kActiveUserChanged:
-      // For the case of kHomeLauncherPressed, the home launcher will minimize
-      // the snapped windows after ending splitview, so avoid maximizing them
-      // here. For the case of kActiveUserChanged, the snapped windows will be
-      // used to restore the splitview layout when switching back, and it is
-      // already too late to maximize them anyway (the for loop below would
-      // iterate over windows in the newly activated user session).
-      return;
-  }
-
-  // Maximize all snapped windows upon exiting split view mode. Note the snapped
-  // window might not be tracked in our |window_state_map_|.
-  MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
-  for (auto* window : windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    if (window_state->IsSnapped()) {
-      wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
-      window_state->OnWMEvent(&event);
-    }
   }
 }
 
@@ -289,6 +290,7 @@ TabletModeWindowManager::TabletModeWindowManager() {
   EnableBackdropBehindTopWindowOnEachDisplay(true);
   display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
   event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
 }

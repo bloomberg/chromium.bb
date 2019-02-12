@@ -1071,6 +1071,7 @@ component("ash") {
     "wm/overview/overview_grid.h",
     "wm/overview/overview_item.cc",
     "wm/overview/overview_item.h",
+    "wm/overview/overview_observer.h",
     "wm/overview/overview_session.cc",
     "wm/overview/overview_session.h",
     "wm/overview/overview_utils.cc",

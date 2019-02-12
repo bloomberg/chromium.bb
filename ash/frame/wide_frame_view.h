@@ -8,8 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
-#include "ash/shell.h"
-#include "ash/shell_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -37,7 +36,7 @@ class ASH_EXPORT WideFrameView
       public aura::WindowObserver,
       public display::DisplayObserver,
       public ash::ImmersiveFullscreenControllerDelegate,
-      public ash::ShellObserver {
+      public OverviewObserver {
  public:
   explicit WideFrameView(views::Widget* target);
   ~WideFrameView() override;
@@ -76,7 +75,7 @@ class ASH_EXPORT WideFrameView
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
 
-  // ash::ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 

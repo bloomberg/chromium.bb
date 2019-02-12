@@ -12,6 +12,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
@@ -40,6 +41,7 @@ class ASH_EXPORT TabletModeWindowManager
     : public aura::WindowObserver,
       public display::DisplayObserver,
       public ShellObserver,
+      public OverviewObserver,
       public SplitViewController::Observer {
  public:
   // This should only be deleted by the creator (ash::Shell).
@@ -58,10 +60,12 @@ class ASH_EXPORT TabletModeWindowManager
   void WindowStateDestroyed(aura::Window* window);
 
   // ShellObserver:
+  void OnSplitViewModeEnded() override;
+
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEnded() override;
-  void OnSplitViewModeEnded() override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_controller_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 
@@ -47,6 +48,7 @@ class BackdropDelegate;
 class BackdropController : public AccessibilityObserver,
                            public AppListControllerObserver,
                            public ShellObserver,
+                           public OverviewObserver,
                            public SplitViewController::Observer,
                            public WallpaperControllerObserver {
  public:
@@ -70,11 +72,13 @@ class BackdropController : public AccessibilityObserver,
   aura::Window* backdrop_window() { return backdrop_window_; }
 
   // ShellObserver:
+  void OnSplitViewModeStarting() override;
+  void OnSplitViewModeEnded() override;
+
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
-  void OnSplitViewModeStarting() override;
-  void OnSplitViewModeEnded() override;
 
   // AppListControllerObserver:
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;

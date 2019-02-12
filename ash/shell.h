@@ -199,7 +199,6 @@ class WaylandServerController;
 class WindowServiceOwner;
 class WindowCycleController;
 class WindowPositioner;
-class OverviewSession;
 class OverviewController;
 class WindowTreeHostManager;
 
@@ -599,23 +598,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when the login status changes.
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
-
-  // Notifies observers that overview mode is about to be started (before the
-  // windows get re-arranged).
-  void NotifyOverviewModeStarting();
-
-  // Notifies observers that the start overview mode animation has completed.
-  void NotifyOverviewModeStartingAnimationComplete(bool canceled);
-
-  // Notifies observers that overview mode is about to end (before the windows
-  // restore themselves). |overview_session| must not be null.
-  void NotifyOverviewModeEnding(OverviewSession* overview_session);
-
-  // Notifies observers that overview mode has ended.
-  void NotifyOverviewModeEnded();
-
-  // Notifies observers that the end overview mode animation has completed.
-  void NotifyOverviewModeEndingAnimationComplete(bool canceled);
 
   // Notifies observers that split view mode is about to be started (before the
   // window gets snapped and activated).

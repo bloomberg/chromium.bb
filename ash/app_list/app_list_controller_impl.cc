@@ -78,13 +78,14 @@ AppListControllerImpl::AppListControllerImpl()
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->mru_window_tracker()->AddObserver(this);
 }
 
-AppListControllerImpl::~AppListControllerImpl() {}
+AppListControllerImpl::~AppListControllerImpl() = default;
 
 void AppListControllerImpl::SetClient(mojom::AppListClientPtr client_ptr) {
   client_ = std::move(client_ptr);
@@ -496,6 +497,21 @@ void AppListControllerImpl::FlushForTesting() {
   bindings_.FlushForTesting();
 }
 
+// Stop observing at the beginning of ~Shell to avoid unnecessary work during
+// Shell shutdown.
+void AppListControllerImpl::OnShellDestroying() {
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->overview_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
+  Shell::Get()->mru_window_tracker()->RemoveObserver(this);
+  model_.RemoveObserver(this);
+}
+
 void AppListControllerImpl::OnOverviewModeStarting() {
   if (!IsTabletMode()) {
     DismissAppList();
@@ -534,20 +550,6 @@ void AppListControllerImpl::OnOverviewModeEndingAnimationComplete(
 
   presenter_.ScheduleOverviewModeAnimation(/*start=*/false,
                                            use_slide_to_exit_overview_);
-}
-
-// Stop observing at the beginning of ~Shell to avoid unnecessary work during
-// Shell shutdown.
-void AppListControllerImpl::OnShellDestroying() {
-  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
-  Shell::Get()->mru_window_tracker()->RemoveObserver(this);
-  model_.RemoveObserver(this);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
