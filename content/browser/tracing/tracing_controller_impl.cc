@@ -153,6 +153,10 @@ TracingControllerImpl::TracingControllerImpl()
   base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
       weak_ptr_factory_.GetWeakPtr());
   g_tracing_controller = this;
+
+  // TODO(oysteine): Instead of connecting right away, we should connect
+  // in StartTracing once this no longer causes test flakiness.
+  ConnectToServiceIfNeeded();
 }
 
 TracingControllerImpl::~TracingControllerImpl() {
@@ -365,7 +369,6 @@ bool TracingControllerImpl::StartTracing(
       std::make_unique<base::trace_event::TraceConfig>(trace_config);
 
   start_tracing_done_ = std::move(callback);
-  ConnectToServiceIfNeeded();
   coordinator_->StartTracing(trace_config.ToString());
 
   if (start_tracing_done_ &&
