@@ -7,15 +7,15 @@
 #include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -64,11 +64,10 @@ void IncognitoWindowCountView::Init() {
       views::BoxLayout::Orientation::kVertical));
 
   auto incognito_icon = std::make_unique<views::ImageView>();
-  // TODO(https://crbug.com/896235): Color to be updated after incognito
-  // redesign is finalized. Text color is chosen to have maximum contrast with
-  // background color.
-  const SkColor icon_color = views::style::GetColor(
-      *this, views::style::CONTEXT_TEXTFIELD, STYLE_PRIMARY_MONOSPACED);
+  const ui::ThemeProvider& theme_provider =
+      ThemeService::GetThemeProviderForProfile(browser_->profile());
+  const SkColor icon_color =
+      theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
   incognito_icon->SetImage(
       gfx::CreateVectorIcon(kIncognitoIcon, 40, icon_color));
 
