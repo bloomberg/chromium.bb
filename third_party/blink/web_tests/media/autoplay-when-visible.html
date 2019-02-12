@@ -67,9 +67,8 @@
       assert_false(inscreen.paused);
       assert_true(audio.paused, 'audio should not play');
 
-      // Both autoplay videos should have loaded.
+      // inscreen autoplay video should have loaded.
       assert_greater_than_equal(inscreen.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
-      assert_greater_than_equal(offscreen.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
 
       // Move video in screen.
       offscreen.style.top = '0px';
@@ -80,6 +79,9 @@
         assert_false(offscreen.paused);
         assert_true(offscreenNoAutoplay.paused);
         assert_true(audio.paused, 'audio should not play');
+
+        // offscreen autoplay video should have loaded.
+        assert_greater_than_equal(offscreen.readyState, HTMLMediaElement.HAVE_ENOUGH_DATA);
 
         // Call to play() should succeed regardless of visibility.
         offscreenNoAutoplay.play();
