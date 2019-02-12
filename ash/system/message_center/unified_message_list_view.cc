@@ -258,6 +258,16 @@ gfx::Rect UnifiedMessageListView::GetLastNotificationBounds() const {
   return GetContainer(child_count() - 1)->bounds();
 }
 
+gfx::Rect UnifiedMessageListView::GetNotificationBoundsBelowY(
+    int y_offset) const {
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    if (view->bounds().bottom() >= y_offset)
+      return view->bounds();
+  }
+  return gfx::Rect();
+}
+
 gfx::Size UnifiedMessageListView::CalculatePreferredSize() const {
   return gfx::Size(kTrayMenuWidth,
                    gfx::Tween::IntValueBetween(GetCurrentValue(), start_height_,

@@ -4,6 +4,8 @@
 
 #include "ash/system/message_center/unified_message_center_view.h"
 
+#include <algorithm>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -191,7 +193,7 @@ void UnifiedMessageCenterView::Layout() {
   }
 
   ScrollToTarget();
-  NotifyHeightBelowScroll();
+  NotifyRectBelowScroll();
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
@@ -219,7 +221,7 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
     scroll_bar_->ScrollByContentsOffset(previous_y - scroller_->y());
   }
 
-  NotifyHeightBelowScroll();
+  NotifyRectBelowScroll();
 }
 
 void UnifiedMessageCenterView::ButtonPressed(views::Button* sender,
@@ -237,9 +239,9 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
   OnMessageCenterScrolled();
 }
 
-void UnifiedMessageCenterView::SetNotificationHeightBelowScroll(
-    int height_below_scroll) {
-  parent_->SetNotificationHeightBelowScroll(height_below_scroll);
+void UnifiedMessageCenterView::SetNotificationRectBelowScroll(
+    const gfx::Rect& rect_below_scroll) {
+  parent_->SetNotificationRectBelowScroll(rect_below_scroll);
 }
 
 void UnifiedMessageCenterView::UpdateVisibility() {
@@ -317,9 +319,19 @@ int UnifiedMessageCenterView::GetStackedNotificationCount() const {
   return message_list_view_->CountNotificationsAboveY(y_offset);
 }
 
-void UnifiedMessageCenterView::NotifyHeightBelowScroll() {
-  SetNotificationHeightBelowScroll(std::max(
-      0, message_list_view_->height() - scroller_->GetVisibleRect().bottom()));
+void UnifiedMessageCenterView::NotifyRectBelowScroll() {
+  gfx::Rect rect_below_scroll;
+  rect_below_scroll.set_height(
+      std::max(0, message_list_view_->GetLastNotificationBounds().bottom() -
+                      scroller_->GetVisibleRect().bottom()));
+
+  gfx::Rect notification_bounds =
+      message_list_view_->GetNotificationBoundsBelowY(
+          scroller_->GetVisibleRect().bottom());
+  rect_below_scroll.set_x(notification_bounds.x());
+  rect_below_scroll.set_width(notification_bounds.width());
+
+  SetNotificationRectBelowScroll(rect_below_scroll);
 }
 
 }  // namespace ash

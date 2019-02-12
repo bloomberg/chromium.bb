@@ -36,13 +36,16 @@ namespace {
 // Border applied to SystemTrayContainer and DetailedViewContainer to iminate
 // notification list scrolling under SystemTray part of UnifiedSystemTray.
 // The border paints mock notification frame behind the top corners based on
-// |height_below_scroll|.
+// |rect_below_scroll|.
 class TopCornerBorder : public views::Border {
  public:
   TopCornerBorder() = default;
 
   // views::Border:
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    if (rect_below_scroll_.IsEmpty())
+      return;
+
     gfx::ScopedCanvas scoped(canvas);
 
     SkPath path;
@@ -56,25 +59,21 @@ class TopCornerBorder : public views::Border {
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setAntiAlias(true);
 
-    const int height = kUnifiedTrayCornerRadius * 4;
-    canvas->DrawRoundRect(
-        gfx::RectF(0,
-                   -height + std::min(height_below_scroll_,
-                                      kUnifiedTrayCornerRadius * 2),
-                   view.width(), height),
-        kUnifiedTrayCornerRadius, flags);
+    gfx::Rect rect = rect_below_scroll_;
+    rect.Inset(gfx::Insets(-kUnifiedTrayCornerRadius * 4, 0, 0, 0));
+    canvas->DrawRoundRect(gfx::RectF(rect), kUnifiedTrayCornerRadius, flags);
   }
 
   gfx::Insets GetInsets() const override { return gfx::Insets(); }
 
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
 
-  void set_height_below_scroll(int height_below_scroll) {
-    height_below_scroll_ = height_below_scroll;
+  void set_rect_below_scroll(const gfx::Rect& rect_below_scroll) {
+    rect_below_scroll_ = rect_below_scroll;
   }
 
  private:
-  int height_below_scroll_ = 0;
+  gfx::Rect rect_below_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(TopCornerBorder);
 };
@@ -357,12 +356,12 @@ bool UnifiedSystemTrayView::IsTransformEnabled() const {
          !message_center_view_->visible();
 }
 
-void UnifiedSystemTrayView::SetNotificationHeightBelowScroll(
-    int height_below_scroll) {
+void UnifiedSystemTrayView::SetNotificationRectBelowScroll(
+    const gfx::Rect& rect_below_scroll) {
   static_cast<TopCornerBorder*>(system_tray_container_->border())
-      ->set_height_below_scroll(height_below_scroll);
+      ->set_rect_below_scroll(rect_below_scroll);
   static_cast<TopCornerBorder*>(detailed_view_container_->border())
-      ->set_height_below_scroll(height_below_scroll);
+      ->set_rect_below_scroll(rect_below_scroll);
   SchedulePaint();
 }
 

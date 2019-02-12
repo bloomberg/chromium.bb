@@ -91,8 +91,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   bool IsTransformEnabled() const;
 
   // Update the top of the SystemTray part to imitate notification list
-  // scrolling under SystemTray. |height_below_scroll| should not be negative.
-  void SetNotificationHeightBelowScroll(int height_below_scroll);
+  // scrolling under SystemTray. |rect_below_scroll| is the region of
+  // notifications covered by SystemTray part, and its coordinate is relative to
+  // UnifiedSystemTrayView. It can be empty.
+  void SetNotificationRectBelowScroll(const gfx::Rect& rect_below_scroll);
 
   // Create background of UnifiedSystemTray that is semi-transparent and has
   // rounded corners.
