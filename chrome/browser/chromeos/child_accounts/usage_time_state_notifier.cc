@@ -55,14 +55,19 @@ void UsageTimeStateNotifier::RemoveObserver(
   }
 }
 
+UsageTimeStateNotifier::UsageTimeState UsageTimeStateNotifier::GetState()
+    const {
+  return last_state_;
+}
+
 void UsageTimeStateNotifier::ChangeUsageTimeState(
     UsageTimeStateNotifier::UsageTimeState state) {
   if (state == last_state_)
     return;
-  for (auto& observer : observers_) {
-    observer.OnUsageTimeStateChange(state);
-  }
   last_state_ = state;
+  for (auto& observer : observers_) {
+    observer.OnUsageTimeStateChange(last_state_);
+  }
 }
 
 void UsageTimeStateNotifier::OnSessionStateChanged() {

@@ -81,6 +81,8 @@ TEST_F(UsageTimeStateNotifierTest, CallObserverWhenSessionIsActive) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE};
@@ -93,7 +95,11 @@ TEST_F(UsageTimeStateNotifierTest, CallObserverWhenSessionIsLocked) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE,
@@ -107,8 +113,12 @@ TEST_F(UsageTimeStateNotifierTest, CallObserverWhenDeviceIsSuspend) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE,
@@ -122,9 +132,15 @@ TEST_F(UsageTimeStateNotifierTest, CallObserverWhenDeviceHasFinishedSuspend) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   power_manager_client()->SendSuspendDone();
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE,
@@ -139,7 +155,11 @@ TEST_F(UsageTimeStateNotifierTest, CallObserversWhenScreenIsTurnedOff) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   NotifyScreenIdleOffChanged(true);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE,
@@ -153,8 +173,14 @@ TEST_F(UsageTimeStateNotifierTest, CallObserversWhenScreenIsTurnedOn) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   NotifyScreenIdleOffChanged(true);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   NotifyScreenIdleOffChanged(false);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE,
@@ -169,7 +195,11 @@ TEST_F(UsageTimeStateNotifierTest, DoNotCallObserversWhenStateDoNotChange) {
   TestUsageTimeStateNotifierObserver observer;
   UsageTimeStateNotifier::GetInstance()->AddObserver(&observer);
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   NotifyScreenIdleOffChanged(false);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
 
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected = {
       UsageTimeStateNotifier::UsageTimeState::ACTIVE};
@@ -184,27 +214,45 @@ TEST_F(UsageTimeStateNotifierTest, CallObserversForMultipleEvents) {
   std::vector<UsageTimeStateNotifier::UsageTimeState> expected;
 
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::ACTIVE);
 
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::INACTIVE);
 
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::ACTIVE);
 
   NotifyScreenIdleOffChanged(true);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::INACTIVE);
 
   NotifyScreenIdleOffChanged(false);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::ACTIVE);
 
   power_manager_client()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::INACTIVE);
 
   power_manager_client()->SendSuspendDone();
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::INACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(UsageTimeStateNotifier::UsageTimeState::ACTIVE,
+            UsageTimeStateNotifier::GetInstance()->GetState());
   expected.push_back(UsageTimeStateNotifier::UsageTimeState::ACTIVE);
 
   EXPECT_EQ(expected, observer.events());

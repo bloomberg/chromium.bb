@@ -33,6 +33,9 @@ namespace chromeos {
 
 namespace {
 
+constexpr base::TimeDelta kUsageTimeLimitWarningTime =
+    base::TimeDelta::FromMinutes(15);
+
 // Dictionary keys for prefs::kScreenTimeLastState.
 constexpr char kScreenStateLocked[] = "locked";
 constexpr char kScreenStateCurrentPolicyType[] = "active_policy";
@@ -58,6 +61,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       pref_service_(Profile::FromBrowserContext(context)->GetPrefs()),
       clock_(base::DefaultClock::GetInstance()),
       next_state_timer_(std::make_unique<base::OneShotTimer>()),
+      usage_time_limit_warning_timer_(std::make_unique<base::OneShotTimer>()),
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
@@ -82,6 +86,16 @@ ScreenTimeController::~ScreenTimeController() {
       this);
 }
 
+void ScreenTimeController::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void ScreenTimeController::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
   return ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
       ->GetChildScreenTime();
@@ -94,6 +108,9 @@ void ScreenTimeController::SetClocksForTesting(
   clock_ = clock;
   next_state_timer_ = std::make_unique<base::OneShotTimer>(tick_clock);
   next_state_timer_->SetTaskRunner(task_runner);
+  usage_time_limit_warning_timer_ =
+      std::make_unique<base::OneShotTimer>(tick_clock);
+  usage_time_limit_warning_timer_->SetTaskRunner(task_runner);
 }
 
 void ScreenTimeController::CheckTimeLimit(const std::string& source) {
@@ -102,6 +119,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   // Stop all timers. They will be rescheduled below.
   ResetStateTimers();
   ResetInSessionTimers();
+  ResetWarningTimers();
 
   base::Time now = clock_->Now();
   const icu::TimeZone& time_zone =
@@ -156,6 +174,9 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
       time_limit_notifier_.MaybeScheduleNotifications(notification_type.value(),
                                                       remaining_time);
     }
+
+    if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
+      ScheduleUsageTimeLimitWarning(state);
   }
 
   base::Time next_get_state_time =
@@ -222,9 +243,36 @@ void ScreenTimeController::ResetStateTimers() {
   next_state_timer_->Stop();
 }
 
+void ScreenTimeController::ResetWarningTimers() {
+  VLOG(1) << "Stopping warning timers";
+  usage_time_limit_warning_timer_->Stop();
+}
+
 void ScreenTimeController::ResetInSessionTimers() {
   VLOG(1) << "Stopping in-session timers";
   time_limit_notifier_.UnscheduleNotifications();
+}
+
+void ScreenTimeController::ScheduleUsageTimeLimitWarning(
+    const usage_time_limit::State& state) {
+  if (state.next_state_active_policy ==
+          usage_time_limit::ActivePolicies::kUsageLimit &&
+      UsageTimeStateNotifier::GetInstance()->GetState() ==
+          UsageTimeStateNotifier::UsageTimeState::ACTIVE) {
+    base::Time now = clock_->Now();
+    base::TimeDelta time_until_next_state = state.next_state_change_time - now;
+    base::TimeDelta delay =
+        time_until_next_state < kUsageTimeLimitWarningTime
+            ? base::TimeDelta()
+            : time_until_next_state - kUsageTimeLimitWarningTime;
+
+    VLOG(1) << "Scheduling usage time limit warning in " << delay.InMinutes()
+            << " minutes.";
+    usage_time_limit_warning_timer_->Start(
+        FROM_HERE, delay,
+        base::BindRepeating(&ScreenTimeController::UsageTimeLimitWarning,
+                            base::Unretained(this)));
+  }
 }
 
 void ScreenTimeController::SaveCurrentStateToPref(
@@ -336,6 +384,30 @@ ScreenTimeController::GetLastStateFromPref() {
   return result;
 }
 
+void ScreenTimeController::UsageTimeLimitWarning() {
+  base::Time now = clock_->Now();
+  const icu::TimeZone& time_zone =
+      system::TimezoneSettings::GetInstance()->GetTimezone();
+  const base::DictionaryValue* time_limit =
+      pref_service_->GetDictionary(prefs::kUsageTimeLimit);
+
+  base::Optional<base::TimeDelta> remaining_usage =
+      usage_time_limit::GetRemainingTimeUsage(time_limit->CreateDeepCopy(), now,
+                                              GetScreenTimeDuration(),
+                                              &time_zone);
+
+  // Remaining time usage can be bigger than |kUsageTimeLimitWarningTime|
+  // because it is counted in another class so the timers might be called with
+  // some delay. We must ensure that the observers will be called when the
+  // usage time is less than |kUsageTimeLimitWarningTime|.
+  if (remaining_usage && remaining_usage < kUsageTimeLimitWarningTime) {
+    for (Observer& observer : observers_)
+      observer.UsageTimeLimitWarning();
+  } else {
+    CheckTimeLimit("UsageTimeLimitWarning");
+  }
+}
+
 void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
@@ -362,6 +434,7 @@ void ScreenTimeController::OnSessionStateChanged() {
 void ScreenTimeController::OnUsageTimeStateChange(
     const UsageTimeStateNotifier::UsageTimeState state) {
   if (state == UsageTimeStateNotifier::UsageTimeState::INACTIVE) {
+    ResetWarningTimers();
     ResetInSessionTimers();
   } else {
     CheckTimeLimit("OnUsageTimeStateChange");
