@@ -19,6 +19,8 @@ class AXObjectCache;
 // Document::ExistingAXObjectCache will always return a valid
 // AXObjectCache if the document is still active.
 class CORE_EXPORT AXContext {
+  USING_FAST_MALLOC(AXContext);
+
  public:
   explicit AXContext(Document& document);
   virtual ~AXContext();
