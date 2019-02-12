@@ -50,7 +50,7 @@ CONTEXT_TEST_F(SignalTest, BasicSignalSyncTokenTest) {
   gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
 
   TestSignalSyncToken(sync_token);
-};
+}
 
 CONTEXT_TEST_F(SignalTest, EmptySignalSyncTokenTest) {
 #if defined(OS_WIN)
@@ -64,7 +64,7 @@ CONTEXT_TEST_F(SignalTest, EmptySignalSyncTokenTest) {
   // immediately.
   gpu::SyncToken sync_token;
   TestSignalSyncToken(sync_token);
-};
+}
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalSyncTokenTest) {
 #if defined(OS_WIN)
@@ -80,7 +80,7 @@ CONTEXT_TEST_F(SignalTest, InvalidSignalSyncTokenTest) {
                             gpu::CommandBufferId::FromUnsafeValue(1297824234),
                             9123743439);
   TestSignalSyncToken(sync_token);
-};
+}
 
 CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
 #if defined(OS_WIN)
@@ -97,7 +97,7 @@ CONTEXT_TEST_F(SignalTest, BasicSignalQueryTest) {
   gl_->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
   TestSignalQuery(query);
   gl_->DeleteQueriesEXT(1, &query);
-};
+}
 
 CONTEXT_TEST_F(SignalTest, SignalQueryUnboundTest) {
 #if defined(OS_WIN)
@@ -111,7 +111,7 @@ CONTEXT_TEST_F(SignalTest, SignalQueryUnboundTest) {
   gl_->GenQueriesEXT(1, &query);
   TestSignalQuery(query);
   gl_->DeleteQueriesEXT(1, &query);
-};
+}
 
 CONTEXT_TEST_F(SignalTest, InvalidSignalQueryUnboundTest) {
 #if defined(OS_WIN)
@@ -129,7 +129,7 @@ CONTEXT_TEST_F(SignalTest, InvalidSignalQueryUnboundTest) {
   TestSignalQuery(928729083);
   TestSignalQuery(928729082);
   TestSignalQuery(928729081);
-};
+}
 
 // The GpuFenceTest doesn't currently work on ChromeOS, apparently
 // due to inconsistent initialization of InProcessCommandBuffer which
@@ -191,6 +191,6 @@ CONTEXT_TEST_F(GpuFenceTest, BasicGpuFenceTest) {
 
 #endif  // defined(OS_ANDROID)
 
-};  // namespace
+}  // namespace
 
 #endif  // GPU_IPC_CLIENT_GPU_CONTEXT_TESTS_H_

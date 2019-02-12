@@ -76,7 +76,7 @@ TEST_F(ShaderDiskCacheTest, ClearsCache) {
   rv = cache->Clear(time, time, clear_cb.callback());
   ASSERT_EQ(net::OK, clear_cb.GetResult(rv));
   EXPECT_EQ(0, cache->Size());
-};
+}
 
 // For https://crbug.com/663589.
 TEST_F(ShaderDiskCacheTest, SafeToDeleteCacheMidEntryOpen) {
@@ -103,7 +103,7 @@ TEST_F(ShaderDiskCacheTest, SafeToDeleteCacheMidEntryOpen) {
   net::TestCompletionCallback available_cb2;
   int rv2 = cache->SetAvailableCallback(available_cb2.callback());
   ASSERT_EQ(net::OK, available_cb2.GetResult(rv2));
-};
+}
 
 TEST_F(ShaderDiskCacheTest, MultipleLoaderCallbacks) {
   InitCache();
@@ -138,6 +138,6 @@ TEST_F(ShaderDiskCacheTest, MultipleLoaderCallbacks) {
   int rv2 = cache->SetAvailableCallback(available_cb2.callback());
   ASSERT_EQ(net::OK, available_cb2.GetResult(rv2));
   EXPECT_EQ(count, loaded_calls);
-};
+}
 
 }  // namespace gpu
