@@ -1687,6 +1687,9 @@ extern const char kSearchSuggestionsOnLocalNtpDescription[];
 extern const char kPromosOnLocalNtpName[];
 extern const char kPromosOnLocalNtpDescription[];
 
+extern const char kRemoveNtpFakeboxName[];
+extern const char kRemoveNtpFakeboxDescription[];
+
 extern const char kEnableWebAuthenticationBleSupportName[];
 extern const char kEnableWebAuthenticationBleSupportDescription[];
 

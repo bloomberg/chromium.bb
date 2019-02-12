@@ -3312,6 +3312,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"promos-on-local-ntp", flag_descriptions::kPromosOnLocalNtpName,
      flag_descriptions::kPromosOnLocalNtpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPromosOnLocalNtp)},
+
+    {"remove-ntp-fakebox", flag_descriptions::kRemoveNtpFakeboxName,
+     flag_descriptions::kRemoveNtpFakeboxDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},
 #endif  // !defined(OS_ANDROID)
 
     {"sound-content-setting", flag_descriptions::kSoundContentSettingName,

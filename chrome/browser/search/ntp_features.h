@@ -14,6 +14,7 @@ namespace features {
 
 extern const base::Feature kDoodlesOnLocalNtp;
 extern const base::Feature kPromosOnLocalNtp;
+extern const base::Feature kRemoveNtpFakebox;
 extern const base::Feature kSearchSuggestionsOnLocalNtp;
 extern const base::Feature kUseGoogleLocalNtp;
 

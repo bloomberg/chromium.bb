@@ -2812,6 +2812,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "remove-ntp-fakebox",
+    "owners": [ "kristipark", "ramyan" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "reset-app-list-install-state",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
