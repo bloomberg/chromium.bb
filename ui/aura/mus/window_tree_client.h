@@ -218,6 +218,7 @@ class AURA_EXPORT WindowTreeClient
   void RemoveTestObserver(WindowTreeClientTestObserver* observer);
 
  private:
+  friend class EmbeddedAllocator;  // For OnWindowMusBoundsChanged().
   friend class EmbedRoot;
   friend class InFlightBoundsChange;
   friend class InFlightFocusChange;
