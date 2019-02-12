@@ -145,24 +145,6 @@ bool InitFieldId(JNIEnv* env,
   return true;
 }
 
-// Initialize a jmethodID corresponding to the static method of a given
-// |clazz|, with name |method_name| and signature |method_sig|.
-// |env| is the current JNI environment handle.
-// On success, return true and set |*method_id|.
-bool InitStaticMethodId(JNIEnv* env,
-                        jclass clazz,
-                        const char* method_name,
-                        const char* method_sig,
-                        jmethodID* method_id) {
-  *method_id = env->GetStaticMethodID(clazz, method_name, method_sig);
-  if (!*method_id) {
-    LOG_ERROR("Could not find ID for static method '%s'", method_name);
-    return false;
-  }
-  LOG_INFO("Found ID %p for static method '%s'", *method_id, method_name);
-  return true;
-}
-
 // Initialize a jfieldID corresponding to the static field of a given |clazz|,
 // with name |field_name| and signature |field_sig|.
 // |env| is the current JNI environment handle.
@@ -468,90 +450,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeLoadLibrary(
   return true;
 }
 
-// Class holding the Java class and method ID for the Java side Linker
-// postCallbackOnMainThread method.
-struct JavaCallbackBindings_class {
-  jclass clazz;
-  jmethodID method_id;
-
-  // Initialize an instance.
-  bool Init(JNIEnv* env, jclass linker_class) {
-    clazz = reinterpret_cast<jclass>(env->NewGlobalRef(linker_class));
-    return InitStaticMethodId(env, linker_class, "postCallbackOnMainThread",
-                              "(J)V", &method_id);
-  }
-};
-
-static JavaCallbackBindings_class s_java_callback_bindings;
-
-// Designated receiver function for callbacks from Java. Its name is known
-// to the Java side.
-// |env| is the current JNI environment handle and is ignored here.
-// |clazz| is the static class handle for org.chromium.base.Linker,
-// and is ignored here.
-// |arg| is a pointer to an allocated crazy_callback_t, deleted after use.
-JNI_GENERATOR_EXPORT void
-Java_org_chromium_base_library_1loader_Linker_nativeRunCallbackOnUiThread(
-    JNIEnv* env,
-    jclass clazz,
-    jlong arg) {
-  crazy_callback_t* callback = reinterpret_cast<crazy_callback_t*>(arg);
-
-  LOG_INFO("Called back from java with handler %p, opaque %p",
-           callback->handler, callback->opaque);
-
-  crazy_callback_run(callback);
-  delete callback;
-}
-
-// Request a callback from Java. The supplied crazy_callback_t is valid only
-// for the duration of this call, so we copy it to a newly allocated
-// crazy_callback_t and then call the Java side's postCallbackOnMainThread.
-// This will call back to to our RunCallbackOnUiThread some time
-// later on the UI thread.
-// |callback_request| is a crazy_callback_t.
-// |poster_opaque| is unused.
-// Returns true if the callback request succeeds.
-static bool PostForLaterExecution(crazy_callback_t* callback_request,
-                                  void* poster_opaque UNUSED) {
-  crazy_context_t* context = GetCrazyContext();
-
-  JavaVM* vm;
-  int minimum_jni_version;
-  crazy_context_get_java_vm(context, reinterpret_cast<void**>(&vm),
-                            &minimum_jni_version);
-
-  // Do not reuse JNIEnv from JNI_OnLoad, but retrieve our own.
-  JNIEnv* env;
-  if (JNI_OK !=
-      vm->GetEnv(reinterpret_cast<void**>(&env), minimum_jni_version)) {
-    LOG_ERROR("Could not create JNIEnv");
-    return false;
-  }
-
-  // Copy the callback; the one passed as an argument may be temporary.
-  crazy_callback_t* callback = new crazy_callback_t();
-  *callback = *callback_request;
-
-  LOG_INFO("Calling back to java with handler %p, opaque %p", callback->handler,
-           callback->opaque);
-
-  jlong arg = static_cast<jlong>(reinterpret_cast<uintptr_t>(callback));
-
-  env->CallStaticVoidMethod(s_java_callback_bindings.clazz,
-                            s_java_callback_bindings.method_id, arg);
-
-  // Back out and return false if we encounter a JNI exception.
-  if (env->ExceptionCheck() == JNI_TRUE) {
-    env->ExceptionDescribe();
-    env->ExceptionClear();
-    delete callback;
-    return false;
-  }
-
-  return true;
-}
-
 JNI_GENERATOR_EXPORT jboolean
 Java_org_chromium_base_library_1loader_Linker_nativeCreateSharedRelro(
     JNIEnv* env,
@@ -651,19 +549,9 @@ static bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
                           &linker_class))
     return false;
 
-  // Resolve and save the Java side Linker callback class and method.
-  LOG_INFO("Resolving callback bindings");
-  if (!s_java_callback_bindings.Init(env, linker_class)) {
-    return false;
-  }
-
   // Save JavaVM* handle into context.
   crazy_context_t* context = GetCrazyContext();
   crazy_context_set_java_vm(context, vm, JNI_VERSION_1_4);
-
-  // Register the function that the crazy linker can call to post code
-  // for later execution.
-  crazy_context_set_callback_poster(context, &PostForLaterExecution, nullptr);
 
   return true;
 }
