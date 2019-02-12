@@ -312,6 +312,8 @@ class LineLayoutItem {
 
   bool IsTruncated() { return layout_object_->IsTruncated(); }
 
+  bool EverHadLayout() const { return layout_object_->EverHadLayout(); }
+
   struct LineLayoutItemHash {
     STATIC_ONLY(LineLayoutItemHash);
     static unsigned GetHash(const LineLayoutItem& key) {
