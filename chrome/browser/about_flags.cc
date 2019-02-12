@@ -3854,6 +3854,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCSSFragmentIdentifiers)},
 
 #if !defined(OS_ANDROID)
+    {"session-restore-prioritizes-background-use-cases",
+     flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesName,
+     flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         features::kSessionRestorePrioritizesBackgroundUseCases)},
     {"page-almost-idle", flag_descriptions::kPageAlmostIdleName,
      flag_descriptions::kPageAlmostIdleDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPageAlmostIdle)},

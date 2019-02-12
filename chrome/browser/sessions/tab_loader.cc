@@ -617,7 +617,9 @@ content::WebContents* TabLoader::GetNextTabToLoad() {
 
   // It's possible the delegate decided none of the remaining tabs should be
   // loaded, in which case the TabLoader is done and will clean itself up as
-  // the stack unwinds to the outermost frame.
+  // the stack unwinds to the outermost frame. Call "StartTimerIfNeeded" to make
+  // sure that the timer invariant is enforced.
+  StartTimerIfNeeded();
   return nullptr;
 }
 

@@ -11,8 +11,10 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -78,6 +80,9 @@ class TestSessionRestorePolicy : public SessionRestorePolicy {
   using SessionRestorePolicy::SetTabLoadsStartedForTesting;
   using SessionRestorePolicy::TabData;
   using SessionRestorePolicy::UpdateSiteEngagementScoreForTesting;
+
+  // Expose some member variables.
+  using SessionRestorePolicy::tab_data_;
 
   // Expose parameters.
   using SessionRestorePolicy::cores_per_simultaneous_tab_load_;
@@ -347,6 +352,44 @@ TEST_F(SessionRestorePolicyTest, ShouldLoadFeatureDisabled) {
   policy_->NotifyTabLoadStarted();
 }
 
+TEST_F(SessionRestorePolicyTest, ShouldLoadBackgroundDataExperimentEnabled) {
+  using TabData = TestSessionRestorePolicy::TabData;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kSessionRestorePrioritizesBackgroundUseCases);
+
+  CreatePolicy(true);
+  EXPECT_TRUE(policy_->policy_enabled());
+  EXPECT_EQ(2u, policy_->simultaneous_tab_loads());
+
+  WaitForFinalTabScores();
+
+  // Disable other limit mechanisms.
+  policy_->min_tabs_to_restore_ = 0;
+  policy_->max_tabs_to_restore_ = 0;
+  policy_->mb_free_memory_per_tab_to_restore_ = 0;
+  policy_->max_time_since_last_use_to_restore_ = base::TimeDelta();
+
+  constexpr size_t kEngagementLimit = 15;
+  policy_->min_site_engagement_to_restore_ = kEngagementLimit;
+  policy_->UpdateSiteEngagementScoreForTesting(contents1_.get(),
+                                               kEngagementLimit + 1);
+  EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
+  policy_->UpdateSiteEngagementScoreForTesting(contents1_.get(),
+                                               kEngagementLimit);
+  EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
+  policy_->UpdateSiteEngagementScoreForTesting(contents1_.get(),
+                                               kEngagementLimit - 1);
+  EXPECT_FALSE(policy_->ShouldLoad(contents1_.get()));
+
+  // Mark the tab as using background communication mechanisms, and expect the
+  // site engagement policy to no longer be applied.
+  TabData* tab_data = &policy_->tab_data_[contents1_.get()];
+  tab_data->used_in_bg = true;
+  EXPECT_TRUE(policy_->ShouldLoad(contents1_.get()));
+}
+
 TEST_F(SessionRestorePolicyTest, MultipleAllTabsDoneCallbacks) {
   CreatePolicy(true);
   WaitForFinalTabScores();
@@ -419,7 +462,7 @@ TEST_F(SessionRestorePolicyTest, CalculateAgeScore) {
     ASSERT_GE(tab_data[i - 1].score, tab_data[i].score);
 }
 
-TEST_F(SessionRestorePolicyTest, ScoreTab) {
+TEST_F(SessionRestorePolicyTest, ScoreTabDefaultBehaviour) {
   using TabData = TestSessionRestorePolicy::TabData;
 
   TabData td_app;
@@ -446,6 +489,35 @@ TEST_F(SessionRestorePolicyTest, ScoreTab) {
   EXPECT_LT(td_normal_old.score, td_normal_young.score);
   EXPECT_LT(td_normal_young.score, td_pinned.score);
   EXPECT_LT(td_pinned.score, td_app.score);
+}
+
+TEST_F(SessionRestorePolicyTest, ScoreTabExperimentEnabled) {
+  using TabData = TestSessionRestorePolicy::TabData;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kSessionRestorePrioritizesBackgroundUseCases);
+
+  TabData td_bg;
+  td_bg.used_in_bg = true;
+  td_bg.last_active = base::TimeDelta::FromDays(30);
+  EXPECT_TRUE(TestSessionRestorePolicy::ScoreTab(&td_bg));
+
+  TabData td_normal_young;
+  TabData td_normal_old;
+  td_normal_young.last_active = base::TimeDelta::FromSeconds(1);
+  td_normal_old.last_active = base::TimeDelta::FromDays(7);
+  EXPECT_TRUE(TestSessionRestorePolicy::ScoreTab(&td_normal_young));
+  EXPECT_TRUE(TestSessionRestorePolicy::ScoreTab(&td_normal_old));
+
+  TabData td_internal;
+  td_internal.is_internal = true;
+  EXPECT_TRUE(TestSessionRestorePolicy::ScoreTab(&td_internal));
+
+  // Check the score produces the expected ordering of tabs.
+  EXPECT_LT(td_internal.score, td_normal_old.score);
+  EXPECT_LT(td_normal_old.score, td_normal_young.score);
+  EXPECT_LT(td_normal_young.score, td_bg.score);
 }
 
 TEST_F(SessionRestorePolicyTest, RescoringSendsNotification) {
