@@ -118,9 +118,10 @@ MidiManager* MidiManager::Create(MidiService* service) {
 MidiManagerMac::MidiManagerMac(MidiService* service) : MidiManager(service) {}
 
 MidiManagerMac::~MidiManagerMac() {
-  bool result = service()->task_service()->UnbindInstance();
-  CHECK(result);
+  if (!service()->task_service()->UnbindInstance())
+    return;
 
+  // Finalization steps should be implemented after the UnbindInstance() call.
   // Do not need to dispose |coremidi_input_| and |coremidi_output_| explicitly.
   // CoreMIDI automatically disposes them on the client disposal.
   base::AutoLock lock(midi_client_lock_);
@@ -129,10 +130,9 @@ MidiManagerMac::~MidiManagerMac() {
 }
 
 void MidiManagerMac::StartInitialization() {
-  if (!service()->task_service()->BindInstance()) {
-    NOTREACHED();
+  if (!service()->task_service()->BindInstance())
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
-  }
+
   service()->task_service()->PostBoundTask(
       kClientTaskRunner, base::BindOnce(&MidiManagerMac::InitializeCoreMIDI,
                                         base::Unretained(this)));

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/system/system_monitor.h"
+#include "media/midi/midi_export.h"
 #include "media/midi/midi_manager.h"
 
 namespace base {
@@ -27,6 +28,8 @@ class MidiManagerWin final
       public base::SystemMonitor::DevicesChangedObserver {
  public:
   class PortManager;
+
+  MIDI_EXPORT static void OverflowInstanceIdForTesting();
 
   explicit MidiManagerWin(MidiService* service);
   ~MidiManagerWin() override;
@@ -83,7 +86,7 @@ class MidiManagerWin final
                         const std::vector<uint8_t>& data);
 
   // Holds an unique instance ID.
-  const int instance_id_;
+  const int64_t instance_id_;
 
   // Keeps a TaskRunner for the I/O thread.
   scoped_refptr<base::SingleThreadTaskRunner> thread_runner_;

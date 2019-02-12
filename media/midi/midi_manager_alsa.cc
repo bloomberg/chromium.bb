@@ -169,17 +169,18 @@ MidiManagerAlsa::~MidiManagerAlsa() {
     // because of SND_SEQ_EVENT_CLIENT_EXIT.
     out_client_.reset();
   }
-
   // Ensure that no task is running any more.
-  bool result = service()->task_service()->UnbindInstance();
-  CHECK(result);
+  if (!service()->task_service()->UnbindInstance())
+    return;
+
+  // |out_client_| should be reset before UnbindInstance() call to avoid
+  // a deadlock, but other finalization steps should be implemented after the
+  // UnbindInstance() call above, if we need.
 }
 
 void MidiManagerAlsa::StartInitialization() {
-  if (!service()->task_service()->BindInstance()) {
-    NOTREACHED();
+  if (!service()->task_service()->BindInstance())
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
-  }
 
   // Create client handles and name the clients.
   int err;
