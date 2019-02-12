@@ -17,7 +17,7 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
     const gfx::Insets& client_area_insets)
     : window_(window),
       surface_layer_owner_(std::make_unique<ui::LayerOwner>(
-          std::make_unique<ui::Layer>(ui::LAYER_TEXTURED))),
+          std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR))),
       inject_gutter_(inject_gutter),
       client_area_insets_(client_area_insets) {
   surface_layer_owner_->layer()->set_name("ClientSurfaceEmbedder");
@@ -37,8 +37,10 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
 
 void ClientSurfaceEmbedder::SetSurfaceId(const viz::SurfaceId& surface_id) {
+  // Set the background to transparent to avoid a flash of color before the
+  // client surface is rendered. See https://crbug.com/930199
   surface_layer_owner_->layer()->SetShowSurface(
-      surface_id, window_->bounds().size(), SK_ColorWHITE,
+      surface_id, window_->bounds().size(), SK_ColorTRANSPARENT,
       cc::DeadlinePolicy::UseDefaultDeadline(),
       false /* stretch_content_to_fill_bounds */);
 }
