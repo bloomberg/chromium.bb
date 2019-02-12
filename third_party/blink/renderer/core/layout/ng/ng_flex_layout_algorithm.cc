@@ -96,9 +96,10 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     // We want the child's min/max size in its writing mode, not ours. We'll
     // only ever use it if the child's inline axis is our main axis.
-    MinMaxSizeInput zero_input;
+    MinMaxSizeInput input(
+        /* percentage_resolution_block_size */ content_box_size_.block_size);
     MinMaxSize min_max_sizes_border_box = child.ComputeMinMaxSize(
-        child_style.GetWritingMode(), zero_input, &child_space);
+        child_style.GetWritingMode(), input, &child_space);
     // TODO(dgrogan): Don't layout every time, just when you need to.
     scoped_refptr<NGLayoutResult> layout_result =
         child.Layout(child_space, nullptr /*break token*/);
@@ -351,19 +352,27 @@ base::Optional<MinMaxSize> NGFlexLayoutAlgorithm::ComputeMinMaxSize(
     return sizes;
   }
 
+  LayoutUnit child_percentage_resolution_block_size =
+      CalculateChildPercentageBlockSizeForMinMax(
+          ConstraintSpace(), Node(), borders_ + padding_,
+          input.percentage_resolution_block_size);
+
+  // Use default MinMaxSizeInput:
+  //   - Children of flexbox ignore any specified float properties, so children
+  //     never have to take floated siblings into account, and external floats
+  //     don't make it through the new formatting context that flexbox
+  //     establishes.
+  //   - We want the child's border box MinMaxSize, which is the default.
+  MinMaxSizeInput child_input(child_percentage_resolution_block_size);
+
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
     NGBlockNode child = ToNGBlockNode(generic_child);
     if (child.IsOutOfFlowPositioned())
       continue;
-    // Use default MinMaxSizeInput:
-    //   - Children of flexbox ignore any specified float properties, so
-    //     children never have to take floated siblings into account, and
-    //     external floats don't make it through the new formatting context that
-    //     flexbox establishes.
-    //   - We want the child's border box MinMaxSize, which is the default.
+
     MinMaxSize child_min_max_sizes =
-        ComputeMinAndMaxContentContribution(Style(), child, MinMaxSizeInput());
+        ComputeMinAndMaxContentContribution(Style(), child, child_input);
     NGBoxStrut child_margins = ComputeMinMaxMargins(Style(), child);
     child_min_max_sizes += child_margins.InlineSum();
     if (is_column_) {

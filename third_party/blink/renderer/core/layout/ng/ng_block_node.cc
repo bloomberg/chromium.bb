@@ -362,7 +362,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   // if we're outside of layout, we can't do that. This can happen on Mac.
   if ((!CanUseNewLayout() && !is_orthogonal_flow_root) ||
       (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout())) {
-    return ComputeMinMaxSizeFromLegacy(input.size_type);
+    return ComputeMinMaxSizeFromLegacy(input);
   }
 
   NGConstraintSpace zero_constraint_space =
@@ -406,7 +406,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   if (!box_->GetFrameView()->IsInPerformLayout()) {
     // We can't synthesize these using Layout() if we're not in PerformLayout.
     // This situation can happen on mac. Fall back to legacy instead.
-    return ComputeMinMaxSizeFromLegacy(input.size_type);
+    return ComputeMinMaxSizeFromLegacy(input);
   }
 
   // Have to synthesize this value.
@@ -441,17 +441,28 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
 }
 
 MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
-    NGMinMaxSizeType type) const {
+    const MinMaxSizeInput& input) const {
+  bool needs_size_reset = false;
+  if (!box_->HasOverrideContainingBlockContentLogicalHeight()) {
+    box_->SetOverrideContainingBlockContentLogicalHeight(
+        input.percentage_resolution_block_size);
+    needs_size_reset = true;
+  }
+
   MinMaxSize sizes;
   // ComputeIntrinsicLogicalWidths returns content-box + scrollbar.
   box_->ComputeIntrinsicLogicalWidths(sizes.min_size, sizes.max_size);
-  if (type == NGMinMaxSizeType::kContentBoxSize) {
+  if (input.size_type == NGMinMaxSizeType::kContentBoxSize) {
     sizes -= LayoutUnit(box_->ScrollbarLogicalWidth());
     DCHECK_GE(sizes.min_size, LayoutUnit());
     DCHECK_GE(sizes.max_size, LayoutUnit());
   } else {
     sizes += box_->BorderAndPaddingLogicalWidth();
   }
+
+  if (needs_size_reset)
+    box_->ClearOverrideContainingBlockContentSize();
+
   return sizes;
 }
 

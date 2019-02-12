@@ -40,6 +40,8 @@ class CORE_EXPORT NGLineBreaker {
                 unsigned handled_leading_floats_index,
                 const NGInlineBreakToken*,
                 NGExclusionSpace*,
+                LayoutUnit percentage_resolution_block_size_for_min_max =
+                    NGSizeIndefinite,
                 Vector<LayoutObject*>* out_floats_for_min_max = nullptr);
   ~NGLineBreaker();
 
@@ -243,8 +245,6 @@ class CORE_EXPORT NGLineBreaker {
   unsigned leading_floats_index_ = 0u;
   unsigned handled_leading_floats_index_;
 
-  Vector<LayoutObject*>* out_floats_for_min_max_;
-
   // Keep the last item |HandleTextForFastMinContent()| has handled. This is
   // used to fallback the last word to |HandleText()|.
   const NGInlineItem* fast_min_content_item_ = nullptr;
@@ -253,6 +253,11 @@ class CORE_EXPORT NGLineBreaker {
   // This is copied from NGInlineNode, then updated after each forced line break
   // if 'unicode-bidi: plaintext'.
   TextDirection base_direction_;
+
+  // During the min/max size calculation we need a special percentage
+  // resolution block-size to pass to children/pass to children.
+  LayoutUnit percentage_resolution_block_size_for_min_max_;
+  Vector<LayoutObject*>* out_floats_for_min_max_;
 };
 
 }  // namespace blink

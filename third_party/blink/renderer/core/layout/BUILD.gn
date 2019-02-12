@@ -388,6 +388,8 @@ blink_core_sources("layout") {
     "ng/inline/ng_text_fragment.h",
     "ng/inline/ng_text_fragment_builder.cc",
     "ng/inline/ng_text_fragment_builder.h",
+    "ng/layout_box_utils.cc",
+    "ng/layout_box_utils.h",
     "ng/layout_ng_block_flow.cc",
     "ng/layout_ng_block_flow.h",
     "ng/layout_ng_fieldset.cc",

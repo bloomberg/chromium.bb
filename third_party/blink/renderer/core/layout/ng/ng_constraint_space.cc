@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 
@@ -34,52 +35,18 @@ static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
-  auto writing_mode = box.StyleRef().GetWritingMode();
-  bool parallel_containing_block = IsParallelWritingMode(
-      box.ContainingBlock()->StyleRef().GetWritingMode(), writing_mode);
-  bool fixed_inline = false, fixed_block = false;
-  bool fixed_block_is_definite = true;
+  const LayoutBlock* cb = box.ContainingBlock();
 
-  LayoutUnit available_logical_width;
-  if (parallel_containing_block &&
-      box.HasOverrideContainingBlockContentLogicalWidth()) {
-    // Grid layout sets OverrideContainingBlockContentLogicalWidth|Height
-    available_logical_width = box.OverrideContainingBlockContentLogicalWidth();
-  } else if (!parallel_containing_block &&
-             box.HasOverrideContainingBlockContentLogicalHeight()) {
-    available_logical_width = box.OverrideContainingBlockContentLogicalHeight();
-  } else {
-    if (parallel_containing_block)
-      available_logical_width = box.ContainingBlockLogicalWidthForContent();
-    else
-      available_logical_width = box.PerpendicularContainingBlockLogicalHeight();
-  }
-  available_logical_width = std::max(LayoutUnit(), available_logical_width);
-
-  LayoutUnit available_logical_height;
-  if (parallel_containing_block &&
-      box.HasOverrideContainingBlockContentLogicalHeight()) {
-    // Grid layout sets OverrideContainingBlockContentLogicalWidth|Height
-    available_logical_height =
-        box.OverrideContainingBlockContentLogicalHeight();
-  } else if (!parallel_containing_block &&
-             box.HasOverrideContainingBlockContentLogicalWidth()) {
-    available_logical_height = box.OverrideContainingBlockContentLogicalWidth();
-  } else {
-    if (!box.Parent()) {
-      available_logical_height = box.View()->ViewLogicalHeightForPercentages();
-    } else if (box.ContainingBlock()) {
-      if (parallel_containing_block) {
-        available_logical_height =
-            box.ContainingBlockLogicalHeightForPercentageResolution();
-      } else {
-        available_logical_height = box.ContainingBlockLogicalWidthForContent();
-      }
-    }
-  }
+  LayoutUnit available_logical_width =
+      LayoutBoxUtils::AvailableLogicalWidth(box, cb);
+  LayoutUnit available_logical_height =
+      LayoutBoxUtils::AvailableLogicalHeight(box, cb);
   NGLogicalSize percentage_size = {available_logical_width,
                                    available_logical_height};
   NGLogicalSize available_size = percentage_size;
+
+  bool fixed_inline = false, fixed_block = false;
+  bool fixed_block_is_definite = true;
   if (box.HasOverrideLogicalWidth()) {
     available_size.inline_size = box.OverrideLogicalWidth();
     fixed_inline = true;
@@ -107,6 +74,9 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   // DCHECK(is_new_fc,
   //  box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext());
 
+  auto writing_mode = box.StyleRef().GetWritingMode();
+  bool parallel_containing_block = IsParallelWritingMode(
+      cb ? cb->StyleRef().GetWritingMode() : writing_mode, writing_mode);
   NGConstraintSpaceBuilder builder(writing_mode, writing_mode, is_new_fc,
                                    !parallel_containing_block);
 

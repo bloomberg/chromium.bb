@@ -34,8 +34,21 @@ enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
 // nodes within the same formatting context need to know which floats are beside
 // them.
 struct MinMaxSizeInput {
+  // The min-max size calculation (un-intuitively) requires a percentage
+  // resolution size!
+  // This occurs when a replaced element has an intrinsic size. E.g.
+  // <div style="float: left; height: 100px">
+  //   <img sr="intrinsic-ratio-1x1.png" style="height: 50%;" />
+  // </div>
+  // In the above example float ends up with a width of 50px.
+  //
+  // As we don't perform any tree walking, we need to pass the percentage
+  // resolution block-size for min/max down the min/max size calculation.
+  explicit MinMaxSizeInput(LayoutUnit percentage_resolution_block_size)
+      : percentage_resolution_block_size(percentage_resolution_block_size) {}
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
+  LayoutUnit percentage_resolution_block_size;
 
   // Whether to return the size as a content-box size or border-box size.
   NGMinMaxSizeType size_type = NGMinMaxSizeType::kBorderBoxSize;
@@ -83,6 +96,9 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsBody() const { return IsBlock() && box_->IsBody(); }
   bool IsDocumentElement() const { return box_->IsDocumentElement(); }
   bool IsFlexItem() const { return IsBlock() && box_->IsFlexItemIncludingNG(); }
+  bool IsFlexBox() const {
+    return IsBlock() && box_->IsFlexibleBoxIncludingNG();
+  }
   bool ShouldBeConsideredAsReplaced() const {
     return box_->ShouldBeConsideredAsReplaced();
   }
