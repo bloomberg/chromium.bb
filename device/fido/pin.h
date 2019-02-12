@@ -1,0 +1,109 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file contains structures to implement the CTAP2 PIN protocol, version
+// one. See
+// https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#authenticatorClientPIN
+
+#ifndef DEVICE_FIDO_PIN_H_
+#define DEVICE_FIDO_PIN_H_
+
+#include <stdint.h>
+
+#include <string>
+#include <vector>
+
+#include "base/containers/span.h"
+#include "base/optional.h"
+
+namespace device {
+namespace pin {
+
+// kMinBytes is the minimum number of *bytes* of PIN data that a CTAP2 device
+// will accept. Since the PIN is UTF-8 encoded, this could be a single code
+// point. However, the platform is supposed to additionally enforce a 4
+// *character* minimum
+constexpr size_t kMinBytes = 4;
+// kMaxBytes is the maximum number of bytes of PIN data that a CTAP2 device will
+// accept. (FIXME: this should be 255 according to the spec but a value larger
+// than this doesn't appear to work with Yubikeys.)
+constexpr size_t kMaxBytes = 127;
+
+// RetriesRequest asks an authenticator for the number of remaining PIN attempts
+// before the device is locked.
+struct RetriesRequest {
+  std::vector<uint8_t> EncodeAsCBOR() const;
+};
+
+// RetriesResponse reflects an authenticator's response to a |RetriesRequest|.
+struct RetriesResponse {
+  static base::Optional<RetriesResponse> Parse(
+      base::span<const uint8_t> buffer);
+
+  // retries is the number of PIN attempts remaining before the authenticator
+  // locks.
+  int64_t retries;
+
+ private:
+  RetriesResponse();
+};
+
+// KeyAgreementRequest asks an authenticator for an ephemeral ECDH key for
+// encrypting PIN material in future requests.
+struct KeyAgreementRequest {
+  std::vector<uint8_t> EncodeAsCBOR() const;
+};
+
+// KeyAgreementResponse reflects an authenticator's response to a
+// |KeyAgreementRequest| and is also used as representation of the
+// authenticator's ephemeral key.
+struct KeyAgreementResponse {
+  static base::Optional<KeyAgreementResponse> Parse(
+      base::span<const uint8_t> buffer);
+
+  // x and y contain the big-endian coordinates of a P-256 point. It is ensured
+  // that this is a valid point on the curve.
+  uint8_t x[32], y[32];
+
+ private:
+  KeyAgreementResponse();
+};
+
+// SetRequest sets an initial PIN on an authenticator. (This is distinct from
+// changing a PIN.)
+class SetRequest {
+  SetRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
+
+ public:
+  // New creates a new PIN request. The |pin| must be between |kMinBytes| and
+  // |kMaxBytes| and be valid UTF-8
+  static base::Optional<SetRequest> New(const std::string& pin,
+                                        const KeyAgreementResponse& peer_key);
+
+  std::vector<uint8_t> EncodeAsCBOR() const;
+
+ private:
+  const KeyAgreementResponse peer_key_;
+  uint8_t pin_[kMaxBytes + 1];
+};
+
+struct EmptyResponse {
+  static base::Optional<EmptyResponse> Parse(base::span<const uint8_t> buffer);
+};
+
+using SetResponse = EmptyResponse;
+
+// ResetRequest resets an authenticator, which should invalidate all credentials
+// and clear any configured PIN. This is not strictly a PIN-related command, but
+// is generally used to reset a PIN and so is included here.
+struct ResetRequest {
+  std::vector<uint8_t> EncodeAsCBOR() const;
+};
+
+using ResetResponse = EmptyResponse;
+
+}  // namespace pin
+}  // namespace device
+
+#endif  // DEVICE_FIDO_PIN_H_

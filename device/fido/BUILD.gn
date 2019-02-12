@@ -104,6 +104,8 @@ component("fido") {
     "opaque_attestation_statement.h",
     "opaque_public_key.cc",
     "opaque_public_key.h",
+    "pin.cc",
+    "pin.h",
     "platform_credential_store.h",
     "public_key.cc",
     "public_key.h",
