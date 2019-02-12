@@ -25,15 +25,14 @@ namespace learning {
 // indicates the type of network connection.
 class COMPONENT_EXPORT(LEARNING_IMPL) FeatureProvider {
  public:
-  using LabelledExampleCB = base::OnceCallback<void(LabelledExample)>;
+  using FeatureVectorCB = base::OnceCallback<void(FeatureVector)>;
 
   FeatureProvider();
   virtual ~FeatureProvider();
 
-  // Update |example| to include whatever features are specified by |task_|,
+  // Update |features| to include whatever features are specified by |task_|,
   // and call |cb| once they're filled in.
-  virtual void AddFeatures(const LabelledExample& example,
-                           LabelledExampleCB cb) = 0;
+  virtual void AddFeatures(FeatureVector features, FeatureVectorCB cb) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureProvider);

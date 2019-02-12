@@ -82,11 +82,9 @@ class LearningTaskControllerImplTest : public testing::Test {
   // Increments feature 0.
   class FakeFeatureProvider : public FeatureProvider {
    public:
-    void AddFeatures(const LabelledExample& example,
-                     LabelledExampleCB cb) override {
-      LabelledExample new_example = example;
-      new_example.features[0] = FeatureValue(example.features[0].value() + 1);
-      std::move(cb).Run(new_example);
+    void AddFeatures(FeatureVector features, FeatureVectorCB cb) override {
+      features[0] = FeatureValue(features[0].value() + 1);
+      std::move(cb).Run(features);
     }
   };
 
@@ -183,9 +181,11 @@ TEST_F(LearningTaskControllerImplTest, FeatureProviderIsUsed) {
   CreateController(std::move(feature_provider));
   LabelledExample example;
   example.features.push_back(FeatureValue(123));
+  example.weight = 321u;
   controller_->AddExample(example);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(trainer_raw_->training_data()[0].features[0], FeatureValue(124));
+  EXPECT_EQ(trainer_raw_->training_data()[0].weight, example.weight);
 }
 
 }  // namespace learning

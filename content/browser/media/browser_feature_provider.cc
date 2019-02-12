@@ -13,7 +13,7 @@
 using ::media::learning::FeatureLibrary;
 using ::media::learning::FeatureProviderFactoryCB;
 using ::media::learning::FeatureValue;
-using ::media::learning::LabelledExample;
+using ::media::learning::FeatureVector;
 using ::media::learning::LearningTask;
 using ::media::learning::SequenceBoundFeatureProvider;
 
@@ -36,24 +36,22 @@ FeatureProviderFactoryCB BrowserFeatureProvider::GetFactoryCB() {
   return base::BindRepeating(&BrowserFeatureProvider::Create);
 }
 
-void BrowserFeatureProvider::AddFeatures(const LabelledExample& example,
-                                         LabelledExampleCB cb) {
-  LabelledExample new_example = example;
-
+void BrowserFeatureProvider::AddFeatures(FeatureVector features,
+                                         FeatureVectorCB cb) {
   const size_t size = task_.feature_descriptions.size();
-  if (new_example.features.size() < size)
-    new_example.features.resize(size);
+  if (features.size() < size)
+    features.resize(size);
 
   // Find any features that we're supposed to fill in.
   for (size_t i = 0; i < size; i++) {
     const auto& desc = task_.feature_descriptions[i];
     if (desc.name == FeatureLibrary::NetworkType().name) {
-      new_example.features[i] = FeatureValue(
+      features[i] = FeatureValue(
           static_cast<int>(net::NetworkChangeNotifier::GetConnectionType()));
     }
   }
 
-  std::move(cb).Run(std::move(new_example));
+  std::move(cb).Run(std::move(features));
 }
 
 }  // namespace content

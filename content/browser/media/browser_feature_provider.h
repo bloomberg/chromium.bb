@@ -28,8 +28,8 @@ class BrowserFeatureProvider : public ::media::learning::FeatureProvider {
   static ::media::learning::FeatureProviderFactoryCB GetFactoryCB();
 
   // FeatureProvider
-  void AddFeatures(const ::media::learning::LabelledExample& example,
-                   LabelledExampleCB cb) override;
+  void AddFeatures(::media::learning::FeatureVector features,
+                   FeatureVectorCB cb) override;
 
  private:
   ::media::learning::LearningTask task_;

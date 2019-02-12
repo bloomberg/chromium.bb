@@ -27,8 +27,8 @@ class LearningSessionImplTest : public testing::Test {
       // we can verify that it was given to us by the session.
       if (!feature_provider_.is_null()) {
         feature_provider_.Post(FROM_HERE, &FeatureProvider::AddFeatures,
-                               LabelledExample(),
-                               FeatureProvider::LabelledExampleCB());
+                               FeatureVector(),
+                               FeatureProvider::FeatureVectorCB());
       }
     }
 
@@ -45,8 +45,8 @@ class LearningSessionImplTest : public testing::Test {
     FakeFeatureProvider(bool* flag_ptr) : flag_ptr_(flag_ptr) {}
 
     // Do nothing, except note that we were called.
-    void AddFeatures(const LabelledExample& example,
-                     FeatureProvider::LabelledExampleCB cb) override {
+    void AddFeatures(FeatureVector features,
+                     FeatureProvider::FeatureVectorCB cb) override {
       *flag_ptr_ = true;
     }
 

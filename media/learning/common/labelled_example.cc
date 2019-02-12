@@ -11,6 +11,10 @@ namespace learning {
 
 LabelledExample::LabelledExample() = default;
 
+LabelledExample::LabelledExample(FeatureVector feature_vector,
+                                 TargetValue target)
+    : features(std::move(feature_vector)), target_value(target) {}
+
 LabelledExample::LabelledExample(std::initializer_list<FeatureValue> init_list,
                                  TargetValue target)
     : features(init_list), target_value(target) {}

@@ -28,6 +28,7 @@ using WeightType = size_t;
 // One training example == group of feature values, plus the desired target.
 struct COMPONENT_EXPORT(LEARNING_COMMON) LabelledExample {
   LabelledExample();
+  LabelledExample(FeatureVector feature_vector, TargetValue target);
   LabelledExample(std::initializer_list<FeatureValue> init_list,
                   TargetValue target);
   LabelledExample(const LabelledExample& rhs);
