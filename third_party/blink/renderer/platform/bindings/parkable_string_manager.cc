@@ -203,6 +203,18 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
       std::move(string), ParkableStringImpl::ParkableState::kParkable);
   unparked_strings_.insert(raw_ptr, new_parkable_string.get());
   ScheduleAgingTaskIfNeeded();
+
+  // Lazy registration because registering too early can cause crashes on Linux,
+  // see crbug.com/930117, and registering without any strings is pointless
+  // anyway.
+  if (!did_register_memory_pressure_listener_) {
+    // No need to ever unregister, as the only ParkableStringManager instance
+    // lives forever.
+    MemoryPressureListenerRegistry::Instance().RegisterClient(
+        MakeGarbageCollected<OnPurgeMemoryListener>());
+    did_register_memory_pressure_listener_ = true;
+  }
+
   return new_parkable_string;
 }
 
@@ -405,6 +417,7 @@ void ParkableStringManager::ResetForTesting() {
   waiting_to_record_stats_ = false;
   has_pending_aging_task_ = false;
   should_record_stats_ = false;
+  did_register_memory_pressure_listener_ = false;
   unparked_strings_.clear();
   parked_strings_.clear();
 }
@@ -414,12 +427,8 @@ ParkableStringManager::ParkableStringManager()
       waiting_to_record_stats_(false),
       has_pending_aging_task_(false),
       should_record_stats_(false),
+      did_register_memory_pressure_listener_(false),
       unparked_strings_(),
-      parked_strings_() {
-  // No need to ever unregister, as the only ParkableStringManager instance
-  // lives forever.
-  MemoryPressureListenerRegistry::Instance().RegisterClient(
-      MakeGarbageCollected<OnPurgeMemoryListener>());
-}
+      parked_strings_() {}
 
 }  // namespace blink

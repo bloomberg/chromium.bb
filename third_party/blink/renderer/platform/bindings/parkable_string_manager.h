@@ -93,6 +93,7 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool waiting_to_record_stats_;
   bool has_pending_aging_task_;
   bool should_record_stats_;
+  bool did_register_memory_pressure_listener_;
   HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>
       unparked_strings_;
   HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
