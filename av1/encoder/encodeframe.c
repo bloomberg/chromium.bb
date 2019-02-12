@@ -6930,7 +6930,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (stats->ref0_counts[mbmi->ref_frame[0]] < 255)
           ++stats->ref0_counts[mbmi->ref_frame[0]];
         if (mbmi->ref_frame[1] >= 0 &&
-            stats->ref1_counts[mbmi->ref_frame[0]] < 255)
+            stats->ref1_counts[mbmi->ref_frame[1]] < 255)
           ++stats->ref1_counts[mbmi->ref_frame[1]];
       }
     }
