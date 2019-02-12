@@ -112,7 +112,6 @@ interface ProducerHost {
 interface ProducerClient {
     OnTracingStart(handle<shared_buffer> shared_memory);
 
-    // TODO(oysteine): Make a TypeTrait for sending the full DataSourceConfig.
     // Called by Perfetto (via ProducerHost) to request a data source to start
     // logging.
     StartDataSource(uint64 id, DataSourceConfig data_source_config);

@@ -126,7 +126,7 @@ class MockProducerHost : public ProducerHost {
   ~MockProducerHost() override;
 
   void RegisterDataSource(
-      mojom::DataSourceRegistrationPtr registration_info) override;
+      const perfetto::DataSourceDescriptor& registration_info) override;
 
   void OnConnect() override;
 

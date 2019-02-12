@@ -108,11 +108,8 @@ void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request) {
 }
 
 void ProducerHost::RegisterDataSource(
-    mojom::DataSourceRegistrationPtr registration_info) {
-  perfetto::DataSourceDescriptor descriptor;
-  descriptor.set_name(registration_info->name);
-  descriptor.set_will_notify_on_stop(registration_info->will_notify_on_stop);
-  producer_endpoint_->RegisterDataSource(descriptor);
+    const perfetto::DataSourceDescriptor& registration_info) {
+  producer_endpoint_->RegisterDataSource(registration_info);
 }
 
 void ProducerHost::NotifyFlushComplete(uint64_t flush_request_id) {

@@ -71,7 +71,7 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   // Called by the ProducerClient to signal the Host that it can
   // provide a specific data source.
   void RegisterDataSource(
-      mojom::DataSourceRegistrationPtr registration_info) override;
+      const perfetto::DataSourceDescriptor& registration_info) override;
 
   // Called to signal the Host that a specific flush request
   // is finished.
