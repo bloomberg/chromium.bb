@@ -190,6 +190,8 @@ class NET_EXPORT HttpNetworkSession {
     // If true, a new connection may be kicked off on an alternate network when
     // a connection fails on the default network before handshake is confirmed.
     bool quic_retry_on_alternate_network_before_handshake;
+    // A session can be migrated if its idle time is within this period.
+    base::TimeDelta quic_idle_session_migration_period;
     // Maximum time the session could be on the non-default network before
     // migrates back to default network. Defaults to
     // kMaxTimeOnNonDefaultNetwork.
