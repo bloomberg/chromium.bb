@@ -24,6 +24,12 @@ specific_include_rules = {
     "+google_apis/gaia/oauth2_token_service_delegate.h",
     "+services/network/test/test_url_loader_factory.h",
   ],
+  "accounts_cookie_mutator_unittest.cc" : [
+    "+google_apis/gaia/gaia_constants.h",
+    "+google_apis/gaia/gaia_urls.h",
+    "+services/network/test/test_url_loader_factory.h",
+    "+services/network/test/test_utils.h",
+  ],
   "identity_manager_unittest.cc": [
     "+google_apis/gaia/oauth2_token_service_delegate.h",
     "+services/network/test/test_cookie_manager.h",

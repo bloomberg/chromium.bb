@@ -84,6 +84,7 @@ source_set("test_support") {
 source_set("tests") {
   testonly = true
   sources = [
+    "accounts_cookie_mutator_unittest.cc",
     "accounts_mutator_unittest.cc",
     "primary_account_mutator_unittest.cc",
   ]
@@ -93,6 +94,7 @@ source_set("tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }

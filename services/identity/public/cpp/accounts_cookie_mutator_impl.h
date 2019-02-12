@@ -5,10 +5,16 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_COOKIE_MUTATOR_IMPL_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_COOKIE_MUTATOR_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
 class GaiaCookieManagerService;
+
+namespace gaia {
+enum class GaiaSource;
+}
 
 namespace identity {
 
@@ -18,6 +24,13 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
   explicit AccountsCookieMutatorImpl(
       GaiaCookieManagerService* gaia_cookie_manager_service);
   ~AccountsCookieMutatorImpl() override;
+
+  void AddAccountToCookie(const std::string& account_id,
+                          gaia::GaiaSource source) override;
+
+  void AddAccountToCookieWithToken(const std::string& account_id,
+                                   const std::string& access_token,
+                                   gaia::GaiaSource source) override;
 
  private:
   GaiaCookieManagerService* gaia_cookie_manager_service_;
