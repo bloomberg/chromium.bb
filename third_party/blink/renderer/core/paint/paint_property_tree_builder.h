@@ -184,6 +184,16 @@ class VisualViewportPaintPropertyTreeBuilder {
   static void Update(VisualViewport&, PaintPropertyTreeBuilderContext&);
 };
 
+// Used to report whether paint properties have changed, and if so, whether
+// it was only due to animations. The order is important - it must go from
+// no change to full change.
+enum class PaintPropertyChangedState {
+  kUnchanged,
+  kChangedOnlyDueToAnimations,
+  kChanged,
+  kAddedOrRemoved,
+};
+
 // Creates paint property tree nodes for non-local effects in the layout tree.
 // Non-local effects include but are not limited to: overflow clip, transform,
 // fixed-pos, animation, mask, filters, etc. It expects to be invoked for each
@@ -200,13 +210,13 @@ class PaintPropertyTreeBuilder {
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date. Also
   // handles updating the object's paintOffset.
-  // Returns true if any paint property of the object has changed.
-  bool UpdateForSelf();
+  // Returns whether any paint property of the object has changed.
+  PaintPropertyChangedState UpdateForSelf();
 
   // Update the paint properties that affect children of this object (e.g.,
   // scroll offset transform) and ensure the context is up to date.
-  // Returns true if any paint property of the object has changed.
-  bool UpdateForChildren();
+  // Returns whether any paint property of the object has changed.
+  PaintPropertyChangedState UpdateForChildren();
 
  private:
   ALWAYS_INLINE void InitFragmentPaintProperties(

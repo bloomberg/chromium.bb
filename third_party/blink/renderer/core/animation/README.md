@@ -68,7 +68,7 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
     Whether or not an animation can be accelerated is determined by
     [CheckCanStartAnimationOnCompositor()][] which looks at several aspects
     such as the composite mode, other animations affecting same property, and
-    whether the target element can be promoted and mutated in compositor.  
+    whether the target element can be promoted and mutated in compositor.
     Reasons for not compositing animations are captured in [FailureCodes][].
 
     #### Lifetime of a compositor animation
@@ -89,7 +89,11 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
     animation updates the visuals the main thread animation updates the computed
     style. There is a special case logic to ensure updates from such accelerated
     animations do not cause spurious commits from main to compositor (See
-    [CompositedLayerMapping::UpdateGraphicsLayerGeometry()][])
+    [CompositedLayerMapping::UpdateGraphicsLayerGeometry()][], or
+    [FragmentPaintPropertyTreeBuilder::UpdateTransform()][],
+    [FragmentPaintPropertyTreeBuilder::UpdateEffect()][], and
+    [FragmentPaintPropertyTreeBuilder::UpdateFilter()][] for
+    [BlinkGenPropertyTrees mode][])
 
     A compositor animation provides updates on its playback state changes (e.g.,
     on start, finish, abort) to its blink counterpart via
@@ -105,6 +109,10 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
 [Animation::PreCommit()]: https://cs.chromium.org/search/?q=file:animation.h+function:PreCommit
 [CompositorAnimationDelegate]: https://cs.chromium.org/search/?q=file:compositor_animation_delegate.h
 [CompositedLayerMapping::UpdateGraphicsLayerGeometry()]: https://cs.chromium.org/search/?q=file:composited_layer_mapping.h+function:UpdateGraphicsLayerGeometry
+[FragmentPaintPropertyTreeBuilder::UpdateTransform()]: https://cs.chromium.org/search/?q=class:FragmentPaintPropertyTreeBuilder+function:UpdateTransform
+[FragmentPaintPropertyTreeBuilder::UpdateEffect()]: https://cs.chromium.org/search/?q=class:FragmentPaintPropertyTreeBuilder+function:UpdateEffect
+[FragmentPaintPropertyTreeBuilder::UpdateFilter()]: https://cs.chromium.org/search/?q=class:FragmentPaintPropertyTreeBuilder+function:UpdateFilter
+[BlinkGenPropertyTrees mode]: https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/blink/renderer/core/paint/README.md
 
 *   ### Javascript
 
@@ -238,8 +246,8 @@ other specs (for example Javascript callback based effects).
 *   __[KeyframeEffect][]__ represents the effect an animation has (without any
     details of when it started or whether it's playing) and is comprised of
     three things:
-    *   Some __[Timing][]__ information (inherited from [AnimationEffect][]).  
-        [Example](http://jsbin.com/nuyohulojo/edit?js,output):  
+    *   Some __[Timing][]__ information (inherited from [AnimationEffect][]).
+        [Example](http://jsbin.com/nuyohulojo/edit?js,output):
         ```javascript
         {
           duration: 4000,
@@ -256,8 +264,8 @@ other specs (for example Javascript callback based effects).
 
     *   A __[KeyframeEffectModel][]__ that holds a sequence of keyframes to
         specify the properties being animated and what values they pass
-        through.  
-        [Example](http://jsbin.com/wiyefaxiru/1/edit?js,output):  
+        through.
+        [Example](http://jsbin.com/wiyefaxiru/1/edit?js,output):
         ```javascript
         [
           {backgroundColor: 'red', transform: 'rotate(0deg)'},
@@ -275,7 +283,7 @@ other specs (for example Javascript callback based effects).
         *   An __[InterpolationEffect][]__ which holds a set of
             [Interpolation][]s, each one representing the animated values
             between adjacent pairs of [PropertySpecificKeyframe][]s, and where
-            in the percentage progress they are active.  
+            in the percentage progress they are active.
             In the example keyframes above the [Interpolations][] generated
             would include, among the 5 different property specific keyframe
             pairs, one for `backgroundColor: 'red'` to

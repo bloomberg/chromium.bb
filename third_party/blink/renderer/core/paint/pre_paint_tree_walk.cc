@@ -327,13 +327,16 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   UpdateAuxiliaryObjectProperties(object, context);
 
   base::Optional<PaintPropertyTreeBuilder> property_tree_builder;
-  bool property_changed = false;
+  PaintPropertyChangedState property_changed =
+      PaintPropertyChangedState::kUnchanged;
   if (context.tree_builder_context) {
     property_tree_builder.emplace(object, *context.tree_builder_context);
-    property_changed = property_tree_builder->UpdateForSelf();
+    property_changed =
+        std::max(property_changed, property_tree_builder->UpdateForSelf());
 
-    if (property_changed && !context.tree_builder_context
-                                 ->supports_composited_raster_invalidation) {
+    if ((property_changed > PaintPropertyChangedState::kUnchanged) &&
+        !context.tree_builder_context
+             ->supports_composited_raster_invalidation) {
       paint_invalidator_context.subtree_flags |=
           PaintInvalidatorContext::kSubtreeFullInvalidation;
     }
@@ -351,11 +354,15 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
   InvalidatePaintForHitTesting(object, context);
 
   if (context.tree_builder_context) {
-    property_changed |= property_tree_builder->UpdateForChildren();
+    property_changed =
+        std::max(property_changed, property_tree_builder->UpdateForChildren());
     InvalidatePaintLayerOptimizationsIfNeeded(object, context);
 
-    if (property_changed) {
-      object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
+    if (property_changed > PaintPropertyChangedState::kUnchanged) {
+      if (property_changed >
+          PaintPropertyChangedState::kChangedOnlyDueToAnimations) {
+        object.GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
+      }
 
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         const auto* paint_invalidation_layer =
