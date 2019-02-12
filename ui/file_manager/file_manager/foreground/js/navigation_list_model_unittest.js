@@ -12,6 +12,12 @@ const recentFakeEntry =
     /** @type {!FilesAppEntry} */ ({toURL: () => 'fake-entry://recent'});
 
 /**
+ * Directory model.
+ * @type {!DirectoryModel}
+ */
+var directoryModel;
+
+/**
  * Drive file system.
  * @type {!MockFileSystem}
  */
@@ -46,7 +52,8 @@ function setUp() {
     return Promise.resolve(this.fileSystem_.root);
   };
 
-  // Create mock file systems.
+  // Create mock components.
+  directoryModel = createFakeDirectoryModel();
   drive = new MockFileSystem('drive');
   hoge = new MockFileSystem('removable:hoge');
 }
@@ -68,7 +75,7 @@ function testModel() {
           'linux-files-label', VolumeManagerCommon.RootType.CROSTINI));
 
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
   model.linuxFilesItem = crostiniFakeItem;
 
   assertEquals(4, model.length);
@@ -102,7 +109,7 @@ function testNoRecentOrLinuxFiles() {
   var recentItem = null;
 
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
 
   assertEquals(3, model.length);
   assertEquals(
@@ -125,7 +132,7 @@ function testAddAndRemoveShortcuts() {
   var recentItem = null;
 
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
 
   assertEquals(3, model.length);
 
@@ -187,7 +194,7 @@ function testAddAndRemoveVolumes() {
   var recentItem = null;
 
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
 
   assertEquals(3, model.length);
 
@@ -325,7 +332,7 @@ function testOrderAndNestItems() {
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.
@@ -437,7 +444,7 @@ function testMyFilesVolumeEnabled(callback) {
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
   model.linuxFilesItem = crostiniFakeItem;
 
   assertEquals(2, model.length);

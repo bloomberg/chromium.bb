@@ -59,7 +59,7 @@ function setUp() {
 
   // Setup mock components.
   volumeManager = new MockVolumeManager();
-  directoryModel = new MockDirectoryModel();
+  directoryModel = createFakeDirectoryModel();
   metadataModel = /** @type {!MetadataModel} */ ({});
   fileOperationManager = /** @type {!FileOperationManager} */ ({
     addEventListener: (name, callback) => {},
@@ -443,9 +443,9 @@ function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
  */
 function testUpdateSubElementsFromListSections() {
   const recentItem = null;
+  const shortcutListModel = new MockFolderShortcutDataModel([]);
   const treeModel = new NavigationListModel(
-      volumeManager, new MockFolderShortcutDataModel([]), recentItem,
-      new MockDirectoryModel());
+      volumeManager, shortcutListModel, recentItem, directoryModel);
   const myFilesItem = treeModel.item(0);
   const driveItem = treeModel.item(1);
 

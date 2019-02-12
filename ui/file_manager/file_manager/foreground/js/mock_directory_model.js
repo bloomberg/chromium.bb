@@ -3,87 +3,59 @@
 // found in the LICENSE file.
 
 /**
- * Mock class for DirectoryModel.
- * @constructor
- * @extends {DirectoryModel}
+ * @returns {!FileFilter} fake for unittests.
  */
-function MockDirectoryModel() {
+function createFakeFileFilter() {
   /**
-   * @private {!MockFileFilter}
+   * FileFilter fake.
    */
-  this.fileFilter_ = new MockFileFilter();
+  class FakeFileFilter extends cr.EventTarget {
+    /**
+     * @param {Entry} entry File entry.
+     * @return {boolean} True if the file should be shown.
+     */
+    filter(entry) {
+      return true;
+    }
+  }
 
-  /**
-   * @private {MockDirectoryEntry}
-   */
-  this.currentEntry_ = null;
-
-  /** @private {FilesAppDirEntry} */
-  this.myFiles_ = null;
+  const filter = /** @type {!Object} */ (new FakeFileFilter());
+  return /** @type {!FileFilter} */ (filter);
 }
 
 /**
- * MockDirectoryModel inherits cr.EventTarget.
+ * @returns {!DirectoryModel} fake for unittests.
  */
-MockDirectoryModel.prototype = {__proto__: cr.EventTarget.prototype};
+function createFakeDirectoryModel() {
+  /**
+   * DirectoryModel fake.
+   */
+  class FakeDirectoryModel extends cr.EventTarget {
+    constructor() {
+      super();
 
-/**
- * Returns a file filter.
- * @return {FileFilter} A file filter.
- */
-MockDirectoryModel.prototype.getFileFilter = function() {
-  return this.fileFilter_;
-};
+      /** @private {!FileFilter} */
+      this.fileFilter_ = createFakeFileFilter();
 
-/**
- * @return {MockDirectoryEntry}
- */
-MockDirectoryModel.prototype.getCurrentDirEntry = function() {
-  return this.currentEntry_;
-};
+      /** @private {FilesAppDirEntry} */
+      this.myFiles_ = null;
+    }
 
-/**
- * @param {MockDirectoryEntry} entry
- * @return {Promise}
- */
-MockDirectoryModel.prototype.navigateToMockEntry = function(entry) {
-  return new Promise(function(resolve, reject) {
-    var event = new Event('directory-changed');
-    event.previousDirEntry = this.currentEntry_;
-    event.newDirEntry = entry;
-    event.volumeChanged =
-        this.currentEntry_ && util.isSameEntry(this.currentEntry_, entry);
-    this.currentEntry_ = entry;
-    this.dispatchEvent(event);
-    resolve();
-  }.bind(this));
-};
+    /**
+     * @param {FilesAppDirEntry} myFilesEntry
+     */
+    setMyFiles(myFilesEntry) {
+      this.myFiles_ = myFilesEntry;
+    }
 
-/**
- * @param {FilesAppDirEntry} myFilesEntry
- * @override
- */
-MockDirectoryModel.prototype.setMyFiles = function(myFilesEntry) {
-  this.myFiles_ = myFilesEntry;
-};
+    /**
+     * @return {!FileFilter} file filter.
+     */
+    getFileFilter() {
+      return this.fileFilter_;
+    }
+  }
 
-/**
- * Mock class for FileFilter.
- * @constructor
- * @extends {FileFilter}
- */
-function MockFileFilter() {}
-
-/**
- * MockFileFilter extends cr.EventTarget.
- */
-MockFileFilter.prototype = {__proto__: cr.EventTarget.prototype};
-
-/**
- * Current implementation always returns true.
- * @param {Entry} entry File entry.
- * @return {boolean} True if the file should be shown, false otherwise.
- */
-MockFileFilter.prototype.filter = function(entry) {
-  return true;
-};
+  const model = /** @type {!Object} */ (new FakeDirectoryModel());
+  return /** @type {!DirectoryModel} */ (model);
+}
