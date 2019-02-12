@@ -36,7 +36,6 @@
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -3234,73 +3233,6 @@ Element* Internals::interestedElement() {
       ->GetPage()
       ->GetSpatialNavigationController()
       .GetInterestedElement();
-}
-
-void Internals::setNetworkConnectionInfoOverride(
-    bool on_line,
-    const String& type,
-    const String& effective_type,
-    unsigned long http_rtt_msec,
-    double downlink_max_mbps,
-    ExceptionState& exception_state) {
-  WebConnectionType webtype;
-  if (type == "cellular2g") {
-    webtype = kWebConnectionTypeCellular2G;
-  } else if (type == "cellular3g") {
-    webtype = kWebConnectionTypeCellular3G;
-  } else if (type == "cellular4g") {
-    webtype = kWebConnectionTypeCellular4G;
-  } else if (type == "bluetooth") {
-    webtype = kWebConnectionTypeBluetooth;
-  } else if (type == "ethernet") {
-    webtype = kWebConnectionTypeEthernet;
-  } else if (type == "wifi") {
-    webtype = kWebConnectionTypeWifi;
-  } else if (type == "wimax") {
-    webtype = kWebConnectionTypeWimax;
-  } else if (type == "other") {
-    webtype = kWebConnectionTypeOther;
-  } else if (type == "none") {
-    webtype = kWebConnectionTypeNone;
-  } else if (type == "unknown") {
-    webtype = kWebConnectionTypeUnknown;
-  } else {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotFoundError,
-        ExceptionMessages::FailedToEnumerate("connection type", type));
-    return;
-  }
-  WebEffectiveConnectionType web_effective_type =
-      WebEffectiveConnectionType::kTypeUnknown;
-  if (effective_type == "offline") {
-    web_effective_type = WebEffectiveConnectionType::kTypeOffline;
-  } else if (effective_type == "slow-2g") {
-    web_effective_type = WebEffectiveConnectionType::kTypeSlow2G;
-  } else if (effective_type == "2g") {
-    web_effective_type = WebEffectiveConnectionType::kType2G;
-  } else if (effective_type == "3g") {
-    web_effective_type = WebEffectiveConnectionType::kType3G;
-  } else if (effective_type == "4g") {
-    web_effective_type = WebEffectiveConnectionType::kType4G;
-  } else if (effective_type != "unknown") {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotFoundError,
-        ExceptionMessages::FailedToEnumerate("effective connection type",
-                                             effective_type));
-    return;
-  }
-  GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-      on_line, webtype, web_effective_type, http_rtt_msec, downlink_max_mbps);
-  GetFrame()->Client()->SetEffectiveConnectionTypeForTesting(
-      web_effective_type);
-}
-
-void Internals::setSaveDataEnabled(bool enabled) {
-  GetNetworkStateNotifier().SetSaveDataEnabledOverride(enabled);
-}
-
-void Internals::clearNetworkConnectionInfoOverride() {
-  GetNetworkStateNotifier().ClearOverride();
 }
 
 unsigned Internals::countHitRegions(CanvasRenderingContext* context) {

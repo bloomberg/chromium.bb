@@ -183,6 +183,8 @@ jumbo_source_set("modules_testing") {
     "accessibility/testing/internals_accessibility.h",
     "mediastream/testing/internals_media_stream.cc",
     "mediastream/testing/internals_media_stream.h",
+    "netinfo/testing/internals_net_info.cc",
+    "netinfo/testing/internals_net_info.h",
     "peerconnection/adapters/test/mock_ice_transport_adapter.h",
     "peerconnection/adapters/test/mock_ice_transport_adapter_cross_thread_factory.h",
     "peerconnection/adapters/test/mock_p2p_quic_packet_transport.h",
