@@ -15,7 +15,7 @@ class Profile;
 
 namespace base {
 class ListValue;
-};
+}
 
 namespace extensions {
 namespace preference_helpers {
