@@ -1853,6 +1853,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // TODO(ericrk): Variable to debug https://crbug.com/758186. Remove when
   // debugging concluded.
   WebContentsDelegate* web_contents_created_delegate_ = nullptr;
+  bool web_contents_added_to_delegate_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
