@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -152,6 +153,11 @@ class EmbeddedWorkerTestHelper {
   // null pointer will restore the default behavior.
   void SetNetworkFactory(network::mojom::URLLoaderFactory* factory);
 
+  // Writes a dummy script into the given service worker's
+  // ServiceWorkerScriptCacheMap. |callback| is called when done.
+  virtual void PopulateScriptCacheMap(int64_t service_worker_version_id,
+                                      base::OnceClosure callback);
+
  protected:
   // StartWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
   // This simulates behaviors in the renderer process. Binds
@@ -239,11 +245,6 @@ class EmbeddedWorkerTestHelper {
           callback);
   virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
-  // Writes a dummy script into the given service worker's
-  // ServiceWorkerScriptCacheMap. |callback| is called when done.
-  virtual void PopulateScriptCacheMap(int64_t service_worker_version_id,
-                                      base::OnceClosure callback);
-
   // These functions simulate making Mojo calls to the browser.
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
@@ -266,6 +267,7 @@ class EmbeddedWorkerTestHelper {
   }
 
  private:
+  friend FakeServiceWorker;
   class MockNetworkURLLoaderFactory;
   class MockServiceWorker;
   class MockRendererInterface;
@@ -278,6 +280,7 @@ class EmbeddedWorkerTestHelper {
   void DidPopulateScriptCacheMap(int embedded_worker_id,
                                  bool pause_after_download);
 
+  // TODO(falken): Remove these and use FakeServiceWorker instead.
   void OnInitializeGlobalScope(
       int embedded_worker_id,
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
