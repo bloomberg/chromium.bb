@@ -18,6 +18,7 @@
 
 namespace gpu {
 
+class MemoryTracker;
 class TransferBufferManager;
 
 class GPU_EXPORT CommandBufferServiceBase {
@@ -73,7 +74,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   static const int kParseCommandsSlice = 20;
 
   CommandBufferService(CommandBufferServiceClient* client,
-                       TransferBufferManager* transfer_buffer_manager);
+                       MemoryTracker* memory_tracker);
   ~CommandBufferService() override;
 
   // CommandBufferServiceBase implementation:
@@ -123,9 +124,11 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
     state_.get_offset = get_offset;
   }
 
+  size_t GetSharedMemoryBytesAllocated() const;
+
  private:
   CommandBufferServiceClient* client_;
-  TransferBufferManager* transfer_buffer_manager_;
+  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
 
   CommandBuffer::State state_;
   int32_t put_offset_ = 0;

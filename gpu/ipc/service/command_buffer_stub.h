@@ -113,6 +113,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   static void SetMemoryTrackerFactoryForTesting(MemoryTrackerFactory factory);
 
   MemoryTracker* GetMemoryTracker() const;
+  scoped_refptr<Buffer> GetTransferBuffer(int32_t id);
+  void RegisterTransferBufferForTest(int32_t id, scoped_refptr<Buffer> buffer);
 
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();

@@ -240,22 +240,15 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
 
     // We need a buffer to make sure that the ImageDecodeAcceleratorStub can
     // create a ServiceDiscardableHandle.
-    scoped_refptr<Buffer> handle_buffer = MakeBufferForTesting();
     CommandBufferStub* command_buffer =
         channel->LookupCommandBuffer(kCommandBufferRouteId);
     if (!command_buffer)
       return SyncToken();
-    scoped_refptr<gles2::ContextGroup> context_group =
-        command_buffer->context_group();
-    if (!context_group)
-      return SyncToken();
-    TransferBufferManager* transfer_buffer_manager =
-        context_group->transfer_buffer_manager();
-    if (!transfer_buffer_manager)
-      return SyncToken();
+
     int32_t buffer_shm_id = GetNextBufferId();
-    transfer_buffer_manager->RegisterTransferBuffer(buffer_shm_id,
-                                                    std::move(handle_buffer));
+    scoped_refptr<Buffer> handle_buffer = MakeBufferForTesting();
+    command_buffer->RegisterTransferBufferForTest(buffer_shm_id,
+                                                  std::move(handle_buffer));
 
     // Send the IPC decode request.
     GpuChannelMsg_ScheduleImageDecode_Params decode_params;

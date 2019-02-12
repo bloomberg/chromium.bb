@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/client/command_buffer_direct_locked.h"
 #include "gpu/command_buffer/service/mocks.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -34,9 +33,7 @@ class MappedMemoryTestBase : public testing::Test {
   static const unsigned int kBufferSize = 1024;
 
   void SetUp() override {
-    transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
-    command_buffer_.reset(
-        new CommandBufferDirectLocked(transfer_buffer_manager_.get()));
+    command_buffer_.reset(new CommandBufferDirectLocked());
     api_mock_.reset(new AsyncAPIMock(true, command_buffer_->service()));
     command_buffer_->set_handler(api_mock_.get());
 
@@ -55,7 +52,6 @@ class MappedMemoryTestBase : public testing::Test {
 
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
-  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferDirectLocked> command_buffer_;
   std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<CommandBufferHelper> helper_;

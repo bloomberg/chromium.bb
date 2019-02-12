@@ -12,7 +12,6 @@
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/mocks.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -43,9 +42,8 @@ class CommandBufferServiceTest : public testing::Test,
   // Creates a CommandBufferService, with a buffer of the specified size (in
   // entries).
   void MakeService(unsigned int entry_count) {
-    transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
-    command_buffer_service_ = std::make_unique<CommandBufferService>(
-        this, transfer_buffer_manager_.get());
+    command_buffer_service_ =
+        std::make_unique<CommandBufferService>(this, nullptr);
     api_mock_.reset(new AsyncAPIMock(false, command_buffer_service_.get()));
     SetNewGetBuffer(entry_count * sizeof(CommandBufferEntry));
   }
@@ -95,7 +93,6 @@ class CommandBufferServiceTest : public testing::Test,
   MOCK_METHOD0(OnParseError, void());
 
  private:
-  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferService> command_buffer_service_;
   std::unique_ptr<AsyncAPIMock> api_mock_;
   scoped_refptr<Buffer> buffer_;

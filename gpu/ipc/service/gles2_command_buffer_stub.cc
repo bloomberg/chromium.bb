@@ -157,7 +157,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
 #endif
 
   command_buffer_ = std::make_unique<CommandBufferService>(
-      this, context_group_->transfer_buffer_manager());
+      this, context_group_->memory_tracker());
   gles2_decoder_ = gles2::GLES2Decoder::Create(
       this, command_buffer_.get(), manager->outputter(), context_group_.get());
   set_decoder_context(std::unique_ptr<DecoderContext>(gles2_decoder_));

@@ -804,6 +804,16 @@ MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
 }
 
+scoped_refptr<Buffer> CommandBufferStub::GetTransferBuffer(int32_t id) {
+  return command_buffer_->GetTransferBuffer(id);
+}
+
+void CommandBufferStub::RegisterTransferBufferForTest(
+    int32_t id,
+    scoped_refptr<Buffer> buffer) {
+  command_buffer_->RegisterTransferBuffer(id, std::move(buffer));
+}
+
 bool CommandBufferStub::CheckContextLost() {
   DCHECK(command_buffer_);
   CommandBuffer::State state = command_buffer_->GetState();

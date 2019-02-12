@@ -54,7 +54,6 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -389,10 +388,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     return gpu::ContextResult::kTransientFailure;
   }
 
-  // TODO(crbug.com/832243): This could use the TransferBufferManager owned by
-  // |context_group_| instead.
-  transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
-
   GpuDriverBugWorkarounds workarounds(
       task_executor_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
 
@@ -448,7 +443,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                                                                         : "0");
 
   command_buffer_ = std::make_unique<CommandBufferService>(
-      this, transfer_buffer_manager_.get());
+      this, context_group_->memory_tracker());
 
   if (!surface_) {
     if (params.is_offscreen) {
@@ -729,7 +724,6 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
     decoder_.reset();
   }
   command_buffer_.reset();
-  transfer_buffer_manager_.reset();
   surface_ = nullptr;
 
   context_ = nullptr;

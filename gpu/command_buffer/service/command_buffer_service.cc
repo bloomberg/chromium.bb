@@ -18,12 +18,12 @@
 
 namespace gpu {
 
-CommandBufferService::CommandBufferService(
-    CommandBufferServiceClient* client,
-    TransferBufferManager* transfer_buffer_manager)
-    : client_(client), transfer_buffer_manager_(transfer_buffer_manager) {
+CommandBufferService::CommandBufferService(CommandBufferServiceClient* client,
+                                           MemoryTracker* memory_tracker)
+    : client_(client),
+      transfer_buffer_manager_(
+          std::make_unique<TransferBufferManager>(memory_tracker)) {
   DCHECK(client_);
-  DCHECK(transfer_buffer_manager_);
   state_.token = 0;
 }
 
@@ -202,6 +202,10 @@ void CommandBufferService::SetScheduled(bool scheduled) {
   TRACE_EVENT2("gpu", "CommandBufferService:SetScheduled", "this", this,
                "scheduled", scheduled);
   scheduled_ = scheduled;
+}
+
+size_t CommandBufferService::GetSharedMemoryBytesAllocated() const {
+  return transfer_buffer_manager_->shared_memory_bytes_allocated();
 }
 
 }  // namespace gpu

@@ -23,7 +23,6 @@
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
@@ -176,12 +175,8 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     OnError();
     return;
   }
-  DCHECK(command_buffer->context_group());
-  DCHECK(command_buffer->context_group()->transfer_buffer_manager());
   scoped_refptr<Buffer> handle_buffer =
-      command_buffer->context_group()
-          ->transfer_buffer_manager()
-          ->GetTransferBuffer(params.discardable_handle_shm_id);
+      command_buffer->GetTransferBuffer(params.discardable_handle_shm_id);
   if (!DiscardableHandleBase::ValidateParameters(
           handle_buffer.get(), params.discardable_handle_shm_offset)) {
     DLOG(ERROR) << "Could not validate the discardable handle parameters";
