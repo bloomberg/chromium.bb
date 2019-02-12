@@ -331,7 +331,7 @@ class NoOpStopWorkerEmbeddedWorkerInstanceClient
     : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
  public:
   explicit NoOpStopWorkerEmbeddedWorkerInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+      EmbeddedWorkerTestHelper* helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
   ~NoOpStopWorkerEmbeddedWorkerInstanceClient() override {
   }
@@ -349,7 +349,7 @@ class MessageReceiverDisallowStop : public MessageReceiver {
  public:
   MessageReceiverDisallowStop() : MessageReceiver() {
     CreateAndRegisterMockInstanceClient<
-        NoOpStopWorkerEmbeddedWorkerInstanceClient>(AsWeakPtr());
+        NoOpStopWorkerEmbeddedWorkerInstanceClient>(this);
   }
   ~MessageReceiverDisallowStop() override {}
 

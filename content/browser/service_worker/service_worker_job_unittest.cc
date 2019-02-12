@@ -1871,7 +1871,7 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
     : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
  public:
   explicit CheckPauseAfterDownloadEmbeddedWorkerInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+      EmbeddedWorkerTestHelper* helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
   int num_of_startworker() const { return num_of_startworker_; }
   void set_next_pause_after_download(bool expectation) {
@@ -1898,12 +1898,12 @@ TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
   helper_.reset(update_helper);
 
   std::vector<CheckPauseAfterDownloadEmbeddedWorkerInstanceClient*> clients;
-  clients.push_back(helper_->CreateAndRegisterMockInstanceClient<
-                    CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(
-      helper_->AsWeakPtr()));
-  clients.push_back(helper_->CreateAndRegisterMockInstanceClient<
-                    CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(
-      helper_->AsWeakPtr()));
+  clients.push_back(
+      helper_->CreateAndRegisterMockInstanceClient<
+          CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(helper_.get()));
+  clients.push_back(
+      helper_->CreateAndRegisterMockInstanceClient<
+          CheckPauseAfterDownloadEmbeddedWorkerInstanceClient>(helper_.get()));
 
   // The initial version should not pause after download.
   clients[0]->set_next_pause_after_download(false);

@@ -186,7 +186,7 @@ class RecordableEmbeddedWorkerInstanceClient
   enum class Message { StartWorker, StopWorker };
 
   explicit RecordableEmbeddedWorkerInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+      EmbeddedWorkerTestHelper* helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
   const std::vector<Message>& events() const { return events_; }
@@ -394,7 +394,7 @@ TEST_F(ServiceWorkerContextTest, Register) {
 
   RecordableEmbeddedWorkerInstanceClient* client = nullptr;
   client = helper_->CreateAndRegisterMockInstanceClient<
-      RecordableEmbeddedWorkerInstanceClient>(helper_->AsWeakPtr());
+      RecordableEmbeddedWorkerInstanceClient>(helper_.get());
 
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -447,7 +447,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
 
   RecordableEmbeddedWorkerInstanceClient* client = nullptr;
   client = helper_->CreateAndRegisterMockInstanceClient<
-      RecordableEmbeddedWorkerInstanceClient>(helper_->AsWeakPtr());
+      RecordableEmbeddedWorkerInstanceClient>(helper_.get());
 
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -496,7 +496,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
 
   RecordableEmbeddedWorkerInstanceClient* client = nullptr;
   client = helper_->CreateAndRegisterMockInstanceClient<
-      RecordableEmbeddedWorkerInstanceClient>(helper_->AsWeakPtr());
+      RecordableEmbeddedWorkerInstanceClient>(helper_.get());
 
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
