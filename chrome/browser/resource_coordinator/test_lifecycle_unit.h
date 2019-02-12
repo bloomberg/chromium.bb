@@ -48,6 +48,7 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   bool Freeze() override;
   bool Unfreeze() override;
   bool Discard(LifecycleUnitDiscardReason discard_reason) override;
+  LifecycleUnitDiscardReason GetDiscardReason() const override;
 
  private:
   base::string16 title_;

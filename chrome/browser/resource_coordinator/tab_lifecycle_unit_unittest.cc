@@ -55,8 +55,10 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
  public:
   MockTabLifecycleObserver() = default;
 
-  MOCK_METHOD2(OnDiscardedStateChange,
-               void(content::WebContents* contents, bool is_discarded));
+  MOCK_METHOD3(OnDiscardedStateChange,
+               void(content::WebContents* contents,
+                    LifecycleUnitDiscardReason reason,
+                    bool is_discarded));
   MOCK_METHOD2(OnAutoDiscardableStateChange,
                void(content::WebContents* contents, bool is_auto_discardable));
 

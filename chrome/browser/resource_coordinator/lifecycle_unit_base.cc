@@ -47,14 +47,6 @@ base::TimeTicks LifecycleUnitBase::GetStateChangeTime() const {
   return state_change_time_;
 }
 
-bool LifecycleUnitBase::Discard(LifecycleUnitDiscardReason discard_reason) {
-  if (DiscardImpl(discard_reason)) {
-    discard_reason_ = discard_reason;
-    return true;
-  }
-  return false;
-}
-
 base::TimeTicks LifecycleUnitBase::GetWallTimeWhenHidden() const {
   return wall_time_when_hidden_;
 }
@@ -65,10 +57,6 @@ base::TimeDelta LifecycleUnitBase::GetChromeUsageTimeWhenHidden() const {
 
 size_t LifecycleUnitBase::GetDiscardCount() const {
   return discard_count_;
-}
-
-LifecycleUnitDiscardReason LifecycleUnitBase::GetDiscardReason() const {
-  return discard_reason_;
 }
 
 void LifecycleUnitBase::AddObserver(LifecycleUnitObserver* observer) {
@@ -107,10 +95,6 @@ void LifecycleUnitBase::SetState(LifecycleUnitState state,
 void LifecycleUnitBase::OnLifecycleUnitStateChanged(
     LifecycleUnitState last_state,
     LifecycleUnitStateChangeReason reason) {}
-
-bool LifecycleUnitBase::DiscardImpl(LifecycleUnitDiscardReason discard_reason) {
-  return false;
-}
 
 void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
     content::Visibility visibility) {
