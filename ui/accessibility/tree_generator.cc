@@ -104,6 +104,6 @@ void TreeGenerator::BuildUniqueTreeWithSize(
 
   // Unserialize the tree update into the destination tree.
   CHECK(out_tree->Unserialize(update)) << out_tree->error();
-};
+}
 
 }  // namespace ui
