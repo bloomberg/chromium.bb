@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_code_authenticator.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/authenticator.h"
 
 #include <vector>
 
@@ -11,11 +11,11 @@
 #include "base/strings/stringprintf.h"
 
 namespace chromeos {
+namespace parent_access {
 
-ParentAccessCodeConfig::ParentAccessCodeConfig(
-    const std::string& shared_secret,
-    base::TimeDelta code_validity,
-    base::TimeDelta clock_drift_tolerance)
+AccessCodeConfig::AccessCodeConfig(const std::string& shared_secret,
+                                   base::TimeDelta code_validity,
+                                   base::TimeDelta clock_drift_tolerance)
     : shared_secret_(shared_secret),
       code_validity_(code_validity),
       clock_drift_tolerance_(clock_drift_tolerance) {
@@ -25,58 +25,53 @@ ParentAccessCodeConfig::ParentAccessCodeConfig(
   DCHECK(clock_drift_tolerance_ <= base::TimeDelta::FromMinutes(30));
 }
 
-ParentAccessCodeConfig::ParentAccessCodeConfig(
-    const ParentAccessCodeConfig& rhs) = default;
+AccessCodeConfig::AccessCodeConfig(const AccessCodeConfig& rhs) = default;
 
-ParentAccessCodeConfig& ParentAccessCodeConfig::operator=(
-    const ParentAccessCodeConfig& rhs) = default;
+AccessCodeConfig& AccessCodeConfig::operator=(const AccessCodeConfig& rhs) =
+    default;
 
-ParentAccessCodeConfig::~ParentAccessCodeConfig() = default;
+AccessCodeConfig::~AccessCodeConfig() = default;
 
-ParentAccessCode::ParentAccessCode(const std::string& code,
-                                   base::Time valid_from,
-                                   base::Time valid_to)
+AccessCode::AccessCode(const std::string& code,
+                       base::Time valid_from,
+                       base::Time valid_to)
     : code_(code), valid_from_(valid_from), valid_to_(valid_to) {
   DCHECK_EQ(6u, code_.length());
   DCHECK_GT(valid_to_, valid_from_);
 }
 
-ParentAccessCode::ParentAccessCode(const ParentAccessCode&) = default;
+AccessCode::AccessCode(const AccessCode&) = default;
 
-ParentAccessCode& ParentAccessCode::operator=(const ParentAccessCode&) =
-    default;
+AccessCode& AccessCode::operator=(const AccessCode&) = default;
 
-ParentAccessCode::~ParentAccessCode() = default;
+AccessCode::~AccessCode() = default;
 
-bool ParentAccessCode::operator==(const ParentAccessCode& rhs) const {
+bool AccessCode::operator==(const AccessCode& rhs) const {
   return code_ == rhs.code() && valid_from_ == rhs.valid_from() &&
          valid_to_ == rhs.valid_to();
 }
 
-bool ParentAccessCode::operator!=(const ParentAccessCode& rhs) const {
+bool AccessCode::operator!=(const AccessCode& rhs) const {
   return code_ != rhs.code() || valid_from_ != rhs.valid_from() ||
          valid_to_ != rhs.valid_to();
 }
 
-std::ostream& operator<<(std::ostream& out, const ParentAccessCode& code) {
+std::ostream& operator<<(std::ostream& out, const AccessCode& code) {
   return out << code.code() << " [" << code.valid_from() << " - "
              << code.valid_to() << "]";
 }
 
 // static
-constexpr base::TimeDelta ParentAccessCodeAuthenticator::kCodeGranularity;
+constexpr base::TimeDelta Authenticator::kAccessCodeGranularity;
 
-ParentAccessCodeAuthenticator::ParentAccessCodeAuthenticator(
-    const ParentAccessCodeConfig& config)
-    : config_(config) {
+Authenticator::Authenticator(const AccessCodeConfig& config) : config_(config) {
   bool result = hmac_.Init(config_.shared_secret());
   DCHECK(result);
 }
 
-ParentAccessCodeAuthenticator::~ParentAccessCodeAuthenticator() = default;
+Authenticator::~Authenticator() = default;
 
-base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Generate(
-    base::Time timestamp) {
+base::Optional<AccessCode> Authenticator::Generate(base::Time timestamp) const {
   DCHECK_LE(base::Time::UnixEpoch(), timestamp);
 
   // We find the beginning of the interval for the given timestamp and adjust by
@@ -86,7 +81,7 @@ base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Generate(
   const int64_t interval_beginning_timestamp =
       interval * config_.code_validity().InMilliseconds();
   const int64_t adjusted_timestamp =
-      interval_beginning_timestamp / kCodeGranularity.InMilliseconds();
+      interval_beginning_timestamp / kAccessCodeGranularity.InMilliseconds();
 
   // The algorithm for PAC generation is using data in Big-endian byte order to
   // feed HMAC.
@@ -110,13 +105,12 @@ base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Generate(
 
   const base::Time valid_from =
       base::Time::FromJavaTime(interval_beginning_timestamp);
-  return ParentAccessCode(base::StringPrintf("%06d", result % 1000000),
-                          valid_from, valid_from + config_.code_validity());
+  return AccessCode(base::StringPrintf("%06d", result % 1000000), valid_from,
+                    valid_from + config_.code_validity());
 }
 
-base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Validate(
-    const std::string& code,
-    base::Time timestamp) {
+base::Optional<AccessCode> Authenticator::Validate(const std::string& code,
+                                                   base::Time timestamp) const {
   DCHECK_LE(base::Time::UnixEpoch(), timestamp);
 
   base::Time valid_from = timestamp - config_.clock_drift_tolerance();
@@ -126,25 +120,26 @@ base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Validate(
                          timestamp + config_.clock_drift_tolerance());
 }
 
-base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::ValidateInRange(
+base::Optional<AccessCode> Authenticator::ValidateInRange(
     const std::string& code,
     base::Time valid_from,
-    base::Time valid_to) {
+    base::Time valid_to) const {
   DCHECK_LE(base::Time::UnixEpoch(), valid_from);
   DCHECK_GE(valid_to, valid_from);
 
   const int64_t start_interval =
-      valid_from.ToJavaTime() / kCodeGranularity.InMilliseconds();
+      valid_from.ToJavaTime() / kAccessCodeGranularity.InMilliseconds();
   const int64_t end_interval =
-      valid_to.ToJavaTime() / kCodeGranularity.InMilliseconds();
+      valid_to.ToJavaTime() / kAccessCodeGranularity.InMilliseconds();
   for (int i = start_interval; i <= end_interval; ++i) {
     const base::Time generation_timestamp =
-        base::Time::FromJavaTime(i * kCodeGranularity.InMilliseconds());
-    base::Optional<ParentAccessCode> pac = Generate(generation_timestamp);
+        base::Time::FromJavaTime(i * kAccessCodeGranularity.InMilliseconds());
+    base::Optional<AccessCode> pac = Generate(generation_timestamp);
     if (pac.has_value() && pac->code() == code)
       return pac;
   }
   return base::nullopt;
 }
 
+}  // namespace parent_access
 }  // namespace chromeos
