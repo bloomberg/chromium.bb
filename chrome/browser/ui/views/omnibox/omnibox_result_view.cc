@@ -45,9 +45,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
-OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
-                                     int model_index)
-    : model_(model),
+OmniboxResultView::OmniboxResultView(
+    OmniboxPopupContentsView* popup_contents_view,
+    int model_index)
+    : popup_contents_view_(popup_contents_view),
       model_index_(model_index),
       is_hovered_(false),
       animation_(new gfx::SlideAnimation(this)) {
@@ -90,12 +91,13 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
       const OmniboxPedal::LabelStrings& strings =
           match.pedal->GetLabelStrings();
       suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          model_, this, strings.hint, strings.hint_short, omnibox::kPedalIcon);
+          popup_contents_view_, this, strings.hint, strings.hint_short,
+          omnibox::kPedalIcon);
     } else {
       if (!OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
         suggestion_tab_switch_button_ =
             std::make_unique<OmniboxTabSwitchButton>(
-                model_, this,
+                popup_contents_view_, this,
                 l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
                 l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
                 omnibox::kSwitchIcon);
@@ -103,7 +105,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
         suggestion_tab_switch_button_ =
             std::make_unique<OmniboxTabSwitchButton>(
                 // TODO(krb): Make official strings when we accept the feature.
-                model_, this, base::ASCIIToUTF16("Open in this tab"),
+                popup_contents_view_, this,
+                base::ASCIIToUTF16("Open in this tab"),
                 base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon);
       }
     }
@@ -225,7 +228,7 @@ void OmniboxResultView::OnSelected() {
 }
 
 bool OmniboxResultView::IsSelected() const {
-  return model_->IsSelectedIndex(model_index_);
+  return popup_contents_view_->IsSelectedIndex(model_index_);
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {
@@ -237,7 +240,7 @@ OmniboxPartState OmniboxResultView::GetThemeState() const {
 }
 
 OmniboxTint OmniboxResultView::GetTint() const {
-  return model_->GetTint();
+  return popup_contents_view_->GetTint();
 }
 
 void OmniboxResultView::OnMatchIconUpdated() {
@@ -306,7 +309,7 @@ void OmniboxResultView::Layout() {
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton())
-    model_->SetSelectedLine(model_index_);
+    popup_contents_view_->SetSelectedLine(model_index_);
   return true;
 }
 
@@ -316,7 +319,7 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     // set the state to be selected or hovered, depending on the mouse button.
     if (event.IsOnlyLeftMouseButton()) {
       if (!IsSelected())
-        model_->SetSelectedLine(model_index_);
+        popup_contents_view_->SetSelectedLine(model_index_);
       if (suggestion_tab_switch_button_) {
         gfx::Point point_in_child_coords(event.location());
         View::ConvertPointToTarget(this, suggestion_tab_switch_button_.get(),
@@ -336,7 +339,7 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
   // When the drag leaves the bounds of this view, cancel the hover state and
   // pass control to the popup view.
   SetHovered(false);
-  SetMouseHandler(model_);
+  SetMouseHandler(popup_contents_view_);
   return false;
 }
 
@@ -377,7 +380,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                              model_index_ + 1);
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             model_->child_count());
+                             popup_contents_view_->child_count());
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
@@ -420,10 +423,6 @@ void OmniboxResultView::ShowContextMenuForView(views::View* source,
 }
 
 // ui::SimpleMenuModel::Delegate overrides:
-bool OmniboxResultView::IsCommandIdChecked(int command_id) const {
-  return false;
-}
-
 bool OmniboxResultView::IsCommandIdEnabled(int command_id) const {
   DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
   return match_.SupportsDeletion();
@@ -443,7 +442,8 @@ void OmniboxResultView::ProvideButtonFocusHint() {
 // OmniboxResultView, private:
 
 gfx::Image OmniboxResultView::GetIcon() const {
-  return model_->GetMatchIcon(match_, GetColor(OmniboxPart::RESULTS_ICON));
+  return popup_contents_view_->GetMatchIcon(
+      match_, GetColor(OmniboxPart::RESULTS_ICON));
 }
 
 void OmniboxResultView::SetHovered(bool hovered) {
@@ -456,7 +456,8 @@ void OmniboxResultView::SetHovered(bool hovered) {
 
 void OmniboxResultView::OpenMatch(WindowOpenDisposition disposition,
                                   base::TimeTicks match_selection_timestamp) {
-  model_->OpenMatch(model_index_, disposition, match_selection_timestamp);
+  popup_contents_view_->OpenMatch(model_index_, disposition,
+                                  match_selection_timestamp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
