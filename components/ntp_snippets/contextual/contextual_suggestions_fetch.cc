@@ -184,11 +184,8 @@ ContextualSuggestionsResult ResultFromResponse(
 
 ContextualSuggestionsFetch::ContextualSuggestionsFetch(
     const GURL& url,
-    const std::string& bcp_language_code,
-    bool include_cookies)
-    : url_(url),
-      bcp_language_code_(bcp_language_code),
-      include_cookies_(include_cookies) {}
+    const std::string& bcp_language_code)
+    : url_(url), bcp_language_code_(bcp_language_code) {}
 
 ContextualSuggestionsFetch::~ContextualSuggestionsFetch() = default;
 
@@ -273,11 +270,8 @@ ContextualSuggestionsFetch::MakeResourceRequest() const {
   resource_request->url = GURL(GetFetchEndpoint());
   resource_request->method = "GET";
   AppendHeaders(resource_request.get());
-
-  int cookie_flag = include_cookies_ ? 0 : net::LOAD_DO_NOT_SEND_COOKIES;
-  resource_request->load_flags = net::LOAD_BYPASS_CACHE |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES | cookie_flag |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->load_flags = net::LOAD_BYPASS_CACHE;
+  resource_request->allow_credentials = false;
 
   return resource_request;
 }

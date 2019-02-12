@@ -88,18 +88,10 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(context);
-  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
-      consent_helper;
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    consent_helper = unified_consent::UrlKeyedDataCollectionConsentHelper::
-        NewPersonalizedDataCollectionConsentHelper(
-            ProfileSyncServiceFactory::GetSyncServiceForProfile(profile));
-  }
-
   auto contextual_suggestions_fetcher =
       std::make_unique<ContextualSuggestionsFetcherImpl>(
           storage_partition->GetURLLoaderFactoryForBrowserProcess(),
-          std::move(consent_helper), g_browser_process->GetApplicationLocale());
+          g_browser_process->GetApplicationLocale());
   auto reporter_provider = std::make_unique<
       contextual_suggestions::ContextualSuggestionsReporterProvider>(
       std::make_unique<
