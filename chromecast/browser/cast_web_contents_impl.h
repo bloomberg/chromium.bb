@@ -6,9 +6,11 @@
 #define CHROMECAST_BROWSER_CAST_WEB_CONTENTS_IMPL_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +20,8 @@
 #include "chromecast/browser/cast_web_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace chromecast {
 
@@ -43,6 +47,10 @@ class CastWebContentsImpl : public CastWebContents,
   void LoadUrl(const GURL& url) override;
   void ClosePage() override;
   void Stop(int error_code) override;
+  void RegisterInterfaceProvider(
+      const InterfaceSet& interface_set,
+      service_manager::InterfaceProvider* interface_provider) override;
+  service_manager::BinderRegistry* binder_registry() override;
 
   // Observer interface:
   void AddObserver(Observer* observer) override;
@@ -94,6 +102,13 @@ class CastWebContentsImpl : public CastWebContents,
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  service_manager::BinderRegistry binder_registry_;
+
+  // Map of InterfaceSet -> InterfaceProvider pointer.
+  base::flat_map<InterfaceSet, service_manager::InterfaceProvider*>
+      interface_providers_map_;
+
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastWebContentsImpl> weak_factory_;
 

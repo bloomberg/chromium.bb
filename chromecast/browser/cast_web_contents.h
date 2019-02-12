@@ -8,9 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -62,9 +65,6 @@ class CastWebContents {
 
     virtual void RenderFrameCreated(int render_process_id,
                                     int render_frame_id) {}
-    virtual void OnInterfaceRequestFromFrame(
-        const std::string& interface_name,
-        mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
     // Adds |this| to the ObserverList in the implementation of
     // |cast_web_contents|.
@@ -142,6 +142,19 @@ class CastWebContents {
   // valid sequence, enforced via SequenceChecker.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Used to expose CastWebContents's |binder_registry_| to Delegate.
+  // Delegate should register its mojo interface binders via this function
+  // when it is ready.
+  virtual service_manager::BinderRegistry* binder_registry() = 0;
+
+  // Used for owner to pass its |InterfaceProviderPtr|s to CastWebContents.
+  // It is owner's respoinsibility to make sure each |InterfaceProviderPtr| has
+  // distinct mojo interface set.
+  using InterfaceSet = base::flat_set<std::string>;
+  virtual void RegisterInterfaceProvider(
+      const InterfaceSet& interface_set,
+      service_manager::InterfaceProvider* interface_provider) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastWebContents);

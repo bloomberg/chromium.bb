@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/cast_web_contents_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -167,6 +169,17 @@ void CastWebContentsImpl::RemoveObserver(CastWebContents::Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+service_manager::BinderRegistry* CastWebContentsImpl::binder_registry() {
+  return &binder_registry_;
+}
+
+void CastWebContentsImpl::RegisterInterfaceProvider(
+    const InterfaceSet& interface_set,
+    service_manager::InterfaceProvider* interface_provider) {
+  DCHECK(interface_provider);
+  interface_providers_map_.emplace(interface_set, interface_provider);
+}
+
 void CastWebContentsImpl::OnClosePageTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!closing_ || stopped_) {
@@ -213,8 +226,18 @@ void CastWebContentsImpl::OnInterfaceRequestFromFrame(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (Observer& observer : observer_list_) {
-    observer.OnInterfaceRequestFromFrame(interface_name, interface_pipe);
+  if (binder_registry_.TryBindInterface(interface_name, interface_pipe)) {
+    return;
+  }
+  for (auto& entry : interface_providers_map_) {
+    auto const& interface_set = entry.first;
+    // Interface is provided by this InterfaceProvider.
+    if (interface_set.find(interface_name) != interface_set.end()) {
+      auto* interface_provider = entry.second;
+      interface_provider->GetInterfaceByName(interface_name,
+                                             std::move(*interface_pipe));
+      break;
+    }
   }
 }
 
