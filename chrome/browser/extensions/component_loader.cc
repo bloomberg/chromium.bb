@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/extensions/data_deleter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -294,6 +295,17 @@ bool ComponentLoader::Exists(const std::string& id) const {
   return false;
 }
 
+void ComponentLoader::AddChromeCameraApp() {
+#if defined(OS_CHROMEOS)
+  base::FilePath resources_path;
+  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
+    AddComponentFromDir(
+        resources_path.Append(extension_misc::kChromeCameraAppPath),
+        extension_misc::kChromeCameraAppId, base::RepeatingClosure());
+  }
+#endif  // defined(OS_CHROMEOS)
+}
+
 void ComponentLoader::AddFileManagerExtension() {
 #if defined(OS_CHROMEOS)
   AddWithNameAndDescription(
@@ -535,6 +547,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
   if (!skip_session_components) {
+    AddChromeCameraApp();
     AddVideoPlayerExtension();
     AddAudioPlayerExtension();
     AddFileManagerExtension();
