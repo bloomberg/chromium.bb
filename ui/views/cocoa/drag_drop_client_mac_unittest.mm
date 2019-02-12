@@ -177,8 +177,8 @@ class DragDropClientMacTest : public WidgetTest {
   }
 
   void SetData(OSExchangeData& data) {
-    drag_drop_client()->data_source_.reset(
-        [[CocoaDragDropDataProvider alloc] initWithData:data]);
+    drag_drop_client()->exchange_data_ =
+        std::make_unique<ui::OSExchangeData>(data.provider().Clone());
   }
 
   // testing::Test:

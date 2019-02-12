@@ -7,22 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/callback.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views_bridge_mac/drag_drop_client.h"
-
-// This class acts as a bridge between NSPasteboardItem and OSExchangeData by
-// implementing NSPasteboardItemDataProvider and writing data from
-// OSExchangeData into the pasteboard.
-VIEWS_EXPORT
-@interface CocoaDragDropDataProvider : NSObject<NSPasteboardItemDataProvider>
-- (instancetype)initWithData:(const ui::OSExchangeData&)data;
-@end
 
 namespace gfx {
 class Point;
@@ -66,7 +59,7 @@ class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
   gfx::Point LocationInView(NSPoint point) const;
 
   // Provides the data for the drag and drop session.
-  base::scoped_nsobject<CocoaDragDropDataProvider> data_source_;
+  std::unique_ptr<ui::OSExchangeData> exchange_data_;
 
   // Used to handle drag and drop with Views.
   DropHelper drop_helper_;
