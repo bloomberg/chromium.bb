@@ -3540,16 +3540,23 @@
   sand-tot-chrome-pfq-informational-tryjob
   sand-tot-chromium-pfq-informational-tryjob
   sand-unittest-stress
+  sarien-chrome-pfq-tryjob
   sarien-chromium-pfq-tryjob
   sarien-compile-only-pre-cq
+  sarien-factory-tryjob
   sarien-full-tryjob
   sarien-llvm-next-toolchain-tryjob
   sarien-llvm-toolchain-tryjob
   sarien-no-vmtest-pre-cq
   sarien-paladin-tryjob
+  sarien-payloads-tryjob
   sarien-postsubmit-tryjob
   sarien-pre-cq
+  sarien-release-afdo-generate-tryjob
+  sarien-release-afdo-tryjob
+  sarien-release-afdo-use-tryjob
   sarien-release-tryjob
+  sarien-tot-chrome-pfq-informational-tryjob
   sarien-tot-chromium-pfq-informational-tryjob
   sarien-unittest-stress
   scarlet-arcnext-chromium-pfq-tryjob

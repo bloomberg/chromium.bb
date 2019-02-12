@@ -155,6 +155,7 @@ x86_internal_release_boards = frozenset([
     'samus',
     'samus-kernelnext',
     'sand',
+    'sarien',
     'sentry',
     'setzer',
     'sludge',
