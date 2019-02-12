@@ -55,7 +55,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   }
 
   // Next/last fragment for  when this is fragmented.
-  const NGPaintFragment* Next() const;
+  const NGPaintFragment* Next() const { return next_fragmented_.get(); }
   void SetNext(scoped_refptr<NGPaintFragment>);
   const NGPaintFragment* Last() const;
   const NGPaintFragment* Last(const NGBreakToken&) const;
@@ -161,9 +161,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   bool HasSelfPaintingLayer() const;
   // This is equivalent to LayoutObject::VisualRect
   LayoutRect VisualRect() const override;
-
-  LayoutRect SelectionVisualRect() const;
-  void SetSelectionVisualRect(const LayoutRect& rect);
+  LayoutRect PartialInvalidationVisualRect() const override;
 
   // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
   // Encloses all pixels painted by self + children.
@@ -316,6 +314,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Dirty line boxes containing |layout_object|.
   static void MarkLineBoxesDirtyFor(const LayoutObject& layout_object);
 
+  // This fragment will use the layout object's visual rect.
+  const LayoutObject& VisualRectLayoutObject(bool& this_as_inline_box) const;
+
   //
   // Following fields are computed in the layout phase.
   //
@@ -327,18 +328,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   scoped_refptr<NGPaintFragment> first_child_;
   scoped_refptr<NGPaintFragment> next_sibling_;
 
-  struct RareData {
-    USING_FAST_MALLOC(RareData);
-
-   public:
-    // The next fragment for when this is fragmented.
-    scoped_refptr<NGPaintFragment> next_fragmented_;
-
-    // Used for invalidating selected fragment.
-    LayoutRect selection_visual_rect_;
-  };
-  RareData& EnsureRareData();
-  std::unique_ptr<RareData> rare_data_;
+  // The next fragment for when this is fragmented.
+  scoped_refptr<NGPaintFragment> next_fragmented_;
 
   NGPaintFragment* next_for_same_layout_object_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;

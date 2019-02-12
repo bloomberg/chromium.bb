@@ -35,12 +35,12 @@
         {
           "object": "NGPhysicalTextFragment 'ipsum'",
           "rect": [0, 80, 40, 40],
-          "reason": "selection"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'lorem'",
           "rect": [0, 80, 40, 40],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ]
     }
@@ -95,22 +95,22 @@
         {
           "object": "NGPhysicalTextFragment 'ipsum'",
           "rect": [0, 160, 40, 40],
-          "reason": "selection"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'lorem'",
           "rect": [0, 160, 40, 40],
-          "reason": "selection"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'ipsum'",
           "rect": [0, 80, 40, 40],
-          "reason": "selection"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'lorem'",
           "rect": [0, 80, 40, 40],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ]
     }

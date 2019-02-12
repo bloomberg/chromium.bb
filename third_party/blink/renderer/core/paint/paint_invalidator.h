@@ -13,7 +13,6 @@
 
 namespace blink {
 
-class NGPaintFragment;
 class PrePaintTreeWalk;
 
 struct CORE_EXPORT PaintInvalidatorContext {
@@ -164,11 +163,6 @@ class PaintInvalidator {
 
   ALWAYS_INLINE LayoutRect ComputeVisualRect(const LayoutObject&,
                                              const PaintInvalidatorContext&);
-  ALWAYS_INLINE LayoutRect
-  MapFragmentLocalRectToVisualRect(const LayoutRect&,
-                                   const LayoutObject&,
-                                   const NGPaintFragment&,
-                                   const PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,
                                          PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintInvalidationContainer(const LayoutObject&,

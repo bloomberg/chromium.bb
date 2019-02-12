@@ -317,18 +317,6 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
   return paint_fragment;
 }
 
-NGPaintFragment::RareData& NGPaintFragment::EnsureRareData() {
-  if (!rare_data_)
-    rare_data_ = std::make_unique<RareData>();
-  return *rare_data_;
-}
-
-const NGPaintFragment* NGPaintFragment::Next() const {
-  if (!rare_data_)
-    return nullptr;
-  return rare_data_->next_fragmented_.get();
-}
-
 const NGPaintFragment* NGPaintFragment::Last() const {
   for (const NGPaintFragment* fragment = this;;) {
     const NGPaintFragment* next = fragment->Next();
@@ -363,8 +351,7 @@ scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
     if (!*fragment)
       return fragment;
 
-    scoped_refptr<NGPaintFragment>* next =
-        &(*fragment)->EnsureRareData().next_fragmented_;
+    scoped_refptr<NGPaintFragment>* next = &(*fragment)->next_fragmented_;
     if ((*fragment)->PhysicalFragment().BreakToken() == break_token)
       return next;
     fragment = next;
@@ -373,9 +360,7 @@ scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
 }
 
 void NGPaintFragment::SetNext(scoped_refptr<NGPaintFragment> fragment) {
-  if (!rare_data_ && !fragment)
-    return;
-  EnsureRareData().next_fragmented_ = std::move(fragment);
+  next_fragmented_ = std::move(fragment);
 }
 
 bool NGPaintFragment::IsDescendantOfNotSelf(
@@ -401,18 +386,6 @@ bool NGPaintFragment::HasOverflowClip() const {
 bool NGPaintFragment::ShouldClipOverflow() const {
   return physical_fragment_->IsBox() &&
          ToNGPhysicalBoxFragment(*physical_fragment_).ShouldClipOverflow();
-}
-
-LayoutRect NGPaintFragment::SelectionVisualRect() const {
-  if (!rare_data_)
-    return LayoutRect();
-  return rare_data_->selection_visual_rect_;
-}
-
-void NGPaintFragment::SetSelectionVisualRect(const LayoutRect& rect) {
-  if (!rare_data_ && rect.IsEmpty())
-    return;
-  EnsureRareData().selection_visual_rect_ = rect;
 }
 
 LayoutRect NGPaintFragment::SelfInkOverflow() const {
@@ -536,9 +509,8 @@ NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
   return fragment;
 }
 
-LayoutRect NGPaintFragment::VisualRect() const {
-  // VisualRect is computed from fragment tree and set to LayoutObject in
-  // pre-paint. Use the stored value in the LayoutObject.
+const LayoutObject& NGPaintFragment::VisualRectLayoutObject(
+    bool& this_as_inline_box) const {
   const NGPhysicalFragment& fragment = PhysicalFragment();
   if (const LayoutObject* layout_object = fragment.GetLayoutObject()) {
     // For inline fragments, InlineBox uses one united rect for the LayoutObject
@@ -549,20 +521,36 @@ LayoutRect NGPaintFragment::VisualRect() const {
     // formatting context and another as a child of the inline formatting
     // context it participates. |Parent()| can distinguish them because a tree
     // is created for each inline formatting context.
-    if (Parent())
-      return layout_object->VisualRectForInlineBox();
-
-    return static_cast<const DisplayItemClient*>(layout_object)->VisualRect();
+    this_as_inline_box = Parent();
+    return *layout_object;
   }
 
   // Line box does not have corresponding LayoutObject. Use VisualRect of the
   // containing LayoutBlockFlow as RootInlineBox does so.
+  this_as_inline_box = true;
   DCHECK(fragment.IsLineBox());
   // Line box is always a direct child of its containing block.
   NGPaintFragment* containing_block_fragment = Parent();
   DCHECK(containing_block_fragment);
   DCHECK(containing_block_fragment->GetLayoutObject());
-  return containing_block_fragment->GetLayoutObject()->VisualRectForInlineBox();
+  return *containing_block_fragment->GetLayoutObject();
+}
+
+LayoutRect NGPaintFragment::VisualRect() const {
+  // VisualRect is computed from fragment tree and set to LayoutObject in
+  // pre-paint. Use the stored value in the LayoutObject.
+  bool this_as_inline_box;
+  const auto& layout_object = VisualRectLayoutObject(this_as_inline_box);
+  return this_as_inline_box ? layout_object.VisualRectForInlineBox()
+                            : layout_object.FragmentsVisualRectBoundingBox();
+}
+
+LayoutRect NGPaintFragment::PartialInvalidationVisualRect() const {
+  bool this_as_inline_box;
+  const auto& layout_object = VisualRectLayoutObject(this_as_inline_box);
+  return this_as_inline_box
+             ? layout_object.PartialInvalidationVisualRectForInlineBox()
+             : layout_object.PartialInvalidationVisualRect();
 }
 
 bool NGPaintFragment::FlippedLocalVisualRectFor(

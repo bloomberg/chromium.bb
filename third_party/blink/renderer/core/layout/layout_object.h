@@ -277,6 +277,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return AdjustVisualRectForInlineBox(VisualRect());
   }
 
+  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
+    return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
+  }
+
   String DebugName() const final;
 
   // End of DisplayItemClient methods.
@@ -2476,9 +2480,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ApplyPseudoStyleChanges(const ComputedStyle* old_style);
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
 
-  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
-    return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
-  }
   LayoutRect AdjustVisualRectForInlineBox(const LayoutRect&) const;
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared

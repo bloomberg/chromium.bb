@@ -1644,15 +1644,6 @@ void LayoutObject::ClearPreviousVisualRects() {
     fragment->SetSelectionVisualRect(LayoutRect());
   }
 
-  if (IsInline()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      for (auto* fragment : fragments) {
-        fragment->SetSelectionVisualRect(LayoutRect());
-      }
-    }
-  }
-
   // After clearing ("invalidating") the visual rects, mark this object as
   // needing to re-compute them.
   SetShouldDoFullPaintInvalidation();

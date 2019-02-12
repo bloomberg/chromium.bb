@@ -20,12 +20,12 @@
         {
           "object": "NGPhysicalTextFragment 'xx'",
           "rect": [0, 8, 40, 32],
-          "reason": "selection"
+          "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'y'",
           "rect": [0, 8, 40, 32],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ]
     }

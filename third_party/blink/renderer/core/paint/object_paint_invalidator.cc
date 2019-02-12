@@ -290,15 +290,6 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
 DISABLE_CFI_PERF
 PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
     PaintInvalidationReason reason) {
-  // In LayoutNG, if NGPaintFragment paints the selection, we invalidate for
-  // selection change in PaintInvalidator.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && object_.IsInline() &&
-      // LayoutReplaced still paints selection tint by itself.
-      !object_.IsLayoutReplaced() &&
-      NGPaintFragment::InlineFragmentsFor(&object_)
-          .IsInLayoutNGInlineFormattingContext())
-    return reason;
-
   // Update selection rect when we are doing full invalidation with geometry
   // change (in case that the object is moved, composite status changed, etc.)
   // or shouldInvalidationSelection is set (in case that the selection itself
