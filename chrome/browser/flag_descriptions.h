@@ -167,9 +167,6 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCanvas2DImageChromiumName[];
 extern const char kCanvas2DImageChromiumDescription[];
 
-extern const char kCastStreamingHwEncodingName[];
-extern const char kCastStreamingHwEncodingDescription[];
-
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
