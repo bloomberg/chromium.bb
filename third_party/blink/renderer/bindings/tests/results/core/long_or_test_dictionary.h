@@ -91,6 +91,6 @@ struct V8TypeOf<LongOrTestDictionary> {
 // items that can initialize with memset or have a vtable. It is safe to
 // set canInitializeWithMemset=true for a union type object in practice.
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::LongOrTestDictionary);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::LongOrTestDictionary)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_LONG_OR_TEST_DICTIONARY_H_

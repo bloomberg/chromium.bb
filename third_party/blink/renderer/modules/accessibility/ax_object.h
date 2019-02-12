@@ -161,9 +161,9 @@ class DescriptionSource {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NameSource);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason)
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NameSource)
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource)
 
 namespace blink {
 

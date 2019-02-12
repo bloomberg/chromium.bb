@@ -223,7 +223,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const QualifiedName&);
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::QualifiedName);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::QualifiedName)
 
 namespace WTF {
 

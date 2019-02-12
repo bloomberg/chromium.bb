@@ -72,6 +72,6 @@ class PointerEventTarget {
 }  // namespace blink
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(
-    blink::event_handling_util::PointerEventTarget);
+    blink::event_handling_util::PointerEventTarget)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLING_UTIL_H_

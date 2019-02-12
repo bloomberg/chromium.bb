@@ -91,7 +91,7 @@ using IntDeque = blink::HeapDeque<blink::Member<IntWrapper>>;
 using IntMap = blink::HeapHashMap<blink::Member<IntWrapper>, int>;
 // TODO(sof): decide if this ought to be a global trait specialization.
 // (i.e., for HeapHash*<T>.)
-WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap);
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap)
 
 namespace blink {
 

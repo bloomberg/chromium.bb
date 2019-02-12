@@ -96,7 +96,7 @@ class AttributeChange {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::AttributeChange);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::AttributeChange)
 
 namespace blink {
 

@@ -85,7 +85,7 @@ struct CSSGradientColorStop {
 // We have to declare the VectorTraits specialization before CSSGradientValue
 // declares its inline capacity vector below.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(
-    blink::cssvalue::CSSGradientColorStop);
+    blink::cssvalue::CSSGradientColorStop)
 
 namespace blink {
 namespace cssvalue {
