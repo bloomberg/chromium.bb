@@ -94,6 +94,7 @@ source_set("tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/signin/core/browser:internals_test_support",
     "//services/network:test_support",
     "//testing/gtest",
   ]

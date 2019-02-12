@@ -30,4 +30,8 @@ void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
       account_id, access_token, source);
 }
 
+void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {
+  gaia_cookie_manager_service_->TriggerListAccounts();
+}
+
 }  // namespace identity

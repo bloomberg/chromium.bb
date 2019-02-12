@@ -32,6 +32,8 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
                                    const std::string& access_token,
                                    gaia::GaiaSource source) override;
 
+  void TriggerCookieJarUpdate() override;
+
  private:
   GaiaCookieManagerService* gaia_cookie_manager_service_;
 
