@@ -92,6 +92,8 @@ class WorkletAnimationTest : public RenderingTest {
         animator_name_);
     worklet_animation_ =
         CreateWorkletAnimation(GetScriptState(), element_, animator_name_);
+    GetDocument().Timeline().ResetForTesting();
+    GetDocument().GetAnimationClock().ResetTimeForTesting();
   }
 
   void SimulateFrame(double milliseconds) {
@@ -252,7 +254,7 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
 
 // Verifies correctness of current time when playback rate is set while the
 // animation is in idle state.
-TEST_F(WorkletAnimationTest, DISABLED_DocumentTimelineSetPlaybackRate) {
+TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
   double playback_rate = 2.0;
 
   SimulateFrame(111.0);
