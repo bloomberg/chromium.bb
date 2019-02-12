@@ -1557,7 +1557,7 @@ TEST_P(SyncUpdatesUsageStatsTest, SyncUpdatesUsageStats) {
   autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillProfileSyncableServiceTest,
     SyncUpdatesUsageStatsTest,
     testing::Values(

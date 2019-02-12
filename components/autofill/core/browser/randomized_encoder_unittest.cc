@@ -160,9 +160,9 @@ TEST_P(RandomizedEncoderTest, EncodeLarge) {
   EXPECT_EQ(expected_result, actual_result);
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        RandomizedEncoderTest,
-                        ::testing::ValuesIn(kEncodeParams));
+INSTANTIATE_TEST_SUITE_P(All,
+                         RandomizedEncoderTest,
+                         ::testing::ValuesIn(kEncodeParams));
 
 namespace {
 
@@ -321,6 +321,6 @@ TEST_P(RandomizedDecoderTest, Decode) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        RandomizedDecoderTest,
-                        ::testing::ValuesIn(kDecodeParams));
+INSTANTIATE_TEST_SUITE_P(All,
+                         RandomizedDecoderTest,
+                         ::testing::ValuesIn(kDecodeParams));

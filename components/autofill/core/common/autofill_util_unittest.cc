@@ -49,7 +49,7 @@ TEST_P(FieldIsTokenBoundarySubstringCaseTest,
                 test_case.case_sensitive));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     FieldIsTokenBoundarySubstringCaseTest,
     testing::Values(
@@ -91,7 +91,7 @@ TEST_P(PrefixEndingOnTokenBoundaryTest, IsPrefixOfEmailEndingWithAtSign) {
                 base::ASCIIToUTF16(test_case.field_contents)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     PrefixEndingOnTokenBoundaryTest,
     testing::Values(AtSignPrefixCase{"ab@cd.b", "a", false},
@@ -136,7 +136,7 @@ TEST_P(GetTextSelectionStartTest, GetTextSelectionStart) {
                             test_case.case_sensitive));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     GetTextSelectionStartTest,
     testing::Values(
@@ -172,7 +172,7 @@ TEST_P(LowercaseAndTokenizeAttributeStringTest,
             LowercaseAndTokenizeAttributeString(test_case.attribute));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillUtilTest,
     LowercaseAndTokenizeAttributeStringTest,
     testing::Values(

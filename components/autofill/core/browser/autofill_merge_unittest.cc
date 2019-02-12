@@ -304,6 +304,8 @@ TEST_P(AutofillMergeTest, DataDrivenMergeProfiles) {
                        kIsExpectedToPass);
 }
 
-INSTANTIATE_TEST_CASE_P(, AutofillMergeTest, testing::ValuesIn(GetTestFiles()));
+INSTANTIATE_TEST_SUITE_P(,
+                         AutofillMergeTest,
+                         testing::ValuesIn(GetTestFiles()));
 
 }  // namespace autofill

@@ -116,7 +116,7 @@ TEST_P(LegalMessageLineTest, Parsing) {
   EXPECT_EQ(GetParam().expected_lines, actual_lines);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestCases,
     LegalMessageLineTest,
     testing::Values(

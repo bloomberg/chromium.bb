@@ -500,12 +500,12 @@ TEST_P(CvcInputValidationTest, CvcInputValidation) {
             delegate_->response().cvc);
 }
 
-INSTANTIATE_TEST_CASE_P(CardUnmaskPromptControllerImplTest,
-                        CvcInputValidationTest,
-                        testing::Values(CvcCase{"123", true, "123"},
-                                        CvcCase{"123 ", true, "123"},
-                                        CvcCase{" 1234 ", false},
-                                        CvcCase{"IOU", false}));
+INSTANTIATE_TEST_SUITE_P(CardUnmaskPromptControllerImplTest,
+                         CvcInputValidationTest,
+                         testing::Values(CvcCase{"123", true, "123"},
+                                         CvcCase{"123 ", true, "123"},
+                                         CvcCase{" 1234 ", false},
+                                         CvcCase{"IOU", false}));
 
 class CvcInputAmexValidationTest
     : public CardUnmaskPromptControllerImplGenericTest,
@@ -541,14 +541,14 @@ TEST_P(CvcInputAmexValidationTest, CvcInputValidation) {
             delegate_->response().cvc);
 }
 
-INSTANTIATE_TEST_CASE_P(CardUnmaskPromptControllerImplTest,
-                        CvcInputAmexValidationTest,
-                        testing::Values(CvcCase{"123", false},
-                                        CvcCase{"123 ", false},
-                                        CvcCase{"1234", true, "1234"},
-                                        CvcCase{"\t1234 ", true, "1234"},
-                                        CvcCase{" 1234", true, "1234"},
-                                        CvcCase{"IOU$", false}));
+INSTANTIATE_TEST_SUITE_P(CardUnmaskPromptControllerImplTest,
+                         CvcInputAmexValidationTest,
+                         testing::Values(CvcCase{"123", false},
+                                         CvcCase{"123 ", false},
+                                         CvcCase{"1234", true, "1234"},
+                                         CvcCase{"\t1234 ", true, "1234"},
+                                         CvcCase{" 1234", true, "1234"},
+                                         CvcCase{"IOU$", false}));
 
 struct ExpirationDateTestCase {
   const char* input_month;
@@ -584,7 +584,7 @@ TEST_P(ExpirationDateValidationTest, ExpirationDateValidation) {
                                 ASCIIToUTF16(exp_case.input_year)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CardUnmaskPromptControllerImplTest,
     ExpirationDateValidationTest,
     testing::Values(ExpirationDateTestCase{"01", "2040", true},

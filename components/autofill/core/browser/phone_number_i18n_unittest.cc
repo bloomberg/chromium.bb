@@ -90,7 +90,7 @@ TEST_P(ParseNumberTest, ParsePhoneNumber) {
   EXPECT_EQ(test_case.deduced_region, deduced_region);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PhoneNumberI18NTest,
     ParseNumberTest,
     testing::Values(
@@ -314,7 +314,7 @@ TEST_P(GetFormattedPhoneNumberForDisplayTest,
                 profile, GetParam().locale)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GetFormattedPhoneNumberForDisplay,
     GetFormattedPhoneNumberForDisplayTest,
     testing::Values(
@@ -421,7 +421,7 @@ INSTANTIATE_TEST_CASE_P(
         // This number is not a valid US number, we won't try to format.
         PhoneNumberFormatCase("55 5342 8400", "US", "5553428400")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GetFormattedPhoneNumberForDisplay_EdgeCases,
     GetFormattedPhoneNumberForDisplayTest,
     testing::Values(
