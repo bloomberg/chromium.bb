@@ -112,7 +112,8 @@ public class ContextualSearchTabHelper
             if (activityTab != mTab) return;
 
             // Removes the hooks if the panel other than contextual search panel just got shown.
-            if (!getContextualSearchManager(mTab).isSearchPanelActive()) {
+            ContextualSearchManager manager = getContextualSearchManager(mTab);
+            if (manager != null && !manager.isSearchPanelActive()) {
                 mUnhookedTab = activityTab;
                 updateContextualSearchHooks(mUnhookedTab.getWebContents());
             }
