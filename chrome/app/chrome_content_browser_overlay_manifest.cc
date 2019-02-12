@@ -96,7 +96,7 @@ service_manager::Manifest MaybeAddTestInterfaces(
 #if defined(OS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ws::switches::kUseTestConfig)) {
-    manifest.required_capabilities.push_back({"ui", "test"});
+    manifest.required_capabilities["ui"].insert("test");
   }
 #endif
   return manifest;

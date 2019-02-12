@@ -37,7 +37,7 @@ const Manifest& GetPackagedService2Manifest() {
   return *manifest;
 }
 
-const Manifest& GetManifest() {
+Manifest CreateTestManifest() {
   static base::NoDestructor<Manifest> manifest{
       ManifestBuilder()
           .WithServiceName(kTestServiceName)
@@ -77,7 +77,7 @@ const Manifest& GetManifest() {
 }
 
 TEST(ManifestTest, BasicBuilder) {
-  const auto& manifest = GetManifest();
+  auto manifest = CreateTestManifest();
   EXPECT_EQ(kTestServiceName, manifest.service_name);
   EXPECT_EQ("none", manifest.options.sandbox_type);
   EXPECT_TRUE(manifest.options.can_connect_to_instances_in_any_group);
@@ -85,10 +85,31 @@ TEST(ManifestTest, BasicBuilder) {
   EXPECT_FALSE(manifest.options.can_register_other_service_instances);
   EXPECT_EQ(Manifest::InstanceSharingPolicy::kSharedAcrossGroups,
             manifest.options.instance_sharing_policy);
+
   EXPECT_EQ(2u, manifest.exposed_capabilities.size());
+  EXPECT_THAT(manifest.exposed_capabilities["capability_1"],
+              ElementsAre(mojom::Connector::Name_, mojom::PIDReceiver::Name_));
+  EXPECT_THAT(manifest.exposed_capabilities["capability_2"],
+              ElementsAre(mojom::Connector::Name_));
+
   EXPECT_EQ(2u, manifest.required_capabilities.size());
+  EXPECT_THAT(manifest.required_capabilities["service_42"],
+              ElementsAre("computation"));
+  EXPECT_THAT(manifest.required_capabilities["frobinator"],
+              ElementsAre("frobination"));
+
   EXPECT_EQ(1u, manifest.exposed_interface_filter_capabilities.size());
-  EXPECT_EQ(2u, manifest.required_interface_filter_capabilities.size());
+  EXPECT_THAT(
+      manifest.exposed_interface_filter_capabilities["navigation:frame"]
+                                                    ["filter_capability_1"],
+      ElementsAre(mojom::Connector::Name_));
+
+  EXPECT_EQ(1u, manifest.required_interface_filter_capabilities.size());
+  EXPECT_THAT(
+      manifest.required_interface_filter_capabilities["navigation:frame"]
+                                                     ["browser"],
+      ElementsAre("another_filter_capability", "some_filter_capability"));
+
   EXPECT_EQ(2u, manifest.packaged_services.size());
   EXPECT_EQ(manifest.packaged_services[0].service_name,
             GetPackagedService1Manifest().service_name);
@@ -123,41 +144,31 @@ TEST(ManifestTest, Amend) {
 
   manifest.Amend(std::move(overlay));
 
-  const auto& exposed_capabilities = manifest.exposed_capabilities;
+  auto& exposed_capabilities = manifest.exposed_capabilities;
   ASSERT_EQ(2u, exposed_capabilities.size());
-  EXPECT_EQ("cap1", exposed_capabilities[0].capability_name);
-  EXPECT_THAT(exposed_capabilities[0].interface_names,
+  EXPECT_THAT(exposed_capabilities["cap1"],
               ElementsAre("interface1", "interface2", "xinterface1"));
+  EXPECT_THAT(exposed_capabilities["xcap1"], ElementsAre("xinterface2"));
 
-  const auto& required_capabilities = manifest.required_capabilities;
+  auto& required_capabilities = manifest.required_capabilities;
   ASSERT_EQ(3u, required_capabilities.size());
-  EXPECT_EQ("service1", required_capabilities[0].service_name);
-  EXPECT_EQ("cap2", required_capabilities[0].capability_name);
-  EXPECT_EQ("service2", required_capabilities[1].service_name);
-  EXPECT_EQ("cap3", required_capabilities[1].capability_name);
-  EXPECT_EQ("xservice1", required_capabilities[2].service_name);
-  EXPECT_EQ("xcap2", required_capabilities[2].capability_name);
+  EXPECT_THAT(required_capabilities["service1"], ElementsAre("cap2"));
+  EXPECT_THAT(required_capabilities["service2"], ElementsAre("cap3"));
+  EXPECT_THAT(required_capabilities["xservice1"], ElementsAre("xcap2"));
 
-  const auto& exposed_filters = manifest.exposed_interface_filter_capabilities;
+  auto& exposed_filters = manifest.exposed_interface_filter_capabilities;
   ASSERT_EQ(2u, exposed_filters.size());
-  EXPECT_EQ("filter1", exposed_filters[0].filter_name);
-  EXPECT_EQ("filtercap1", exposed_filters[0].capability_name);
-  EXPECT_THAT(exposed_filters[0].interface_names,
+  EXPECT_THAT(exposed_filters["filter1"]["filtercap1"],
               ElementsAre("interface3", "interface4", "xinterface3"));
+  EXPECT_THAT(exposed_filters["xfilter1"]["xfiltercap1"],
+              ElementsAre("xinterface4"));
 
-  EXPECT_EQ("xfilter1", exposed_filters[1].filter_name);
-  EXPECT_EQ("xfiltercap1", exposed_filters[1].capability_name);
-  EXPECT_THAT(exposed_filters[1].interface_names, ElementsAre("xinterface4"));
-
-  const auto& required_filters =
-      manifest.required_interface_filter_capabilities;
+  auto& required_filters = manifest.required_interface_filter_capabilities;
   ASSERT_EQ(2u, required_filters.size());
-  EXPECT_EQ("service3", required_filters[0].service_name);
-  EXPECT_EQ("filter2", required_filters[0].filter_name);
-  EXPECT_EQ("filtercap2", required_filters[0].capability_name);
-  EXPECT_EQ("xservice2", required_filters[1].service_name);
-  EXPECT_EQ("xfilter2", required_filters[1].filter_name);
-  EXPECT_EQ("xfiltercap2", required_filters[1].capability_name);
+  EXPECT_THAT(required_filters["filter2"]["service3"],
+              ElementsAre("filtercap2"));
+  EXPECT_THAT(required_filters["xfilter2"]["xservice2"],
+              ElementsAre("xfiltercap2"));
 }
 
 }  // namespace service_manager
