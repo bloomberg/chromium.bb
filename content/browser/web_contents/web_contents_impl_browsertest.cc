@@ -1116,10 +1116,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
 
   // Load the same resource from the same data url, it shouldn't be cached
   // because the origin should be unique.
-  // TODO(crbug.com/910711): This test should return false! Opaque origins
-  // shouldn't share cache space. The issue is that opaque origins stringify as
-  // "null".
-  EXPECT_TRUE(TestResourceLoad(data_url, GURL()));
+
+  EXPECT_FALSE(TestResourceLoad(data_url, GURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
