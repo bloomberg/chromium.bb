@@ -18,6 +18,7 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/get_session_name.h"
 #include "components/sync/base/invalidation_adapter.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -620,6 +621,11 @@ void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
 
 void SyncBackendHostCore::DoOnInvalidatorClientIdChange(
     const std::string& client_id) {
+  if (base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
+    // Don't populate the ID, if client participates in latency measurement
+    // experiment.
+    return;
+  }
   sync_manager_->UpdateInvalidationClientId(client_id);
 }
 
