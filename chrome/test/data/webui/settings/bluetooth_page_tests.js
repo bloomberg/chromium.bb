@@ -289,9 +289,8 @@ suite('Bluetooth', function() {
         assertEquals(
             unpairedDeviceList()[0].address, fakeUnpairedDevice2.address);
 
-        // Add the first device again. Since the devices are always sorted by
-        // address, the new device will be added at the beginning of the list.
-        // TODO(ortuno): Devices should always be added at the end of the list.
+        // Add the first device again; it should be added at the end of the
+        // list.
         bluetoothApi.simulateDevicesAddedForTest([fakeUnpairedDevice1]);
 
         await waitForListUpdateTimeout();
@@ -304,9 +303,9 @@ suite('Bluetooth', function() {
         assertFalse(subpage.$.noPairedDevices.hidden);
 
         assertEquals(
-            unpairedDeviceList()[0].address, fakeUnpairedDevice1.address);
+            unpairedDeviceList()[0].address, fakeUnpairedDevice2.address);
         assertEquals(
-            unpairedDeviceList()[1].address, fakeUnpairedDevice2.address);
+            unpairedDeviceList()[1].address, fakeUnpairedDevice1.address);
 
         // Remove both devices.
         bluetoothApi.simulateDevicesRemovedForTest(
@@ -394,9 +393,8 @@ suite('Bluetooth', function() {
 
         assertEquals(pairedDeviceList()[0].address, fakePairedDevice2.address);
 
-        // Add the first device again. Since the devices are always sorted by
-        // address, the new device will be added at the beginning of the list.
-        // TODO(ortuno): Devices should always be added at the end of the list.
+        // Add the first device again; it should be added at the end of the
+        // list.
         bluetoothApi.simulateDevicesAddedForTest([fakePairedDevice1]);
 
         await waitForListUpdateTimeout();
@@ -408,8 +406,8 @@ suite('Bluetooth', function() {
         assertFalse(subpage.$.noUnpairedDevices.hidden);
         assertTrue(subpage.$.noPairedDevices.hidden);
 
-        assertEquals(pairedDeviceList()[0].address, fakePairedDevice1.address);
-        assertEquals(pairedDeviceList()[1].address, fakePairedDevice2.address);
+        assertEquals(pairedDeviceList()[0].address, fakePairedDevice2.address);
+        assertEquals(pairedDeviceList()[1].address, fakePairedDevice1.address);
 
         // Remove both devices.
         bluetoothApi.simulateDevicesRemovedForTest(
