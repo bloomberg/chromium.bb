@@ -28406,6 +28406,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Third Party Unsafe Headers"/>
 </enum>
 
+<enum name="InterceptionType">
+  <int value="0" label="Not intercepted"/>
+  <int value="1" label="Other"/>
+  <int value="2" label="Http scheme"/>
+  <int value="3" label="Https scheme"/>
+  <int value="4" label="File scheme"/>
+  <int value="5" label="Data scheme"/>
+</enum>
+
 <enum name="InternalErrorLoadEvent">
   <summary>Internal Errors in the page_load_metrics system</summary>
   <int value="0" label="Invalid timing IPC sent from renderer (deprecated)"/>
