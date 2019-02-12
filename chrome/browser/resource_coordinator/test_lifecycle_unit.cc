@@ -89,6 +89,10 @@ bool TestLifecycleUnit::Discard(LifecycleUnitDiscardReason discard_reason) {
   return false;
 }
 
+LifecycleUnitDiscardReason TestLifecycleUnit::GetDiscardReason() const {
+  return mojom::LifecycleUnitDiscardReason::EXTERNAL;
+}
+
 void ExpectCanDiscardTrue(const LifecycleUnit* lifecycle_unit,
                           LifecycleUnitDiscardReason discard_reason) {
   DecisionDetails decision_details;

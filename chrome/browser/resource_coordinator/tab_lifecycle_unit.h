@@ -103,8 +103,10 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool CanFreeze(DecisionDetails* decision_details) const override;
   bool CanDiscard(LifecycleUnitDiscardReason reason,
                   DecisionDetails* decision_details) const override;
+  LifecycleUnitDiscardReason GetDiscardReason() const override;
   bool Freeze() override;
   bool Unfreeze() override;
+  bool Discard(LifecycleUnitDiscardReason discard_reason) override;
   ukm::SourceId GetUkmSourceId() const override;
 
   // Implementations of some functions from TabLifecycleUnitExternal. These are
@@ -126,9 +128,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
     kProactive,
     kExternalOrUrgent,
   };
-
-  // LifecycleUnitBase:
-  bool DiscardImpl(LifecycleUnitDiscardReason discard_reason) override;
 
   // Same as GetSource, but cast to the most derived type.
   TabLifecycleUnitSource* GetTabSource() const;
@@ -203,6 +202,11 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // When this is false, CanDiscard() always returns false.
   bool auto_discardable_ = true;
+
+  // Maintains the most recent LifecycleUnitDiscardReason that was passed into
+  // Discard().
+  LifecycleUnitDiscardReason discard_reason_ =
+      LifecycleUnitDiscardReason::EXTERNAL;
 
   // Timer that ensures that this tab does not wait forever for the callback
   // when it is being frozen.

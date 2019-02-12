@@ -292,8 +292,10 @@ void TabsEventRouter::OnFaviconUpdated(
   }
 }
 
-void TabsEventRouter::OnDiscardedStateChange(WebContents* contents,
-                                             bool is_discarded) {
+void TabsEventRouter::OnDiscardedStateChange(
+    WebContents* contents,
+    mojom::LifecycleUnitDiscardReason reason,
+    bool is_discarded) {
   std::set<std::string> changed_property_names;
   changed_property_names.insert(tabs_constants::kDiscardedKey);
   DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
