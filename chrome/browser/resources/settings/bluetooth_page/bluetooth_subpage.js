@@ -192,15 +192,53 @@ Polymer({
   deviceListChanged_: function() {
     this.saveScroll(this.$.pairedDevices);
     this.saveScroll(this.$.unpairedDevices);
-    this.pairedDeviceList_ = this.deviceList_.filter(function(device) {
-      return !!device.paired || !!device.connecting;
-    });
-    this.unpairedDeviceList_ = this.deviceList_.filter(function(device) {
-      return !device.paired && !device.connecting;
-    });
+
+    this.pairedDeviceList_ = this.getUpdatedDeviceList_(
+      this.pairedDeviceList_,
+      this.deviceList_.filter(d => d.paired || d.connecting));
+    this.unpairedDeviceList_ = this.getUpdatedDeviceList_(
+      this.unpairedDeviceList_,
+      this.deviceList_.filter(d => !(d.paired || d.connecting)));
+
     this.updateScrollableContents();
     this.restoreScroll(this.$.unpairedDevices);
     this.restoreScroll(this.$.pairedDevices);
+  },
+
+  /**
+   * Returns a copy of |oldDeviceList| but:
+   *   - Using the corresponding device objects in |newDeviceList|
+   *   - Removing devices not in |newDeviceList|
+   *   - Adding device not in |oldDeviceList| but in |newDeviceList| to the
+   *     end of the list.
+   *
+   * @param {!Array<!chrome.bluetooth.Device>} oldDeviceList
+   * @param {!Array<!chrome.bluetooth.Device>} newDeviceList
+   * @return {!Array<!chrome.bluetooth.Device>}
+   * @private
+   */
+  getUpdatedDeviceList_: function(oldDeviceList, newDeviceList) {
+    const newDeviceMap = new Map(newDeviceList.map(d => [d.address, d]));
+    const updatedDeviceList = [];
+
+    // Add elements of |oldDeviceList| that are in |newDeviceList| to
+    // |updatedDeviceList|.
+    for (const oldDevice of oldDeviceList) {
+      const newDevice = newDeviceMap.get(oldDevice.address);
+      if (newDevice === undefined) {
+        continue;
+      }
+      updatedDeviceList.push(newDevice);
+      newDeviceMap.delete(newDevice.address);
+    }
+
+    // Add all elements of |newDeviceList| that are not in |oldDeviceList| to
+    // |updatedDeviceList|.
+    for (const newDevice of newDeviceMap.values()) {
+      updatedDeviceList.push(newDevice);
+    }
+
+    return updatedDeviceList;
   },
 
   /** @private */
