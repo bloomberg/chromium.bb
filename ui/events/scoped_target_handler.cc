@@ -38,6 +38,11 @@ void ScopedTargetHandler::OnEvent(Event* event) {
     }
     destroyed_flag_ = old_destroyed_flag;
   }
+
+  // This check is needed due to nested event loops when starting DragDrop.
+  if (event->stopped_propagation())
+    return;
+
   new_handler_->OnEvent(event);
 }
 

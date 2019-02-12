@@ -136,41 +136,74 @@ class EventCountingEventHandler : public EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventCountingEventHandler);
 };
 
+// An EventCountingEventHandler that will also mark the event to stop further
+// propataion.
+class EventStopPropagationHandler : public EventCountingEventHandler {
+ public:
+  EventStopPropagationHandler(EventTarget* target, int* count)
+      : EventCountingEventHandler(target, count) {}
+  ~EventStopPropagationHandler() override {}
+
+ protected:
+  void OnEvent(Event* event) override {
+    EventCountingEventHandler::OnEvent(event);
+    event->StopPropagation();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EventStopPropagationHandler);
+};
+
 }  // namespace
 
 // Tests that a ScopedTargetHandler invokes both the target and a delegate.
 TEST(ScopedTargetHandlerTest, HandlerInvoked) {
   int count = 0;
-  TestEventTarget* target = new TestEventTarget;
+  std::unique_ptr<TestEventTarget> target = std::make_unique<TestEventTarget>();
   std::unique_ptr<NestedEventHandler> target_handler(
-      new NestedEventHandler(target, 1));
+      new NestedEventHandler(target.get(), 1));
   std::unique_ptr<EventCountingEventHandler> delegate(
-      new EventCountingEventHandler(target, &count));
+      new EventCountingEventHandler(target.get(), &count));
   target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
                    EF_LEFT_MOUSE_BUTTON);
   target->DispatchEvent(&event);
   EXPECT_EQ(1, count);
-  delete target;
+}
+
+// Tests that a ScopedTargetHandler invokes both the target and a delegate but
+// does not further propagate the event after a handler stops event propagation.
+TEST(ScopedTargetHandlerTest, HandlerInvokedOnceThenEventStopsPropagating) {
+  int count = 0;
+  std::unique_ptr<TestEventTarget> target = std::make_unique<TestEventTarget>();
+  std::unique_ptr<NestedEventHandler> target_handler(
+      new NestedEventHandler(target.get(), 3));
+  std::unique_ptr<EventStopPropagationHandler> delegate(
+      new EventStopPropagationHandler(target.get(), &count));
+  target->SetHandler(std::move(target_handler), std::move(delegate));
+  MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                   EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
+                   EF_LEFT_MOUSE_BUTTON);
+  target->DispatchEvent(&event);
+  EXPECT_EQ(1, count);
 }
 
 // Tests that a ScopedTargetHandler invokes both the target and a delegate when
 // an Event is dispatched recursively such as with synthetic events.
 TEST(ScopedTargetHandlerTest, HandlerInvokedNested) {
   int count = 0;
-  TestEventTarget* target = new TestEventTarget;
+  std::unique_ptr<TestEventTarget> target = std::make_unique<TestEventTarget>();
   std::unique_ptr<NestedEventHandler> target_handler(
-      new NestedEventHandler(target, 2));
+      new NestedEventHandler(target.get(), 2));
   std::unique_ptr<EventCountingEventHandler> delegate(
-      new EventCountingEventHandler(target, &count));
+      new EventCountingEventHandler(target.get(), &count));
   target->SetHandler(std::move(target_handler), std::move(delegate));
   MouseEvent event(ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
                    EF_LEFT_MOUSE_BUTTON);
   target->DispatchEvent(&event);
   EXPECT_EQ(2, count);
-  delete target;
 }
 
 // Tests that a it is safe to delete a ScopedTargetHandler while handling an

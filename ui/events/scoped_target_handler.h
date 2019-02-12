@@ -16,7 +16,8 @@ class EventTarget;
 // An EventHandler that replaces an EventTarget's target handler with itself to
 // pass events first to the original handler and second to an additional new
 // EventHandler. The new handler gets called after the original handler even
-// if it calls SetHandled() or StopPropagation() on the event.
+// if it calls SetHandled() on the event but not if StopPropagation() is called
+// on the event.
 class EVENTS_EXPORT ScopedTargetHandler : public EventHandler {
  public:
   ScopedTargetHandler(EventTarget* target, EventHandler* new_handler);

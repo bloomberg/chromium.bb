@@ -1650,7 +1650,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Input ---------------------------------------------------------------------
 
   bool ProcessMousePressed(const ui::MouseEvent& event);
-  bool ProcessMouseDragged(const ui::MouseEvent& event);
+  void ProcessMouseDragged(ui::MouseEvent* event);
   void ProcessMouseReleased(const ui::MouseEvent& event);
 
   // Accelerators --------------------------------------------------------------
