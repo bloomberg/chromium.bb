@@ -41,14 +41,10 @@ class InterceptNavigationThrottle : public content::NavigationThrottle {
   // content::NavigationThrottle implementation:
   ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
-  ThrottleCheckResult WillFailRequest() override;
   ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
  private:
-  // To be called on either WillFailRequest or WillProcessResponse.
-  ThrottleCheckResult WillFinish();
-
   ThrottleCheckResult CheckIfShouldIgnoreNavigation(bool is_redirect);
   void RunCheckAsync(const NavigationParams& params);
 
