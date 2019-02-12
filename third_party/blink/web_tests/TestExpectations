@@ -5643,10 +5643,6 @@ crbug.com/886566 [ Android ] http/tests/csspaint/invalidation-background-image.h
 crbug.com/886566 http/tests/csspaint/invalidation-border-image.html [ Pass Timeout ]
 crbug.com/886566 http/tests/csspaint/invalidation-content-image.html [ Pass Timeout ]
 
-# Enable AnimationWorklet tests for mainthread
-crbug.com/785940 animations/animationworklet/worklet-animation-currentTime.html [ Pass Failure ]
-crbug.com/927462 external/wpt/animation-worklet/current-time.https.html [ Pass Failure ]
-
 # Sheriff 2018-09-25
 crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 
