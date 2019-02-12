@@ -112,6 +112,9 @@ cr.define('offlineInternals', function() {
     browserProxy.getNetworkStatus().then(function(networkStatus) {
       $('current-status').textContent = networkStatus;
     });
+    browserProxy.getLimitlessPrefetchingEnabled().then(function(enabled) {
+      $('limitless-prefetching-status').textContent = getTextLabel(enabled);
+    });
     refreshLog();
   }
 
@@ -254,6 +257,14 @@ cr.define('offlineInternals', function() {
       $('prefetch-status').textContent = getTextLabel(enabled);
     }
 
+    /**
+     * @param {boolean} enabled Whether to enable limitless prefetching.
+     */
+    function toggleLimitlessPrefetching(enabled) {
+      browserProxy.setLimitlessPrefetchingEnabled(enabled);
+      $('limitless-prefetching-status').textContent = getTextLabel(enabled);
+    }
+
     const incognito = loadTimeData.getBoolean('isIncognito');
     ['delete-selected-pages', 'delete-selected-requests', 'log-model-on',
      'log-model-off', 'log-request-on', 'log-request-off', 'refresh']
@@ -331,6 +342,10 @@ cr.define('offlineInternals', function() {
     $('toggle-all-requests').onclick = function() {
       toggleAllCheckboxes($('toggle-all-requests'), 'requests');
     };
+    $('limitless-prefetching-on').onclick =
+        toggleLimitlessPrefetching.bind(null, true);
+    $('limitless-prefetching-off').onclick =
+        toggleLimitlessPrefetching.bind(null, false);
     if (!incognito) {
       refreshAll();
     }

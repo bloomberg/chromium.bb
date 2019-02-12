@@ -57,6 +57,12 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Set whether to record prefetch service events.
   void HandleSetRecordPrefetchService(const base::ListValue* args);
 
+  // Set whether to enable limitless prefetching.
+  void HandleSetLimitlessPrefetchingEnabled(const base::ListValue* args);
+
+  // Get whether limitless prefetching is enabled.
+  void HandleGetLimitlessPrefetchingEnabled(const base::ListValue* args);
+
   // Load all offline services' event logs.
   void HandleGetEventLogs(const base::ListValue* args);
 
