@@ -4,7 +4,7 @@
 
 #include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
 
-#include "chrome/browser/permissions/permission_request.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -20,9 +20,14 @@
 
 namespace vr {
 
+namespace {
+static constexpr base::TimeDelta kPermissionPromptTimeout =
+    base::TimeDelta::FromSeconds(5);
+}  // namespace
+
 VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
                            device::mojom::XRCompositorHostPtr compositor)
-    : compositor_(std::move(compositor)) {
+    : compositor_(std::move(compositor)), weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
@@ -149,12 +154,29 @@ void VRUiHostImpl::OnBubbleAdded() {
 
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptGenericPermission);
+
+  is_prompt_showing_in_headset_ = true;
+  current_prompt_sequence_num_++;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&VRUiHostImpl::RemoveHeadsetNotificationPrompt,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     current_prompt_sequence_num_),
+      kPermissionPromptTimeout);
 }
 
 void VRUiHostImpl::OnBubbleRemoved() {
+  RemoveHeadsetNotificationPrompt(current_prompt_sequence_num_);
+}
+
+void VRUiHostImpl::RemoveHeadsetNotificationPrompt(int prompt_sequence_num) {
+  if (!is_prompt_showing_in_headset_)
+    return;
+  if (prompt_sequence_num != current_prompt_sequence_num_)
+    return;
+  is_prompt_showing_in_headset_ = false;
   ui_rendering_thread_->SetVisibleExternalPromptNotification(
       ExternalPromptNotificationType::kPromptNone);
   ui_rendering_thread_->StopOverlay();
 }
-
 }  // namespace vr

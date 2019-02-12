@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_UI_HOST_VR_UI_HOST_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -45,13 +46,20 @@ class VRUiHostImpl : public VRUiHost,
   void OnBubbleAdded() override;
   void OnBubbleRemoved() override;
 
+  void RemoveHeadsetNotificationPrompt(int prompt_sequence_num);
+
   device::mojom::XRCompositorHostPtr compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
   content::WebContents* web_contents_ = nullptr;
   PermissionRequestManager* permission_request_manager_ = nullptr;
 
+  bool is_prompt_showing_in_headset_ = false;
+  int current_prompt_sequence_num_ = 0;
+
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<VRUiHostImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VRUiHostImpl);
 };
