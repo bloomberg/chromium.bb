@@ -160,10 +160,6 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
     edit_model_->OnPopupDataChanged(match.fill_into_edit, &current_destination,
                                     keyword, is_keyword_hint);
   }
-
-  // Repaint old and new selected lines immediately, so that the edit doesn't
-  // appear to update [much] faster than the popup.
-  view_->PaintUpdatesNow();
 }
 
 void OmniboxPopupModel::ResetToDefaultMatch() {

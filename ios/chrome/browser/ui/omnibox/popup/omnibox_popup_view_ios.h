@@ -39,7 +39,6 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
   void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override;
   void OnMatchIconUpdated(size_t match_index) override {}
-  void PaintUpdatesNow() override {}
   void OnDragCanceled() override {}
 
   void UpdateEditViewIcon();
