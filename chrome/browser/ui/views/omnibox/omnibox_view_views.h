@@ -131,6 +131,8 @@ class OmniboxViewViews : public OmniboxView,
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   bool ShouldDoLearning() override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdEnabled(int command_id) const override;
 
   // For testing only.
   OmniboxPopupContentsView* GetPopupContentsViewForTesting() const {
@@ -230,7 +232,6 @@ class OmniboxViewViews : public OmniboxView,
 
   // views::Textfield:
   bool IsItemForCommandIdDynamic(int command_id) const override;
-  base::string16 GetLabelForCommandId(int command_id) const override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -242,7 +243,6 @@ class OmniboxViewViews : public OmniboxView,
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnFocus() override;
   void OnBlur() override;
-  bool IsCommandIdEnabled(int command_id) const override;
   base::string16 GetSelectionClipboardText() const override;
   void DoInsertChar(base::char16 ch) override;
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
