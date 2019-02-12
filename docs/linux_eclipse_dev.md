@@ -317,17 +317,17 @@ The overall idea is described [here](https://www.chromium.org/blink/getting-star
        ```Renderer (239930) paused waiting for debugger to attach. Send SIGUSR1 to unpause.```
      9. ```239930``` is the number of the process running waiting for the ```signal```.
 2. Create a ```C/C++ Attach to Application```:
-     1. ```Run``` > ```Debug configurations```
-     2. Double click on ```C/C++ Attach to Application```
-    2. Pick  a name (e.g. ```shell proc```)
-    3. Click ```Debug``` to run the configuration.
-    4. In the ```Select Processes``` dialog, pick the process that was
+    1. ```Run``` > ```Debug configurations```
+    2. Double click on ```C/C++ Attach to Application```
+    3. Pick  a name (e.g. ```shell proc```)
+    4. Click ```Debug``` to run the configuration.
+    5. In the ```Select Processes``` dialog, pick the process that was
         spawned above (if you type ```content_shell``` it will filter by
         name)
-    5. Click on ```Debugger console``` to access the ```gdb``` console.
-    6. Send the original process a signal
+    6. Click on ```Debugger console``` to access the ```gdb``` console.
+    7. Send the original process a signal
         ```signal SIGUSR1```
-    7. That should unblock the original process and you should now be able to
+    8. That should unblock the original process and you should now be able to
         set breakpoints.
 
 ### Optional: Accurate symbol information
