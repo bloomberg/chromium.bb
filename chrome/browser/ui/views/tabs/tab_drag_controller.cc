@@ -1482,7 +1482,12 @@ void TabDragController::PerformDeferredAttach() {
   // GetCursorScreenPoint() needs to be called before Detach() is called as
   // GetCursorScreenPoint() may use the current attached tabstrip to get the
   // touch event position but Detach() sets attached tabstrip to nullptr.
-  const gfx::Point current_screen_point = GetCursorScreenPoint();
+  // On ChromeOS, the gesture state is already cleared and so
+  // GetCursorScreenPoint() will fail to obtain the last touch location.
+  // Therefore it uses the last remembered location instead.
+  const gfx::Point current_screen_point = (event_source_ == EVENT_SOURCE_TOUCH)
+                                              ? last_point_in_screen_
+                                              : GetCursorScreenPoint();
   Detach(DONT_RELEASE_CAPTURE);
   // If we're attaching the dragged tabs to an overview window's tabstrip, the
   // tabstrip should not have focus.

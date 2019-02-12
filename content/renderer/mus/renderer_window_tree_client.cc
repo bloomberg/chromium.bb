@@ -388,4 +388,6 @@ void RendererWindowTreeClient::OnOcclusionStatesChanged(
     const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
         occlusion_changes) {}
 
+void RendererWindowTreeClient::CleanupGestureState(ws::Id window_id) {}
+
 }  // namespace content

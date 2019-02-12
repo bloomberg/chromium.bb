@@ -1627,6 +1627,13 @@ void WindowTreeClient::OnOcclusionStatesChanged(
   }
 }
 
+void WindowTreeClient::CleanupGestureState(ws::Id window_id) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+  window->GetWindow()->CleanupGestureState();
+}
+
 void WindowTreeClient::OnDisplaysChanged(
     std::vector<ws::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,

@@ -230,8 +230,6 @@ void ClientSideWindowMoveHandler::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ClientSideWindowMoveHandler::OnWindowMoveDone(bool success) {
-  dragging_window_->env()->gesture_recognizer()->CancelActiveTouches(
-      dragging_window_);
   dragging_window_ = nullptr;
 }
 
