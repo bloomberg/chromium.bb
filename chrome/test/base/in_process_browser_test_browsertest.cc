@@ -105,7 +105,14 @@ class SingleProcessBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SingleProcessBrowserTest, Test) {
+#if defined(OS_LINUX)
+// TODO(https://crbug.com/931233): Reenable
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleProcessBrowserTest, MAYBE_Test) {
   // Should not crash.
 }
 
