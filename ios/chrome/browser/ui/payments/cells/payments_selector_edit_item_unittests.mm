@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

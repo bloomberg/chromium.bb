@@ -38,8 +38,6 @@ source_set("cells") {
     "sync_switch_item.mm",
     "table_view_clear_browsing_data_item.h",
     "table_view_clear_browsing_data_item.mm",
-    "text_and_error_item.h",
-    "text_and_error_item.mm",
     "version_item.h",
     "version_item.mm",
   ]
@@ -77,7 +75,6 @@ source_set("unit_tests") {
     "copied_to_chrome_item_unittest.mm",
     "passphrase_error_item_unittest.mm",
     "settings_multiline_detail_item_unittest.mm",
-    "text_and_error_item_unittest.mm",
     "version_item_unittest.mm",
   ]
 

@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
 #import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
-#import "ios/chrome/browser/ui/authentication/cells/signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -31,7 +30,6 @@
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
@@ -83,8 +81,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccountDetail,
   ItemTypeAccountCheckMark,
   ItemTypeAccountSignIn,
-  ItemTypeColdStateSigninPromo,
-  ItemTypeWarmStateSigninPromo,
   ItemTypeApp,
   ItemTypePaymentsSingleLine,
   ItemTypePaymentsDynamicHeight,
@@ -293,10 +289,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierAccountCell];
   [model addItem:[self accountItemCheckMark]
       toSectionWithIdentifier:SectionIdentifierAccountCell];
-  [model addItem:[self coldStateSigninPromoItem]
-      toSectionWithIdentifier:SectionIdentifierAccountCell];
-  [model addItem:[self warmStateSigninPromoItem]
-      toSectionWithIdentifier:SectionIdentifierAccountCell];
 
   // Account control cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountControlCell];
@@ -345,8 +337,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
     case ItemTypeAutofillStatus:
     case ItemTypePaymentsDynamicHeight:
     case ItemTypeAutofillDynamicHeight:
-    case ItemTypeColdStateSigninPromo:
-    case ItemTypeWarmStateSigninPromo:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
                              forItem:item];
@@ -402,9 +392,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypeApp:
-    case ItemTypeColdStateSigninPromo:
     case ItemTypeSwitchDynamicHeight:
-    case ItemTypeWarmStateSigninPromo:
       return YES;
     default:
       return NO;
@@ -444,28 +432,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"eiusmod tempor incididunt ut labore et dolore magna aliqua.";
   accountItemCheckMark.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
   return accountItemCheckMark;
-}
-
-- (CollectionViewItem*)coldStateSigninPromoItem {
-  SigninPromoItem* signinPromoItem =
-      [[SigninPromoItem alloc] initWithType:ItemTypeWarmStateSigninPromo];
-  signinPromoItem.configurator =
-      [[SigninPromoViewConfigurator alloc] initWithUserEmail:nil
-                                                userFullName:nil
-                                                   userImage:nil
-                                              hasCloseButton:YES];
-  return signinPromoItem;
-}
-
-- (CollectionViewItem*)warmStateSigninPromoItem {
-  SigninPromoItem* signinPromoItem =
-      [[SigninPromoItem alloc] initWithType:ItemTypeColdStateSigninPromo];
-  signinPromoItem.configurator = [[SigninPromoViewConfigurator alloc]
-      initWithUserEmail:@"jonhdoe@example.com"
-           userFullName:@"John Doe"
-              userImage:nil
-         hasCloseButton:NO];
-  return signinPromoItem;
 }
 
 - (CollectionViewItem*)accountControlItem {

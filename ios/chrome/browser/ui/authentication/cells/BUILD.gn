@@ -11,8 +11,6 @@ source_set("cells") {
     "account_control_item.mm",
     "legacy_account_control_item.h",
     "legacy_account_control_item.mm",
-    "signin_promo_item.h",
-    "signin_promo_item.mm",
     "signin_promo_view.h",
     "signin_promo_view.mm",
     "signin_promo_view_configurator.h",
@@ -50,7 +48,6 @@ source_set("unit_tests") {
   sources = [
     "account_control_item_unittest.mm",
     "legacy_account_control_item_unittest.mm",
-    "signin_promo_item_unittest.mm",
     "signin_promo_view_unittest.mm",
     "table_view_account_item_unittest.mm",
   ]
