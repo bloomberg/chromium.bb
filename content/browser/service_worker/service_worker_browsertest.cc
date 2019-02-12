@@ -3114,7 +3114,7 @@ class ServiceWorkerVersionBrowserV8FullCodeCacheTest
     // OnCachedMetadataUpdated() is called.
     run_loop.Run();
   }
-  size_t metadata_size() { return metadata_size_; };
+  size_t metadata_size() { return metadata_size_; }
 
  protected:
   // ServiceWorkerVersion::Observer overrides

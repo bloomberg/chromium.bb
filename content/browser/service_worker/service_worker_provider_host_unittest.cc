@@ -436,7 +436,7 @@ class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
   }
 
  protected:
-  ~MockServiceWorkerRegistration() override{};
+  ~MockServiceWorkerRegistration() override {}
 
  private:
   std::set<ServiceWorkerRegistration::Listener*> listeners_;

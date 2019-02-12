@@ -77,10 +77,10 @@ class MockServiceWorkerRegistrationObject
   }
   ~MockServiceWorkerRegistrationObject() override = default;
 
-  int update_found_called_count() const { return update_found_called_count_; };
+  int update_found_called_count() const { return update_found_called_count_; }
   int set_version_attributes_called_count() const {
     return set_version_attributes_called_count_;
-  };
+  }
   int set_update_via_cache_called_count() const {
     return set_update_via_cache_called_count_;
   }
