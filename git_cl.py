@@ -908,7 +908,11 @@ class Settings(object):
   def GetGitEditor(self):
     """Return the editor specified in the git config, or None if none is."""
     if self.git_editor is None:
-      self.git_editor = self._GetConfig('core.editor', error_ok=True)
+      # Git requires single quotes for paths with spaces. We need to replace
+      # them with double quotes for Windows to treat such paths as a single
+      # path.
+      self.git_editor = self._GetConfig(
+          'core.editor', error_ok=True).replace('\'', '"')
     return self.git_editor or None
 
   def GetLintRegex(self):
