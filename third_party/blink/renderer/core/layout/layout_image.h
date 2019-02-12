@@ -92,6 +92,10 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // https://github.com/WICG/feature-policy/blob/master/policies/optimized-images.md
   bool IsImagePolicyViolated() const;
 
+  // For image policies that require layout input, report the policy violation
+  // every time when the image is being repainted.
+  void ReportImagePolicyViolation() const;
+
   void UpdateAfterLayout() override;
 
  protected:
