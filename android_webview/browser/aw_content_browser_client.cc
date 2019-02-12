@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -489,7 +490,8 @@ void AwContentBrowserClient::GetQuotaSettings(
     content::StoragePartition* partition,
     storage::OptionalQuotaSettingsCallback callback) {
   storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
+      partition->GetPath(), context->IsOffTheRecord(),
+      storage::GetDefaultDiskInfoHelper(), std::move(callback));
 }
 
 content::GeneratedCodeCacheSettings
