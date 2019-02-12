@@ -125,8 +125,7 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     : indexed_db_context_(std::move(indexed_db_context)),
       blob_storage_context_(std::move(blob_storage_context)),
       ipc_process_id_(ipc_process_id),
-      idb_helper_(new IDBSequenceHelper(ipc_process_id_,
-                                        indexed_db_context_)),
+      idb_helper_(new IDBSequenceHelper(ipc_process_id_, indexed_db_context_)),
       weak_factory_(this) {
   DCHECK(indexed_db_context_.get());
 }
@@ -138,6 +137,12 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 void IndexedDBDispatcherHost::AddBinding(
     blink::mojom::IDBFactoryRequest request,
     const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (blob_storage_context_) {
+    io_weak_blob_storage_context_ =
+        blob_storage_context_->context()->AsWeakPtr();
+    blob_storage_context_.reset();
+  }
   bindings_.AddBinding(this, std::move(request), {origin});
 }
 

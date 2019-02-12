@@ -282,6 +282,12 @@ void DatabaseImpl::Put(
     blink::mojom::IDBPutMode mode,
     const std::vector<IndexedDBIndexKeys>& index_keys,
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CHECK(dispatcher_host_);
+  if (!dispatcher_host_->blob_storage_context()) {
+    return;
+  }
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 

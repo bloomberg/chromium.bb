@@ -58,8 +58,8 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
-  storage::BlobStorageContext* blob_storage_context() const {
-    return blob_storage_context_->context();
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
+    return io_weak_blob_storage_context_;
   }
   int ipc_process_id() const { return ipc_process_id_; }
 
@@ -107,7 +107,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   base::SequencedTaskRunner* IDBTaskRunner() const;
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  base::WeakPtr<storage::BlobStorageContext> io_weak_blob_storage_context_;
 
   // Used to set file permissions for blob storage.
   const int ipc_process_id_;
