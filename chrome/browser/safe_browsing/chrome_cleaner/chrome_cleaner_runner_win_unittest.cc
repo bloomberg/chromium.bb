@@ -411,14 +411,31 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
   CallRunChromeCleaner();
   run_loop_.Run();
 
+  // Make sure the correct callbacks were invoked whether the process exited
+  // normally or through a Mojo connection error handler.
   EXPECT_TRUE(on_process_done_called_);
   EXPECT_TRUE(on_connection_closed_called_);
-  EXPECT_EQ(on_prompt_user_called_,
-            (cleaner_process_options_.crash_point() ==
-                 MockChromeCleanerProcess::CrashPoint::kNone ||
-             cleaner_process_options_.crash_point() ==
-                 MockChromeCleanerProcess::CrashPoint::kAfterResponseReceived));
 
+  // Check whether the prompt was shown.
+  switch (cleaner_process_options_.crash_point()) {
+    case MockChromeCleanerProcess::CrashPoint::kNone:
+    case MockChromeCleanerProcess::CrashPoint::kAfterResponseReceived:
+      EXPECT_TRUE(on_prompt_user_called_);
+      break;
+    case MockChromeCleanerProcess::CrashPoint::kOnStartup:
+    case MockChromeCleanerProcess::CrashPoint::kAfterConnection:
+      EXPECT_FALSE(on_prompt_user_called_);
+      break;
+    case MockChromeCleanerProcess::CrashPoint::kAfterRequestSent:
+      // The child process crashes while the request is in-flight, so
+      // OnPromptUser may or may not be called depending on timing.
+      break;
+    default:
+      FAIL() << "Invalid crash point";
+      break;
+  }
+
+  // If the prompt was shown, validate its contents.
   if (on_prompt_user_called_ &&
       !cleaner_process_options_.files_to_delete().empty()) {
     EXPECT_THAT(

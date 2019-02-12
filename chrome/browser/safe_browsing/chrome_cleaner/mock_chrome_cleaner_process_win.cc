@@ -11,11 +11,11 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -363,7 +363,7 @@ int MockChromeCleanerProcess::Run() {
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
   // After the response from the parent process is received, this will post a
   // task to unblock the child process's main thread.
