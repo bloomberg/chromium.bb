@@ -69,7 +69,7 @@ class FakeScrollClient {
   void DidScroll(const gfx::ScrollOffset& offset, const CompositorElementId&) {
     did_scroll_count++;
     last_scroll_offset = offset;
-  };
+  }
 
   gfx::ScrollOffset last_scroll_offset;
   unsigned did_scroll_count;

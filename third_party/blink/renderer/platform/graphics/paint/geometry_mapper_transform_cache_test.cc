@@ -50,7 +50,7 @@ class GeometryMapperTransformCacheTest : public testing::Test {
     EXPECT_EQ(cache.from_2d_translation_root(), cache.from_plane_root());
     EXPECT_EQ(cache.to_2d_translation_root(), cache.to_screen());
     EXPECT_EQ(cache.from_2d_translation_root(), cache.projection_from_screen());
-  };
+  }
 
   static void CheckRootAsPlaneRoot(
       const TransformPaintPropertyNode& node,
