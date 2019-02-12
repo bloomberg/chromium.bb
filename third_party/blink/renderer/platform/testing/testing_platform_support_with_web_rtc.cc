@@ -51,7 +51,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
       : internal_(other.internal_) {}
   ~DummyWebRTCRtpSender() override {}
 
-  scoped_refptr<DummyRtpSenderInternal> internal() const { return internal_; };
+  scoped_refptr<DummyRtpSenderInternal> internal() const { return internal_; }
 
   std::unique_ptr<WebRTCRtpSender> ShallowCopy() const override {
     return nullptr;
