@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -51,7 +52,7 @@ public class MultiActivityTestRule implements TestRule {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (!tab.isLoadingAndRenderingDone()) return false;
+                if (!ChromeTabUtils.isLoadingAndRenderingDone(tab)) return false;
                 if (!TextUtils.equals(expectedTitle, tab.getTitle())) return false;
                 return true;
             }
