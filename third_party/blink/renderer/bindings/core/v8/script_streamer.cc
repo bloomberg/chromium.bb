@@ -78,7 +78,8 @@ class SourceStreamDataQueue {
   }
 
  private:
-  bool TryGetData(const uint8_t** data, size_t* length) {
+  bool TryGetData(const uint8_t** data, size_t* length)
+      EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
     mutex_.AssertAcquired();
     if (!data_.IsEmpty()) {
       std::pair<const uint8_t*, size_t> next_data = data_.TakeFirst();
@@ -93,17 +94,17 @@ class SourceStreamDataQueue {
     return false;
   }
 
-  void DiscardQueuedData() {
+  void DiscardQueuedData() EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
     while (!data_.IsEmpty()) {
       std::pair<const uint8_t*, size_t> next_data = data_.TakeFirst();
       delete[] next_data.first;
     }
   }
 
-  Deque<std::pair<const uint8_t*, size_t>> data_;
-  bool finished_;
+  Deque<std::pair<const uint8_t*, size_t>> data_ GUARDED_BY(mutex_);
+  bool finished_ GUARDED_BY(mutex_);
   Mutex mutex_;
-  ThreadCondition have_data_;
+  ThreadCondition have_data_ GUARDED_BY(mutex_);
 };
 
 // SourceStream implements the streaming interface towards V8. The main
@@ -117,9 +118,12 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   SourceStream()
       : v8::ScriptCompiler::ExternalSourceStream(),
         cancelled_(false),
+#if DCHECK_IS_ON()
         finished_(false),
+#endif  // DCHECK_IS_ON()
         queue_lead_position_(0),
-        queue_tail_position_(0) {}
+        queue_tail_position_(0) {
+  }
 
   ~SourceStream() override = default;
 
@@ -146,7 +150,9 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
   void DidFinishLoading() {
     DCHECK(IsMainThread());
+#if DCHECK_IS_ON()
     finished_ = true;
+#endif  // DCHECK_IS_ON()
     data_queue_.Finish();
   }
 
@@ -174,7 +180,12 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
                                ScriptStreamer* streamer) {
     DCHECK(IsMainThread());
 
-    if (cancelled_) {
+    bool was_canceled;
+    {
+      MutexLocker locker(mutex_);
+      was_canceled = cancelled_;
+    }
+    if (was_canceled) {
       data_queue_.Finish();
       return;
     }
@@ -205,7 +216,10 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     DCHECK(IsMainThread());
     MutexLocker locker(mutex_);
 
+#if DCHECK_IS_ON()
     DCHECK(!finished_);
+#endif  // DCHECK_IS_ON()
+
     if (cancelled_) {
       data_queue_.Finish();
       return;
@@ -228,14 +242,15 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   }
 
   // For coordinating between the main thread and background thread tasks.
-  // Guards m_cancelled and m_queueTailPosition.
   Mutex mutex_;
 
-  // The shared buffer containing the resource data + state variables.
-  // Used by both threads, guarded by m_mutex.
-  bool cancelled_;
-  bool finished_;
+  bool cancelled_ GUARDED_BY(mutex_);  // Used by both threads.
 
+#if DCHECK_IS_ON()
+  bool finished_;  // Only used by the main thread.
+#endif             // DCHECK_IS_ON()
+
+  // The shared buffer containing the resource data + state variables.
   scoped_refptr<const SharedBuffer>
       resource_buffer_;  // Only used by the main thread.
 
@@ -245,7 +260,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   //   bookmarkPosition: position of the bookmark.
   SourceStreamDataQueue data_queue_;  // Thread safe.
   size_t queue_lead_position_;        // Only used by v8 thread.
-  size_t queue_tail_position_;  // Used by both threads; guarded by m_mutex.
+  size_t queue_tail_position_ GUARDED_BY(mutex_);  // Used by both threads.
 };
 
 size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;
@@ -412,7 +427,7 @@ void ScriptStreamer::NotifyAppendData() {
     DCHECK(!stream_);
     DCHECK(!source_);
     stream_ = new SourceStream;
-    // m_source takes ownership of m_stream.
+    // |source_| takes ownership of |stream_|.
     source_ = std::make_unique<v8::ScriptCompiler::StreamedSource>(stream_,
                                                                    encoding_);
 

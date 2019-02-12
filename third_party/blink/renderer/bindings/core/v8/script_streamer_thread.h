@@ -49,8 +49,8 @@ class CORE_EXPORT ScriptStreamerThread {
   // At the moment, we only use one thread, so we can only stream one script
   // at a time. FIXME: Use a thread pool and stream multiple scripts.
   std::unique_ptr<Thread> thread_;
-  bool running_task_;
-  mutable Mutex mutex_;  // Guards m_runningTask.
+  bool running_task_ GUARDED_BY(mutex_);
+  mutable Mutex mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptStreamerThread);
 };
