@@ -25,6 +25,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -57,17 +58,17 @@ namespace ash {
 namespace {
 
 // The observer to observe the overview states in |root_window_|.
-class OverviewStatesObserver : public ShellObserver {
+class OverviewStatesObserver : public OverviewObserver {
  public:
   OverviewStatesObserver(aura::Window* root_window)
       : root_window_(root_window) {
-    Shell::Get()->AddShellObserver(this);
+    Shell::Get()->overview_controller()->AddObserver(this);
   }
   ~OverviewStatesObserver() override {
-    Shell::Get()->RemoveShellObserver(this);
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   }
 
-  // ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override {
     // Reset the value to true.
     overview_animate_when_exiting_ = true;
@@ -155,7 +156,7 @@ class SplitViewControllerTest : public AshTestBase {
   std::vector<aura::Window*> GetWindowsInOverviewGrids() {
     return Shell::Get()
         ->overview_controller()
-        ->GetWindowsListInOverviewGridsForTesting();
+        ->GetWindowsListInOverviewGridsForTest();
   }
 
   SplitViewController* split_view_controller() {
@@ -1825,15 +1826,15 @@ TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
 }
 
-// TestShellObserver which tracks how many overview items there are when
+// TestOverviewObserver which tracks how many overview items there are when
 // overview mode is about to end.
-class TestOverviewItemsOnOverviewModeEndObserver : public ShellObserver {
+class TestOverviewItemsOnOverviewModeEndObserver : public OverviewObserver {
  public:
   TestOverviewItemsOnOverviewModeEndObserver() {
-    Shell::Get()->AddShellObserver(this);
+    Shell::Get()->overview_controller()->AddObserver(this);
   }
   ~TestOverviewItemsOnOverviewModeEndObserver() override {
-    Shell::Get()->RemoveShellObserver(this);
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   }
   void OnOverviewModeEnding(OverviewSession* overview_session) override {
     items_on_last_overview_end_ = overview_session->num_items_for_testing();

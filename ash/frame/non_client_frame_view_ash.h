@@ -11,7 +11,7 @@
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/menu.mojom.h"
-#include "ash/shell_observer.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -40,7 +40,7 @@ class NonClientFrameViewAshImmersiveHelper;
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
 class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
-                                         public ShellObserver,
+                                         public OverviewObserver,
                                          public SplitViewController::Observer,
                                          public views::ContextMenuController,
                                          public ui::SimpleMenuModel::Delegate {
@@ -116,7 +116,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // header of v2 and ARC apps.
   virtual void SetShouldPaintHeader(bool paint);
 
-  // ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 

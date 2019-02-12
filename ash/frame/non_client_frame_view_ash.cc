@@ -257,14 +257,15 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     immersive_helper_ =
         std::make_unique<NonClientFrameViewAshImmersiveHelper>(frame, this);
   }
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
 }
 
 NonClientFrameViewAsh::~NonClientFrameViewAsh() {
-  Shell::Get()->RemoveShellObserver(this);
+  if (Shell::Get()->overview_controller())
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   if (Shell::Get()->split_view_controller())
     Shell::Get()->split_view_controller()->RemoveObserver(this);
 }

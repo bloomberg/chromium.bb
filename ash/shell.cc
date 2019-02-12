@@ -575,32 +575,6 @@ void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
     root_window_controller->UpdateAfterLoginStatusChange(status);
 }
 
-void Shell::NotifyOverviewModeStarting() {
-  for (auto& observer : shell_observers_)
-    observer.OnOverviewModeStarting();
-}
-
-void Shell::NotifyOverviewModeStartingAnimationComplete(bool canceled) {
-  for (auto& observer : shell_observers_)
-    observer.OnOverviewModeStartingAnimationComplete(canceled);
-}
-
-void Shell::NotifyOverviewModeEnding(OverviewSession* overview_session) {
-  DCHECK(overview_session);
-  for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEnding(overview_session);
-}
-
-void Shell::NotifyOverviewModeEnded() {
-  for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEnded();
-}
-
-void Shell::NotifyOverviewModeEndingAnimationComplete(bool canceled) {
-  for (auto& observer : shell_observers_)
-    observer.OnOverviewModeEndingAnimationComplete(canceled);
-}
-
 void Shell::NotifySplitViewModeStarting() {
   for (auto& observer : shell_observers_)
     observer.OnSplitViewModeStarting();

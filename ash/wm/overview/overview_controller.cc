@@ -360,7 +360,8 @@ bool OverviewController::ToggleOverview(
 
     overview_session_ = std::make_unique<OverviewSession>(this);
     overview_session_->set_enter_exit_overview_type(new_type);
-    Shell::Get()->NotifyOverviewModeStarting();
+    for (auto& observer : observers_)
+      observer.OnOverviewModeStarting();
     overview_session_->Init(windows, hide_windows);
     if (IsBlurAllowed())
       overview_blur_controller_->Blur(/*animate_only=*/false);
@@ -375,7 +376,8 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   if (IsBlurAllowed())
     overview_blur_controller_->Blur(/*animate_only=*/true);
 
-  Shell::Get()->NotifyOverviewModeStartingAnimationComplete(canceled);
+  for (auto& observer : observers_)
+    observer.OnOverviewModeStartingAnimationComplete(canceled);
   if (overview_session_)
     overview_session_->OnStartingAnimationComplete(canceled);
   UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
@@ -388,7 +390,8 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
   if (IsBlurAllowed() && !canceled)
     overview_blur_controller_->Unblur();
 
-  Shell::Get()->NotifyOverviewModeEndingAnimationComplete(canceled);
+  for (auto& observer : observers_)
+    observer.OnOverviewModeEndingAnimationComplete(canceled);
   UnpauseOcclusionTracker(occlusion_pause_duration_for_end_ms_);
 }
 
@@ -534,15 +537,12 @@ void OverviewController::UnpauseOcclusionTracker(int delay) {
       base::TimeDelta::FromMilliseconds(delay));
 }
 
-std::vector<aura::Window*>
-OverviewController::GetWindowsListInOverviewGridsForTesting() {
-  std::vector<aura::Window*> windows;
-  for (const std::unique_ptr<OverviewGrid>& grid :
-       overview_session_->grid_list_for_testing()) {
-    for (const auto& overview_session_item : grid->window_list())
-      windows.push_back(overview_session_item->GetWindow());
-  }
-  return windows;
+void OverviewController::AddObserver(OverviewObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void OverviewController::RemoveObserver(OverviewObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void OverviewController::DelayedUpdateMaskAndShadow() {
@@ -570,12 +570,14 @@ void OverviewController::OnSelectionEnded() {
   // Do not show mask and show during overview shutdown.
   overview_session->UpdateMaskAndShadow();
 
-  Shell::Get()->NotifyOverviewModeEnding(overview_session);
+  for (auto& observer : observers_)
+    observer.OnOverviewModeEnding(overview_session);
   overview_session->Shutdown();
   // Don't delete |overview_session_| yet since the stack is still using it.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, overview_session);
   last_selection_time_ = base::Time::Now();
-  Shell::Get()->NotifyOverviewModeEnded();
+  for (auto& observer : observers_)
+    observer.OnOverviewModeEnded();
   if (delayed_animations_.empty())
     OnEndingAnimationComplete(/*canceled=*/false);
 }
@@ -623,6 +625,17 @@ bool OverviewController::HasBlurForTest() const {
 
 bool OverviewController::HasBlurAnimationForTest() const {
   return overview_blur_controller_->has_blur_animation();
+}
+
+std::vector<aura::Window*>
+OverviewController::GetWindowsListInOverviewGridsForTest() {
+  std::vector<aura::Window*> windows;
+  for (const std::unique_ptr<OverviewGrid>& grid :
+       overview_session_->grid_list_for_testing()) {
+    for (const auto& overview_session_item : grid->window_list())
+      windows.push_back(overview_session_item->GetWindow());
+  }
+  return windows;
 }
 
 void OverviewController::AddStartAnimationObserver(

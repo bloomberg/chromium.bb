@@ -50,14 +50,15 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
   // horizontal shelf, no separator is required.
   set_separator_visibility(false);
 
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
+  if (Shell::Get()->overview_controller())
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {

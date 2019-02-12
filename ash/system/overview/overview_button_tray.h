@@ -7,8 +7,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/events/event_constants.h"
@@ -26,7 +26,7 @@ namespace ash {
 // provide any bubble view windows.
 class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
                                       public SessionObserver,
-                                      public ShellObserver,
+                                      public OverviewObserver,
                                       public TabletModeObserver {
  public:
   // Second taps within this time will be counted as double taps. Use this
@@ -57,7 +57,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  // ShellObserver:
+  // OverviewObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
