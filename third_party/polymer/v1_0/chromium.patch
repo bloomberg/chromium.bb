@@ -9,6 +9,16 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
+diff --git a/components-chromium/html-imports/html-imports.min.js b/components-chromium/html-imports/html-imports.min.js
+index 3365917e8b99..8750aefdefb1 100644
+--- a/components-chromium/html-imports/html-imports.min.js
++++ b/components-chromium/html-imports/html-imports.min.js
+@@ -23,5 +23,3 @@ if(d&&b.parentNode!==document.head){var e=document.createElement(b.localName);e.
+ "complete"),a.dispatchEvent(y(a.import?"load":"error",{bubbles:!1,cancelable:!1,detail:void 0})))};h.prototype.w=function(a){var b=this;g(a,function(a){return g(a.addedNodes,function(a){a&&a.nodeType===Node.ELEMENT_NODE&&(r(a)?b.l(a):b.loadImports(a))})})};var x=null;if(u)g(k(document,"link[rel=import]"),function(a){a.import&&"loading"===a.import.readyState||(a.__loaded=!0)}),n=function(a){a=a.target;r(a)&&(a.__loaded=!0)},document.addEventListener("load",n,!0),document.addEventListener("error",n,
+ !0);else{var p=Object.getOwnPropertyDescriptor(Node.prototype,"baseURI");Object.defineProperty((!p||p.configurable?Node:Element).prototype,"baseURI",{get:function(){var a=r(this)?this:m(this);return a?a.href:p&&p.get?p.get.call(this):(document.querySelector("base")||window.location).href},configurable:!0,enumerable:!0});Object.defineProperty(HTMLLinkElement.prototype,"import",{get:function(){return this.__import||null},configurable:!0,enumerable:!0});z(function(){x=new h})}A(function(){return document.dispatchEvent(y("HTMLImportsLoaded",
+ {cancelable:!0,bubbles:!0,detail:void 0}))});q.useNative=u;q.whenReady=A;q.importForElement=m;q.loadImports=function(a){x&&x.loadImports(a)}})(window.HTMLImports=window.HTMLImports||{});
+-
+-//# sourceMappingURL=html-imports.min.js.map
 diff --git a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
 index 2edddb115d46..d3c7fbe36d63 100644
 --- a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js

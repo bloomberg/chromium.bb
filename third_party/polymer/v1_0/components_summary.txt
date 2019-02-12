@@ -4,6 +4,12 @@ Tree: v1.0.1
 Revision: 21ce9b51a417fa9995cf6606e886aba0728f70a1
 Tree link: https://github.com/PolymerElements/font-roboto/tree/v1.0.1
 
+Name: html-imports
+Repository: https://github.com/webcomponents/html-imports.git
+Tree: v1.2.0
+Revision: bcdbb81201faad37270b03f59a29f2f27cb70312
+Tree link: https://github.com/webcomponents/html-imports/tree/v1.2.0
+
 Name: iron-a11y-announcer
 Repository: https://github.com/PolymerElements/iron-a11y-announcer.git
 Tree: v2.1.0
