@@ -1057,7 +1057,12 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
             'user:PaygenTestStage']
     for payload_test in payload_test_configs:
       test_name = test_control.get_test_name()
-      tko_label = '%s_%s' % (test_name, payload_test.unique_name_suffix())
+      # TKO parser requires that label format can be parsed by
+      # site_utils.parse_job_name to get build, build_version, board and suite.
+      # A parsable label format for autoupdate_EndtoEnd test should be:
+      #   reef-release/R74-XX.0.0/paygen_au_canary/autoupdate_E2E_***_XX.0.0
+      shown_test_name = '%s_%s' % (test_name, payload_test.unique_name_suffix())
+      tko_label = '%s/%s/%s' % (build, suite_name, shown_test_name)
       keyvals = ['build:%s' % build,
                  'suite:%s' % suite_name,
                  'label:%s' % tko_label]
@@ -1066,7 +1071,7 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
           build=build,
           pool='bvt',
           test_name=test_control.get_test_name(),
-          shown_test_name=tko_label,
+          shown_test_name=shown_test_name,
           board=board,
           model=model,
           timeout_mins=timeout_mins,
