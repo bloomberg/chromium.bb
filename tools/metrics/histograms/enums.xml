@@ -15408,6 +15408,7 @@ Called by update_net_error_codes.py.-->
   <int value="518" label="CertificateManagementAllowed"/>
   <int value="519" label="BrowserSwitcherKeepLastChromeTab"/>
   <int value="520" label="DeviceRebootAfterArcSession"/>
+  <int value="521" label="ForceNetworkInProcess"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

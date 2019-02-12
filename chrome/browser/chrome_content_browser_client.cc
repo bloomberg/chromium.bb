@@ -218,6 +218,8 @@
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -286,6 +288,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -3773,6 +3776,23 @@ void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
+#if defined(OS_WIN)
+  if (chrome_feature_list_creator_) {
+    // This has to run very early before ServiceManagerContext is created.
+    const base::Value* force_network_in_process_value =
+        chrome_feature_list_creator_->browser_policy_connector()
+            ->GetPolicyService()
+            ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                  std::string()))
+            .GetValue(policy::key::kForceNetworkInProcess);
+    bool force_network_in_process = false;
+    if (force_network_in_process_value)
+      force_network_in_process_value->GetAsBoolean(&force_network_in_process);
+    if (force_network_in_process)
+      content::ForceInProcessNetworkService(true);
+  }
+#endif
+
   if (chrome::IsNoopServiceEnabled()) {
     (*services)[chrome::mojom::kNoopServiceName] = base::BindRepeating(
         &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_NOOP_SERVICE_NAME);
