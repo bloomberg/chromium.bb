@@ -677,6 +677,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
 
+  std::string LayersAsString() const;
+
   // Captures the on-screen text content, if success, fills the associated
   // NodeHolder in |content| and return true, otherwise return false.
   bool CaptureContent(std::vector<NodeHolder>* content);
