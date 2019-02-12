@@ -971,10 +971,13 @@ function VolumeItem(modelItem, tree) {
     item.setContextMenu_(tree.contextMenuForRootItems);
   }
 
-  // Populate children of this volume using resolved display root.
-  item.volumeInfo_.resolveDisplayRoot((displayRoot) => {
-    item.updateSubDirectories(false /* recursive */);
-  });
+  // Populate children of this volume using resolved display root. For SMB
+  // shares, avoid prefetching sub directories to delay authentication.
+  if (modelItem.volumeInfo_.providerId !== '@smb') {
+    item.volumeInfo_.resolveDisplayRoot((displayRoot) => {
+      item.updateSubDirectories(false /* recursive */);
+    });
+  }
 
   return item;
 }
