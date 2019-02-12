@@ -1625,7 +1625,7 @@ blink::WebDisplayMode Browser::GetDisplayMode(
   if (window_->IsFullscreen())
     return blink::kWebDisplayModeFullscreen;
 
-  if (is_type_popup())
+  if (is_app() && is_type_popup())
     return blink::kWebDisplayModeStandalone;
 
   return blink::kWebDisplayModeBrowser;
