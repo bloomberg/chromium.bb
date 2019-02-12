@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -165,7 +166,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // renderer. If parameters required to commit are not provided, they will be
   // set to default null values.
   void SimulateCommitProcessed(
-      int64_t navigation_id,
+      NavigationRequest* navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
@@ -201,10 +202,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
 
   // This simulates aborting a cross document navigation.
   // Will abort the navigation with the given |navigation_id|.
-  void AbortCommit(int64_t navigation_id);
+  void AbortCommit(NavigationRequest* navigation_request);
 
   // Returns the navigations that are trying to commit.
-  const std::map<int64_t, std::unique_ptr<NavigationRequest>>&
+  const std::map<NavigationRequest*, std::unique_ptr<NavigationRequest>>&
   navigation_requests() {
     return navigation_requests_;
   }
@@ -274,14 +275,17 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // The last commit was for an error page.
   bool last_commit_was_error_page_;
 
-  std::map<int64_t, mojom::FrameNavigationControl::CommitNavigationCallback>
+  std::map<NavigationRequest*,
+           mojom::FrameNavigationControl::CommitNavigationCallback>
       commit_callback_;
-  std::map<int64_t, mojom::NavigationClient::CommitNavigationCallback>
+  std::map<NavigationRequest*,
+           mojom::NavigationClient::CommitNavigationCallback>
       navigation_client_commit_callback_;
-  std::map<int64_t,
+  std::map<NavigationRequest*,
            mojom::FrameNavigationControl::CommitFailedNavigationCallback>
       commit_failed_callback_;
-  std::map<int64_t, mojom::NavigationClient::CommitFailedNavigationCallback>
+  std::map<NavigationRequest*,
+           mojom::NavigationClient::CommitFailedNavigationCallback>
       navigation_client_commit_failed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHost);

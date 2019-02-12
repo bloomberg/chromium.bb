@@ -611,6 +611,11 @@ NavigationRequest::~NavigationRequest() {
     devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
+  // This is done manually here because the NavigationHandle destructor
+  // calls into WebContentsObserver::DidFinishNavigation, some of which need to
+  // then access navigation_request(). This is only possible if the handle is
+  // destroyed before the NavigationRequest.
+  navigation_handle_.reset();
 }
 
 void NavigationRequest::BeginNavigation() {

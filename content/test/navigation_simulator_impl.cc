@@ -586,7 +586,7 @@ void NavigationSimulatorImpl::Commit() {
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
-      handle_->GetNavigationId(), std::move(params),
+      handle_->navigation_request(), std::move(params),
       std::move(interface_provider_request_),
       std::move(document_interface_broker_content_request_),
       std::move(document_interface_broker_blink_request_), same_document_);
@@ -618,7 +618,7 @@ void NavigationSimulatorImpl::AbortCommit() {
   CHECK(render_frame_host_)
       << "NavigationSimulatorImpl::AbortCommit can only be "
          "called for navigations that commit.";
-  render_frame_host_->AbortCommit(handle_->GetNavigationId());
+  render_frame_host_->AbortCommit(handle_->navigation_request());
 
   state_ = FINISHED;
   CHECK_EQ(1, num_did_finish_navigation_called_);
@@ -704,7 +704,7 @@ void NavigationSimulatorImpl::CommitErrorPage() {
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, true /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(
-      handle_->GetNavigationId(), std::move(params),
+      handle_->navigation_request(), std::move(params),
       std::move(interface_provider_request_),
       std::move(document_interface_broker_content_request_),
       std::move(document_interface_broker_blink_request_),
@@ -740,7 +740,7 @@ void NavigationSimulatorImpl::CommitSameDocument() {
   document_interface_broker_blink_request_ = nullptr;
 
   render_frame_host_->SimulateCommitProcessed(
-      handle_ ? handle_->GetNavigationId() : -1, std::move(params),
+      handle_ ? handle_->navigation_request() : nullptr, std::move(params),
       nullptr /* interface_provider_request_ */,
       nullptr /* document_interface_broker_content_handle */,
       nullptr /* document_interface_broker_blink_handle */,

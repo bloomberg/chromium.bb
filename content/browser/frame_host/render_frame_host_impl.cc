@@ -2254,8 +2254,8 @@ void RenderFrameHostImpl::SetNavigationRequest(
     same_document_navigation_request_ = std::move(navigation_request);
     return;
   }
-  navigation_requests_[navigation_request->navigation_handle()
-                           ->GetNavigationId()] = std::move(navigation_request);
+  navigation_requests_[navigation_request.get()] =
+      std::move(navigation_request);
 }
 
 void RenderFrameHostImpl::SwapOut(
@@ -5363,9 +5363,8 @@ RenderFrameHostImpl::GetNavigationClientFromInterfaceProvider() {
 
 void RenderFrameHostImpl::NavigationRequestCancelled(
     NavigationRequest* navigation_request) {
-  OnCrossDocumentCommitProcessed(
-      navigation_request->navigation_handle()->GetNavigationId(),
-      blink::mojom::CommitResult::Aborted);
+  OnCrossDocumentCommitProcessed(navigation_request,
+                                 blink::mojom::CommitResult::Aborted);
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
@@ -6200,8 +6199,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   std::unique_ptr<NavigationRequest> committed_request;
   // |navigation_request| is committed, we pass full ownership to the Navigator.
   if (navigation_request) {
-    auto it = navigation_requests_.find(
-        navigation_request->navigation_handle()->GetNavigationId());
+    auto it = navigation_requests_.find(navigation_request);
     // If we provided a navigation_request and it committed, it should always
     // be in the map.
     CHECK(it != navigation_requests_.end());
@@ -6276,13 +6274,13 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
 }
 
 void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     blink::mojom::CommitResult result) {
   DCHECK_NE(blink::mojom::CommitResult::RestartCrossDocument, result);
   if (result == blink::mojom::CommitResult::Ok) {
     // The navigation will soon be committed. Move it out of the map to the
     // NavigationRequest that is about to commit.
-    auto find_request = navigation_requests_.find(navigation_id);
+    auto find_request = navigation_requests_.find(navigation_request);
     if (find_request != navigation_requests_.end()) {
       navigation_request_ = std::move(find_request->second);
     } else {
@@ -6292,7 +6290,7 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
     }
   }
   // Remove the requests from the list of NavigationRequests waiting to commit.
-  navigation_requests_.erase(navigation_id);
+  navigation_requests_.erase(navigation_request);
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
@@ -6561,20 +6559,16 @@ RenderFrameHostImpl::BuildCommitNavigationCallback(
   if (!navigation_request)
     return content::mojom::FrameNavigationControl::CommitNavigationCallback();
 
-  return base::BindOnce(
-      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-      base::Unretained(this),
-      navigation_request->navigation_handle()->GetNavigationId());
+  return base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                        base::Unretained(this), navigation_request);
 }
 
 mojom::FrameNavigationControl::CommitFailedNavigationCallback
 RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
-  return base::BindOnce(
-      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-      base::Unretained(this),
-      navigation_request->navigation_handle()->GetNavigationId());
+  return base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                        base::Unretained(this), navigation_request);
 }
 
 mojom::NavigationClient::CommitNavigationCallback
