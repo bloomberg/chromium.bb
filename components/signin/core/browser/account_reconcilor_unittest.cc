@@ -668,7 +668,7 @@ class AccountReconcilorTestTable
     }
     signin::SetListAccountsResponseWithParams(cookie_params,
                                               &test_url_loader_factory_);
-    identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
+    identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(false);
   }
 
   std::string GaiaIdForAccountKey(char account_key) {
@@ -1329,7 +1329,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceLastKnownFirstAccount) {
 
   // Delete the cookies.
   signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
-  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
+  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(false);
 
   if (!IsMultiloginEnabled()) {
     // Reconcile again and check that account_id_2 is added first.
@@ -2437,7 +2437,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   signin::SetListAccountsResponseTwoAccounts(
       account_info.email, account_info.gaia, account_info2.email,
       account_info2.gaia, &test_url_loader_factory_);
-  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
+  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(false);
 
   // This will cause the reconcilor to fire.
   identity_test_env()->SetRefreshTokenForAccount(account_id3);

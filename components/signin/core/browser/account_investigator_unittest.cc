@@ -360,7 +360,7 @@ TEST_F(AccountInvestigatorTest, TryPeriodicReportStale) {
 }
 
 TEST_F(AccountInvestigatorTest, TryPeriodicReportEmpty) {
-  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(false);
+  identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
   const HistogramTester histogram_tester;
 
   TryPeriodicReport();

@@ -1543,7 +1543,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   signin::SetListAccountsResponseOneAccount(
       account_info.email, account_info.gaia, &test_url_loader_factory_);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager, true);
+  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager, false);
 
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
