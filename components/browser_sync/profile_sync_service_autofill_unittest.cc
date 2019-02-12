@@ -396,7 +396,6 @@ class ProfileSyncServiceAutofillTest
                                  /*identity_manager=*/nullptr,
                                  /*client_profile_validator=*/nullptr,
                                  /*history_service=*/nullptr,
-                                 /*cookie_manager_sevice=*/nullptr,
                                  /*is_off_the_record=*/false);
 
     web_data_service_->StartSyncableService();

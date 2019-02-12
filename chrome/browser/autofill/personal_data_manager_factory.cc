@@ -9,7 +9,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -38,7 +37,6 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
 }
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {
@@ -59,7 +57,6 @@ KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
   service->Init(local_storage, account_storage, profile->GetPrefs(),
                 IdentityManagerFactory::GetForProfile(profile),
                 autofill_validator, history_service,
-                GaiaCookieManagerServiceFactory::GetForProfile(profile),
                 profile->IsOffTheRecord());
   return service;
 }

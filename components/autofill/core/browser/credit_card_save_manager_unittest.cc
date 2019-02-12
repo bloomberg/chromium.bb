@@ -117,7 +117,6 @@ class CreditCardSaveManagerTest : public testing::Test {
                         /*identity_manager=*/nullptr,
                         /*client_profile_validator=*/nullptr,
                         /*history_service=*/nullptr,
-                        /*cookie_manager_sevice=*/nullptr,
                         /*is_off_the_record=*/false);
     personal_data_.SetSyncServiceForTest(&sync_service_);
     autocomplete_history_manager_.Init(

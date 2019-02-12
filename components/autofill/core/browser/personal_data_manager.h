@@ -37,9 +37,9 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class Browser;
 class PrefService;
@@ -57,10 +57,6 @@ void SetProfiles(int, std::vector<autofill::AutofillProfile>*);
 void SetCreditCards(int, std::vector<autofill::CreditCard>*);
 }  // namespace autofill_helper
 
-namespace identity {
-class IdentityManager;
-}
-
 namespace syncer {
 class SyncService;
 }  // namespace syncer
@@ -75,7 +71,7 @@ class PersonalDataManager : public KeyedService,
                             public AutofillWebDataServiceObserverOnUISequence,
                             public history::HistoryServiceObserver,
                             public syncer::SyncServiceObserver,
-                            public GaiaCookieManagerService::Observer,
+                            public identity::IdentityManager::Observer,
                             public AccountInfoGetter {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
@@ -96,7 +92,6 @@ class PersonalDataManager : public KeyedService,
             identity::IdentityManager* identity_manager,
             AutofillProfileValidator* client_profile_validator,
             history::HistoryService* history_service,
-            GaiaCookieManagerService* cookie_manager_service,
             bool is_off_the_record);
 
   // KeyedService:
@@ -127,8 +122,8 @@ class PersonalDataManager : public KeyedService,
   CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
   bool IsSyncFeatureEnabled() const override;
 
-  // GaiaCookieManagerService::Observer:
-  void OnGaiaCookieDeletedByUserAction() override;
+  // identity::IdentityManager::Observer:
+  void OnAccountsCookieDeletedByUserAction() override;
 
   // Returns the current sync status.
   AutofillSyncSigninState GetSyncSigninState() const;
@@ -761,11 +756,6 @@ class PersonalDataManager : public KeyedService,
   // outlive this instance. This unowned pointer is retained so the PDM can
   // remove itself from the history service's observer list on shutdown.
   history::HistoryService* history_service_ = nullptr;
-
-  // The GaiaCookieManagerService to be observed by the personal data manager.
-  // Must outlive this instance. This unowned pointer is retained so the PDM can
-  // remove itself from the cookie manager service's observer list on shutdown.
-  GaiaCookieManagerService* cookie_manager_service_ = nullptr;
 
   // Pref registrar for managing the change observers.
   PrefChangeRegistrar pref_registrar_;
