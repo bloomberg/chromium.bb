@@ -58,11 +58,15 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
  *     function. Either 'drive' or 'local'.
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
  * @param {TestEntryInfo} entry File to be opened.
+ * @param {TestEntryInfo=} subtitle Subtitle file to be added to volume.
  * @return {Promise} Promise to be fulfilled with the video player element.
  */
-function openSingleVideo(volumeName, volumeType, entry) {
+function openSingleVideo(volumeName, volumeType, entry, subtitle = null) {
   var entries = [entry];
-  return launch(volumeName, volumeType, entries).then(function(args) {
+  if (subtitle) {
+    entries.push(subtitle);
+  }
+  return launch(volumeName, volumeType, entries, [entry]).then(function(args) {
     var videoPlayer = args[1];
 
     chrome.test.assertTrue('first-video' in videoPlayer.attributes);

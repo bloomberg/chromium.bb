@@ -46,6 +46,17 @@ test.util.sync.isMuted = function(filename) {
 };
 
 /**
+ * Returns if the video has subtitle attached.
+ *
+ * @param {string} filename Name of video file to be checked. This must be same
+ *     as entry.name() of the video file.
+ * @return {boolean} True if the video has subtitle, false otherwise.
+ */
+test.util.sync.hasSubtitle = function(filename) {
+  return testElement(filename, element => element.textTracks.length > 0);
+};
+
+/**
  * Loads the mock of the cast extension.
  *
  * @param {Window} contentWindow Video player window to be chacked toOB.

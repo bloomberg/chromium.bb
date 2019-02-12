@@ -65,6 +65,14 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenVideoWithSubtitle) {
+  set_test_case_name("openVideoWithSubtitle");
+}
+
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenVideoWithoutSubtitle) {
+  set_test_case_name("openVideoWithoutSubtitle");
+}
+
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, CheckInitialElements) {
   set_test_case_name("checkInitialElements");
   StartTest();
