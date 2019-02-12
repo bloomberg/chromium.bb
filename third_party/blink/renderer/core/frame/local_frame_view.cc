@@ -2399,7 +2399,8 @@ void LocalFrameView::RunPaintLifecyclePhase() {
 
       // Notify the controller that the artifact has been pushed and some
       // lifecycle state can be freed (such as raster invalidations).
-      paint_controller_->FinishCycle();
+      if (paint_controller_)
+        paint_controller_->FinishCycle();
 
       // PaintController for BlinkGenPropertyTrees is transient.
       if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
@@ -2408,8 +2409,10 @@ void LocalFrameView::RunPaintLifecyclePhase() {
         // |PaintController::FinishCycle| but that will be a no-op because
         // the paint controller is transient, so force the changed state to be
         // cleared here.
-        paint_controller_->ClearPropertyTreeChangedStateTo(
-            PropertyTreeState::Root());
+        if (paint_controller_) {
+          paint_controller_->ClearPropertyTreeChangedStateTo(
+              PropertyTreeState::Root());
+        }
         auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
         if (root) {
           ForAllGraphicsLayers(*root, [](GraphicsLayer& layer) {
@@ -2633,37 +2636,6 @@ void LocalFrameView::PaintTree() {
     if (auto* layout_view = frame_view.GetLayoutView())
       layout_view->Layer()->ClearNeedsRepaintRecursively();
   });
-
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // BlinkGenPropertyTrees just needs a transient PaintController to
-    // collect the foreign layers which doesn't need caching. It also
-    // shouldn't affect caching status of DisplayItemClients because it's
-    // FinishCycle() is not synchronized with other PaintControllers.
-    paint_controller_ = PaintController::Create(PaintController::kTransient);
-
-    GraphicsContext context(*paint_controller_);
-    // Note: Some blink unit tests run without turning on compositing which
-    // means we don't create viewport layers. OOPIFs also don't have their own
-    // viewport layers.
-    if (GetLayoutView()->Compositor()->InCompositingMode() &&
-        GetFrame() == GetPage()->MainFrame()) {
-      // TODO(bokan): We should eventually stop creating layers for the visual
-      // viewport. At that point, we can remove this. However, for now, CC
-      // still has some dependencies on the viewport scale and scroll layers.
-      CollectViewportLayersForLayerList(context,
-                                        frame_->GetPage()->GetVisualViewport());
-    }
-    // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
-    // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
-    // so we do not need to collect scrollbars separately.
-    auto* root = layout_view->Compositor()->PaintRootGraphicsLayer();
-    CollectDrawableLayersForLayerListRecursively(context, root);
-    // Link highlights paint after all other layers.
-    if (!frame_->GetPage()->GetLinkHighlights().IsEmpty())
-      CollectLinkHighlightLayersForLayerListRecursively(context, root);
-    paint_controller_->CommitNewDisplayItems();
-  }
 }
 
 const cc::Layer* LocalFrameView::RootCcLayer() const {
@@ -2719,6 +2691,43 @@ void LocalFrameView::PushPaintArtifactToCompositor(
   PaintArtifactCompositor::Settings settings;
   settings.prefer_compositing_to_lcd_text =
       page->GetSettings().GetPreferCompositingToLCDTextEnabled();
+
+  // Skip updating property trees, pushing cc::Layers, and issuing raster
+  // invalidations if possible.
+  if (!paint_artifact_compositor_->NeedsUpdate())
+    return;
+
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // BlinkGenPropertyTrees just needs a transient PaintController to
+    // collect the foreign layers which doesn't need caching. It also
+    // shouldn't affect caching status of DisplayItemClients because it's
+    // FinishCycle() is not synchronized with other PaintControllers.
+    paint_controller_ = PaintController::Create(PaintController::kTransient);
+
+    GraphicsContext context(*paint_controller_);
+    // Note: Some blink unit tests run without turning on compositing which
+    // means we don't create viewport layers. OOPIFs also don't have their own
+    // viewport layers.
+    if (GetLayoutView()->Compositor()->InCompositingMode() &&
+        GetFrame() == GetPage()->MainFrame()) {
+      // TODO(bokan): We should eventually stop creating layers for the visual
+      // viewport. At that point, we can remove this. However, for now, CC
+      // still has some dependencies on the viewport scale and scroll layers.
+      CollectViewportLayersForLayerList(context,
+                                        frame_->GetPage()->GetVisualViewport());
+    }
+    // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
+    // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
+    // so we do not need to collect scrollbars separately.
+    auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
+    CollectDrawableLayersForLayerListRecursively(context, root);
+    // Link highlights paint after all other layers.
+    if (!frame_->GetPage()->GetLinkHighlights().IsEmpty())
+      CollectLinkHighlightLayersForLayerListRecursively(context, root);
+
+    paint_controller_->CommitNewDisplayItems();
+  }
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,
