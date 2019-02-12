@@ -44,6 +44,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   // StartLxdContainer.
   bool IsLxdContainerCreatedSignalConnected() override;
 
+  // This should be true prior to calling DeleteLxdContainer.
+  bool IsLxdContainerDeletedSignalConnected() override;
+
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   bool IsLxdContainerDownloadingSignalConnected() override;
@@ -109,6 +112,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   void CreateLxdContainer(
       const vm_tools::cicerone::CreateLxdContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::CreateLxdContainerResponse>
+          callback) override;
+
+  void DeleteLxdContainer(
+      const vm_tools::cicerone::DeleteLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::DeleteLxdContainerResponse>
           callback) override;
 
   // Fake version of the method that starts a new Container.
@@ -188,6 +196,17 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     lxd_container_created_signal_status_ = status;
   }
 
+  // Set LxdContainerDeletedSignalConnected state
+  void set_lxd_container_deleted_signal_connected(bool connected) {
+    is_lxd_container_deleted_signal_connected_ = connected;
+  }
+
+  // Set LxdContainerDeletedSignalConnected response status
+  void set_lxd_container_deleted_signal_status(
+      vm_tools::cicerone::LxdContainerDeletedSignal_Status status) {
+    lxd_container_deleted_signal_status_ = status;
+  }
+
   // Set LxdContainerDownloadingSignalConnected state
   void set_lxd_container_downloading_signal_connected(bool connected) {
     is_lxd_container_downloading_signal_connected_ = connected;
@@ -261,6 +280,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     create_lxd_container_response_ = create_lxd_container_response;
   }
 
+  void set_delete_lxd_container_response_(
+      const vm_tools::cicerone::DeleteLxdContainerResponse&
+          delete_lxd_container_response) {
+    delete_lxd_container_response_ = delete_lxd_container_response;
+  }
+
   void set_start_lxd_container_response(
       const vm_tools::cicerone::StartLxdContainerResponse&
           start_lxd_container_response) {
@@ -294,6 +319,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   // Additional functions to allow tests to trigger Signals.
   void NotifyLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
+  void NotifyLxdContainerDeleted(
+      const vm_tools::cicerone::LxdContainerDeletedSignal& signal);
   void NotifyContainerStarted(
       const vm_tools::cicerone::ContainerStartedSignal& signal);
   void NotifyTremplinStarted(
@@ -318,6 +345,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   bool is_install_linux_package_progress_signal_connected_ = true;
   bool is_uninstall_package_progress_signal_connected_ = true;
   bool is_lxd_container_created_signal_connected_ = true;
+  bool is_lxd_container_deleted_signal_connected_ = true;
   bool is_lxd_container_downloading_signal_connected_ = true;
   bool is_tremplin_started_signal_connected_ = true;
   bool is_lxd_container_starting_signal_connected_ = true;
@@ -327,6 +355,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   vm_tools::cicerone::LxdContainerCreatedSignal_Status
       lxd_container_created_signal_status_ =
           vm_tools::cicerone::LxdContainerCreatedSignal::CREATED;
+  vm_tools::cicerone::LxdContainerDeletedSignal_Status
+      lxd_container_deleted_signal_status_ =
+          vm_tools::cicerone::LxdContainerDeletedSignal::DELETED;
   vm_tools::cicerone::LxdContainerStartingSignal_Status
       lxd_container_starting_signal_status_ =
           vm_tools::cicerone::LxdContainerStartingSignal::STARTED;
@@ -344,6 +375,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   vm_tools::cicerone::UninstallPackageOwningFileResponse
       uninstall_package_owning_file_response_;
   vm_tools::cicerone::CreateLxdContainerResponse create_lxd_container_response_;
+  vm_tools::cicerone::DeleteLxdContainerResponse delete_lxd_container_response_;
   vm_tools::cicerone::StartLxdContainerResponse start_lxd_container_response_;
   vm_tools::cicerone::GetLxdContainerUsernameResponse
       get_lxd_container_username_response_;

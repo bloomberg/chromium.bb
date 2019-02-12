@@ -2142,6 +2142,9 @@ void CrostiniManager::OnLxdContainerCreated(
   create_lxd_container_callbacks_.erase(range.first, range.second);
 }
 
+void CrostiniManager::OnLxdContainerDeleted(
+    const vm_tools::cicerone::LxdContainerDeletedSignal& signal) {}
+
 void CrostiniManager::OnLxdContainerDownloading(
     const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) {
   if (owner_id_ != signal.owner_id()) {

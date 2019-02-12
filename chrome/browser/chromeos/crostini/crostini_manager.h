@@ -544,6 +544,8 @@ class CrostiniManager : public KeyedService,
       override;
   void OnLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal) override;
+  void OnLxdContainerDeleted(
+      const vm_tools::cicerone::LxdContainerDeletedSignal& signal) override;
   void OnLxdContainerDownloading(
       const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) override;
   void OnTremplinStarted(

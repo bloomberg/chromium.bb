@@ -62,6 +62,10 @@ class CiceroneClientImpl : public CiceroneClient {
     return is_lxd_container_created_signal_connected_;
   }
 
+  bool IsLxdContainerDeletedSignalConnected() override {
+    return is_lxd_container_deleted_signal_connected_;
+  }
+
   bool IsLxdContainerDownloadingSignalConnected() override {
     return is_lxd_container_downloading_signal_connected_;
   }
@@ -220,6 +224,28 @@ class CiceroneClientImpl : public CiceroneClient {
         &method_call, kLongOperationTimeout.InMilliseconds(),
         base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
                            vm_tools::cicerone::CreateLxdContainerResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void DeleteLxdContainer(
+      const vm_tools::cicerone::DeleteLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::DeleteLxdContainerResponse>
+          callback) override {
+    dbus::MethodCall method_call(vm_tools::cicerone::kVmCiceroneInterface,
+                                 vm_tools::cicerone::kDeleteLxdContainerMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode DeleteLxdContainerRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::DeleteLxdContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -410,6 +436,13 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr()));
     cicerone_proxy_->ConnectToSignal(
         vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kLxdContainerDeletedSignal,
+        base::BindRepeating(&CiceroneClientImpl::OnLxdContainerDeletedSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
         vm_tools::cicerone::kLxdContainerDownloadingSignal,
         base::BindRepeating(
             &CiceroneClientImpl::OnLxdContainerDownloadingSignal,
@@ -526,6 +559,18 @@ class CiceroneClientImpl : public CiceroneClient {
     }
   }
 
+  void OnLxdContainerDeletedSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::LxdContainerDeletedSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnLxdContainerDeleted(proto);
+    }
+  }
+
   void OnLxdContainerDownloadingSignal(dbus::Signal* signal) {
     vm_tools::cicerone::LxdContainerDownloadingSignal proto;
     dbus::MessageReader reader(signal);
@@ -606,6 +651,8 @@ class CiceroneClientImpl : public CiceroneClient {
       is_uninstall_package_progress_signal_connected_ = is_connected;
     } else if (signal_name == vm_tools::cicerone::kLxdContainerCreatedSignal) {
       is_lxd_container_created_signal_connected_ = is_connected;
+    } else if (signal_name == vm_tools::cicerone::kLxdContainerDeletedSignal) {
+      is_lxd_container_deleted_signal_connected_ = is_connected;
     } else if (signal_name ==
                vm_tools::cicerone::kLxdContainerDownloadingSignal) {
       is_lxd_container_downloading_signal_connected_ = is_connected;
@@ -633,6 +680,7 @@ class CiceroneClientImpl : public CiceroneClient {
   bool is_install_linux_package_progress_signal_connected_ = false;
   bool is_uninstall_package_progress_signal_connected_ = false;
   bool is_lxd_container_created_signal_connected_ = false;
+  bool is_lxd_container_deleted_signal_connected_ = false;
   bool is_lxd_container_downloading_signal_connected_ = false;
   bool is_tremplin_started_signal_connected_ = false;
   bool is_lxd_container_starting_signal_connected_ = false;
