@@ -52,9 +52,11 @@ void TestDeviceStatusListener::SetDeviceStatus(const DeviceStatus& status) {
   status_ = status;
 }
 
-void TestDeviceStatusListener::Start(DeviceStatusListener::Observer* observer) {
+void TestDeviceStatusListener::Start(const base::TimeDelta& start_delay) {
+  if (listening_ || !observer_)
+    return;
+
   listening_ = true;
-  observer_ = observer;
 
   // Simulates the delay after start up.
   base::ThreadTaskRunnerHandle::Get()->PostTask(

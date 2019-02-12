@@ -54,6 +54,11 @@ constexpr char kWindowEndTimeSecondsConfig[] = "window_end_time_seconds";
 // Configuration name for start up delay, measured in milliseconds.
 constexpr char kNetworkStartupDelayMsConfig[] = "start_up_delay_ms";
 
+// Configuration name for start up delay when triggered from a background task,
+// measured in milliseconds.
+constexpr char kNetworkStartupDelayBackgroundTaskMsConfig[] =
+    "start_up_delay_background_task_ms";
+
 // Configuration name for the delay to notify network status change, measured in
 // milliseconds.
 constexpr char kNetworkChangeDelayMsConfig[] = "network_change_delay_ms";
@@ -138,6 +143,10 @@ struct Configuration {
   // The delay to initialize internal components to wait for network stack
   // ready.
   base::TimeDelta network_startup_delay;
+
+  // The delay to initialize internal components to wait for network stack
+  // ready when triggered from a background task.
+  base::TimeDelta network_startup_delay_backgroud_task;
 
   // The delay to notify network status changes.
   base::TimeDelta network_change_delay;
