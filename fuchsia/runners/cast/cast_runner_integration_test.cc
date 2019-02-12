@@ -5,9 +5,9 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/zx/channel.h>
 
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -129,7 +129,7 @@ class CastRunnerIntegrationTest : public testing::Test,
 
   // ServiceDirectory into which the CastRunner will publish itself.
   std::unique_ptr<base::fuchsia::ServiceDirectory> test_services_;
-  std::unique_ptr<base::fuchsia::ComponentContext> test_services_client_;
+  std::unique_ptr<base::fuchsia::ServiceDirectoryClient> test_services_client_;
 
   std::unique_ptr<CastRunner> cast_runner_;
   fuchsia::sys::RunnerPtr cast_runner_ptr_;

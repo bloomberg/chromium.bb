@@ -28,9 +28,6 @@ namespace fuchsia {
 // Helper for connecting to services from a supplied fuchsia.io.Directory.
 class BASE_EXPORT ServiceDirectoryClient {
  public:
-  // TODO(https://crbug.com/920920): Remove when ComponentContext is gone.
-  explicit ServiceDirectoryClient(zx::channel directory);
-
   // Wraps the supplied |directory| to access the services it contains.
   explicit ServiceDirectoryClient(
       fidl::InterfaceHandle<::fuchsia::io::Directory> directory);
@@ -40,10 +37,6 @@ class BASE_EXPORT ServiceDirectoryClient {
   // This connects to the "/svc" path in the namespace that was supplied to the
   // current process when it was launched.
   static const ServiceDirectoryClient* ForCurrentProcess();
-  // TODO(https://crbug.com/920920): Remove when ComponentContext is gone.
-  static const ServiceDirectoryClient* GetDefault() {
-    return ForCurrentProcess();
-  }
 
   // Connects to the service satisfying the specified |request|.
   template <typename Interface>
@@ -85,10 +78,6 @@ class BASE_EXPORT ServiceDirectoryClient {
 // |directory|, and restores it when going out-of-scope.
 class BASE_EXPORT ScopedServiceDirectoryClientForCurrentProcessForTest {
  public:
-  // TODO(https://crbug.com/920920): Remove when ComponentContext is gone.
-  explicit ScopedServiceDirectoryClientForCurrentProcessForTest(
-      zx::channel directory);
-
   explicit ScopedServiceDirectoryClientForCurrentProcessForTest(
       fidl::InterfaceHandle<::fuchsia::io::Directory> directory);
   ~ScopedServiceDirectoryClientForCurrentProcessForTest();
