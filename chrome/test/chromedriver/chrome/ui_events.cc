@@ -31,7 +31,15 @@ MouseEvent::MouseEvent(const MouseEvent& other) = default;
 MouseEvent::~MouseEvent() {}
 
 TouchEvent::TouchEvent(TouchEventType type, int x, int y)
-    : type(type), x(x), y(y), element_id(std::string()) {}
+    : type(type),
+      x(x),
+      y(y),
+      radiusX(1.0),
+      radiusY(1.0),
+      rotationAngle(0.0),
+      force(1.0),
+      id(0),
+      element_id(std::string()) {}
 
 TouchEvent::TouchEvent(const TouchEvent& other) = default;
 

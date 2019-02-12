@@ -56,7 +56,13 @@ struct MouseEvent {
 };
 
 // Specifies the type of the touch event.
-enum TouchEventType { kTouchStart = 0, kTouchEnd, kTouchMove, kPause };
+enum TouchEventType {
+  kTouchStart = 0,
+  kTouchEnd,
+  kTouchMove,
+  kTouchCancel,
+  kPause
+};
 
 struct TouchEvent {
   TouchEvent(TouchEventType type,
@@ -68,6 +74,11 @@ struct TouchEvent {
   TouchEventType type;
   int x;
   int y;
+  double radiusX;
+  double radiusY;
+  double rotationAngle;
+  double force;
+  int id;
   std::string element_id;
 };
 
