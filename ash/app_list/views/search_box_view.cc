@@ -549,9 +549,14 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     return false;
   }
 
-  // Events occurring over an inactive search box are handled elsewhere.
-  if (!is_search_box_active())
-    return false;
+  // Events occurring over an inactive search box are handled elsewhere, with
+  // the exception of left/right arrow key events
+  if (!is_search_box_active()) {
+    if (IsUnhandledLeftRightKeyEvent(key_event))
+      return ProcessLeftRightKeyTraversalForTextfield(search_box(), key_event);
+    else
+      return false;
+  }
 
   // Record the |last_key_pressed_| for autocomplete.
   if (!search_box()->text().empty() && ShouldProcessAutocomplete())
@@ -565,16 +570,27 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   SearchResultPageView* search_page =
       contents_view_->search_results_page_view();
 
+  // Define forward/backward keys for traversal based on RTL settings
+  ui::KeyboardCode forward =
+      base::i18n::IsRTL() ? ui::VKEY_LEFT : ui::VKEY_RIGHT;
+  ui::KeyboardCode backward =
+      base::i18n::IsRTL() ? ui::VKEY_RIGHT : ui::VKEY_LEFT;
+
   // Left/Right arrow keys are handled elsewhere, unless the first result is a
   // tile, in which case right will be handled below.
-  if (key_event.key_code() == ui::VKEY_LEFT ||
-      (key_event.key_code() == ui::VKEY_RIGHT &&
-       !search_page->IsFirstResultTile())) {
+  // The focus traversal in the search box is based around the 'implicit focus'
+  // or whichever result is highlighted. As a result, we are trying to move
+  // the actual focus based on the position of this highlight.
+  // In addition to that, when there are tiles we want to allow a left/right
+  // traversal among the tiles. When there are no tiles, left/right should be
+  // handled in the ordinary way that a textfield would handle it.
+  if (key_event.key_code() == backward ||
+      (key_event.key_code() == forward && !search_page->IsFirstResultTile())) {
     return ProcessLeftRightKeyTraversalForTextfield(search_box(), key_event);
   }
 
   // Right arrow key should not be handled if the cursor is within text.
-  if (key_event.key_code() == ui::VKEY_RIGHT &&
+  if (key_event.key_code() == forward &&
       !LeftRightKeyEventShouldExitText(search_box(), key_event)) {
     return false;
   }

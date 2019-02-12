@@ -296,6 +296,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };
 
+INSTANTIATE_TEST_SUITE_P(, AppsGridViewTest, testing::Bool());
+
 class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
  public:
   TestAppsGridViewFolderDelegate() = default;
