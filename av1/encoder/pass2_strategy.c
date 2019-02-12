@@ -944,11 +944,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 #define REDUCE_GF_LENGTH_TO_KEY_THRESH 9
 #define REDUCE_GF_LENGTH_BY 1
   int alt_offset = 0;
-  // The length reduction strategy is tweaked using AOM_Q mode, and doesn't work
-  // for VBR mode.
-  // Also, we don't have do adjustment for lossless mode.
+  // The length reduction strategy is tweaked for certain cases, and doesn't
+  // work well for certain other cases.
   const int allow_gf_length_reduction =
-      (cpi->oxcf.rc_mode == AOM_Q || cpi->extra_arf_allowed == 0) &&
+      ((cpi->oxcf.rc_mode == AOM_Q && cpi->oxcf.cq_level <= 128) ||
+       cpi->extra_arf_allowed == 0) &&
       !is_lossless_requested(&cpi->oxcf);
 
   if (allow_gf_length_reduction && use_alt_ref) {
