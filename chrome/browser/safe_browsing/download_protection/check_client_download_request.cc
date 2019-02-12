@@ -593,6 +593,11 @@ std::string CheckClientDownloadRequest::SanitizeUrl(const GURL& url) const {
 void CheckClientDownloadRequest::SendRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (item_->GetState() == download::DownloadItem::CANCELLED) {
+    FinishRequest(DownloadCheckResult::UNKNOWN, REASON_DOWNLOAD_DESTROYED);
+    return;
+  }
+
   auto request = std::make_unique<ClientDownloadRequest>();
   auto population = is_extended_reporting_
                         ? ChromeUserPopulation::EXTENDED_REPORTING
@@ -809,8 +814,7 @@ void CheckClientDownloadRequest::FinishRequest(
            << " verdict:" << reason << " result:" << static_cast<int>(result);
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
-  if (reason != REASON_DOWNLOAD_DESTROYED)
-    callback_.Run(result);
+  callback_.Run(result);
   item_->RemoveObserver(this);
   service_->RequestFinished(this);
   // DownloadProtectionService::RequestFinished may delete us.

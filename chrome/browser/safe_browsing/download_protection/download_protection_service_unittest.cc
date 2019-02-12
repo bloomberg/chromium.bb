@@ -2187,7 +2187,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
 
   // When download is destroyed, no need to check for client download request
   // result.
-  EXPECT_FALSE(has_result_);
+  EXPECT_TRUE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
@@ -2221,7 +2221,7 @@ TEST_F(DownloadProtectionServiceTest,
                           base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(has_result_);
+  EXPECT_TRUE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
@@ -2728,6 +2728,39 @@ TEST_F(DownloadProtectionServiceTest,
   referrer_chain_data = download_service_->IdentifyReferrerChain(item);
   // 3 entries means 2 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 3u);
+}
+
+TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item, {"http://www.evil.test/a.exe"},  // url_chain
+                           "http://www.google.com/",               // referrer
+                           FILE_PATH_LITERAL("a.tmp"),             // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));            // final_path
+
+  // Mock a cancelled download.
+  EXPECT_CALL(item, GetState())
+      .WillRepeatedly(Return(download::DownloadItem::CANCELLED));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_TRUE(has_result_);
+  EXPECT_FALSE(HasClientDownloadRequest());
 }
 
 }  // namespace safe_browsing
