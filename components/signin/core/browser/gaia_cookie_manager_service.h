@@ -337,6 +337,10 @@ class GaiaCookieManagerService : public KeyedService,
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
+  // Marks the list account being staled, and for iOS only, it triggers to fetch
+  // the list of accounts (on iOS there is no OnCookieChange() notification).
+  void MarkListAccountsStale();
+
   // Overridden from network::mojom::CookieChangeListner. If the cookie relates
   // to a GAIA APISID cookie, then we call ListAccounts and fire
   // OnGaiaAccountsInCookieUpdated.
