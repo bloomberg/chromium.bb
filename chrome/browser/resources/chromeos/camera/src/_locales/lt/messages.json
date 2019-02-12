@@ -1,21 +1,21 @@
 {
-  "name": {
+  "NAME": {
     "message": "Žiniatinklio kamera",
     "description": "Name of the Camera App."
   },
-  "description": {
+  "DESCRIPTION": {
     "message": "Fotografuokite ir filmuokite naudodami žiniatinklio kamerą.",
     "description": "Short description of the Camera App."
   },
-  "errorMsgFileSystemFailed": {
+  "ERROR_MSG_FILE_SYSTEM_FAILED": {
     "message": "Failų sistemos klaidos.",
     "description": "Error message shown when failing to read or write the file system."
   },
-  "errorMsgNoCamera": {
+  "ERROR_MSG_NO_CAMERA": {
     "message": "Jūsų kamera šiuo metu nepasiekiama.\nPatikrinkite, ar kamera tinkamai prijungta.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgGalleryExportFailed": {
+  "ERROR_MSG_GALLERY_EXPORT_FAILED": {
     "message": "Nepavyko eksportuoti failo $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
@@ -25,27 +25,27 @@
       }
     }
   },
-  "errorMsgSaveFileFailed": {
+  "ERROR_MSG_SAVE_FILE_FAILED": {
     "message": "Nepavyko išsaugoti failo",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
-  "errorMsgTakePhotoFailed": {
+  "ERROR_MSG_TAKE_PHOTO_FAILED": {
     "message": "Nepavyko nufotografuoti",
     "description": "Error message shown when failing to take photo."
   },
-  "errorMsgRecordStartFailed": {
+  "ERROR_MSG_RECORD_START_FAILED": {
     "message": "Nepavyko pradėti įrašymo",
     "description": "Error message shown when failing to start recording video."
   },
-  "errorMsgEmptyRecording": {
+  "ERROR_MSG_EMPTY_RECORDING": {
     "message": "Nieko neįrašyta",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "statusMsgRecordingStopped": {
+  "STATUS_MSG_RECORDING_STOPPED": {
     "message": "Įrašymas sustabdytas",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
-  "statusMsgCameraSwitched": {
+  "STATUS_MSG_CAMERA_SWITCHED": {
     "message": "$camera$ veikia",
     "description": "Status message for spoken feedback when switching over to another camera.",
     "placeholders": {
@@ -55,131 +55,131 @@
       }
     }
   },
-  "galleryButton": {
+  "GALLERY_BUTTON": {
     "message": "Eiti į galeriją",
     "description": "Label for the gallery button."
   },
-  "deleteButton": {
+  "DELETE_BUTTON": {
     "message": "Ištrinti",
     "description": "Label for the delete button."
   },
-  "exportButton": {
+  "EXPORT_BUTTON": {
     "message": "Eksportuoti į diską",
     "description": "Label for the exporting button."
   },
-  "printButton": {
+  "PRINT_BUTTON": {
     "message": "Spausdinti",
     "description": "Label for the printing button."
   },
-  "backButton": {
+  "BACK_BUTTON": {
     "message": "Grįžti atgal",
     "description": "Label for the back button."
   },
-  "galleryImages": {
+  "GALLERY_IMAGES": {
     "message": "Galerijos vaizdai",
     "description": "Text to speech label for the gallery list."
   },
-  "settingsButton": {
+  "SETTINGS_BUTTON": {
     "message": "Nustatymai",
     "description": "Label for the settings button."
   },
-  "gridTypeButton": {
+  "GRID_TYPE_BUTTON": {
     "message": "Tinklelio tipas",
     "description": "Label for the button of grid-type options."
   },
-  "timerDurationButton": {
+  "TIMER_DURATION_BUTTON": {
     "message": "Laikmačio trukmė",
     "description": "Label for the button of timer-duration options."
   },
-  "feedbackButton": {
+  "FEEDBACK_BUTTON": {
     "message": "Siųsti atsiliepimą",
     "description": "Label for the feedback button."
   },
-  "helpButton": {
+  "HELP_BUTTON": {
     "message": "Pagalba",
     "description": "Label for the help button."
   },
-  "labelGrid3x3": {
+  "LABEL_GRID_3X3": {
     "message": "3 ir 3",
     "description": "Label for for grid-type: 3x3."
   },
-  "ariaGrid3x3": {
+  "ARIA_GRID_3X3": {
     "message": "3 iš 3",
     "description": "Label for spoken feedback to read out grid-type: 3x3."
   },
-  "labelGrid4x4": {
+  "LABEL_GRID_4X4": {
     "message": "4 ir 4",
     "description": "Label for for grid-type: 4x4."
   },
-  "ariaGrid4x4": {
+  "ARIA_GRID_4X4": {
     "message": "4 iš 4",
     "description": "Label for spoken feedback to read out grid-type: 4x4."
   },
-  "labelGridGolden": {
+  "LABEL_GRID_GOLDEN": {
     "message": "Geriausias įvertinimas",
     "description": "Label for grid-type: golden ratio."
   },
-  "labelTimer3s": {
+  "LABEL_TIMER_3S": {
     "message": "3 sekundės",
     "description": "Label for timer-duration: 3 seconds."
   },
-  "labelTimer10s": {
+  "LABEL_TIMER_10S": {
     "message": "10 sekundžių",
     "description": "Label for timer-duration: 10 seconds."
   },
-  "takePhotoButton": {
+  "TAKE_PHOTO_BUTTON": {
     "message": "Fotografuoti",
     "description": "Label for the shutter button to take photo."
   },
-  "takePhotoCancelButton": {
+  "TAKE_PHOTO_CANCEL_BUTTON": {
     "message": "Sustabdyti fotografavimą",
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
-  "recordVideoStartButton": {
+  "RECORD_VIDEO_START_BUTTON": {
     "message": "Pradėti įrašymą",
     "description": "Label for the shutter button to start recording."
   },
-  "recordVideoStopButton": {
+  "RECORD_VIDEO_STOP_BUTTON": {
     "message": "Sustabdyti įrašymą",
     "description": "Label for the shutter button to stop recording."
   },
-  "switchCameraButton": {
+  "SWITCH_CAMERA_BUTTON": {
     "message": "Perjungti į kitą kamerą",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "switchRecordVideoButton": {
+  "SWITCH_RECORD_VIDEO_BUTTON": {
     "message": "Perjungti į vaizdo įrašymo režimą",
     "description": "Label for the button to switch to record video mode."
   },
-  "switchTakePhotoButton": {
+  "SWITCH_TAKE_PHOTO_BUTTON": {
     "message": "Perjungti į fotografavimo režimą",
     "description": "Label for the button to switch to take photo mode."
   },
-  "toggleTimerButton": {
+  "TOGGLE_TIMER_BUTTON": {
     "message": "Laikmatis",
     "description": "Label for the checkbox to toggle the countdown timer."
   },
-  "toggleMirrorButton": {
+  "TOGGLE_MIRROR_BUTTON": {
     "message": "Atspindėjimas",
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
-  "toggleGridButton": {
+  "TOGGLE_GRID_BUTTON": {
     "message": "Tinklelis",
     "description": "Label for the checkbox to toggle the grid shown on preview."
   },
-  "toggleMicButton": {
+  "TOGGLE_MIC_BUTTON": {
     "message": "Mikrofonas",
     "description": "Label for the checkbox to toggle the microphone for recording video."
   },
-  "dialogOKButton": {
+  "DIALOG_OK_BUTTON": {
     "message": "Gerai",
     "description": "Label for the accepting button in the dialog."
   },
-  "dialogCancelButton": {
+  "DIALOG_CANCEL_BUTTON": {
     "message": "Atšaukti",
     "description": "Label for the dismissing button in the dialog."
   },
-  "deleteConfirmationMsg": {
+  "DELETE_CONFIRMATION_MSG": {
     "message": "Ar tikrai norite pašalinti failą $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
@@ -189,7 +189,7 @@
       }
     }
   },
-  "deleteMultiConfirmationMsg": {
+  "DELETE_MULTI_CONFIRMATION_MSG": {
     "message": "Ar tikrai norite pašalinti elementus ($count$)?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
@@ -199,7 +199,7 @@
       }
     }
   },
-  "migratePicturesMsg": {
+  "MIGRATE_PICTURES_MSG": {
     "message": "Nuotraukos ir vaizdo įrašai, sukurti naudojant fotoaparatą, bus perkelti į aplanką „Atsisiuntimai“. Juos galite pasiekti Failų programoje.\n\nProgramos su saugyklos leidimais turės prieigą prie nuotraukų ir vaizdo įrašų.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }

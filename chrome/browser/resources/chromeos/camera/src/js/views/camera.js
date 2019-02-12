@@ -195,7 +195,7 @@ cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
   } catch (e) {
     console.error(e);
     cca.toast.show(this.recordMode ?
-        'errorMsgRecordStartFailed' : 'errorMsgTakePhotoFailed');
+        'error_msg_record_start_failed' : 'error_msg_take_photo_failed');
   }
 };
 
@@ -206,10 +206,10 @@ cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
 cca.views.Camera.prototype.updateShutterLabel_ = function() {
   var label;
   if (this.recordMode) {
-    label = this.taking ? 'recordVideoStopButton' : 'recordVideoStartButton';
+    label = this.taking ? 'record_video_stop_button' : 'record_video_start_button';
   } else {
     label = (this.taking && this.ticks_) ?
-        'takePhotoCancelButton' : 'takePhotoButton';
+        'take_photo_cancel_button' : 'take_photo_button';
   }
   this.shutterButton_.setAttribute('aria-label', chrome.i18n.getMessage(label));
 };
@@ -250,12 +250,12 @@ cca.views.Camera.prototype.beginTake_ = function() {
       if (this.recordMode) {
         // Take of recording will be ended by another shutter click.
         this.take_ = this.createRecordingBlob_().catch((error) => {
-          cca.toast.show('errorMsgEmptyRecording');
+          cca.toast.show('error_msg_empty_recording');
           throw error;
         });
       } else {
         this.take_ = this.createPhotoBlob_().catch((error) => {
-          cca.toast.show('errorMsgTakePhotoFailed');
+          cca.toast.show('error_msg_take_photo_failed');
           throw error;
         });
         this.endTake_();
@@ -291,7 +291,7 @@ cca.views.Camera.prototype.endTake_ = function() {
           cca.views.camera.Options.Sound.RECORDEND :
           cca.views.camera.Options.Sound.SHUTTER);
       return this.model_.savePicture(blob, recordMode).catch((error) => {
-        cca.toast.show('errorMsgSaveFileFailed');
+        cca.toast.show('error_msg_save_file_failed');
         throw error;
       });
     }

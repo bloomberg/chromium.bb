@@ -880,11 +880,11 @@ body.ext-fs #browser-export {
   display: none;
 }
 
-body._3x3 .description span[i18n-content=labelGrid3x3],
-body._4x4 .description span[i18n-content=labelGrid4x4],
-body.golden .description span[i18n-content=labelGridGolden],
-body._3sec .description span[i18n-content=labelTimer3s],
-body._10sec .description span[i18n-content=labelTimer10s] {
+body._3x3 .description span[i18n-content=label_grid_3x3],
+body._4x4 .description span[i18n-content=label_grid_4x4],
+body.golden .description span[i18n-content=label_grid_golden],
+body._3sec .description span[i18n-content=label_timer_3s],
+body._10sec .description span[i18n-content=label_timer_10s] {
   display: inline;
 }
 

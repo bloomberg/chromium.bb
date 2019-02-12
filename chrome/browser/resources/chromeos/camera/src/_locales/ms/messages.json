@@ -1,21 +1,21 @@
 {
-  "name": {
+  "NAME": {
     "message": "Kamera",
     "description": "Name of the Camera App."
   },
-  "description": {
+  "DESCRIPTION": {
     "message": "Ambil foto dan rakam video dengan kamera anda.",
     "description": "Short description of the Camera App."
   },
-  "errorMsgFileSystemFailed": {
+  "ERROR_MSG_FILE_SYSTEM_FAILED": {
     "message": "Ralat sistem fail.",
     "description": "Error message shown when failing to read or write the file system."
   },
-  "errorMsgNoCamera": {
+  "ERROR_MSG_NO_CAMERA": {
     "message": "Kamera anda tidak tersedia pada masa ini.\nSila periksa sama ada kamera disambungkan dengan betul.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgGalleryExportFailed": {
+  "ERROR_MSG_GALLERY_EXPORT_FAILED": {
     "message": "Tidak dapat mengeksport $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
@@ -25,27 +25,27 @@
       }
     }
   },
-  "errorMsgSaveFileFailed": {
+  "ERROR_MSG_SAVE_FILE_FAILED": {
     "message": "Tidak dapat menyimpan fail",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
-  "errorMsgTakePhotoFailed": {
+  "ERROR_MSG_TAKE_PHOTO_FAILED": {
     "message": "Tidak dapat mengambil foto",
     "description": "Error message shown when failing to take photo."
   },
-  "errorMsgRecordStartFailed": {
+  "ERROR_MSG_RECORD_START_FAILED": {
     "message": "Tidak dapat memulakan rakaman",
     "description": "Error message shown when failing to start recording video."
   },
-  "errorMsgEmptyRecording": {
+  "ERROR_MSG_EMPTY_RECORDING": {
     "message": "Tiada apa-apa yang dirakamkan",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "statusMsgRecordingStopped": {
+  "STATUS_MSG_RECORDING_STOPPED": {
     "message": "Rakaman dihentikan",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
-  "statusMsgCameraSwitched": {
+  "STATUS_MSG_CAMERA_SWITCHED": {
     "message": "$camera$ aktif",
     "description": "Status message for spoken feedback when switching over to another camera.",
     "placeholders": {
@@ -55,131 +55,131 @@
       }
     }
   },
-  "galleryButton": {
+  "GALLERY_BUTTON": {
     "message": "Pergi ke galeri",
     "description": "Label for the gallery button."
   },
-  "deleteButton": {
+  "DELETE_BUTTON": {
     "message": "Padam",
     "description": "Label for the delete button."
   },
-  "exportButton": {
+  "EXPORT_BUTTON": {
     "message": "Eksport ke cakera",
     "description": "Label for the exporting button."
   },
-  "printButton": {
+  "PRINT_BUTTON": {
     "message": "Cetak",
     "description": "Label for the printing button."
   },
-  "backButton": {
+  "BACK_BUTTON": {
     "message": "Kembali",
     "description": "Label for the back button."
   },
-  "galleryImages": {
+  "GALLERY_IMAGES": {
     "message": "Imej galeri",
     "description": "Text to speech label for the gallery list."
   },
-  "settingsButton": {
+  "SETTINGS_BUTTON": {
     "message": "Tetapan",
     "description": "Label for the settings button."
   },
-  "gridTypeButton": {
+  "GRID_TYPE_BUTTON": {
     "message": "Jenis grid",
     "description": "Label for the button of grid-type options."
   },
-  "timerDurationButton": {
+  "TIMER_DURATION_BUTTON": {
     "message": "Tempoh pemasa",
     "description": "Label for the button of timer-duration options."
   },
-  "feedbackButton": {
+  "FEEDBACK_BUTTON": {
     "message": "Hantar maklum balas",
     "description": "Label for the feedback button."
   },
-  "helpButton": {
+  "HELP_BUTTON": {
     "message": "Bantuan",
     "description": "Label for the help button."
   },
-  "labelGrid3x3": {
+  "LABEL_GRID_3X3": {
     "message": "3 x 3",
     "description": "Label for for grid-type: 3x3."
   },
-  "ariaGrid3x3": {
+  "ARIA_GRID_3X3": {
     "message": "3 kali 3",
     "description": "Label for spoken feedback to read out grid-type: 3x3."
   },
-  "labelGrid4x4": {
+  "LABEL_GRID_4X4": {
     "message": "4 x 4",
     "description": "Label for for grid-type: 4x4."
   },
-  "ariaGrid4x4": {
+  "ARIA_GRID_4X4": {
     "message": "4 kali 4",
     "description": "Label for spoken feedback to read out grid-type: 4x4."
   },
-  "labelGridGolden": {
+  "LABEL_GRID_GOLDEN": {
     "message": "Nisbah keemasan",
     "description": "Label for grid-type: golden ratio."
   },
-  "labelTimer3s": {
+  "LABEL_TIMER_3S": {
     "message": "3 saat",
     "description": "Label for timer-duration: 3 seconds."
   },
-  "labelTimer10s": {
+  "LABEL_TIMER_10S": {
     "message": "10 saat",
     "description": "Label for timer-duration: 10 seconds."
   },
-  "takePhotoButton": {
+  "TAKE_PHOTO_BUTTON": {
     "message": "Ambil foto",
     "description": "Label for the shutter button to take photo."
   },
-  "takePhotoCancelButton": {
+  "TAKE_PHOTO_CANCEL_BUTTON": {
     "message": "Berhenti mengambil foto",
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
-  "recordVideoStartButton": {
+  "RECORD_VIDEO_START_BUTTON": {
     "message": "Mulakan rakaman",
     "description": "Label for the shutter button to start recording."
   },
-  "recordVideoStopButton": {
+  "RECORD_VIDEO_STOP_BUTTON": {
     "message": "Hentikan rakaman",
     "description": "Label for the shutter button to stop recording."
   },
-  "switchCameraButton": {
+  "SWITCH_CAMERA_BUTTON": {
     "message": "Beralih kepada kamera seterusnya",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "switchRecordVideoButton": {
+  "SWITCH_RECORD_VIDEO_BUTTON": {
     "message": "Beralih kepada merakam video",
     "description": "Label for the button to switch to record video mode."
   },
-  "switchTakePhotoButton": {
+  "SWITCH_TAKE_PHOTO_BUTTON": {
     "message": "Beralih kepada mengambil foto",
     "description": "Label for the button to switch to take photo mode."
   },
-  "toggleTimerButton": {
+  "TOGGLE_TIMER_BUTTON": {
     "message": "Pemasa",
     "description": "Label for the checkbox to toggle the countdown timer."
   },
-  "toggleMirrorButton": {
+  "TOGGLE_MIRROR_BUTTON": {
     "message": "Pencerminan",
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
-  "toggleGridButton": {
+  "TOGGLE_GRID_BUTTON": {
     "message": "Grid",
     "description": "Label for the checkbox to toggle the grid shown on preview."
   },
-  "toggleMicButton": {
+  "TOGGLE_MIC_BUTTON": {
     "message": "Mikrofon",
     "description": "Label for the checkbox to toggle the microphone for recording video."
   },
-  "dialogOKButton": {
+  "DIALOG_OK_BUTTON": {
     "message": "OK",
     "description": "Label for the accepting button in the dialog."
   },
-  "dialogCancelButton": {
+  "DIALOG_CANCEL_BUTTON": {
     "message": "Batal",
     "description": "Label for the dismissing button in the dialog."
   },
-  "deleteConfirmationMsg": {
+  "DELETE_CONFIRMATION_MSG": {
     "message": "Adakah anda benar-benar mahu mengalih keluar $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
@@ -189,7 +189,7 @@
       }
     }
   },
-  "deleteMultiConfirmationMsg": {
+  "DELETE_MULTI_CONFIRMATION_MSG": {
     "message": "Adakah anda benar-benar mahu mengalih keluar $count$ item?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
@@ -199,7 +199,7 @@
       }
     }
   },
-  "migratePicturesMsg": {
+  "MIGRATE_PICTURES_MSG": {
     "message": "Foto dan video yang diambil dengan kamera akan dialihkan ke folder Muat turun. Anda boleh mengakses item ini dalam Fail.\n\nApl dengan kebenaran storan akan boleh mengakses foto dan video anda.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }

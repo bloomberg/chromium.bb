@@ -78,7 +78,7 @@ cca.views.camera.RecordTime.prototype.start = function() {
  * Stops counting and showing the elapsed recording time.
  */
 cca.views.camera.RecordTime.prototype.stop = function() {
-  cca.toast.speak('statusMsgRecordingStopped');
+  cca.toast.speak('status_msg_recording_stopped');
   if (this.tickTimeout_) {
     clearInterval(this.tickTimeout_);
     this.tickTimeout_ = null;

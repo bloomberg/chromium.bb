@@ -192,7 +192,7 @@ cca.views.camera.Options.prototype.switchDevice_ = function() {
     var found = devices.find((entry) => entry.deviceId == this.videoDeviceId_);
     if (found) {
       cca.toast.speak(chrome.i18n.getMessage(
-          'statusMsgCameraSwitched', found.label));
+          'status_msg_camera_switched', found.label));
     }
   });
 };
