@@ -436,6 +436,15 @@ TEST_F(HarfBuzzShaperTest, MAYBE_ShapeArabicWithContext) {
   ASSERT_NEAR(combined->Width(), first->Width() + second->Width(), 0.1);
 }
 
+TEST_F(HarfBuzzShaperTest, ShapeTabulationCharacters) {
+  const unsigned length = HarfBuzzRunGlyphData::kMaxGlyphs * 2 + 1;
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::CreateForTabulationCharacters(&font, TextDirection::kLtr,
+                                                 TabSize(8), 0.f, 0, length);
+  EXPECT_EQ(result->NumCharacters(), length);
+  EXPECT_EQ(result->NumGlyphs(), length);
+}
+
 TEST_F(HarfBuzzShaperTest, ShapeVerticalUpright) {
   font_description.SetOrientation(FontOrientation::kVerticalUpright);
   font = Font(font_description);
