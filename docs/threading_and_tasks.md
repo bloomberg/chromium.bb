@@ -16,24 +16,29 @@ threads for communication, and we use callback interfaces (implemented by
 message passing) for most cross-thread requests.
 
 ### Nomenclature
- * **Thread-unsafe**: The vast majority of types in Chrome are thread-unsafe by
-   design. Such types/methods cannot be accessed concurrently from different
-   threads. They should either be accessed from a single
-   `base::SequencedTaskRunner` (this should be enforced by a `SEQUENCE_CHECKER`)
-   or be accessed with external synchronization (e.g. locks -- but
-   [prefer sequences](#Using-Sequences-Instead-of-Locks)).
+ * **Thread-unsafe**: The vast majority of types in Chromium are thread-unsafe
+   by design. Access to such types/methods must be synchronized, typically by
+   sequencing access through a single `base::SequencedTaskRunner` (this should
+   be enforced by a `SEQUENCE_CHECKER`) or via low-level synchronization (e.g.
+   locks -- but [prefer sequences](#Using-Sequences-Instead-of-Locks)).
  * **Thread-affine**: Such types/methods need to be always accessed from the
-   same physical thread (i.e. from the same `base::SingleThreadTaskRunner`).
-   Short of using a third-party API or having a leaf dependency which is
-   thread-affine: there's pretty much no reason for a type to be thread-affine
-   in Chrome. Note that `base::SingleThreadTaskRunner` is-a
-   `base::SequencedTaskRunner` so thread-affine is a subset of thread-unsafe.
+   same physical thread (i.e. from the same `base::SingleThreadTaskRunner`) and
+   should use `THREAD_CHECKER` to verify that they are. Short of using a
+   third-party API or having a leaf dependency which is thread-affine: there's
+   pretty much no reason for a type to be thread-affine in Chromium. Note that
+   `base::SingleThreadTaskRunner` is-a `base::SequencedTaskRunner` so
+   thread-affine is a subset of thread-unsafe. Thread-affine is also sometimes
+   referred to as **thread-hostile**.
  * **Thread-safe**: Such types/methods can be safely accessed concurrently.
- * **Thread-compatible**: Such types/methods are initialized once in a
+ * **Thread-compatible**: Such types provide safe concurrent access to const
+   methods but require synchronization for non-const (or mixed const/non-const
+   access). Chromium doesn't expose reader-writer locks; as such, the only use
+   case for this is objects (typically globals) which are initialized once in a
    thread-safe manner (either in the single-threaded phase of startup or lazily
    through a thread-safe static-local-initialization paradigm a la
-   `base::NoDestructor`) and can forever after be accessed concurrently in a
-   read-only manner.
+   `base::NoDestructor`) and forever after immutable.
+ * **Immutable**: A subset of thread-compatible types which cannot be modified
+   after construction.
  * **Sequence-friendly**: Such types/methods are thread-unsafe types which
    support being invoked from a `base::SequencedTaskRunner`. Ideally this would
    be the case for all thread-unsafe types but legacy code sometimes has
