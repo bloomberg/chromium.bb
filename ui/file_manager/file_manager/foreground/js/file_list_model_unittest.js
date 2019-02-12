@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var TEST_METADATA = {
+const TEST_METADATA = {
   'a.txt': {
     contentMimeType: 'text/plain',
     size: 1023,
@@ -33,7 +33,7 @@ function assertEntryArrayEquals(entryArray, names) {
 }
 
 function makeSimpleFileListModel(names) {
-  var fileListModel = new FileListModel(new TestMetadataModel({}));
+  var fileListModel = new FileListModel(createFakeMetadataModel({}));
   for (var i = 0; i < names.length; i++) {
     fileListModel.push({name: names[i], isDirectory: false});
   }
@@ -41,36 +41,31 @@ function makeSimpleFileListModel(names) {
 }
 
 /**
- * MetadataModel for this test.
- * It is supposed to provide metadata from TEST_METADATA to work with the
- * FileListModel.
- *
- * @constructor
- * @extends {MetadataModel}
- * @param {Object} testdata
+ * Returns a fake MetadataModel, used to provide metadata from the given |data|
+ * object (usually TEST_METADATA) to the FileListModel.
+ * @param {!Object} data
+ * @return {!MetadataModel}
  */
-function TestMetadataModel(testdata) {
-  this.testdata_ = testdata;
+function createFakeMetadataModel(data) {
+  return /** @type {!MetadataModel} */ ({
+    getCache: (entries, names) => {
+      let result = [];
+      for (let i = 0; i < entries.length; i++) {
+        let metadata = {};
+        if (!entries[i].isDirectory && data[entries[i].name]) {
+          for (let j = 0; j < names.length; j++) {
+            metadata[names[j]] = data[entries[i].name][names[j]];
+          }
+        }
+        result.push(metadata);
+      }
+      return result;
+    },
+  });
 }
 
-TestMetadataModel.prototype = {
-  getCache : function(entries, names) {
-    var result = [];
-    for (var i = 0; i < entries.length; i++) {
-      var metadata = {};
-      if (!entries[i].isDirectory && this.testdata_[entries[i].name]) {
-        for (var j = 0; j < names.length; j++) {
-          metadata[names[j]] = this.testdata_[entries[i].name][names[j]];
-        }
-      }
-      result.push(metadata);
-    }
-    return result;
-  },
-};
-
 function testIsImageDominant() {
-  var fileListModel = new FileListModel(new TestMetadataModel(TEST_METADATA));
+  var fileListModel = new FileListModel(createFakeMetadataModel(TEST_METADATA));
 
   assertEquals(fileListModel.isImageDominant(), false);
 
@@ -97,7 +92,7 @@ function testIsImageDominant() {
 }
 
 function testSortWithFolders() {
-  var fileListModel = new FileListModel(new TestMetadataModel(TEST_METADATA));
+  var fileListModel = new FileListModel(createFakeMetadataModel(TEST_METADATA));
   fileListModel.push({ name: 'dirA', isDirectory: true });
   fileListModel.push({ name: 'dirB', isDirectory: true });
   fileListModel.push({ name: 'a.txt', isDirectory: false });
