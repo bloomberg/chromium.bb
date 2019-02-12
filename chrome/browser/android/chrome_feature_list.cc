@@ -86,6 +86,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &feed::kInterestFeedContentSuggestions,
     &invalidation::switches::kFCMInvalidations,
     &kAdjustWebApkInstallationSpace,
+    &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
     &kAndroidNightMode,
     &kAndroidPayIntegrationV1,
@@ -217,6 +218,9 @@ const base::Feature kAndroidNightMode{"AndroidNightMode",
 
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAllowNewIncognitoTabIntents{
+    "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAllowRemoteContextForNotifications{
     "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};

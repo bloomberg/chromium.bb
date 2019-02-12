@@ -343,6 +343,18 @@ by a child template that "extends" this file.
             android:excludeFromRecents="true"
             android:exported="false" />
 
+        <activity android:name="org.chromium.chrome.browser.incognito.IncognitoTabLauncher"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:taskAffinity=""
+            android:enabled="false"
+            android:excludeFromRecents="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.incognito.OPEN_PRIVATE_TAB" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- Upgrade related -->
         <activity android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
             android:excludeFromRecents="true"

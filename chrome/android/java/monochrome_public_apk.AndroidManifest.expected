@@ -889,6 +889,18 @@
       </intent-filter>
     </activity>
     <activity
+        android:enabled="false"
+        android:excludeFromRecents="true"
+        android:exported="true"
+        android:name="org.chromium.chrome.browser.incognito.IncognitoTabLauncher"
+        android:taskAffinity=""
+        android:theme="@android:style/Theme.NoDisplay">
+      <intent-filter>
+        <action android:name="org.chromium.chrome.browser.incognito.OPEN_PRIVATE_TAB"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
+    <activity
         android:excludeFromRecents="true"
         android:exported="false"
         android:launchMode="singleInstance"

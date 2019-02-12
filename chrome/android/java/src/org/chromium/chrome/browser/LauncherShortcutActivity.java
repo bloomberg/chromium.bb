@@ -12,16 +12,13 @@ import android.content.SharedPreferences;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.drawable.Icon;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.provider.Browser;
 import android.support.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 import java.util.ArrayList;
@@ -142,18 +139,9 @@ public class LauncherShortcutActivity extends Activity {
     @VisibleForTesting
     public static Intent getChromeLauncherActivityIntent(
             Context context, String launcherShortcutIntentAction) {
-        Intent newIntent = new Intent();
-        newIntent.setAction(Intent.ACTION_VIEW);
-        newIntent.setData(Uri.parse(UrlConstants.NTP_URL));
-        newIntent.setClass(context, ChromeLauncherActivity.class);
+        Intent newIntent = IntentHandler.createTrustedOpenNewTabIntent(context,
+                launcherShortcutIntentAction.equals(ACTION_OPEN_NEW_INCOGNITO_TAB));
         newIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, true);
-        newIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-        newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-        IntentHandler.addTrustedIntentExtras(newIntent);
-
-        if (launcherShortcutIntentAction.equals(ACTION_OPEN_NEW_INCOGNITO_TAB)) {
-            newIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-        }
 
         return newIntent;
     }

@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
+import org.chromium.chrome.browser.incognito.IncognitoTabLauncher;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
@@ -408,31 +409,24 @@ public class ProcessInitializationHandler {
             }
         });
 
-        deferredStartupHandler.addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(application);
-            }
-        });
-
-        deferredStartupHandler.addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                logEGLShaderCacheSizeHistogram();
-            }
-        });
+        deferredStartupHandler.addDeferredTask(
+                () -> BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(application));
 
         deferredStartupHandler.addDeferredTask(
-                () -> { BuildHooksAndroid.maybeRecordResourceMetrics(); });
+                ProcessInitializationHandler::logEGLShaderCacheSizeHistogram);
 
-        deferredStartupHandler.addDeferredTask(() -> {
-            MediaViewerUtils.updateMediaLauncherActivityEnabled(
-                    ContextUtils.getApplicationContext());
-        });
+        deferredStartupHandler.addDeferredTask(
+                BuildHooksAndroid::maybeRecordResourceMetrics);
+
+        deferredStartupHandler.addDeferredTask(
+                () -> MediaViewerUtils.updateMediaLauncherActivityEnabled(application));
 
         deferredStartupHandler.addDeferredTask(
                 ChromeApplication.getComponent().resolveTwaClearDataDialogRecorder()
                         ::makeDeferredRecordings);
+
+        deferredStartupHandler.addDeferredTask(
+                () ->  IncognitoTabLauncher.updateComponentEnabledState(application));
     }
 
     private void initChannelsAsync() {

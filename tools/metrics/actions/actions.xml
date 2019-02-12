@@ -1972,6 +1972,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.LaunchNewIncognitoTab">
+  <owner>peconn@chromium.org</owner>
+  <description>
+    An external application launched a new Chrome Incognito Tab.
+  </description>
+</action>
+
 <action name="Android.ManageSpace">
   <owner>dmurph@chromium.org</owner>
   <description>

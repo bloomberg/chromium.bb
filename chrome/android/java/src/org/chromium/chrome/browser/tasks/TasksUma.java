@@ -77,7 +77,8 @@ public class TasksUma {
                 manuallyCreatedCount++;
             } else if (tabLaunchType == TabLaunchType.FROM_LONGPRESS_FOREGROUND) {
                 targetBlankCreatedCount++;
-            } else if (tabLaunchType == TabLaunchType.FROM_EXTERNAL_APP) {
+            } else if (tabLaunchType == TabLaunchType.FROM_EXTERNAL_APP
+                    || tabLaunchType == TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB) {
                 externalAppCreatedCount++;
             } else {
                 othersCreatedCount++;

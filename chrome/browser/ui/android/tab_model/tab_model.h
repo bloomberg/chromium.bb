@@ -78,6 +78,8 @@ class TabModel : public content::NotificationObserver {
     FROM_SPECULATIVE_BACKGROUND_CREATION,
     // Opened in the background from Browser Actions context menu.
     FROM_BROWSER_ACTIONS,
+    // Opened by an external application launching a new Chrome incognito tab.
+    FROM_LAUNCH_NEW_INCOGNITO_TAB,
     // Must be last.
     SIZE
   };

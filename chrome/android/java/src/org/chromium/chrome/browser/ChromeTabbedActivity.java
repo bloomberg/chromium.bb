@@ -87,6 +87,7 @@ import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityD
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
+import org.chromium.chrome.browser.incognito.IncognitoTabLauncher;
 import org.chromium.chrome.browser.incognito.IncognitoTabSnapshotController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
@@ -1319,16 +1320,19 @@ public class ChromeTabbedActivity
 
                     if (url == null || url.equals(UrlConstants.NTP_URL)) {
                         if (fromLauncherShortcut) {
-                            getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_LAUNCHER_SHORTCUT);
+                            getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
+                                    TabLaunchType.FROM_LAUNCHER_SHORTCUT);
                             recordLauncherShortcutAction(true);
                             reportNewTabShortcutUsed(true);
+                        } else if (IncognitoTabLauncher.didCreateIntent(intent)) {
+                            getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
+                                    TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB);
+                            IncognitoTabLauncher.recordUse();
                         } else {
                             // Used by the Account management screen to open a new incognito tab.
                             // Account management screen collects its metrics separately.
-                            getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI,
-                                    intent, mIntentHandlingTimeMs);
+                            getTabCreator(true).launchUrl(UrlConstants.NTP_URL,
+                                    TabLaunchType.FROM_CHROME_UI, intent, mIntentHandlingTimeMs);
                         }
                     } else {
                         @TabLaunchType
@@ -1983,16 +1987,20 @@ public class ChromeTabbedActivity
             // the back button to close these tabs and restore selection to the previous tab.
             boolean isIncognito = IntentUtils.safeGetBooleanExtra(intent,
                     IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-            boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
-                    intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
             loadUrlParams.setVerbatimHeaders(headers);
             @TabLaunchType
             Integer launchType = IntentHandler.getTabLaunchType(intent);
             if (launchType == null) {
-                launchType = fromLauncherShortcut ? TabLaunchType.FROM_LAUNCHER_SHORTCUT
-                                                  : TabLaunchType.FROM_LINK;
+                if (IntentUtils.safeGetBooleanExtra(intent,
+                        IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false)) {
+                    launchType = TabLaunchType.FROM_LAUNCHER_SHORTCUT;
+                } else if (IncognitoTabLauncher.didCreateIntent(intent)) {
+                    launchType = TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB;
+                } else {
+                    launchType = TabLaunchType.FROM_LINK;
+                }
             }
             return getTabCreator(isIncognito).createNewTab(loadUrlParams, launchType, null, intent);
         } else {

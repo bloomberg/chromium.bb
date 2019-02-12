@@ -300,6 +300,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 break;
             case TabLaunchType.FROM_CHROME_UI:
             case TabLaunchType.FROM_LAUNCHER_SHORTCUT:
+            case TabLaunchType.FROM_LAUNCH_NEW_INCOGNITO_TAB:
                 transition = PageTransition.AUTO_TOPLEVEL;
                 break;
             case TabLaunchType.FROM_LONGPRESS_FOREGROUND:
