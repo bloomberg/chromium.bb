@@ -26,7 +26,6 @@ test("service_manager_unittests") {
     "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/catalog:lib",
     "//services/service_manager",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:unittests",

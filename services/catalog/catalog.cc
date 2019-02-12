@@ -4,8 +4,9 @@
 
 #include "services/catalog/catalog.h"
 
-#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
@@ -24,11 +25,37 @@
 #include "components/services/filesystem/lock_table.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/catalog/constants.h"
-#include "services/catalog/entry_cache.h"
-#include "services/catalog/instance.h"
 
 namespace catalog {
+
+namespace {
+
+using Manifest = service_manager::Manifest;
+
+std::map<Manifest::ServiceName, const Manifest*> CreateManifestMap(
+    const std::vector<Manifest>& manifests) {
+  std::map<Manifest::ServiceName, const Manifest*> map;
+  for (const auto& manifest : manifests) {
+    map[manifest.service_name] = &manifest;
+    for (const auto& entry : CreateManifestMap(manifest.packaged_services))
+      map[entry.first] = entry.second;
+  }
+  return map;
+}
+
+std::map<Manifest::ServiceName, const Manifest*> CreateParentManifestMap(
+    const std::vector<Manifest>& manifests) {
+  std::map<Manifest::ServiceName, const Manifest*> map;
+  for (const auto& parent : manifests) {
+    for (const auto& child : parent.packaged_services)
+      map[child.service_name] = &parent;
+    for (const auto& entry : CreateParentManifestMap(parent.packaged_services))
+      map[entry.first] = entry.second;
+  }
+  return map;
+}
+
+}  // namespace
 
 // Wraps state needed for servicing directory requests on a separate thread.
 // filesystem::LockTable is not thread safe, so it's wrapped in
@@ -58,9 +85,10 @@ class Catalog::DirectoryThreadState
   DISALLOW_COPY_AND_ASSIGN(DirectoryThreadState);
 };
 
-Catalog::Catalog(const std::vector<service_manager::Manifest>& manifests) {
-  for (const auto& manifest : manifests)
-    system_cache_.AddRootEntryFromManifest(manifest);
+Catalog::Catalog(const std::vector<Manifest>& manifests)
+    : manifests_(manifests),
+      manifest_map_(CreateManifestMap(manifests_)),
+      parent_manifest_map_(CreateParentManifestMap(manifests_)) {
   registry_.AddInterface<mojom::Catalog>(base::BindRepeating(
       &Catalog::BindCatalogRequest, base::Unretained(this)));
   registry_.AddInterface<filesystem::mojom::Directory>(base::BindRepeating(
@@ -74,27 +102,29 @@ void Catalog::BindServiceRequest(
   service_binding_.Bind(std::move(request));
 }
 
-Instance* Catalog::GetInstanceForGroup(const base::Token& instance_group) {
-  auto it = instances_.find(instance_group);
-  if (it != instances_.end())
-    return it->second.get();
-
-  auto result = instances_.emplace(instance_group,
-                                   std::make_unique<Instance>(&system_cache_));
-  return result.first->second.get();
+const service_manager::Manifest* Catalog::GetManifest(
+    const Manifest::ServiceName& service_name) {
+  const auto it = manifest_map_.find(service_name);
+  if (it == manifest_map_.end())
+    return nullptr;
+  return it->second;
 }
 
-void Catalog::BindCatalogRequest(
-    mojom::CatalogRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  Instance* instance =
-      GetInstanceForGroup(source_info.identity.instance_group());
-  instance->BindCatalog(std::move(request));
+const service_manager::Manifest* Catalog::GetParentManifest(
+    const Manifest::ServiceName& service_name) {
+  auto it = parent_manifest_map_.find(service_name);
+  if (it == parent_manifest_map_.end())
+    return nullptr;
+
+  return it->second;
+}
+
+void Catalog::BindCatalogRequest(mojom::CatalogRequest request) {
+  catalog_bindings_.AddBinding(this, std::move(request));
 }
 
 void Catalog::BindDirectoryRequest(
-    filesystem::mojom::DirectoryRequest request,
-    const service_manager::BindSourceInfo& source_info) {
+    filesystem::mojom::DirectoryRequest request) {
   if (!directory_task_runner_) {
     directory_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(),
@@ -106,14 +136,13 @@ void Catalog::BindDirectoryRequest(
   directory_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&Catalog::BindDirectoryRequestOnBackgroundThread,
-                     directory_thread_state_, std::move(request), source_info));
+                     directory_thread_state_, std::move(request)));
 }
 
 // static
 void Catalog::BindDirectoryRequestOnBackgroundThread(
     scoped_refptr<DirectoryThreadState> thread_state,
-    filesystem::mojom::DirectoryRequest request,
-    const service_manager::BindSourceInfo& source_info) {
+    filesystem::mojom::DirectoryRequest request) {
   base::FilePath resources_path;
   base::PathService::Get(base::DIR_MODULE, &resources_path);
   mojo::MakeStrongBinding(
@@ -127,8 +156,43 @@ void Catalog::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe),
-                          source_info);
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void Catalog::GetEntries(const base::Optional<std::vector<std::string>>& names,
+                         GetEntriesCallback callback) {
+  std::vector<mojom::EntryPtr> entries;
+  if (!names.has_value()) {
+    for (const auto& entry : manifest_map_) {
+      const auto* manifest = entry.second;
+      entries.push_back(mojom::Entry::New(manifest->service_name,
+                                          manifest->display_name.raw_string));
+    }
+  } else {
+    for (const std::string& name : names.value()) {
+      const auto* manifest = GetManifest(name);
+      if (manifest) {
+        entries.push_back(mojom::Entry::New(manifest->service_name,
+                                            manifest->display_name.raw_string));
+      }
+    }
+  }
+  std::move(callback).Run(std::move(entries));
+}
+
+void Catalog::GetEntriesProvidingCapability(
+    const std::string& capability,
+    GetEntriesProvidingCapabilityCallback callback) {
+  std::vector<mojom::EntryPtr> entries;
+  for (const auto& entry : manifest_map_) {
+    const auto* manifest = entry.second;
+    if (manifest->exposed_capabilities.find(capability) !=
+        manifest->exposed_capabilities.end()) {
+      entries.push_back(mojom::Entry::New(manifest->service_name,
+                                          manifest->display_name.raw_string));
+    }
+  }
+  std::move(callback).Run(std::move(entries));
 }
 
 }  // namespace catalog

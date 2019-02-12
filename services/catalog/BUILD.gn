@@ -11,33 +11,15 @@ group("catalog") {
   ]
 }
 
-source_set("constants") {
-  sources = [
-    "store.cc",
-    "store.h",
-  ]
-}
-
 component("lib") {
   sources = [
     "catalog.cc",
     "catalog.h",
-    "constants.cc",
-    "constants.h",
-    "entry.cc",
-    "entry.h",
-    "entry_cache.cc",
-    "entry_cache.h",
-    "instance.cc",
-    "instance.h",
-    "service_options.cc",
-    "service_options.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
-    ":constants",
     "//base",
     "//components/services/filesystem:lib",
     "//services/catalog/public/cpp",

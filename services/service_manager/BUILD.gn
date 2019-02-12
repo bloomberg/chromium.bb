@@ -42,7 +42,6 @@ source_set("service_manager") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/catalog:constants",
     "//services/catalog:lib",
     "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
