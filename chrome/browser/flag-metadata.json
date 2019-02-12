@@ -563,8 +563,8 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-explicit-dma-fences",
-    // "owners": [ "your-team" ],
+    "name": "enable-explicit-dma-fences",
+    "owners": [ "chromeos-gfx" ],
     "expiry_milestone": 76
   },
   {
