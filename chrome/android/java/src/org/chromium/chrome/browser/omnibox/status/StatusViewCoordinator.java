@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
 import android.view.View;
@@ -152,18 +150,13 @@ public class StatusViewCoordinator implements View.OnClickListener {
     public void onClick(View view) {
         if (mUrlHasFocus) return;
 
-        // Get Activity from our managed view.
-        // TODO(ender): turn this into a property accessible via shared model.
-        Context context = view.getContext();
-        if (context == null || !(context instanceof Activity)) return;
-
         if (!mToolbarDataProvider.hasTab()
                 || mToolbarDataProvider.getTab().getWebContents() == null) {
             return;
         }
 
-        PageInfoController.show((Activity) context, mToolbarDataProvider.getTab(), null,
-                PageInfoController.OpenedFromSource.TOOLBAR);
+        PageInfoController.show(mToolbarDataProvider.getTab().getActivity(),
+                mToolbarDataProvider.getTab(), null, PageInfoController.OpenedFromSource.TOOLBAR);
     }
 
     /**
