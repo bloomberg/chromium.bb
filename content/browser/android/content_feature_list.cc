@@ -24,6 +24,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
     &kEnhancedSelectionInsertionHandle,
+    &features::kServiceWorkerForegroundPriority,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

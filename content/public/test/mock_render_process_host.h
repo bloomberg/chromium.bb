@@ -86,6 +86,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   GetRendererAudioOutputStreamFactoryContext() override;
   void OnMediaStreamAdded() override;
   void OnMediaStreamRemoved() override;
+  void OnForegroundServiceWorkerAdded() override;
+  void OnForegroundServiceWorkerRemoved() override;
   StoragePartition* GetStoragePartition() override;
   virtual void AddWord(const base::string16& word);
   bool Shutdown(int exit_code) override;
@@ -200,6 +202,10 @@ class MockRenderProcessHost : public RenderProcessHost {
     return is_renderer_locked_to_site_;
   }
 
+  int foreground_service_worker_count() const {
+    return foreground_service_worker_count_;
+  }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -221,6 +227,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_unused_;
   base::Process process;
   int keep_alive_ref_count_;
+  int foreground_service_worker_count_;
   std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
       renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;

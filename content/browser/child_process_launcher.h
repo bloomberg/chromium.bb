@@ -58,6 +58,7 @@ static_assert(static_cast<int>(LAUNCH_RESULT_START) >
 struct ChildProcessLauncherPriority {
   ChildProcessLauncherPriority(bool visible,
                                bool has_media_stream,
+                               bool has_foreground_service_worker,
                                unsigned int frame_depth,
                                bool intersects_viewport,
                                bool boost_for_pending_views
@@ -68,6 +69,7 @@ struct ChildProcessLauncherPriority {
                                )
       : visible(visible),
         has_media_stream(has_media_stream),
+        has_foreground_service_worker(has_foreground_service_worker),
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
         boost_for_pending_views(boost_for_pending_views)
@@ -79,9 +81,7 @@ struct ChildProcessLauncherPriority {
   }
 
   // Returns true if the child process is backgrounded.
-  bool is_background() const {
-    return !visible && !has_media_stream && !boost_for_pending_views;
-  }
+  bool is_background() const;
 
   bool operator==(const ChildProcessLauncherPriority& other) const;
   bool operator!=(const ChildProcessLauncherPriority& other) const {
@@ -100,6 +100,11 @@ struct ChildProcessLauncherPriority {
   // |has_media_stream| is true when the process is responsible for "hearable"
   // content.
   bool has_media_stream;
+
+  // |has_foreground_service_worker| is true when the process has a service
+  // worker that may need to service timely events from other, possibly visible,
+  // processes.
+  bool has_foreground_service_worker;
 
   // |frame_depth| is the depth of the shallowest frame this process is
   // responsible for which has |visible| visibility. It only makes sense to

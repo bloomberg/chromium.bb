@@ -33,6 +33,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -323,6 +324,21 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
       NOTREACHED();
   }
   return false;
+}
+
+void NotifyForegroundServiceWorkerOnUIThread(bool added, int process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority));
+
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+  if (!rph)
+    return;
+
+  if (added)
+    rph->OnForegroundServiceWorkerAdded();
+  else
+    rph->OnForegroundServiceWorkerRemoved();
 }
 
 }  // namespace
@@ -648,7 +664,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   devtools_proxy_.reset();
   if (registry_->GetWorker(embedded_worker_id_))
     registry_->RemoveWorker(process_id(), embedded_worker_id_);
-  process_handle_.reset();
+  ReleaseProcess();
 }
 
 void EmbeddedWorkerInstance::Start(
@@ -748,6 +764,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       instance_host_binding_(this),
       devtools_attached_(false),
       network_accessed_for_script_(false),
+      foreground_notified_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -759,6 +776,9 @@ void EmbeddedWorkerInstance::OnProcessAllocated(
   DCHECK(!process_handle_);
 
   process_handle_ = std::move(handle);
+
+  UpdateForegroundPriority();
+
   start_situation_ = start_situation;
   for (auto& observer : listener_list_)
     observer.OnProcessAllocated();
@@ -955,6 +975,16 @@ void EmbeddedWorkerInstance::Detach() {
     observer.OnDetached(old_status);
 }
 
+void EmbeddedWorkerInstance::UpdateForegroundPriority() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (process_handle_ &&
+      owner_version_->ShouldRequireForegroundPriority(process_id())) {
+    NotifyForegroundServiceWorkerAdded();
+  } else {
+    NotifyForegroundServiceWorkerRemoved();
+  }
+}
+
 base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -1019,6 +1049,8 @@ void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
 void EmbeddedWorkerInstance::ReleaseProcess() {
   // Abort an inflight start task.
   inflight_start_task_.reset();
+
+  NotifyForegroundServiceWorkerRemoved();
 
   instance_host_binding_.Close();
   devtools_proxy_.reset();
@@ -1099,6 +1131,39 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
 void EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
     const CreateNetworkFactoryCallback& create_network_factory_callback) {
   GetNetworkFactoryCallbackForTest() = create_network_factory_callback;
+}
+
+void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerAdded() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(
+      base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority));
+
+  if (!process_handle_ || foreground_notified_)
+    return;
+
+  foreground_notified_ = true;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&NotifyForegroundServiceWorkerOnUIThread, true /* added */,
+                     process_id()));
+}
+
+void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(
+      !foreground_notified_ ||
+      base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority));
+
+  if (!process_handle_ || !foreground_notified_)
+    return;
+
+  foreground_notified_ = false;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&NotifyForegroundServiceWorkerOnUIThread,
+                     false /* added */, process_id()));
 }
 
 }  // namespace content

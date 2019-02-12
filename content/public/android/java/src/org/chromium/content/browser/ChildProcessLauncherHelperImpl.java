@@ -419,9 +419,9 @@ public final class ChildProcessLauncherHelperImpl {
     }
 
     @CalledByNative
-    private void setPriority(int pid, boolean visible, boolean hasMediaStream, long frameDepth,
-            boolean intersectsViewport, boolean boostForPendingViews,
-            @ChildProcessImportance int importance) {
+    private void setPriority(int pid, boolean visible, boolean hasMediaStream,
+            boolean hasForegroundServiceWorker, long frameDepth, boolean intersectsViewport,
+            boolean boostForPendingViews, @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
         assert mLauncher.getPid() == pid;
         if (getByPid(pid) == null) {
@@ -438,6 +438,9 @@ public final class ChildProcessLauncherHelperImpl {
         boolean mediaRendererHasModerate = ContentFeatureList.isEnabled(
                 ContentFeatureList.BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING);
 
+        boolean serviceWorkerForegroundPriority =
+                ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_WORKER_FOREGROUND_PRIORITY);
+
         @ChildProcessImportance
         int newEffectiveImportance;
         if ((visible && frameDepth == 0) || importance == ChildProcessImportance.IMPORTANT
@@ -445,7 +448,8 @@ public final class ChildProcessLauncherHelperImpl {
             newEffectiveImportance = ChildProcessImportance.IMPORTANT;
         } else if ((visible && frameDepth > 0 && intersectsViewport) || boostForPendingViews
                 || importance == ChildProcessImportance.MODERATE
-                || (hasMediaStream && mediaRendererHasModerate)) {
+                || (hasMediaStream && mediaRendererHasModerate)
+                || (hasForegroundServiceWorker && serviceWorkerForegroundPriority)) {
             newEffectiveImportance = ChildProcessImportance.MODERATE;
         } else {
             newEffectiveImportance = ChildProcessImportance.NORMAL;
