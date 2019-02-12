@@ -10,6 +10,7 @@
 #include "base/pickle.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -26,6 +27,32 @@ bool IsSupportedMimeType(const std::string& mime_type) {
 }
 
 }  // namespace
+
+class MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver
+    : public content::RenderFrameObserver {
+ public:
+  RenderFrameLifetimeObserver(content::RenderFrame* render_frame,
+                              MimeHandlerViewFrameContainer* container);
+  ~RenderFrameLifetimeObserver() override;
+
+  // content:RenderFrameObserver override.
+  void OnDestruct() final;
+
+ private:
+  MimeHandlerViewFrameContainer* const container_;
+};
+
+MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
+    RenderFrameLifetimeObserver(content::RenderFrame* render_frame,
+                                MimeHandlerViewFrameContainer* container)
+    : content::RenderFrameObserver(render_frame), container_(container) {}
+
+MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
+    ~RenderFrameLifetimeObserver() {}
+
+void MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::OnDestruct() {
+  container_->OnDestroyFrameContainer(container_->element_instance_id_);
+}
 
 // static
 bool MimeHandlerViewFrameContainer::Create(
@@ -62,7 +89,9 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
                                    mime_type,
                                    resource_url),
       plugin_element_(plugin_element),
-      element_instance_id_(element_instance_id) {
+      element_instance_id_(element_instance_id),
+      render_frame_lifetime_observer_(
+          new RenderFrameLifetimeObserver(GetEmbedderRenderFrame(), this)) {
   is_embedded_ = IsEmbedded();
   if (is_embedded_) {
     SendResourceRequest();

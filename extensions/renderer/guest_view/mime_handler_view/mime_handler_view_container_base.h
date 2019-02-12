@@ -83,6 +83,9 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   void EmbedderRenderFrameWillBeGone();
   v8::Local<v8::Object> GetScriptableObject(v8::Isolate* isolate);
 
+  // Returns the frame which is embedding the corresponding plugin element.
+  content::RenderFrame* GetEmbedderRenderFrame() const;
+
   bool guest_created() const { return guest_created_; }
 
   // Used when network service is enabled:
@@ -104,9 +107,6 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
 
  private:
   class PluginResourceThrottle;
-
-  // Returns the frame which is embedding the corresponding plugin element.
-  content::RenderFrame* GetEmbedderRenderFrame() const;
 
   // Called for embedded plugins when network service is enabled. This is called
   // by the URLLoaderThrottle which intercepts the resource load, which is then
