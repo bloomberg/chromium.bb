@@ -3074,7 +3074,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Timeout ]
 crbug.com/626703 crbug.com/930297 [ Linux ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/windows-1251.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007v.html [ Failure ]
@@ -6009,6 +6008,7 @@ crbug.com/927866 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
 # returns candidate-pair whose state is "succeeded", this sounds like a
 # contradiction.
+crbug.com/926170 external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Pass Timeout ]
 crbug.com/926170 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Pass Timeout ]
 
 # Sheriff 2019-01-18
