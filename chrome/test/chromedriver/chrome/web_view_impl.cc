@@ -79,11 +79,13 @@ const char* GetAsString(MouseEventType type) {
 const char* GetAsString(TouchEventType type) {
   switch (type) {
     case kTouchStart:
-      return "touchstart";
+      return "touchStart";
     case kTouchEnd:
-      return "touchend";
+      return "touchEnd";
     case kTouchMove:
-      return "touchmove";
+      return "touchMove";
+    case kTouchCancel:
+      return "touchCancel";
     default:
       return "";
   }
@@ -470,12 +472,11 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
   if (mobile_emulation_override_manager_->IsEmulatingTouch())
     return DispatchTouchEventsForMouseEvents(events, frame);
 
-  double page_scale_factor = 1.0;
   for (auto it = events.begin(); it != events.end(); ++it) {
     base::DictionaryValue params;
     params.SetString("type", GetAsString(it->type));
-    params.SetInteger("x", it->x * page_scale_factor);
-    params.SetInteger("y", it->y * page_scale_factor);
+    params.SetInteger("x", it->x);
+    params.SetInteger("y", it->y);
     params.SetInteger("modifiers", it->modifiers);
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("buttons", it->buttons);
@@ -489,12 +490,24 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
 }
 
 Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
-  base::ListValue args;
-  args.Append(std::make_unique<base::Value>(event.x));
-  args.Append(std::make_unique<base::Value>(event.y));
-  args.Append(std::make_unique<base::Value>(GetAsString(event.type)));
-  std::unique_ptr<base::Value> unused;
-  return CallFunction(std::string(), kDispatchTouchEventScript, args, &unused);
+  base::DictionaryValue params;
+  std::string type = GetAsString(event.type);
+  params.SetString("type", type);
+  LOG(ERROR) << "WebViewImpl::DispatchTouchEvent type " << type;
+  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+  if (type == "touchStart" || type == "touchMove") {
+    std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
+    point->SetInteger("x", event.x);
+    point->SetInteger("y", event.y);
+    point->SetDouble("radiusX", event.radiusX);
+    point->SetDouble("radiusY", event.radiusY);
+    point->SetDouble("rotationAngle", event.rotationAngle);
+    point->SetDouble("force", event.force);
+    point->SetInteger("id", event.id);
+    point_list->Append(std::move(point));
+  }
+  params.Set("touchPoints", std::move(point_list));
+  return client_->SendCommand("Input.dispatchTouchEvent", params);
 }
 
 Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events) {

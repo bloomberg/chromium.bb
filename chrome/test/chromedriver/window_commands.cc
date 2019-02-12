@@ -134,6 +134,8 @@ TouchEventType StringToTouchEventType(std::string action_type) {
     return kTouchEnd;
   else if (action_type == "pointerMove")
     return kTouchMove;
+  else if (action_type == "pointerCancel")
+    return kTouchCancel;
   else if (action_type == "pause")
     return kPause;
   else
