@@ -97,7 +97,7 @@ bool AdvancedProtectionStatusManager::IsRefreshScheduled() {
   return timer_.IsRunning();
 }
 
-void AdvancedProtectionStatusManager::OnAccountUpdated(
+void AdvancedProtectionStatusManager::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
   // Ignore update if |profile_| is in incognito mode, or the updated account
   // is not the primary account.

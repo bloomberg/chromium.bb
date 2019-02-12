@@ -183,7 +183,8 @@ void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
   }
 }
 
-void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
+void SyncConfirmationHandler::OnExtendedAccountInfoUpdated(
+    const AccountInfo& info) {
   if (!info.IsValid())
     return;
 

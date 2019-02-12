@@ -103,7 +103,7 @@ void ChildAccountService::Init() {
   // If we're already signed in, check the account immediately just to be sure.
   // (We might have missed an update before registering as an observer.)
   if (identity_manager_->HasPrimaryAccount())
-    OnAccountUpdated(identity_manager_->GetPrimaryAccountInfo());
+    OnExtendedAccountInfoUpdated(identity_manager_->GetPrimaryAccountInfo());
 }
 
 bool ChildAccountService::IsChildAccountStatusKnown() {
@@ -248,7 +248,8 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
   status_received_callback_list_.clear();
 }
 
-void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
+void ChildAccountService::OnExtendedAccountInfoUpdated(
+    const AccountInfo& info) {
   // This method may get called when the account info isn't complete yet.
   // We deliberately don't check for that, as we are only interested in the
   // child account status.

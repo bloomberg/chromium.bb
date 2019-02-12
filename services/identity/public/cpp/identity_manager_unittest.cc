@@ -391,7 +391,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     is_inside_batch_ = false;
   }
 
-  void OnAccountUpdated(const AccountInfo& info) override {
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override {
     account_from_account_updated_callback_ = info;
   }
 
