@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/session_manager/core/session_manager.h"
@@ -32,6 +33,9 @@ const std::string StatusReportEventToString(
       return "Request status report due to device going online.";
     case EventBasedStatusReportingService::StatusReportEvent::kSuspendDone:
       return "Request status report after a suspend has been completed.";
+    case EventBasedStatusReportingService::StatusReportEvent::
+        kUsageTimeLimitWarning:
+      return "Request status report before usage time limit finish.";
     default:
       NOTREACHED();
   }
@@ -52,6 +56,8 @@ EventBasedStatusReportingService::EventBasedStatusReportingService(
   session_manager::SessionManager::Get()->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  ScreenTimeControllerFactory::GetForBrowserContext(context_)->AddObserver(
+      this);
 }
 
 EventBasedStatusReportingService::~EventBasedStatusReportingService() = default;
@@ -97,6 +103,10 @@ void EventBasedStatusReportingService::SuspendDone(
   RequestStatusReport(StatusReportEvent::kSuspendDone);
 }
 
+void EventBasedStatusReportingService::UsageTimeLimitWarning() {
+  RequestStatusReport(StatusReportEvent::kUsageTimeLimitWarning);
+}
+
 void EventBasedStatusReportingService::RequestStatusReport(
     StatusReportEvent event) {
   VLOG(1) << StatusReportEventToString(event);
@@ -118,6 +128,8 @@ void EventBasedStatusReportingService::Shutdown() {
   session_manager::SessionManager::Get()->RemoveObserver(this);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  ScreenTimeControllerFactory::GetForBrowserContext(context_)->RemoveObserver(
+      this);
 }
 
 }  // namespace chromeos
