@@ -864,3 +864,63 @@ function testInsideMyDriveAndInsideDrive(callback) {
       }),
       callback);
 }
+
+/**
+ * Test adding FSPs.
+ * Sub directories should be fetched for FSPs, but not for the Smb FSP.
+ *
+ * @param {!function(boolean)} callback A callback function which is called with
+ *     test result.
+ */
+function testAddProviders(callback) {
+  // Add a volume representing a non-Smb provider to the mock filesystem.
+  volumeManager.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.PROVIDED, 'not_smb', 'NOT_SMB_LABEL');
+
+  // Add a sub directory to the non-Smb provider.
+  const provider = assert(volumeManager.volumeInfoList.item(2).fileSystem);
+  fakeFileSystemURLEntries['filesystem:not_smb/child'] =
+      new MockDirectoryEntry(provider, '/child');
+
+  // Add a volume representing an Smb provider to the mock filesystem.
+  volumeManager.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.PROVIDED, 'smb', 'SMB_LABEL', '@smb');
+
+  // Add a sub directory to the Smb provider.
+  const smbProvider = assert(volumeManager.volumeInfoList.item(3).fileSystem);
+  fakeFileSystemURLEntries['filesystem:smb/child'] =
+      new MockDirectoryEntry(smbProvider, '/smb_child');
+
+  // Populate the directory tree with the mock filesystem.
+  var directoryTree = createElements();
+  const metadataModel = createMockMetadataModel();
+  directoryTree.metadataModel = metadataModel;
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, metadataModel,
+      fileOperationManager, true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+
+  // Coerce to DirectoryTree type and draw the tree.
+  directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
+  directoryTree.redraw(true);
+
+  // At top level, Drive and downloads should be listed.
+  assertEquals(4, directoryTree.items.length);
+  assertEquals(str('DRIVE_DIRECTORY_LABEL'), directoryTree.items[0].label);
+  assertEquals(str('DOWNLOADS_DIRECTORY_LABEL'), directoryTree.items[1].label);
+  assertEquals('NOT_SMB_LABEL', directoryTree.items[2].label);
+  assertEquals('SMB_LABEL', directoryTree.items[3].label);
+
+  const providerItem = directoryTree.items[2];
+  const smbItem = directoryTree.items[3];
+  reportPromise(
+      waitUntil(() => {
+        // Under providerItem there should be 1 entry, 'child'. Ensure there are
+        // no entries under smbItem.
+        return providerItem.items.length === 1;
+      }).then(() => {
+        assertEquals('child', providerItem.items[0].label);
+        assertEquals(0, smbItem.items.length);
+      }),
+      callback);
+}
