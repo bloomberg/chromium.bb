@@ -615,6 +615,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->default_min_partition_size = BLOCK_8X8;
     sf->partition_search_type = VAR_BASED_PARTITION;
     sf->use_nonrd_pick_mode = 1;
+    sf->inter_mode_rd_model_estimation = 2;
   }
 }
 
