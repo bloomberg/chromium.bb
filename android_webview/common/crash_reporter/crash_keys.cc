@@ -21,6 +21,9 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     kAppPackageVersionCode,
     kAndroidSdkInt,
 
+    // Java exception stack traces
+    "exception_info",
+
     // gpu
     "gpu-driver",
     "gpu-psver",
