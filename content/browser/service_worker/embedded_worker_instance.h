@@ -217,6 +217,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // worker.
   void Detach();
 
+  // Examine the current state of the worker in order to determine if it should
+  // require foreground priority or not.  This should be called whenever state
+  // changes such that the decision might change.
+  void UpdateForegroundPriority();
+
   base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
 
  private:
@@ -295,6 +300,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void OnSetupFailed(StatusCallback callback,
                      blink::ServiceWorkerStatusCode status);
 
+  // Called when a foreground service worker is added/removed in a process.
+  // Called on the IO thread and dispatches task to the UI thread.
+  void NotifyForegroundServiceWorkerAdded();
+  void NotifyForegroundServiceWorkerRemoved();
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<EmbeddedWorkerRegistry> registry_;
   ServiceWorkerVersion* owner_version_;
@@ -324,6 +334,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // True if the script load request accessed the network. If the script was
   // served from HTTPCache or ServiceWorkerDatabase this value is false.
   bool network_accessed_for_script_;
+
+  // True if the RenderProcessHost has been notified that this is a service
+  // worker requiring foreground priority.
+  bool foreground_notified_;
 
   ListenerList listener_list_;
   std::unique_ptr<DevToolsProxy> devtools_proxy_;

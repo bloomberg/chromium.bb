@@ -525,6 +525,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
   TakePausedStateOfChangedScript(const GURL& script_url);
 
+  // Called by the EmbeddedWorkerInstance to determine if its worker process
+  // should be kept at foreground priority.
+  bool ShouldRequireForegroundPriority(int worker_process_id) const;
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;

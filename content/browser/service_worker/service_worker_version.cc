@@ -701,7 +701,11 @@ void ServiceWorkerVersion::AddControllee(
   const std::string& uuid = provider_host->client_uuid();
   CHECK(!provider_host->client_uuid().empty());
   DCHECK(!base::ContainsKey(controllee_map_, uuid));
+
   controllee_map_[uuid] = provider_host;
+
+  embedded_worker_->UpdateForegroundPriority();
+
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
   ClearTick(&no_controllees_time_);
@@ -727,6 +731,9 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::ContainsKey(controllee_map_, client_uuid));
   controllee_map_.erase(client_uuid);
+
+  embedded_worker_->UpdateForegroundPriority();
+
   // Notify observers asynchronously since this gets called during
   // ServiceWorkerProviderHost's destructor, and we don't want observers to do
   // work during that.
@@ -2131,6 +2138,40 @@ ServiceWorkerVersion::compared_script_info_map() const {
 std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
 ServiceWorkerVersion::TakePausedStateOfChangedScript(const GURL& script_url) {
   return std::move(compared_script_info_map_[script_url].paused_state);
+}
+
+bool ServiceWorkerVersion::ShouldRequireForegroundPriority(
+    int worker_process_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!base::FeatureList::IsEnabled(features::kServiceWorkerForegroundPriority))
+    return false;
+
+  // Currently FetchEvents are the only type of event we need to really process
+  // at foreground priority.  If the service worker does not have a FetchEvent
+  // handler then we can always allow it to go to the background.
+  if (fetch_handler_existence_ != FetchHandlerExistence::EXISTS)
+    return false;
+
+  // Keep the service worker at foreground priority if its controlling clients
+  // from a different process.  In this situation we are likely to need to
+  // quickly service FetchEvents when the worker's process does not have any
+  // visible windows and would have otherwise been moved to the background.
+  //
+  // Ideally we would check the visibility of all clients as well, but that
+  // would also require triggering additional checks on every visibility
+  // change of all clients.  That would add a lot of complexity and its
+  // unclear we need to pay that cost yet.  This may get easier once the
+  // service worker code runs on the UI thread directly. (crbug.com/824858)
+  //
+  // For now the requirement for cross-process clients should filter out most
+  // service workers.  The impact of foreground service workers is further
+  // limited by the automatic shutdown mechanism.
+  for (const auto& controllee : controllee_map_) {
+    const ServiceWorkerProviderHost* host = controllee.second;
+    if (host->process_id() != worker_process_id)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace content

@@ -15,6 +15,7 @@
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "content/public/browser/child_process_launcher_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "services/service_manager/embedder/result_codes.h"
 
@@ -167,10 +168,18 @@ ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
   return ret;
 }
 
+bool ChildProcessLauncherPriority::is_background() const {
+  return !visible && !has_media_stream && !boost_for_pending_views &&
+         !(has_foreground_service_worker &&
+           base::FeatureList::IsEnabled(
+               features::kServiceWorkerForegroundPriority));
+}
+
 bool ChildProcessLauncherPriority::operator==(
     const ChildProcessLauncherPriority& other) const {
   return visible == other.visible &&
          has_media_stream == other.has_media_stream &&
+         has_foreground_service_worker == other.has_foreground_service_worker &&
          frame_depth == other.frame_depth &&
          intersects_viewport == other.intersects_viewport &&
          boost_for_pending_views == other.boost_for_pending_views
