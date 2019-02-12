@@ -31,7 +31,8 @@ use_custom_libcxx = use_custom_libcxx && !is_nacl
 # libc++abi needs to be exported from executables to be picked up by shared
 # libraries on certian instrumented builds.
 export_libcxxabi_from_executables =
-    use_custom_libcxx && !is_component_build && (is_asan || is_ubsan_vptr)
+    use_custom_libcxx && !is_win && !is_component_build &&
+    (is_asan || is_ubsan_vptr)
 libcxx_is_shared = use_custom_libcxx && is_component_build
 
 # On Android, many shared libraries get loaded from the context of a JRE.  In
