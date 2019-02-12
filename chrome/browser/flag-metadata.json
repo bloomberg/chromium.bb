@@ -515,13 +515,17 @@
   },
   {
     "name": "disable-accelerated-mjpeg-decode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chromeos-camera-eng@google.com" ],
+    // This flag does not expire because it allows users to disable HW mjpeg
+    // decoding for debugging purpose and temporary workaround for some issues.
+    "expiry_milestone": -1
   },
   {
     "name": "disable-accelerated-video-decode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "chromeos-video-eng@google.com" ],
+    // This flag does not expire because it allows users to disable HW video
+    // decoding for debugging purpose and temporary workaround for some issues.
+    "expiry_milestone": -1
   },
   {
     "name": "disable-audio-support-for-desktop-share",
@@ -654,13 +658,19 @@
   },
   {
     "name": "disable-webrtc-hw-decoding",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
+    // This flag does not expire because it allows users to disable HW video
+    // decoding only in webrtc usecase for debugging purpose and temporary
+    // workaround for some issues.
+    "expiry_milestone": -1
   },
   {
     "name": "disable-webrtc-hw-encoding",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
+    // This flag does not expire because it allows users to disable HW video
+    // encoding only in webrtc usecase for debugging purpose and temporary
+    // workaround for some issues.
+    "expiry_milestone": -1
   },
   {
     "name": "disallow-doc-written-script-loads",
@@ -1906,7 +1916,7 @@
   },
   {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
-    // "owners": [ "your-team" ],
+    "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 76
   },
   {
@@ -2008,12 +2018,12 @@
   },
   {
     "name": "enable-webrtc-hw-h264-encoding",
-    // "owners": [ "your-team" ],
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-webrtc-hw-vp8-encoding",
-    // "owners": [ "your-team" ],
+    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
     "expiry_milestone": 76
   },
   {
