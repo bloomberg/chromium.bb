@@ -1,8 +1,9 @@
-# Using breakpad with content shell
+# Using crashpad with content shell
 
 When running web tests, it is possible to use
-[breakpad](../../third_party/breakpad/) to capture stack traces on crashes while
-running without a debugger attached and with the sandbox enabled.
+[crashpad](../third_party/crashpad/)/[breakpad](../../third_party/breakpad/) to
+capture stack traces on crashes while running without a debugger attached and
+with the sandbox enabled.
 
 ## Setup
 
@@ -17,6 +18,12 @@ by default.
 
 *** note
 **Linux:** Add `use_debug_fission = true` to your [gn build
+arguments](https://gn.googlesource.com/gn/+/master/docs/quick_start.md) before
+building.
+***
+
+*** note
+**Android:** Add `force_local_build_id = true` to your [gn build
 arguments](https://gn.googlesource.com/gn/+/master/docs/quick_start.md) before
 building.
 ***
@@ -36,9 +43,9 @@ Then, create a directory where the crash dumps will be stored:
   mkdir %TEMP%\crashes
   ```
 
-## Running content shell with breakpad
+## Running content shell with crashpad
 
-Breakpad can be enabled by passing `--enable-crash-reporter` and
+Crashpad can be enabled by passing `--enable-crash-reporter` and
 `--crash-dumps-dir` to content shell:
 
 * Linux:
@@ -58,10 +65,9 @@ Breakpad can be enabled by passing `--enable-crash-reporter` and
   ```
 * Android:
   ```bash
-  build/android/adb_install_apk.py out/Default/apks/ContentShell.apk
-  build/android/adb_content_shell_command_line --enable-crash-reporter \
-      --crash-dumps-dir=/data/local/tmp/crashes chrome://crash
-  build/android/adb_run_content_shell
+  out/Default/bin/content_shell_apk install
+  out/Default/bin/content_shell_apk launch chrome://crash
+  --args="--enable-crash-reporter --crash-dumps-dir=/data/local/tmp/crashes"
   ```
 
 ## Retrieving the crash dump
@@ -75,8 +81,7 @@ Windows, this step can be skipped.
   ```
 * Android:
   ```bash
-  adb pull $(adb shell ls /data/local/tmp/crashes/*) /tmp/chromium-renderer-minidump.dmp
-  components/breakpad/tools/dmp2minidump /tmp/chromium-renderer-minidump.dmp /tmp/minidump
+  adb pull $(adb shell ls /data/local/tmp/crashes/pending/*.dmp) /tmp/chromium-renderer-minidump.dmp
   ```
 
 ## Symbolizing the crash dump

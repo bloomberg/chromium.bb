@@ -25,17 +25,64 @@ CONCURRENT_TASKS=4
 BREAKPAD_TOOLS_DIR = os.path.join(
   os.path.dirname(__file__), '..', '..', '..',
   'components', 'crash', 'content', 'tools')
+ANDROID_CRASH_DIR = '/data/local/tmp/crashes'
 
-def run_test(options, crash_dir, symbols_dir, additional_arguments = []):
+def build_is_android(build_dir):
+  return os.path.isfile(os.path.join(build_dir, 'bin', 'content_shell_apk'))
+
+def android_crash_dir_exists():
+  proc = subprocess.Popen(['adb', 'shell', 'ls', ANDROID_CRASH_DIR],
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  [stdout, stderr] = proc.communicate()
+  not_found = 'No such file or directory'
+  return not_found not in stdout and not_found not in stderr
+
+def get_android_dump(crash_dir):
   global failure
 
-  print "# Run content_shell and make it crash."
-  cmd = [options.binary,
-         '--run-web-tests',
-         'chrome://crash',
-         '--enable-crash-reporter',
-         '--crash-dumps-dir=%s' % crash_dir]
-  cmd += additional_arguments
+  pending = ANDROID_CRASH_DIR + '/pending/'
+
+  for attempts in range(5):
+    proc = subprocess.Popen(
+        ['adb', 'shell', 'ls', pending + '*.dmp'],
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    dumps = [f for f in map(str.strip, proc.communicate()[0].split('\n'))
+             if f.endswith('.dmp')]
+    if len(dumps) > 0:
+      break
+    # Crashpad may still be writing the dump. Sleep and try again.
+    time.sleep(1)
+
+  if len(dumps) != 1:
+    failure = 'Expected 1 crash dump, found %d.' % len(dumps)
+    print dumps
+    raise Exception(failure)
+
+  subprocess.check_call(['adb', 'pull', dumps[0], crash_dir])
+  subprocess.check_call(['adb', 'shell', 'rm', pending + '*'])
+
+  return os.path.join(crash_dir, os.path.basename(dumps[0]))
+
+def run_test(options, crash_dir, symbols_dir, platform,
+             additional_arguments = []):
+  global failure
+
+  print '# Run content_shell and make it crash.'
+  if platform == 'android':
+    cmd = [os.path.join(options.build_dir, 'bin', 'content_shell_apk'),
+           'launch',
+           'chrome://crash',
+           '--args=--enable-crash-reporter --crash-dumps-dir=%s ' %
+           ANDROID_CRASH_DIR + ' '.join(additional_arguments)]
+  else:
+    cmd = [options.binary,
+           '--run-web-tests',
+           'chrome://crash',
+           '--enable-crash-reporter',
+           '--crash-dumps-dir=%s' % crash_dir]
+    cmd += additional_arguments
+
   if options.verbose:
     print ' '.join(cmd)
   failure = 'Failed to run content_shell.'
@@ -47,21 +94,25 @@ def run_test(options, crash_dir, symbols_dir, additional_arguments = []):
     with tempfile.TemporaryFile() as tmpfile:
       subprocess.check_call(cmd, stdout=tmpfile, stderr=tmpfile)
 
-  print "# Retrieve crash dump."
-  dmp_dir = crash_dir
-  # TODO(crbug.com/782923): This test should not reach directly into the
-  # Crashpad database, but instead should use crashpad_database_util.
-  if sys.platform == 'darwin':
-    dmp_dir = os.path.join(dmp_dir, 'pending')
-  elif sys.platform == 'win32':
-    dmp_dir = os.path.join(dmp_dir, 'reports')
-  dmp_files = glob.glob(os.path.join(dmp_dir, '*.dmp'))
-  failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
-  if len(dmp_files) != 1:
-    raise Exception(failure)
-  dmp_file = dmp_files[0]
+  print '# Retrieve crash dump.'
+  if platform == 'android':
+    dmp_file = get_android_dump(crash_dir)
+  else:
+    dmp_dir = crash_dir
+    # TODO(crbug.com/782923): This test should not reach directly into the
+    # Crashpad database, but instead should use crashpad_database_util.
+    if platform == 'darwin':
+      dmp_dir = os.path.join(dmp_dir, 'pending')
+    elif platform == 'win32':
+      dmp_dir = os.path.join(dmp_dir, 'reports')
 
-  if sys.platform not in ('darwin', 'win32'):
+    dmp_files = glob.glob(os.path.join(dmp_dir, '*.dmp'))
+    failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
+    if len(dmp_files) != 1:
+      raise Exception(failure)
+    dmp_file = dmp_files[0]
+
+  if platform not in ('darwin', 'win32', 'android'):
     minidump = os.path.join(crash_dir, 'minidump')
     dmp_to_minidump = os.path.join(BREAKPAD_TOOLS_DIR, 'dmp2minidump.py')
     cmd = [dmp_to_minidump, dmp_file, minidump]
@@ -72,8 +123,8 @@ def run_test(options, crash_dir, symbols_dir, additional_arguments = []):
   else:
     minidump = dmp_file
 
-  print "# Symbolize crash dump."
-  if sys.platform == 'win32':
+  print '# Symbolize crash dump.'
+  if platform == 'win32':
     cdb_exe = os.path.join(options.build_dir, 'cdb', 'cdb.exe')
     cmd = [cdb_exe, '-y', options.build_dir, '-c', '.lines;.excr;k30;q',
            '-z', dmp_file]
@@ -137,18 +188,29 @@ def main():
   (options, _) = parser.parse_args()
 
   if not options.build_dir:
-    print "Required option --build-dir missing."
+    print 'Required option --build-dir missing.'
     return 1
 
   if not options.binary:
-    print "Required option --binary missing."
+    print 'Required option --binary missing.'
     return 1
 
   if not os.access(options.binary, os.X_OK):
-    print "Cannot find %s." % options.binary
+    print 'Cannot find %s.' % options.binary
     return 1
 
   failure = ''
+
+  if build_is_android(options.build_dir):
+    platform = 'android'
+    if android_crash_dir_exists():
+      print 'Android crash dir exists %s' % ANDROID_CRASH_DIR
+      return 1
+
+    subprocess.check_call(['adb', 'shell', 'mkdir', ANDROID_CRASH_DIR])
+
+  else:
+    platform = sys.platform
 
   # Create a temporary directory to store the crash dumps and symbols in.
   crash_dir = tempfile.mkdtemp()
@@ -157,8 +219,8 @@ def main():
   crash_service = None
 
   try:
-    if sys.platform != 'win32':
-      print "# Generate symbols."
+    if platform != 'win32':
+      print '# Generate symbols.'
       bins = [options.binary]
       if options.additional_binary:
         bins.append(options.additional_binary)
@@ -176,15 +238,15 @@ def main():
         failure = 'Failed to run generate_breakpad_symbols.py.'
         subprocess.check_call(cmd)
 
-    print "# Running test without trap handler."
-    run_test(options, crash_dir, symbols_dir)
-    print "# Running test with trap handler."
-    run_test(options, crash_dir, symbols_dir,
+    print '# Running test without trap handler.'
+    run_test(options, crash_dir, symbols_dir, platform)
+    print '# Running test with trap handler.'
+    run_test(options, crash_dir, symbols_dir, platform,
              additional_arguments =
                ['--enable-features=WebAssemblyTrapHandler'])
 
   except:
-    print "FAIL: %s" % failure
+    print 'FAIL: %s' % failure
     if options.json:
       with open(options.json, 'w') as json_file:
         json.dump([failure], json_file)
@@ -192,7 +254,7 @@ def main():
     return 1
 
   else:
-    print "PASS: Breakpad integration test ran successfully."
+    print 'PASS: Breakpad integration test ran successfully.'
     if options.json:
       with open(options.json, 'w') as json_file:
         json.dump([], json_file)
@@ -206,6 +268,11 @@ def main():
       shutil.rmtree(crash_dir)
     except:
       print 'Failed to delete temp directory "%s".' % crash_dir
+    if platform == 'android':
+      try:
+        subprocess.check_call(['adb', 'shell', 'rm', '-rf', ANDROID_CRASH_DIR])
+      except:
+        print 'Failed to delete android crash dir %s' % ANDROID_CRASH_DIR
 
 
 if '__main__' == __name__:
