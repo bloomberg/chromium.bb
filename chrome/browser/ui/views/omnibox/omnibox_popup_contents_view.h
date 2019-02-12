@@ -31,6 +31,8 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
                            LocationBarView* location_bar_view);
   ~OmniboxPopupContentsView() override;
 
+  OmniboxPopupModel* model() const { return model_.get(); }
+
   // Opens a match from the list specified by |index| with the type of tab or
   // window specified by |disposition|.
   void OpenMatch(WindowOpenDisposition disposition,

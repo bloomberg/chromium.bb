@@ -46,7 +46,8 @@ class OmniboxResultView : public views::View,
                           public views::ContextMenuController,
                           public ui::SimpleMenuModel::Delegate {
  public:
-  OmniboxResultView(OmniboxPopupContentsView* model, int model_index);
+  OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
+                    int model_index);
   ~OmniboxResultView() override;
 
   // Helper to get the color for |part| using the current state and tint.
@@ -101,7 +102,6 @@ class OmniboxResultView : public views::View,
                               ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
-  bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
@@ -129,8 +129,10 @@ class OmniboxResultView : public views::View,
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // This row's model and model index.
-  OmniboxPopupContentsView* model_;
+  // The parent view.
+  OmniboxPopupContentsView* const popup_contents_view_;
+
+  // This result's model index.
   size_t model_index_;
 
   // Whether this view is in the hovered state.
