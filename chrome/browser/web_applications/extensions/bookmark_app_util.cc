@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 
@@ -127,6 +128,12 @@ int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
   }
 
   return num_user_installed;
+}
+
+bool IsValidBookmarkAppUrl(const GURL& url) {
+  URLPattern origin_only_pattern(Extension::kValidBookmarkAppSchemes);
+  origin_only_pattern.SetMatchAllURLs(true);
+  return url.is_valid() && origin_only_pattern.MatchesURL(url);
 }
 
 }  // namespace extensions

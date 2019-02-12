@@ -58,7 +58,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/url_pattern.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -578,12 +577,6 @@ void CreateOrUpdateBookmarkApp(extensions::ExtensionService* service,
   scoped_refptr<BookmarkAppInstaller> installer(
       new BookmarkAppInstaller(service, *web_app_info, is_locally_installed));
   installer->Run();
-}
-
-bool IsValidBookmarkAppUrl(const GURL& url) {
-  URLPattern origin_only_pattern(Extension::kValidBookmarkAppSchemes);
-  origin_only_pattern.SetMatchAllURLs(true);
-  return url.is_valid() && origin_only_pattern.MatchesURL(url);
 }
 
 }  // namespace extensions
