@@ -390,7 +390,7 @@ TEST_F(GLApplyScreenSpaceAntialiasingCHROMIUMTest, BasicStatePreservation) {
   }
 
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-};
+}
 
 // Verify that invocation of the extension does not modify the bound
 // texture state.

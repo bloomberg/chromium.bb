@@ -295,7 +295,7 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformivBadSharedMemoryFails) {
   cmd.Init(client_program_id_, kUniform2FakeLocation, shared_memory_id_,
            kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-};
+}
 
 TEST_P(GLES3DecoderWithShaderTest, GetUniformuivSucceeds) {
   GetUniformuiv::Result* result =
@@ -389,7 +389,7 @@ TEST_P(GLES3DecoderWithShaderTest, GetUniformuivBadSharedMemoryFails) {
   cmd.Init(client_program_id_, kUniform2FakeLocation, shared_memory_id_,
            kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-};
+}
 
 TEST_P(GLES2DecoderWithShaderTest, GetUniformfvSucceeds) {
   GetUniformfv::Result* result =
@@ -483,7 +483,7 @@ TEST_P(GLES2DecoderWithShaderTest, GetUniformfvBadSharedMemoryFails) {
   cmd.Init(client_program_id_, kUniform2FakeLocation, shared_memory_id_,
            kInvalidSharedMemoryOffset);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
-};
+}
 
 TEST_P(GLES2DecoderWithShaderTest, GetAttachedShadersSucceeds) {
   GetAttachedShaders cmd;

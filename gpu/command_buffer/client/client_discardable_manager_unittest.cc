@@ -16,7 +16,7 @@ class FakeCommandBuffer : public CommandBuffer {
   State GetLastState() override {
     NOTREACHED();
     return State();
-  };
+  }
   void Flush(int32_t put_offset) override { NOTREACHED(); }
   void OrderingBarrier(int32_t put_offset) override { NOTREACHED(); }
   State WaitForTokenInRange(int32_t start, int32_t end) override {
