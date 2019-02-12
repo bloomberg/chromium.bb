@@ -1086,6 +1086,7 @@ interface TextEncoder
     getter encoding
     method constructor
     method encode
+    method encodeInto
 interface TextEncoderStream
     attribute @@toStringTag
     getter encoding

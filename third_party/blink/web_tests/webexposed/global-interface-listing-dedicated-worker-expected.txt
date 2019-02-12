@@ -1175,6 +1175,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter encoding
 [Worker]     method constructor
 [Worker]     method encode
+[Worker]     method encodeInto
 [Worker] interface TextEncoderStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter encoding
