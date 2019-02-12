@@ -119,7 +119,9 @@
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
-  [ChromeEarlGrey waitForMainTabCount:1];
+  // TODO(crbug.com/931280): This should be 1, but for the time being will be 2
+  // to work around an NTP bug.
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that BVC properly handles open URL. When BVC is showing a non-NTP
