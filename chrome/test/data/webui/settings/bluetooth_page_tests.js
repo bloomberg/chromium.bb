@@ -176,9 +176,10 @@ suite('Bluetooth', function() {
         fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
         fakePairedDevice2
       ]);
-      await waitForListUpdateTimeout();
 
+      await waitForListUpdateTimeout();
       Polymer.dom.flush();
+
       assertEquals(4, subpage.deviceList_.length);
       assertEquals(2, subpage.pairedDeviceList_.length);
       assertEquals(2, subpage.unpairedDeviceList_.length);
@@ -187,7 +188,9 @@ suite('Bluetooth', function() {
       await new Promise(
           resolve => bluetoothPrivateApi.connect(address, resolve));
 
+      await waitForListUpdateTimeout();
       Polymer.dom.flush();
+
       assertEquals(3, subpage.pairedDeviceList_.length);
       assertEquals(1, subpage.unpairedDeviceList_.length);
     });
