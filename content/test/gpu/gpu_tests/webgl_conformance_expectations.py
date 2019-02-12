@@ -95,6 +95,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    self.Fail('conformance/extensions/oes-texture-float.html',
+        bug=930993)
+
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844)
@@ -192,6 +195,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['win'], bug=525188)
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
+    self.Fail('conformance/textures/misc/texture-active-bind.html',
+        ['win'], bug=931006)
 
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
@@ -525,6 +530,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2926) # ANGLE bug ID
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['win', 'passthrough', 'vulkan', 'amd'], bug=2926) # ANGLE bug ID
+    self.Fail('conformance/textures/' +
+        'image_bitmap_from_canvas/tex-2d-luminance*.html',
+        ['win', 'passthrough', 'vulkan', 'amd'], bug=931016)
+    self.Fail('conformance/textures/' +
+        'image_bitmap_from_canvas/tex-2d-rgb*.html',
+        ['win', 'passthrough', 'vulkan', 'amd'], bug=931016)
 
     # Mac failures
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
