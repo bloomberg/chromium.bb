@@ -542,6 +542,7 @@ modules_dictionary_idl_files =
           "device_orientation/device_rotation_rate_init.idl",
           "encoding/text_decode_options.idl",
           "encoding/text_decoder_options.idl",
+          "encoding/text_encoder_encode_into_result.idl",
           "encryptedmedia/media_encrypted_event_init.idl",
           "encryptedmedia/media_key_message_event_init.idl",
           "encryptedmedia/media_key_system_configuration.idl",

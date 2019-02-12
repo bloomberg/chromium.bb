@@ -493,6 +493,42 @@ CString TextCodecUTF8::EncodeCommon(const CharType* characters,
   return CString(reinterpret_cast<char*>(bytes.data()), bytes_written);
 }
 
+template <typename CharType>
+TextCodec::EncodeIntoResult TextCodecUTF8::EncodeIntoCommon(
+    const CharType* characters,
+    wtf_size_t length,
+    unsigned char* destination,
+    wtf_size_t capacity) {
+  TextCodec::EncodeIntoResult encode_into_result{0, 0};
+
+  wtf_size_t i = 0;
+  wtf_size_t previous_code_unit_index = 0;
+  bool is_error = false;
+  while (i < length && encode_into_result.bytes_written < capacity &&
+         !is_error) {
+    UChar32 character;
+    previous_code_unit_index = i;
+    U16_NEXT(characters, i, length, character);
+    // U16_NEXT will simply emit a surrogate code point if an unmatched
+    // surrogate is encountered. See comment in EncodeCommon() for more info.
+    if (0xD800 <= character && character <= 0xDFFF)
+      character = kReplacementCharacter;
+    U8_APPEND(destination, encode_into_result.bytes_written, capacity,
+              character, is_error);
+  }
+
+  // |is_error| is only true when U8_APPEND cannot append the UTF8 bytes that
+  // represent a given UTF16 code point, due to limited capacity. In that case,
+  // the last code point read was not used, so we must not include its code
+  // units in our final |code_units_read| count.
+  if (is_error)
+    encode_into_result.code_units_read = previous_code_unit_index;
+  else
+    encode_into_result.code_units_read = i;
+
+  return encode_into_result;
+}
+
 CString TextCodecUTF8::Encode(const UChar* characters,
                               wtf_size_t length,
                               UnencodableHandling) {
@@ -503,6 +539,22 @@ CString TextCodecUTF8::Encode(const LChar* characters,
                               wtf_size_t length,
                               UnencodableHandling) {
   return EncodeCommon(characters, length);
+}
+
+TextCodec::EncodeIntoResult TextCodecUTF8::EncodeInto(
+    const UChar* characters,
+    wtf_size_t length,
+    unsigned char* destination,
+    wtf_size_t capacity) {
+  return EncodeIntoCommon(characters, length, destination, capacity);
+}
+
+TextCodec::EncodeIntoResult TextCodecUTF8::EncodeInto(
+    const LChar* characters,
+    wtf_size_t length,
+    unsigned char* destination,
+    wtf_size_t capacity) {
+  return EncodeIntoCommon(characters, length, destination, capacity);
 }
 
 }  // namespace WTF

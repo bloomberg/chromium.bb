@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/encoding/encoding.h"
+#include "third_party/blink/renderer/modules/encoding/text_encoder_encode_into_result.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
@@ -79,6 +80,29 @@ NotShared<DOMUint8Array> TextEncoder::encode(const String& input) {
 
   return NotShared<DOMUint8Array>(
       DOMUint8Array::Create(unsigned_buffer, result.length()));
+}
+
+TextEncoderEncodeIntoResult* TextEncoder::encodeInto(
+    const String& source,
+    NotShared<DOMUint8Array>& destination) {
+  TextEncoderEncodeIntoResult* encode_into_result =
+      TextEncoderEncodeIntoResult::Create();
+
+  TextCodec::EncodeIntoResult encode_into_result_data;
+  unsigned char* destination_buffer = destination.View()->View()->Data();
+  if (source.Is8Bit()) {
+    encode_into_result_data =
+        codec_->EncodeInto(source.Characters8(), source.length(),
+                           destination_buffer, destination.View()->length());
+  } else {
+    encode_into_result_data =
+        codec_->EncodeInto(source.Characters16(), source.length(),
+                           destination_buffer, destination.View()->length());
+  }
+
+  encode_into_result->setRead(encode_into_result_data.code_units_read);
+  encode_into_result->setWritten(encode_into_result_data.bytes_written);
+  return encode_into_result;
 }
 
 }  // namespace blink
