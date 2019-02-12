@@ -490,7 +490,7 @@
         "name": "non_viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -1104,7 +1104,7 @@
         "name": "non_viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -1115,7 +1115,7 @@
         "name": "skia_renderer_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -1663,7 +1663,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -2225,7 +2225,7 @@
         "name": "non_viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -3620,7 +3620,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
@@ -11483,7 +11483,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 10
+          "shards": 2
         },
         "test": "content_browsertests"
       },
