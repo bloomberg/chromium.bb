@@ -2637,9 +2637,14 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-ui-show-suggestion-favicons",
+    "owners": [ "chrome-omnibox-team" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-ui-swap-title-and-url",
     "owners": [ "chrome-omnibox-team" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "only-new-password-form-parsing",
