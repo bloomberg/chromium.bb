@@ -105,7 +105,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
 
 class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
  public:
-  PasswordProtectionServiceTest(){};
+  PasswordProtectionServiceTest() {}
 
   LoginReputationClientResponse CreateVerdictProto(
       LoginReputationClientResponse::VerdictType verdict,
