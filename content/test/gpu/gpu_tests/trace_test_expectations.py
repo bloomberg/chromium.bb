@@ -22,8 +22,11 @@ class TraceTestExpectations(GpuTestExpectations):
     self.Skip('*_Video_Context_Loss_MP4', ['android'], bug=580386)
 
     # Skip on platforms where DirectComposition isn't supported
-    self.Skip('VideoTraceTest_*',
+    self.Skip('VideoPathTraceTest_*',
+        ['mac', 'linux', 'android', 'chromeos', 'win7'], bug=867136)
+    self.Skip('OverlayModeTraceTest_*',
         ['mac', 'linux', 'android', 'chromeos', 'win7'], bug=867136)
 
-    # Skip until flakiness is resolved.
-    self.Skip('VideoTraceTest_DirectComposition*', ['win10'], bug=928166)
+    # VP9 videos fail to trigger zero copy video presentation path.
+    self.Fail('VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize',
+        ['win', 'intel'], bug=930343)
