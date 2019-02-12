@@ -497,16 +497,6 @@ class Internals final : public ScriptWrappable {
 
   Element* interestedElement();
 
-  void setNetworkConnectionInfoOverride(bool,
-                                        const String&,
-                                        const String&,
-                                        unsigned long http_rtt_msec,
-                                        double downlink_max_mbps,
-                                        ExceptionState&);
-  void setSaveDataEnabled(bool);
-
-  void clearNetworkConnectionInfoOverride();
-
   unsigned countHitRegions(CanvasRenderingContext*);
 
   bool isInCanvasFontCache(Document*, const String&);
@@ -602,9 +592,10 @@ class Internals final : public ScriptWrappable {
 
   void addEmbedderCustomElementName(const AtomicString& name, ExceptionState&);
 
+  LocalFrame* GetFrame() const;
+
  private:
   Document* ContextDocument() const;
-  LocalFrame* GetFrame() const;
   Vector<String> IconURLs(Document*, int icon_types_mask) const;
   DOMRectList* AnnotatedRegions(Document*, bool draggable, ExceptionState&);
   void HitTestRect(HitTestLocation&,
