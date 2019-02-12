@@ -1214,7 +1214,7 @@ def DirectCompositionPages(base_name):
     '--enable-features=DirectCompositionUnderlays',
     '--disable-features=D3D11VideoDecoder']
 
-  tolerance_dc = 3
+  tolerance_dc = 5
 
   return [
     PixelTestPage(
