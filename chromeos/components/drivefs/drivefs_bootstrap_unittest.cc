@@ -80,11 +80,11 @@ class DriveFsBootstrapTest : public testing::Test,
   }
 
   base::UnguessableToken ListenForConnection() {
-    connection_ = std::make_unique<DriveFsConnection>(
-        CreateListener(), mojom::DriveFsConfiguration::New(), &mock_delegate_,
-        base::BindOnce(&DriveFsBootstrapTest::OnDisconnect,
-                       base::Unretained(this)));
-    return connection_->pending_token();
+    connection_ = DriveFsConnection::Create(CreateListener(),
+                                            mojom::DriveFsConfiguration::New());
+    return connection_->Connect(
+        &mock_delegate_, base::BindOnce(&DriveFsBootstrapTest::OnDisconnect,
+                                        base::Unretained(this)));
   }
 
   void WaitForConnection(const base::UnguessableToken& token) {

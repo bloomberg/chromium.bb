@@ -23,8 +23,8 @@ DriveFsAuth::DriveFsAuth(const base::Clock* clock,
 
 DriveFsAuth::~DriveFsAuth() {}
 
-base::Optional<std::string> DriveFsAuth::TakeCachedAccessToken() {
-  const auto& token = MaybeGetCachedToken(true);
+base::Optional<std::string> DriveFsAuth::GetCachedAccessToken() {
+  const auto& token = GetOrResetCachedToken(true);
   if (token.empty()) {
     return base::nullopt;
   }
@@ -40,7 +40,7 @@ void DriveFsAuth::GetAccessToken(
     return;
   }
 
-  const std::string& token = MaybeGetCachedToken(use_cached);
+  const std::string& token = GetOrResetCachedToken(use_cached);
   if (!token.empty()) {
     std::move(callback).Run(mojom::AccessTokenStatus::kSuccess, token);
     return;
@@ -78,8 +78,7 @@ void DriveFsAuth::GotChromeAccessToken(
       .Run(mojom::AccessTokenStatus::kSuccess, *access_token);
 }
 
-const std::string& DriveFsAuth::MaybeGetCachedToken(bool use_cached) {
-  // Return value from cache at most once per mount.
+const std::string& DriveFsAuth::GetOrResetCachedToken(bool use_cached) {
   if (!use_cached || clock_->Now() >= last_token_expiry_) {
     last_token_.clear();
   }

@@ -4,6 +4,8 @@
 
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -47,34 +49,66 @@ void DriveFsBootstrapListener::SendInvitationOverPipe(base::ScopedFD handle) {
       mojo::PlatformChannelEndpoint(mojo::PlatformHandle(std::move(handle))));
 }
 
-DriveFsConnection::DriveFsConnection(
-    std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener,
-    mojom::DriveFsConfigurationPtr config,
-    mojom::DriveFsDelegate* delegate,
-    base::OnceClosure on_disconnected)
-    : bootstrap_listener_(std::move(bootstrap_listener)),
-      delegate_binding_(delegate),
-      on_disconnected_(std::move(on_disconnected)) {
-  auto bootstrap = bootstrap_listener_->bootstrap();
+class DriveFsConnectionImpl : public DriveFsConnection {
+ public:
+  DriveFsConnectionImpl(
+      std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener,
+      mojom::DriveFsConfigurationPtr config)
+      : bootstrap_listener_(std::move(bootstrap_listener)),
+        config_(std::move(config)) {}
 
-  mojom::DriveFsDelegatePtr delegate_ptr;
-  delegate_binding_.Bind(mojo::MakeRequest(&delegate_ptr));
-  delegate_binding_.set_connection_error_handler(base::BindOnce(
-      &DriveFsConnection::OnMojoConnectionError, base::Unretained(this)));
+  ~DriveFsConnectionImpl() override = default;
 
-  bootstrap->Init(std::move(config), mojo::MakeRequest(&drivefs_),
-                  std::move(delegate_ptr));
+  base::UnguessableToken Connect(mojom::DriveFsDelegate* delegate,
+                                 base::OnceClosure on_disconnected) override {
+    delegate_binding_ =
+        std::make_unique<mojo::Binding<mojom::DriveFsDelegate>>(delegate);
+    on_disconnected_ = std::move(on_disconnected);
 
-  drivefs_.set_connection_error_handler(base::BindOnce(
-      &DriveFsConnection::OnMojoConnectionError, base::Unretained(this)));
-}
+    auto bootstrap = bootstrap_listener_->bootstrap();
+    auto token = bootstrap_listener_->pending_token();
 
-DriveFsConnection::~DriveFsConnection() = default;
+    mojom::DriveFsDelegatePtr delegate_ptr;
+    delegate_binding_->Bind(mojo::MakeRequest(&delegate_ptr));
+    delegate_binding_->set_connection_error_handler(base::BindOnce(
+        &DriveFsConnectionImpl::OnMojoConnectionError, base::Unretained(this)));
 
-void DriveFsConnection::OnMojoConnectionError() {
-  if (on_disconnected_ && bootstrap_listener_->is_connected()) {
-    std::move(on_disconnected_).Run();
+    bootstrap->Init(std::move(config_), mojo::MakeRequest(&drivefs_),
+                    std::move(delegate_ptr));
+
+    drivefs_.set_connection_error_handler(base::BindOnce(
+        &DriveFsConnectionImpl::OnMojoConnectionError, base::Unretained(this)));
+
+    return token;
   }
-}
 
+  mojom::DriveFs& GetDriveFs() override {
+    CHECK(drivefs_);
+    return *drivefs_;
+  }
+
+ private:
+  void OnMojoConnectionError() {
+    if (on_disconnected_ && bootstrap_listener_->is_connected()) {
+      std::move(on_disconnected_).Run();
+    }
+  }
+
+  const std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener_;
+  mojom::DriveFsConfigurationPtr config_;
+
+  std::unique_ptr<mojo::Binding<mojom::DriveFsDelegate>> delegate_binding_;
+  mojom::DriveFsPtr drivefs_;
+
+  base::OnceClosure on_disconnected_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveFsConnectionImpl);
+};
+
+std::unique_ptr<DriveFsConnection> DriveFsConnection::Create(
+    std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener,
+    mojom::DriveFsConfigurationPtr config) {
+  return std::make_unique<DriveFsConnectionImpl>(std::move(bootstrap_listener),
+                                                 std::move(config));
+}
 }  // namespace drivefs

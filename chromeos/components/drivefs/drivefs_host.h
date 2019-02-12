@@ -16,6 +16,7 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/drivefs/drivefs_auth.h"
+#include "chromeos/components/drivefs/drivefs_session.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
@@ -45,27 +46,7 @@ class DriveFsHostObserver;
 // file manager.
 class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
  public:
-  class MountObserver {
-   public:
-    enum class MountFailure {
-      kUnknown,
-      kNeedsRestart,
-      kIpcDisconnect,
-      kInvocation,
-      kTimeout,
-    };
-
-    MountObserver() = default;
-    virtual ~MountObserver() = default;
-    virtual void OnMounted(const base::FilePath& mount_path) = 0;
-    virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
-    virtual void OnMountFailed(
-        MountFailure failure,
-        base::Optional<base::TimeDelta> remount_delay) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MountObserver);
-  };
+  using MountObserver = DriveFsSession::MountObserver;
 
   class Delegate : public DriveFsAuth::Delegate {
    public:
@@ -117,6 +98,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
  private:
   class AccountTokenDelegate;
   class MountState;
+
+  std::string GetDefaultMountDirName() const;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
