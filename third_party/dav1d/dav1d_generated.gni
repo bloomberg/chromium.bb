@@ -13,6 +13,7 @@ x86_asm_sources = [
   "libdav1d/src/x86/itx_ssse3.asm",
   "libdav1d/src/x86/loopfilter.asm",
   "libdav1d/src/x86/looprestoration.asm",
+  "libdav1d/src/x86/looprestoration_ssse3.asm",
   "libdav1d/src/x86/mc.asm",
   "libdav1d/src/x86/mc_ssse3.asm",
 ]
@@ -27,17 +28,20 @@ x86_template_sources = [
 ]
 
 arm32_asm_sources = [
+  "libdav1d/src/arm/32/looprestoration.S",
   "libdav1d/src/arm/32/mc.S",
   "libdav1d/src/arm/32/util.S",
 ]
 
 arm64_asm_sources = [
+  "libdav1d/src/arm/64/cdef.S",
   "libdav1d/src/arm/64/looprestoration.S",
   "libdav1d/src/arm/64/mc.S",
   "libdav1d/src/arm/64/util.S",
 ]
 
 arm_template_sources = [
+  "libdav1d/src/arm/cdef_init_tmpl.c",
   "libdav1d/src/arm/looprestoration_init_tmpl.c",
   "libdav1d/src/arm/mc_init_tmpl.c",
 ]
