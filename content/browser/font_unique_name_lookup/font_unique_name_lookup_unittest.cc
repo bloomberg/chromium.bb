@@ -98,7 +98,13 @@ TEST_F(FontUniqueNameLookupTest, TestBuildLookup) {
   ASSERT_GT(matcher_after_load.AvailableFonts(), 0u);
 }
 
-TEST_F(FontUniqueNameLookupTest, TestHandleFailedRead) {
+// http://crbug.com/928818
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestHandleFiledRead DISABLED_TestHandleFailedRead
+#else
+#define MAYBE_TestHandleFiledRead TestHandleFailedRead
+#endif
+TEST_F(FontUniqueNameLookupTest, MAYBE_TestHandleFiledRead) {
   base::DeleteFile(font_unique_name_lookup_->TableCacheFilePathForTesting(),
                    false);
   ASSERT_FALSE(font_unique_name_lookup_->LoadFromFile());
