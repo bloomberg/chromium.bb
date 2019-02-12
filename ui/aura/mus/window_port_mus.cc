@@ -189,6 +189,9 @@ void WindowPortMus::CreateLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+  // Ensures MusLsiAllocator has been created.
+  GetLocalSurfaceIdAllocation();
+
   if (did_set_frame_sink_) {
     pending_layer_tree_frame_sink_args_ =
         std::make_unique<PendingLayerTreeFrameSinkArgs>();
@@ -229,13 +232,9 @@ gfx::Size WindowPortMus::GetSizeInPixels(const gfx::Size& size) {
 }
 
 void WindowPortMus::SetAllocator(std::unique_ptr<MusLsiAllocator> allocator) {
+  DCHECK(!allocator_);
   allocator_ = std::move(allocator);
-  if (allocator_->type() != MusLsiAllocatorType::kTopLevel) {
-    // This triggers allocating a LocalSurfaceId *and* notifying the server.
-    // TODO: investigate making allocation match that of WindowPortLocal, this
-    // may be called earlier than WindowPortLocal allocates the id.
-    allocator_->AllocateLocalSurfaceId();
-  }
+  allocator_->OnInstalled();
 }
 
 WindowPortMus::ServerChangeIdType WindowPortMus::ScheduleChange(
@@ -334,8 +333,8 @@ bool WindowPortMus::PrepareForEmbed() {
 
   has_embedding_ = true;
   DCHECK(!allocator_.get());
-  SetAllocator(MusLsiAllocator::CreateAllocator(MusLsiAllocatorType::kEmbed,
-                                                this, window_tree_client_));
+  SetAllocator(std::make_unique<ParentAllocator>(this, window_tree_client_,
+                                                 /* is_embedder */ true));
   return true;
 }
 
@@ -442,7 +441,8 @@ void WindowPortMus::SetFrameSinkIdFromServer(
   DCHECK(has_embedding_);
   embed_frame_sink_id_ = frame_sink_id;
   window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
-  allocator_->OnFrameSinkIdChanged();
+  DCHECK(allocator_->AsParentAllocator());
+  allocator_->AsParentAllocator()->OnFrameSinkIdChanged();
 }
 
 void WindowPortMus::DestroyFromServer() {
@@ -506,14 +506,14 @@ void WindowPortMus::AllocateLocalSurfaceId() {
   if (!allocator_ && (window_mus_type() == WindowMusType::TOP_LEVEL &&
                       static_cast<WindowTreeHostMus*>(window_->GetHost())
                           ->has_pending_local_surface_id_from_server())) {
-    SetAllocator(MusLsiAllocator::CreateAllocator(
-        MusLsiAllocatorType::kTopLevel, this, window_tree_client_));
+    SetAllocator(
+        std::make_unique<TopLevelAllocator>(this, window_tree_client_));
   }
   if (allocator_) {
     allocator_->AllocateLocalSurfaceId();
   } else if (window_mus_type() == WindowMusType::LOCAL) {
-    SetAllocator(MusLsiAllocator::CreateAllocator(MusLsiAllocatorType::kLocal,
-                                                  this, window_tree_client_));
+    SetAllocator(std::make_unique<ParentAllocator>(this, window_tree_client_,
+                                                   /* is_embedder */ false));
   }
 }
 
@@ -542,8 +542,8 @@ void WindowPortMus::UpdateLocalSurfaceIdFromParent(
       break;
     case WindowMusType::TOP_LEVEL:
       if (!allocator_) {
-        SetAllocator(MusLsiAllocator::CreateAllocator(
-            MusLsiAllocatorType::kTopLevel, this, window_tree_client_));
+        SetAllocator(
+            std::make_unique<TopLevelAllocator>(this, window_tree_client_));
       }
       DCHECK(allocator_->AsTopLevelAllocator());
       allocator_->AsTopLevelAllocator()->UpdateLocalSurfaceIdFromParent(
@@ -572,10 +572,12 @@ void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
 const viz::LocalSurfaceIdAllocation&
 WindowPortMus::GetLocalSurfaceIdAllocation() {
   static base::NoDestructor<viz::LocalSurfaceIdAllocation> empty_allocation;
-  if (window_mus_type() == WindowMusType::EMBED) {
-    embed_local_surface_id_allocation_ =
-        window_->GetHost()->compositor()->GetLocalSurfaceIdAllocation();
-    return embed_local_surface_id_allocation_;
+  if (window_mus_type() == WindowMusType::EMBED && !allocator_) {
+    // Ideally EmbeddedAllocator would be created in the constructor, but that
+    // isn't possible because of timing dependencies (EmbeddedAllocator expects
+    // GetHost()->compositor() to return non-null).
+    SetAllocator(
+        std::make_unique<EmbeddedAllocator>(this, window_tree_client_));
   }
   return allocator_ ? allocator_->GetLocalSurfaceIdAllocation()
                     : *empty_allocation;
@@ -753,11 +755,9 @@ void WindowPortMus::RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   window_tree_client_->RegisterFrameSinkId(this, frame_sink_id);
   // This api only makes sense for local windows.
   DCHECK_EQ(window_mus_type(), WindowMusType::LOCAL);
-  if (allocator_) {
-    DCHECK_EQ(MusLsiAllocatorType::kLocal, allocator_->type());
-  } else {
-    SetAllocator(MusLsiAllocator::CreateAllocator(MusLsiAllocatorType::kLocal,
-                                                  this, window_tree_client_));
+  if (!allocator_) {
+    SetAllocator(std::make_unique<ParentAllocator>(this, window_tree_client_,
+                                                   /* is_embedder */ false));
   }
 }
 

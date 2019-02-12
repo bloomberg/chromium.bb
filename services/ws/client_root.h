@@ -90,14 +90,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   void AttachChildFrameSinkIdRecursive(ProxyWindow* proxy_window);
   void UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window);
 
- private:
-  friend class ClientRootTestHelper;
-
   // Returns true if the WindowService should assign the LocalSurfaceId. A value
   // of false means the client is expected to providate the LocalSurfaceId.
   bool ShouldAssignLocalSurfaceId() const {
     return parent_local_surface_id_allocator_.has_value();
   }
+
+ private:
+  friend class ClientRootTestHelper;
 
   // If necessary, this generates a new LocalSurfaceId. Generally you should
   // call UpdateLocalSurfaceIdAndClientSurfaceEmbedder(), not this. If you call

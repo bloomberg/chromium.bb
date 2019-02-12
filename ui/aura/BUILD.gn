@@ -161,12 +161,7 @@ jumbo_component("aura") {
     "window_tree_host_platform.cc",
   ]
 
-  # aura_interactive_ui_tests needs access to native_window_occlusion_tracker.h.
-  friend = [
-    ":aura_interactive_ui_tests",
-    ":aura_unittests",
-    ":test_support",
-  ]
+  friend = [ ":*" ]
 
   defines = [ "AURA_IMPLEMENTATION" ]
 

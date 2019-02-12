@@ -21,6 +21,7 @@ class ParentLocalSurfaceIdAllocator;
 namespace aura {
 
 class ClientSurfaceEmbedder;
+class MusLsiAllocator;
 class ParentAllocator;
 class Window;
 class WindowPortMus;
@@ -37,6 +38,8 @@ class WindowPortMusTestHelper {
   ClientSurfaceEmbedder* GetClientSurfaceEmbedder();
 
   viz::ParentLocalSurfaceIdAllocator* GetParentLocalSurfaceIdAllocator();
+
+  MusLsiAllocator* GetAllocator();
 
  private:
   ParentAllocator* GetParentAllocator();

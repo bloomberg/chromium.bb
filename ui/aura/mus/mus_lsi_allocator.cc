@@ -19,16 +19,6 @@
 
 namespace aura {
 
-// static
-std::unique_ptr<MusLsiAllocator> MusLsiAllocator::CreateAllocator(
-    MusLsiAllocatorType type,
-    WindowPortMus* window,
-    WindowTreeClient* window_tree_client) {
-  if (type == MusLsiAllocatorType::kTopLevel)
-    return std::make_unique<TopLevelAllocator>(window, window_tree_client);
-  return std::make_unique<ParentAllocator>(type, window, window_tree_client);
-}
-
 ParentAllocator* MusLsiAllocator::AsParentAllocator() {
   return nullptr;
 }
@@ -37,17 +27,25 @@ TopLevelAllocator* MusLsiAllocator::AsTopLevelAllocator() {
   return nullptr;
 }
 
+MusLsiAllocator::MusLsiAllocator(WindowPortMus* window_port_mus,
+                                 WindowTreeClient* window_tree_client)
+    : window_port_mus_(window_port_mus),
+      window_tree_client_(window_tree_client) {
+  DCHECK(window_port_mus_);
+  DCHECK(window_tree_client_);
+}
+
+aura::Window* MusLsiAllocator::GetWindow() {
+  return static_cast<WindowMus*>(window_port_mus_)->GetWindow();
+}
+
 // ParentAllocator -------------------------------------------------------------
 
-ParentAllocator::ParentAllocator(MusLsiAllocatorType type,
-                                 WindowPortMus* window,
-                                 WindowTreeClient* window_tree_client)
-    : MusLsiAllocator(type),
-      window_(window),
-      window_tree_client_(window_tree_client) {
-  DCHECK(window_);
-  DCHECK(window_tree_client_);
-  if (type == MusLsiAllocatorType::kEmbed) {
+ParentAllocator::ParentAllocator(WindowPortMus* window_port_mus,
+                                 WindowTreeClient* window_tree_client,
+                                 bool is_embedder)
+    : MusLsiAllocator(window_port_mus, window_tree_client) {
+  if (is_embedder) {
     client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
         GetWindow(), /* inject_gutter */ false, gfx::Insets());
   }
@@ -66,12 +64,21 @@ void ParentAllocator::UpdateLocalSurfaceIdFromEmbeddedClient(
   Update(/* send_bounds_change */ true);
 }
 
+void ParentAllocator::OnFrameSinkIdChanged() {
+  Update(/* send_bounds_change */ false);
+}
+
+void ParentAllocator::OnInstalled() {
+  // This triggers allocating a LocalSurfaceId *and* notifying the server.
+  AllocateLocalSurfaceId();
+}
+
 ParentAllocator* ParentAllocator::AsParentAllocator() {
   return this;
 }
 
 void ParentAllocator::AllocateLocalSurfaceId() {
-  last_surface_size_in_pixels_ = window_->GetSizeInPixels();
+  last_surface_size_in_pixels_ = window_port_mus()->GetSizeInPixels();
   parent_local_surface_id_allocator_.GenerateId();
   Update(/* send_bounds_change */ true);
 }
@@ -110,16 +117,13 @@ ParentAllocator::GetLocalSurfaceIdAllocation() {
       .GetCurrentLocalSurfaceIdAllocation();
 }
 
-aura::Window* ParentAllocator::GetWindow() {
-  return static_cast<WindowMus*>(window_)->GetWindow();
-}
-
 void ParentAllocator::Update(bool send_bounds_change) {
   // If not in a bounds change, then need to update server of new
   // LocalSurfaceId.
   if (send_bounds_change) {
     const gfx::Rect& bounds = GetWindow()->bounds();
-    window_tree_client_->OnWindowMusBoundsChanged(window_, bounds, bounds);
+    window_tree_client()->OnWindowMusBoundsChanged(window_port_mus(), bounds,
+                                                   bounds);
   }
   if (GetWindow()->IsEmbeddingClient() && client_surface_embedder_) {
     viz::SurfaceId surface_id(GetWindow()->GetFrameSinkId(),
@@ -129,22 +133,16 @@ void ParentAllocator::Update(bool send_bounds_change) {
   }
 }
 
-void ParentAllocator::OnFrameSinkIdChanged() {
-  Update(/* send_bounds_change */ false);
-}
-
 // TopLevelAllocator -----------------------------------------------------------
 
-TopLevelAllocator::TopLevelAllocator(WindowPortMus* window,
+TopLevelAllocator::TopLevelAllocator(WindowPortMus* window_port_mus,
                                      WindowTreeClient* window_tree_client)
-    : MusLsiAllocator(MusLsiAllocatorType::kTopLevel),
-      window_(window),
-      window_tree_client_(window_tree_client),
+    : MusLsiAllocator(window_port_mus, window_tree_client),
       compositor_(GetWindow()->GetHost()->compositor()) {
-  DCHECK(window_);
-  DCHECK(window_tree_client_);
   DCHECK(compositor_);
   compositor_->AddObserver(this);
+  // The initial allocation comes from the server, which has not been received
+  // yet.
   DCHECK(!GetLocalSurfaceIdAllocation().IsValid());
 }
 
@@ -205,10 +203,6 @@ TopLevelAllocator::GetLocalSurfaceIdAllocation() {
   return local_surface_id_allocation_;
 }
 
-aura::Window* TopLevelAllocator::GetWindow() {
-  return static_cast<WindowMus*>(window_)->GetWindow();
-}
-
 void TopLevelAllocator::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK_EQ(compositor_, compositor);
   compositor_->RemoveObserver(this);
@@ -229,13 +223,82 @@ void TopLevelAllocator::DidGenerateLocalSurfaceIdAllocation(
 }
 
 void TopLevelAllocator::NotifyServerOfLocalSurfaceId() {
-  window_tree_client_->OnWindowTreeHostBoundsWillChange(
+  window_tree_client()->OnWindowTreeHostBoundsWillChange(
       static_cast<WindowTreeHostMus*>(GetWindow()->GetHost()),
       GetWindow()->GetHost()->GetBoundsInPixels());
 }
 
-void TopLevelAllocator::OnFrameSinkIdChanged() {
+// EmbeddedAllocator -----------------------------------------------------------
+
+EmbeddedAllocator::EmbeddedAllocator(WindowPortMus* window_port_mus,
+                                     WindowTreeClient* window_tree_client)
+    : MusLsiAllocator(window_port_mus, window_tree_client),
+      compositor_(GetWindow()->GetHost()->compositor()) {
+  DCHECK(compositor_);
+  compositor_->AddObserver(this);
+}
+
+EmbeddedAllocator::~EmbeddedAllocator() {
+  if (compositor_)
+    compositor_->RemoveObserver(this);
+}
+
+void EmbeddedAllocator::AllocateLocalSurfaceId() {
+  // EmbeddedAllocators should never generate LocalSurfaceIds.
   NOTREACHED();
+}
+
+viz::ScopedSurfaceIdAllocator EmbeddedAllocator::GetSurfaceIdAllocator(
+    base::OnceClosure allocation_task) {
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+}
+
+void EmbeddedAllocator::InvalidateLocalSurfaceId() {
+  // It doesn't make sense to do anthing here for embedded windows.
+  NOTIMPLEMENTED();
+}
+
+void EmbeddedAllocator::OnDeviceScaleFactorChanged() {
+  // The embedder is responsible for allocating and generating a new id.
+}
+
+void EmbeddedAllocator::OnDidChangeBounds(const gfx::Size& size_in_pixels,
+                                          bool from_server) {
+  // Only the server side can change the bounds.
+}
+
+const viz::LocalSurfaceIdAllocation&
+EmbeddedAllocator::GetLocalSurfaceIdAllocation() {
+  local_surface_id_allocation_ = compositor_->GetLocalSurfaceIdAllocation();
+  return local_surface_id_allocation_;
+}
+
+void EmbeddedAllocator::OnCompositingShuttingDown(ui::Compositor* compositor) {
+  DCHECK_EQ(compositor_, compositor);
+  compositor_->RemoveObserver(this);
+  compositor_ = nullptr;
+}
+
+void EmbeddedAllocator::DidGenerateLocalSurfaceIdAllocation(
+    ui::Compositor* compositor,
+    const viz::LocalSurfaceIdAllocation& allocation) {
+  local_surface_id_allocation_ = allocation;
+  // The LocalSurfaceIdAllocation needs to be applied to the Compositor as well,
+  // otherwise nothing will be drawn.
+  WindowTreeHost* window_tree_host = GetWindow()->GetHost();
+  compositor->SetScaleAndSize(window_tree_host->device_scale_factor(),
+                              window_tree_host->GetBoundsInPixels().size(),
+                              local_surface_id_allocation_);
+  NotifyServerOfLocalSurfaceId();
+}
+
+void EmbeddedAllocator::NotifyServerOfLocalSurfaceId() {
+  aura::WindowTreeHostMus* window_tree_host =
+      static_cast<WindowTreeHostMus*>(GetWindow()->GetHost());
+  DCHECK(window_tree_host);
+  DCHECK_EQ(GetWindow(), window_tree_host->window());
+  window_tree_client()->tree_->UpdateLocalSurfaceIdFromChild(
+      window_port_mus()->server_id(), GetLocalSurfaceIdAllocation());
 }
 
 }  // namespace aura

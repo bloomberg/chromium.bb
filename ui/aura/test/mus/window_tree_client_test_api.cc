@@ -58,15 +58,19 @@ void WindowTreeClientTestApi::CallOnCaptureChanged(Window* new_capture,
       old_capture ? WindowPortMus::Get(old_capture)->server_id() : 0);
 }
 
-void WindowTreeClientTestApi::CallOnEmbedFromToken(EmbedRoot* embed_root,
-                                                   bool visible) {
+void WindowTreeClientTestApi::CallOnEmbedFromToken(
+    EmbedRoot* embed_root,
+    bool visible,
+    const viz::LocalSurfaceIdAllocation& lsia) {
   embed_root->OnScheduledEmbedForExistingClient(
       base::UnguessableToken::Create());
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
   parent_local_surface_id_allocator.GenerateId();
   tree_client_impl_->OnEmbedFromToken(
       embed_root->token(), CreateWindowDataForEmbed(visible), kDisplayId,
-      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation());
+      lsia.IsValid() ? lsia
+                     : parent_local_surface_id_allocator
+                           .GetCurrentLocalSurfaceIdAllocation());
 }
 
 void WindowTreeClientTestApi::SetTree(ws::mojom::WindowTree* window_tree) {
@@ -119,6 +123,7 @@ ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed(
   root_data->window_id =
       (client_id << 32) | tree_client_impl_->GetRoots().size();
   root_data->visible = visible;
+  root_data->bounds = gfx::Rect(1, 2, 3, 4);
   return root_data;
 }
 

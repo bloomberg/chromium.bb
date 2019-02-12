@@ -44,6 +44,10 @@ WindowPortMusTestHelper::GetParentLocalSurfaceIdAllocator() {
              : nullptr;
 }
 
+MusLsiAllocator* WindowPortMusTestHelper::GetAllocator() {
+  return window_port_mus_->allocator_.get();
+}
+
 ParentAllocator* WindowPortMusTestHelper::GetParentAllocator() {
   return window_port_mus_->allocator_
              ? static_cast<ParentAllocator*>(window_port_mus_->allocator_.get())

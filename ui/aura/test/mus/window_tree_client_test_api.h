@@ -57,7 +57,10 @@ class WindowTreeClientTestApi {
   // Simulates the EmbedRoot receiving the token from the WindowTree and then
   // the WindowTree calling OnEmbedFromToken(). |visible| is the initial value
   // to supply from the server for the visibility.
-  void CallOnEmbedFromToken(EmbedRoot* embed_root, bool visible = true);
+  void CallOnEmbedFromToken(EmbedRoot* embed_root,
+                            bool visible = true,
+                            const viz::LocalSurfaceIdAllocation& lsia =
+                                viz::LocalSurfaceIdAllocation());
 
   // Sets the WindowTree. This calls WindowTreeConnectionEstablished(), which
   // means it should only be called once, during setup.

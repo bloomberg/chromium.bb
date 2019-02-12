@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -33,6 +34,7 @@
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/mus_lsi_allocator.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -2883,6 +2885,59 @@ TEST_F(WindowTreeClientTest, TopLevelBoundsChangeFails) {
   // No new bounds changes should be generated.
   EXPECT_EQ(0u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+}
+
+TEST_F(WindowTreeClientTest, OnEmbedGetsLocalSurfaceId) {
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
+  TestEmbedRootDelegate embed_root_delegate;
+  auto initial_lsia =
+      parent_local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation();
+  std::unique_ptr<EmbedRoot> embed_root =
+      window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
+  WindowTreeClientTestApi(window_tree_client_impl())
+      .CallOnEmbedFromToken(embed_root.get(), false, initial_lsia);
+  ASSERT_TRUE(embed_root->window());
+  const viz::LocalSurfaceIdAllocation lsia =
+      embed_root->window()->GetLocalSurfaceIdAllocation();
+  EXPECT_EQ(initial_lsia, lsia);
+  EXPECT_EQ(initial_lsia, embed_root->window()
+                              ->GetHost()
+                              ->compositor()
+                              ->GetLocalSurfaceIdAllocation());
+}
+
+TEST_F(WindowTreeClientTest,
+       NotifyServerOnDidGenerateLocalSurfaceIdAllocation) {
+  TestEmbedRootDelegate embed_root_delegate;
+  std::unique_ptr<EmbedRoot> embed_root =
+      window_tree_client_impl()->CreateEmbedRoot(&embed_root_delegate);
+  WindowTreeClientTestApi(window_tree_client_impl())
+      .CallOnEmbedFromToken(embed_root.get());
+  ASSERT_TRUE(embed_root->window());
+  const viz::LocalSurfaceIdAllocation lsia =
+      embed_root->window()->GetLocalSurfaceIdAllocation();
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(lsia);
+  child_allocator.GenerateId();
+  auto updated_lsia = child_allocator.GetCurrentLocalSurfaceIdAllocation();
+  EmbeddedAllocator* allocator = static_cast<EmbeddedAllocator*>(
+      WindowPortMusTestHelper(embed_root->window()).GetAllocator());
+  ASSERT_TRUE(allocator);
+  window_tree()->get_and_clear_update_local_surface_id_from_child_count();
+  // This mirrors what happens when LayerTreeHostImpl generates a new id.
+  allocator->DidGenerateLocalSurfaceIdAllocation(
+      embed_root->window()->GetHost()->compositor(), updated_lsia);
+  EXPECT_EQ(
+      1u,
+      window_tree()->get_and_clear_update_local_surface_id_from_child_count());
+  EXPECT_EQ(updated_lsia.local_surface_id(),
+            window_tree()->last_local_surface_id());
+  EXPECT_EQ(updated_lsia, embed_root->window()
+                              ->GetHost()
+                              ->compositor()
+                              ->GetLocalSurfaceIdAllocation());
+  EXPECT_EQ(updated_lsia, embed_root->window()->GetLocalSurfaceIdAllocation());
 }
 
 }  // namespace aura

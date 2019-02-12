@@ -335,6 +335,42 @@ TEST(WindowTreeTest, UpdateLocalSurfaceIdFromChildBadEmbedToken) {
   EXPECT_TRUE(setup.changes()->empty());
 }
 
+TEST(WindowTreeTest, UpdateLocalSurfaceIdFromScheduleEmbedWindow) {
+  WindowServiceTestSetup setup;
+  // Schedule an embed in the tree created by |setup|.
+  base::UnguessableToken token;
+  const uint32_t window_id_in_child = 149;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child, base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  // Create a window that will serve as the parent for the remote window and
+  // complete the embedding.
+  aura::Window local_window(nullptr);
+  local_window.Init(ui::LAYER_NOT_DRAWN);
+  local_window.SetBounds(gfx::Rect(1, 2, 3, 4));
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      &local_window, token, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::IsProxyWindow(&local_window));
+
+  // Call UpdateLocalSurfaceIdFromScheduleEmbedWindow() for the embedded window
+  // and ensure the value is updated.
+  ProxyWindow* local_window_proxy = ProxyWindow::GetMayBeNull(&local_window);
+  ASSERT_TRUE(local_window_proxy);
+  ASSERT_TRUE(local_window_proxy->local_surface_id_allocation().has_value());
+  viz::ChildLocalSurfaceIdAllocator child_allocator;
+  child_allocator.UpdateFromParent(
+      *local_window_proxy->local_surface_id_allocation());
+  child_allocator.GenerateId();
+  setup.window_tree_test_helper()->window_tree()->UpdateLocalSurfaceIdFromChild(
+      setup.window_tree_test_helper()->TransportIdForWindow(&local_window),
+      child_allocator.GetCurrentLocalSurfaceIdAllocation());
+  EXPECT_EQ(child_allocator.GetCurrentLocalSurfaceIdAllocation(),
+            local_window_proxy->local_surface_id_allocation());
+}
+
 TEST(WindowTreeTest, SetTopLevelWindowBoundsNullSurfaceId) {
   WindowServiceTestSetup setup;
   aura::Window* top_level =

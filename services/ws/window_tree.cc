@@ -1586,7 +1586,8 @@ void WindowTree::UpdateLocalSurfaceIdFromChild(
   DVLOG(3) << "UpdateLocalSurfaceIdFromChild window_id=" << window_id
            << " local_surface_id=" << local_surface_id_allocation.ToString();
 
-  if (!window || !IsTopLevel(window)) {
+  ClientRoot* client_root = GetClientRootForWindow(window);
+  if (!client_root || !client_root->ShouldAssignLocalSurfaceId()) {
     DVLOG(1) << "UpdateLocalSurfaceIdFromChild failed (invalid window id)";
     return;
   }
@@ -1600,8 +1601,6 @@ void WindowTree::UpdateLocalSurfaceIdFromChild(
     DVLOG(1) << "UpdateLocalSurfaceIdFromChild failed (embed token changed)";
     return;
   }
-  ClientRoot* client_root = GetClientRootForWindow(window);
-  DCHECK(client_root);  // Earlier checks mean this should be true.
   client_root->UpdateLocalSurfaceIdFromChild(local_surface_id_allocation);
 }
 
