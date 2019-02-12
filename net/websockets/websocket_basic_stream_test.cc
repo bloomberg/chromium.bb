@@ -33,7 +33,7 @@ namespace {
 
 #define WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(name, value) \
   const char k##name[] = value;                                  \
-  const size_t k##name##Size = base::size(k##name) - 1;
+  const size_t k##name##Size = base::size(k##name) - 1
 
 WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(SampleFrame, "\x81\x06Sample");
 WEBSOCKET_BASIC_STREAM_TEST_DEFINE_CONSTANT(
