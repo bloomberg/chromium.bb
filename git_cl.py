@@ -5099,6 +5099,10 @@ def CMDowners(parser, args):
       action='store_true',
       help='Ignore the CL\'s current reviewers and start from scratch.')
   parser.add_option(
+      '--ignore-self',
+      action='store_true',
+      help='Do not consider CL\'s author as an owners.')
+  parser.add_option(
       '--no-color',
       action='store_true',
       help='Use this option to disable color output')
@@ -5137,7 +5141,8 @@ def CMDowners(parser, args):
       [] if options.ignore_current else cl.GetReviewers(),
       fopen=file, os_path=os.path,
       disable_color=options.no_color,
-      override_files=change.OriginalOwnersFiles()).run()
+      override_files=change.OriginalOwnersFiles(),
+      ignore_author=options.ignore_self).run()
 
 
 def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
