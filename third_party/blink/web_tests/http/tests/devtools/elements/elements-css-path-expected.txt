@@ -6,36 +6,71 @@ Tests DOMNode.cssPath()
     body
       body > article:nth-child(1)
       body > article:nth-child(2)
-      body > input[type="number"]
+      body > input[type=number]
       #ids
         #ids > div:nth-child(1)
         #inner-id
         #__proto__
-        #\23 \22 ridiculous\22 \2e id
-        #\27 quoted\2e value\27
-        #\2e foo\2e bar
-        #\2d
+        #\#\"ridiculous\"\.id
+        #\'quoted\.value\'
+        #\.foo\.bar
+        #\-
         #-a
-        #\2d 0
-        #\37
+        #-\30 
+        #\37 
         #ид
+        #\#
+        #\#foo
+        #\#\#
+        #\#\.\#\.\#
+        #_
+        #\{\}
+        #\.fake-class
+        #foo\.bar
+        #\:hover
+        #\:hover\:focus\:active
+        #\[attr\=value\]
+        #f\/o\/o
+        #foo
+        #f\*o\*o
+        #f\!o\!o
+        #f\'o\'o
+        #f\~o\~o
+        #f\+o\+o
         #input-id
-        #ids > input[type="text"]:nth-child(13)
+        #ids > input[type=text]:nth-child(31)
+        #ids > input[type=something-invalid-\'-\"-and-weird]:nth-child(32)
         #ids > p
       #classes
         #classes > div.foo.bar
         #classes > div:nth-child(2)
-        #classes > div.\2e foo
-        #classes > div.\2e foo\2e bar
-        #classes > div.\2d
+        #classes > div.\.foo
+        #classes > div.\.foo\.bar
+        #classes > div.\-
         #classes > div.-a
-        #classes > div.\2d 0
+        #classes > div.-\30 
         #classes > div.--a
-        #classes > div.\2d --a
-        #classes > div.\37
+        #classes > div.---a
+        #classes > div.\37 
         #classes > div.класс
         #classes > div:nth-child(12)
         #classes > div.__proto__.foo
+        #classes > div.\#
+        #classes > div.\#foo
+        #classes > div.\#\#
+        #classes > div.\#\.\#\.\#
+        #classes > div._
+        #classes > div.\{\}
+        #classes > div.\:hover
+        #classes > div.\:hover\:focus\:active
+        #classes > div.\[attr\=value\]
+        #classes > div.f\/o\/o
+        #classes > div:nth-child(24)
+        #classes > div.f\*o\*o
+        #classes > div.f\!o\!o
+        #classes > div.f\'o\'o
+        #classes > div.f\~o\~o
+        #classes > div.f\+o\+o
         #classes > span
         #id-with-class
         #classes > input.input-class-one
