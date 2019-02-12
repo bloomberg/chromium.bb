@@ -11,7 +11,7 @@ AnyInternal::~AnyInternal() {
   reset();
 }
 
-void AnyInternal::reset() {
+void AnyInternal::reset() noexcept {
   if (!has_value())
     return;
 
