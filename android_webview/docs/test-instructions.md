@@ -1,5 +1,7 @@
 # WebView Test Instructions
 
+[TOC]
+
 ## Android Instructions
 
 Please follow the instructions at
