@@ -246,6 +246,11 @@ const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{
     "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature to use material design weather icons in the omnibox when displaying
+// weather answers.
+const base::Feature kOmniboxMaterialDesignWeatherIcons{
+    "OmniboxMaterialDesignWeatherIcons", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox
 
 namespace {

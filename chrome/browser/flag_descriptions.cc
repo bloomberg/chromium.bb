@@ -1376,6 +1376,12 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxMaterialDesignWeatherIconsName[] =
+    "Omnibox Material Design Weather Icons";
+const char kOmniboxMaterialDesignWeatherIconsDescription[] =
+    "Use material design weather icons in the omnibox when displaying weather "
+    "answers.";
+
 const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
 const char kOmniboxNewAnswerLayoutDescription[] =
     "Modernize omnibox answers using an enhanced layout with larger icons.";
