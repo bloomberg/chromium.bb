@@ -370,8 +370,6 @@ extern const base::Feature kSSLCommittedInterstitials;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNativeSmb;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSingleTabMode;
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
 

@@ -237,8 +237,9 @@ bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
   // special color we use won't be visible if there's a frame image, but since
   // it's used to determine contrast of other UI elements, the theme color
   // should be used instead.
-  return base::FeatureList::IsEnabled(features::kSingleTabMode) &&
-         ShouldPaintAsActive() && GetFrameImage().isNull();
+
+  // TODO(yiningwang): Remove all calls to this function.
+  return false;
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
