@@ -140,7 +140,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
     } else {
       callback_ = std::move(callback);
     }
-  };
+  }
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              RenderFrameHost* render_frame_host,
@@ -1631,7 +1631,7 @@ class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevToolsProtocolTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
-  };
+  }
 
   void SetUpOnMainThread() override {
     DevToolsProtocolTest::SetUpOnMainThread();
