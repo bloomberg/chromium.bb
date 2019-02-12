@@ -19,8 +19,8 @@ namespace fuchsia {
 
 class ServiceDirectoryClient;
 
-// ServiceDirectory that uses the supplied ComponentContext to satisfy requests
-// for only a restricted set of services.
+// ServiceDirectory that uses the supplied ServiceDirectoryClient to satisfy
+// requests for only a restricted set of services.
 class BASE_EXPORT FilteredServiceDirectory {
  public:
   // Creates proxy that proxies requests to the specified service |directory|,

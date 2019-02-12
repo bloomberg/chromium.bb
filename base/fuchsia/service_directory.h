@@ -46,9 +46,6 @@ class BASE_EXPORT ServiceDirectory {
   // use the all-in-one constructor above.
   ServiceDirectory();
 
-  // TODO(https://crbug.com/920920): Clean up callers and remove this synonym.
-  explicit ServiceDirectory(zx::channel request);
-
   ~ServiceDirectory();
 
   // Returns default ServiceDirectory instance for the current process. It
@@ -79,12 +76,6 @@ class BASE_EXPORT ServiceDirectory {
   // compile-time. Use the type-safe APIs above whenever possible.
   void AddServiceUnsafe(StringPiece name,
                         RepeatingCallback<void(zx::channel)> connect_callback);
-
-  // TODO(https://crbug.com/920920): Clean up callers and remove this synonym.
-  void AddService(StringPiece name,
-                  RepeatingCallback<void(zx::channel)> connect_callback) {
-    AddServiceUnsafe(name, std::move(connect_callback));
-  }
 
  private:
   // Called by |svc_dir_| to handle service requests.

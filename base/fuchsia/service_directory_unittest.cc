@@ -22,7 +22,7 @@ namespace fuchsia {
 
 class ServiceDirectoryTest : public ServiceDirectoryTestBase {};
 
-// Verifies that ComponentContext can consume a public service in
+// Verifies that ServiceDirectoryClient can consume a public service in
 // ServiceDirectory and that connection is disconnected when the client stub is
 // destroyed.
 TEST_F(ServiceDirectoryTest, ConnectDisconnect) {
@@ -64,8 +64,8 @@ TEST_F(ServiceDirectoryTest, ConnectLegacy) {
   VerifyTestInterface(&stub, ZX_OK);
 }
 
-// Verify that ComponentContext can handle the case when the service directory
-// connection is disconnected.
+// Verify that ServiceDirectoryClient can handle the case when the service
+// directory connection is disconnected.
 TEST_F(ServiceDirectoryTest, DirectoryGone) {
   service_binding_.reset();
   service_directory_.reset();

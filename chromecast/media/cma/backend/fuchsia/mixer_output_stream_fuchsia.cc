@@ -8,7 +8,7 @@
 #include <zircon/syscalls.h>
 
 #include "base/command_line.h"
-#include "base/fuchsia/component_context.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "media/base/audio_sample_types.h"
@@ -52,7 +52,7 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
 
   // Connect |audio_renderer_|.
   fuchsia::media::AudioPtr audio_server =
-      base::fuchsia::ComponentContext::GetDefault()
+      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<fuchsia::media::Audio>();
   audio_server->CreateAudioRenderer(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(

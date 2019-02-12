@@ -35,10 +35,6 @@ std::unique_ptr<ServiceDirectoryClient>* ProcessServiceDirectoryClient() {
 
 }  // namespace
 
-ServiceDirectoryClient::ServiceDirectoryClient(zx::channel dir)
-    : ServiceDirectoryClient(
-          fidl::InterfaceHandle<::fuchsia::io::Directory>(std::move(dir))) {}
-
 ServiceDirectoryClient::ServiceDirectoryClient(
     fidl::InterfaceHandle<::fuchsia::io::Directory> directory)
     : directory_(std::move(directory)) {
@@ -59,12 +55,6 @@ zx_status_t ServiceDirectoryClient::ConnectToServiceUnsafe(
   return fdio_service_connect_at(directory_.channel().get(), name,
                                  request.release());
 }
-
-ScopedServiceDirectoryClientForCurrentProcessForTest::
-    ScopedServiceDirectoryClientForCurrentProcessForTest(zx::channel directory)
-    : ScopedServiceDirectoryClientForCurrentProcessForTest(
-          fidl::InterfaceHandle<::fuchsia::io::Directory>(
-              std::move(directory))) {}
 
 ScopedServiceDirectoryClientForCurrentProcessForTest::
     ScopedServiceDirectoryClientForCurrentProcessForTest(

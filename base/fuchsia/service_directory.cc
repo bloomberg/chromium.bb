@@ -6,7 +6,6 @@
 
 #include <lib/async/default.h>
 #include <lib/svc/dir.h>
-#include <lib/zx/channel.h>
 #include <zircon/process.h>
 #include <zircon/processargs.h>
 
@@ -23,10 +22,6 @@ ServiceDirectory::ServiceDirectory(
 }
 
 ServiceDirectory::ServiceDirectory() = default;
-
-ServiceDirectory::ServiceDirectory(zx::channel request)
-    : ServiceDirectory(fidl::InterfaceRequest<::fuchsia::io::Directory>(
-          std::move(request))) {}
 
 ServiceDirectory::~ServiceDirectory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
