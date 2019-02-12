@@ -1025,7 +1025,8 @@ static LayoutUnit ComputeContentSize(
   NGLineBreaker line_breaker(
       node, mode, space, line_opportunity, empty_leading_floats,
       /* handled_leading_floats_index */ 0u,
-      /* break_token */ nullptr, &empty_exclusion_space, &floats_for_min_max);
+      /* break_token */ nullptr, &empty_exclusion_space,
+      input.percentage_resolution_block_size, &floats_for_min_max);
   do {
     floats_for_min_max.Shrink(0);
 
@@ -1053,9 +1054,10 @@ static LayoutUnit ComputeContentSize(
       NGBlockNode float_node(ToLayoutBox(floating_object));
       const ComputedStyle& float_style = float_node.Style();
 
-      MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
+      // Floats don't intrude into floats.
+      MinMaxSizeInput float_input(input.percentage_resolution_block_size);
       MinMaxSize child_sizes =
-          ComputeMinAndMaxContentContribution(style, float_node, zero_input);
+          ComputeMinAndMaxContentContribution(style, float_node, float_input);
       LayoutUnit child_inline_margins =
           ComputeMinMaxMargins(style, float_node).InlineSum();
 

@@ -64,15 +64,17 @@ LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
 
 }  // namespace
 
-NGLineBreaker::NGLineBreaker(NGInlineNode node,
-                             NGLineBreakerMode mode,
-                             const NGConstraintSpace& space,
-                             const NGLineLayoutOpportunity& line_opportunity,
-                             const NGPositionedFloatVector& leading_floats,
-                             unsigned handled_leading_floats_index,
-                             const NGInlineBreakToken* break_token,
-                             NGExclusionSpace* exclusion_space,
-                             Vector<LayoutObject*>* out_floats_for_min_max)
+NGLineBreaker::NGLineBreaker(
+    NGInlineNode node,
+    NGLineBreakerMode mode,
+    const NGConstraintSpace& space,
+    const NGLineLayoutOpportunity& line_opportunity,
+    const NGPositionedFloatVector& leading_floats,
+    unsigned handled_leading_floats_index,
+    const NGInlineBreakToken* break_token,
+    NGExclusionSpace* exclusion_space,
+    LayoutUnit percentage_resolution_block_size_for_min_max,
+    Vector<LayoutObject*>* out_floats_for_min_max)
     : line_opportunity_(line_opportunity),
       node_(node),
       is_first_formatted_line_((!break_token || (!break_token->ItemIndex() &&
@@ -90,8 +92,10 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       spacing_(items_data_.text_content),
       leading_floats_(leading_floats),
       handled_leading_floats_index_(handled_leading_floats_index),
-      out_floats_for_min_max_(out_floats_for_min_max),
-      base_direction_(node_.BaseDirection()) {
+      base_direction_(node_.BaseDirection()),
+      percentage_resolution_block_size_for_min_max_(
+          percentage_resolution_block_size_for_min_max),
+      out_floats_for_min_max_(out_floats_for_min_max) {
   break_iterator_.SetBreakSpace(BreakSpaceType::kBeforeSpaceRun);
 
   if (break_token) {
@@ -1022,7 +1026,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
             .InlineSize();
   } else {
     NGBlockNode child(ToLayoutBox(item.GetLayoutObject()));
-    MinMaxSizeInput input;
+    MinMaxSizeInput input(percentage_resolution_block_size_for_min_max_);
     MinMaxSize sizes =
         ComputeMinAndMaxContentContribution(node_.Style(), child, input);
     item_result->inline_size = mode_ == NGLineBreakerMode::kMinContent

@@ -196,6 +196,11 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     return sizes;
   }
 
+  LayoutUnit child_percentage_resolution_block_size =
+      CalculateChildPercentageBlockSizeForMinMax(
+          ConstraintSpace(), Node(), border_padding,
+          input.percentage_resolution_block_size);
+
   const TextDirection direction = Style().Direction();
   LayoutUnit float_left_inline_size = input.float_left_inline_size;
   LayoutUnit float_right_inline_size = input.float_right_inline_size;
@@ -229,9 +234,11 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
         float_right_inline_size = LayoutUnit();
     }
 
-    MinMaxSizeInput child_input;
-    if (child.IsInline() || child.IsAnonymousBlock())
-      child_input = {float_left_inline_size, float_right_inline_size};
+    MinMaxSizeInput child_input(child_percentage_resolution_block_size);
+    if (child.IsInline() || child.IsAnonymousBlock()) {
+      child_input.float_left_inline_size = float_left_inline_size;
+      child_input.float_right_inline_size = float_right_inline_size;
+    }
 
     MinMaxSize child_sizes;
     if (child.IsInline()) {
@@ -355,7 +362,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                   ? NGBoxStrut()
                                   : border_padding_ + scrollbars;
   NGLogicalSize border_box_size = CalculateBorderBoxSize(
-      ConstraintSpace(), Node(), border_padding_, CalculateDefaultBlockSize());
+      ConstraintSpace(), Node(), border_padding_,
+      CalculateDefaultBlockSize(ConstraintSpace(), Node(),
+                                border_scrollbar_padding_));
 
   child_available_size_ =
       ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
@@ -2267,19 +2276,6 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
   }
 
   unpositioned_floats_.Shrink(0);
-}
-
-// In quirks mode, BODY and HTML elements must completely fill initial
-// containing block. Percentage resolution size is minimal size
-// that would fill the ICB.
-LayoutUnit NGBlockLayoutAlgorithm::CalculateDefaultBlockSize() {
-  if (Node().IsQuirkyAndFillsViewport()) {
-    LayoutUnit block_size = ConstraintSpace().AvailableSize().block_size;
-    block_size -= ComputeMarginsForSelf(ConstraintSpace(), Style()).BlockSum();
-    return std::max(block_size.ClampNegativeToZero(),
-                    border_scrollbar_padding_.BlockSum());
-  }
-  return NGSizeIndefinite;
 }
 
 LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(

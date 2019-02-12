@@ -511,7 +511,9 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
     <div id=container>12345 6789 </div>
   )HTML");
 
-  auto size = node.ComputeMinMaxSize(WritingMode::kHorizontalTb, {});
+  auto size = node.ComputeMinMaxSize(
+      WritingMode::kHorizontalTb,
+      MinMaxSizeInput(/* percentage_resolution_block_size */ (LayoutUnit())));
   EXPECT_EQ(size.min_size, LayoutUnit(60));
   EXPECT_EQ(size.max_size, LayoutUnit(110));
 }

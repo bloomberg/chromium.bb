@@ -377,8 +377,8 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
       descendant.node.ShouldBeConsideredAsReplaced()) {
     // This is a new formatting context, so whatever happened on the outside
     // doesn't concern us.
-    MinMaxSizeInput zero_input;
-    min_max_size = node.ComputeMinMaxSize(descendant_writing_mode, zero_input,
+    MinMaxSizeInput input(container_content_size.block_size);
+    min_max_size = node.ComputeMinMaxSize(descendant_writing_mode, input,
                                           &descendant_constraint_space);
   }
 

@@ -192,13 +192,15 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
   }
 }
 
-LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
-                              const ComputedStyle& style,
-                              const NGBoxStrut& border_padding,
-                              const Length& length,
-                              LayoutUnit content_size,
-                              LengthResolveType type,
-                              LengthResolvePhase phase) {
+LayoutUnit ResolveBlockLength(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style,
+    const NGBoxStrut& border_padding,
+    const Length& length,
+    LayoutUnit content_size,
+    LengthResolveType type,
+    LengthResolvePhase phase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
   DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
   if (constraint_space.IsAnonymous())
@@ -226,9 +228,12 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
   // cannot resolve percentages / calc() / -webkit-fill-available.
   bool size_is_unresolvable = false;
   if (length.IsPercentOrCalc()) {
-    size_is_unresolvable =
-        phase == LengthResolvePhase::kIntrinsic ||
-        constraint_space.PercentageResolutionBlockSize() == NGSizeIndefinite;
+    LayoutUnit percentage_resolution_block_size =
+        opt_percentage_resolution_block_size_for_min_max
+            ? *opt_percentage_resolution_block_size_for_min_max
+            : constraint_space.PercentageResolutionBlockSize();
+    size_is_unresolvable = phase == LengthResolvePhase::kIntrinsic ||
+                           percentage_resolution_block_size == NGSizeIndefinite;
   } else if (length.IsFillAvailable()) {
     size_is_unresolvable =
         phase == LengthResolvePhase::kIntrinsic ||
@@ -258,9 +263,12 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
     case kPercent:
     case kFixed:
     case kCalculated: {
-      LayoutUnit percentage_resolution_size =
-          constraint_space.PercentageResolutionBlockSize();
-      LayoutUnit value = ValueForLength(length, percentage_resolution_size);
+      LayoutUnit percentage_resolution_block_size =
+          opt_percentage_resolution_block_size_for_min_max
+              ? *opt_percentage_resolution_block_size_for_min_max
+              : constraint_space.PercentageResolutionBlockSize();
+      LayoutUnit value =
+          ValueForLength(length, percentage_resolution_block_size);
 
       // Percentage-sized children of table cells, in the table "layout" phase,
       // pretend they have box-sizing: border-box.
@@ -504,8 +512,9 @@ LayoutUnit ComputeInlineSizeForFragment(
     if (override_minmax_for_test) {
       min_and_max = *override_minmax_for_test;
     } else {
-      min_and_max = node.ComputeMinMaxSize(space.GetWritingMode(),
-                                           MinMaxSizeInput(), &space);
+      min_and_max = node.ComputeMinMaxSize(
+          space.GetWritingMode(),
+          MinMaxSizeInput(space.PercentageResolutionBlockSize()), &space);
       // Cache these computed values
       MinMaxSize contribution = ComputeMinAndMaxContentContribution(
           style.GetWritingMode(), style, border_padding, min_and_max);
@@ -533,11 +542,14 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const NGBoxStrut& border_padding,
-    LayoutUnit content_size) {
+    LayoutUnit content_size,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr) {
   LayoutUnit extent = ResolveBlockLength(
       constraint_space, style, border_padding, style.LogicalHeight(),
       content_size, LengthResolveType::kContentSize,
-      LengthResolvePhase::kLayout);
+      LengthResolvePhase::kLayout,
+      opt_percentage_resolution_block_size_for_min_max);
   if (extent == NGSizeIndefinite) {
     DCHECK_EQ(content_size, NGSizeIndefinite);
     return extent;
@@ -545,10 +557,12 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
 
   LayoutUnit max = ResolveBlockLength(
       constraint_space, style, border_padding, style.LogicalMaxHeight(),
-      content_size, LengthResolveType::kMaxSize, LengthResolvePhase::kLayout);
+      content_size, LengthResolveType::kMaxSize, LengthResolvePhase::kLayout,
+      opt_percentage_resolution_block_size_for_min_max);
   LayoutUnit min = ResolveBlockLength(
       constraint_space, style, border_padding, style.LogicalMinHeight(),
-      content_size, LengthResolveType::kMinSize, LengthResolvePhase::kLayout);
+      content_size, LengthResolveType::kMinSize, LengthResolvePhase::kLayout,
+      opt_percentage_resolution_block_size_for_min_max);
 
   return ConstrainByMinMax(extent, min, max);
 }
@@ -1135,6 +1149,21 @@ NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset) {
   return size;
 }
 
+LayoutUnit CalculateDefaultBlockSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode& node,
+    const NGBoxStrut& border_scrollbar_padding) {
+  // In quirks mode, html and body elements will completely fill the ICB, block
+  // percentages should resolve against this size.
+  if (node.IsQuirkyAndFillsViewport()) {
+    LayoutUnit block_size = space.AvailableSize().block_size;
+    block_size -= ComputeMarginsForSelf(space, node.Style()).BlockSum();
+    return std::max(block_size.ClampNegativeToZero(),
+                    border_scrollbar_padding.BlockSum());
+  }
+  return NGSizeIndefinite;
+}
+
 namespace {
 
 // Implements the common part of the child percentage size calculation. Deals
@@ -1155,9 +1184,11 @@ NGLogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
   // In quirks mode the percentage resolution height is passed from parent to
   // child.
   // https://quirks.spec.whatwg.org/#the-percentage-height-calculation-quirk
+  // TODO(layout-dev): grid, and css-layout-api containers need to also bypass
+  // this quirk.
   if (child_percentage_size.block_size == NGSizeIndefinite &&
       node.GetDocument().InQuirksMode() && !node.Style().IsDisplayTableType() &&
-      !node.Style().HasOutOfFlowPosition()) {
+      !node.Style().HasOutOfFlowPosition() && !node.IsFlexBox()) {
     child_percentage_size.block_size = parent_percentage_block_size;
   }
 
@@ -1231,6 +1262,35 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
   return AdjustChildPercentageSizeForQuirksAndFlex(
       space, node, child_percentage_size,
       space.ReplacedPercentageResolutionBlockSize());
+}
+
+LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
+    const NGConstraintSpace& space,
+    const NGBlockNode node,
+    const NGBoxStrut& border_padding,
+    LayoutUnit parent_percentage_block_size) {
+  // Anonymous block or spaces should pass the percent size straight through.
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    return parent_percentage_block_size;
+
+  LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
+      space, node.Style(), border_padding,
+      CalculateDefaultBlockSize(space, node, border_padding),
+      &parent_percentage_block_size);
+
+  LayoutUnit child_percentage_block_size =
+      block_size == NGSizeIndefinite
+          ? NGSizeIndefinite
+          : (block_size - border_padding.BlockSum()).ClampNegativeToZero();
+
+  // TODO(layout-dev): grid, and css-layout-api containers need to also bypass
+  // this quirk.
+  if (child_percentage_block_size == NGSizeIndefinite &&
+      node.GetDocument().InQuirksMode() &&
+      !node.Style().HasOutOfFlowPosition() && !node.IsFlexBox())
+    child_percentage_block_size = parent_percentage_block_size;
+
+  return child_percentage_block_size;
 }
 
 }  // namespace blink

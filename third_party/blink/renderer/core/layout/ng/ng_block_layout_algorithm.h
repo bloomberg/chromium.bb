@@ -276,10 +276,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       LayoutUnit child_bfc_line_offset,
       const base::Optional<LayoutUnit>& child_bfc_block_offset);
 
-  // Computes default content size for HTML and BODY elements in quirks mode.
-  // Returns NGSizeIndefinite in all other cases.
-  LayoutUnit CalculateDefaultBlockSize();
-
   // Computes minimum size for HTML and BODY elements in quirks mode.
   // Returns NGSizeIndefinite in all other cases.
   LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);

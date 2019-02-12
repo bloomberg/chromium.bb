@@ -50,7 +50,8 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
         NGLogicalSize(LayoutUnit(), LayoutUnit()));
 
     NGBlockLayoutAlgorithm algorithm(node, space);
-    MinMaxSizeInput input;
+    MinMaxSizeInput input(
+        /* percentage_resolution_block_size */ (LayoutUnit()));
     auto min_max = algorithm.ComputeMinMaxSize(input);
     EXPECT_TRUE(min_max.has_value());
     return *min_max;

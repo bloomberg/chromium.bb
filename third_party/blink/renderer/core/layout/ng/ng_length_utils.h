@@ -66,8 +66,12 @@ CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
 
 // Resolve means translate a Length to a LayoutUnit, using parent info
 // (represented by ConstraintSpace) as necessary for things like percents.
-//
-// MinMaxSize is used only when the length is intrinsic (fit-content, etc).
+//  - |MinMaxSize| is only used when the length is intrinsic (fit-content, etc).
+//  - |Length| is the length to resolve.
+//  - |LengthResolveType| is the type of length function, based on its CSS
+//    property (see definition above).
+//  - |LengthResolveType| indicates what type of layout pass we are within (see
+//    definition above).
 CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            const ComputedStyle&,
                                            const NGBoxStrut& border_padding,
@@ -76,15 +80,18 @@ CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            LengthResolveType,
                                            LengthResolvePhase);
 
-// Same as ResolveInlineLength, except here content_size roughly plays the part
-// of MinMaxSize.
-CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
-                                          const ComputedStyle&,
-                                          const NGBoxStrut& border_padding,
-                                          const Length&,
-                                          LayoutUnit content_size,
-                                          LengthResolveType,
-                                          LengthResolvePhase);
+// Same as ResolveInlineLength, except here |content_size| roughly plays the
+// part of |MinMaxSize|.
+CORE_EXPORT LayoutUnit ResolveBlockLength(
+    const NGConstraintSpace&,
+    const ComputedStyle&,
+    const NGBoxStrut& border_padding,
+    const Length&,
+    LayoutUnit content_size,
+    LengthResolveType,
+    LengthResolvePhase,
+    const LayoutUnit* opt_percentage_resolution_block_size_for_min_max =
+        nullptr);
 
 // Convert margin/border/padding length to a layout unit using the
 // given constraint space.
@@ -341,6 +348,13 @@ NGLogicalSize CalculateBorderBoxSize(
 // allowed, in which case the inset will be ignored for block size.
 NGLogicalSize ShrinkAvailableSize(NGLogicalSize size, const NGBoxStrut& inset);
 
+// Calculates default content size for html and body elements in quirks mode.
+// Returns NGSizeIndefinite in all other cases.
+LayoutUnit CalculateDefaultBlockSize(
+    const NGConstraintSpace&,
+    const NGBlockNode&,
+    const NGBoxStrut& border_scrollbar_padding);
+
 // Calculates the percentage resolution size that children of the node should
 // use.
 NGLogicalSize CalculateChildPercentageSize(
@@ -356,6 +370,12 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
     NGLogicalSize border_box_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
+
+LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
+    const NGConstraintSpace& constraint_space,
+    const NGBlockNode node,
+    const NGBoxStrut& border_padding,
+    LayoutUnit parent_percentage_block_size);
 
 }  // namespace blink
 

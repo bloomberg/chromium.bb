@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -81,7 +82,10 @@ void LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths(
     Base::ComputeIntrinsicLogicalWidths(min_logical_width, max_logical_width);
     return;
   }
-  MinMaxSizeInput input;
+
+  LayoutUnit available_logical_height =
+      LayoutBoxUtils::AvailableLogicalHeight(*this, Base::ContainingBlock());
+  MinMaxSizeInput input(available_logical_height);
   // This function returns content-box plus scrollbar.
   input.size_type = NGMinMaxSizeType::kContentBoxSize;
   MinMaxSize sizes =

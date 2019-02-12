@@ -112,6 +112,12 @@ class NGInlineNodeTest : public NGLayoutTest {
     return node;
   }
 
+  MinMaxSize ComputeMinMaxSize(NGInlineNode node) {
+    return node.ComputeMinMaxSize(
+        node.Style().GetWritingMode(),
+        MinMaxSizeInput(/* percentage_resolution_block_size */ LayoutUnit()));
+  }
+
   void CreateLine(
       NGInlineNode node,
       Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
@@ -461,8 +467,7 @@ TEST_F(NGInlineNodeTest, MinMaxSize) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
   EXPECT_EQ(40, sizes.min_size);
   EXPECT_EQ(70, sizes.max_size);
 }
@@ -471,8 +476,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.
   EXPECT_EQ(20, sizes.min_size);
@@ -491,8 +495,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloats) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(130, sizes.max_size);
@@ -511,8 +514,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeFloatsClearance) {
   )HTML");
 
   NGInlineNodeForTest node = CreateInlineNode();
-  MinMaxSize sizes =
-      node.ComputeMinMaxSize(WritingMode::kHorizontalTb, MinMaxSizeInput());
+  MinMaxSize sizes = ComputeMinMaxSize(node);
 
   EXPECT_EQ(50, sizes.min_size);
   EXPECT_EQ(160, sizes.max_size);
@@ -931,8 +933,7 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyInInlineBlock) {
   // Inline block with auto-size calls |ComputeMinMaxSize|, which may call
   // |CollectInlines|. Emulate it to ensure it does not let tests to fail.
   GetDocument().UpdateStyleAndLayoutTree();
-  NGInlineNode(layout_block_flow_)
-      .ComputeMinMaxSize(layout_block_flow_->StyleRef().GetWritingMode(), {});
+  ComputeMinMaxSize(NGInlineNode(layout_block_flow_));
 
   auto lines = MarkLineBoxesDirty();
   EXPECT_FALSE(lines[0]->IsDirty());
