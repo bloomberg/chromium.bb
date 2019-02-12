@@ -24,7 +24,7 @@
 #include "ui/ozone/platform/drm/host/drm_device_handle.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager_host.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 
 namespace ui {
@@ -111,7 +111,7 @@ class FindDrmDisplayHostById {
 DrmDisplayHostManager::DrmDisplayHostManager(
     GpuThreadAdapter* proxy,
     DeviceManager* device_manager,
-    DrmOverlayManager* overlay_manager,
+    DrmOverlayManagerHost* overlay_manager,
     InputControllerEvdev* input_controller)
     : proxy_(proxy),
       device_manager_(device_manager),

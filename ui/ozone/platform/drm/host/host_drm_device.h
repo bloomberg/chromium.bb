@@ -24,7 +24,7 @@ class DisplaySnapshot;
 
 namespace ui {
 class DrmDisplayHostManager;
-class DrmOverlayManager;
+class DrmOverlayManagerHost;
 class GpuThreadObserver;
 class DrmDeviceConnector;
 class HostCursorProxy;
@@ -46,7 +46,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   void BlockingStartDrmDevice();
 
   void ProvideManagers(DrmDisplayHostManager* display_manager,
-                       DrmOverlayManager* overlay_manager);
+                       DrmOverlayManagerHost* overlay_manager);
 
   void OnGpuServiceLaunched(ui::ozone::mojom::DrmDevicePtr drm_device_ptr,
                             ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ui,
@@ -75,8 +75,9 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
                             base::ScopedFD fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
-  // Services needed for DrmOverlayManager.
-  void RegisterHandlerForDrmOverlayManager(DrmOverlayManager* handler) override;
+  // Services needed for DrmOverlayManagerHost.
+  void RegisterHandlerForDrmOverlayManager(
+      DrmOverlayManagerHost* handler) override;
   void UnRegisterHandlerForDrmOverlayManager() override;
   bool GpuCheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
@@ -150,7 +151,7 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr_compositor_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
-  DrmOverlayManager* overlay_manager_;      // Not owned.
+  DrmOverlayManagerHost* overlay_manager_;  // Not owned.
   DrmCursor* const cursor_;                 // Not owned.
 
   std::unique_ptr<HostCursorProxy> cursor_proxy_;
