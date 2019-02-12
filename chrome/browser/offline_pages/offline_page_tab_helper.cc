@@ -369,6 +369,10 @@ bool OfflinePageTabHelper::IsShowingTrustedOfflinePage() const {
          (offline_info_.trusted_state != OfflinePageTrustedState::UNTRUSTED);
 }
 
+bool OfflinePageTabHelper::IsLoadingOfflinePage() const {
+  return provisional_offline_info_.offline_page.get() != nullptr;
+}
+
 const OfflinePageItem* OfflinePageTabHelper::GetOfflinePageForTest() const {
   return provisional_offline_info_.offline_page.get();
 }

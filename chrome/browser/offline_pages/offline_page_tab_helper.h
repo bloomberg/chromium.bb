@@ -95,6 +95,9 @@ class OfflinePageTabHelper
   // during unit tests.
   const OfflinePageItem* GetOfflinePageForTest() const;
 
+  // True if an offline page is loading, but has not committed.
+  bool IsLoadingOfflinePage() const;
+
   // Returns trusted state of provisional offline page.
   OfflinePageTrustedState GetTrustedStateForTest() const;
 
