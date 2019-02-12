@@ -245,7 +245,8 @@ void AccountManagerUIHandler::OnAccountRemoved(
 // this new set of information. Note that we may be listening to
 // |identity::IdentityManager| but we still consider |AccountManager| to be the
 // source of truth for account list.
-void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
+void AccountManagerUIHandler::OnExtendedAccountInfoUpdated(
+    const AccountInfo& info) {
   RefreshUI();
 }
 

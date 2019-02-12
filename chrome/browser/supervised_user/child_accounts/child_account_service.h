@@ -79,7 +79,7 @@ class ChildAccountService : public KeyedService,
   void SetIsChildAccount(bool is_child_account);
 
   // identity::IdentityManager::Observer implementation.
-  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // FamilyInfoFetcher::Consumer implementation.

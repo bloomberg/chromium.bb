@@ -463,7 +463,7 @@ void PeopleHandler::HandleGetStoredAccounts(const base::ListValue* args) {
   ResolveJavascriptCallback(*callback_id, GetStoredAccountsList());
 }
 
-void PeopleHandler::OnAccountUpdated(const AccountInfo& info) {
+void PeopleHandler::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
   FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 

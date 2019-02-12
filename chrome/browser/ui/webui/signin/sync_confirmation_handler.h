@@ -40,7 +40,7 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
 
   // identity::IdentityManager::Observer:
-  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;

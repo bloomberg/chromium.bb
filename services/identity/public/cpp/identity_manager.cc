@@ -474,7 +474,7 @@ void IdentityManager::OnAccessTokenRemoved(const std::string& account_id,
 
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
   for (auto& observer : observer_list_) {
-    observer.OnAccountUpdated(info);
+    observer.OnExtendedAccountInfoUpdated(info);
   }
 }
 

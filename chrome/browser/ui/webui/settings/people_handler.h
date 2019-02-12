@@ -131,7 +131,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 #endif
 

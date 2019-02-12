@@ -235,7 +235,8 @@ void AvatarToolbarButton::OnAccountsInCookieUpdated(
   UpdateIcon();
 }
 
-void AvatarToolbarButton::OnAccountUpdated(const AccountInfo& info) {
+void AvatarToolbarButton::OnExtendedAccountInfoUpdated(
+    const AccountInfo& info) {
   UpdateIcon();
 }
 

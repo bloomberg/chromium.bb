@@ -304,7 +304,7 @@ void ProfileDownloader::OnAccessTokenFetchComplete(
   StartFetchingImage();
 }
 
-void ProfileDownloader::OnAccountUpdated(const AccountInfo& info) {
+void ProfileDownloader::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
   if (info.account_id == account_id_ && info.IsValid()) {
     account_info_ = info;
 

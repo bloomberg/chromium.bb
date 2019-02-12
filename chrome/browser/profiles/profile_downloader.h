@@ -95,7 +95,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   void OnDecodeImageFailed() override;
 
   // Overriden from identity::IdentityManager::Observer:
-  void OnAccountUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   // Callback for AccessTokenFetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,

@@ -151,7 +151,7 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnEndBatchOfRefreshTokenStateChanges() {}
 
     // Called after an account is updated.
-    virtual void OnAccountUpdated(const AccountInfo& info) {}
+    virtual void OnExtendedAccountInfoUpdated(const AccountInfo& info) {}
 
     // Called after removing an account info.
     virtual void OnExtendedAccountInfoRemoved(const AccountInfo& info) {}
