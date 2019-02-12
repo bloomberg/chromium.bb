@@ -9,6 +9,7 @@
 #include <zircon/syscalls/log.h>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"

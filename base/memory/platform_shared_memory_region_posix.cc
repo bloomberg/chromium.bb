@@ -109,6 +109,16 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
 }
 
 // static
+PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
+    ScopedFD handle,
+    Mode mode,
+    size_t size,
+    const UnguessableToken& guid) {
+  CHECK_NE(mode, Mode::kWritable);
+  return Take(ScopedFDPair(std::move(handle), ScopedFD()), mode, size, guid);
+}
+
+// static
 PlatformSharedMemoryRegion
 PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
     const SharedMemoryHandle& handle,

@@ -1013,7 +1013,6 @@ void LocalPersistentMemoryAllocator::DeallocateLocalMemory(void* memory,
 #endif
 }
 
-
 //----- SharedPersistentMemoryAllocator ----------------------------------------
 
 SharedPersistentMemoryAllocator::SharedPersistentMemoryAllocator(
@@ -1038,6 +1037,54 @@ bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
   return IsMemoryAcceptable(memory.memory(), memory.mapped_size(), 0, false);
 }
 
+//----- WritableSharedPersistentMemoryAllocator --------------------------------
+
+WritableSharedPersistentMemoryAllocator::
+    WritableSharedPersistentMemoryAllocator(
+        base::WritableSharedMemoryMapping memory,
+        uint64_t id,
+        base::StringPiece name)
+    : PersistentMemoryAllocator(Memory(memory.memory(), MEM_SHARED),
+                                memory.size(),
+                                0,
+                                id,
+                                name,
+                                false),
+      shared_memory_(std::move(memory)) {}
+
+WritableSharedPersistentMemoryAllocator::
+    ~WritableSharedPersistentMemoryAllocator() = default;
+
+// static
+bool WritableSharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
+    const base::WritableSharedMemoryMapping& memory) {
+  return IsMemoryAcceptable(memory.memory(), memory.size(), 0, false);
+}
+
+//----- ReadOnlySharedPersistentMemoryAllocator --------------------------------
+
+ReadOnlySharedPersistentMemoryAllocator::
+    ReadOnlySharedPersistentMemoryAllocator(
+        base::ReadOnlySharedMemoryMapping memory,
+        uint64_t id,
+        base::StringPiece name)
+    : PersistentMemoryAllocator(
+          Memory(const_cast<void*>(memory.memory()), MEM_SHARED),
+          memory.size(),
+          0,
+          id,
+          name,
+          true),
+      shared_memory_(std::move(memory)) {}
+
+ReadOnlySharedPersistentMemoryAllocator::
+    ~ReadOnlySharedPersistentMemoryAllocator() = default;
+
+// static
+bool ReadOnlySharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
+    const base::ReadOnlySharedMemoryMapping& memory) {
+  return IsMemoryAcceptable(memory.memory(), memory.size(), 0, true);
+}
 
 #if !defined(OS_NACL)
 //----- FilePersistentMemoryAllocator ------------------------------------------
