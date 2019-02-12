@@ -65,7 +65,7 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
 
   // Checks whether credentials are now available and starts an access token
   // request if so. Should only be called in mode |kWaitUntilAvailable|.

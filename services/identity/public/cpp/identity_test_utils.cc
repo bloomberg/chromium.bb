@@ -43,7 +43,7 @@ class OneShotIdentityManagerObserver : public IdentityManager::Observer {
       const CoreAccountInfo& previous_primary_account_info) override;
   void OnRefreshTokensLoaded() override;
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnAccountsInCookieUpdated(
       const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
@@ -97,7 +97,7 @@ void OneShotIdentityManagerObserver::OnRefreshTokensLoaded() {
 }
 
 void OneShotIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_UPDATED)
     return;
 

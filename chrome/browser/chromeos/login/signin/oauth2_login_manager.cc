@@ -111,7 +111,7 @@ bool OAuth2LoginManager::ShouldBlockTabLoading() const {
 }
 
 void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   VLOG(1) << "OnRefreshTokenUpdatedForAccount";
 
   if (state_ == SESSION_RESTORE_NOT_STARTED)

@@ -130,7 +130,7 @@ void SyncSessionDurationsMetricsRecorder::OnStateChanged(SyncService* sync) {
 }
 
 void SyncSessionDurationsMetricsRecorder::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   DVLOG(1) << __func__;
   HandleSyncAndAccountChange();
 }

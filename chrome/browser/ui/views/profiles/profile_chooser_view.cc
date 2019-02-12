@@ -449,7 +449,7 @@ void ProfileChooserView::OnAvatarMenuChanged(
 }
 
 void ProfileChooserView::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if (view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
       view_mode_ == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {

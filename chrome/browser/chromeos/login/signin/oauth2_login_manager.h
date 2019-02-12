@@ -154,7 +154,7 @@ class OAuth2LoginManager : public KeyedService,
 
   // identity::IdentityManager::Observer implementation:
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
 
   // Signals delegate that authentication is completed, kicks off token fetching
   // process.

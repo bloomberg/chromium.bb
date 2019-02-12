@@ -67,7 +67,7 @@ std::vector<AccountIds> AccountTracker::GetAccounts() const {
 }
 
 void AccountTracker::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   TRACE_EVENT1("identity", "AccountTracker::OnRefreshTokenUpdatedForAccount",
                "account_id", account_info.account_id);
 

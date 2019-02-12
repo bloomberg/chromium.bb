@@ -165,7 +165,7 @@ bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
 }
 
 void IdentityAPI::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   // Refresh tokens are sometimes made available in contexts where
   // AccountTrackerService is not tracking the account in question (one example
   // is SupervisedUserService::InitSync()). Bail out in these cases.

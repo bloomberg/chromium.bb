@@ -82,7 +82,7 @@ class AccountTracker : public identity::IdentityManager::Observer {
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
 
   void OnUserInfoFetchSuccess(AccountIdFetcher* fetcher,

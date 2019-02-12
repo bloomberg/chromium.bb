@@ -527,7 +527,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
 
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override {
+      const CoreAccountInfo& account_info) override {
     if (account_info.account_id == GetMainAccountID()) {
       refresh_token_available_ = true;
       RunClosureIfValid(std::move(refresh_token_available_quit_closure_));

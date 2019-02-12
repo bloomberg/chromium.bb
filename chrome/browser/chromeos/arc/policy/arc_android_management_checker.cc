@@ -98,7 +98,7 @@ void ArcAndroidManagementChecker::EnsureRefreshTokenLoaded() {
 }
 
 void ArcAndroidManagementChecker::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if (account_info.account_id != device_account_id_)
     return;
   OnRefreshTokensLoaded();

@@ -256,7 +256,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     on_refresh_tokens_loaded_callback_ = std::move(callback);
   }
 
-  const AccountInfo& account_from_refresh_token_updated_callback() {
+  const CoreAccountInfo& account_from_refresh_token_updated_callback() {
     return account_from_refresh_token_updated_callback_;
   }
   const std::string& account_from_refresh_token_removed_callback() {
@@ -332,7 +332,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       std::move(on_primary_account_signin_failed_callback_).Run();
   }
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override {
+      const CoreAccountInfo& account_info) override {
     if (!is_inside_batch_)
       StartBatchOfRefreshTokenStateChanges();
 
@@ -413,7 +413,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
   CoreAccountInfo primary_account_from_set_callback_;
   CoreAccountInfo primary_account_from_cleared_callback_;
-  AccountInfo account_from_refresh_token_updated_callback_;
+  CoreAccountInfo account_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
   CoreAccountInfo account_from_error_state_of_refresh_token_updated_callback_;
   AccountInfo account_from_account_updated_callback_;
@@ -1623,7 +1623,7 @@ TEST_F(IdentityManagerTest,
 
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
@@ -1636,7 +1636,7 @@ TEST_F(IdentityManagerTest,
 
   SetInvalidRefreshTokenForPrimaryAccount(identity_manager());
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
@@ -1660,7 +1660,7 @@ TEST_F(IdentityManagerTest,
       MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
@@ -1677,7 +1677,7 @@ TEST_F(IdentityManagerTest,
   SetInvalidRefreshTokenForAccount(identity_manager(),
                                    expected_account_info.account_id);
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
@@ -1712,7 +1712,7 @@ TEST_F(
       MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
@@ -1736,7 +1736,7 @@ TEST_F(
   SetInvalidRefreshTokenForAccount(identity_manager(),
                                    expected_account_info.account_id);
 
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       identity_manager_observer()
           ->account_from_refresh_token_updated_callback();
   EXPECT_EQ(expected_account_info.account_id, account_info.account_id);
