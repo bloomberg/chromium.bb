@@ -61,7 +61,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
                   int inter_tone_gap,
                   ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange, kTonechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange, kTonechange)
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

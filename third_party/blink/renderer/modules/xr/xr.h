@@ -37,7 +37,7 @@ class XR final : public EventTargetWithInlineData,
 
   explicit XR(LocalFrame& frame, int64_t ukm_source_id_);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
   ScriptPromise supportsSessionMode(ScriptState*, const String&);
   ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions*);

@@ -127,9 +127,9 @@ class MODULES_EXPORT RTCQuicTransport final
   // Resolves the promise with an RTCQuicTransportStats dictionary.
   ScriptPromise getStats(ScriptState* script_state,
                          ExceptionState& exception_state);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(quicstream, kQuicstream);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(quicstream, kQuicstream)
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;

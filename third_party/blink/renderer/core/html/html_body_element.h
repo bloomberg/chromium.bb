@@ -41,13 +41,13 @@ class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
   explicit HTMLBodyElement(Document&);
   ~HTMLBodyElement() override;
 
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur, kBlur);
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(focus, kFocus);
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(load, kLoad);
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(resize, kResize);
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll);
-  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange);
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(focus, kFocus)
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(load, kLoad)
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(resize, kResize)
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll)
+  DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange)
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;

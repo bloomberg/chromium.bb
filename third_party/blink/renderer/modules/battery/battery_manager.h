@@ -45,11 +45,10 @@ class BatteryManager final : public EventTargetWithInlineData,
   double dischargingTime();
   double level();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange, kChargingchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange, kChargingtimechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange,
-                                  kDischargingtimechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange, kLevelchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange, kChargingchange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange, kChargingtimechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange, kDischargingtimechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange, kLevelchange)
 
   // Inherited from PlatformEventController.
   void DidUpdateData() override;

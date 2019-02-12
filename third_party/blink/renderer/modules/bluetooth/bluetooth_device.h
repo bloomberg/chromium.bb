@@ -84,7 +84,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   BluetoothRemoteGATTServer* gatt() { return gatt_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected,
-                                  kGattserverdisconnected);
+                                  kGattserverdisconnected)
 
  protected:
   // EventTarget overrides:

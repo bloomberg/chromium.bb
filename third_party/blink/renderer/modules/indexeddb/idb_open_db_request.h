@@ -69,8 +69,8 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked, kBlocked);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded, kUpgradeneeded);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked, kBlocked)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(upgradeneeded, kUpgradeneeded)
 
  protected:
   void EnqueueResponse(int64_t old_version) override;

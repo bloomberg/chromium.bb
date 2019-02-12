@@ -93,7 +93,7 @@ class CORE_EXPORT DedicatedWorker final
   // Returns the name specified by WorkerOptions.
   const String Name() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void Trace(blink::Visitor*) override;
 

@@ -45,7 +45,7 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   ScriptPromise lock(ScriptState*, const AtomicString& orientation);
   void unlock();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
   // Helper being used by this class and LockOrientationCallback.
   static const AtomicString& OrientationTypeToString(WebScreenOrientationType);

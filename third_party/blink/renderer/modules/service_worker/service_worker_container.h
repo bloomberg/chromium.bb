@@ -104,7 +104,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange, kControllerchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange, kControllerchange)
 
   void setOnmessage(EventListener* listener);
   EventListener* onmessage();

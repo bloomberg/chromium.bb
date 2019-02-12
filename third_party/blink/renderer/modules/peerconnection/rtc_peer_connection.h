@@ -226,7 +226,7 @@ class MODULES_EXPORT RTCPeerConnection final
                                     ExceptionState&);
   RTCRtpSender* addTrack(MediaStreamTrack*, MediaStreamVector, ExceptionState&);
   void removeTrack(RTCRtpSender*, ExceptionState&);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(track, kTrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(track, kTrack)
 
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,
@@ -247,18 +247,17 @@ class MODULES_EXPORT RTCPeerConnection final
   bool ShouldFireDefaultCallbacks() { return !closed_ && !stopped_; }
   bool ShouldFireGetStatsCallback() { return !stopped_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(negotiationneeded, kNegotiationneeded);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate, kIcecandidate);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(signalingstatechange, kSignalingstatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addstream, kAddstream);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removestream, kRemovestream);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(negotiationneeded, kNegotiationneeded)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate, kIcecandidate)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(signalingstatechange, kSignalingstatechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addstream, kAddstream)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removestream, kRemovestream)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(iceconnectionstatechange,
-                                  kIceconnectionstatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionstatechange,
-                                  kConnectionstatechange);
+                                  kIceconnectionstatechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionstatechange, kConnectionstatechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icegatheringstatechange,
-                                  kIcegatheringstatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel, kDatachannel);
+                                  kIcegatheringstatechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(datachannel, kDatachannel)
 
   // Utility to note result of CreateOffer / CreateAnswer
   void NoteSdpCreated(const RTCSessionDescription&);

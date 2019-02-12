@@ -145,8 +145,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool Limited() const { return Limited(CurrentTimeInternal()); }
   bool FinishedInternal() const { return finished_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(finish, kFinish);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(cancel, kCancel);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(finish, kFinish)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(cancel, kCancel)
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

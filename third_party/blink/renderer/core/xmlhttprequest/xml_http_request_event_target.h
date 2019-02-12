@@ -40,13 +40,13 @@ class XMLHttpRequestEventTarget : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(load, kLoad);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend, kLoadend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(timeout, kTimeout);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(load, kLoad)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend, kLoadend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(timeout, kTimeout)
 };
 
 }  // namespace blink

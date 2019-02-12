@@ -11,7 +11,7 @@ namespace blink {
 
 class DOMWindowDeviceMotion {
  public:
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(devicemotion, kDevicemotion);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(devicemotion, kDevicemotion)
 };
 
 }  // namespace blink

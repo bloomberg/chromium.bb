@@ -124,7 +124,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void setResourceTimingBufferSize(unsigned);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull,
-                                  kResourcetimingbufferfull);
+                                  kResourcetimingbufferfull)
 
   void AddLongTaskTiming(
       TimeTicks start_time,
@@ -163,15 +163,14 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void clearElementTimings();
   void setElementTimingBufferMaxSize(unsigned);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(elementtimingbufferfull,
-                                  kElementtimingbufferfull);
+                                  kElementtimingbufferfull)
 
   bool IsEventTimingBufferFull() const;
   void AddEventTimingBuffer(PerformanceEventTiming&);
   unsigned EventTimingBufferSize() const;
   void clearEventTimings();
   void setEventTimingBufferMaxSize(unsigned);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull,
-                                  kEventtimingbufferfull);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull, kEventtimingbufferfull)
 
   void AddLayoutJankBuffer(PerformanceLayoutJank&);
 

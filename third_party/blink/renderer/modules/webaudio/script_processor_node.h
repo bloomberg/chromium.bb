@@ -145,7 +145,7 @@ class ScriptProcessorNode final
                       uint32_t number_of_input_channels,
                       uint32_t number_of_output_channels);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess, kAudioprocess)
   uint32_t bufferSize() const;
 
   // ScriptWrappable

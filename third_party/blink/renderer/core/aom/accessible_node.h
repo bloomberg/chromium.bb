@@ -347,14 +347,13 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleclick, kAccessibleclick);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblecontextmenu,
-                                  kAccessiblecontextmenu);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibledecrement, kAccessibledecrement);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblefocus, kAccessiblefocus);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleincrement, kAccessibleincrement);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleclick, kAccessibleclick)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblecontextmenu, kAccessiblecontextmenu)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibledecrement, kAccessibledecrement)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblefocus, kAccessiblefocus)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(accessibleincrement, kAccessibleincrement)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(accessiblescrollintoview,
-                                  kAccessiblescrollintoview);
+                                  kAccessiblescrollintoview)
 
   void Trace(blink::Visitor*) override;
 

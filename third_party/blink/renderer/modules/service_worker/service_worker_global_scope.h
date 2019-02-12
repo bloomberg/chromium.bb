@@ -140,10 +140,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   int WillStartTask();
   void DidEndTask(int task_id);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void Trace(blink::Visitor*) override;
 

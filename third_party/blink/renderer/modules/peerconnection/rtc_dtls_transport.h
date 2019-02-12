@@ -49,8 +49,8 @@ class MODULES_EXPORT RTCDtlsTransport final
   String state() const;
   const HeapVector<Member<DOMArrayBuffer>>& getRemoteCertificates() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   // DtlsTransportProxy::Delegate
   void OnStartCompleted(webrtc::DtlsTransportInformation info) override;

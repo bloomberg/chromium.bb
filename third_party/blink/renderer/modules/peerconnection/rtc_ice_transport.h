@@ -107,11 +107,11 @@ class MODULES_EXPORT RTCIceTransport final
   void stop();
   void addRemoteCandidate(RTCIceCandidate* remote_candidate,
                           ExceptionState& exception_state);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(gatheringstatechange, kGatheringstatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(gatheringstatechange, kGatheringstatechange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectedcandidatepairchange,
-                                  kSelectedcandidatepairchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate, kIcecandidate);
+                                  kSelectedcandidatepairchange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate, kIcecandidate)
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;

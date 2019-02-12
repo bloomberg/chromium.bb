@@ -60,7 +60,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   String state() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
   void Trace(blink::Visitor*) override;
 

@@ -103,10 +103,10 @@ class CORE_EXPORT WorkerGlobalScope
 
   String origin() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(languagechange, kLanguagechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled, kRejectionhandled);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(languagechange, kLanguagechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled, kRejectionhandled)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection)
 
   // WorkerUtils
   virtual void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,

@@ -14,9 +14,9 @@ class DocumentAndElementEventHandlers {
   STATIC_ONLY(DocumentAndElementEventHandlers);
 
  public:
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(copy, kCopy);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(cut, kCut);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(paste, kPaste);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(copy, kCopy)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(cut, kCut)
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(paste, kPaste)
 };
 
 }  // namespace blink

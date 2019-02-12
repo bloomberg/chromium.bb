@@ -218,8 +218,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   WebIDBCallbacks* WebCallbacks() const { return web_callbacks_; }
 #endif  // DCHECK_IS_ON()
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(success, kSuccess);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(success, kSuccess)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   void SetCursorDetails(indexed_db::CursorType, mojom::IDBCursorDirection);
   void SetPendingCursor(IDBCursor*);
