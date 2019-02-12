@@ -73,6 +73,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -1321,6 +1322,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // Details in https://crbug.com/709681.
     public void testPageLoadMetricsAreSent() throws Exception {
         checkPageLoadMetrics(true);
     }
@@ -1623,6 +1625,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // Details in https://crbug.com/709681.
     public void testPostMessageReceivedFromPageWithLateRequest() throws Exception {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
