@@ -20,6 +20,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -103,6 +104,21 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
                 Intercept(resourceRequestUrlEquals(url)));
   }
 
+  void SetupProxyError() {
+    GURL url(GaiaUrls::GetInstance()->oauth2_token_url());
+    url_loader_factory_.AddResponse(
+        url,
+        network::CreateResourceResponseHead(
+            net::HTTP_PROXY_AUTHENTICATION_REQUIRED),
+        std::string(),
+        network::URLLoaderCompletionStatus(net::ERR_TUNNEL_CONNECTION_FAILED),
+        network::TestURLLoaderFactory::Redirects(),
+        network::TestURLLoaderFactory::kSendHeadersOnNetworkError);
+
+    EXPECT_CALL(url_loader_factory_interceptor_,
+                Intercept(resourceRequestUrlEquals(url)));
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockOAuth2AccessTokenConsumer consumer_;
@@ -124,6 +140,18 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, GetAccessTokenRequestFailure) {
 TEST_F(OAuth2AccessTokenFetcherImplTest, GetAccessTokenResponseCodeFailure) {
   SetupGetAccessToken(net::OK, net::HTTP_FORBIDDEN, std::string());
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
+  fetcher_.Start("client_id", "client_secret", ScopeList());
+  base::RunLoop().RunUntilIdle();
+}
+
+// Regression test for https://crbug.com/914672
+TEST_F(OAuth2AccessTokenFetcherImplTest, ProxyFailure) {
+  GoogleServiceAuthError expected_error =
+      GoogleServiceAuthError::FromConnectionError(
+          net::ERR_TUNNEL_CONNECTION_FAILED);
+  ASSERT_TRUE(expected_error.IsTransientError());
+  SetupProxyError();
+  EXPECT_CALL(consumer_, OnGetTokenFailure(expected_error)).Times(1);
   fetcher_.Start("client_id", "client_secret", ScopeList());
   base::RunLoop().RunUntilIdle();
 }

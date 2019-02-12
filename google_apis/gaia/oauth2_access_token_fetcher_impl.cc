@@ -208,7 +208,8 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
 
   bool net_failure = false;
   int histogram_value;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+  if (url_loader_->NetError() == net::OK && url_loader_->ResponseInfo() &&
+      url_loader_->ResponseInfo()->headers) {
     // Note that the SimpleURLLoader reports net::ERR_FAILED for HTTP codes
     // other than 200s.
     histogram_value = url_loader_->ResponseInfo()->headers->response_code();
@@ -227,6 +228,13 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
   switch (response_code) {
     case net::HTTP_OK:
       break;
+    case net::HTTP_PROXY_AUTHENTICATION_REQUIRED:
+      NOTREACHED() << "HTTP 407 should be treated as a network error.";
+      // If this ever happens in production, we treat it as a temporary error as
+      // it is similar to a network error.
+      OnGetTokenFailure(
+          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+      return;
     case net::HTTP_FORBIDDEN:
       // HTTP_FORBIDDEN (403) is treated as temporary error, because it may be
       // '403 Rate Limit Exeeded.'
