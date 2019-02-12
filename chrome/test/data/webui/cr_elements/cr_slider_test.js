@@ -380,4 +380,20 @@ suite('cr-slider', function() {
     pressArrowRight();
     return wait;
   });
+
+  test('out of range value updated back into min/max range', () => {
+    crSlider.min = 0;
+    crSlider.max = 100;
+    crSlider.value = 50;
+    assertEquals(50, crSlider.value);
+    crSlider.value = 150;
+    assertEquals(100, crSlider.value);
+    crSlider.value = -50;
+    assertEquals(0, crSlider.value);
+    crSlider.min = 25;
+    assertEquals(25, crSlider.value);
+    crSlider.value = 100;
+    crSlider.max = 50;
+    assertEquals(50, crSlider.value);
+  });
 });

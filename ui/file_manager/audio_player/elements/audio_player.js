@@ -218,6 +218,7 @@ Polymer({
     if(this.repeatMode === "repeat-one") {
       this.playing = true;
       this.$.audio.currentTime = 0;
+      this.time = 0;
       return;
     }
     this.advance_(true /* forward */, this.repeatMode === "repeat-all");
@@ -290,6 +291,7 @@ Polymer({
     var shouldFireEvent = this.$.trackList.currentTrackIndex === nextTrackIndex;
     this.$.trackList.currentTrackIndex = nextTrackIndex;
     this.$.audio.currentTime = 0;
+    this.time = 0;
     // If the next track and current track is the same,
     // the event will not be fired.
     // So we will fire the event here.
