@@ -342,7 +342,8 @@ void WorkerGlobalScope::EvaluateClassicScript(
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
-  ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
+  WorkerThreadDebugger* debugger =
+      WorkerThreadDebugger::From(GetThread()->GetIsolate());
   if (debugger)
     debugger->ExternalAsyncTaskStarted(stack_id);
   EvaluateClassicScriptInternal(script_url, source_code,
@@ -450,7 +451,8 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
   DCHECK(!IsContextPaused());
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*this, std::move(message.ports));
-  ThreadDebugger* debugger = ThreadDebugger::From(GetThread()->GetIsolate());
+  WorkerThreadDebugger* debugger =
+      WorkerThreadDebugger::From(GetThread()->GetIsolate());
   if (debugger)
     debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
   UserActivation* user_activation = nullptr;
