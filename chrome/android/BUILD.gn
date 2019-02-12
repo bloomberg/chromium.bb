@@ -2003,12 +2003,16 @@ if (android_64bit_target_cpu && enable_64_bit_browser) {
   monochrome_public_bundle_tmpl("monochrome_64_public_bundle") {
     bundle_suffix = "64"
     is_64_bit_browser = true
-    include_32_bit_webview = false
+    if (build_apk_secondary_abi) {
+      include_32_bit_webview = false
+    }
   }
 
   monochrome_public_bundle_tmpl("monochrome_64_32_public_bundle") {
     bundle_suffix = "6432"
     is_64_bit_browser = true
-    include_32_bit_webview = true
+    if (build_apk_secondary_abi) {
+      include_32_bit_webview = true
+    }
   }
 }
