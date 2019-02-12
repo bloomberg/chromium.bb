@@ -1,5 +1,4 @@
 file://ui/webui/PLATFORM_OWNERS
-rbpotter@chromium.org
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
