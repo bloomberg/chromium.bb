@@ -29,7 +29,7 @@ namespace {
 // do-nothing implementation.
 void PluginCrashed(PP_Module module) {
   NOTREACHED();
-};
+}
 
 PP_Instance GetInstanceForResource(PP_Resource resource) {
   // If a test relies on this, we need to implement it.
