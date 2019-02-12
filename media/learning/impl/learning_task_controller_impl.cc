@@ -39,31 +39,39 @@ void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
   if (feature_provider_) {
     // TODO(liberato): SequenceBound should make this easier.
     feature_provider_.Post(
-        FROM_HERE, &FeatureProvider::AddFeatures, example,
-        base::BindOnce(&LearningTaskControllerImpl::OnExampleReadyTrampoline,
-                       task_runner_, AsWeakPtr()));
+        FROM_HERE, &FeatureProvider::AddFeatures, example.features,
+        base::BindOnce(&LearningTaskControllerImpl::OnFeaturesReadyTrampoline,
+                       task_runner_, AsWeakPtr(), example));
   } else {
-    OnExampleReady(example);
+    AddFinishedExample(example);
   }
 }
 
 // static
-void LearningTaskControllerImpl::OnExampleReadyTrampoline(
+void LearningTaskControllerImpl::OnFeaturesReadyTrampoline(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::WeakPtr<LearningTaskControllerImpl> weak_this,
-    LabelledExample example) {
+    LabelledExample example,
+    FeatureVector features) {
   if (!task_runner->RunsTasksInCurrentSequence()) {
     task_runner->PostTask(
-        FROM_HERE, base::BindOnce(&LearningTaskControllerImpl::OnExampleReady,
-                                  std::move(weak_this), std::move(example)));
+        FROM_HERE, base::BindOnce(&LearningTaskControllerImpl::OnFeaturesReady,
+                                  std::move(weak_this), std::move(example),
+                                  std::move(features)));
     return;
   }
 
   if (weak_this)
-    weak_this->OnExampleReady(std::move(example));
+    weak_this->OnFeaturesReady(std::move(example), std::move(features));
 }
 
-void LearningTaskControllerImpl::OnExampleReady(LabelledExample example) {
+void LearningTaskControllerImpl::OnFeaturesReady(LabelledExample example,
+                                                 FeatureVector features) {
+  example.features = std::move(features);
+  AddFinishedExample(example);
+}
+
+void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
   if (training_data_->size() >= task_.max_data_set_size) {
     // Replace a random example.  We don't necessarily want to replace the
     // oldest, since we don't necessarily want to enforce an ad-hoc recency

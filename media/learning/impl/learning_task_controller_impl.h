@@ -39,16 +39,21 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
  private:
   // Trampoline method for receiving examples from |feature_provider_|.  Will
-  // chain directly to OnExampleReady if we're on |task_runner| and |weak_thiz|
+  // chain directly to OnExampleReady if we're on |task_runner| and |weak_this|
   // is non-null, else it will post to |task_runner|.
-  static void OnExampleReadyTrampoline(
+  static void OnFeaturesReadyTrampoline(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::WeakPtr<LearningTaskControllerImpl> weak_this,
-      LabelledExample example);
+      LabelledExample example,
+      FeatureVector features);
 
-  // Called when a new example has been finished by |feature_provider_|, if
-  // needed, to actually add the example.
-  void OnExampleReady(LabelledExample example);
+  // Called when a new feature vector has been finished by |feature_provider_|,
+  // if needed, to actually add the example.  |features| will replace the ones
+  // in |example|.
+  void OnFeaturesReady(LabelledExample example, FeatureVector features);
+
+  // Add |example| to the training data, and process it.
+  void AddFinishedExample(LabelledExample example);
 
   // Called by |training_cb_| when the model is trained.
   void OnModelTrained(std::unique_ptr<Model> model);
