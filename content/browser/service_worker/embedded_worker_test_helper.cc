@@ -103,8 +103,7 @@ class EmbeddedWorkerTestHelper::MockNetworkURLLoaderFactory final
 };
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
-    MockEmbeddedWorkerInstanceClient(
-        base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+    MockEmbeddedWorkerInstanceClient(EmbeddedWorkerTestHelper* helper)
     : helper_(helper), binding_(this) {}
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
@@ -112,9 +111,6 @@ EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
     blink::mojom::EmbeddedWorkerStartParamsPtr params) {
-  if (!helper_)
-    return;
-
   embedded_worker_id_ = params->embedded_worker_id;
 
   EmbeddedWorkerInstance* worker =
@@ -125,9 +121,6 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
 }
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker() {
-  if (!helper_)
-    return;
-
   ASSERT_TRUE(embedded_worker_id_);
   EmbeddedWorkerInstance* worker =
       helper_->registry()->GetWorker(embedded_worker_id_.value());
@@ -152,7 +145,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 
 // static
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
-    const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+    EmbeddedWorkerTestHelper* helper,
     blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>* clients =
       helper->mock_instance_clients();
@@ -174,26 +167,28 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
 class EmbeddedWorkerTestHelper::MockServiceWorker
     : public blink::mojom::ServiceWorker {
  public:
-  static void Create(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     int embedded_worker_id,
-                     blink::mojom::ServiceWorkerRequest request) {
-    mojo::MakeStrongBinding(
-        std::make_unique<MockServiceWorker>(helper, embedded_worker_id),
-        std::move(request));
+  MockServiceWorker(blink::mojom::ServiceWorkerRequest request,
+                    EmbeddedWorkerTestHelper* helper,
+                    int embedded_worker_id)
+      : helper_(helper),
+        embedded_worker_id_(embedded_worker_id),
+        binding_(this) {
+    binding_.Bind(std::move(request));
+    binding_.set_connection_error_handler(base::BindOnce(
+        &MockServiceWorker::OnConnectionError, base::Unretained(this)));
   }
 
-  MockServiceWorker(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                    int embedded_worker_id)
-      : helper_(helper), embedded_worker_id_(embedded_worker_id) {}
+  ~MockServiceWorker() override = default;
 
-  ~MockServiceWorker() override {}
+  void OnConnectionError() {
+    // Destroys |this|.
+    helper_->RemoveServiceWorker(this);
+  }
 
   void InitializeGlobalScope(
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info)
       override {
-    if (!helper_)
-      return;
     helper_->OnInitializeGlobalScope(embedded_worker_id_,
                                      std::move(service_worker_host),
                                      std::move(registration_info));
@@ -201,22 +196,16 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
 
   void DispatchInstallEvent(
       DispatchInstallEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnInstallEventStub(std::move(callback));
   }
 
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnActivateEventStub(std::move(callback));
   }
 
   void DispatchBackgroundFetchAbortEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       DispatchBackgroundFetchAbortEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnBackgroundFetchAbortEventStub(std::move(registration),
                                              std::move(callback));
   }
@@ -224,8 +213,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
   void DispatchBackgroundFetchClickEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       DispatchBackgroundFetchClickEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnBackgroundFetchClickEventStub(std::move(registration),
                                              std::move(callback));
   }
@@ -233,8 +220,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
   void DispatchBackgroundFetchFailEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       DispatchBackgroundFetchFailEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnBackgroundFetchFailEventStub(std::move(registration),
                                             std::move(callback));
   }
@@ -242,8 +227,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
   void DispatchBackgroundFetchSuccessEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       DispatchBackgroundFetchSuccessEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnBackgroundFetchSuccessEventStub(std::move(registration),
                                                std::move(callback));
   }
@@ -252,8 +235,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
       DispatchCookieChangeEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnCookieChangeEventStub(cookie, cause, std::move(callback));
   }
 
@@ -261,8 +242,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnFetchEventStub(embedded_worker_id_, std::move(params->request),
                               std::move(params->preload_handle),
                               std::move(response_callback),
@@ -275,8 +254,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       int action_index,
       const base::Optional<base::string16>& reply,
       DispatchNotificationClickEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnNotificationClickEventStub(notification_id, notification_data,
                                           action_index, reply,
                                           std::move(callback));
@@ -286,16 +263,12 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       const std::string& notification_id,
       const blink::PlatformNotificationData& notification_data,
       DispatchNotificationCloseEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnNotificationCloseEventStub(notification_id, notification_data,
                                           std::move(callback));
   }
 
   void DispatchPushEvent(const base::Optional<std::string>& payload,
                          DispatchPushEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnPushEventStub(payload, std::move(callback));
   }
 
@@ -309,8 +282,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
   void DispatchAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchAbortPaymentEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnAbortPaymentEventStub(std::move(response_callback),
                                      std::move(callback));
   }
@@ -319,8 +290,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       payments::mojom::CanMakePaymentEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchCanMakePaymentEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnCanMakePaymentEventStub(std::move(event_data),
                                        std::move(response_callback),
                                        std::move(callback));
@@ -330,8 +299,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnPaymentRequestEventStub(std::move(event_data),
                                        std::move(response_callback),
                                        std::move(callback));
@@ -340,8 +307,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
   void DispatchExtendableMessageEvent(
       blink::mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override {
-    if (!helper_)
-      return;
     helper_->OnExtendableMessageEventStub(std::move(event),
                                           std::move(callback));
   }
@@ -351,8 +316,6 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       base::TimeDelta timeout,
       DispatchExtendableMessageEventWithCustomTimeoutCallback callback)
       override {
-    if (!helper_)
-      return;
     helper_->OnExtendableMessageEventStub(std::move(event),
                                           std::move(callback));
   }
@@ -360,19 +323,20 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
   void SetIdleTimerDelayToZero() override {
-    if (!helper_)
-      return;
     helper_->OnSetIdleTimerDelayToZero(embedded_worker_id_);
   }
 
  private:
-  base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
+  // |helper_| owns |this|.
+  EmbeddedWorkerTestHelper* helper_;
   const int embedded_worker_id_;
+  mojo::Binding<blink::mojom::ServiceWorker> binding_;
 };
 
 class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
  public:
-  explicit MockRendererInterface(base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+  // |helper| must outlive this.
+  explicit MockRendererInterface(EmbeddedWorkerTestHelper* helper)
       : helper_(helper) {}
 
   void AddBinding(mojom::RendererAssociatedRequest request) {
@@ -429,7 +393,7 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
   void SetIsLockedToSite() override { NOTREACHED(); }
   void EnableV8LowMemoryMode() override { NOTREACHED(); }
 
-  base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
+  EmbeddedWorkerTestHelper* helper_;
   mojo::AssociatedBindingSet<mojom::Renderer> bindings_;
 };
 
@@ -459,8 +423,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
 
   // Install a mocked mojom::Renderer interface to catch requests to
   // establish Mojo connection for EWInstanceClient.
-  mock_renderer_interface_ =
-      std::make_unique<MockRendererInterface>(AsWeakPtr());
+  mock_renderer_interface_ = std::make_unique<MockRendererInterface>(this);
 
   auto renderer_interface_ptr =
       std::make_unique<mojom::RendererAssociatedPtr>();
@@ -543,8 +506,7 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
     blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
-  MockServiceWorker::Create(AsWeakPtr(), embedded_worker_id,
-                            std::move(service_worker_request));
+  CreateServiceWorker(std::move(service_worker_request), embedded_worker_id);
   embedded_worker_id_service_worker_version_id_map_[embedded_worker_id] =
       service_worker_version_id;
   embedded_worker_id_instance_host_ptr_map_[embedded_worker_id].Bind(
@@ -569,6 +531,24 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
       service_worker_version_id,
       base::BindOnce(&EmbeddedWorkerTestHelper::DidPopulateScriptCacheMap,
                      AsWeakPtr(), embedded_worker_id, pause_after_download));
+}
+
+void EmbeddedWorkerTestHelper::AddServiceWorker(
+    std::unique_ptr<MockServiceWorker> service_worker) {
+  service_workers_.insert(std::move(service_worker));
+}
+
+void EmbeddedWorkerTestHelper::RemoveServiceWorker(
+    MockServiceWorker* service_worker) {
+  auto it = service_workers_.find(service_worker);
+  service_workers_.erase(it);
+}
+
+void EmbeddedWorkerTestHelper::CreateServiceWorker(
+    blink::mojom::ServiceWorkerRequest request,
+    int embedded_worker_id) {
+  AddServiceWorker(std::make_unique<MockServiceWorker>(std::move(request), this,
+                                                       embedded_worker_id));
 }
 
 void EmbeddedWorkerTestHelper::DidPopulateScriptCacheMap(

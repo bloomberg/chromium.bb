@@ -14,6 +14,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -67,11 +69,11 @@ class EmbeddedWorkerTestHelper {
   class MockEmbeddedWorkerInstanceClient
       : public blink::mojom::EmbeddedWorkerInstanceClient {
    public:
-    explicit MockEmbeddedWorkerInstanceClient(
-        base::WeakPtr<EmbeddedWorkerTestHelper> helper);
+    // |helper| must outlive this.
+    explicit MockEmbeddedWorkerInstanceClient(EmbeddedWorkerTestHelper* helper);
     ~MockEmbeddedWorkerInstanceClient() override;
 
-    static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+    static void Bind(EmbeddedWorkerTestHelper* helper,
                      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
 
    protected:
@@ -86,7 +88,8 @@ class EmbeddedWorkerTestHelper {
         blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
         blink::mojom::DevToolsAgentAssociatedRequest) override {}
 
-    base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
+    // |helper_| owns |this|.
+    EmbeddedWorkerTestHelper* helper_;
     mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
 
     base::Optional<int> embedded_worker_id_;
@@ -267,6 +270,11 @@ class EmbeddedWorkerTestHelper {
   class MockServiceWorker;
   class MockRendererInterface;
 
+  void AddServiceWorker(std::unique_ptr<MockServiceWorker> service_worker);
+  void RemoveServiceWorker(MockServiceWorker* service_worker);
+  void CreateServiceWorker(blink::mojom::ServiceWorkerRequest request,
+                           int embedded_worker_id);
+
   void DidPopulateScriptCacheMap(int embedded_worker_id,
                                  bool pause_after_download);
 
@@ -350,6 +358,9 @@ class EmbeddedWorkerTestHelper {
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
       mock_instance_clients_;
   size_t mock_instance_clients_next_index_;
+
+  base::flat_set<std::unique_ptr<MockServiceWorker>, base::UniquePtrComparator>
+      service_workers_;
 
   int next_thread_id_;
   int mock_render_process_id_;

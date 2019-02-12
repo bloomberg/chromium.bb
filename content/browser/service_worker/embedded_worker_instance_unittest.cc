@@ -546,7 +546,7 @@ class DontReceiveResumeAfterDownloadInstanceClient
     : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
  public:
   explicit DontReceiveResumeAfterDownloadInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper,
+      EmbeddedWorkerTestHelper* helper,
       bool* was_resume_after_download_called)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper),
         was_resume_after_download_called_(was_resume_after_download_called) {}
@@ -566,7 +566,7 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   bool was_resume_after_download_called = false;
   helper_->RegisterMockInstanceClient(
       std::make_unique<DontReceiveResumeAfterDownloadInstanceClient>(
-          helper_->AsWeakPtr(), &was_resume_after_download_called));
+          helper_.get(), &was_resume_after_download_called));
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
   std::unique_ptr<EmbeddedWorkerInstance> worker =
@@ -699,7 +699,7 @@ class FailEmbeddedWorkerInstanceClientImpl
     : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
  public:
   explicit FailEmbeddedWorkerInstanceClientImpl(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+      EmbeddedWorkerTestHelper* helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
  private:
@@ -714,8 +714,7 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
 
   // Let StartWorker fail; binding is discarded in the middle of IPC
   helper_->RegisterMockInstanceClient(
-      std::make_unique<FailEmbeddedWorkerInstanceClientImpl>(
-          helper_->AsWeakPtr()));
+      std::make_unique<FailEmbeddedWorkerInstanceClientImpl>(helper_.get()));
   ASSERT_EQ(mock_instance_clients()->size(), 1UL);
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
@@ -743,8 +742,7 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
 class StoreMessageInstanceClient
     : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
  public:
-  explicit StoreMessageInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
+  explicit StoreMessageInstanceClient(EmbeddedWorkerTestHelper* helper)
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
   const std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>&
@@ -766,7 +764,7 @@ TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
   std::unique_ptr<StoreMessageInstanceClient> instance_client =
-      std::make_unique<StoreMessageInstanceClient>(helper_->AsWeakPtr());
+      std::make_unique<StoreMessageInstanceClient>(helper_.get());
   StoreMessageInstanceClient* instance_client_rawptr = instance_client.get();
   helper_->RegisterMockInstanceClient(std::move(instance_client));
   ASSERT_EQ(mock_instance_clients()->size(), 1UL);
