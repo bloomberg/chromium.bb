@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -66,12 +67,12 @@ const std::string* GetAppNameForWMClass(base::StringPiece wmclass) {
   // This is used to deal with the Linux apps that don't specify the correct
   // WMClass in their desktop files so that their aura windows can be identified
   // with their respective app IDs.
-  static const std::map<std::string, std::string> kWMClassToNname = {
-      {"Octave-gui", "GNU Octave"},
-      {"MuseScore2", "MuseScore 2"},
-      {"XnViewMP", "XnView Multi Platform"}};
-  const auto it = kWMClassToNname.find(wmclass.as_string());
-  if (it == kWMClassToNname.end())
+  static const base::NoDestructor<std::map<std::string, std::string>>
+      kWMClassToNname({{"Octave-gui", "GNU Octave"},
+                       {"MuseScore2", "MuseScore 2"},
+                       {"XnViewMP", "XnView Multi Platform"}});
+  const auto it = kWMClassToNname->find(wmclass.as_string());
+  if (it == kWMClassToNname->end())
     return nullptr;
   return &it->second;
 }

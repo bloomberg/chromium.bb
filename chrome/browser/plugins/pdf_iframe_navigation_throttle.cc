@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -79,9 +80,9 @@ PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   content::WebPluginInfo pdf_plugin_info;
-  static const base::FilePath pdf_plugin_path(
+  static const base::NoDestructor<base::FilePath> pdf_plugin_path(
       ChromeContentClient::kPDFPluginPath);
-  content::PluginService::GetInstance()->GetPluginInfoByPath(pdf_plugin_path,
+  content::PluginService::GetInstance()->GetPluginInfoByPath(*pdf_plugin_path,
                                                              &pdf_plugin_info);
 
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();

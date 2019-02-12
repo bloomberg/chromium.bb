@@ -31,9 +31,6 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
 
   std::unique_ptr<XmlDownloader> ieem_downloader_;
 
-  // URL to fetch the IEEM sitelist from. Only used for testing.
-  static base::Optional<std::string> ieem_sitelist_url_for_testing_;
-
   base::WeakPtrFactory<BrowserSwitcherServiceWin> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherServiceWin);

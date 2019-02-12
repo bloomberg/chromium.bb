@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
@@ -38,8 +39,9 @@ namespace {
 
 std::unique_ptr<DiceTurnSyncOnHelper::Delegate>*
 GetDiceTurnSyncOnHelperDelegateForTestingStorage() {
-  static std::unique_ptr<DiceTurnSyncOnHelper::Delegate> delegate;
-  return &delegate;
+  static base::NoDestructor<std::unique_ptr<DiceTurnSyncOnHelper::Delegate>>
+      delegate;
+  return delegate.get();
 }
 
 std::string DecryptRefreshToken(const std::string& cipher_text) {

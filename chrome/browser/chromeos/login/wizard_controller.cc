@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -247,8 +248,9 @@ chromeos::OobeUI* GetOobeUI() {
 
 scoped_refptr<network::SharedURLLoaderFactory>&
 GetSharedURLLoaderFactoryForTesting() {
-  static scoped_refptr<network::SharedURLLoaderFactory> loader;
-  return loader;
+  static base::NoDestructor<scoped_refptr<network::SharedURLLoaderFactory>>
+      loader;
+  return *loader;
 }
 
 }  // namespace

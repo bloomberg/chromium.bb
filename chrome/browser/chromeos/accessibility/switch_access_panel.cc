@@ -6,6 +6,7 @@
 
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/no_destructor.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
@@ -17,15 +18,17 @@ namespace {
 const char kWidgetName[] = "SwitchAccessMenu";
 const int kFocusRingBuffer = 5;
 
+const std::string& UrlForContent() {
+  static const base::NoDestructor<std::string> url(
+      std::string(EXTENSION_PREFIX) + extension_misc::kSwitchAccessExtensionId +
+      "/menu_panel.html");
+  return *url;
+}
+
 }  // namespace
 
-// static
-const std::string urlForContent = std::string(EXTENSION_PREFIX) +
-                                  extension_misc::kSwitchAccessExtensionId +
-                                  "/menu_panel.html";
-
 SwitchAccessPanel::SwitchAccessPanel(content::BrowserContext* browser_context)
-    : AccessibilityPanel(browser_context, urlForContent, kWidgetName) {
+    : AccessibilityPanel(browser_context, UrlForContent(), kWidgetName) {
   Hide();
 }
 

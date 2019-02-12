@@ -160,9 +160,8 @@ void OmniboxTextView::ApplyTextColor(OmniboxPart part) {
 }
 
 const base::string16& OmniboxTextView::text() const {
-  static const base::string16 kEmptyString;
   if (!render_text_)
-    return kEmptyString;
+    return base::EmptyString16();
   return render_text_->text();
 }
 
