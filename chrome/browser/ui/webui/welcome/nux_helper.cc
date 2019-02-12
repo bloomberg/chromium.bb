@@ -78,8 +78,10 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
     return false;
   }
 
-  // TODO(hcarmona): Re-enable synthetic trial reporting when we know more
-  // about https://crbug.com/919705
+  // User will be tied to their original onboarding group, even after
+  // experiment ends.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "NaviOnboardingSynthetic", onboard_group);
 
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
     return true;
