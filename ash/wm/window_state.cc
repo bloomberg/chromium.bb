@@ -276,7 +276,8 @@ bool WindowState::CanSnap() const {
 }
 
 bool WindowState::HasRestoreBounds() const {
-  return window_->GetProperty(aura::client::kRestoreBoundsKey) != nullptr;
+  gfx::Rect* bounds = window_->GetProperty(aura::client::kRestoreBoundsKey);
+  return bounds != nullptr && !bounds->IsEmpty();
 }
 
 void WindowState::Maximize() {
@@ -694,6 +695,9 @@ void WindowState::UpdatePipState(bool was_pip) {
     }
     ::wm::SetWindowVisibilityAnimationType(
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
+
+    // There may already be a system ui window on the initial position.
+    UpdatePipBounds();
   } else if (was_pip) {
     if (widget) {
       widget->widget_delegate()->SetCanActivate(true);
