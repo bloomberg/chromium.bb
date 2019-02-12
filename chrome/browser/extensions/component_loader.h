@@ -177,7 +177,6 @@ class ComponentLoader {
   void AddChromeApp();
   void AddKeyboardApp();
   void AddWebStoreApp();
-  void AddChromeCameraApp();
 
   scoped_refptr<const Extension> CreateExtension(
       const ComponentExtensionInfo& info, std::string* utf8_error);
