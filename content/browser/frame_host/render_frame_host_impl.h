@@ -1455,7 +1455,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Called by the renderer process when it is done processing a cross-document
   // commit request.
-  void OnCrossDocumentCommitProcessed(int64_t navigation_id,
+  void OnCrossDocumentCommitProcessed(NavigationRequest* navigation_request,
                                       blink::mojom::CommitResult result);
 
   // Creates a TracedValue object containing the details of a committed
@@ -1731,7 +1731,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // When the flag is always on, rework the structure to simply store an
   // unindexed bunch of ongoing navigations and modify
   // DidCommitNavigationInternal.
-  std::map<int64_t, std::unique_ptr<NavigationRequest>> navigation_requests_;
+  std::map<NavigationRequest*, std::unique_ptr<NavigationRequest>>
+      navigation_requests_;
 
   // Holds a same-document NavigationRequest while waiting for the navigation it
   // is tracking to commit.

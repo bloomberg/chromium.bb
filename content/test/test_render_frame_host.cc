@@ -432,7 +432,7 @@ void TestRenderFrameHost::PrepareForCommitIfNecessary() {
 }
 
 void TestRenderFrameHost::SimulateCommitProcessed(
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
     blink::mojom::DocumentInterfaceBrokerRequest
@@ -449,12 +449,13 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     // callbacks, no more than 1 callback will ever run, because navigation_id
     // is unique across all callback storages.
     {
-      auto callback_it = commit_callback_.find(navigation_id);
+      auto callback_it = commit_callback_.find(navigation_request);
       if (callback_it != commit_callback_.end())
         std::move(callback_it->second).Run(result);
     }
     {
-      auto callback_it = navigation_client_commit_callback_.find(navigation_id);
+      auto callback_it =
+          navigation_client_commit_callback_.find(navigation_request);
       if (callback_it != navigation_client_commit_callback_.end()) {
         std::move(callback_it->second)
             .Run(std::move(params),
@@ -466,13 +467,13 @@ void TestRenderFrameHost::SimulateCommitProcessed(
       }
     }
     {
-      auto callback_it = commit_failed_callback_.find(navigation_id);
+      auto callback_it = commit_failed_callback_.find(navigation_request);
       if (callback_it != commit_failed_callback_.end())
         std::move(callback_it->second).Run(result);
     }
     {
       auto callback_it =
-          navigation_client_commit_failed_callback_.find(navigation_id);
+          navigation_client_commit_failed_callback_.find(navigation_request);
       if (callback_it != navigation_client_commit_failed_callback_.end()) {
         std::move(callback_it->second)
             .Run(std::move(params),
@@ -526,13 +527,11 @@ void TestRenderFrameHost::SendCommitNavigation(
     const base::UnguessableToken& devtools_navigation_token) {
   if (!navigation_request)
     return;
-  int64_t navigation_id =
-      navigation_request->navigation_handle()->GetNavigationId();
   if (navigation_client) {
-    navigation_client_commit_callback_[navigation_id] =
+    navigation_client_commit_callback_[navigation_request] =
         BuildNavigationClientCommitNavigationCallback(navigation_request);
   } else {
-    commit_callback_[navigation_id] =
+    commit_callback_[navigation_request] =
         BuildCommitNavigationCallback(navigation_request);
   }
 }
@@ -547,15 +546,11 @@ void TestRenderFrameHost::SendCommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories) {
-  if (!navigation_request)
-    return;
-  int64_t navigation_id =
-      navigation_request->navigation_handle()->GetNavigationId();
   if (navigation_client) {
-    navigation_client_commit_failed_callback_[navigation_id] =
+    navigation_client_commit_failed_callback_[navigation_request] =
         BuildNavigationClientCommitFailedNavigationCallback(navigation_request);
   } else {
-    commit_failed_callback_[navigation_id] =
+    commit_failed_callback_[navigation_request] =
         BuildCommitFailedNavigationCallback(navigation_request);
   }
 }
@@ -648,8 +643,8 @@ TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
   return interface_params;
 }
 
-void TestRenderFrameHost::AbortCommit(int64_t navigation_id) {
-  OnCrossDocumentCommitProcessed(navigation_id,
+void TestRenderFrameHost::AbortCommit(NavigationRequest* navigation_request) {
+  OnCrossDocumentCommitProcessed(navigation_request,
                                  blink::mojom::CommitResult::Aborted);
 }
 
