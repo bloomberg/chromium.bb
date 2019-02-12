@@ -44,6 +44,7 @@ public class FindToolbarPhone extends FindToolbar {
     @Override
     protected void updateVisualsForTabModel(boolean isIncognito) {
         int queryTextColorId;
+        int queryHintTextColorId;
         if (isIncognito) {
             setBackgroundColor(ColorUtils.getDefaultThemeColor(getResources(), true));
             ColorStateList white =
@@ -52,6 +53,8 @@ public class FindToolbarPhone extends FindToolbar {
             ApiCompatibilityUtils.setImageTintList(mFindPrevButton, white);
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, white);
             queryTextColorId = R.color.find_in_page_query_white_color;
+            queryHintTextColorId = R.color.find_in_page_query_incognito_hint_color;
+
         } else {
             setBackgroundColor(Color.WHITE);
             ColorStateList dark =
@@ -60,9 +63,12 @@ public class FindToolbarPhone extends FindToolbar {
             ApiCompatibilityUtils.setImageTintList(mFindPrevButton, dark);
             ApiCompatibilityUtils.setImageTintList(mCloseFindButton, dark);
             queryTextColorId = R.color.default_text_color;
+            queryHintTextColorId = R.color.find_in_page_query_default_hint_color;
         }
         mFindQuery.setTextColor(
                 ApiCompatibilityUtils.getColor(getContext().getResources(), queryTextColorId));
+        mFindQuery.setHintTextColor(
+                ApiCompatibilityUtils.getColor(getContext().getResources(), queryHintTextColorId));
     }
 
     @Override
