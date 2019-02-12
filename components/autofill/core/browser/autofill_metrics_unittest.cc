@@ -2899,7 +2899,6 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
                        /*identity_manager=*/nullptr,
                        /*client_profile_validator=*/nullptr,
                        /*history_service=*/nullptr,
-                       /*cookie_manager_sevice=*/nullptr,
                        /*is_off_the_record=*/false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
 }
@@ -2914,7 +2913,6 @@ TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
                        /*identity_manager=*/nullptr,
                        /*client_profile_validator=*/nullptr,
                        /*history_service=*/nullptr,
-                       /*cookie_manager_sevice=*/nullptr,
                        /*is_off_the_record=*/false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
 }

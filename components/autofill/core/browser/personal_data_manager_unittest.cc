@@ -187,10 +187,10 @@ class PersonalDataManagerTestBase {
 
   void ResetPersonalDataManager(UserMode user_mode,
                                 bool use_sync_transport_mode,
-                                PersonalDataManager* personal_data_) {
+                                PersonalDataManager* personal_data) {
     bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
 
-    personal_data_->Init(
+    personal_data->Init(
         scoped_refptr<AutofillWebDataService>(profile_database_service_),
         base::FeatureList::IsEnabled(
             features::kAutofillEnableAccountWalletStorage)
@@ -198,28 +198,27 @@ class PersonalDataManagerTestBase {
             : nullptr,
         prefs_.get(), identity_test_env_.identity_manager(),
         TestAutofillProfileValidator::GetInstance(),
-        /*history_service=*/nullptr, /*cookie_manager_sevice=*/nullptr,
-        is_incognito);
+        /*history_service=*/nullptr, is_incognito);
 
-    personal_data_->AddObserver(&personal_data_observer_);
+    personal_data->AddObserver(&personal_data_observer_);
     AccountInfo account_info;
     account_info.email = "sync@account";
     sync_service_.SetAuthenticatedAccountInfo(account_info);
     sync_service_.SetIsAuthenticatedAccountPrimary(!use_sync_transport_mode);
-    personal_data_->OnSyncServiceInitialized(&sync_service_);
-    personal_data_->OnStateChanged(&sync_service_);
+    personal_data->OnSyncServiceInitialized(&sync_service_);
+    personal_data->OnStateChanged(&sync_service_);
 
     WaitForOnPersonalDataChangedRepeatedly();
   }
 
-  bool TurnOnSyncFeature(PersonalDataManager* personal_data_)
+  bool TurnOnSyncFeature(PersonalDataManager* personal_data)
       WARN_UNUSED_RESULT {
     sync_service_.SetIsAuthenticatedAccountPrimary(true);
     if (!sync_service_.IsSyncFeatureEnabled())
       return false;
-    personal_data_->OnStateChanged(&sync_service_);
+    personal_data->OnStateChanged(&sync_service_);
 
-    return personal_data_->IsSyncFeatureEnabled();
+    return personal_data->IsSyncFeatureEnabled();
   }
 
   void EnableWalletCardImport() {
@@ -228,16 +227,15 @@ class PersonalDataManagerTestBase {
         switches::kEnableOfferStoreUnmaskedWalletCards);
   }
 
-  void RemoveByGUIDFromPersonalDataManager(
-      const std::string& guid,
-      PersonalDataManager* personal_data_) {
+  void RemoveByGUIDFromPersonalDataManager(const std::string& guid,
+                                           PersonalDataManager* personal_data) {
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
         .WillOnce(QuitMessageLoop(&run_loop));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(testing::AnyNumber());
 
-    personal_data_->RemoveByGUID(guid);
+    personal_data->RemoveByGUID(guid);
     run_loop.Run();
   }
 
@@ -283,14 +281,14 @@ class PersonalDataManagerTestBase {
     return account_info;
   }
 
-  void MoveJapanCityToStreetAddress(PersonalDataManager* personal_data_,
+  void MoveJapanCityToStreetAddress(PersonalDataManager* personal_data,
                                     int move_times) {
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
         .WillRepeatedly(QuitMessageLoop(&run_loop));
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .Times(move_times);
-    personal_data_->MoveJapanCityToStreetAddress();
+    personal_data->MoveJapanCityToStreetAddress();
     run_loop.Run();
   }
 
@@ -314,8 +312,16 @@ class PersonalDataManagerTestBase {
 
 class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
  protected:
+  virtual ~PersonalDataManagerHelper() {
+    if (personal_data_)
+      personal_data_->Shutdown();
+    personal_data_.reset();
+  }
+
   void ResetPersonalDataManager(UserMode user_mode,
                                 bool use_account_server_storage = false) {
+    if (personal_data_)
+      personal_data_->Shutdown();
     personal_data_.reset(new PersonalDataManager("en"));
     PersonalDataManagerTestBase::ResetPersonalDataManager(
         user_mode, use_account_server_storage, personal_data_.get());
@@ -556,9 +562,17 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
         atoi(version_info::GetVersionNumber().c_str()));
     personal_data_->is_autofill_profile_cleanup_pending_ = true;
   }
-  void TearDown() override { TearDownTest(); }
+
+  void TearDown() override {
+    if (personal_data_)
+      personal_data_->Shutdown();
+    personal_data_.reset();
+    TearDownTest();
+  }
 
   void ResetPersonalDataManager(UserMode user_mode) {
+    if (personal_data_)
+      personal_data_->Shutdown();
     personal_data_.reset(new PersonalDataManagerMock("en"));
     PersonalDataManagerTestBase::ResetPersonalDataManager(
         user_mode, /*use_account_server_storage=*/true, personal_data_.get());
@@ -6432,6 +6446,10 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
       1);
   histogram_tester.ExpectUniqueSample(
       "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
+
+  // Call OnSyncShutdown to ensure removing observer added by
+  // OnSyncServiceInitialized.
+  personal_data_->OnSyncShutdown(&sync_service);
 }
 #endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
@@ -7365,7 +7383,7 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
   }
 }
 
-TEST_F(PersonalDataManagerTest, OnGaiaCookieDeletedByUserAction) {
+TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
   // Set up some sync transport opt-ins in the prefs.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(prefs_.get(), "account1",
                                                        true);
@@ -7373,7 +7391,7 @@ TEST_F(PersonalDataManagerTest, OnGaiaCookieDeletedByUserAction) {
       prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
 
   // Simulate that the cookies get cleared by the user.
-  personal_data_->OnGaiaCookieDeletedByUserAction();
+  personal_data_->OnAccountsCookieDeletedByUserAction();
 
   // Make sure the pref is now empty.
   EXPECT_TRUE(
