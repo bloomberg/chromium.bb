@@ -456,8 +456,8 @@ public class PersonalDataManager {
 
         public String getFormattedExpirationDate(Context context) {
             return getMonth()
-                    + context.getResources().getString(
-                              R.string.autofill_card_unmask_expiration_date_separator) + getYear();
+                    + context.getResources().getString(R.string.autofill_expiration_date_separator)
+                    + getYear();
         }
 
         @CalledByNative("CreditCard")

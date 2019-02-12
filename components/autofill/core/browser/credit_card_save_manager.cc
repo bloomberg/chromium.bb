@@ -825,6 +825,10 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
         client_->ConfirmAccountNameFixFlow(base::BindOnce(
             &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
             weak_ptr_factory_.GetWeakPtr()));
+      } else if (should_request_expiration_date_from_user_) {
+        client_->ConfirmExpirationDateFixFlow(base::BindOnce(
+            &CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow,
+            weak_ptr_factory_.GetWeakPtr()));
       } else {
         OnUserDidAcceptUploadHelper(user_provided_card_details);
       }
@@ -850,6 +854,13 @@ void CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow(
   OnUserDidAcceptUploadHelper({cardholder_name,
                                /*expiration_date_month=*/base::string16(),
                                /*expiration_date_year=*/base::string16()});
+}
+
+void CreditCardSaveManager::OnUserDidAcceptExpirationDateFixFlow(
+    const base::string16& month,
+    const base::string16& year) {
+  OnUserDidAcceptUploadHelper(
+      {/*cardholder_name=*/base::string16(), month, year});
 }
 #endif
 

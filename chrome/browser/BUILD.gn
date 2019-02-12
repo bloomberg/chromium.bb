@@ -4855,6 +4855,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/WarmupManager.java",
       "../android/java/src/org/chromium/chrome/browser/WebContentsFactory.java",
       "../android/java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java",
+      "../android/java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardAccessoryBridge.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
       "../android/java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",

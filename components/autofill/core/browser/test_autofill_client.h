@@ -74,6 +74,9 @@ class TestAutofillClient : public AutofillClient {
 #if defined(OS_ANDROID)
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
+  void ConfirmExpirationDateFixFlow(
+      base::OnceCallback<void(const base::string16&, const base::string16&)>
+          callback) override;
 #endif  // defined(OS_ANDROID)
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,

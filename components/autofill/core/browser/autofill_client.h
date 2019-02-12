@@ -260,6 +260,11 @@ class AutofillClient : public RiskDataLoader {
   // name from the user.
   virtual void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) = 0;
+  // Run |callback| if the card should be uploaded to payments with updated
+  // expiration date from the user.
+  virtual void ConfirmExpirationDateFixFlow(
+      base::OnceCallback<void(const base::string16&, const base::string16&)>
+          callback) = 0;
 #endif  // defined(OS_ANDROID)
 
   // Runs |callback| once the user makes a decision with respect to the

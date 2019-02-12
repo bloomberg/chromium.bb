@@ -86,6 +86,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuItemIcon.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuObserver.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuPropertiesDelegate.java",
+  "java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowBridge.java",
+  "java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowPrompt.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillKeyboardAccessoryBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillNameFixFlowBridge.java",

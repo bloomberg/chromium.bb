@@ -71,11 +71,13 @@
 #include "chrome/browser/android/signin/signin_promo_util_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
+#include "chrome/browser/ui/android/autofill/card_expiration_date_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/autofill/card_name_fix_flow_view_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_credit_card_filling_infobar.h"
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
+#include "components/autofill/core/browser/ui/card_expiration_date_fix_flow_view_delegate_mobile.h"
 #include "components/autofill/core/browser/ui/card_name_fix_flow_view_delegate_mobile.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/android/window_android.h"
@@ -292,7 +294,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/false, /*should_request_name_from_user=*/false, card,
+              /*upload=*/false, /*should_request_name_from_user=*/false,
+              /*should_request_expiration_date_from_user=*/false, card,
               std::make_unique<base::DictionaryValue>(),
               /*upload_save_card_callback=*/
               AutofillClient::UploadSaveCardPromptCallback(),
@@ -322,6 +325,21 @@ void ChromeAutofillClient::ConfirmAccountNameFixFlow(
           std::move(card_name_fix_flow_view_delegate_mobile), web_contents());
   card_name_fix_flow_view_android_->Show();
 }
+
+void ChromeAutofillClient::ConfirmExpirationDateFixFlow(
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  std::unique_ptr<CardExpirationDateFixFlowViewDelegateMobile>
+      card_expiration_date_fix_flow_view_delegate_mobile =
+          std::make_unique<CardExpirationDateFixFlowViewDelegateMobile>(
+              /*upload_save_card_callback=*/std::move(callback));
+
+  card_expiration_date_fix_flow_view_android_ =
+      std::make_unique<CardExpirationDateFixFlowViewAndroid>(
+          std::move(card_expiration_date_fix_flow_view_delegate_mobile),
+          web_contents());
+  card_expiration_date_fix_flow_view_android_->Show();
+}
 #endif
 
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
@@ -336,7 +354,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-              /*upload=*/true, should_request_name_from_user, card,
+              /*upload=*/true, should_request_name_from_user,
+              should_request_expiration_date_from_user, card,
               std::move(legal_message),
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/
