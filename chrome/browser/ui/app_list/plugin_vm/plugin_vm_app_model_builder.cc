@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/plugin_vm/plugin_vm_app_model_builder.h"
 
+#include "base/no_destructor.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/plugin_vm/plugin_vm_app_item.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -21,11 +22,11 @@ PluginVmAppModelBuilder::PluginVmAppModelBuilder(
 PluginVmAppModelBuilder::~PluginVmAppModelBuilder() = default;
 
 void PluginVmAppModelBuilder::BuildModel() {
-  static const std::string kPluginVmTerminalId =
-      crx_file::id_util::GenerateId(kPluginVmTerminalAppName);
+  static const base::NoDestructor<std::string> kPluginVmTerminalId(
+      crx_file::id_util::GenerateId(kPluginVmTerminalAppName));
   InsertApp(std::make_unique<PluginVmAppItem>(
-      profile(), model_updater(), GetSyncItem(kPluginVmTerminalId),
-      kPluginVmTerminalId, kPluginVmTerminalAppName,
+      profile(), model_updater(), GetSyncItem(*kPluginVmTerminalId),
+      *kPluginVmTerminalId, kPluginVmTerminalAppName,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGO_PLUGIN_VM_LAUNCHER)));
 }

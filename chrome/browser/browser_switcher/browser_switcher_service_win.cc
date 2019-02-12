@@ -98,6 +98,13 @@ void SavePrefsToFile(std::string data) {
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MoveSuccess", success);
 }
 
+// URL to fetch the IEEM sitelist from. Only used for testing.
+base::Optional<std::string>* IeemSitelistUrlForTesting() {
+  static base::NoDestructor<base::Optional<std::string>>
+      ieem_sitelist_url_for_testing;
+  return ieem_sitelist_url_for_testing.get();
+}
+
 }  // namespace
 
 BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
@@ -127,19 +134,16 @@ BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
 
 BrowserSwitcherServiceWin::~BrowserSwitcherServiceWin() = default;
 
-base::Optional<std::string>
-    BrowserSwitcherServiceWin::ieem_sitelist_url_for_testing_;
-
 // static
 void BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(
     const std::string& spec) {
-  ieem_sitelist_url_for_testing_ = spec;
+  *IeemSitelistUrlForTesting() = spec;
 }
 
 // static
 GURL BrowserSwitcherServiceWin::GetIeemSitelistUrl() {
-  if (ieem_sitelist_url_for_testing_ != base::nullopt)
-    return GURL(*ieem_sitelist_url_for_testing_);
+  if (*IeemSitelistUrlForTesting() != base::nullopt)
+    return GURL((*IeemSitelistUrlForTesting()).value());
 
   base::win::RegKey key;
   if (ERROR_SUCCESS != key.Open(HKEY_LOCAL_MACHINE, kIeSiteListKey, KEY_READ) &&

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -38,11 +39,11 @@ base::LazyInstance<std::map<content::RenderProcessHost*, base::Closure>>::Leaky
 void EnableInternalPDFPluginForContents(int render_process_id,
                                         int render_frame_id) {
   // Always enable the internal PDF plugin for the print preview page.
-  static const base::FilePath pdf_plugin_path(
+  static const base::NoDestructor<base::FilePath> pdf_plugin_path(
       ChromeContentClient::kPDFPluginPath);
   auto* plugin_service = content::PluginService::GetInstance();
   const content::PepperPluginInfo* info =
-      plugin_service->GetRegisteredPpapiPluginInfo(pdf_plugin_path);
+      plugin_service->GetRegisteredPpapiPluginInfo(*pdf_plugin_path);
   if (!info)
     return;
 

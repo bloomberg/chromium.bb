@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -84,8 +85,9 @@ bool IsPepperPluginEnabled(Profile* profile,
 bool IsPdfPluginEnabled(Profile* profile) {
   DCHECK(profile);
 
-  static const base::FilePath plugin_path(ChromeContentClient::kPDFPluginPath);
-  return IsPepperPluginEnabled(profile, plugin_path);
+  static const base::NoDestructor<base::FilePath> plugin_path(
+      ChromeContentClient::kPDFPluginPath);
+  return IsPepperPluginEnabled(profile, *plugin_path);
 }
 
 bool IsFlashPluginEnabled(Profile* profile) {

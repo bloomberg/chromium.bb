@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -140,9 +141,10 @@ void PluginManager::UpdatePluginListWithNaClModules() {
   // there is a MIME type that module wants to handle, so we need to add that
   // MIME type to plugins which handle NaCl modules in order to allow the
   // individual modules to handle these types.
-  static const base::FilePath path(ChromeContentClient::kNaClPluginFileName);
+  static const base::NoDestructor<base::FilePath> path(
+      ChromeContentClient::kNaClPluginFileName);
   const content::PepperPluginInfo* pepper_info =
-      PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(path);
+      PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(*path);
   if (!pepper_info)
     return;
 
