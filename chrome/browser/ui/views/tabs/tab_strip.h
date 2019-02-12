@@ -385,6 +385,10 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets the visibility state of all tabs based on ShouldTabBeVisible().
   void SetTabVisibility();
 
+  // Updates the indexes and count for AX data on all tabs. Used by some screen
+  // readers (e.g. ChromeVox).
+  void UpdateAccessibleTabIndices();
+
   // Drags the active tab by |delta|. |initial_positions| is the x-coordinates
   // of the tabs when the drag started.  This is only called when
   // |touch_layout_| is non-null.
