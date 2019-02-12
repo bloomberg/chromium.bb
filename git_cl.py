@@ -3624,7 +3624,6 @@ def CMDbaseurl(parser, args):
     return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
                   error_ok=False).strip()
 
-
 def color_for_status(status):
   """Maps a Changelist status to color, for CMDstatus and other tools."""
   return {
@@ -3944,8 +3943,27 @@ def CMDstatus(parser, args):
                            fine_grained=not options.fast,
                            max_processes=options.maxjobs)
 
+  current_branch = GetCurrentBranch()
+
+  def FormatBranchName(branch, colorize=False):
+    """Simulates 'git branch' behavior. Colorizes and prefixes branch name with
+    an asterisk when it is the current branch."""
+
+    asterisk = ""
+    color = Fore.RESET
+    if branch == current_branch:
+      asterisk = "* "
+      color = Fore.GREEN
+    branch_name = ShortBranchName(branch)
+
+    if colorize:
+      return asterisk + color + branch_name + Fore.RESET
+    else:
+      return branch_name
+
   branch_statuses = {}
-  alignment = max(5, max(len(ShortBranchName(c.GetBranch())) for c in changes))
+
+  alignment = max(5, max(len(FormatBranchName(c.GetBranch())) for c in changes))
   for cl in sorted(changes, key=lambda c: c.GetBranch()):
     branch = cl.GetBranch()
     while branch not in branch_statuses:
@@ -3964,15 +3982,14 @@ def CMDstatus(parser, args):
       reset = ''
     status_str = '(%s)' % status if status else ''
     print('  %*s : %s%s %s%s' % (
-          alignment, ShortBranchName(branch), color, url,
+          alignment, FormatBranchName(branch, colorize=True), color, url,
           status_str, reset))
 
 
-  branch = GetCurrentBranch()
   print()
-  print('Current branch: %s' % branch)
+  print('Current branch: %s' % current_branch)
   for cl in changes:
-    if cl.GetBranch() == branch:
+    if cl.GetBranch() == current_branch:
       break
   if not cl.GetIssue():
     print('No issue assigned.')
