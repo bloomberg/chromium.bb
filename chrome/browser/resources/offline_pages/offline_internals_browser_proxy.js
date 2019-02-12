@@ -94,6 +94,18 @@ cr.define('offlineInternals', function() {
     setRecordPrefetchService: function(shouldLog) {},
 
     /**
+     * Sets whether limitless prefetching is enabled.
+     * @param {boolean} enabled Whether to enable limitless prefetching.
+     */
+    setLimitlessPrefetchingEnabled: function(enabled) {},
+
+    /**
+     * Gets whether limitless prefetching is enabled.
+     * @return {!Promise<boolean>} Whether limitless prefetching is enabled
+     */
+    getLimitlessPrefetchingEnabled: function() {},
+
+    /**
      * Gets the currently recorded logs.
      * @return {!Promise<!Array<string>>} A promise firing when the
      *     logs are retrieved.
@@ -206,6 +218,16 @@ cr.define('offlineInternals', function() {
     /** @override */
     setRecordPrefetchService: function(shouldLog) {
       chrome.send('setRecordPrefetchService', [shouldLog]);
+    },
+
+    /** @override */
+    setLimitlessPrefetchingEnabled: function(enabled) {
+      chrome.send('setLimitlessPrefetchingEnabled', [enabled]);
+    },
+
+    /** @override */
+    getLimitlessPrefetchingEnabled: function() {
+      return cr.sendWithPromise('getLimitlessPrefetchingEnabled');
     },
 
     /** @override */

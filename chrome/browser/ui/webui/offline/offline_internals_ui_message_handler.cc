@@ -34,6 +34,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_background_task_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "content/public/browser/web_ui.h"
@@ -402,6 +403,29 @@ void OfflineInternalsUIMessageHandler::HandleSetRecordPrefetchService(
     prefetch_service_->GetLogger()->SetIsLogging(should_record);
 }
 
+void OfflineInternalsUIMessageHandler::HandleSetLimitlessPrefetchingEnabled(
+    const base::ListValue* args) {
+  AllowJavascript();
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  DCHECK(!args->GetList().empty());
+  bool enabled = args->GetList()[0].GetBool();
+  offline_pages::prefetch_prefs::SetLimitlessPrefetchingEnabled(prefs, enabled);
+}
+
+void OfflineInternalsUIMessageHandler::HandleGetLimitlessPrefetchingEnabled(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  bool got_callback_id = args->Get(0, &callback_id);
+  DCHECK(got_callback_id);
+
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  bool enabled =
+      offline_pages::prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs);
+
+  ResolveJavascriptCallback(*callback_id, base::Value(enabled));
+}
+
 void OfflineInternalsUIMessageHandler::HandleGetLoggingState(
     const base::ListValue* args) {
   AllowJavascript();
@@ -522,6 +546,16 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
       base::BindRepeating(
           &OfflineInternalsUIMessageHandler::HandleSetRecordPrefetchService,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setLimitlessPrefetchingEnabled",
+      base::BindRepeating(&OfflineInternalsUIMessageHandler::
+                              HandleSetLimitlessPrefetchingEnabled,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getLimitlessPrefetchingEnabled",
+      base::BindRepeating(&OfflineInternalsUIMessageHandler::
+                              HandleGetLimitlessPrefetchingEnabled,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getLoggingState",
       base::BindRepeating(
