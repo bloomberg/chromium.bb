@@ -46,8 +46,8 @@ class BrowserThreadPostTaskBeforeThreadCreationBrowserTest
   }
 };
 
-// Flaky on Chrome OS. https://crbug.com/910834
-#if defined(OS_CHROMEOS)
+// Flaky on Chrome OS and Linux. https://crbug.com/910834
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_ExpectFailures DISABLED_ExpectFailures
 #else
 #define MAYBE_ExpectFailures ExpectFailures
