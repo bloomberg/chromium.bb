@@ -136,6 +136,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Returns true if in tablet mode.
   virtual bool IsTabletMode() const = 0;
 
+  // Invoked when an in-Assistant notification button is pressed.
+  virtual void OnNotificationButtonPressed(const std::string& notification_id,
+                                           int notification_button_index) = 0;
+
   // Invoked when suggestion chip is pressed.
   virtual void OnSuggestionChipPressed(
       const AssistantSuggestion* suggestion) = 0;

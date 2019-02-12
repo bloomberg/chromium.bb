@@ -144,6 +144,13 @@ bool AssistantViewDelegateImpl::IsTabletMode() const {
       ->IsTabletModeWindowManagerEnabled();
 }
 
+void AssistantViewDelegateImpl::OnNotificationButtonPressed(
+    const std::string& notification_id,
+    int notification_button_index) {
+  assistant_controller_->notification_controller()->OnNotificationClicked(
+      notification_id, notification_button_index, /*reply=*/base::nullopt);
+}
+
 void AssistantViewDelegateImpl::OnSuggestionChipPressed(
     const AssistantSuggestion* suggestion) {
   assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
