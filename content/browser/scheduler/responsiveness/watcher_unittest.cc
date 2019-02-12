@@ -89,7 +89,7 @@ class FakeWatcher : public Watcher {
   int NumTasksOnIOThread() { return calculator_->NumTasksOnIOThread(); }
 
  private:
-  ~FakeWatcher() override{};
+  ~FakeWatcher() override {}
   FakeCalculator* calculator_ = nullptr;
   bool register_message_loop_observer_ = false;
 };
