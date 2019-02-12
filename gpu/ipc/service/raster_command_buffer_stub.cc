@@ -135,7 +135,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       shared_context_state->use_virtualized_gl_contexts();
 
   command_buffer_ = std::make_unique<CommandBufferService>(
-      this, context_group_->transfer_buffer_manager());
+      this, context_group_->memory_tracker());
   std::unique_ptr<raster::RasterDecoder> decoder(raster::RasterDecoder::Create(
       this, command_buffer_.get(), manager->outputter(), context_group_.get(),
       shared_context_state));

@@ -195,10 +195,8 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 
 class CommandBufferCheckLostContext : public CommandBufferDirect {
  public:
-  CommandBufferCheckLostContext(TransferBufferManager* transfer_buffer_manager,
-                                bool context_lost_allowed)
-      : CommandBufferDirect(transfer_buffer_manager),
-        context_lost_allowed_(context_lost_allowed) {}
+  explicit CommandBufferCheckLostContext(bool context_lost_allowed)
+      : context_lost_allowed_(context_lost_allowed) {}
 
   ~CommandBufferCheckLostContext() override = default;
 
@@ -356,8 +354,8 @@ void GLManager::InitializeWithWorkaroundsImpl(
         &shared_image_manager_);
   }
 
-  command_buffer_.reset(new CommandBufferCheckLostContext(
-      context_group->transfer_buffer_manager(), options.context_lost_allowed));
+  command_buffer_.reset(
+      new CommandBufferCheckLostContext(options.context_lost_allowed));
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
       command_buffer_.get(), command_buffer_->service(), &outputter_,
@@ -427,9 +425,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 }
 
 size_t GLManager::GetSharedMemoryBytesAllocated() const {
-  return decoder_->GetContextGroup()
-      ->transfer_buffer_manager()
-      ->shared_memory_bytes_allocated();
+  return command_buffer_->service()->GetSharedMemoryBytesAllocated();
 }
 
 void GLManager::SetupBaseContext() {

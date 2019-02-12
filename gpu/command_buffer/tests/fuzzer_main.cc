@@ -363,8 +363,7 @@ class CommandBufferSetup {
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         gpu_feature_info, discardable_manager_.get(),
         passthrough_discardable_manager_.get(), &shared_image_manager_);
-    command_buffer_.reset(
-        new CommandBufferDirect(context_group->transfer_buffer_manager()));
+    command_buffer_.reset(new CommandBufferDirect());
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
     CHECK(feature_info->feature_flags().chromium_raster_transport);

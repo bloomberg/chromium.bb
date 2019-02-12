@@ -15,17 +15,16 @@
 namespace gpu {
 
 class AsyncAPIInterface;
-class TransferBufferManager;
 
 class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
                                        public CommandBufferServiceClient,
                                        public DecoderClient {
  public:
-  explicit CommandBufferDirect(TransferBufferManager* transfer_buffer_manager);
+  CommandBufferDirect();
   ~CommandBufferDirect() override;
 
   void set_handler(AsyncAPIInterface* handler) { handler_ = handler; }
-  CommandBufferServiceBase* service() { return &service_; }
+  CommandBufferService* service() { return &service_; }
 
   // CommandBuffer implementation:
   CommandBuffer::State GetLastState() override;
@@ -40,7 +39,7 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
                                              int32_t* id) override;
   void DestroyTransferBuffer(int32_t id) override;
 
-  // CommandBufferServiceBase implementation:
+  // CommandBufferServiceClient implementation:
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
 

@@ -101,7 +101,6 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
   share_group_ = manager->share_group();
   use_virtualized_gl_context_ = false;
 
-  TransferBufferManager* transfer_buffer_manager;
   // TODO: all of this is necessary to get a transfer buffer manager - we would
   // prefer to create a standalone one instead.
   {
@@ -120,12 +119,10 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
         manager->gpu_feature_info(), manager->discardable_manager(),
         manager->passthrough_discardable_manager(),
         manager->shared_image_manager());
-
-    transfer_buffer_manager = context_group_->transfer_buffer_manager();
   }
 
-  command_buffer_ =
-      std::make_unique<CommandBufferService>(this, transfer_buffer_manager);
+  command_buffer_ = std::make_unique<CommandBufferService>(
+      this, context_group_->memory_tracker());
   std::unique_ptr<webgpu::WebGPUDecoder> decoder(webgpu::WebGPUDecoder::Create(
       this, command_buffer_.get(), manager->outputter()));
 

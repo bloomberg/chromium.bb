@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -45,10 +44,7 @@ DirectContextProvider::DirectContextProvider(
       /*progress_reporter=*/nullptr, gpu_feature_info_, &discardable_manager_,
       &passthrough_discardable_manager_, &shared_image_manager_);
 
-  transfer_buffer_manager_ =
-      std::make_unique<gpu::TransferBufferManager>(nullptr);
-  auto command_buffer = std::make_unique<gpu::CommandBufferDirect>(
-      transfer_buffer_manager_.get());
+  auto command_buffer = std::make_unique<gpu::CommandBufferDirect>();
 
   std::unique_ptr<gpu::gles2::GLES2Decoder> decoder(
       gpu::gles2::GLES2Decoder::Create(command_buffer.get(),

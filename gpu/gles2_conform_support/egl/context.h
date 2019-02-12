@@ -111,7 +111,6 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool is_current_in_some_thread_;
   bool is_destroyed_;
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
-  std::unique_ptr<gpu::TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<gpu::CommandBufferDirect> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
 

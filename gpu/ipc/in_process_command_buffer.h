@@ -64,7 +64,6 @@ class ImageFactory;
 class SharedImageFactory;
 class SharedImageInterface;
 class SyncPointClientState;
-class TransferBufferManager;
 struct ContextCreationAttribs;
 struct SwapBuffersCompleteParams;
 
@@ -316,7 +315,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   bool use_virtualized_gl_context_ = false;
   raster::GrShaderCache* gr_shader_cache_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
-  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<DecoderContext> decoder_;
   base::Optional<raster::GrCacheController> gr_cache_controller_;

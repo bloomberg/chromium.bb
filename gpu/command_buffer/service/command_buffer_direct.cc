@@ -16,9 +16,8 @@ uint64_t g_next_command_buffer_id = 1;
 
 }  // anonymous namespace
 
-CommandBufferDirect::CommandBufferDirect(
-    TransferBufferManager* transfer_buffer_manager)
-    : service_(this, transfer_buffer_manager),
+CommandBufferDirect::CommandBufferDirect()
+    : service_(this, nullptr),
       command_buffer_id_(
           CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)) {}
 

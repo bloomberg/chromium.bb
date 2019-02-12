@@ -13,9 +13,7 @@ namespace gpu {
 // until either it gets unlocked or the client waits for progress.
 class CommandBufferDirectLocked : public CommandBufferDirect {
  public:
-  explicit CommandBufferDirectLocked(
-      TransferBufferManager* transfer_buffer_manager)
-      : CommandBufferDirect(transfer_buffer_manager) {}
+  CommandBufferDirectLocked() = default;
   ~CommandBufferDirectLocked() override = default;
 
   // Overridden from CommandBufferDirect
