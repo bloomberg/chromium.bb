@@ -584,4 +584,25 @@ TEST_F(PipPositionerTest,
             CallAvoidObstacles(display, gfx::Rect(100, 100, 100, 100)));
 }
 
+TEST_F(PipPositionerTest, PipInitailPositionAvoidsObstacles) {
+  // Place a keyboard window at the initial position of a PIP window.
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(/*lock=*/true);
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(0, 0, 400, 100));
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+  // Ensure the initial PIP position is shifted below the keyboard.
+  EXPECT_EQ("8,100 100x100", window->layer()->GetTargetBounds().ToString());
+}
+
 }  // namespace ash

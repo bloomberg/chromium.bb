@@ -326,7 +326,7 @@ TEST_F(WindowAnimationsTest, SlideOutAnimationPlaysTwiceForPipWindow) {
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetBounds(gfx::Rect(8, 8, 100, 100));
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
@@ -335,23 +335,25 @@ TEST_F(WindowAnimationsTest, SlideOutAnimationPlaysTwiceForPipWindow) {
 
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
+  EXPECT_EQ("8,8 100x100", window->layer()->GetTargetBounds().ToString());
 
   window->Hide();
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
-  EXPECT_EQ("-150,0 100x100", window->layer()->GetTargetBounds().ToString());
+  EXPECT_EQ("-142,8 100x100", window->layer()->GetTargetBounds().ToString());
 
   // Reset the position and try again.
   window->Show();
-  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetBounds(gfx::Rect(8, 8, 100, 100));
   EXPECT_TRUE(window->layer()->visible());
+  EXPECT_EQ("8,8 100x100", window->layer()->GetTargetBounds().ToString());
 
   window->Hide();
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
   EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
-  EXPECT_EQ("-150,0 100x100", window->layer()->GetTargetBounds().ToString());
+  EXPECT_EQ("-142,8 100x100", window->layer()->GetTargetBounds().ToString());
 }
 
 }  // namespace ash
