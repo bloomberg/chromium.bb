@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SINK_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SINK_H_
 
-#include "content/public/renderer/media_stream_video_sink.h"
+#include "content/renderer/media_stream_video_sink.h"
 
 #include "base/memory/weak_ptr.h"
 #include "media/base/video_frame.h"

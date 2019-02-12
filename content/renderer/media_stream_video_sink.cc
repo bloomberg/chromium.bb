@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/renderer/media_stream_video_sink.h"
+#include "content/renderer/media_stream_video_sink.h"
 
+#include "content/public/renderer/media_stream_utils.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 
 namespace content {
@@ -21,27 +22,19 @@ void MediaStreamVideoSink::ConnectToTrack(
     bool is_sink_secure) {
   DCHECK(connected_track_.IsNull());
   connected_track_ = track;
-  MediaStreamVideoTrack* const video_track =
-      MediaStreamVideoTrack::GetVideoTrack(connected_track_);
-  DCHECK(video_track);
-  video_track->AddSink(this, callback, is_sink_secure);
+  AddSinkToMediaStreamTrack(track, this, callback, is_sink_secure);
 }
 
 void MediaStreamVideoSink::DisconnectFromTrack() {
-  MediaStreamVideoTrack* const video_track =
-      MediaStreamVideoTrack::GetVideoTrack(connected_track_);
-  if (video_track)
-    video_track->RemoveSink(this);
+  RemoveSinkFromMediaStreamTrack(connected_track_, this);
   connected_track_.Reset();
 }
 
 void MediaStreamVideoSink::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
-  MediaStreamVideoTrack* const video_track =
-      MediaStreamVideoTrack::GetVideoTrack(connected_track_);
-  if (!video_track)
+  if (connected_track_.IsNull())
     return;
-  video_track->OnFrameDropped(reason);
+  OnFrameDroppedAtMediaStreamSink(connected_track_, reason);
 }
 
 }  // namespace content

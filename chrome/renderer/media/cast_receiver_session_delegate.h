@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "chrome/renderer/media/cast_receiver_audio_valve.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "media/capture/video_capture_types.h"
 #include "media/cast/cast_receiver.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 
 class CastReceiverSessionDelegate : public CastSessionDelegateBase {
  public:

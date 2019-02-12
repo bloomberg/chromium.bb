@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
-#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
+#ifndef CONTENT_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
+#define CONTENT_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -17,13 +17,13 @@
 
 namespace content {
 
-// MediaStreamVideoSink is an interface used for receiving video frames from a
-// Video Stream Track or a Video Source. It should be extended by embedders,
-// which connect/disconnect the sink implementation to a track to start/stop the
-// flow of video frames.
+// MediaStreamVideoSink is a base class that contains implementation commonly
+// useful for implementations of blink::WebMediaStreamSink which
+// connect/disconnect the sink implementation to a track to start/stop the flow
+// of video frames.
 //
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html
-// All methods calls will be done from the main render thread.
+// All methods calls must be made from the main render thread.
 class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
  public:
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
@@ -32,10 +32,9 @@ class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
   MediaStreamVideoSink();
   ~MediaStreamVideoSink() override;
 
-  // An implementation of MediaStreamVideoSink should call ConnectToTrack when
-  // it is ready to receive data from a video track. Before the implementation
-  // is destroyed, DisconnectFromTrack must be called. This MediaStreamVideoSink
-  // base class holds a reference to the WebMediaStreamTrack until
+  // A subclass should call ConnectToTrack when it is ready to receive data from
+  // a video track. Before destruction, DisconnectFromTrack must be called.
+  // This base class holds a reference to the WebMediaStreamTrack until
   // DisconnectFromTrack is called.
   //
   // Calls to these methods must be done on the main render thread.
@@ -65,4 +64,4 @@ class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
+#endif  // CONTENT_RENDERER_MEDIA_STREAM_VIDEO_SINK_H_
