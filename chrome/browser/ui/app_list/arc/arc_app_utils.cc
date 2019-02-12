@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
@@ -140,6 +141,10 @@ bool Launch(content::BrowserContext* context,
         ArcIntentHelperBridge::kArcIntentHelperPackageName,
         kIntentHelperClassName, extras_string);
   }
+
+  // Unthrottle the ARC instance before launching an ARC app. This is done
+  // to minimize lag on an app launch.
+  SetArcCpuRestriction(false /* do_restrict */);
 
   if (app_info->shortcut || intent.has_value()) {
     const std::string intent_uri = intent.value_or(app_info->intent_uri);
@@ -326,7 +331,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       // default to avoid slowing down Chrome's user session restoration.
       // However, the restriction should be lifted once the user explicitly
       // tries to launch an ARC app.
-      SetArcCpuRestriction(false);
+      SetArcCpuRestriction(false /* do_restrict */);
     }
     prefs->SetLastLaunchTime(app_id);
     return true;
