@@ -1136,6 +1136,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kHtmlTag:
         result += " html_tag=" + value;
         break;
+      case ax::mojom::StringAttribute::kImageAnnotation:
+        result += " image_annotation=" + value;
+        break;
       case ax::mojom::StringAttribute::kImageDataUrl:
         result += " image_data_url=(" +
                   base::NumberToString(static_cast<int>(value.size())) +

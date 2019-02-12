@@ -1198,6 +1198,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "fontFamily";
     case ax::mojom::StringAttribute::kHtmlTag:
       return "htmlTag";
+    case ax::mojom::StringAttribute::kImageAnnotation:
+      return "imageAnnotation";
     case ax::mojom::StringAttribute::kImageDataUrl:
       return "imageDataUrl";
     case ax::mojom::StringAttribute::kInnerHtml:
@@ -1252,6 +1254,8 @@ ax::mojom::StringAttribute ParseStringAttribute(const char* string_attribute) {
     return ax::mojom::StringAttribute::kFontFamily;
   if (0 == strcmp(string_attribute, "htmlTag"))
     return ax::mojom::StringAttribute::kHtmlTag;
+  if (0 == strcmp(string_attribute, "imageAnnotation"))
+    return ax::mojom::StringAttribute::kImageAnnotation;
   if (0 == strcmp(string_attribute, "imageDataUrl"))
     return ax::mojom::StringAttribute::kImageDataUrl;
   if (0 == strcmp(string_attribute, "innerHtml"))
