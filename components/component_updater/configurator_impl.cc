@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"

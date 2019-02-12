@@ -22,14 +22,11 @@ class DictionaryValue;
 class FilePath;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-}  // namespace network
-
 namespace update_client {
 
 class Component;
+class NetworkFetcher;
+class NetworkFetcherFactory;
 struct CrxComponent;
 
 // Defines a name-value pair that represents an installer attribute.
@@ -43,13 +40,13 @@ using LoadCompleteCallback =
 // Sends a protocol request to the the service endpoint specified by |url|.
 // The body of the request is provided by |protocol_request| and it is
 // expected to contain XML data. The caller owns the returned object.
-std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
+std::unique_ptr<NetworkFetcher> SendProtocolRequest(
     const GURL& url,
     const base::flat_map<std::string, std::string>&
         protocol_request_extra_headers,
     const std::string& protocol_request,
     LoadCompleteCallback callback,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+    scoped_refptr<NetworkFetcherFactory> network_fetcher_factory);
 
 // Returns true if the |component| contains a valid differential update url.
 bool HasDiffUpdate(const Component& component);

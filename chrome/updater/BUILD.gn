@@ -33,6 +33,7 @@ source_set("common") {
     "//components/version_info",
     "//mojo/core/embedder",
     "//net",
+    "//url",
   ]
 }
 

@@ -5,9 +5,11 @@
 #include "chrome/updater/configurator.h"
 
 #include "base/version.h"
+#include "components/update_client/network.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/version_info/version_info.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -82,8 +84,8 @@ std::string Configurator::GetDownloadPreference() const {
   return {};
 }
 
-scoped_refptr<network::SharedURLLoaderFactory> Configurator::URLLoaderFactory()
-    const {
+scoped_refptr<update_client::NetworkFetcherFactory>
+Configurator::GetNetworkFetcherFactory() {
   return nullptr;
 }
 

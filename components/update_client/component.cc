@@ -20,6 +20,7 @@
 #include "components/update_client/action_runner.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/network.h"
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/task_traits.h"
@@ -620,7 +621,7 @@ void Component::StateDownloadingDiff::DoHandle() {
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
-      update_context.config->URLLoaderFactory());
+      update_context.config->GetNetworkFetcherFactory());
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
@@ -685,7 +686,7 @@ void Component::StateDownloading::DoHandle() {
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
-      update_context.config->URLLoaderFactory());
+      update_context.config->GetNetworkFetcherFactory());
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(

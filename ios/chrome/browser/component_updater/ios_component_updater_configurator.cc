@@ -15,11 +15,13 @@
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/activity_data_service.h"
+#include "components/update_client/network.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/common/channel_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace component_updater {
@@ -45,8 +47,8 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const override;
+  scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
+      override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -66,6 +68,7 @@ class IOSConfigurator : public update_client::Configurator {
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
 
   ConfiguratorImpl configurator_impl_;
+  scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
 
   ~IOSConfigurator() override {}
 };
@@ -137,9 +140,14 @@ std::string IOSConfigurator::GetDownloadPreference() const {
   return configurator_impl_.GetDownloadPreference();
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-IOSConfigurator::URLLoaderFactory() const {
-  return GetApplicationContext()->GetSharedURLLoaderFactory();
+scoped_refptr<update_client::NetworkFetcherFactory>
+IOSConfigurator::GetNetworkFetcherFactory() {
+  if (!network_fetcher_factory_) {
+    network_fetcher_factory_ =
+        base::MakeRefCounted<update_client::NetworkFetcherFactory>(
+            GetApplicationContext()->GetSharedURLLoaderFactory());
+  }
+  return network_fetcher_factory_;
 }
 
 std::unique_ptr<service_manager::Connector>
