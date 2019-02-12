@@ -130,16 +130,11 @@ class TraceEventDataSource::ThreadLocalEventSink {
  public:
   ThreadLocalEventSink(
       std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
-      perfetto::BufferID target_buffer,
+      uint32_t session_id,
       bool thread_will_flush)
       : trace_writer_(std::move(trace_writer)),
-        target_buffer_(target_buffer),
-        thread_will_flush_(thread_will_flush) {
-#if DCHECK_IS_ON()
-    static std::atomic<int32_t> id_counter(1);
-    sink_id_ = id_counter.fetch_add(1, std::memory_order_relaxed);
-#endif  // DCHECK_IS_ON()
-  }
+        session_id_(session_id),
+        thread_will_flush_(thread_will_flush) {}
 
   ~ThreadLocalEventSink() {
     // Finalize the current message before posting the |trace_writer_| for
@@ -220,13 +215,10 @@ class TraceEventDataSource::ThreadLocalEventSink {
         return;
       }
 
-#if DCHECK_IS_ON()
-      handle->chunk_seq = sink_id_;
-#endif  // DCHECK_IS_ON()
-
       complete_event_stack_[current_stack_depth_] = std::move(*trace_event);
       handle->event_index = ++current_stack_depth_;
       handle->chunk_index = kMagicChunkIndex;
+      handle->chunk_seq = session_id_;
       return;
     }
 
@@ -401,13 +393,10 @@ class TraceEventDataSource::ThreadLocalEventSink {
   void UpdateDuration(base::trace_event::TraceEventHandle handle,
                       const base::TimeTicks& now,
                       const base::ThreadTicks& thread_now) {
-    if (!handle.event_index || handle.chunk_index != kMagicChunkIndex) {
+    if (!handle.event_index || handle.chunk_index != kMagicChunkIndex ||
+        handle.chunk_seq != session_id_) {
       return;
     }
-
-#if DCHECK_IS_ON()
-    DCHECK_EQ(handle.chunk_seq, sink_id_);
-#endif  // DCHECK_IS_ON()
 
     DCHECK_EQ(handle.event_index, current_stack_depth_);
     DCHECK_GE(current_stack_depth_, 1u);
@@ -434,11 +423,11 @@ class TraceEventDataSource::ThreadLocalEventSink {
     trace_writer_->Flush();
   }
 
-  perfetto::BufferID target_buffer() const { return target_buffer_; }
+  uint32_t session_id() const { return session_id_; }
 
  private:
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
-  perfetto::BufferID target_buffer_;
+  uint32_t session_id_;
   const bool thread_will_flush_;
   ChromeEventBundleHandle event_bundle_;
   perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
@@ -447,9 +436,6 @@ class TraceEventDataSource::ThreadLocalEventSink {
   size_t current_eventcount_for_message_ = 0;
   TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
   uint32_t current_stack_depth_ = 0;
-#if DCHECK_IS_ON()
-  uint32_t sink_id_;
-#endif  // DCHECK_IS_ON()
 };
 
 namespace {
@@ -509,11 +495,12 @@ void TraceEventDataSource::StartTracing(
 
     DCHECK(!producer_client_);
     producer_client_ = producer_client;
-    target_buffer_.store(data_source_config.target_buffer(),
-                         std::memory_order_relaxed);
+    target_buffer_ = data_source_config.target_buffer();
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
   }
+
+  session_id_.fetch_add(1u, std::memory_order_relaxed);
 
   if (unbound_writer_registry) {
     producer_client->BindStartupTraceWriterRegistry(
@@ -558,7 +545,7 @@ void TraceEventDataSource::StopTracing(
     base::AutoLock lock(lock_);
     DCHECK(producer_client_);
     producer_client_ = nullptr;
-    target_buffer_.store(0, std::memory_order_relaxed);
+    target_buffer_ = 0;
   }
 
   if (was_enabled) {
@@ -635,13 +622,12 @@ TraceEventDataSource::CreateThreadLocalEventSink(bool thread_will_flush) {
   if (startup_writer_registry_) {
     return new ThreadLocalEventSink(
         startup_writer_registry_->CreateUnboundTraceWriter(),
-        target_buffer_.load(std::memory_order_relaxed), thread_will_flush);
+        session_id_.load(std::memory_order_relaxed), thread_will_flush);
   } else if (producer_client_) {
     return new ThreadLocalEventSink(
         std::make_unique<perfetto::StartupTraceWriter>(
-            producer_client_->CreateTraceWriter(
-                target_buffer_.load(std::memory_order_relaxed))),
-        target_buffer_.load(std::memory_order_relaxed), thread_will_flush);
+            producer_client_->CreateTraceWriter(target_buffer_)),
+        session_id_.load(std::memory_order_relaxed), thread_will_flush);
   } else {
     return nullptr;
   }
@@ -660,17 +646,25 @@ void TraceEventDataSource::OnAddTraceEvent(
   // been reset if the current thread doesn't support flushing. In that case, we
   // need to check here that it writes to the right buffer.
   //
-  // Because we want to avoid locking for each event, we access |target_buffer_|
-  // racily. It's OK if we don't see it change to the new buffer immediately. In
+  // Because we want to avoid locking for each event, we access |session_id_|
+  // racily. It's OK if we don't see it change to the session immediately. In
   // that case, the first few trace events may get lost, but we will eventually
   // notice that we are writing to the wrong buffer once the change to
-  // |target_buffer_| has propagated, and reset the sink. Note we will still
+  // |session_id_| has propagated, and reset the sink. Note we will still
   // acquire the |lock_| to safely recreate the sink in
   // CreateThreadLocalEventSink().
-  if (!thread_will_flush && thread_local_event_sink &&
-      GetInstance()->target_buffer_.load(std::memory_order_relaxed) !=
-          thread_local_event_sink->target_buffer()) {
-    thread_local_event_sink = nullptr;
+  if (!thread_will_flush && thread_local_event_sink) {
+    uint32_t new_session_id =
+        GetInstance()->session_id_.load(std::memory_order_relaxed);
+    // Ignore the first session to avoid resetting the sink during startup
+    // tracing, where the sink is created with kInvalidSessionID. Resetting the
+    // sink during startup might cause data buffered in its potentially still
+    // unbound StartupTraceWriter to be lost.
+    if (new_session_id > kFirstSessionID &&
+        new_session_id != thread_local_event_sink->session_id()) {
+      delete thread_local_event_sink;
+      thread_local_event_sink = nullptr;
+    }
   }
 
   if (!thread_local_event_sink) {

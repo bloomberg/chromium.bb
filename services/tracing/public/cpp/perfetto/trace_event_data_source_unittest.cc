@@ -603,6 +603,8 @@ TEST_F(TraceEventDataSourceTest, UpdateDurationOfCompleteEvent) {
   EXPECT_EQ(new_events.size(), 1);
 }
 
+// TODO(eseckler): Add startup tracing unittests.
+
 }  // namespace
 
 }  // namespace tracing
