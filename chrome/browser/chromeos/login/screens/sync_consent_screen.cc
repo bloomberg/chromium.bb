@@ -14,9 +14,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -33,9 +33,9 @@ constexpr const char kUserActionContinueWithSyncAndPersonalization[] =
 constexpr base::TimeDelta kSyncConsentSettingsShowDelay =
     base::TimeDelta::FromSeconds(3);
 
-browser_sync::ProfileSyncService* GetSyncService(Profile* profile) {
+syncer::SyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
-    return ProfileSyncServiceFactory::GetForProfile(profile);
+    return ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   return nullptr;
 }
 
@@ -225,8 +225,7 @@ void SyncConsentScreen::RecordConsent(
 bool SyncConsentScreen::IsProfileSyncDisabledByPolicy() const {
   if (test_sync_disabled_by_policy_.has_value())
     return test_sync_disabled_by_policy_.value();
-  const browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(profile_);
+  const syncer::SyncService* sync_service = GetSyncService(profile_);
   return sync_service->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 }
@@ -234,8 +233,7 @@ bool SyncConsentScreen::IsProfileSyncDisabledByPolicy() const {
 bool SyncConsentScreen::IsProfileSyncEngineInitialized() const {
   if (test_sync_engine_initialized_.has_value())
     return test_sync_engine_initialized_.value();
-  const browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(profile_);
+  const syncer::SyncService* sync_service = GetSyncService(profile_);
   return sync_service->IsEngineInitialized();
 }
 

@@ -31,8 +31,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -261,13 +262,13 @@ ExtensionFunction::ResponseAction
 WallpaperPrivateGetSyncSettingFunction::Run() {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
-                         CheckProfileSyncServiceStatus,
-                     this));
+      base::BindOnce(
+          &WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus,
+          this));
   return RespondLater();
 }
 
-void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
+void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   auto dict = std::make_unique<base::DictionaryValue>();
 
   if (retry_number_ > kRetryLimit) {
@@ -280,8 +281,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   }
 
   Profile* profile =  Profile::FromBrowserContext(browser_context());
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   if (!sync_service || !sync_service->CanSyncFeatureStart()) {
     // Sync as a whole is disabled.
     dict->SetBoolean(kSyncThemes, false);
@@ -305,9 +306,9 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   retry_number_++;
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
-                         CheckProfileSyncServiceStatus,
-                     this),
+      base::BindOnce(
+          &WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus,
+          this),
       retry_number_ * kRetryDelay);
 }
 

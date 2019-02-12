@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
@@ -51,6 +50,7 @@
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -627,8 +627,8 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
 }
 
 bool ChromePasswordProtectionService::IsHistorySyncEnabled() {
-  browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  syncer::SyncService* sync =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
