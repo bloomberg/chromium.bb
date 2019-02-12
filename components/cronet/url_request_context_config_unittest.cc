@@ -650,6 +650,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       "{\"QUIC\":{\"migrate_sessions_on_network_change_v2\":true,"
       "\"migrate_sessions_early_v2\":true,"
       "\"retry_on_alternate_network_before_handshake\":true,"
+      "\"idle_session_migration_period_seconds\":15,"
       "\"max_time_on_non_default_network_seconds\":10,"
       "\"max_migrations_to_non_default_network_on_write_error\":3,"
       "\"max_migrations_to_non_default_network_on_path_degrading\":4}}",
@@ -676,6 +677,8 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
   EXPECT_TRUE(params->quic_migrate_sessions_on_network_change_v2);
   EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
   EXPECT_TRUE(params->quic_retry_on_alternate_network_before_handshake);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(15),
+            params->quic_idle_session_migration_period);
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
             params->quic_max_time_on_non_default_network);
   EXPECT_EQ(3,
