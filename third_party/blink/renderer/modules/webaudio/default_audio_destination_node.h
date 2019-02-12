@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class BaseAudioContext;
+class AudioContext;
 class ExceptionState;
 class WebAudioLatencyHint;
 
@@ -96,10 +96,10 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
 
 class DefaultAudioDestinationNode final : public AudioDestinationNode {
  public:
-  static DefaultAudioDestinationNode* Create(BaseAudioContext*,
+  static DefaultAudioDestinationNode* Create(AudioContext*,
                                              const WebAudioLatencyHint&);
 
-  explicit DefaultAudioDestinationNode(BaseAudioContext&,
+  explicit DefaultAudioDestinationNode(AudioContext&,
                                        const WebAudioLatencyHint&);
 };
 

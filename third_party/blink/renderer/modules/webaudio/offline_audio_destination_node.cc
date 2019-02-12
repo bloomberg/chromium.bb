@@ -316,7 +316,7 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
   // Take care pre-render tasks at the beginning of each render quantum. Then
   // it will stop the rendering loop if the context needs to be suspended
   // at the beginning of the next render quantum.
-  if (Context()->HandlePreOfflineRenderTasks()) {
+  if (Context()->HandlePreRenderTasks(nullptr, nullptr)) {
     SuspendOfflineRendering();
     return true;
   }
@@ -344,7 +344,7 @@ bool OfflineAudioDestinationHandler::RenderIfNotSuspended(
 
   // Let the context take care of any business at the end of each render
   // quantum.
-  Context()->HandlePostOfflineRenderTasks();
+  Context()->HandlePostRenderTasks();
 
   // Advance current sample-frame.
   AdvanceCurrentSampleFrame(number_of_frames);
