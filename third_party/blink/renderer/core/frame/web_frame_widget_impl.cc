@@ -527,9 +527,6 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   return true;
 }
 
-void WebFrameWidgetImpl::Initialize() {
-}
-
 void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
     const IntrinsicSizingInfo& sizing_info) {
   WebIntrinsicSizingInfo web_sizing_info;

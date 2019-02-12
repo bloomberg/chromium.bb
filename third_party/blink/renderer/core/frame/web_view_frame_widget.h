@@ -83,7 +83,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
 
   // WebFrameWidgetBase overrides:
-  void Initialize() override;
   void SetLayerTreeView(WebLayerTreeView*) override;
   bool ForSubframe() const override { return false; }
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>

@@ -57,8 +57,6 @@ WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = ToWebLocalFrameImpl(local_root);
   local_root_->SetFrameWidget(this);
-
-  Initialize();
 }
 
 void WebFrameWidgetBase::Close() {
