@@ -12,7 +12,6 @@ include_rules = [
   "+ui",
 
   # Needed to embed the ServiceManager in //ios/web.
-  "+services/catalog",
   "+services/service_manager",
 
   # For tests.

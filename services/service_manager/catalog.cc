@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/catalog/catalog.h"
+#include "services/service_manager/catalog.h"
 
 #include <string>
 #include <utility>
@@ -26,11 +26,9 @@
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace catalog {
+namespace service_manager {
 
 namespace {
-
-using Manifest = service_manager::Manifest;
 
 std::map<Manifest::ServiceName, const Manifest*> CreateManifestMap(
     const std::vector<Manifest>& manifests) {
@@ -89,7 +87,7 @@ Catalog::Catalog(const std::vector<Manifest>& manifests)
     : manifests_(manifests),
       manifest_map_(CreateManifestMap(manifests_)),
       parent_manifest_map_(CreateParentManifestMap(manifests_)) {
-  registry_.AddInterface<mojom::Catalog>(base::BindRepeating(
+  registry_.AddInterface<catalog::mojom::Catalog>(base::BindRepeating(
       &Catalog::BindCatalogRequest, base::Unretained(this)));
   registry_.AddInterface<filesystem::mojom::Directory>(base::BindRepeating(
       &Catalog::BindDirectoryRequest, base::Unretained(this)));
@@ -97,12 +95,11 @@ Catalog::Catalog(const std::vector<Manifest>& manifests)
 
 Catalog::~Catalog() = default;
 
-void Catalog::BindServiceRequest(
-    service_manager::mojom::ServiceRequest request) {
+void Catalog::BindServiceRequest(mojom::ServiceRequest request) {
   service_binding_.Bind(std::move(request));
 }
 
-const service_manager::Manifest* Catalog::GetManifest(
+const Manifest* Catalog::GetManifest(
     const Manifest::ServiceName& service_name) {
   const auto it = manifest_map_.find(service_name);
   if (it == manifest_map_.end())
@@ -110,7 +107,7 @@ const service_manager::Manifest* Catalog::GetManifest(
   return it->second;
 }
 
-const service_manager::Manifest* Catalog::GetParentManifest(
+const Manifest* Catalog::GetParentManifest(
     const Manifest::ServiceName& service_name) {
   auto it = parent_manifest_map_.find(service_name);
   if (it == parent_manifest_map_.end())
@@ -119,7 +116,7 @@ const service_manager::Manifest* Catalog::GetParentManifest(
   return it->second;
 }
 
-void Catalog::BindCatalogRequest(mojom::CatalogRequest request) {
+void Catalog::BindCatalogRequest(catalog::mojom::CatalogRequest request) {
   catalog_bindings_.AddBinding(this, std::move(request));
 }
 
@@ -152,28 +149,27 @@ void Catalog::BindDirectoryRequestOnBackgroundThread(
       std::move(request));
 }
 
-void Catalog::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
+void Catalog::OnBindInterface(const BindSourceInfo& source_info,
+                              const std::string& interface_name,
+                              mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void Catalog::GetEntries(const base::Optional<std::vector<std::string>>& names,
                          GetEntriesCallback callback) {
-  std::vector<mojom::EntryPtr> entries;
+  std::vector<catalog::mojom::EntryPtr> entries;
   if (!names.has_value()) {
     for (const auto& entry : manifest_map_) {
       const auto* manifest = entry.second;
-      entries.push_back(mojom::Entry::New(manifest->service_name,
-                                          manifest->display_name.raw_string));
+      entries.push_back(catalog::mojom::Entry::New(
+          manifest->service_name, manifest->display_name.raw_string));
     }
   } else {
     for (const std::string& name : names.value()) {
       const auto* manifest = GetManifest(name);
       if (manifest) {
-        entries.push_back(mojom::Entry::New(manifest->service_name,
-                                            manifest->display_name.raw_string));
+        entries.push_back(catalog::mojom::Entry::New(
+            manifest->service_name, manifest->display_name.raw_string));
       }
     }
   }
@@ -183,16 +179,16 @@ void Catalog::GetEntries(const base::Optional<std::vector<std::string>>& names,
 void Catalog::GetEntriesProvidingCapability(
     const std::string& capability,
     GetEntriesProvidingCapabilityCallback callback) {
-  std::vector<mojom::EntryPtr> entries;
+  std::vector<catalog::mojom::EntryPtr> entries;
   for (const auto& entry : manifest_map_) {
     const auto* manifest = entry.second;
     if (manifest->exposed_capabilities.find(capability) !=
         manifest->exposed_capabilities.end()) {
-      entries.push_back(mojom::Entry::New(manifest->service_name,
-                                          manifest->display_name.raw_string));
+      entries.push_back(catalog::mojom::Entry::New(
+          manifest->service_name, manifest->display_name.raw_string));
     }
   }
   std::move(callback).Run(std::move(entries));
 }
 
-}  // namespace catalog
+}  // namespace service_manager
