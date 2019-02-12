@@ -31,8 +31,8 @@ TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   // Fullscreen should be disabled in this frame
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
             container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_EQ(0UL, container_policy[0].origins.size());
+  EXPECT_EQ(0UL, container_policy[0].values.size());
+  EXPECT_GE(PolicyValue(false), container_policy[0].fallback_value);
 }
 
 }  // namespace blink

@@ -29,6 +29,7 @@ jumbo_source_set("common") {
     "download/download_stats.cc",
     "experiments/memory_ablation_experiment.cc",
     "feature_policy/feature_policy.cc",
+    "feature_policy/policy_value.cc",
     "features.cc",
     "frame/frame_policy.cc",
     "frame/from_ad_state.cc",

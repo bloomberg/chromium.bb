@@ -133,12 +133,33 @@ enum FeaturePolicyDisposition {
   kReport,
 };
 
+// This enum defines the types of parameters used to specify a feature policy.
+// TODO(loonybear): Add the following types: inc/dec int, inc/dec double, set.
+enum PolicyValueType {
+  kNull,
+  kBool,
+};
+
+// This union includes all the types that can be used to specify a policy's
+// parameter.
+// TODO(loonybear): Add the following types: inc/dec int, inc/dec double, set.
+union PolicyValueData {
+  bool null_value;
+  bool bool_value;
+};
+
+// Defined as a structure so that it can be typemapped with StructTraits.
+struct PolicyValue {
+  PolicyValueData data;
+};
+
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.
 // NOTE: These types are used for replication frame state between processes.
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
-  bool matches_all_origins;
-  array<url.mojom.Origin> origins;
+  map<url.mojom.Origin, PolicyValue> values;
+  PolicyValue fallback_value;
+  PolicyValue opaque_value;
 };

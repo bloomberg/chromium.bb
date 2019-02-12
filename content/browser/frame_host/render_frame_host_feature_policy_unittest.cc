@@ -83,9 +83,11 @@ class RenderFrameHostFeaturePolicyTest
       const std::vector<std::string>& origins) {
     blink::ParsedFeaturePolicy result(1);
     result[0].feature = feature;
-    result[0].matches_all_origins = false;
+    // TODO(loonybear): Add a test for non-bool type PolicyValue.
+    // crbug.com/924568.
     for (const std::string& origin : origins)
-      result[0].origins.push_back(url::Origin::Create(GURL(origin)));
+      result[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
+          url::Origin::Create(GURL(origin)), blink::PolicyValue(true)));
     return result;
   }
 };

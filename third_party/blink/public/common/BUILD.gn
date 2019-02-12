@@ -44,6 +44,7 @@ source_set("headers") {
     "download/download_stats.h",
     "experiments/memory_ablation_experiment.h",
     "feature_policy/feature_policy.h",
+    "feature_policy/policy_value.h",
     "features.h",
     "fetch/fetch_api_request_headers_map.h",
     "fetch/fetch_api_request_headers_mojom_traits.h",

@@ -4,6 +4,8 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 
 #include <algorithm>
+#include <map>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -112,6 +114,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       }
 
       mojom::FeaturePolicyFeature feature = feature_names.at(feature_name);
+      mojom::PolicyValueType feature_type =
+          FeaturePolicy::GetDefaultFeatureList().at(feature).second;
       // If a policy has already been specified for the current feature, drop
       // the new policy.
       if (features_specified.QuickGet(static_cast<int>(feature)))
@@ -132,11 +136,11 @@ ParsedFeaturePolicy ParseFeaturePolicy(
                                   feature);
       }
 
-      ParsedFeaturePolicyDeclaration allowlist;
-      allowlist.feature = feature;
+      ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
       features_specified.QuickSet(static_cast<int>(feature));
-      std::vector<url::Origin> origins;
-      // If a policy entry has no (optional) values (e,g,
+      std::map<url::Origin, PolicyValue> values;
+      PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
+      // If a policy entry has no listed origins (e.g. "feature_name1" in
       // allow="feature_name1; feature_name2 value"), enable the feature for:
       //     a. |self_origin|, if we are parsing a header policy (i.e.,
       //       |src_origin| is null);
@@ -145,11 +149,11 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       //     c. the opaque origin of the frame, if |src_origin| is opaque.
       if (tokens.size() == 1) {
         if (!src_origin) {
-          origins.push_back(self_origin->ToUrlOrigin());
+          values[self_origin->ToUrlOrigin()] = value;
         } else if (!src_origin->IsOpaque()) {
-          origins.push_back(src_origin->ToUrlOrigin());
+          values[src_origin->ToUrlOrigin()] = value;
         } else {
-          allowlist.matches_opaque_src = true;
+          allowlist.opaque_value = value;
         }
       }
 
@@ -159,7 +163,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           continue;
         }
         if (EqualIgnoringASCIICase(tokens[i], "'self'")) {
-          origins.push_back(self_origin->ToUrlOrigin());
+          values[self_origin->ToUrlOrigin()] = value;
         } else if (src_origin && EqualIgnoringASCIICase(tokens[i], "'src'")) {
           // Only the iframe allow attribute can define |src_origin|.
           // When parsing feature policy header, 'src' is disallowed and
@@ -167,32 +171,29 @@ ParsedFeaturePolicy ParseFeaturePolicy(
           // If the iframe will have an opaque origin (for example, if it is
           // sandboxed, or has a data: URL), then 'src' needs to refer to the
           // opaque origin of the frame, which is not known yet. In this case,
-          // the |matches_opaque_src| flag on the declaration is set, rather
-          // than adding an origin to the allowlist.
+          // the |opaque_value| on the declaration is set, rather than adding
+          // an origin to the allowlist.
           if (src_origin->IsOpaque()) {
-            allowlist.matches_opaque_src = true;
+            allowlist.opaque_value = value;
           } else {
-            origins.push_back(src_origin->ToUrlOrigin());
+            values[src_origin->ToUrlOrigin()] = value;
           }
         } else if (EqualIgnoringASCIICase(tokens[i], "'none'")) {
           continue;
         } else if (tokens[i] == "*") {
-          allowlist.matches_all_origins = true;
-          origins.clear();
+          allowlist.fallback_value.SetToMax();
+          allowlist.opaque_value.SetToMax();
           break;
         } else {
           scoped_refptr<SecurityOrigin> target_origin =
               SecurityOrigin::CreateFromString(tokens[i]);
           if (!target_origin->IsOpaque())
-            origins.push_back(target_origin->ToUrlOrigin());
+            values[target_origin->ToUrlOrigin()] = value;
           else if (messages)
             messages->push_back("Unrecognized origin: '" + tokens[i] + "'.");
         }
       }
-      std::sort(origins.begin(), origins.end());
-      auto new_end = std::unique(origins.begin(), origins.end());
-      origins.erase(new_end, origins.end());
-      allowlist.origins = std::move(origins);
+      allowlist.values = std::move(values);
       allowlists.push_back(allowlist);
     }
   }
@@ -223,10 +224,9 @@ bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature feature,
                                  ParsedFeaturePolicy& policy) {
   if (IsFeatureDeclared(feature, policy))
     return false;
-  ParsedFeaturePolicyDeclaration allowlist;
-  allowlist.feature = feature;
-  allowlist.matches_all_origins = false;
-  allowlist.matches_opaque_src = false;
+  blink::mojom::PolicyValueType feature_type =
+      blink::FeaturePolicy::GetDefaultFeatureList().at(feature).second;
+  ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
   policy.push_back(allowlist);
   return true;
 }
@@ -235,10 +235,11 @@ bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature feature,
                                         ParsedFeaturePolicy& policy) {
   if (IsFeatureDeclared(feature, policy))
     return false;
-  ParsedFeaturePolicyDeclaration allowlist;
-  allowlist.feature = feature;
-  allowlist.matches_all_origins = true;
-  allowlist.matches_opaque_src = true;
+  blink::mojom::PolicyValueType feature_type =
+      blink::FeaturePolicy::GetDefaultFeatureList().at(feature).second;
+  ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
+  allowlist.fallback_value.SetToMax();
+  allowlist.opaque_value.SetToMax();
   policy.push_back(allowlist);
   return true;
 }

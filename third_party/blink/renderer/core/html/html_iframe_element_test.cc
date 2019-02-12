@@ -19,6 +19,10 @@ class HTMLIFrameElementTest : public testing::Test {
       HTMLIFrameElement* element) {
     return element->GetOriginForFeaturePolicy();
   }
+
+ protected:
+  const PolicyValue min_value = PolicyValue(false);
+  const PolicyValue max_value = PolicyValue(true);
 };
 
 // Test that the correct origin is used when constructing the container policy,
@@ -196,9 +200,10 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_EQ(1UL, container_policy1.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
             container_policy1[0].feature);
-  EXPECT_FALSE(container_policy1[0].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy1[0].origins.size());
-  EXPECT_EQ("http://example.net", container_policy1[0].origins[0].Serialize());
+  EXPECT_GE(min_value, container_policy1[0].fallback_value);
+  EXPECT_EQ(1UL, container_policy1[0].values.size());
+  EXPECT_EQ("http://example.net",
+            container_policy1[0].values.begin()->first.Serialize());
 
   frame_element->setAttribute(html_names::kAllowAttr, "payment; fullscreen");
   frame_element->UpdateContainerPolicyForTests();
@@ -213,12 +218,13 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_TRUE(
       container_policy2[0].feature == mojom::FeaturePolicyFeature::kPayment ||
       container_policy2[1].feature == mojom::FeaturePolicyFeature::kPayment);
-  EXPECT_FALSE(container_policy2[0].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy2[0].origins.size());
-  EXPECT_EQ("http://example.net", container_policy2[0].origins[0].Serialize());
-  EXPECT_FALSE(container_policy2[1].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy2[1].origins.size());
-  EXPECT_EQ("http://example.net", container_policy2[1].origins[0].Serialize());
+  EXPECT_EQ(1UL, container_policy2[0].values.size());
+  EXPECT_EQ("http://example.net",
+            container_policy2[0].values.begin()->first.Serialize());
+  EXPECT_GE(min_value, container_policy2[1].fallback_value);
+  EXPECT_EQ(1UL, container_policy2[1].values.size());
+  EXPECT_EQ("http://example.net",
+            container_policy2[1].values.begin()->first.Serialize());
 }
 
 // Sandboxing an iframe should result in a container policy with an item for
@@ -280,9 +286,9 @@ TEST_F(HTMLIFrameElementTest, CrossOriginSandboxAttributeContainerPolicy) {
 
   const ParsedFeaturePolicyDeclaration item = *container_policy_item;
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, item.feature);
-  EXPECT_FALSE(item.matches_all_origins);
-  EXPECT_TRUE(item.matches_opaque_src);
-  EXPECT_EQ(0UL, item.origins.size());
+  EXPECT_GE(min_value, item.fallback_value);
+  EXPECT_LE(max_value, item.opaque_value);
+  EXPECT_EQ(0UL, item.values.size());
   RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
@@ -320,11 +326,11 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
 
   const ParsedFeaturePolicyDeclaration item = *container_policy_item;
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, item.feature);
-  EXPECT_FALSE(item.matches_all_origins);
-  EXPECT_FALSE(item.matches_opaque_src);
-  EXPECT_EQ(1UL, item.origins.size());
-  EXPECT_FALSE(item.origins[0].opaque());
-  EXPECT_EQ("http://example.net", item.origins[0].Serialize());
+  EXPECT_GE(min_value, item.fallback_value);
+  EXPECT_GE(min_value, item.opaque_value);
+  EXPECT_EQ(1UL, item.values.size());
+  EXPECT_FALSE(item.values.begin()->first.opaque());
+  EXPECT_EQ("http://example.net", item.values.begin()->first.Serialize());
   RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
@@ -357,14 +363,13 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicy) {
       frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
+  EXPECT_GE(min_value, container_policy[0].fallback_value);
+  EXPECT_EQ(1UL, container_policy[0].values.size());
+  EXPECT_TRUE(container_policy[0].values.begin()->first.IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kUsb, container_policy[1].feature);
-  EXPECT_FALSE(container_policy[1].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy[1].origins.size());
-  EXPECT_TRUE(container_policy[1].origins[0].IsSameOriginWith(
+  EXPECT_EQ(1UL, container_policy[1].values.size());
+  EXPECT_TRUE(container_policy[1].values.begin()->first.IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
 }
 
@@ -384,7 +389,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowFullscreen) {
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
             container_policy[0].feature);
-  EXPECT_TRUE(container_policy[0].matches_all_origins);
+  EXPECT_LE(max_value, container_policy[0].fallback_value);
 }
 
 // Test the ConstructContainerPolicy method when the "allowpaymentrequest"
@@ -404,12 +409,11 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowPaymentRequest) {
       frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kUsb, container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
+  EXPECT_GE(min_value, container_policy[0].fallback_value);
+  EXPECT_EQ(1UL, container_policy[0].values.size());
+  EXPECT_TRUE(container_policy[0].values.begin()->first.IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, container_policy[1].feature);
-  EXPECT_TRUE(container_policy[1].matches_all_origins);
 }
 
 // Test the ConstructContainerPolicy method when both "allowfullscreen" and
@@ -434,18 +438,16 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
       frame_element->ConstructContainerPolicy(nullptr);
   EXPECT_EQ(3UL, container_policy.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
+  EXPECT_GE(min_value, container_policy[0].fallback_value);
+  EXPECT_EQ(1UL, container_policy[0].values.size());
+  EXPECT_TRUE(container_policy[0].values.begin()->first.IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kUsb, container_policy[1].feature);
-  EXPECT_FALSE(container_policy[1].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy[1].origins.size());
-  EXPECT_TRUE(container_policy[1].origins[0].IsSameOriginWith(
+  EXPECT_EQ(1UL, container_policy[1].values.size());
+  EXPECT_TRUE(container_policy[1].values.begin()->first.IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
             container_policy[2].feature);
-  EXPECT_TRUE(container_policy[2].matches_all_origins);
 }
 
 }  // namespace blink
