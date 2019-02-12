@@ -10,6 +10,8 @@ import("//media/media_options.gni")
 declare_args() {
   system_owns_volume =
       use_alsa && !enable_assistant && chromecast_branding != "google"
+
+  mixer_output = ""
 }
 
 cast_source_set("backend") {
@@ -248,6 +250,9 @@ cast_source_set("for_mixer_audio") {
     # provide its own mixer output.
     if (!enable_video_with_mixed_audio) {
       sources += [ "mixer_output_stream_dummy.cc" ]
+    } else {
+      assert("$mixer_output" != "")
+      deps += [ "$mixer_output" ]
     }
   }
 }
