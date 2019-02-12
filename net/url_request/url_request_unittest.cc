@@ -12094,6 +12094,11 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagNotSet) {
 // Test that URLRequests get properly tagged.
 #if defined(OS_ANDROID)
 TEST_F(URLRequestTestHTTP, TestTagging) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   ASSERT_TRUE(http_test_server()->Start());
 
   // The tag under which the system reports untagged traffic.

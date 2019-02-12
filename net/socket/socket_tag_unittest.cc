@@ -56,6 +56,11 @@ TEST(SocketTagTest, Compares) {
 // works as expected.
 #if defined(OS_ANDROID)
 TEST(SocketTagTest, Apply) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   // Start test server.
   EmbeddedTestServer test_server;
   test_server.AddDefaultHandlers(base::FilePath());

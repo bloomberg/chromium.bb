@@ -1199,6 +1199,11 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
 // returned sockets.
 #if defined(OS_ANDROID)
 TEST_F(TransportClientSocketPoolTest, Tag) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   // Start test server.
   EmbeddedTestServer test_server;
   test_server.AddDefaultHandlers(base::FilePath());
@@ -1410,6 +1415,11 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
 }
 
 TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   const char kGroupName[] = "group_name";
 
   // Start test server.
@@ -1485,6 +1495,11 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
 }
 
 TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   const char kGroupName[] = "group_name";
 
   // Start test server.
@@ -1546,6 +1561,11 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
 }
 
 TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   const char kGroupName[] = "group_name";
 
   // Start test server.
