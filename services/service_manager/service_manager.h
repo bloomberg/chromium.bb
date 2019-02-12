@@ -15,10 +15,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/catalog/catalog.h"
-#include "services/catalog/service_options.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/interface_provider_spec.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -30,10 +28,6 @@
 #include "services/service_manager/service_process_launcher_factory.h"
 
 namespace service_manager {
-
-// Creates an identity for the singular Service Manager instance which is always
-// present in the system.
-const Identity& GetServiceManagerInstanceIdentity();
 
 class ServiceManager : public Service {
  public:
@@ -131,8 +125,7 @@ class ServiceManager : public Service {
 
   Instance* CreateInstance(const Identity& identity,
                            InstanceType instance_type,
-                           const InterfaceProviderSpecMap& specs,
-                           const catalog::ServiceOptions& options);
+                           const Manifest& manifest);
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);
