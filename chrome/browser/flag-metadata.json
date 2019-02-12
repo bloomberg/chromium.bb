@@ -74,7 +74,7 @@
   },
   {
     "name": "allow-previews",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -483,7 +483,7 @@
   },
   {
     "name": "data-saver-server-previews",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -997,7 +997,7 @@
   },
   {
     "name": "enable-client-lo-fi",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1062,17 +1062,17 @@
   },
   {
     "name": "enable-data-reduction-proxy-savings-promo",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-data-reduction-proxy-server-experiment",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-data-reduction-proxy-with-network-service",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1364,22 +1364,22 @@
   },
   {
     "name": "enable-lazy-frame-loading",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-lazy-image-loading",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-lite-mode-rebrand",
-    "owners": [ "robertogden@chromium.org" ],
-    "expiry_milestone": 75
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 76
   },
   {
     "name": "enable-lite-page-server-previews",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1479,7 +1479,7 @@
   },
   {
     "name": "enable-noscript-previews",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1554,7 +1554,7 @@
   },
   {
     "name": "enable-offline-previews",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1574,7 +1574,7 @@
   },
   {
     "name": "enable-optimization-hints",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1634,7 +1634,7 @@
   },
   {
     "name": "enable-previews-android-omnibox-ui",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1689,7 +1689,7 @@
   },
   {
     "name": "enable-resource-loading-hints",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -2173,8 +2173,10 @@
   },
   {
     "name": "force-effective-connection-type",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    // ECT is a baked-in feature of Chrome. This flag is used for frequent
+    // testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "force-enable-home-page-button",
@@ -2284,8 +2286,10 @@
   },
   {
     "name": "ignore-previews-blocklist",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    // Previews is a baked-in feature of Chrome. This flag is used for frequent
+    // testing and should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "in-product-help-demo-mode-choice",
