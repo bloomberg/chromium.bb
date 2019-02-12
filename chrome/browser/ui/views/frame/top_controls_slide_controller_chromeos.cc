@@ -195,7 +195,7 @@ class TopControlsSlideTabObserver : public content::WebContentsObserver,
   }
 
   void UpdateDoBrowserControlsShrinkRendererSize() {
-    shrink_renderer_size_ = shown_ratio_ > 0;
+    shrink_renderer_size_ = shown_ratio_ == 1.f;
   }
 
   // content::WebContentsObserver:
@@ -282,9 +282,11 @@ class TopControlsSlideTabObserver : public content::WebContentsObserver,
   float shown_ratio_ = 1.f;
 
   // Indicates whether the renderer's viewport size should be shrunk by the
-  // height of the browser's top controls. This value should only be updated at
-  // the end of sliding, and should never change while sliding or scrolling are
-  // in progress. https://crbug.com/885223.
+  // height of the browser's top controls. This value never changes while
+  // sliding is in progress. It is updated only once right before sliding begins
+  // and remains unchanged until sliding ends, at which point it is updated
+  // right before the final layout of the BrowserView.
+  // https://crbug.com/885223.
   bool shrink_renderer_size_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TopControlsSlideTabObserver);
@@ -348,27 +350,23 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
   // disabled, so that we're always synchronized with the renderer.
   DCHECK(observed_tabs_.count(contents));
 
-  // Note that there are two small windows of intervals between:
-  // 1- When |is_gesture_scrolling_in_progress_| is set to true (i.e. received
-  //    ET_GESTURE_SCROLL_BEGIN) and when |is_sliding_in_progress_| is set to
-  //    true (i.e. top-chrome actually starts moving), and
-  // 2- When |is_gesture_scrolling_in_progress_| is set to false (i.e.
-  //    ET_GESTURE_SCROLL_END was received) and when |is_sliding_in_progress_|
-  //    is set to false (i.e. top-chrome stopped moving) which can happen as the
-  //    renderer continues to animate top-chrome towards fully-shown or
-  //    fully-hidden after the user had lifted their fingers while the
-  //    shown_ratio is still a fractional value.
-  // Even during those two small windows, the
-  // `DoBrowserControlsShrinkRendererSize` bit should remain unchanged from its
-  // current value until sliding reaches a steady state.
-  // Make sure it doesn't get updated if sliding is about to start.
+  // The only times the `DoBrowserControlsShrinkRendererSize` bit is allowed to
+  // change are:
+  // 1) Right before we begin sliding the controls, which happens immediately
+  //    after we set a fractional shown ratio.
+  // 2) As soon as both gesture scrolling has finished and controls reach a
+  //    terminal value (1 or 0). Note that a scroll might finish but controls
+  //    might still be animating. In this case,
+  //    `DoBrowserControlsShrinkRendererSize` is changed when the animation
+  //    finishes.
+  const bool is_enabled = IsEnabled();
   const bool sliding_or_scrolling_in_progress =
       is_gesture_scrolling_in_progress_ || is_sliding_in_progress_ ||
-      (IsEnabled() && ratio != 0.f && ratio != 1.f);
+      (is_enabled && ratio != 0.f && ratio != 1.f);
   observed_tabs_[contents]->SetShownRatio(ratio,
                                           sliding_or_scrolling_in_progress);
 
-  if (!IsEnabled()) {
+  if (!is_enabled) {
     // However, if sliding is disabled, we don't update |shown_ratio_|, which is
     // the current value for the entire browser, and it must always be 1.f (i.e.
     // the top controls are fully shown).
@@ -567,15 +565,22 @@ void TopControlsSlideControllerChromeOS::OnEnabledStateChanged(bool new_state) {
 }
 
 void TopControlsSlideControllerChromeOS::Refresh() {
-  if (!is_gesture_scrolling_in_progress_ &&
-      (shown_ratio_ == 1.f || shown_ratio_ == 0.f)) {
+  const bool got_a_terminal_shown_ratio =
+      (shown_ratio_ == 1.f || shown_ratio_ == 0.f);
+  if (!is_gesture_scrolling_in_progress_ && got_a_terminal_shown_ratio) {
     // Reached a terminal value and gesture scrolling is not in progress.
     OnEndSliding();
     return;
   }
 
-  if (!is_sliding_in_progress_)
+  if (!is_sliding_in_progress_) {
+    if (got_a_terminal_shown_ratio) {
+      // Don't start sliding until we receive a fractional shown ratio.
+      return;
+    }
+
     OnBeginSliding();
+  }
 
   // Using |shown_ratio_|, translate the browser top controls (using the root
   // view layer), as well as the layer of page contents native view's container
@@ -615,6 +620,15 @@ void TopControlsSlideControllerChromeOS::OnBeginSliding() {
 
   // It should never be called again.
   DCHECK(!is_sliding_in_progress_);
+
+  // Explicitly update the `DoBrowserControlsShrinkRendererSize` bit here before
+  // we begin sliding, and before we resize the browser view below, which will
+  // result in changing the bounds of the `BrowserView::contents_web_view_`,
+  // causing the RednerWidgetHost to request the new value of the
+  // `DoBrowserControlsShrinkRendererSize` bit, which should be false from now
+  // on, during and after sliding, until only sliding ends and the top controls
+  // are fully shown.
+  UpdateDoBrowserControlsShrinkRendererSize();
 
   is_sliding_in_progress_ = true;
 
@@ -728,10 +742,7 @@ void TopControlsSlideControllerChromeOS::OnEndSliding() {
 
 void TopControlsSlideControllerChromeOS::
     UpdateDoBrowserControlsShrinkRendererSize() {
-  // It should never be called while gesture scrolling is still in progress.
-  DCHECK(!is_gesture_scrolling_in_progress_);
-
-  // Nor should it be called while sliding is in progress.
+  // It should never be called while sliding is in progress.
   DCHECK(!is_sliding_in_progress_);
 
   content::WebContents* active_contents = browser_view_->GetActiveWebContents();
