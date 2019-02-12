@@ -33,6 +33,9 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
                      int32_t element_instance_id);
 
  private:
+  class RenderFrameLifetimeObserver;
+  friend class RenderFrameLifetimeObserver;
+
   MimeHandlerViewFrameContainer(const blink::WebElement& plugin_element,
                                 const GURL& resource_url,
                                 const std::string& mime_type,
@@ -66,6 +69,7 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
 
   blink::WebElement plugin_element_;
   const int32_t element_instance_id_;
+  std::unique_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewFrameContainer);
 };

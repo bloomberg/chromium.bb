@@ -32,6 +32,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -91,6 +92,10 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
     return manager;
   }
 
+  content::WebContents* GetEmbedderWebContents() {
+    return browser()->tab_strip_model()->GetWebContentsAt(0);
+  }
+
   MimeHandlerViewGuest* GetLastGuestView() const {
     return MimeHandlerViewGuest::FromWebContents(
                GetGuestViewManager()->GetLastGuestCreated())
@@ -117,6 +122,7 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
     ASSERT_TRUE(extension);
 
     extensions::ResultCatcher catcher;
+
     ui_test_utils::NavigateToURL(browser(), url);
 
     if (!catcher.GetNextResult())
@@ -265,6 +271,35 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
                          kTestName.c_str(), cross_origin_url.c_str(),
                          other_cross_origin_url.c_str(), "testEmbedded.csv"));
   RunTestWithUrl(test_url);
+}
+
+// This test verifies that removing embedder RenderFrame will not crash the
+// renderer (for context see https://crbug.com/930803).
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       EmbedderFrameRemovedNoCrash) {
+  if (!is_cross_process_mode()) {
+    // The associated crash is due to handling an IPC which is only used on the
+    // frame-based MimeHandlerView.
+  }
+  RunTest("test_iframe.html");
+  auto* guest_view = GuestViewBase::FromWebContents(
+      GetGuestViewManager()->WaitForSingleGuestCreated());
+  ASSERT_TRUE(guest_view);
+  int32_t element_instance_id = guest_view->element_instance_id();
+  auto* embedder_web_contents = GetEmbedderWebContents();
+  auto* child_frame =
+      content::ChildFrameAt(embedder_web_contents->GetMainFrame(), 0);
+  content::RenderFrameDeletedObserver render_frame_observer(child_frame);
+  ASSERT_TRUE(
+      content::ExecJs(embedder_web_contents,
+                      "document.querySelector('iframe').outerHTML = ''"));
+  render_frame_observer.WaitUntilDeleted();
+  // Send the IPC. During destruction MHVFC would cause a UaF since it was not
+  // removed from the global map.
+  embedder_web_contents->GetMainFrame()->Send(
+      new ExtensionsGuestViewMsg_DestroyFrameContainer(element_instance_id));
+  // Running the following JS code fails if the renderer has crashed.
+  ASSERT_TRUE(content::ExecJs(embedder_web_contents, "window.name = 'foo'"));
 }
 
 // TODO(ekaramad): Somehow canceling a first dialog in a setup similar to the
@@ -464,12 +499,6 @@ class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
   ~MimeHandlerViewBrowserPluginSpecificTest() override {}
 
  protected:
-  // None of these test create new tabs, so the embedder should be the first
-  // tab.
-  content::WebContents* GetEmbedderWebContents() {
-    return browser()->tab_strip_model()->GetWebContentsAt(0);
-  }
-
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
 };
 
