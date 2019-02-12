@@ -6084,9 +6084,6 @@ crbug.com/929122 [ Linux ] external/wpt/html/dom/interfaces.worker.html [ Timeou
 crbug.com/929435 [ Mac ] external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/sub-sample-buffer-stitching.html [ Pass Failure ]
 
 # Sheriff 2019-02-11
-crbug.com/930654 [ Linux ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCIceTransport-extension.https.html [ Failure ]
-
-# Sheriff 2019-02-11
 ### external/wpt/html/semantics/links/links-created-by-a-and-area-elements/
 crbug.com/626703 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.html [ Failure Timeout Pass ]
 crbug.com/930873 external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener_base.html [ Timeout Pass ]
