@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/script_executor.h"
 
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -14,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
@@ -31,6 +33,82 @@ namespace {
 // to show up.
 constexpr base::TimeDelta kShortWaitForElementDeadline =
     base::TimeDelta::FromSeconds(2);
+
+// Intended for debugging. Writes a string representation of the status to
+// |out|.
+std::ostream& operator<<(std::ostream& out,
+                         const ProcessedActionStatusProto& status) {
+#ifdef NDEBUG
+  out << static_cast<int>(status);
+  return out;
+#else
+  switch (status) {
+    case ProcessedActionStatusProto::UNKNOWN_ACTION_STATUS:
+      out << "UNKNOWN_ACTION_STATUS";
+      break;
+    case ProcessedActionStatusProto::ELEMENT_RESOLUTION_FAILED:
+      out << "ELEMENT_RESOLUTION_FAILED";
+      break;
+    case ProcessedActionStatusProto::ACTION_APPLIED:
+      out << "ACTION_APPLIED";
+      break;
+    case ProcessedActionStatusProto::OTHER_ACTION_STATUS:
+      out << "OTHER_ACTION_STATUS";
+      break;
+    case ProcessedActionStatusProto::PAYMENT_REQUEST_ERROR:
+      out << "PAYMENT_REQUEST_ERROR";
+      break;
+    case ProcessedActionStatusProto::UNSUPPORTED_ACTION:
+      out << "UNSUPPORTED_ACTION";
+      break;
+    case ProcessedActionStatusProto::MANUAL_FALLBACK:
+      out << "MANUAL_FALLBACK";
+      break;
+    case ProcessedActionStatusProto::INTERRUPT_FAILED:
+      out << "INTERRUPT_FAILED";
+      break;
+    case ProcessedActionStatusProto::USER_ABORTED_ACTION:
+      out << "USER_ABORTED_ACTION";
+      break;
+      // Intentionally no default case to make compilation fail if a new value
+      // was added to the enum but not to this list.
+  }
+  return out;
+#endif  // NDEBUG
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const ScriptExecutor::AtEnd& at_end) {
+#ifdef NDEBUG
+  out << static_cast<int>(at_end);
+  return out;
+#else
+  switch (at_end) {
+    case ScriptExecutor::CONTINUE:
+      out << "CONTINUE";
+      break;
+    case ScriptExecutor::SHUTDOWN:
+      out << "SHUTDOWN";
+      break;
+    case ScriptExecutor::SHUTDOWN_GRACEFULLY:
+      out << "SHUTDOWN_GRACEFULLY";
+      break;
+    case ScriptExecutor::CLOSE_CUSTOM_TAB:
+      out << "CLOSE_CUSTOM_TAB";
+      break;
+    case ScriptExecutor::RESTART:
+      out << "RESTART";
+      break;
+    case ScriptExecutor::TERMINATE:
+      out << "TERMINATE";
+      break;
+      // Intentionally no default case to make compilation fail if a new value
+      // was added to the enum but not to this list.
+  }
+  return out;
+#endif  // NDEBUG
+}
+
 }  // namespace
 
 ScriptExecutor::ScriptExecutor(
@@ -63,11 +141,14 @@ ScriptExecutor::Result::Result() = default;
 ScriptExecutor::Result::~Result() = default;
 
 void ScriptExecutor::Run(RunScriptCallback callback) {
+  DVLOG(2) << "Starting script " << script_path_;
   (*scripts_state_)[script_path_] = SCRIPT_STATUS_RUNNING;
 
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
 
+  DVLOG(2) << "GetActions for "
+           << delegate_->GetWebController()->GetUrl().host();
   delegate_->GetService()->GetActions(
       script_path_, delegate_->GetWebController()->GetUrl(),
       delegate_->GetParameters(), last_global_payload_, last_script_payload_,
@@ -339,6 +420,7 @@ void ScriptExecutor::SetDetails(const Details& details) {
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool success = result && ProcessNextActionResponse(response);
+  DVLOG(2) << __func__ << " result=" << result;
   if (should_stop_script_) {
     // The last action forced the script to stop. Sending the result of the
     // action is considered best effort in this situation. Report a successful
@@ -423,7 +505,7 @@ void ScriptExecutor::ProcessNextAction() {
   // we could have more |processed_actions| than |actions_|.
   if (actions_.size() <= processed_actions_.size()) {
     DCHECK_EQ(actions_.size(), processed_actions_.size());
-    // Request more actions to execute.
+    DVLOG(2) << __func__ << ", get more actions";
     GetNextActions();
     return;
   }
@@ -443,6 +525,7 @@ void ScriptExecutor::ProcessNextAction() {
 }
 
 void ScriptExecutor::ProcessAction(Action* action) {
+  DVLOG(2) << "Begin action: " << *action;
   action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
                                              weak_ptr_factory_.GetWeakPtr()));
 }
@@ -467,6 +550,8 @@ void ScriptExecutor::OnProcessedAction(
         ProcessedActionStatusProto::USER_ABORTED_ACTION);
   }
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
+    DVLOG(1) << "Action failed: " << processed_action.status()
+             << ", get more actions";
     // Report error immediately, interrupting action processing.
     GetNextActions();
     return;
@@ -696,6 +781,13 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
 void ScriptExecutor::WaitWithInterrupts::Terminate() {
   if (interrupt_executor_)
     interrupt_executor_->Terminate();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const ScriptExecutor::Result& result) {
+  result.success ? out << "succeeded. " : out << "failed. ";
+  out << "at_end = " << result.at_end;
+  return out;
 }
 
 }  // namespace autofill_assistant

@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_H_
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -45,12 +46,21 @@ class Action {
 
   void UpdateProcessedAction(ProcessedActionStatusProto status);
 
+  // Intended for debugging. Writes a string representation of |action| to
+  // |out|.
+  friend std::ostream& operator<<(std::ostream& out, const Action& action);
+
   const ActionProto proto_;
 
   // Accumulate any result of this action during ProcessAction. Is only valid
   // during a run of ProcessAction.
   std::unique_ptr<ProcessedActionProto> processed_action_proto_;
 };
+
+// Intended for debugging. Writes a string representation of |action_case| to
+// |out|.
+std::ostream& operator<<(std::ostream& out,
+                         const ActionProto::ActionInfoCase& action_case);
 
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_H_

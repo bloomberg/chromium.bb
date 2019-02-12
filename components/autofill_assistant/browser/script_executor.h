@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <string>
 #include <vector>
@@ -87,6 +88,8 @@ class ScriptExecutor : public ActionDelegate {
 
     Result();
     ~Result();
+
+    friend std::ostream& operator<<(std::ostream& out, const Result& result);
   };
 
   using RunScriptCallback = base::OnceCallback<void(const Result&)>;
