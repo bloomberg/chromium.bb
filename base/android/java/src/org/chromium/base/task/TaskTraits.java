@@ -75,6 +75,32 @@ public class TaskTraits {
         return mExtensionId != INVALID_EXTENSION_ID;
     }
 
+    /**
+     * Tries to extract the extension for the given descriptor from this traits.
+     *
+     * @return Extension instance or null if the traits do not contain the requested extension
+     */
+    public <Extension> Extension getExtension(TaskTraitsExtensionDescriptor<Extension> descriptor) {
+        if (mExtensionId == descriptor.getId()) {
+            return descriptor.fromSerializedData(mExtensionData);
+        } else {
+            return null;
+        }
+    }
+
+    public <Extension> TaskTraits withExtension(
+            TaskTraitsExtensionDescriptor<Extension> descriptor, Extension extension) {
+        int id = descriptor.getId();
+        byte[] data = descriptor.toSerializedData(extension);
+        assert id > INVALID_EXTENSION_ID && id <= MAX_EXTENSION_ID;
+        assert data.length <= EXTENSION_STORAGE_SIZE;
+
+        TaskTraits taskTraits = new TaskTraits(this);
+        taskTraits.mExtensionId = (byte) id;
+        taskTraits.mExtensionData = data;
+        return taskTraits;
+    }
+
     @Override
     public boolean equals(@Nullable Object object) {
         if (object == this) {
