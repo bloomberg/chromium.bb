@@ -9948,7 +9948,7 @@ typedef struct {
 } inter_mode_info;
 
 static int64_t handle_inter_mode(
-    const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *x,
+    AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *x,
     BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
     RD_STATS *rd_stats_uv, int *disable_skip, int mi_row, int mi_col,
     HandleInterModeArgs *args, int64_t ref_best_rd, uint8_t *const tmp_buf,
@@ -10332,10 +10332,16 @@ static int64_t handle_inter_mode(
         rd_stats_y->dist = plane_dist[0];
         rd_stats_uv->dist = plane_dist[1] + plane_dist[2];
       } else {
+#if CONFIG_COLLECT_COMPONENT_TIMING
+        start_timing(cpi, motion_mode_rd_time);
+#endif
         ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
                                  rd_stats_uv, disable_skip, mi_row, mi_col,
                                  args, ref_best_rd, refs, &rate_mv, &orig_dst,
                                  best_est_rd, do_tx_search, inter_modes_info);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+        end_timing(cpi, motion_mode_rd_time);
+#endif
       }
       mode_info[ref_mv_idx].mv.as_int = mbmi->mv[0].as_int;
       mode_info[ref_mv_idx].rate_mv = rate_mv;
@@ -12523,10 +12529,17 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         if (midx < MAX_SINGLE_REF_MODES) {
           args.simple_rd_state = x->simple_rd_state[midx];
         }
+
+#if CONFIG_COLLECT_COMPONENT_TIMING
+        start_timing(cpi, handle_inter_mode_time);
+#endif
         this_rd = handle_inter_mode(
             cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
             &disable_skip, mi_row, mi_col, &args, ref_best_rd, tmp_buf,
             &rd_buffers, &best_est_rd, do_tx_search, inter_modes_info);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+        end_timing(cpi, handle_inter_mode_time);
+#endif
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
         distortion2 = rd_stats.dist;
