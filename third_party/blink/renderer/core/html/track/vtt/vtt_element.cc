@@ -74,11 +74,11 @@ VTTElement* VTTElement::Create(VTTNodeType node_type, Document* document) {
   return MakeGarbageCollected<VTTElement>(node_type, document);
 }
 
-Element* VTTElement::CloneWithoutAttributesAndChildren(
+Element& VTTElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
-  VTTElement* clone =
-      Create(static_cast<VTTNodeType>(web_vtt_node_type_), &factory);
-  clone->SetLanguage(language_);
+  VTTElement& clone =
+      *Create(static_cast<VTTNodeType>(web_vtt_node_type_), &factory);
+  clone.SetLanguage(language_);
   return clone;
 }
 

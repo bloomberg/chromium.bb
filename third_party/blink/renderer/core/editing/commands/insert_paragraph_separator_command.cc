@@ -167,14 +167,14 @@ Element* InsertParagraphSeparatorCommand::CloneHierarchyUnderNewBlock(
   // Make clones of ancestors in between the start node and the start block.
   Element* parent = block_to_insert;
   for (wtf_size_t i = ancestors.size(); i != 0; --i) {
-    Element* child = ancestors[i - 1]->CloneWithoutChildren();
+    Element& child = ancestors[i - 1]->CloneWithoutChildren();
     // It should always be okay to remove id from the cloned elements, since the
     // originals are not deleted.
-    child->removeAttribute(kIdAttr);
-    AppendNode(child, parent, editing_state);
+    child.removeAttribute(kIdAttr);
+    AppendNode(&child, parent, editing_state);
     if (editing_state->IsAborted())
       return nullptr;
-    parent = child;
+    parent = &child;
   }
 
   return parent;
@@ -274,7 +274,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   } else if (ShouldUseDefaultParagraphElement(start_block)) {
     block_to_insert = CreateDefaultParagraphElement(GetDocument());
   } else {
-    block_to_insert = start_block->CloneWithoutChildren();
+    block_to_insert = &start_block->CloneWithoutChildren();
   }
 
   VisiblePosition visible_pos =
@@ -314,11 +314,11 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       }
 
       if (list_child && list_child != start_block) {
-        Element* list_child_to_insert = list_child->CloneWithoutChildren();
-        AppendNode(block_to_insert, list_child_to_insert, editing_state);
+        Element& list_child_to_insert = list_child->CloneWithoutChildren();
+        AppendNode(block_to_insert, &list_child_to_insert, editing_state);
         if (editing_state->IsAborted())
           return;
-        InsertNodeAfter(list_child_to_insert, list_child, editing_state);
+        InsertNodeAfter(&list_child_to_insert, list_child, editing_state);
       } else {
         // Most of the time we want to stay at the nesting level of the
         // startBlock (e.g., when nesting within lists). However, for div nodes,
@@ -365,11 +365,11 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
 
     if (is_first_in_block && !nest_new_block) {
       if (list_child && list_child != start_block) {
-        Element* list_child_to_insert = list_child->CloneWithoutChildren();
-        AppendNode(block_to_insert, list_child_to_insert, editing_state);
+        Element& list_child_to_insert = list_child->CloneWithoutChildren();
+        AppendNode(block_to_insert, &list_child_to_insert, editing_state);
         if (editing_state->IsAborted())
           return;
-        InsertNodeBefore(list_child_to_insert, list_child, editing_state);
+        InsertNodeBefore(&list_child_to_insert, list_child, editing_state);
         if (editing_state->IsAborted())
           return;
       } else {
@@ -523,11 +523,11 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   if (nest_new_block) {
     AppendNode(block_to_insert, start_block, editing_state);
   } else if (list_child && list_child != start_block) {
-    Element* list_child_to_insert = list_child->CloneWithoutChildren();
-    AppendNode(block_to_insert, list_child_to_insert, editing_state);
+    Element& list_child_to_insert = list_child->CloneWithoutChildren();
+    AppendNode(block_to_insert, &list_child_to_insert, editing_state);
     if (editing_state->IsAborted())
       return;
-    InsertNodeAfter(list_child_to_insert, list_child, editing_state);
+    InsertNodeAfter(&list_child_to_insert, list_child, editing_state);
   } else {
     InsertNodeAfter(block_to_insert, start_block, editing_state);
   }

@@ -1388,14 +1388,14 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
         continue;
       if (!child->contains(target_node) && elements_to_push_down.size()) {
         for (const auto& element : elements_to_push_down) {
-          Element* wrapper = element->CloneWithoutChildren();
-          wrapper->removeAttribute(kStyleAttr);
+          Element& wrapper = element->CloneWithoutChildren();
+          wrapper.removeAttribute(kStyleAttr);
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
           element->removeAttribute(html_names::kIdAttr);
           if (IsHTMLAnchorElement(element))
             element->removeAttribute(html_names::kNameAttr);
-          SurroundNodeRangeWithElement(child, child, wrapper, editing_state);
+          SurroundNodeRangeWithElement(child, child, &wrapper, editing_state);
           if (editing_state->IsAborted())
             return;
         }
@@ -2010,9 +2010,9 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   }
 
   if (styled_inline_element_ && add_styled_element == kAddStyledElement) {
-    SurroundNodeRangeWithElement(start_node, end_node,
-                                 styled_inline_element_->CloneWithoutChildren(),
-                                 editing_state);
+    SurroundNodeRangeWithElement(
+        start_node, end_node, &styled_inline_element_->CloneWithoutChildren(),
+        editing_state);
   }
 }
 
