@@ -21,6 +21,7 @@
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
@@ -229,7 +230,7 @@ void OfflinePageTabHelper::FinalizeOfflineInfo(
   } else if (navigated_url.SchemeIsHTTPOrHTTPS()) {
     // For http/https URL, commit the provisional offline info if any.
     if (provisional_offline_info_.IsValid()) {
-      DCHECK(OfflinePageUtils::EqualsIgnoringFragment(
+      DCHECK(EqualsIgnoringFragment(
           navigated_url, provisional_offline_info_.offline_page->url));
       offline_info_ = std::move(provisional_offline_info_);
       provisional_offline_info_.Clear();

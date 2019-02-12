@@ -36,7 +36,6 @@ const ClientId kClientId("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
 const bool kUserRequested = true;
 const char kRequestOrigin[] = "abc.xyz";
-
 enum class LastResult {
   RESULT_NONE,
   RESULT_FALSE,
@@ -273,7 +272,7 @@ class RequestQueueStoreTestBase : public testing::Test {
                        std::vector<std::unique_ptr<SavePageRequest>> requests);
   // Callback used for add/update request.
   void AddOrUpdateDone(UpdateStatus result);
-  void AddRequestDone(ItemActionStatus status);
+  void AddRequestDone(AddRequestResult result);
   void UpdateRequestDone(UpdateRequestsResult result);
   // Callback used for reset.
   void ResetDone(bool result);
@@ -283,7 +282,9 @@ class RequestQueueStoreTestBase : public testing::Test {
   const std::vector<std::unique_ptr<SavePageRequest>>& last_requests() const {
     return last_requests_;
   }
-  ItemActionStatus last_add_status() const { return last_add_status_; }
+  base::Optional<AddRequestResult> last_add_result() const {
+    return last_add_result_;
+  }
 
   UpdateRequestsResult* last_update_result() const {
     return last_update_result_.get();
@@ -295,7 +296,7 @@ class RequestQueueStoreTestBase : public testing::Test {
  private:
   LastResult last_result_;
   UpdateStatus last_update_status_;
-  ItemActionStatus last_add_status_;
+  base::Optional<AddRequestResult> last_add_result_;
   std::unique_ptr<UpdateRequestsResult> last_update_result_;
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
 
@@ -306,7 +307,6 @@ class RequestQueueStoreTestBase : public testing::Test {
 RequestQueueStoreTestBase::RequestQueueStoreTestBase()
     : last_result_(LastResult::RESULT_NONE),
       last_update_status_(UpdateStatus::FAILED),
-      last_add_status_(ItemActionStatus::NOT_FOUND),
       task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
@@ -324,7 +324,7 @@ void RequestQueueStoreTestBase::PumpLoop() {
 void RequestQueueStoreTestBase::ClearResults() {
   last_result_ = LastResult::RESULT_NONE;
   last_update_status_ = UpdateStatus::FAILED;
-  last_add_status_ = ItemActionStatus::NOT_FOUND;
+  last_add_result_ = base::nullopt;
   last_requests_.clear();
   last_update_result_.reset(nullptr);
 }
@@ -352,8 +352,8 @@ void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
   last_update_status_ = status;
 }
 
-void RequestQueueStoreTestBase::AddRequestDone(ItemActionStatus status) {
-  last_add_status_ = status;
+void RequestQueueStoreTestBase::AddRequestDone(AddRequestResult result) {
+  last_add_result_ = result;
 }
 
 void RequestQueueStoreTestBase::UpdateRequestDone(UpdateRequestsResult result) {
@@ -414,13 +414,13 @@ class RequestQueueStoreTest : public RequestQueueStoreTestBase {
     // Verify a request can be added and retrieved.
     SavePageRequest request(kRequestId, kUrl, kClientId, OfflineTimeNow(),
                             kUserRequested);
-    store->AddRequest(request,
+    store->AddRequest(request, RequestQueue::AddOptions(),
                       base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                      base::Unretained(this)));
     store->GetRequests(base::BindOnce(
         &RequestQueueStoreTestBase::GetRequestsDone, base::Unretained(this)));
     PumpLoop();
-    ASSERT_EQ(ItemActionStatus::SUCCESS, last_add_status());
+    ASSERT_EQ(AddRequestResult::SUCCESS, last_add_result());
     ASSERT_EQ(LastResult::RESULT_TRUE, last_result());
     ASSERT_EQ(1ul, last_requests().size());
     EXPECT_EQ(request, *this->last_requests()[0]);
@@ -524,12 +524,12 @@ TEST_F(RequestQueueStoreTest, GetRequestsByIds) {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
                            kUserRequested);
-  store->AddRequest(request1,
+  store->AddRequest(request1, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
-  store->AddRequest(request2,
+  store->AddRequest(request2, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   this->PumpLoop();
@@ -587,12 +587,12 @@ TEST_F(RequestQueueStoreTest, AddRequest) {
                           kUserRequested);
   request.set_original_url(kUrl2);
 
-  store->AddRequest(request,
+  store->AddRequest(request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
-  ASSERT_EQ(ItemActionStatus::NOT_FOUND, this->last_add_status());
+  ASSERT_EQ(base::nullopt, this->last_add_result());
   this->PumpLoop();
-  ASSERT_EQ(ItemActionStatus::SUCCESS, this->last_add_status());
+  ASSERT_EQ(AddRequestResult::SUCCESS, this->last_add_result());
 
   // Verifying get reqeust results after a request was added.
   this->ClearResults();
@@ -606,12 +606,12 @@ TEST_F(RequestQueueStoreTest, AddRequest) {
 
   // Verify it is not possible to add the same request twice.
   this->ClearResults();
-  store->AddRequest(request,
+  store->AddRequest(request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
-  ASSERT_EQ(ItemActionStatus::NOT_FOUND, this->last_add_status());
+  ASSERT_EQ(base::nullopt, this->last_add_result());
   this->PumpLoop();
-  ASSERT_EQ(ItemActionStatus::ALREADY_EXISTS, this->last_add_status());
+  ASSERT_EQ(AddRequestResult::ALREADY_EXISTS, this->last_add_result());
 
   // Check that there is still only one item in the store.
   this->ClearResults();
@@ -627,14 +627,14 @@ TEST_F(RequestQueueStoreTest, AddAndGetRequestsMatch) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
   const SavePageRequest request = GetTestRequest();
-  store->AddRequest(request,
+  store->AddRequest(request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   store->GetRequests(base::BindOnce(&RequestQueueStoreTestBase::GetRequestsDone,
                                     base::Unretained(this)));
   this->PumpLoop();
 
-  ASSERT_EQ(ItemActionStatus::SUCCESS, this->last_add_status());
+  ASSERT_EQ(AddRequestResult::SUCCESS, this->last_add_result());
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1ul, this->last_requests().size());
   EXPECT_EQ(request.ToString(), this->last_requests()[0]->ToString());
@@ -647,7 +647,7 @@ TEST_F(RequestQueueStoreTest, UpdateRequest) {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
-  store->AddRequest(original_request,
+  store->AddRequest(original_request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   this->PumpLoop();
@@ -703,12 +703,12 @@ TEST_F(RequestQueueStoreTest, RemoveRequests) {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
                            kUserRequested);
-  store->AddRequest(request1,
+  store->AddRequest(request1, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
                            kUserRequested);
-  store->AddRequest(request2,
+  store->AddRequest(request2, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   this->PumpLoop();
@@ -767,7 +767,7 @@ TEST_F(RequestQueueStoreTest, ResetStore) {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
-  store->AddRequest(original_request,
+  store->AddRequest(original_request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   this->PumpLoop();
@@ -797,7 +797,7 @@ TEST_F(RequestQueueStoreTest, SaveCloseReopenRead) {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
-  store->AddRequest(original_request,
+  store->AddRequest(original_request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
   PumpLoop();

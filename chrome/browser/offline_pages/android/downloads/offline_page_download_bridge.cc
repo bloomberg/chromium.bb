@@ -36,6 +36,7 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
@@ -166,7 +167,7 @@ void SavePageIfNotNavigatedAway(const GURL& url,
   // This ignores fragment differences in URLs, bails out only if tab has
   // navigated away and not just scrolled to a fragment.
   GURL current_url = web_contents->GetLastCommittedURL();
-  if (!OfflinePageUtils::EqualsIgnoringFragment(current_url, url))
+  if (!EqualsIgnoringFragment(current_url, url))
     return;
 
   offline_pages::ClientId client_id;

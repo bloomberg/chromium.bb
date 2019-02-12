@@ -33,7 +33,9 @@ class MarkAttemptStartedTaskTest : public RequestQueueTaskTestBase {
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   std::unique_ptr<UpdateRequestsResult> result_;
 };
@@ -42,9 +44,9 @@ void MarkAttemptStartedTaskTest::AddItemToStore() {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store_.AddRequest(request_1,
-                    base::BindOnce(&MarkAttemptStartedTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store_.AddRequest(
+      request_1, RequestQueue::AddOptions(),
+      base::BindOnce(&MarkAttemptStartedTaskTest::AddRequestDone));
   PumpLoop();
 }
 
@@ -53,9 +55,6 @@ void MarkAttemptStartedTaskTest::ChangeRequestsStateCallback(
   result_ = std::make_unique<UpdateRequestsResult>(std::move(result));
 }
 
-void MarkAttemptStartedTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
 
 TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenStoreEmpty) {
   InitializeStore();

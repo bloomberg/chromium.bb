@@ -96,8 +96,6 @@ class PickRequestTaskTest : public RequestQueueTaskTestBase {
 
   void SetUp() override;
 
-  void AddRequestDone(ItemActionStatus status);
-
   void RequestPicked(
       const SavePageRequest& request,
       const std::unique_ptr<std::vector<SavePageRequest>> available_requests,
@@ -157,8 +155,6 @@ void PickRequestTaskTest::TaskCompletionCallback(Task* completed_task) {
   task_complete_called_ = true;
 }
 
-void PickRequestTaskTest::AddRequestDone(ItemActionStatus status) {}
-
 void PickRequestTaskTest::RequestPicked(
     const SavePageRequest& request,
     std::unique_ptr<std::vector<SavePageRequest>> available_requests,
@@ -186,12 +182,8 @@ void PickRequestTaskTest::QueueRequests(const SavePageRequest& request1,
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  store_.AddRequest(request1,
-                    base::BindOnce(&PickRequestTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
-  store_.AddRequest(request2,
-                    base::BindOnce(&PickRequestTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store_.AddRequest(request1, RequestQueue::AddOptions(), base::DoNothing());
+  store_.AddRequest(request2, RequestQueue::AddOptions(), base::DoNothing());
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();

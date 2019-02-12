@@ -377,19 +377,6 @@ TEST_F(OfflinePageUtilsTest, ScheduleDownloadWithFailedFileAcecssRequest) {
 }
 #endif
 
-TEST_F(OfflinePageUtilsTest, EqualsIgnoringFragment) {
-  EXPECT_TRUE(OfflinePageUtils::EqualsIgnoringFragment(
-      GURL("http://example.com/"), GURL("http://example.com/")));
-  EXPECT_TRUE(OfflinePageUtils::EqualsIgnoringFragment(
-      GURL("http://example.com/"), GURL("http://example.com/#test")));
-  EXPECT_TRUE(OfflinePageUtils::EqualsIgnoringFragment(
-      GURL("http://example.com/#test"), GURL("http://example.com/")));
-  EXPECT_TRUE(OfflinePageUtils::EqualsIgnoringFragment(
-      GURL("http://example.com/#test"), GURL("http://example.com/#test2")));
-  EXPECT_FALSE(OfflinePageUtils::EqualsIgnoringFragment(
-      GURL("http://example.com/"), GURL("http://test.com/#test")));
-}
-
 TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeBetween) {
   // The clock will be at 03:00:00 after adding pages.
   CreateCachedOfflinePages();

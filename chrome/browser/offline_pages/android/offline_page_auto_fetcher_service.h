@@ -101,59 +101,21 @@ class OfflinePageAutoFetcherService : public KeyedService,
                          int64_t received_bytes) override {}
 
  private:
-  class TaskToken;
-  using TaskCallback = base::OnceCallback<void(TaskToken)>;
 
   base::WeakPtr<OfflinePageAutoFetcherService> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  // Task management methods. Each request made to this class is serialized by
-  // appending the tasks as callbacks to task_queue_.
-
-  // Starts or enqueues a new task.
-  void StartOrEnqueue(TaskCallback task);
-  // Reports a task complete. Must be called when the task is completely
-  // finished.
-  void TaskComplete(TaskToken token);
-
-  // Implementation details for public methods.
-
-  void TryScheduleStep1(bool user_requested,
-                        const GURL& url,
-                        int android_tab_id,
-                        TryScheduleCallback callback,
-                        TaskToken token);
-  void TryScheduleStep2(
-      TaskToken token,
-      bool user_requested,
-      const GURL& url,
-      int android_tab_id,
-      TryScheduleCallback callback,
-      RequestCoordinator* coordinator,
-      std::vector<std::unique_ptr<SavePageRequest>> all_requests);
-  void TryScheduleStep3(TaskToken token,
-                        TryScheduleCallback callback,
-                        AddRequestResult result);
-
-  void CancelScheduleStep1(const GURL& url, TaskToken token);
-  void CancelScheduleStep2(TaskToken token, const MultipleItemStatuses&);
-
-  void CancelAllStep1(base::OnceClosure callback, TaskToken token);
-  void CancelAllStep2(TaskToken token,
-                      base::OnceClosure callback,
-                      const MultipleItemStatuses& result);
-
+  void TryScheduleDone(TryScheduleCallback callback, AddRequestResult result);
   void AutoFetchComplete(const OfflinePageItem* page);
+  void CancelAllDone(base::OnceClosure callback,
+                     const MultipleItemStatuses& result);
 
   std::unique_ptr<AutoFetchNotifier> notifier_;
   AutoFetchPageLoadWatcher page_load_watcher_;
   RequestCoordinator* request_coordinator_;
   OfflinePageModel* offline_page_model_;
   Delegate* delegate_;
-  // TODO(harringtond): Pull out task management into another class, or use
-  // offline_pages::TaskQueue.
-  std::queue<TaskCallback> task_queue_;
   base::WeakPtrFactory<OfflinePageAutoFetcherService> weak_ptr_factory_{this};
 };
 
