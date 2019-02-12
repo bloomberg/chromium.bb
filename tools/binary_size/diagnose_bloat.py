@@ -123,8 +123,7 @@ class NativeDiff(BaseDiff):
 class ResourceSizesDiff(BaseDiff):
   # Ordered by output appearance.
   _SUMMARY_SECTIONS = (
-      'Specifics', 'InstallSize', 'InstallBreakdown', 'Dex',
-      'StaticInitializersCount')
+      'Specifics', 'InstallSize', 'InstallBreakdown', 'Dex')
   # Sections where it makes sense to sum subsections into a section total.
   _AGGREGATE_SECTIONS = (
       'InstallBreakdown', 'Breakdown', 'MainLibInfo', 'Uncompressed')
@@ -227,15 +226,23 @@ class _BuildHelper(object):
     self.target_os = args.target_os
     self.use_goma = args.use_goma
     self._SetDefaults()
+    self.is_bundle = 'minimal' in self.target
 
   @property
   def abs_apk_path(self):
     return os.path.join(self.output_directory, self.apk_path)
 
   @property
+  def abs_mapping_path(self):
+    return os.path.join(self.output_directory, self.mapping_path)
+
+  @property
   def apk_name(self):
-    # Only works on apk targets that follow: my_great_apk naming convention.
+    # my_great_apk -> MyGreat.apk
     apk_name = ''.join(s.title() for s in self.target.split('_')[:-1]) + '.apk'
+    if self.is_bundle:
+      # my_great_minimal_apks -> MyGreatMinimal.apk -> MyGreat.minimal.apks
+      apk_name = apk_name.replace('Minimal.apk', '.minimal.apks')
     return apk_name.replace('Webview', 'WebView')
 
   @property
@@ -243,14 +250,25 @@ class _BuildHelper(object):
     return os.path.join('apks', self.apk_name)
 
   @property
+  def mapping_path(self):
+    if self.is_bundle:
+      return self.apk_path.replace('.minimal.apks', '.aab') + '.mapping'
+    else:
+      return self.apk_path + '.mapping'
+
+  @property
   def main_lib_path(self):
-    # TODO(estevenson): Get this from GN instead of hardcoding.
+    # Cannot extract this from GN because --cloud needs to work without GN.
     if self.IsLinux():
       return 'chrome'
-    elif 'monochrome' in self.target:
-      return 'lib.unstripped/libmonochrome.so'
+    if 'monochrome' in self.target:
+      ret = 'lib.unstripped/libmonochrome_base.so'
     else:
-      return 'lib.unstripped/libchrome.so'
+      ret = 'lib.unstripped/libchrome_base.so'
+    # Maintain support for measuring non-bundle apks.
+    if not self.is_bundle:
+      ret = ret.replace('_base', '')
+    return ret
 
   @property
   def abs_main_lib_path(self):
@@ -307,9 +325,9 @@ class _BuildHelper(object):
       if self.IsLinux():
         self.target = 'chrome'
       elif self.enable_chrome_android_internal:
-        self.target = 'monochrome_apk'
+        self.target = 'monochrome_minimal_apks'
       else:
-        self.target = 'monochrome_public_apk'
+        self.target = 'monochrome_public_minimal_apks'
 
   def _GenGnCmd(self):
     gn_args = 'is_official_build=true'
@@ -375,7 +393,7 @@ class _BuildArchive(object):
     _EnsureDirsExist(self.dir)
     if self.build.IsAndroid():
       self._ArchiveFile(self.build.abs_apk_path)
-      self._ArchiveFile(self.build.abs_apk_path + '.mapping')
+      self._ArchiveFile(self.build.abs_mapping_path)
       self._ArchiveResourceSizes()
     self._ArchiveSizeFile(supersize_path, tool_prefix)
     if self._save_unstripped:
@@ -426,7 +444,7 @@ class _BuildArchive(object):
       else:
         supersize_cmd += ['--output-directory', self.build.output_directory]
       if self.build.IsAndroid():
-        supersize_cmd += ['--apk-file', self.build.abs_apk_path]
+        supersize_cmd += ['-f', self.build.abs_apk_path]
       logging.info('Creating .size file')
       _RunCmd(supersize_cmd)
 
@@ -755,7 +773,7 @@ def _DownloadAndArchive(gsutil_path, archive, dl_dir, build, supersize_path):
   to_extract = [build.main_lib_path, build.map_file_path, 'args.gn']
   if build.IsAndroid():
     to_extract += ['build_vars.txt', build.apk_path,
-                   build.apk_path + '.mapping', build.apk_path + '.size']
+                   build.mapping_path, build.apk_path + '.size']
   extract_dir = dl_dst + '_' + 'unzipped'
   logging.info('Extracting build artifacts')
   with zipfile.ZipFile(dl_dst, 'r') as z:
