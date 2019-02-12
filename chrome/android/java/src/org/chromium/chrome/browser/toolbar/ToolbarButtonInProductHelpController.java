@@ -174,6 +174,15 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
                         accessibilityStringId, anchorView, appMenuHandler, activity));
     }
 
+    private static boolean shouldHighlightForIPH(String featureName) {
+        switch (featureName) {
+            case FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE:
+                return false;
+            default:
+                return true;
+        }
+    }
+
     private static void maybeShowIPH(Tracker tracker, String featureName,
             Integer highlightMenuItemId, @StringRes int stringId,
             @StringRes int accessibilityStringId, View anchorView, AppMenuHandler appMenuHandler,
@@ -202,10 +211,14 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
             textBubble.setDismissOnTouchInteraction(true);
             textBubble.addOnDismissListener(() -> anchorView.getHandler().postDelayed(() -> {
                 tracker.dismissed(featureName);
-                turnOffHighlightForTextBubble(appMenuHandler, anchorView);
+                if (shouldHighlightForIPH(featureName)) {
+                    turnOffHighlightForTextBubble(appMenuHandler, anchorView);
+                }
             }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
 
-            turnOnHighlightForTextBubble(appMenuHandler, highlightMenuItemId, anchorView);
+            if (shouldHighlightForIPH(featureName)) {
+                turnOnHighlightForTextBubble(appMenuHandler, highlightMenuItemId, anchorView);
+            }
 
             int yInsetPx = activity.getResources().getDimensionPixelOffset(
                     R.dimen.text_bubble_menu_anchor_y_inset);
