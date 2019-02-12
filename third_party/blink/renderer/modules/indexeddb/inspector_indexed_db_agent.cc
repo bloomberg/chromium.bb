@@ -442,7 +442,7 @@ class DatabaseLoader final
     std::unique_ptr<DatabaseWithObjectStores> result =
         DatabaseWithObjectStores::create()
             .setName(idb_database->name())
-            .setVersion(static_cast<uint64_t>(idb_database->version()))
+            .setVersion(idb_database->version())
             .setObjectStores(std::move(object_stores))
             .build();
 
