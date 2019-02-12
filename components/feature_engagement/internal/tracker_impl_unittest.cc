@@ -117,7 +117,7 @@ class StoreEverythingEventStorageValidator : public EventStorageValidator {
                   uint32_t event_day,
                   uint32_t current_day) const override {
     return true;
-  };
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StoreEverythingEventStorageValidator);
@@ -129,7 +129,7 @@ class TestTimeProvider : public TimeProvider {
   ~TestTimeProvider() override = default;
 
   // TimeProvider implementation.
-  uint32_t GetCurrentDay() const override { return 1u; };
+  uint32_t GetCurrentDay() const override { return 1u; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTimeProvider);
