@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_IMAGE_FETCHER_CORE_CACHE_CACHED_IMAGE_FETCHER_METRICS_REPORTER_H_
 #define COMPONENTS_IMAGE_FETCHER_CORE_CACHE_CACHED_IMAGE_FETCHER_METRICS_REPORTER_H_
 
+#include <string>
+
 #include "base/time/time.h"
 
 namespace image_fetcher {
@@ -30,18 +32,30 @@ enum class CachedImageFetcherEvent {
 
 class CachedImageFetcherMetricsReporter {
  public:
+  // For use in metrics that aren't client-specific.
+  static const char kCachedImageFetcherInternalUmaClientName[];
+
   // Report cache events, used by CachedImageFetcher and composing classes.
-  static void ReportEvent(CachedImageFetcherEvent event);
+  static void ReportEvent(const std::string& client_name,
+                          CachedImageFetcherEvent event);
 
   // Report the time it takes to load an image from the cache in native code.
-  static void ReportImageLoadFromCacheTime(base::Time start_time);
+  static void ReportImageLoadFromCacheTime(const std::string& client_name,
+                                           base::Time start_time);
+
+  // Report the time it takes to load an image from the cache in java code.
+  static void ReportImageLoadFromCacheTimeJava(const std::string& client_name,
+                                               base::Time start_time);
 
   // Report the time it takes to load an image from the network.
-  static void ReportImageLoadFromNetworkTime(base::Time start_time);
+  static void ReportImageLoadFromNetworkTime(const std::string& client_name,
+                                             base::Time start_time);
 
   // Report the time it takes to load an image from the network after a cache
   // hit.
-  static void ReportImageLoadFromNetworkAfterCacheHit(base::Time start_time);
+  static void ReportImageLoadFromNetworkAfterCacheHit(
+      const std::string& client_name,
+      base::Time start_time);
 
   // Report the time between cache evictions.
   static void ReportTimeSinceLastCacheLRUEviction(base::Time start_time);

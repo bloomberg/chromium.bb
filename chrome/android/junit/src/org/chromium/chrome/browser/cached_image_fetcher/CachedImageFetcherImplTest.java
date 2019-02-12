@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.cached_image_fetcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,6 +40,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.Sh
 @Config(manifest = Config.NONE,
         shadows = {ShadowUrlUtilities.class, BackgroundShadowAsyncTask.class})
 public class CachedImageFetcherImplTest {
+    private static final String UMA_CLIENT_NAME = "TestUmaClient";
     private static final String URL = "http://foo.bar";
     private static final int WIDTH_PX = 100;
     private static final int HEIGHT_PX = 200;
@@ -52,10 +52,6 @@ public class CachedImageFetcherImplTest {
     @Mock
     Bitmap mBitmap;
 
-    @Captor
-    ArgumentCaptor<Integer> mWidthCaptor;
-    @Captor
-    ArgumentCaptor<Integer> mHeightCaptor;
     @Captor
     ArgumentCaptor<Callback<Bitmap>> mCallbackCaptor;
 
@@ -69,63 +65,87 @@ public class CachedImageFetcherImplTest {
             return null;
         })
                 .when(mCachedImageFetcherBridge)
-                .fetchImage(eq(URL), mWidthCaptor.capture(), mHeightCaptor.capture(),
-                        mCallbackCaptor.capture());
+                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), mCallbackCaptor.capture());
     }
 
     @Test
     @SmallTest
     public void testFetchImageWithDimensionsFoundOnDisk() throws Exception {
         Mockito.doReturn(mBitmap).when(mCachedImageFetcher).tryToLoadImageFromDisk(anyObject());
-        mCachedImageFetcher.fetchImage(
-                URL, WIDTH_PX, HEIGHT_PX, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
+        mCachedImageFetcher.fetchImage(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX,
+                (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
-        verify(mCachedImageFetcher).fetchImageImpl(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
+        verify(mCachedImageFetcher)
+                .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
         verify(mCachedImageFetcherBridge, never()) // Should never make it to native.
-                .fetchImage(eq(URL), anyInt(), anyInt(), any());
+                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
 
         // Verify metrics have been reported.
         verify(mCachedImageFetcherBridge)
-                .reportEvent(eq(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT));
-        verify(mCachedImageFetcherBridge).reportCacheHitTime(anyLong());
+                .reportEvent(eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT));
+        verify(mCachedImageFetcherBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
     }
 
     @Test
     @SmallTest
     public void testFetchImageWithDimensionsCallToNative() throws Exception {
         Mockito.doReturn(null).when(mCachedImageFetcher).tryToLoadImageFromDisk(anyObject());
-        mCachedImageFetcher.fetchImage(
-                URL, WIDTH_PX, HEIGHT_PX, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
+        mCachedImageFetcher.fetchImage(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX,
+                (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
-        verify(mCachedImageFetcher).fetchImageImpl(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
-        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), anyInt(), anyInt(), any());
+        verify(mCachedImageFetcher)
+                .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
+        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
     }
 
     @Test
     @SmallTest
     public void testFetchImageWithNoDimensionsFoundOnDisk() throws Exception {
         Mockito.doReturn(mBitmap).when(mCachedImageFetcher).tryToLoadImageFromDisk(anyObject());
-        mCachedImageFetcher.fetchImage(URL, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
+        mCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
-        verify(mCachedImageFetcher).fetchImageImpl(eq(URL), eq(0), eq(0), any());
-        verify(mCachedImageFetcherBridge, never()).fetchImage(eq(URL), anyInt(), anyInt(), any());
+        verify(mCachedImageFetcher)
+                .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(0), eq(0), any());
+        verify(mCachedImageFetcherBridge, never()).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
     }
 
     @Test
     @SmallTest
     public void testFetchImageWithNoDimensionsCallToNative() throws Exception {
         Mockito.doReturn(null).when(mCachedImageFetcher).tryToLoadImageFromDisk(anyObject());
-        mCachedImageFetcher.fetchImage(URL, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
+        mCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
-        verify(mCachedImageFetcher).fetchImageImpl(eq(URL), eq(0), eq(0), any());
-        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), anyInt(), anyInt(), any());
+        verify(mCachedImageFetcher)
+                .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(0), eq(0), any());
+        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testFetchTwoClients() throws Exception {
+        Mockito.doReturn(null).when(mCachedImageFetcher).tryToLoadImageFromDisk(anyObject());
+        mCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME, (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
+        mCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME + "2", (Bitmap bitmap) -> { assertEquals(bitmap, mBitmap); });
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+
+        verify(mCachedImageFetcher)
+                .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME), eq(0), eq(0), any());
+        verify(mCachedImageFetcher)
+                .fetchImageImpl(eq(URL), eq(UMA_CLIENT_NAME + "2"), eq(0), eq(0), any());
+        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME), any());
+        verify(mCachedImageFetcherBridge).fetchImage(eq(URL), eq(UMA_CLIENT_NAME + "2"), any());
     }
 }

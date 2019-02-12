@@ -31,6 +31,7 @@ static_library("cache") {
 source_set("cache_unit_tests") {
   testonly = true
   sources = [
+    "cached_image_fetcher_metrics_reporter_unittest.cc",
     "image_cache_unittest.cc",
     "image_data_store_disk_unittest.cc",
     "image_metadata_store_leveldb_unittest.cc",

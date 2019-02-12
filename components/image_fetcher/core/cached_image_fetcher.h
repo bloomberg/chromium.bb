@@ -70,7 +70,8 @@ class CachedImageFetcher : public ImageFetcher {
                                  ImageFetcherCallback image_callback,
                                  const gfx::Image& image,
                                  const RequestMetadata& request_metadata);
-  void StoreEncodedData(const GURL& url, std::string image_data);
+  void StoreEncodedData(CachedImageFetcherRequest request,
+                        std::string image_data);
 
   // Whether the ImageChache is allowed to be modified in any way from requests
   // made by this CachedImageFetcher. This includes updating last used times,

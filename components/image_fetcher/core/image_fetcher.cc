@@ -7,12 +7,16 @@
 namespace image_fetcher {
 
 ImageFetcherParams::ImageFetcherParams(
-    const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag)
-    : network_traffic_annotation_tag_(network_traffic_annotation_tag) {}
+    const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag,
+    std::string uma_client_name)
+    : network_traffic_annotation_tag_(network_traffic_annotation_tag),
+      uma_client_name_(uma_client_name) {}
 
 ImageFetcherParams::ImageFetcherParams(const ImageFetcherParams& params) =
     default;
 
 ImageFetcherParams::ImageFetcherParams(ImageFetcherParams&& params) = default;
+
+ImageFetcherParams::~ImageFetcherParams() = default;
 
 }  // namespace image_fetcher

@@ -15,11 +15,6 @@ class MockImageFetcher : public ImageFetcher {
   MockImageFetcher();
   ~MockImageFetcher() override;
 
-  MOCK_METHOD1(SetDataUseServiceName,
-               void(data_use_measurement::DataUseUserData::ServiceName));
-  MOCK_METHOD1(SetImageDownloadLimit,
-               void(base::Optional<int64_t> max_download_bytes));
-  MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
   MOCK_METHOD4(FetchImageAndData_,
                void(const GURL&,
                     ImageDataFetcherCallback*,

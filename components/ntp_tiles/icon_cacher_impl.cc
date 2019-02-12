@@ -37,6 +37,8 @@ constexpr int kDesiredFrameSize = 128;
 constexpr int kDefaultTileIconMinSizePx = 1;
 constexpr int kDefaultTileIconDesiredSizePx = 96;
 
+const char kImageFetcherUmaClient[] = "IconCacher";
+
 constexpr char kTileIconMinSizePxFieldParam[] = "min_size";
 constexpr char kTileIconDesiredSizePxFieldParam[] = "desired_size";
 
@@ -133,7 +135,8 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification: "Not implemented."
         })");
-  image_fetcher::ImageFetcherParams params(traffic_annotation);
+  image_fetcher::ImageFetcherParams params(traffic_annotation,
+                                           kImageFetcherUmaClient);
   // For images with multiple frames, prefer one of size 128x128px.
   params.set_frame_size(gfx::Size(kDesiredFrameSize, kDesiredFrameSize));
   image_fetcher_->FetchImage(
@@ -141,7 +144,7 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
       base::BindOnce(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
                      base::Unretained(this), site,
                      std::move(preliminary_callback)),
-      params);
+      std::move(params));
 }
 
 void IconCacherImpl::OnPopularSitesFaviconDownloaded(

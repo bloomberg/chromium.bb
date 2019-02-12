@@ -27,6 +27,9 @@ const int DIMENSION_UNKNOWN = -1;
 const int kDefaultGarbageCollectionExpiredDays = 30;
 const int kLongGarbageCollectionInterval = 12 * 60 * 60;  // 12 hours
 const int kShortGarbageCollectionInterval = 5 * 60;       // 5 minutes
+
+const char kImageFetcherUmaClient[] = "FeedImageManager";
+
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("feed_image_fetcher", R"(
         semantics {
@@ -186,12 +189,14 @@ void FeedImageManager::FetchImageFromNetwork(size_t url_index,
     return;
   }
 
+  image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
+                                           kImageFetcherUmaClient);
   image_fetcher_->FetchImageData(
       url,
       base::BindOnce(&FeedImageManager::OnImageFetchedFromNetwork,
                      weak_ptr_factory_.GetWeakPtr(), url_index, std::move(urls),
                      width_px, height_px, std::move(callback)),
-      kTrafficAnnotation);
+      params);
 }
 
 void FeedImageManager::OnImageFetchedFromNetwork(
