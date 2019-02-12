@@ -17,8 +17,6 @@
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -31,9 +29,7 @@
 #include "chrome/test/base/dialog_test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 
@@ -120,11 +116,6 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     return web_ui_.get();
   }
 
-  FakeAccountFetcherService* account_fetcher_service() {
-    return static_cast<FakeAccountFetcherService*>(
-        AccountFetcherServiceFactory::GetForProfile(profile()));
-  }
-
   base::UserActionTester* user_action_tester() {
     return &user_action_tester_;
   }
@@ -151,8 +142,6 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
 
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {
-        {AccountFetcherServiceFactory::GetInstance(),
-         base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests)},
         {ConsentAuditorFactory::GetInstance(),
          base::BindRepeating(&BuildFakeConsentAuditor)}};
   }
@@ -206,7 +195,7 @@ const char SyncConfirmationHandlerTest::kConsentText4[] = "consentText4";
 const char SyncConfirmationHandlerTest::kConsentText5[] = "consentText5";
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
-  account_fetcher_service()->FakeUserInfoFetchSuccess(
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
       "full_name", "given_name", "locale",
       "http://picture.example.com/picture.jpg");
@@ -244,7 +233,7 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   handler()->HandleInitializedWithSize(&args);
   EXPECT_EQ(2U, web_ui()->call_data().size());
 
-  account_fetcher_service()->FakeUserInfoFetchSuccess(
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
       "full_name", "given_name", "locale",
       "http://picture.example.com/picture.jpg");
@@ -291,7 +280,7 @@ TEST_F(SyncConfirmationHandlerTest,
 
   AccountInfo account_info =
       identity_test_env()->MakeAccountAvailable("bar@example.com");
-  account_fetcher_service()->FakeUserInfoFetchSuccess(
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info.account_id, account_info.email, account_info.gaia, "",
       "bar_full_name", "bar_given_name", "bar_locale",
       "http://picture.example.com/bar_picture.jpg");
@@ -300,7 +289,7 @@ TEST_F(SyncConfirmationHandlerTest,
   // image of the sync confirmation dialog.
   EXPECT_EQ(2U, web_ui()->call_data().size());
 
-  account_fetcher_service()->FakeUserInfoFetchSuccess(
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
       "full_name", "given_name", "locale",
       "http://picture.example.com/picture.jpg");

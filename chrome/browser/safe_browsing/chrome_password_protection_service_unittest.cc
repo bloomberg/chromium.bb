@@ -13,9 +13,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
@@ -32,7 +30,6 @@
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -196,9 +193,6 @@ class ChromePasswordProtectionServiceTest
     builder.AddTestingFactory(
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&signin::BuildTestSigninClient));
-    builder.AddTestingFactory(
-        AccountFetcherServiceFactory::GetInstance(),
-        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
     std::unique_ptr<TestingProfile> profile =
         IdentityTestEnvironmentProfileAdaptor::
             CreateProfileForIdentityTestEnvironment(builder);
@@ -250,13 +244,13 @@ class ChromePasswordProtectionServiceTest
 
   void SetUpSyncAccount(const std::string& hosted_domain,
                         const CoreAccountInfo& account_info) {
-    FakeAccountFetcherService* account_fetcher_service =
-        static_cast<FakeAccountFetcherService*>(
-            AccountFetcherServiceFactory::GetForProfile(profile()));
-    account_fetcher_service->FakeUserInfoFetchSuccess(
-        account_info.account_id, account_info.email, account_info.gaia,
-        hosted_domain, "full_name", "given_name", "locale",
-        "http://picture.example.com/picture.jpg");
+    IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
+        profile());
+    identity_test_env_profile_adaptor.identity_test_env()
+        ->SimulateSuccessfulFetchOfAccountInfo(
+            account_info.account_id, account_info.email, account_info.gaia,
+            hosted_domain, "full_name", "given_name", "locale",
+            "http://picture.example.com/picture.jpg");
   }
 
   void PrepareRequest(
