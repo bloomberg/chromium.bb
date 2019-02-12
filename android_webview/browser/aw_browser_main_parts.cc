@@ -25,6 +25,7 @@
 #include "base/base_paths_android.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"

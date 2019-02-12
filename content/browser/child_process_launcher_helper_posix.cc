@@ -82,12 +82,9 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
 
 // Mac shared memory doesn't use file descriptors.
 #if !defined(OS_MACOSX)
-  base::SharedMemoryHandle shm = base::FieldTrialList::GetFieldTrialHandle();
-  if (shm.IsValid()) {
-    files_to_register->Share(
-        service_manager::kFieldTrialDescriptor,
-        base::SharedMemory::GetFdFromSharedMemoryHandle(shm));
-  }
+  int fd = base::FieldTrialList::GetFieldTrialDescriptor();
+  DCHECK_NE(fd, -1);
+  files_to_register->Share(service_manager::kFieldTrialDescriptor, fd);
 #endif
 
   DCHECK(mojo_channel_remote_endpoint.is_valid());

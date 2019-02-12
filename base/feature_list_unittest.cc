@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/stl_util.h"
@@ -485,9 +486,10 @@ TEST_F(FeatureListTest, StoreAndRetrieveFeaturesFromSharedMemory) {
   feature_list->FinalizeInitialization();
 
   // Create an allocator and store the overrides.
-  std::unique_ptr<SharedMemory> shm(new SharedMemory());
-  shm->CreateAndMapAnonymous(4 << 10);
-  SharedPersistentMemoryAllocator allocator(std::move(shm), 1, "", false);
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(4 << 10);
+  WritableSharedPersistentMemoryAllocator allocator(std::move(shm.mapping), 1,
+                                                    "");
   feature_list->AddFeaturesToAllocator(&allocator);
 
   std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
@@ -520,9 +522,10 @@ TEST_F(FeatureListTest, StoreAndRetrieveAssociatedFeaturesFromSharedMemory) {
   feature_list->FinalizeInitialization();
 
   // Create an allocator and store the overrides.
-  std::unique_ptr<SharedMemory> shm(new SharedMemory());
-  shm->CreateAndMapAnonymous(4 << 10);
-  SharedPersistentMemoryAllocator allocator(std::move(shm), 1, "", false);
+  base::MappedReadOnlyRegion shm =
+      base::ReadOnlySharedMemoryRegion::Create(4 << 10);
+  WritableSharedPersistentMemoryAllocator allocator(std::move(shm.mapping), 1,
+                                                    "");
   feature_list->AddFeaturesToAllocator(&allocator);
 
   std::unique_ptr<base::FeatureList> feature_list2(new base::FeatureList);
