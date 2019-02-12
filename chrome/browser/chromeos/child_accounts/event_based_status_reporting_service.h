@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -29,12 +30,14 @@ namespace chromeos {
 //     * Device unlock
 //     * Device connected
 //     * Device returns from suspend mode
+//     * Device is about to lock by usage time limit
 class EventBasedStatusReportingService
     : public KeyedService,
       public ArcAppListPrefs::Observer,
       public session_manager::SessionManagerObserver,
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public PowerManagerClient::Observer {
+      public PowerManagerClient::Observer,
+      public ScreenTimeController::Observer {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -45,7 +48,8 @@ class EventBasedStatusReportingService
     kSessionLocked = 3,
     kDeviceOnline = 4,
     kSuspendDone = 5,
-    kMaxValue = kSuspendDone,
+    kUsageTimeLimitWarning = 6,
+    kMaxValue = kUsageTimeLimitWarning,
   };
 
   // Histogram to log events that triggered status report.
@@ -69,6 +73,9 @@ class EventBasedStatusReportingService
 
   // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& duration) override;
+
+  // ScreenTimeController::Observer:
+  void UsageTimeLimitWarning() override;
 
  private:
   friend class EventBasedStatusReportingServiceTest;

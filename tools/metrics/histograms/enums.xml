@@ -51040,6 +51040,7 @@ would be helpful to identify which type is being sent.
   <int value="3" label="SESSION_LOCKED"/>
   <int value="4" label="DEVICE_ONLINE"/>
   <int value="5" label="SUSPEND_DONE"/>
+  <int value="6" label="USAGE_TIME_LIMIT_WARNING"/>
 </enum>
 
 <enum name="SurveyDownloadResponseCodes">

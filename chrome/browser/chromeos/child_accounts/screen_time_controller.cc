@@ -113,6 +113,11 @@ void ScreenTimeController::SetClocksForTesting(
   usage_time_limit_warning_timer_->SetTaskRunner(task_runner);
 }
 
+void ScreenTimeController::NotifyUsageTimeLimitWarningForTesting() {
+  for (Observer& observer : observers_)
+    observer.UsageTimeLimitWarning();
+}
+
 void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   VLOG(1) << "Checking time limits (source=" << source << ")";
 

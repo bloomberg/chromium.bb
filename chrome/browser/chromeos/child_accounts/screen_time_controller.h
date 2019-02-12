@@ -61,13 +61,16 @@ class ScreenTimeController : public KeyedService,
 
   // Returns the child's screen time duration. This is how long the child has
   // used the device today (since the last reset).
-  base::TimeDelta GetScreenTimeDuration();
+  virtual base::TimeDelta GetScreenTimeDuration();
 
   // Method intended for testing purposes only.
   void SetClocksForTesting(
       const base::Clock* clock,
       const base::TickClock* tick_clock,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  // Call UsageTimeLimitWarning for each observer for testing.
+  void NotifyUsageTimeLimitWarningForTesting();
 
   // Adds or removes an observer.
   void AddObserver(Observer* observer);
