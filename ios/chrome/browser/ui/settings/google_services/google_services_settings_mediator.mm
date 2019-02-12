@@ -372,14 +372,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return YES;
 }
 
+// Updates the sync Chrome data item, and returns YES if the item has been
+// updated.
 - (BOOL)updateSyncChromeDataItem {
   TableViewModel* model = self.consumer.tableViewModel;
   if (self.isAuthenticated) {
     if (self.syncChromeDataSwitchItem) {
       BOOL needsUpdate = self.syncChromeDataSwitchItem.on !=
                          self.syncSetupService->IsSyncingAllDataTypes();
-      self.syncChromeDataSwitchItem.on =
-          self.syncSetupService->IsSyncingAllDataTypes();
+      self.syncChromeDataSwitchItem.on = self.syncSetupService->IsSyncEnabled();
       return needsUpdate;
     }
     self.syncChromeDataSwitchItem = [self
