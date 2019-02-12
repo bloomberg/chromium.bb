@@ -48,7 +48,6 @@ source_set("web") {
     "//ios/web/web_state:error_translation_util",
     "//ios/web/web_state:navigation_context",
     "//ios/web/web_state:web_view_internal_creation_util",
-    "//services/catalog/public/cpp",
     "//services/network:network_service",
     "//services/network/public/mojom",
     "//services/service_manager",

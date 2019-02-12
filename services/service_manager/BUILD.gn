@@ -23,6 +23,8 @@ source_set("service_manager") {
   sources = [
     "background_service_manager.cc",
     "background_service_manager.h",
+    "catalog.cc",
+    "catalog.h",
     "connect_params.cc",
     "connect_params.h",
     "service_manager.cc",
@@ -37,13 +39,14 @@ source_set("service_manager") {
 
   deps = [
     "//base/third_party/dynamic_annotations",
+    "//components/services/filesystem:lib",
+    "//components/services/filesystem/public/interfaces",
   ]
 
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/catalog:lib",
-    "//services/catalog/public/mojom:constants",
+    "//services/catalog/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/sandbox",

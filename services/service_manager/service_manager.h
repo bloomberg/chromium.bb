@@ -14,7 +14,7 @@
 #include "base/process/process.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/catalog/catalog.h"
+#include "services/service_manager/catalog.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -153,7 +153,7 @@ class ServiceManager : public Service {
   using InstanceMap = std::map<Instance*, std::unique_ptr<Instance>>;
   InstanceMap instances_;
 
-  catalog::Catalog catalog_;
+  Catalog catalog_;
 
   // Maps service identities to reachable instances. Note that the Instance
   // values stored in that map are NOT owned by this map.

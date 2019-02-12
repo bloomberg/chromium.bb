@@ -25,7 +25,6 @@
 #include "ios/web/service_manager_connection_impl.h"
 #import "ios/web/web_browser_manifest.h"
 #import "ios/web/web_packaged_services_manifest.h"
-#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"

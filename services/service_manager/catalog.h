@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_CATALOG_CATALOG_H_
-#define SERVICES_CATALOG_CATALOG_H_
+#ifndef SERVICES_SERVICE_MANAGER_CATALOG_H_
+#define SERVICES_SERVICE_MANAGER_CATALOG_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/token.h"
@@ -27,23 +26,20 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace catalog {
+namespace service_manager {
 
 // Creates and owns an instance of the catalog and hosts a ServiceBinding to
 // bind interface requests targeting the Catalog service.
 //
-// TODO(https://crbug.com/904240): Move this into the Service Manager. It
-// doesn't need to be its own service.
-class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service,
-                                          public mojom::Catalog {
+// TODO(https://crbug.com/904240): Get rid of the Service implementation.
+// This doesn't need to be a separate service from the Service Manager.
+class Catalog : public Service, public catalog::mojom::Catalog {
  public:
-  using Manifest = service_manager::Manifest;
-
   // Constructs a catalog over a set of Manifests to use for lookup.
   explicit Catalog(const std::vector<Manifest>& manifests);
   ~Catalog() override;
 
-  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
+  void BindServiceRequest(mojom::ServiceRequest request);
 
   // Returns manifest data for the service named by |service_name|. If no
   // service is known by that name, this returns null.
@@ -57,15 +53,15 @@ class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service,
  private:
   class DirectoryThreadState;
 
-  void BindCatalogRequest(mojom::CatalogRequest request);
+  void BindCatalogRequest(catalog::mojom::CatalogRequest request);
   void BindDirectoryRequest(filesystem::mojom::DirectoryRequest request);
 
   static void BindDirectoryRequestOnBackgroundThread(
       scoped_refptr<DirectoryThreadState> thread_state,
       filesystem::mojom::DirectoryRequest request);
 
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+  // Service:
+  void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
@@ -76,11 +72,11 @@ class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service,
       const std::string& capability,
       GetEntriesProvidingCapabilityCallback callback) override;
 
-  service_manager::ServiceBinding service_binding_{this};
-  service_manager::BinderRegistry registry_;
+  ServiceBinding service_binding_{this};
+  BinderRegistry registry_;
 
   // Bindings for consumers of the Catalog interface.
-  mojo::BindingSet<mojom::Catalog> catalog_bindings_;
+  mojo::BindingSet<catalog::mojom::Catalog> catalog_bindings_;
 
   // The set of all top-level manifests known to the Service Manager.
   const std::vector<Manifest> manifests_;
@@ -105,6 +101,6 @@ class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service,
   DISALLOW_COPY_AND_ASSIGN(Catalog);
 };
 
-}  // namespace catalog
+}  // namespace service_manager
 
-#endif  // SERVICES_CATALOG_CATALOG_H_
+#endif  // SERVICES_SERVICE_MANAGER_CATALOG_H_
