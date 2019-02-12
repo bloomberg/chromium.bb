@@ -909,17 +909,18 @@ sessions::BaseSessionService* SessionService::GetBaseSessionServiceForTest() {
   return base_session_service_.get();
 }
 
-void SessionService::SetAvailableRangeForTest(const SessionID& tab_id,
-                                              const std::pair<int, int> range) {
+void SessionService::SetAvailableRangeForTest(
+    const SessionID& tab_id,
+    const std::pair<int, int>& range) {
   tab_to_available_range_[tab_id] = range;
 }
 
 bool SessionService::GetAvailableRangeForTest(const SessionID& tab_id,
-                                              std::pair<int, int>& range) {
+                                              std::pair<int, int>* range) {
   auto i = tab_to_available_range_.find(tab_id);
   if (i == tab_to_available_range_.end())
     return false;
 
-  range = i->second;
+  *range = i->second;
   return true;
 }

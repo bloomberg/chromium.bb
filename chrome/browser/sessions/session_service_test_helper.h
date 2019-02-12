@@ -85,8 +85,8 @@ class SessionServiceTestHelper {
                               const base::Closure& task);
 
   void SetAvailableRange(const SessionID& tab_id,
-                         const std::pair<int, int> range);
-  bool GetAvailableRange(const SessionID& tab_id, std::pair<int, int>& range);
+                         const std::pair<int, int>& range);
+  bool GetAvailableRange(const SessionID& tab_id, std::pair<int, int>* range);
 
  private:
   std::unique_ptr<SessionService> service_;

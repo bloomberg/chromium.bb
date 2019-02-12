@@ -327,9 +327,9 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   sessions::BaseSessionService* GetBaseSessionServiceForTest();
 
   void SetAvailableRangeForTest(const SessionID& tab_id,
-                                const std::pair<int, int> range);
+                                const std::pair<int, int>& range);
   bool GetAvailableRangeForTest(const SessionID& tab_id,
-                                std::pair<int, int>& range);
+                                std::pair<int, int>* range);
 
   // The profile. This may be null during testing.
   Profile* profile_;
