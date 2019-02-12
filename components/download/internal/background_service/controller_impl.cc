@@ -305,6 +305,7 @@ DownloadClient ControllerImpl::GetOwnerOfDownload(const std::string& guid) {
 
 void ControllerImpl::OnStartScheduledTask(DownloadTaskType task_type,
                                           TaskFinishedCallback callback) {
+  device_status_listener_->Start(config_->network_startup_delay_backgroud_task);
   task_finished_callbacks_[task_type] = std::move(callback);
 
   switch (controller_state_) {
@@ -678,7 +679,8 @@ void ControllerImpl::AttemptToFinalizeSetup() {
     return;
   }
 
-  device_status_listener_->Start(this);
+  device_status_listener_->SetObserver(this);
+  device_status_listener_->Start(config_->network_startup_delay);
   PollActiveDriverDownloads();
   CancelOrphanedRequests();
   CleanupUnknownFiles();

@@ -38,9 +38,12 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
   // internal device status when called.
   const DeviceStatus& CurrentDeviceStatus();
 
+  void SetObserver(DeviceStatusListener::Observer* observer);
+
   // Starts/stops to listen network and battery change events, virtual for
   // testing.
-  virtual void Start(DeviceStatusListener::Observer* observer);
+  virtual void Start(const base::TimeDelta& start_delay);
+
   virtual void Stop();
 
  protected:
@@ -76,9 +79,6 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
 
   // Used to start the device listener or notify network change after a delay.
   base::OneShotTimer timer_;
-
-  // The delay used on start up.
-  base::TimeDelta startup_delay_;
 
   // The delay used when network status becomes online.
   base::TimeDelta online_delay_;
