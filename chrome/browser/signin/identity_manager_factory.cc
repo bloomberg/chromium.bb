@@ -114,6 +114,15 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
 }
 
 // static
+void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
+  IdentityManagerFactory::GetInstance();
+  AccountTrackerServiceFactory::GetInstance();
+  GaiaCookieManagerServiceFactory::GetInstance();
+  ProfileOAuth2TokenServiceFactory::GetInstance();
+  SigninManagerFactory::GetInstance();
+}
+
+// static
 std::unique_ptr<KeyedService>
 IdentityManagerFactory::BuildAuthenticatedServiceInstanceForTesting(
     const std::string& gaia_id,
