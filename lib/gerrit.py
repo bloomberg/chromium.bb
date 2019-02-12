@@ -367,7 +367,8 @@ class GerritHelper(object):
 
     return change
 
-  def SetReview(self, change, msg=None, labels=None, dryrun=False):
+  def SetReview(self, change, msg=None, labels=None,
+                dryrun=False, notify='ALL'):
     """Update the review labels on a gerrit change.
 
     Args:
@@ -375,6 +376,7 @@ class GerritHelper(object):
       msg: A text comment to post to the review.
       labels: A dict of label/value to set on the review.
       dryrun: If True, don't actually update the review.
+      notify: A string, parameter controlling gerrit's email generation.
     """
     if not msg and not labels:
       return
@@ -388,7 +390,7 @@ class GerritHelper(object):
                        key, val, change)
       return
     gob_util.SetReview(self.host, self._to_changenum(change),
-                       msg=msg, labels=labels, notify='ALL')
+                       msg=msg, labels=labels, notify=notify)
 
   def SetTopic(self, change, topic, dryrun=False):
     """Update the topic on a gerrit change.
