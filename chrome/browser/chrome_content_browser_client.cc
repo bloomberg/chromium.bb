@@ -5357,8 +5357,15 @@ content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
       offline_pages::OfflinePageTabHelper::FromWebContents(
           navigation_handle->GetWebContents());
 
-  previews_user_data->set_offline_preview_used(
-      tab_helper && tab_helper->GetOfflinePreviewItem());
+  bool is_offline_page = tab_helper && tab_helper->IsLoadingOfflinePage();
+  bool is_offline_preview = tab_helper && tab_helper->GetOfflinePreviewItem();
+
+  // If this is an offline page, but not a preview, then we should not attempt
+  // any previews or surface the previews UI.
+  if (is_offline_page && !is_offline_preview)
+    return content::PREVIEWS_OFF;
+
+  previews_user_data->set_offline_preview_used(is_offline_preview);
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Annotate request if no-transform directive found in response headers.
