@@ -83,6 +83,7 @@ def _RenameChartsAndPointsWithSuffix(charts, suffix):
     if chart_name == 'trace':
       continue
     chart = charts[chart_name]
+    chart_name = chart_name.split('@@', 1)[-1]
     new_chart_name = chart_name + suffix
     for point_name in chart:
       chart[point_name]['name'] = new_chart_name
