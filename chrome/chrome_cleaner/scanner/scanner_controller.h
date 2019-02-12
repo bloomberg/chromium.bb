@@ -5,15 +5,18 @@
 #ifndef CHROME_CHROME_CLEANER_SCANNER_SCANNER_CONTROLLER_H_
 #define CHROME_CHROME_CLEANER_SCANNER_SCANNER_CONTROLLER_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
+#include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/logging/registry_logger.h"
+#include "chrome/chrome_cleaner/parsers/shortcut_parser/broker/shortcut_parser_api.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 
 namespace chrome_cleaner {
@@ -26,7 +29,8 @@ class ScannerController {
   int ScanOnly();
 
  protected:
-  explicit ScannerController(RegistryLogger* registry_logger);
+  explicit ScannerController(RegistryLogger* registry_logger,
+                             ShortcutParserAPI* shortcut_parser);
 
   virtual void StartScan() = 0;
 
@@ -45,12 +49,13 @@ class ScannerController {
 
   RegistryLogger* registry_logger_;
   SEQUENCE_CHECKER(sequence_checker_);
-  // Defines a task runner for the current thread, which will be accessible
-  // via base::ThreadTaskRunnerHandle::Get().
-  base::MessageLoopForUI ui_message_loop_;
 
   // Allow subclasses to override the default watchdog timeout.
   uint32_t watchdog_timeout_in_seconds_;
+
+  // Allow subclasses to quit the current run loop without uploading logs.
+  // Should only be called from unit tests.
+  base::OnceClosure QuitClosureForTesting() { return std::move(quit_closure_); }
 
  private:
   // Callback for LoggingServiceAPI::SendLogsToSafeBrowsing() that finishes the
@@ -62,6 +67,10 @@ class ScannerController {
 
   // Called by LogsUploadComplete() to quit the current run loop.
   base::OnceClosure quit_closure_;
+
+  ShortcutParserAPI* shortcut_parser_;
+  std::vector<ShortcutInformation> shortcuts_found_;
+  base::WaitableEvent shortcut_parsing_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScannerController);
 };
