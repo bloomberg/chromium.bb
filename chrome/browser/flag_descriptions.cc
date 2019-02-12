@@ -232,12 +232,6 @@ const char kCanvas2DImageChromiumName[] = "Canvas 2D Image Chromium";
 const char kCanvas2DImageChromiumDescription[] =
     "Allows for using CHROMIUM_image GLES2 extension for HTML Canvas Contexts";
 
-const char kCastStreamingHwEncodingName[] =
-    "Cast Streaming hardware video encoding";
-const char kCastStreamingHwEncodingDescription[] =
-    "This option enables support in Cast Streaming for encoding video streams "
-    "using platform hardware.";
-
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "

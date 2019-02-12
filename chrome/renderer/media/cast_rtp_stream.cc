@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -433,12 +432,6 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 };
 
 bool CastRtpStream::IsHardwareVP8EncodingSupported() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
-    DVLOG(1) << "Disabled hardware VP8 support for Cast Streaming.";
-    return false;
-  }
-
   // Query for hardware VP8 encoder support.
   const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
@@ -452,12 +445,6 @@ bool CastRtpStream::IsHardwareVP8EncodingSupported() {
 }
 
 bool CastRtpStream::IsHardwareH264EncodingSupported() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
-    DVLOG(1) << "Disabled hardware h264 support for Cast Streaming.";
-    return false;
-  }
-
 // Query for hardware H.264 encoder support.
 //
 // TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.
