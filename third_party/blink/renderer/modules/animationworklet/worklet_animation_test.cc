@@ -252,7 +252,7 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
 
 // Verifies correctness of current time when playback rate is set while the
 // animation is in idle state.
-TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
+TEST_F(WorkletAnimationTest, DISABLED_DocumentTimelineSetPlaybackRate) {
   double playback_rate = 2.0;
 
   SimulateFrame(111.0);
