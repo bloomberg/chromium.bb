@@ -43,7 +43,9 @@ enum class SignedExchangeLoadResult {
   kCertRequirementsNotMet,
   // SXG was served without "X-Content-Type-Options: nosniff" header.
   kSXGServedWithoutNosniff,
-  kMaxValue = kSXGServedWithoutNosniff
+  // Merkle integrity error.
+  kMerkleIntegrityError,
+  kMaxValue = kMerkleIntegrityError
 };
 
 struct SignedExchangeError {

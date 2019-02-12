@@ -1845,6 +1845,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_prefetch_metric_recorder.h",
     "web_package/signed_exchange_prologue.cc",
     "web_package/signed_exchange_prologue.h",
+    "web_package/signed_exchange_reporter.cc",
+    "web_package/signed_exchange_reporter.h",
     "web_package/signed_exchange_request_handler.cc",
     "web_package/signed_exchange_request_handler.h",
     "web_package/signed_exchange_request_matcher.cc",

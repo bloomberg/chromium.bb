@@ -93,7 +93,8 @@ class MockSignedExchangeCertFetcherFactory
       const GURL& cert_url,
       bool force_fetch,
       SignedExchangeCertFetcher::CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy) override {
+      SignedExchangeDevToolsProxy* devtools_proxy,
+      SignedExchangeReporter* reporter) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
     auto cert_chain = SignedExchangeCertificateChain::Parse(
@@ -270,7 +271,8 @@ class SignedExchangeHandlerTest
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory_), net::LOAD_NORMAL,
-        nullptr /* devtools_proxy */, base::RepeatingCallback<int(void)>());
+        nullptr /* devtools_proxy */, nullptr /* reporter */,
+        base::RepeatingCallback<int(void)>());
   }
 
   void WaitForHeader() {

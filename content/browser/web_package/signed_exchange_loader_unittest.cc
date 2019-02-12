@@ -13,6 +13,7 @@
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/http/http_status_code.h"
@@ -115,7 +116,7 @@ TEST_F(SignedExchangeLoaderTest, Simple) {
           resource_request, response, std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
-          nullptr /* url_loader_factory */,
+          nullptr /* reporter */, nullptr /* url_loader_factory */,
           SignedExchangeLoader::URLLoaderThrottlesGetter(),
           base::RepeatingCallback<int(void)>(), nullptr /* metric_recorder */);
 

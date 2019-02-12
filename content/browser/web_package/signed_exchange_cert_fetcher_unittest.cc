@@ -215,7 +215,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
         std::move(throttles_), url, force_fetch, std::move(callback),
-        nullptr /* devtools_proxy */,
+        nullptr /* devtools_proxy */, nullptr /* reporter */,
         base::nullopt /* throttling_profile_id */);
   }
 

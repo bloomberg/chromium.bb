@@ -29,6 +29,7 @@ class SimpleWatcher;
 namespace content {
 
 class SignedExchangeDevToolsProxy;
+class SignedExchangeReporter;
 class ThrottlingURLLoader;
 class URLLoaderThrottle;
 
@@ -54,6 +55,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       bool force_fetch,
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy,
+      SignedExchangeReporter* reporter,
       const base::Optional<base::UnguessableToken>& throttling_profile_id);
 
   ~SignedExchangeCertFetcher() override;
@@ -75,6 +77,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       bool force_fetch,
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy,
+      SignedExchangeReporter* reporter,
       const base::Optional<base::UnguessableToken>& throttling_profile_id);
   void Start();
   void Abort();
@@ -106,6 +109,9 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
 
   // This is owned by SignedExchangeHandler which is the owner of |this|.
   SignedExchangeDevToolsProxy* devtools_proxy_;
+  // This is owned by SignedExchangeLoader which owns SignedExchangeHandler
+  // that is the owner of |this|.
+  SignedExchangeReporter* reporter_;
   base::Optional<base::UnguessableToken> cert_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeCertFetcher);

@@ -11,6 +11,7 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
@@ -90,6 +91,9 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   network::mojom::URLLoaderClientPtr client;
   *client_request = mojo::MakeRequest(&client);
 
+  base::RepeatingCallback<int(void)> frame_tree_node_id_getter =
+      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_);
+
   // This lets the SignedExchangeLoader directly returns an artificial redirect
   // to the downstream client without going through ThrottlingURLLoader, which
   // means some checks like SafeBrowsing may not see the redirect. Given that
@@ -99,12 +103,12 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
       request, response, std::move(client), url_loader->Unbind(),
       url_loader_options_, true /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          request.url, response,
-          base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
+          request.url, response, frame_tree_node_id_getter,
           devtools_navigation_token_, request.report_raw_headers),
+      SignedExchangeReporter::MaybeCreate(request.url, request.referrer.spec(),
+                                          response, frame_tree_node_id_getter),
       url_loader_factory_, url_loader_throttles_getter_,
-      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
-      metric_recorder_);
+      frame_tree_node_id_getter, metric_recorder_);
 
   *skip_other_interceptors = true;
   return true;

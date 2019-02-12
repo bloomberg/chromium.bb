@@ -9,6 +9,7 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -54,6 +55,9 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
           resource_request.url, response, frame_tree_node_id_getter,
           base::nullopt /* devtools_navigation_token */,
           resource_request.report_raw_headers),
+      SignedExchangeReporter::MaybeCreate(resource_request.url,
+                                          resource_request.referrer.spec(),
+                                          response, frame_tree_node_id_getter),
       std::move(url_loader_factory), loader_throttles_getter,
       frame_tree_node_id_getter, std::move(metric_recorder));
 }
