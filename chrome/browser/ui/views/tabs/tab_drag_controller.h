@@ -481,7 +481,8 @@ class TabDragController : public views::WidgetObserver,
   void ClearTabDraggingInfo();
 
   // Sets |deferred_target_tabstrip_| and updates its corresponding window
-  // property.
+  // property. |location| is the location of the pointer when the deferred
+  // target is set.
   void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip);
 
   DragState current_state_;

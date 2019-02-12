@@ -166,6 +166,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   gfx::PointF ConvertRootLocationForClient(aura::Window* window,
                                            const gfx::PointF& root_location);
 
+  // Sends CleanupGestureState mojo call for |window| to the window tree client.
+  void CleanupGestureState(aura::Window* window);
+
  private:
   friend class ClientRoot;
   // TODO(sky): WindowTree should be refactored such that it is not

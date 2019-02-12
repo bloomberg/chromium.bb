@@ -308,6 +308,14 @@ class TopLevelEventHandler : public ProxyWindowEventHandler {
       return;
     }
 
+    // When the gesture-end happens in the server side, the gesture state
+    // is cleaned up there; this state should be synchronized with the client.
+    if (event->type() == ui::ET_GESTURE_END &&
+        event->AsGestureEvent()->details().touch_points() == 1) {
+      proxy_window()->owning_window_tree()->CleanupGestureState(window());
+      return;
+    }
+
     if (ShouldIgnoreEvent(*event))
       return;
 

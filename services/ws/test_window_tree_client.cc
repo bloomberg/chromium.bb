@@ -303,4 +303,6 @@ void TestWindowTreeClient::OnOcclusionStatesChanged(
   tracker_.OnOcclusionStatesChanged(occlusion_changes);
 }
 
+void TestWindowTreeClient::CleanupGestureState(Id window_id) {}
+
 }  // namespace ws

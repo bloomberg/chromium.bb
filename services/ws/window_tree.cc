@@ -347,6 +347,11 @@ gfx::PointF WindowTree::ConvertRootLocationForClient(
   return client_root_location;
 }
 
+void WindowTree::CleanupGestureState(aura::Window* window) {
+  DCHECK(IsWindowKnown(window));
+  window_tree_client_->CleanupGestureState(TransportIdForWindow(window));
+}
+
 ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
                                          bool is_top_level) {
   DCHECK(window);

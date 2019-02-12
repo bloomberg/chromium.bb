@@ -178,6 +178,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       mojom::ScreenProviderObserverAssociatedRequest observer) override;
   void OnOcclusionStatesChanged(const base::flat_map<Id, mojom::OcclusionState>&
                                     occlusion_changes) override;
+  void CleanupGestureState(Id window_id) override;
 
  protected:
   TestChangeTracker tracker_;
