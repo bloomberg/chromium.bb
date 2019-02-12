@@ -118,8 +118,8 @@ class UI_BASE_EXPORT Accelerator {
   // Whether the accelerator is interrupted by a mouse press/release. This is
   // optionally used by AcceleratorController. Even this is set to true, the
   // accelerator may still be handled successfully. (Currently only
-  // TOGGLE_APP_LIST is disabled when mouse press/release occurs between
-  // search key down and up. See crbug.com/665897)
+  // TOGGLE_APP_LIST and TOGGLE_APP_LIST_FULLSCREEN are disabled when mouse
+  // press/release occurs between search key down and up. See crbug.com/665897)
   bool interrupted_by_mouse_event_;
 };
 

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
@@ -75,6 +76,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // |event_time_stamp| is not 0, it means |ToggleAppList()| was triggered by
   // one of the AppListShowSources: kSearchKey or kShelfButton.
   ash::ShelfAction ToggleAppList(int64_t display_id,
+                                 app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the app list.

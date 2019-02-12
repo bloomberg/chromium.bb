@@ -509,7 +509,8 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
   return true;
 }
 
-void HandleToggleAppList(const ui::Accelerator& accelerator) {
+void HandleToggleAppList(const ui::Accelerator& accelerator,
+                         app_list::AppListShowSource show_source) {
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
@@ -517,7 +518,7 @@ void HandleToggleAppList(const ui::Accelerator& accelerator) {
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
           .id(),
-      app_list::kSearchKey, accelerator.time_stamp());
+      show_source, accelerator.time_stamp());
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
@@ -1306,6 +1307,7 @@ bool AcceleratorController::CanPerformAction(
     case SWITCH_TO_NEXT_USER:
       return CanHandleCycleUser();
     case TOGGLE_APP_LIST:
+    case TOGGLE_APP_LIST_FULLSCREEN:
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(
@@ -1638,7 +1640,10 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleTakeWindowScreenshot();
       break;
     case TOGGLE_APP_LIST:
-      HandleToggleAppList(accelerator);
+      HandleToggleAppList(accelerator, app_list::kSearchKey);
+      break;
+    case TOGGLE_APP_LIST_FULLSCREEN:
+      HandleToggleAppList(accelerator, app_list::kSearchKeyFullscreen);
       break;
     case TOGGLE_CAPS_LOCK:
       HandleToggleCapsLock();

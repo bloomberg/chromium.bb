@@ -24,7 +24,10 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
                                             ItemSelectedCallback callback) {
   std::move(callback).Run(
       Shell::Get()->app_list_controller()->OnAppListButtonPressed(
-          display_id, app_list::kShelfButton, event->time_stamp()),
+          display_id,
+          event->IsShiftDown() ? app_list::kShelfButtonFullscreen
+                               : app_list::kShelfButton,
+          event->time_stamp()),
       base::nullopt);
 }
 

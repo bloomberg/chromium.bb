@@ -11,6 +11,7 @@
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
@@ -40,6 +41,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
@@ -875,6 +877,99 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
+}
+
+TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppListFullscreen) {
+  base::HistogramTester histogram_tester;
+
+  int toggle_count_total = 0;
+  int toggle_count_regular = 0;
+  int toggle_count_fullscreen = 0;
+
+  // Shift+VKEY_BROWSER_SEARCH should toggle the AppList in fullscreen mode.
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
+                                    ++toggle_count_total);
+  histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
+                                     app_list::kSearchKeyFullscreen,
+                                     ++toggle_count_fullscreen);
+
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Shift+VKEY_BROWSER_SEARCH should transition from peeking to fullscreen
+  // mode.
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
+                                    ++toggle_count_total);
+  histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
+                                     app_list::kSearchKey,
+                                     ++toggle_count_regular);
+
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
+                                    ++toggle_count_total);
+  histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
+                                     app_list::kSearchKeyFullscreen,
+                                     ++toggle_count_fullscreen);
+  // VKEY_BROWSER_SEARCH (no shift) should not return to peeking, but close the
+  // AppList.
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Open AppList in peeking mode and type in the search box.
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
+                                    ++toggle_count_total);
+  histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
+                                     app_list::kSearchKey,
+                                     ++toggle_count_regular);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::VKEY_0, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_0, ui::EF_NONE);
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
+  // Shift+VKEY_BROWSER_SEARCH transitions to FULLSCREEN_SEARCH.
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_SEARCH);
+  histogram_tester.ExpectTotalCount(app_list::kAppListToggleMethodHistogram,
+                                    ++toggle_count_total);
+  histogram_tester.ExpectBucketCount(app_list::kAppListToggleMethodHistogram,
+                                     app_list::kSearchKeyFullscreen,
+                                     ++toggle_count_fullscreen);
+
+  // Shift+VKEY_BROWSER_SEARCH closes the AppList.
+  EXPECT_TRUE(ProcessInController(
+      ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN)));
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
