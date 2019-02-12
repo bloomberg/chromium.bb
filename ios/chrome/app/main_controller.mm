@@ -2230,9 +2230,15 @@ enum class EnterTabSwitcherSnapshotResult {
     return currentTabInTargetBVC;
   }
 
+  // With kBrowserContainerContainsNTP enabled paired with a restored NTP
+  // session, the NTP may appear committed when it is still loading.  For the
+  // time being, always load within a new tab when this feature is enabled.
+  // TODO(crbug.com/931284): Revert this change when fixed.
+  BOOL alwaysInsertNewTab = YES;
   // If the current tab isn't an NTP, open a new tab.  Be sure to use
   // -GetLastCommittedURL incase the NTP is still loading.
-  if (!(currentTabInTargetBVC.webState &&
+  if (alwaysInsertNewTab ||
+      !(currentTabInTargetBVC.webState &&
         IsURLNtp(currentTabInTargetBVC.webState->GetLastCommittedURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
     web::NavigationManager::WebLoadParams params(URL);
