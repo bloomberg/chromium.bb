@@ -504,9 +504,16 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
     String source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  To<WorkerGlobalScope>(GlobalScope())
-      ->EvaluateClassicScript(script_url, std::move(source_code),
-                              std::move(cached_meta_data), stack_id);
+  // TODO(crbug.com/930618): Remove this check after we identified the cause
+  // of the crash.
+  {
+    MutexLocker lock(mutex_);
+    CHECK_EQ(ThreadState::kRunning, thread_state_);
+  }
+  WorkerGlobalScope* global_scope = To<WorkerGlobalScope>(GlobalScope());
+  CHECK(global_scope);
+  global_scope->EvaluateClassicScript(script_url, std::move(source_code),
+                                      std::move(cached_meta_data), stack_id);
 }
 
 void WorkerThread::ImportClassicScriptOnWorkerThread(
