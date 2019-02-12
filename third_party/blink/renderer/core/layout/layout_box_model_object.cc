@@ -725,11 +725,14 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
       !IsOutOfFlowPositionedWithImplicitHeight(this))
     return true;
 
-  if (GetDocument().InQuirksMode())
-    return false;
-
-  if (cb)
-    return !cb->HasDefiniteLogicalHeight();
+  if (cb) {
+    // We need the containing block to have a definite block-size in order to
+    // resolve the block-size of the descendant, except when in quirks mode.
+    // Flexboxes follow strict behavior even in quirks mode, though.
+    if (!GetDocument().InQuirksMode() ||
+        cb->IsFlexibleBoxIncludingDeprecatedAndNG())
+      return !cb->HasDefiniteLogicalHeight();
+  }
 
   return false;
 }
