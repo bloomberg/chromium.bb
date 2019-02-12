@@ -392,5 +392,5 @@ TEST_F(LostNavigationsRecorderTest, MultipleNavsMultipleLostWithOverlap) {
   histogram_tester.ExpectBucketCount("Sync.LostNavigationCount", 2, 1);
 }
 
-};  // namespace
-};  // namespace sync_sessions
+}  // namespace
+}  // namespace sync_sessions
