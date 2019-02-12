@@ -32,6 +32,30 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+
+namespace {
+
+// Time delta representing the usage time limit warning time.
+constexpr base::TimeDelta kUsageTimeLimitWarningTime =
+    base::TimeDelta::FromMinutes(15);
+
+class TestScreenTimeControllerObserver : public ScreenTimeController::Observer {
+ public:
+  TestScreenTimeControllerObserver() = default;
+  ~TestScreenTimeControllerObserver() override = default;
+
+  int usage_time_limit_warnings() const { return usage_time_limit_warnings_; }
+
+ private:
+  void UsageTimeLimitWarning() override { usage_time_limit_warnings_++; }
+
+  int usage_time_limit_warnings_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestScreenTimeControllerObserver);
+};
+
+}  // namespace
+
 namespace utils = time_limit_test_utils;
 
 // Allows testing ScreenTimeController with UsageTimeStateNotifier enabled
@@ -45,9 +69,9 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
 
   // policy::LoginPolicyTestBase:
   void SetUp() override {
-    bool is_feature_enabled = GetParam();
+    is_feature_enabled_ = GetParam();
     base::test::ScopedFeatureList feature_list;
-    if (is_feature_enabled) {
+    if (is_feature_enabled_) {
       feature_list.InitAndEnableFeature(features::kUsageTimeStateNotifier);
     } else {
       feature_list.InitAndDisableFeature(features::kUsageTimeStateNotifier);
@@ -113,6 +137,7 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   Profile* child_profile_ = nullptr;
+  bool is_feature_enabled_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenTimeControllerTest);
@@ -514,6 +539,92 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
   // Verify that auth is disabled at 8 PM (start of bedtime).
   task_runner_->FastForwardBy(base::TimeDelta::FromHours(1));
   EXPECT_FALSE(IsAuthEnabled());
+}
+
+// Tests if call the observers for usage time limit warning.
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, CallObservers) {
+  if (!is_feature_enabled_)
+    return;
+  SetupTaskRunnerWithTime(utils::TimeFromString("1 Jan 2018 10:00:00 PST"));
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+  MockClockForActiveUser();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("PST"));
+
+  // Set new policy with 3 hours of time usage limit.
+  base::Time last_updated = utils::TimeFromString("1 Jan 2018 0:00 PST");
+  std::unique_ptr<base::DictionaryValue> policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeUsageLimit(policy_content.get(), utils::kMonday,
+                           base::TimeDelta::FromHours(3), last_updated);
+
+  auto policy = std::make_unique<base::DictionaryValue>();
+  policy->SetKey("UsageTimeLimit",
+                 base::Value(utils::PolicyToString(policy_content.get())));
+
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(),
+                                     child_profile_);
+
+  TestScreenTimeControllerObserver observer;
+  ScreenTimeControllerFactory::GetForBrowserContext(child_profile_)
+      ->AddObserver(&observer);
+
+  base::TimeDelta current_screen_time;
+  base::TimeDelta last_screen_time;
+
+  // Check that observer was not called at 10 AM.
+  EXPECT_EQ(0, observer.usage_time_limit_warnings());
+
+  // Check that observer was not called after child used device for 2 hours and
+  // forward to 12 AM.
+  last_screen_time = base::TimeDelta();
+  current_screen_time = base::TimeDelta::FromHours(2);
+  MockChildScreenTime(current_screen_time);
+  task_runner_->FastForwardBy(current_screen_time - last_screen_time);
+  EXPECT_EQ(0, observer.usage_time_limit_warnings());
+
+  // Check that observer was not called after using the device for
+  // 3 hours - |kUsageTimeLimitWarningTime| - 1 second. Forward to
+  // 1 PM - |kUsageTimeLimitWarningTime| - 1 second.
+  last_screen_time = current_screen_time;
+  current_screen_time = base::TimeDelta::FromHours(3) -
+                        kUsageTimeLimitWarningTime -
+                        base::TimeDelta::FromSeconds(1);
+  MockChildScreenTime(current_screen_time);
+  task_runner_->FastForwardBy(current_screen_time - last_screen_time);
+  EXPECT_EQ(0, observer.usage_time_limit_warnings());
+
+  // Check that observer was called after using the device for
+  // 3 hours - |kUsageTimeLimitWarningTime| + 1 second. Forward to
+  // 1 PM - |kUsageTimeLimitWarningTime| + 1 second.
+  last_screen_time = current_screen_time;
+  current_screen_time = base::TimeDelta::FromHours(3) -
+                        kUsageTimeLimitWarningTime +
+                        base::TimeDelta::FromSeconds(1);
+  MockChildScreenTime(current_screen_time);
+  task_runner_->FastForwardBy(current_screen_time - last_screen_time);
+  EXPECT_EQ(1, observer.usage_time_limit_warnings());
+
+  // Check that observer was not called after using the device for 3 hours.
+  // Forward to 1 PM.
+  last_screen_time = current_screen_time;
+  current_screen_time = base::TimeDelta::FromHours(3);
+  MockChildScreenTime(current_screen_time);
+  task_runner_->FastForwardBy(current_screen_time - last_screen_time);
+  EXPECT_EQ(1, observer.usage_time_limit_warnings());
+
+  // Forward to 6 AM, reset the usage time.
+  MockChildScreenTime(base::TimeDelta::FromHours(0));
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(17));
+
+  // Forward to 10 AM.
+  task_runner_->FastForwardBy(base::TimeDelta::FromHours(4));
+  EXPECT_EQ(1, observer.usage_time_limit_warnings());
+
+  ScreenTimeControllerFactory::GetForBrowserContext(child_profile_)
+      ->RemoveObserver(&observer);
 }
 
 // Run all ScreenTimeControllerTest with UsageTimeStateNotifier feature enabled

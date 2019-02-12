@@ -47,6 +47,8 @@ class UsageTimeStateNotifier : public session_manager::SessionManagerObserver,
   void AddObserver(UsageTimeStateNotifier::Observer* observer);
   void RemoveObserver(UsageTimeStateNotifier::Observer* observer);
 
+  UsageTimeState GetState() const;
+
  private:
   UsageTimeStateNotifier();
   ~UsageTimeStateNotifier() override;

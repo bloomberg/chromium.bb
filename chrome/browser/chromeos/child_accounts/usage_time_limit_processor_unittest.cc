@@ -1483,5 +1483,50 @@ TEST_F(UsageTimeLimitProcessorTest, GetTimeUsageLimitResetTime) {
             GetTimeUsageLimitResetTime(time_limit_dictionary));
 }
 
+// Test GetRemainingTimeUsage with an empty policy.
+TEST_F(UsageTimeLimitProcessorTest, GetRemainingTimeUsageWithEmptyPolicy) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("BRT"));
+
+  // Setup policy.
+  std::unique_ptr<base::DictionaryValue> policy =
+      std::make_unique<base::DictionaryValue>(base::DictionaryValue());
+
+  base::Time time_one = utils::TimeFromString("Mon, 1 Jan 2018 22:00");
+  base::Optional<base::TimeDelta> remaining_usage = GetRemainingTimeUsage(
+      policy, time_one, base::TimeDelta(), timezone.get());
+
+  ASSERT_EQ(remaining_usage, base::nullopt);
+}
+
+// Test GetExpectedResetTime with a policy.
+TEST_F(UsageTimeLimitProcessorTest, GetRemainingTimeUsageWithPolicy) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("BRT"));
+
+  // Setup policy with a time usage of 2 hours.
+  base::Time last_updated = utils::TimeFromString("1 Jan 2018 8:00 BRT");
+  std::unique_ptr<base::DictionaryValue> policy =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(8, 0));
+  utils::AddTimeUsageLimit(policy.get(), utils::kTuesday,
+                           base::TimeDelta::FromHours(2), last_updated);
+  utils::AddTimeUsageLimit(policy.get(), utils::kWednesday,
+                           base::TimeDelta::FromHours(2), last_updated);
+
+  // Check that the remaining time is 2 hours.
+  base::Time time_one = utils::TimeFromString("Wed, 3 Jan 2018 10:00 BRT");
+  base::Optional<base::TimeDelta> remaining_usage_one = GetRemainingTimeUsage(
+      policy, time_one, base::TimeDelta::FromHours(0), timezone.get());
+
+  ASSERT_FALSE(remaining_usage_one == base::nullopt);
+  ASSERT_EQ(remaining_usage_one, base::TimeDelta::FromHours(2));
+
+  // Check that remaining time changes to 1 hour if device was used for 1 hour.
+  base::Time time_two = utils::TimeFromString("Wed, 3 Jan 2018 11:00 BRT");
+  base::Optional<base::TimeDelta> remaining_usage_two = GetRemainingTimeUsage(
+      policy, time_two, base::TimeDelta::FromHours(1), timezone.get());
+
+  ASSERT_FALSE(remaining_usage_two == base::nullopt);
+  ASSERT_EQ(remaining_usage_two, base::TimeDelta::FromHours(1));
+}
+
 }  // namespace usage_time_limit
 }  // namespace chromeos

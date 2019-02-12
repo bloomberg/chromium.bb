@@ -94,6 +94,9 @@ class UsageTimeLimitProcessor {
   // Expected time when the user's usage quota should be reseted.
   base::Time GetExpectedResetTime();
 
+  // Difference between today user's usage quota and usage time.
+  base::Optional<base::TimeDelta> GetRemainingTimeUsage();
+
  private:
   // Get the active time window limit.
   base::Optional<internal::TimeWindowLimitEntry> GetActiveTimeWindowLimit();
@@ -252,6 +255,14 @@ base::Time UsageTimeLimitProcessor::GetExpectedResetTime() {
   return ConvertPolicyTime(UsageLimitResetTime(), shift_in_days);
 }
 
+base::Optional<base::TimeDelta>
+UsageTimeLimitProcessor::GetRemainingTimeUsage() {
+  if (!enabled_time_usage_limit_)
+    return base::nullopt;
+  return std::max(enabled_time_usage_limit_->usage_quota - used_time_,
+                  base::TimeDelta::FromMinutes(0));
+}
+
 State UsageTimeLimitProcessor::GetState() {
   State state;
   state.is_locked = IsLocked();
@@ -259,11 +270,10 @@ State UsageTimeLimitProcessor::GetState() {
 
   // Time usage limit is enabled if there is an entry for the current day and it
   // is not overridden.
-  if (enabled_time_usage_limit_ || active_time_usage_limit_) {
+  base::Optional<base::TimeDelta> remaining_usage = GetRemainingTimeUsage();
+  if (remaining_usage) {
     state.is_time_usage_limit_enabled = true;
-    state.remaining_usage =
-        std::max(enabled_time_usage_limit_->usage_quota - used_time_,
-                 base::TimeDelta::FromMinutes(0));
+    state.remaining_usage = remaining_usage.value();
   }
 
   const base::TimeDelta delta_zero = base::TimeDelta::FromMinutes(0);
@@ -1125,6 +1135,24 @@ base::Time GetExpectedResetTime(
              std::move(time_limit_override), base::TimeDelta::FromMinutes(0),
              base::Time(), current_time, time_zone, base::nullopt)
       .GetExpectedResetTime();
+}
+
+base::Optional<base::TimeDelta> GetRemainingTimeUsage(
+    const std::unique_ptr<base::DictionaryValue>& time_limit,
+    const base::Time current_time,
+    const base::TimeDelta& used_time,
+    const icu::TimeZone* const time_zone) {
+  base::Optional<internal::TimeWindowLimit> time_window_limit =
+      TimeWindowLimitFromPolicy(time_limit);
+  base::Optional<internal::TimeUsageLimit> time_usage_limit =
+      TimeUsageLimitFromPolicy(time_limit);
+  base::Optional<internal::TimeLimitOverride> time_limit_override =
+      OverrideFromPolicy(time_limit);
+  return internal::UsageTimeLimitProcessor(
+             std::move(time_window_limit), std::move(time_usage_limit),
+             std::move(time_limit_override), used_time, base::Time(),
+             current_time, time_zone, base::nullopt)
+      .GetRemainingTimeUsage();
 }
 
 base::TimeDelta GetTimeUsageLimitResetTime(
