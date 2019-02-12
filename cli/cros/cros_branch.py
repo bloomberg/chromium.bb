@@ -287,13 +287,19 @@ class CrosCheckout(object):
     """
     logging.info(message)
 
-    # Fetch the remote ref on which version will be updated.
     chromiumos_overlay = self.manifest.GetUniqueProject(
         'chromiumos/overlays/chromiumos-overlay')
     remote = chromiumos_overlay.Remote().GitName()
     ref = git.NormalizeRef(branch)
-    self.RunGit(chromiumos_overlay, ['fetch', remote, ref])
-    self.RunGit(chromiumos_overlay, ['checkout', 'FETCH_HEAD'])
+
+    # Check if we need to fetch the branch.
+    needs_fetch = not git.DoesCommitExistInRepo(
+        self.AbsoluteProjectPath(chromiumos_overlay), ref)
+    if needs_fetch:
+      self.RunGit(chromiumos_overlay, ['fetch', remote, ref])
+
+    # Checkout the branch.
+    self.RunGit(chromiumos_overlay, ['checkout', branch])
 
     # Do the push.
     new_version = self.ReadVersion(incr_type=which)
@@ -604,8 +610,8 @@ class ReleaseBranch(StandardBranch):
   def Create(self, push=False, force=False):
     super(ReleaseBranch, self).Create(push=push, force=force)
     # When a release branch has been successfully created, we report it by
-    # bumping the milestone on the master. We intentionally do this *after*
-    # the new branch has been pushed.
+    # bumping the milestone on the master. Note this also bumps build number
+    # as a workaround for crbug.com/213075
     self.checkout.BumpVersion(
         'chrome_branch',
         'master',
