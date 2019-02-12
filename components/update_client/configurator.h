@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class GURL;
 class PrefService;
@@ -30,6 +29,7 @@ class Connector;
 namespace update_client {
 
 class ActivityDataService;
+class NetworkFetcherFactory;
 class ProtocolHandlerFactory;
 
 using RecoveryCRXElevator = base::OnceCallback<std::tuple<bool, int, int>(
@@ -103,8 +103,7 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // Returns an empty string if no policy is in effect.
   virtual std::string GetDownloadPreference() const = 0;
 
-  virtual scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const = 0;
+  virtual scoped_refptr<NetworkFetcherFactory> GetNetworkFetcherFactory() = 0;
 
   // Returns a new connector to the service manager. That connector is not bound
   // to any thread yet.

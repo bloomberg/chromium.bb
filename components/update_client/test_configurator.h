@@ -35,6 +35,7 @@ class Connector;
 namespace update_client {
 
 class ActivityDataService;
+class NetworkFetcherFactory;
 class ProtocolHandlerFactory;
 
 #define POST_INTERCEPT_SCHEME "https"
@@ -90,8 +91,7 @@ class TestConfigurator : public Configurator {
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const override;
+  scoped_refptr<NetworkFetcherFactory> GetNetworkFetcherFactory() override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -146,6 +146,7 @@ class TestConfigurator : public Configurator {
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConfigurator);
 };

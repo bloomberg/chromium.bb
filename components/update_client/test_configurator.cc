@@ -12,6 +12,7 @@
 #include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/update_client/activity_data_service.h"
+#include "components/update_client/network.h"
 #include "components/update_client/protocol_handler.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -44,7 +45,9 @@ TestConfigurator::TestConfigurator()
           connector_factory_.RegisterInstance(patch::mojom::kServiceName)),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)) {
+              &test_url_loader_factory_)),
+      network_fetcher_factory_(base::MakeRefCounted<NetworkFetcherFactory>(
+          test_shared_loader_factory_)) {
   connector_factory_.set_ignore_quit_requests(true);
 }
 
@@ -115,9 +118,9 @@ std::string TestConfigurator::GetDownloadPreference() const {
   return download_preference_;
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-TestConfigurator::URLLoaderFactory() const {
-  return test_shared_loader_factory_;
+scoped_refptr<NetworkFetcherFactory>
+TestConfigurator::GetNetworkFetcherFactory() {
+  return network_fetcher_factory_;
 }
 
 std::unique_ptr<service_manager::Connector>

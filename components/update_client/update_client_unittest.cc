@@ -28,6 +28,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
+#include "components/update_client/network.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
 #include "components/update_client/protocol_parser.h"
@@ -280,7 +281,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -445,7 +446,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -646,7 +647,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -854,7 +855,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -993,7 +994,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentDataAtAll) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -1183,7 +1184,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -1474,7 +1475,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -1748,7 +1749,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -1997,7 +1998,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -2216,7 +2217,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -2363,7 +2364,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -2492,7 +2493,7 @@ TEST_F(UpdateClientTest, OneCrxInstallNoCrxComponentData) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -2626,7 +2627,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -2717,7 +2718,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -2779,7 +2780,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return nullptr;
     }
 
@@ -2911,7 +2912,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -3154,7 +3155,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -3323,7 +3324,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -3478,7 +3479,7 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -3663,7 +3664,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 
@@ -3825,7 +3826,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
    public:
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
       return std::make_unique<MockCrxDownloader>();
     }
 

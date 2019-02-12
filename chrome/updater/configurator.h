@@ -23,16 +23,13 @@ namespace base {
 class Version;
 }  // namespace base
 
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
 namespace service_manager {
 class Connector;
 }  // namespace service_manager
 
 namespace update_client {
 class ActivityDataService;
+class NetworkFetcherFactory;
 class ProtocolHandlerFactory;
 }  // namespace update_client
 
@@ -57,8 +54,8 @@ class Configurator : public update_client::Configurator {
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const override;
+  scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
+      override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;

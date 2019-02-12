@@ -15,9 +15,9 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/update_client/network.h"
 #include "components/update_client/utils.h"
 #include "net/base/load_flags.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -35,9 +35,9 @@ namespace update_client {
 
 UrlFetcherDownloader::UrlFetcherDownloader(
     std::unique_ptr<CrxDownloader> successor,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<NetworkFetcherFactory> network_fetcher_factory)
     : CrxDownloader(std::move(successor)),
-      url_loader_factory_(std::move(url_loader_factory)) {}
+      network_fetcher_factory_(network_fetcher_factory) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -61,35 +61,6 @@ void UrlFetcherDownloader::CreateDownloadDir() {
 
 void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("url_fetcher_downloader", R"(
-        semantics {
-          sender: "Component Updater"
-          description:
-            "The component updater in Chrome is responsible for updating code "
-            "and data modules such as Flash, CrlSet, Origin Trials, etc. These "
-            "modules are updated on cycles independent of the Chrome release "
-            "tracks. It runs in the browser process and communicates with a "
-            "set of servers using the Omaha protocol to find the latest "
-            "versions of components, download them, and register them with the "
-            "rest of Chrome."
-          trigger: "Manual or automatic software updates."
-          data:
-            "The URL that refers to a component. It is obfuscated for most "
-            "components."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled."
-          chrome_policy {
-            ComponentUpdatesEnabled {
-              policy_options {mode: MANDATORY}
-              ComponentUpdatesEnabled: false
-            }
-          }
-        })");
 
   if (download_dir_.empty()) {
     Result result;
@@ -117,32 +88,32 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SAVE_COOKIES |
                                  net::LOAD_DISABLE_CACHE;
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
+  network_fetcher_ =
+      network_fetcher_factory_->Create(std::move(resource_request));
+
   const int kMaxRetries = 3;
-  url_loader_->SetRetryOptions(
+  network_fetcher_->SetRetryOptions(
       kMaxRetries,
       network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
 
-  url_loader_->SetOnResponseStartedCallback(base::BindOnce(
+  network_fetcher_->SetOnResponseStartedCallback(base::BindOnce(
       &UrlFetcherDownloader::OnResponseStarted, base::Unretained(this)));
 
   // For the end-to-end system it is important that the client reports the
   // number of bytes it loaded from the server even in the case that the
   // overall network transaction failed.
-  url_loader_->SetAllowPartialResults(true);
+  network_fetcher_->SetAllowPartialResults(true);
 
   VLOG(1) << "Starting background download: " << url.spec();
-  url_loader_->DownloadToFile(
-      url_loader_factory_.get(),
-      base::BindOnce(&UrlFetcherDownloader::OnURLLoadComplete,
+  network_fetcher_->DownloadToFile(
+      base::BindOnce(&UrlFetcherDownloader::OnNetworkFetcherComplete,
                      base::Unretained(this)),
       response);
 
   download_start_time_ = base::TimeTicks::Now();
 }
 
-void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
+void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const base::TimeTicks download_end_time(base::TimeTicks::Now());
@@ -155,8 +126,9 @@ void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
   // the request and avoid overloading the server in this case.
   // is not accepting requests for the moment.
   int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  if (network_fetcher_->ResponseInfo() &&
+      network_fetcher_->ResponseInfo()->headers) {
+    response_code = network_fetcher_->ResponseInfo()->headers->response_code();
   }
 
   int fetch_error = -1;
@@ -165,7 +137,7 @@ void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
   } else if (response_code != -1) {
     fetch_error = response_code;
   } else {
-    fetch_error = url_loader_->NetError();
+    fetch_error = network_fetcher_->NetError();
   }
 
   const bool is_handled = fetch_error == 0 || IsHttpServerError(fetch_error);
@@ -182,15 +154,15 @@ void UrlFetcherDownloader::OnURLLoadComplete(base::FilePath file_path) {
   download_metrics.error = fetch_error;
   // Tests expected -1, in case of failures and no content is available.
   download_metrics.downloaded_bytes =
-      fetch_error && !url_loader_->GetContentSize()
+      fetch_error && !network_fetcher_->GetContentSize()
           ? -1
-          : url_loader_->GetContentSize();
+          : network_fetcher_->GetContentSize();
   download_metrics.total_bytes = total_bytes_;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
-  VLOG(1) << "Downloaded " << url_loader_->GetContentSize() << " bytes in "
+  VLOG(1) << "Downloaded " << network_fetcher_->GetContentSize() << " bytes in "
           << download_time.InMilliseconds() << "ms from "
-          << url_loader_->GetFinalURL().spec() << " to "
+          << network_fetcher_->GetFinalURL().spec() << " to "
           << result.response.value();
 
   // Delete the download directory in the error cases.

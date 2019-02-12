@@ -23,6 +23,7 @@ class BrowserContext;
 
 namespace update_client {
 class ActivityDataService;
+class NetworkFetcherFactory;
 class ProtocolHandlerFactory;
 }
 
@@ -53,8 +54,8 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const override;
+  scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
+      override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -87,6 +88,7 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   component_updater::ConfiguratorImpl impl_;
   PrefService* pref_service_;
   std::unique_ptr<update_client::ActivityDataService> activity_data_service_;
+  scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUpdateClientConfig);
 };

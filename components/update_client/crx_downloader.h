@@ -19,11 +19,9 @@
 #include "base/threading/thread_checker.h"
 #include "url/gurl.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-}
-
 namespace update_client {
+
+class NetworkFetcherFactory;
 
 // Defines a download interface for downloading components, with retrying on
 // fallback urls in case of errors. This class implements a chain of
@@ -75,9 +73,9 @@ class CrxDownloader {
   // different urls and different downloaders.
   using ProgressCallback = base::RepeatingCallback<void()>;
 
-  using Factory = std::unique_ptr<CrxDownloader> (*)(
-      bool,
-      scoped_refptr<network::SharedURLLoaderFactory>);
+  using Factory =
+      std::unique_ptr<CrxDownloader> (*)(bool,
+                                         scoped_refptr<NetworkFetcherFactory>);
 
   // Factory method to create an instance of this class and build the
   // chain of responsibility. |is_background_download| specifies that a
@@ -86,7 +84,7 @@ class CrxDownloader {
   // code such as file IO operations.
   static std::unique_ptr<CrxDownloader> Create(
       bool is_background_download,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<NetworkFetcherFactory> network_fetcher_factory);
   virtual ~CrxDownloader();
 
   void set_progress_callback(const ProgressCallback& progress_callback);

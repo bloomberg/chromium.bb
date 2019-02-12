@@ -22,13 +22,10 @@ namespace client_update_protocol {
 class Ecdsa;
 }
 
-namespace network {
-class SimpleURLLoader;
-}
-
 namespace update_client {
 
 class Configurator;
+class NetworkFetcher;
 
 // Sends a request to one of the urls provided. The class implements a chain
 // of responsibility design pattern, where the urls are tried in the order they
@@ -70,17 +67,16 @@ class RequestSender {
 
   // Returns the string value of a header of the server response or an empty
   // string if the header is not available.
-  static std::string GetStringHeaderValue(
-      const network::SimpleURLLoader* url_loader,
-      const char* header_name);
+  static std::string GetStringHeaderValue(const NetworkFetcher* url_loader,
+                                          const char* header_name);
 
   // Returns the integral value of a header of the server response or -1 if
   // if the header is not available or a conversion error has occured.
-  static int64_t GetInt64HeaderValue(const network::SimpleURLLoader* loader,
+  static int64_t GetInt64HeaderValue(const NetworkFetcher* loader,
                                      const char* header_name);
 
-  void OnSimpleURLLoaderComplete(const GURL& original_url,
-                                 std::unique_ptr<std::string> response_body);
+  void OnNetworkFetcherComplete(const GURL& original_url,
+                                std::unique_ptr<std::string> response_body);
 
   // Implements the error handling and url fallback mechanism.
   void SendInternal();
@@ -107,7 +103,7 @@ class RequestSender {
 
   std::string public_key_;
   std::vector<GURL>::const_iterator cur_url_;
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  std::unique_ptr<NetworkFetcher> network_fetcher_;
   std::unique_ptr<client_update_protocol::Ecdsa> signer_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);
