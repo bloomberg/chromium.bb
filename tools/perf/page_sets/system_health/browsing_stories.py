@@ -645,6 +645,85 @@ class YouTubeDesktopStory2018(_MediaBrowsingStory):
           '--enable-blink-features=HTMLImports,CustomElementsV0'])
 
 
+class YouTubeTVDesktopStory2019(_MediaBrowsingStory):
+  """Load a typical YouTube TV video then navigate to a next few videos. Stop
+  and watch each video for a few seconds.
+  """
+  NAME = 'browse:media:youtubetv:2019'
+  URL = 'https://www.youtube.com/tv#/watch/ads/control?v=PxrnoGyBw4E&resume'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def WaitIfRecording(self, action_runner):
+    # Uncomment the below if recording to try and reduce network errors.
+    # action_runner.Wait(2)
+    pass
+
+  def WatchThenSkipAd(self, action_runner):
+    skip_button_selector = '.skip-ad-button'
+    action_runner.WaitForElement(selector=skip_button_selector)
+    action_runner.Wait(8)  # Wait until the ad is skippable.
+    action_runner.MouseClick(selector=skip_button_selector)
+    self.WaitIfRecording(action_runner)
+
+  def ShortAttentionSpan(self, action_runner):
+    action_runner.Wait(2)
+
+  def GotoNextVideo(self, action_runner):
+    forward_button_selector = '.skip-forward-button'
+    action_runner.PressKey('ArrowDown')   # Open the menu.
+    action_runner.WaitForElement(selector=forward_button_selector)
+    action_runner.MouseClick(selector=forward_button_selector)
+    self.WaitIfRecording(action_runner)
+
+  def NavigateInMenu(self, action_runner):
+    short_delay_in_ms = 300
+    delay_in_ms = 1000
+    long_delay_in_ms = 3000
+    # Escape to menu, skip the sign-in process.
+    action_runner.PressKey('Backspace', 1, long_delay_in_ms)
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    action_runner.PressKey('Return', 1, long_delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Scroll through categories and back.
+    action_runner.WaitForElement(selector='#guide-logo')
+    action_runner.PressKey('ArrowUp', 1, delay_in_ms)
+    action_runner.PressKey('ArrowRight', 3, delay_in_ms)
+    action_runner.PressKey('ArrowLeft', 3, delay_in_ms)
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Scroll through a few videos then open the sidebar menu.
+    action_runner.PressKey('ArrowRight', 3, short_delay_in_ms)
+    action_runner.PressKey('ArrowDown', 3, short_delay_in_ms)
+    action_runner.PressKey('Backspace', 2, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Scroll through options and then go to search.
+    action_runner.PressKey('ArrowDown', 3, delay_in_ms)
+    action_runner.PressKey('s', 1, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Search for 'dub stories' and start playing.
+    action_runner.EnterText('dub stories', short_delay_in_ms)
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    action_runner.PressKey('Return', 2, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+
+  def _DidLoadDocument(self, action_runner):
+    self.WatchThenSkipAd(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.NavigateInMenu(action_runner)
+
+  # This story is mainly relevant for V8 in jitless mode, but there is no
+  # benchmark that enables this flag. We take the pragmatic solution and set
+  # this flag explicitly for this story.
+  def __init__(self, story_set, take_memory_measurement):
+    super(YouTubeTVDesktopStory2019, self).__init__(
+        story_set, take_memory_measurement,
+        extra_browser_args=['--js-flags="--jitless"'])
+
 class FacebookPhotosMobileStory(_MediaBrowsingStory):
   """Load a photo page from Rihanna's facebook page then navigate a few next
   photos.
