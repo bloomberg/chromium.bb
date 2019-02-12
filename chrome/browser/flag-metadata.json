@@ -1278,11 +1278,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-heavy-page-capping",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-history-entry-requires-user-gesture",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
