@@ -17,6 +17,8 @@
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
+#include "media/audio/audio_device_description.h"
+
 #if defined(OS_ANDROID)
 #include "media/audio/android/audio_track_output_stream.h"
 #endif  // defined(OS_ANDROID)
@@ -174,10 +176,12 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
     const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
-  // If |mixer_| exists, return a mixing stream. If used, the mixing stream
-  // will use the default device_id, not |device_id_or_group_id|
-  if (mixer_) {
-    DCHECK(device_id_or_group_id.empty());
+  // For non-default device IDs, we always want to use CastAudioOutputStream
+  // to allow features like redirection. For default device ID, if |mixer_|
+  // exists, return a mixing stream. If used, the mixing stream will always use
+  // the default device_id.
+  if (::media::AudioDeviceDescription::IsDefaultDevice(device_id_or_group_id) &&
+      mixer_) {
     return mixer_->MakeStream(params);
   } else {
     return new CastAudioOutputStream(
