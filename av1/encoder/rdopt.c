@@ -8481,7 +8481,10 @@ static INLINE int find_comp_rd_in_stats(const AV1_COMP *const cpi,
 }
 
 static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
-                                                  MB_MODE_INFO *const mbmi) {
+                                                  MB_MODE_INFO *const mbmi,
+                                                  int64_t rd, int skip_txfm_sb,
+                                                  int64_t skip_sse_sb,
+                                                  unsigned int pred_sse) {
   const int comp_idx = mbmi->compound_idx;
   const int offset = x->interp_filter_stats_idx[comp_idx];
   if (offset < MAX_INTERP_FILTER_STATS) {
@@ -8489,7 +8492,11 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
                                         { mbmi->mv[0], mbmi->mv[1] },
                                         { mbmi->ref_frame[0],
                                           mbmi->ref_frame[1] },
-                                        mbmi->interinter_comp.type };
+                                        mbmi->interinter_comp.type,
+                                        rd,
+                                        skip_txfm_sb,
+                                        skip_sse_sb,
+                                        pred_sse };
     x->interp_filter_stats[comp_idx][offset] = stat;
     x->interp_filter_stats_idx[comp_idx]++;
   }
@@ -8526,8 +8533,8 @@ static int64_t interpolation_filter_search(
     const BUFFER_SET *const tmp_dst, const BUFFER_SET *const orig_dst,
     InterpFilter (*const single_filter)[REF_FRAMES], int64_t *const rd,
     int *const switchable_rate, int *const skip_txfm_sb,
-    int64_t *const skip_sse_sb, const int skip_build_pred,
-    HandleInterModeArgs *args, int64_t ref_best_rd) {
+    int64_t *const skip_sse_sb, int *skip_build_pred, HandleInterModeArgs *args,
+    int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -8544,12 +8551,23 @@ static int64_t interpolation_filter_search(
   const int ref_frame = xd->mi[0]->ref_frame[0];
 
   (void)single_filter;
-  int match_found = -1;
+  int match_found_idx = -1;
   const InterpFilter assign_filter = cm->interp_filter;
   if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
-    match_found = find_interp_filter_in_stats(x, mbmi);
+    match_found_idx = find_interp_filter_in_stats(x, mbmi);
   }
-  if (!need_search || match_found == -1) {
+  if (match_found_idx != -1) {
+    const int comp_idx = mbmi->compound_idx;
+    *rd = x->interp_filter_stats[comp_idx][match_found_idx].rd;
+    *skip_txfm_sb =
+        x->interp_filter_stats[comp_idx][match_found_idx].skip_txfm_sb;
+    *skip_sse_sb =
+        x->interp_filter_stats[comp_idx][match_found_idx].skip_sse_sb;
+    x->pred_sse[ref_frame] =
+        x->interp_filter_stats[comp_idx][match_found_idx].pred_sse;
+    return 0;
+  }
+  if (!need_search || match_found_idx == -1) {
     set_default_interp_filters(mbmi, assign_filter);
   }
   int switchable_ctx[2];
@@ -8557,9 +8575,10 @@ static int64_t interpolation_filter_search(
   switchable_ctx[1] = av1_get_pred_context_switchable_interp(xd, 1);
   *switchable_rate =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
-  if (!skip_build_pred) {
+  if (!(*skip_build_pred)) {
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize, 0,
                                   av1_num_planes(cm) - 1);
+    *skip_build_pred = 1;
   }
 
 #if CONFIG_COLLECT_RD_STATS == 3
@@ -8586,7 +8605,7 @@ static int64_t interpolation_filter_search(
   *skip_sse_sb = best_skip_sse_sb[1];
   x->pred_sse[ref_frame] = (unsigned int)(best_skip_sse_sb[0] >> 4);
 
-  if (assign_filter != SWITCHABLE || match_found != -1) {
+  if (assign_filter != SWITCHABLE || match_found_idx != -1) {
     return 0;
   }
   if (!need_search) {
@@ -8756,8 +8775,9 @@ static int64_t interpolation_filter_search(
 
   // save search results
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
-    assert(match_found == -1);
-    save_interp_filter_search_stat(x, mbmi);
+    assert(match_found_idx == -1);
+    save_interp_filter_search_stat(x, mbmi, *rd, *skip_txfm_sb, *skip_sse_sb,
+                                   x->pred_sse[ref_frame]);
   }
   return 0;
 }
@@ -10240,7 +10260,7 @@ static int64_t handle_inter_mode(
       ret_val = interpolation_filter_search(
           x, cpi, tile_data, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
           args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb,
-          skip_build_pred, args, ref_best_rd);
+          &skip_build_pred, args, ref_best_rd);
       if (args->modelled_rd != NULL && !is_comp_pred) {
         args->modelled_rd[this_mode][ref_mv_idx][refs[0]] = rd;
       }
@@ -10271,6 +10291,10 @@ static int64_t handle_inter_mode(
         }
       }
       rd_stats->rate += compmode_interinter_cost;
+      if (skip_build_pred != 1) {
+        av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, &orig_dst, bsize,
+                                      0, av1_num_planes(cm) - 1);
+      }
 
       if (cpi->sf.second_loop_comp_fast_tx_search && comp_idx == 0) {
         // TODO(chengchen): this speed feature introduces big loss.

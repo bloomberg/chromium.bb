@@ -184,6 +184,10 @@ typedef struct {
   int_mv mv[2];
   int8_t ref_frames[2];
   COMPOUND_TYPE comp_type;
+  int64_t rd;
+  int skip_txfm_sb;
+  int64_t skip_sse_sb;
+  unsigned int pred_sse;
 } INTERPOLATION_FILTER_STATS;
 
 #define MAX_COMP_RD_STATS 64
