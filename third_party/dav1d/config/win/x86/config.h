@@ -25,6 +25,8 @@
 
 #define HAVE_ASM 1
 
+#define HAVE_IO_H 1
+
 #define PREFIX 1
 
 // #define STACK_ALIGNMENT 4 -- Stack alignment is controlled by Chromium
