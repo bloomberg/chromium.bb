@@ -92,7 +92,7 @@ public class PostTask {
      * @param extensionId The id associated with the TaskExecutor.
      * @param taskExecutor The TaskExecutor to be registered. Must not equal zero.
      */
-    public static void registerTaskExecutor(byte extensionId, TaskExecutor taskExecutor) {
+    public static void registerTaskExecutor(int extensionId, TaskExecutor taskExecutor) {
         synchronized (sLock) {
             assert extensionId != 0;
             assert extensionId <= TaskTraits.MAX_EXTENSION_ID;
