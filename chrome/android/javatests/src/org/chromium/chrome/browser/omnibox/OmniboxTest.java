@@ -710,7 +710,12 @@ public class OmniboxTest {
                     testServer.getURL("/chrome/test/data/android/theme_color_test.html");
 
             mActivityTestRule.loadUrl(testHttpsUrl);
-            didThemeColorChangedCallbackHelper.waitForCallback(0);
+
+            // Tablets don't have website theme colors.
+            if (!mActivityTestRule.getActivity().isTablet()) {
+                didThemeColorChangedCallbackHelper.waitForCallback(0);
+            }
+
             onSSLStateUpdatedCallbackHelper.waitForCallback(0);
 
             LocationBarLayout locationBarLayout =
