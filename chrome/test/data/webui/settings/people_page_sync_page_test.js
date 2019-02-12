@@ -538,41 +538,9 @@ cr.define('settings_people_page_sync_page', function() {
                 .shadowRoot.querySelector('#setup-buttons .secondary-button');
         assertTrue(!!cancelButton);
 
-        // Clicking the setup cancel button opens the 'Cancel sync?' dialog.
+        // Clicking the setup cancel button aborts sync.
         cancelButton.click();
-        return test_util.eventToPromise('cr-dialog-open', syncPage)
-            .then(() => {
-              assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
-              assertTrue(syncPage.$$('#setupCancelDialog').open);
-
-              // Clicking the cancel button on the 'Cancel sync?' dialog closes
-              // the dialog and removes it from the DOM.
-              syncPage.$$('#setupCancelDialog')
-                  .querySelector('.cancel-button')
-                  .click();
-
-              return test_util.eventToPromise(
-                  'close', syncPage.$$('#setupCancelDialog'));
-            })
-            .then(() => {
-              Polymer.dom.flush();
-              assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
-              assertFalse(!!syncPage.$$('#setupCancelDialog'));
-
-              // Clicking the setup cancel button shows the 'Cancel sync?'
-              // dialog again.
-              cancelButton.click();
-              return test_util.eventToPromise('cr-dialog-open', syncPage);
-            })
-            .then(() => {
-              assertTrue(syncPage.$$('#setupCancelDialog').open);
-
-              // Clicking the confirm button on the dialog aborts sync.
-              syncPage.$$('#setupCancelDialog')
-                  .querySelector('.action-button')
-                  .click();
-              return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
-            })
+        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {
               assertTrue(abort);
             });
@@ -621,11 +589,32 @@ cr.define('settings_people_page_sync_page', function() {
               assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
               assertTrue(syncPage.$$('#setupCancelDialog').open);
 
+              // Clicking the cancel button on the 'Cancel sync?' dialog closes
+              // the dialog and removes it from the DOM.
+              syncPage.$$('#setupCancelDialog')
+                  .querySelector('.cancel-button')
+                  .click();
+
+              return test_util.eventToPromise(
+                  'close', syncPage.$$('#setupCancelDialog'));
+            })
+            .then(() => {
+              Polymer.dom.flush();
+              assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+              assertFalse(!!syncPage.$$('#setupCancelDialog'));
+
+              // Navigating away while setup is in progress opens the
+              // dialog again.
+              settings.navigateTo(settings.routes.BASIC);
+              return test_util.eventToPromise('cr-dialog-open', syncPage);
+            })
+            .then(() => {
+              assertTrue(syncPage.$$('#setupCancelDialog').open);
+
               // Clicking the confirm button on the dialog aborts sync.
               syncPage.$$('#setupCancelDialog')
                   .querySelector('.action-button')
                   .click();
-
               return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
             })
             .then(abort => {

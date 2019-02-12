@@ -179,10 +179,10 @@ Polymer({
   didAbort_: false,
 
   /**
-   * Whether the user clicked the confirm button on the "Cancel sync?" dialog.
+   * Whether the user confirmed the cancellation of sync.
    * @private {boolean}
    */
-  setupCancelDialogConfirmed_: false,
+  setupCancelConfirmed_: false,
 
   /** @override */
   created: function() {
@@ -250,7 +250,7 @@ Polymer({
 
   /** @private */
   onSetupCancelDialogConfirm_: function() {
-    this.setupCancelDialogConfirmed_ = true;
+    this.setupCancelConfirmed_ = true;
     this.$$('#setupCancelDialog').close();
     settings.navigateTo(settings.routes.BASIC);
     chrome.metricsPrivate.recordUserAction(
@@ -267,11 +267,11 @@ Polymer({
     if (settings.getCurrentRoute() == settings.routes.SYNC) {
       this.onNavigateToPage_();
     } else if (!settings.routes.SYNC.contains(settings.getCurrentRoute())) {
-      // When the user wants to cancel the sync setup, but hasn't confirmed
-      // the cancel dialog, navigate back and show the dialog.
+      // When the user is about to cancel the sync setup, but hasn't confirmed
+      // the cancellation, navigate back and show the 'Cancel sync?' dialog.
       if (this.unifiedConsentEnabled && this.syncStatus &&
           !!this.syncStatus.setupInProgress && this.didAbort_ &&
-          !this.setupCancelDialogConfirmed_) {
+          !this.setupCancelConfirmed_) {
         // Yield so that other |currentRouteChanged| observers are called,
         // before triggering another navigation (and another round of observers
         // firing). Triggering navigation from within an observer leads to some
@@ -284,7 +284,7 @@ Polymer({
           this.$$('#setupCancelDialog').showModal();
         });
       } else {
-        this.setupCancelDialogConfirmed_ = false;
+        this.setupCancelConfirmed_ = false;
         this.onNavigateAwayFromPage_();
       }
     }
@@ -617,6 +617,7 @@ Polymer({
       chrome.metricsPrivate.recordUserAction(
           'Signin_Signin_ConfirmAdvancedSyncSettings');
     } else {
+      this.setupCancelConfirmed_ = true;
       chrome.metricsPrivate.recordUserAction(
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
