@@ -3475,6 +3475,7 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
            ToLayoutCustom(containing_block)->IsLoaded()) &&
          !containing_block->HasOverridePercentageResolutionBlockSize() &&
          !containing_block->IsLayoutGrid() &&
+         !containing_block->IsFlexibleBoxIncludingDeprecatedAndNG() &&
          containing_block->StyleRef().LogicalHeight().IsAuto();
 }
 
