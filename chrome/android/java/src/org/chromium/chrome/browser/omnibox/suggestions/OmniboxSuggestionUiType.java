@@ -10,9 +10,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** The different types of view that a suggestion can be. */
-@IntDef({OmniboxSuggestionUiType.DEFAULT, OmniboxSuggestionUiType.EDIT_URL_SUGGESTION})
+@IntDef({OmniboxSuggestionUiType.DEFAULT, OmniboxSuggestionUiType.EDIT_URL_SUGGESTION,
+        OmniboxSuggestionUiType.ANSWER_SUGGESTION})
 @Retention(RetentionPolicy.SOURCE)
 public @interface OmniboxSuggestionUiType {
     int DEFAULT = 0;
     int EDIT_URL_SUGGESTION = 1;
+    int ANSWER_SUGGESTION = 2;
 }
