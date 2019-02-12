@@ -157,7 +157,7 @@ class ParallelDownloadJobTest : public testing::Test {
     received_slices_ = slices;
   }
 
-  bool IsJobCanceled() const { return job_->is_canceled_; };
+  bool IsJobCanceled() const { return job_->is_canceled_; }
 
   void MakeWorkerReady(
       DownloadWorker* worker,
