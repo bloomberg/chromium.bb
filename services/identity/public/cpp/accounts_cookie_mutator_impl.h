@@ -11,6 +11,7 @@
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
 class GaiaCookieManagerService;
+class GoogleServiceAuthError;
 
 namespace gaia {
 enum class GaiaSource;
@@ -33,6 +34,10 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
                                    gaia::GaiaSource source) override;
 
   void TriggerCookieJarUpdate() override;
+
+  void ForceTriggerOnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override;
 
  private:
   GaiaCookieManagerService* gaia_cookie_manager_service_;
