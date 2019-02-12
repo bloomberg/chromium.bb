@@ -55,7 +55,7 @@ TEST_P(FieldTypeMirrorConversionsTest, FieldTypeMirrorConversions) {
   EXPECT_EQ(test_data.server_field, server_field);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AddressI18nTest,
     FieldTypeMirrorConversionsTest,
     testing::Values(
@@ -108,17 +108,17 @@ TEST_P(FieldTypeUnidirectionalConversionsTest,
   EXPECT_EQ(test_data.expected_address_field, actual_address_field);
 }
 
-INSTANTIATE_TEST_CASE_P(AddressI18nTest,
-                        FieldTypeUnidirectionalConversionsTest,
-                        testing::Values(
-                            FieldTypeUnidirectionalConversionsTestCase{
-                                ADDRESS_BILLING_LINE1, STREET_ADDRESS},
-                            FieldTypeUnidirectionalConversionsTestCase{
-                                ADDRESS_BILLING_LINE2, STREET_ADDRESS},
-                            FieldTypeUnidirectionalConversionsTestCase{
-                                ADDRESS_HOME_LINE1, STREET_ADDRESS},
-                            FieldTypeUnidirectionalConversionsTestCase{
-                                ADDRESS_HOME_LINE2, STREET_ADDRESS}));
+INSTANTIATE_TEST_SUITE_P(AddressI18nTest,
+                         FieldTypeUnidirectionalConversionsTest,
+                         testing::Values(
+                             FieldTypeUnidirectionalConversionsTestCase{
+                                 ADDRESS_BILLING_LINE1, STREET_ADDRESS},
+                             FieldTypeUnidirectionalConversionsTestCase{
+                                 ADDRESS_BILLING_LINE2, STREET_ADDRESS},
+                             FieldTypeUnidirectionalConversionsTestCase{
+                                 ADDRESS_HOME_LINE1, STREET_ADDRESS},
+                             FieldTypeUnidirectionalConversionsTestCase{
+                                 ADDRESS_HOME_LINE2, STREET_ADDRESS}));
 
 TEST(AddressI18nTest, UnconvertableServerFields) {
   EXPECT_FALSE(FieldForType(PHONE_HOME_NUMBER, nullptr));

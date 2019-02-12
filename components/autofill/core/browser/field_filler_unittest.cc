@@ -480,7 +480,7 @@ TEST_P(PhoneNumberTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     PhoneNumberTest,
     testing::Values(
@@ -530,7 +530,7 @@ TEST_P(ExpirationYearTest, FillExpirationYearInput) {
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     ExpirationYearTest,
     testing::Values(
@@ -594,7 +594,7 @@ TEST_P(ExpirationDateTest, FillExpirationDateInput) {
   EXPECT_EQ(response, test_case.expected_response);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     ExpirationDateTest,
     testing::Values(
@@ -784,7 +784,7 @@ TEST_P(AutofillSelectWithStatesTest, FillSelectWithStates) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     AutofillSelectWithStatesTest,
     testing::Values(
@@ -872,7 +872,7 @@ TEST_P(AutofillSelectWithExpirationMonthTest,
                              test_case.select_values.size());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     AutofillSelectWithExpirationMonthTest,
     testing::Values(
@@ -1358,7 +1358,7 @@ TEST_P(AutofillStateTextTest, FillStateText) {
   EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillFieldFillerTest,
     AutofillStateTextTest,
     testing::Values(

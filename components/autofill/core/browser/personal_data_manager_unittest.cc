@@ -3840,7 +3840,7 @@ TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
   ResetProfiles();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PersonalDataManagerTest,
     SaveImportedProfileTest,
     testing::Values(

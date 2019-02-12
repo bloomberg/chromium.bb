@@ -375,7 +375,7 @@ TEST_P(ParseExpFieldTest, ParseExpField) {
             field_candidates_map_[ASCIIToUTF16("exp3")].BestHeuristicType());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardFieldTest,
     ParseExpFieldTest,
     testing::Values(

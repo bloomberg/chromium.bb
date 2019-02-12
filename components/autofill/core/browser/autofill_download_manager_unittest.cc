@@ -1188,11 +1188,11 @@ TEST_P(AutofillServerCommunicationTest, Upload) {
 
 // Note that we omit DEFAULT_URL from the test params. We don't actually want
 // the tests to hit the production server.
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillServerCommunicationTest,
-                        ::testing::Values(DISABLED,
-                                          FINCHED_URL,
-                                          COMMAND_LINE_URL));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillServerCommunicationTest,
+                         ::testing::Values(DISABLED,
+                                           FINCHED_URL,
+                                           COMMAND_LINE_URL));
 
 using AutofillQueryTest = AutofillServerCommunicationTest;
 
@@ -1468,9 +1468,9 @@ TEST_P(AutofillQueryTest, RichMetadata_Disabled) {
 // Note that we omit DEFAULT_URL from the test params. We don't actually want
 // the tests to hit the production server. We also excluded DISABLED, since
 // these tests exercise "enabled" functionality.
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillQueryTest,
-                        ::testing::Values(FINCHED_URL, COMMAND_LINE_URL));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillQueryTest,
+                         ::testing::Values(FINCHED_URL, COMMAND_LINE_URL));
 
 using AutofillUploadTest = AutofillServerCommunicationTest;
 
@@ -1779,8 +1779,8 @@ TEST_P(AutofillUploadTest, ResetOnClearUploadHisotry) {
 // Note that we omit DEFAULT_URL from the test params. We don't actually want
 // the tests to hit the production server. We also excluded DISABLED, since
 // these tests exercise "enabled" functionality.
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillUploadTest,
-                        ::testing::Values(FINCHED_URL, COMMAND_LINE_URL));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillUploadTest,
+                         ::testing::Values(FINCHED_URL, COMMAND_LINE_URL));
 
 }  // namespace autofill

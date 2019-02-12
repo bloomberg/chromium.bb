@@ -364,19 +364,19 @@ TEST_P(SetExpirationYearFromStringTest, SetExpirationYearFromString) {
       << test_case.expiration_year << " " << test_case.expected_year;
 }
 
-INSTANTIATE_TEST_CASE_P(CreditCardTest,
-                        SetExpirationYearFromStringTest,
-                        testing::Values(
-                            // Valid values.
-                            SetExpirationYearFromStringTestCase{"2040", 2040},
-                            SetExpirationYearFromStringTestCase{"45", 2045},
-                            SetExpirationYearFromStringTestCase{"045", 2045},
-                            SetExpirationYearFromStringTestCase{"9", 2009},
+INSTANTIATE_TEST_SUITE_P(CreditCardTest,
+                         SetExpirationYearFromStringTest,
+                         testing::Values(
+                             // Valid values.
+                             SetExpirationYearFromStringTestCase{"2040", 2040},
+                             SetExpirationYearFromStringTestCase{"45", 2045},
+                             SetExpirationYearFromStringTestCase{"045", 2045},
+                             SetExpirationYearFromStringTestCase{"9", 2009},
 
-                            // Unrecognized year values.
-                            SetExpirationYearFromStringTestCase{"052045", 0},
-                            SetExpirationYearFromStringTestCase{"123", 0},
-                            SetExpirationYearFromStringTestCase{"y2045", 0}));
+                             // Unrecognized year values.
+                             SetExpirationYearFromStringTestCase{"052045", 0},
+                             SetExpirationYearFromStringTestCase{"123", 0},
+                             SetExpirationYearFromStringTestCase{"y2045", 0}));
 
 struct SetExpirationDateFromStringTestCase {
   std::string expiration_date;
@@ -396,7 +396,7 @@ TEST_P(SetExpirationDateFromStringTest, SetExpirationDateFromString) {
   EXPECT_EQ(test_case.expected_year, card.expiration_year());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     SetExpirationDateFromStringTest,
     testing::Values(
@@ -486,7 +486,7 @@ TEST_P(IsLocalDuplicateOfServerCardTest, IsLocalDuplicateOfServerCard) {
       << " when comparing cards " << a.Label() << " and " << b.Label();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     IsLocalDuplicateOfServerCardTest,
     testing::Values(
@@ -1152,9 +1152,9 @@ const CreditCardMatchingTypesCase kCreditCardMatchingTypesTestCases[] = {
     {"2021", "01", "2019", LOCAL_CARD, ServerFieldTypeSet()},
 };
 
-INSTANTIATE_TEST_CASE_P(CreditCardTest,
-                        CreditCardMatchingTypesTest,
-                        testing::ValuesIn(kCreditCardMatchingTypesTestCases));
+INSTANTIATE_TEST_SUITE_P(CreditCardTest,
+                         CreditCardMatchingTypesTest,
+                         testing::ValuesIn(kCreditCardMatchingTypesTestCases));
 
 struct GetCardNetworkTestCase {
   const char* card_number;
@@ -1162,7 +1162,7 @@ struct GetCardNetworkTestCase {
   bool is_valid;
 };
 
-// We are doing batches here because INSTANTIATE_TEST_CASE_P has a
+// We are doing batches here because INSTANTIATE_TEST_SUITE_P has a
 // 50 upper limit.
 class GetCardNetworkTestBatch1
     : public testing::TestWithParam<GetCardNetworkTestCase> {};
@@ -1175,7 +1175,7 @@ TEST_P(GetCardNetworkTestBatch1, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch1,
     testing::Values(
@@ -1238,7 +1238,7 @@ TEST_P(GetCardNetworkTestBatch2, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch2,
     testing::Values(
@@ -1291,7 +1291,7 @@ TEST_P(GetCardNetworkTestBatch3, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch3,
     testing::Values(
@@ -1351,7 +1351,7 @@ TEST_P(GetCardNetworkTestBatch4, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch4,
     testing::Values(
@@ -1482,7 +1482,7 @@ TEST_P(ShouldUpdateExpirationTest, ShouldUpdateExpiration) {
             card.ShouldUpdateExpiration(testingTimes.now_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     ShouldUpdateExpirationTest,
     testing::Values(

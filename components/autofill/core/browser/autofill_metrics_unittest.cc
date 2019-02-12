@@ -470,9 +470,9 @@ class AutofillMetricsIFrameTest : public AutofillMetricsTest,
   const std::string credit_card_form_events_frame_histogram_;
 };
 
-INSTANTIATE_TEST_CASE_P(AutofillMetricsTest,
-                        AutofillMetricsIFrameTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
+                         AutofillMetricsIFrameTest,
+                         testing::Bool());
 
 // Test parameter indicates if the metrics are being logged for a form in an
 // iframe or the main frame. True means the form is in the main frame.
@@ -494,9 +494,9 @@ class AutofillMetricsCompanyTest : public AutofillMetricsTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(AutofillMetricsTest,
-                        AutofillMetricsCompanyTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(AutofillMetricsTest,
+                         AutofillMetricsCompanyTest,
+                         testing::Bool());
 
 // Test that we log quality metrics appropriately.
 TEST_F(AutofillMetricsTest, QualityMetrics) {
@@ -1739,7 +1739,7 @@ TEST_P(QualityMetricsTest, Classification) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillMetricsTest,
     QualityMetricsTest,
     testing::Values(QualityMetricsTestCase{NO_SERVER_DATA, EMPTY_TYPE},

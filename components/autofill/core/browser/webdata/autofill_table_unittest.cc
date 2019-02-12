@@ -2831,7 +2831,7 @@ TEST_P(GetFormValuesTest, GetFormValuesForElementName_SubstringMatchEnabled) {
   table_->RemoveFormElementsAddedBetween(t1, Time(), &changes);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillTableTest,
     GetFormValuesTest,
     testing::Values(GetFormValuesTestCase{{"user.test", "test_user"},
@@ -2979,10 +2979,10 @@ TEST_P(AutofillTableTestPerModelType, AutofillCorruptModelTypeState) {
   EXPECT_FALSE(table_->GetAllSyncMetadata(model_type, &metadata_batch));
 }
 
-INSTANTIATE_TEST_CASE_P(AutofillTableTest,
-                        AutofillTableTestPerModelType,
-                        testing::Values(syncer::AUTOFILL,
-                                        syncer::AUTOFILL_PROFILE));
+INSTANTIATE_TEST_SUITE_P(AutofillTableTest,
+                         AutofillTableTestPerModelType,
+                         testing::Values(syncer::AUTOFILL,
+                                         syncer::AUTOFILL_PROFILE));
 
 TEST_F(AutofillTableTest, RemoveOrphanAutofillTableRows) {
   // Populate the different tables.

@@ -2830,7 +2830,7 @@ TEST_F(CreditCardSaveManagerTest, DuplicateMaskedCreditCard_NoUpload) {
 }
 
 // This class is parametrized to allow running all the inheriting tests with and
-// without a specific feature enabled. See INSTANTIATE_TEST_CASE_P.
+// without a specific feature enabled. See INSTANTIATE_TEST_SUITE_P.
 class CreditCardSaveManagerFeatureParameterizedTest
     : public CreditCardSaveManagerTest,
       public ::testing::WithParamInterface<
@@ -3927,9 +3927,9 @@ TEST_P(CreditCardSaveManagerFeatureParameterizedTest,
 //    Feature disabled
 //  CreditCardSaveManagerFeatureParameterizedTest.NothingIfNothingFound/1:
 //    Feature enabled.
-INSTANTIATE_TEST_CASE_P(,  // Empty instatiation name.
-                        CreditCardSaveManagerFeatureParameterizedTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,  // Empty instatiation name.
+                         CreditCardSaveManagerFeatureParameterizedTest,
+                         ::testing::Values(false, true));
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddAnyFlagStatesToRequestIfExperimentsOff) {

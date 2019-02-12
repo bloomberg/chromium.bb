@@ -138,7 +138,7 @@ TEST_P(HasGreaterFrecencyThanTest, HasGreaterFrecencyThan) {
             model_b.HasGreaterFrecencyThan(&model_a, now));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillDataModelTest,
     HasGreaterFrecencyThanTest,
     testing::Values(
