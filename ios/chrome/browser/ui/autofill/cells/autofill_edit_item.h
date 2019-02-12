@@ -23,9 +23,6 @@
 // An icon identifying the text field or its current value, if any.
 @property(nonatomic, copy) UIImage* identifyingIcon;
 
-// The inputView for the text field, if any.
-@property(nonatomic, strong) UIPickerView* inputView;
-
 // The field type this item is describing.
 @property(nonatomic, assign) AutofillUIType autofillUIType;
 
@@ -59,6 +56,9 @@
 // Text field at the trailing edge of the cell. It displays the item's
 // |textFieldValue|.
 @property(nonatomic, readonly, strong) UITextField* textField;
+
+// Whether the icon showing that the cell is editable should be displayed.
+@property(nonatomic, assign) BOOL editIconDisplayed;
 
 - (void)setIdentifyingIcon:(UIImage*)icon;
 
