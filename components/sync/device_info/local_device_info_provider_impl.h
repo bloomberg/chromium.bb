@@ -20,7 +20,6 @@ namespace syncer {
 
 class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
  public:
-  // TODO(crbug.com/922971): This could be moved to DeviceInfoSyncService.
   using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
 
   LocalDeviceInfoProviderImpl(
