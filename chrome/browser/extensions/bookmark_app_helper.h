@@ -214,9 +214,6 @@ void CreateOrUpdateBookmarkApp(ExtensionService* service,
                                WebApplicationInfo* web_app_info,
                                bool is_locally_installed);
 
-// Returns whether the given |url| is a valid user bookmark app url.
-bool IsValidBookmarkAppUrl(const GURL& url);
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_HELPER_H_
