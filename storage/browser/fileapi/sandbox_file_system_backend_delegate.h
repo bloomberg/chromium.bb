@@ -251,7 +251,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   FileSystemOptions file_system_options_;
 
   bool is_filesystem_opened_;
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
 
   // Accessed only on the file thread.
   std::set<GURL> visited_origins_;

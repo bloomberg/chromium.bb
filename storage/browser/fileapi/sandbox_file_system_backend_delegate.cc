@@ -223,7 +223,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
 }
 
 SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
-  io_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(io_thread_checker_);
 
   if (!file_task_runner_->RunsTasksInCurrentSequence()) {
     DeleteSoon(file_task_runner_.get(), quota_reservation_manager_.release());
@@ -286,7 +286,7 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
                      base::BindOnce(std::move(callback), root_url, name),
                      base::Owned(error_ptr)));
 
-  io_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(io_thread_checker_);
   is_filesystem_opened_ = true;
 }
 
@@ -462,7 +462,9 @@ void SandboxFileSystemBackendDelegate::AddFileUpdateObserver(
     FileSystemType type,
     FileUpdateObserver* observer,
     base::SequencedTaskRunner* task_runner) {
+#if DCHECK_IS_ON()
   DCHECK(!is_filesystem_opened_ || io_thread_checker_.CalledOnValidThread());
+#endif
   update_observers_[type] =
       update_observers_[type].AddObserver(observer, task_runner);
 }
@@ -471,7 +473,9 @@ void SandboxFileSystemBackendDelegate::AddFileChangeObserver(
     FileSystemType type,
     FileChangeObserver* observer,
     base::SequencedTaskRunner* task_runner) {
+#if DCHECK_IS_ON()
   DCHECK(!is_filesystem_opened_ || io_thread_checker_.CalledOnValidThread());
+#endif
   change_observers_[type] =
       change_observers_[type].AddObserver(observer, task_runner);
 }
@@ -480,7 +484,9 @@ void SandboxFileSystemBackendDelegate::AddFileAccessObserver(
     FileSystemType type,
     FileAccessObserver* observer,
     base::SequencedTaskRunner* task_runner) {
+#if DCHECK_IS_ON()
   DCHECK(!is_filesystem_opened_ || io_thread_checker_.CalledOnValidThread());
+#endif
   access_observers_[type] =
       access_observers_[type].AddObserver(observer, task_runner);
 }

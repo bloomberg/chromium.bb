@@ -63,15 +63,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationContext
   // FileSystemOperationContext is created (i.e. are not supposed be updated
   // after the context's passed onto other task runners).
   void set_change_observers(const ChangeObserverList& list) {
-    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(setter_thread_checker_);
     change_observers_ = list;
   }
   void set_update_observers(const UpdateObserverList& list) {
-    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(setter_thread_checker_);
     update_observers_ = list;
   }
   void set_quota_limit_type(storage::QuotaLimitType limit_type) {
-    DCHECK(setter_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(setter_thread_checker_);
     quota_limit_type_ = limit_type;
   }
 
@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationContext
   UpdateObserverList update_observers_;
 
   // Used to check its setters are not called on arbitrary thread.
-  base::ThreadChecker setter_thread_checker_;
+  THREAD_CHECKER(setter_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationContext);
 };
