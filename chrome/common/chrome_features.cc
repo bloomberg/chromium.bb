@@ -553,7 +553,7 @@ const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
 
 // The site settings all sites list page in the Chrome settings UI.
 const base::Feature kSiteSettings{"SiteSettings",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables committed error pages instead of transient navigation entries for
 // SSL interstitial error pages (i.e. certificate errors).
