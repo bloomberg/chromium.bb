@@ -44,9 +44,6 @@ int main(int argc, char* argv[]) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
 
-  base::MessageLoopForIO message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_server");
-
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   CHECK(logging::InitLogging(settings));
@@ -75,7 +72,7 @@ int main(int argc, char* argv[]) {
   if (line->HasSwitch("mode")) {
     FLAGS_quic_mode = line->GetSwitchValueASCII("mode");
   }
-  if (FLAGS_quic_mode.compare("cache") == 0) {
+  if (FLAGS_quic_mode == "cache") {
     if (line->HasSwitch("quic_response_cache_dir")) {
       FLAGS_quic_response_cache_dir =
           line->GetSwitchValueASCII("quic_response_cache_dir");
@@ -122,6 +119,6 @@ int main(int argc, char* argv[]) {
   }
 
   while (true) {
-    server.Start();
+    server.WaitForEvents();
   }
 }

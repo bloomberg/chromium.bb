@@ -14,7 +14,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_framer.h"
@@ -23,7 +22,6 @@
 #include "net/third_party/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/tools/quic_simple_server_backend.h"
-#include "net/tools/epoll_server/epoll_server.h"
 
 namespace quic {
 
@@ -55,9 +53,6 @@ class QuicServer : public QuicEpollCallbackInterface {
 
   // Wait up to 50ms, and handle any events which occur.
   void WaitForEvents();
-
-  void Start();
-  void Run();
 
   // Server deletion is imminent.  Start cleaning up the epoll server.
   virtual void Shutdown();
@@ -149,8 +144,6 @@ class QuicServer : public QuicEpollCallbackInterface {
   std::unique_ptr<QuicPacketReader> packet_reader_;
 
   QuicSimpleServerBackend* quic_simple_server_backend_;  // unowned.
-
-  base::WeakPtrFactory<QuicServer> weak_factory_;
 };
 
 }  // namespace quic

@@ -14,8 +14,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/bind.h"
-#include "base/run_loop.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
@@ -79,8 +77,7 @@ QuicServer::QuicServer(
       crypto_config_options_(crypto_config_options),
       version_manager_(supported_versions),
       packet_reader_(new QuicPacketReader()),
-      quic_simple_server_backend_(quic_simple_server_backend),
-      weak_factory_(this) {
+      quic_simple_server_backend_(quic_simple_server_backend) {
   Initialize();
 }
 
@@ -163,17 +160,6 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
 
 void QuicServer::WaitForEvents() {
   epoll_server_.WaitForEventsAndExecuteCallbacks();
-}
-
-void QuicServer::Start() {
-  Run();
-  base::RunLoop().Run();
-}
-
-void QuicServer::Run() {
-  WaitForEvents();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&QuicServer::Run, weak_factory_.GetWeakPtr()));
 }
 
 void QuicServer::Shutdown() {
