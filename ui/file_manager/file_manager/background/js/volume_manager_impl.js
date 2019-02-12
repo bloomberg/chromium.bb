@@ -272,6 +272,10 @@ VolumeManagerImpl.prototype.configure = function(volumeInfo) {
 
 /** @override */
 VolumeManagerImpl.prototype.getVolumeInfo = function(entry) {
+  if (!entry) {
+    console.error('Invalid entry passed to getVolumeInfo: ' + entry);
+    return null;
+  }
   for (let i = 0; i < this.volumeInfoList.length; i++) {
     const volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.fileSystem &&
@@ -303,6 +307,10 @@ VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 
 /** @override */
 VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
+  if (!entry) {
+    console.error('Invalid entry passed to getLocationInfo: ' + entry);
+    return null;
+  }
   var volumeInfo = this.getVolumeInfo(entry);
 
   if (util.isFakeEntry(entry)) {
