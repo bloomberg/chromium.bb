@@ -121,7 +121,7 @@ class CopyOrMoveFileValidatorTestHelper {
       EXPECT_TRUE(FileExists(copy_dest_, 10));
     else
       EXPECT_FALSE(FileExists(copy_dest_, 10));
-  };
+  }
 
   void MoveTest(base::File::Error expected) {
     ASSERT_TRUE(FileExists(move_src_, 10));
@@ -138,7 +138,7 @@ class CopyOrMoveFileValidatorTestHelper {
       EXPECT_TRUE(FileExists(move_src_, 10));
       EXPECT_FALSE(FileExists(move_dest_, 10));
     }
-  };
+  }
 
  private:
   FileSystemURL SourceURL(const std::string& path) {
