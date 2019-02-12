@@ -207,7 +207,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     NOTREACHED();
     return nullptr;
-  };
+  }
   scoped_refptr<CanvasResource> MakeUnaccelerated() final {
     NOTREACHED();
     return nullptr;
@@ -276,7 +276,7 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     NOTREACHED();
     return nullptr;
-  };
+  }
   scoped_refptr<CanvasResource> MakeUnaccelerated() final {
     NOTREACHED();
     return nullptr;
@@ -333,7 +333,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
     NOTREACHED();
     return nullptr;
-  };
+  }
   scoped_refptr<CanvasResource> MakeUnaccelerated() final {
     NOTREACHED();
     return nullptr;

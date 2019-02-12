@@ -88,7 +88,7 @@ class ImageFrameGeneratorTest : public testing::Test,
 
   void ClearCacheExceptFrameRequested(size_t clear_except_frame) override {
     requested_clear_except_frame_ = clear_except_frame;
-  };
+  }
 
   size_t FrameCount() override { return frame_count_; }
   int RepetitionCount() const override {

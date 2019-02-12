@@ -1001,9 +1001,11 @@ BROADCAST_BINARY_OP(SquaredDifference,
     }                                                                         \
   }
 
-REDUCE_OP(Max, std::numeric_limits<T>::lowest(), std::max(prev, next), value);
-REDUCE_OP(Sum, 0, prev + next, value);
-REDUCE_OP(Mean, 0, prev + next, value / count);
+REDUCE_OP(Max, std::numeric_limits<T>::lowest(), std::max(prev, next), value)
+REDUCE_OP(Sum, 0, prev + next, value)
+REDUCE_OP(Mean, 0, prev + next, value / count)
+
+#undef REDUCE_OP
 
 // -----------------------------------------------------------------------------
 // Dequantize ops

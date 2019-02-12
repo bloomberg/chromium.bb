@@ -671,7 +671,7 @@ TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
       EXPECT_EQ(data.duration, base::TimeDelta::FromSeconds(1));
     EXPECT_TRUE(data.complete);
   }
-};
+}
 
 TEST_F(BitmapImageTestWithMockDecoder,
        AnimationPolicyOverrideOriginalRepetitionNone) {
