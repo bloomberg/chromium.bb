@@ -45,10 +45,6 @@
 #  include <fftw3.h>
 #endif
 
-#ifndef M_LN2
-#define M_LN2 0.693147180559945309417
-#endif
-
 #define MAX(x,y) ((x)>(y)?(x):(y))
 
 double frand() {

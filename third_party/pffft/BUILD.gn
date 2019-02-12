@@ -5,8 +5,6 @@
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
-# TODO(crbug.com/webrtc/9577): Add architecture specific flags.
-
 config("simd_config") {
   # TODO(crbug.com/webrtc/9577): Use SIMD while fuzzing.
   # TODO(crbug.com/webrtc/9577): Fix SIMD not detected on Android, fuchsia, iOS.
@@ -15,8 +13,20 @@ config("simd_config") {
   }
 }
 
+config("common_config") {
+  if (is_win) {
+    defines = [
+      # Required to use math constants from math.h.
+      "_USE_MATH_DEFINES",
+    ]
+  }
+}
+
 static_library("pffft") {
-  configs += [ ":simd_config" ]
+  configs += [
+    ":common_config",
+    ":simd_config",
+  ]
   sources = [
     "src/pffft.c",
     "src/pffft.h",
@@ -75,6 +85,9 @@ fuzzer_test("pffft_real_fuzzer") {
 # This target must be used only for testing and benchmark purposes.
 static_library("fftpack") {
   testonly = true
+  configs += [
+    ":common_config",
+  ]
   sources = [
     "src/fftpack.c",
     "src/fftpack.h",
@@ -83,8 +96,11 @@ static_library("fftpack") {
 }
 
 executable("pffft_benchmark") {
-  configs += [ ":simd_config" ]
   testonly = true
+  configs += [
+    ":common_config",
+    ":simd_config",
+  ]
   sources = [
     "src/test_pffft.c",
   ]
@@ -95,6 +111,7 @@ executable("pffft_benchmark") {
 }
 
 test("pffft_unittest") {
+  testonly = true
   sources = [
     "pffft_unittest.cc",
   ]
