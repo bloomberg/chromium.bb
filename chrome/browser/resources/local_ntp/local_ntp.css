@@ -735,12 +735,6 @@ html[darkmode=true] #error-notice-link:active {
   transition: bottom 400ms;
 }
 
-/* TODO(https://crbug/925492): Remove once promos have been optimized for dark
- * mode. */
-html[darkmode=true] #promo {
-  display: none;
-}
-
 #promo.float-down {
   bottom: -50px;
 }
@@ -799,10 +793,14 @@ html[darkmode=true] #promo > div > a:visited {
 #promo > div > img {
   border-radius: 50%;
   height: 24px;
-  margin: 0 8px 0 -12px;
+  margin: 0 8px 2px -12px;
   object-fit: cover;
   vertical-align: middle;
   width: 24px;
+}
+
+html[darkmode=true] #promo > div > img {
+  background-color: rgb(var(--GG200-rgb));
 }
 
 #promo.notice-hide {
