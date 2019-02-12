@@ -785,17 +785,13 @@ void PaintArtifactCompositor::Update(
     CompositorElementIdSet& composited_element_ids,
     const ViewportProperties& viewport_properties,
     const Settings& settings) {
+  DCHECK(NeedsUpdate());
   DCHECK(root_layer_);
 
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
   cc::LayerTreeHost* host = root_layer_->layer_tree_host();
   if (!host)
-    return;
-
-  // Skip updating property trees, pushing cc::Layers, and issuing raster
-  // invalidations if possible.
-  if (!NeedsUpdate())
     return;
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
