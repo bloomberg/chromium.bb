@@ -33,12 +33,15 @@ class ImageDecoder;
 //   the downloaded image to the given dimensions.
 class ImageFetcherParams {
  public:
+  // Sets the UMA client name to report feature-specific metrics. Make sure
+  // |uma_client_name| is also present in histograms.xml.
   ImageFetcherParams(
-      net::NetworkTrafficAnnotationTag network_traffic_annotation_tag);
+      net::NetworkTrafficAnnotationTag network_traffic_annotation_tag,
+      std::string uma_client_name);
   ImageFetcherParams(const ImageFetcherParams& params);
   ImageFetcherParams(ImageFetcherParams&& params);
 
-  ~ImageFetcherParams() = default;
+  ~ImageFetcherParams();
 
   const net::NetworkTrafficAnnotationTag traffic_annotation() const {
     return network_traffic_annotation_tag_;
@@ -58,11 +61,14 @@ class ImageFetcherParams {
 
   gfx::Size frame_size() const { return desired_frame_size_; }
 
+  const std::string& uma_client_name() const { return uma_client_name_; }
+
  private:
   const net::NetworkTrafficAnnotationTag network_traffic_annotation_tag_;
 
   base::Optional<int64_t> max_download_bytes_;
   gfx::Size desired_frame_size_;
+  std::string uma_client_name_;
 };
 
 // A class used to fetch server images. It can be called from any thread and the

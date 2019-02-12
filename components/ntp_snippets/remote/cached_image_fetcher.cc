@@ -15,7 +15,11 @@
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
+
 namespace {
+
+constexpr char kImageFetcherUmaClientName[] = "NtpSnippets";
+
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("remote_suggestions_provider", R"(
         semantics {
@@ -151,7 +155,8 @@ void CachedImageFetcher::FetchImageFromNetwork(
                        base::Unretained(this), std::move(image_callback));
   }
 
-  image_fetcher::ImageFetcherParams params(kTrafficAnnotation);
+  image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
+                                           kImageFetcherUmaClientName);
   image_fetcher_->FetchImageAndData(
       url,
       base::BindOnce(&CachedImageFetcher::SaveImageAndInvokeDataCallback,

@@ -138,6 +138,8 @@ void ImageCache::OnDependencyInitialized() {
   // TODO(wylieb): Consider delaying eviction as new requests come in via
   // separate weak pointers.
   CachedImageFetcherMetricsReporter::ReportEvent(
+      CachedImageFetcherMetricsReporter::
+          kCachedImageFetcherInternalUmaClientName,
       CachedImageFetcherEvent::kCacheStartupEvictionStarted);
 
   // Once all the queued requests are taken care of, run eviction.
@@ -268,6 +270,8 @@ void ImageCache::ReconcileDataKeys(std::vector<std::string> metadata_keys,
   }
 
   CachedImageFetcherMetricsReporter::ReportEvent(
+      CachedImageFetcherMetricsReporter::
+          kCachedImageFetcherInternalUmaClientName,
       CachedImageFetcherEvent::kCacheStartupEvictionFinished);
 }
 

@@ -47,34 +47,35 @@ class CachedImageFetcherBridge {
      * Fetch the image from native.
      *
      * @param url The url to fetch.
-     * @param width The width to use when resizing the image.
-     * @param height The height to use when resizing the image.
+     * @param clientName The UMA client name to report the metrics to.
      * @param callback The callback to call when the image is ready.
      */
-    public void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
+    public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
         assert mNativeCachedImageFetcherBridge != 0;
-        nativeFetchImage(mNativeCachedImageFetcherBridge, url, width, height, callback);
+        nativeFetchImage(mNativeCachedImageFetcherBridge, url, clientName, callback);
     }
 
     /**
      * Report a metrics event.
      *
+     * @param clientName The UMA client name to report the metrics to.
      * @param eventId The event to report.
      */
-    public void reportEvent(@CachedImageFetcherEvent int eventId) {
+    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
         assert mNativeCachedImageFetcherBridge != 0;
-        nativeReportEvent(mNativeCachedImageFetcherBridge, eventId);
+        nativeReportEvent(mNativeCachedImageFetcherBridge, clientName, eventId);
     }
 
     /**
      * Report a timing event for a cache hit.
      *
+     * @param clientName The UMA client name to report the metrics to.
      * @param startTimeMillis The start time (in milliseconds) of the request, used to measure the
      * total duration.
      */
-    public void reportCacheHitTime(long startTimeMillis) {
+    public void reportCacheHitTime(String clientName, long startTimeMillis) {
         assert mNativeCachedImageFetcherBridge != 0;
-        nativeReportCacheHitTime(mNativeCachedImageFetcherBridge, startTimeMillis);
+        nativeReportCacheHitTime(mNativeCachedImageFetcherBridge, clientName, startTimeMillis);
     }
 
     // Native methods
@@ -82,8 +83,9 @@ class CachedImageFetcherBridge {
     private native void nativeDestroy(long nativeCachedImageFetcherBridge);
     private native String nativeGetFilePath(long nativeCachedImageFetcherBridge, String url);
     private native void nativeFetchImage(long nativeCachedImageFetcherBridge, String url,
-            int widthPx, int heightPx, Callback<Bitmap> callback);
-    private native void nativeReportEvent(long nativeCachedImageFetcherBridge, int eventId);
+            String clientName, Callback<Bitmap> callback);
+    private native void nativeReportEvent(
+            long nativeCachedImageFetcherBridge, String clientName, int eventId);
     private native void nativeReportCacheHitTime(
-            long nativeCachedImageFetcherBridge, long startTimeMillis);
+            long nativeCachedImageFetcherBridge, String clientName, long startTimeMillis);
 }

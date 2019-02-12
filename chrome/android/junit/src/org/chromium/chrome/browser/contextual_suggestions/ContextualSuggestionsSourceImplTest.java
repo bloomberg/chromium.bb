@@ -66,7 +66,7 @@ public class ContextualSuggestionsSourceImplTest {
             return null;
         })
                 .when(mCachedImageFetcher)
-                .fetchImage(any(), mCallbackCaptor.capture());
+                .fetchImage(any(), any(), mCallbackCaptor.capture());
     }
 
     @Test

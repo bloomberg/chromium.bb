@@ -13,6 +13,8 @@ namespace offline_pages {
 
 namespace {
 
+constexpr char kImageFetcherUmaClientName[] = "OfflinePages";
+
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("prefetch_thumbnail", R"(
         semantics {
@@ -53,7 +55,8 @@ void FetchThumbnailByURL(
         std::move(callback).Run(image_data);
       };
 
-  image_fetcher::ImageFetcherParams params(kTrafficAnnotation);
+  image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
+                                           kImageFetcherUmaClientName);
 
   fetcher->FetchImageData(thumbnail_url,
                           base::BindOnce(forward_callback, std::move(callback)),

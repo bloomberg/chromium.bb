@@ -35,6 +35,7 @@ import java.util.List;
  * Provides image loading and other host-specific asset fetches for Feed.
  */
 public class FeedImageLoader implements ImageLoaderApi {
+    private static final String CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME = "Feed";
     private static final String ASSET_PREFIX = "asset://";
     private static final String OVERLAY_IMAGE_PREFIX = "overlay-image://";
     private static final String OVERLAY_IMAGE_URL_PARAM = "url";
@@ -168,7 +169,8 @@ public class FeedImageLoader implements ImageLoaderApi {
 
     @VisibleForTesting
     protected void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
-        mCachedImageFetcher.fetchImage(url, width, height, callback);
+        mCachedImageFetcher.fetchImage(
+                url, CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME, width, height, callback);
     }
 
     @VisibleForTesting

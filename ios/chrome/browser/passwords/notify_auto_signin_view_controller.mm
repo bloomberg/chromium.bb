@@ -25,6 +25,8 @@ namespace {
 
 constexpr int kBackgroundColor = 0x4285F4;
 
+const char kImageFetcherUmaClient[] = "NotifyAutoSignin";
+
 // NetworkTrafficAnnotationTag for fetching avatar.
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("credential_avatar",
@@ -145,7 +147,8 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   // Fetch user's avatar and update displayed image.
   if (self.iconURL.is_valid()) {
     __weak NotifyUserAutoSigninViewController* weakSelf = self;
-    image_fetcher::ImageFetcherParams params(kTrafficAnnotation);
+    image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
+                                             kImageFetcherUmaClient);
     _imageFetcher->FetchImage(
         _iconURL,
         base::BindOnce(^(const gfx::Image& image,

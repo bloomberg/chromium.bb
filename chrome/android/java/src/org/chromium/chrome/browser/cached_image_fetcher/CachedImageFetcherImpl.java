@@ -54,8 +54,8 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
     }
 
     @Override
-    public void reportEvent(@CachedImageFetcherEvent int eventId) {
-        mCachedImageFetcherBridge.reportEvent(eventId);
+    public void reportEvent(String clientName, @CachedImageFetcherEvent int eventId) {
+        mCachedImageFetcherBridge.reportEvent(clientName, eventId);
     }
 
     @Override
@@ -64,13 +64,14 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
     }
 
     @Override
-    public void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
-        fetchImageImpl(url, width, height, callback);
+    public void fetchImage(
+            String url, String clientName, int width, int height, Callback<Bitmap> callback) {
+        fetchImageImpl(url, clientName, width, height, callback);
     }
 
     @Override
-    public void fetchImage(String url, Callback<Bitmap> callback) {
-        fetchImageImpl(url, 0, 0, callback);
+    public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
+        fetchImageImpl(url, clientName, 0, 0, callback);
     }
 
     /**
@@ -83,7 +84,8 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
      * @param callback The function which will be called when the image is ready.
      */
     @VisibleForTesting
-    void fetchImageImpl(String url, int width, int height, Callback<Bitmap> callback) {
+    void fetchImageImpl(
+            String url, String clientName, int width, int height, Callback<Bitmap> callback) {
         long startTimeMillis = System.currentTimeMillis();
         String filePath = mCachedImageFetcherBridge.getFilePath(url);
         new AsyncTask<Bitmap>() {
@@ -96,10 +98,10 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
             protected void onPostExecute(Bitmap bitmap) {
                 if (bitmap != null) {
                     callback.onResult(bitmap);
-                    reportEvent(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT);
-                    mCachedImageFetcherBridge.reportCacheHitTime(startTimeMillis);
+                    reportEvent(clientName, CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT);
+                    mCachedImageFetcherBridge.reportCacheHitTime(clientName, startTimeMillis);
                 } else {
-                    mCachedImageFetcherBridge.fetchImage(url, width, height, callback);
+                    mCachedImageFetcherBridge.fetchImage(url, clientName, callback);
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

@@ -39,6 +39,8 @@ namespace {
 
 using favicon_base::GoogleFaviconServerRequestStatus;
 
+const char kImageFetcherUmaClient[] = "LargeIconService";
+
 // This feature is only used for accessing field trial parameters, not for
 // switching on/off the code.
 const base::Feature kLargeIconServiceFetchingFeature{
@@ -608,7 +610,8 @@ void LargeIconServiceImpl::OnCanSetOnDemandFaviconComplete(
     return;
   }
 
-  image_fetcher::ImageFetcherParams params(traffic_annotation);
+  image_fetcher::ImageFetcherParams params(traffic_annotation,
+                                           kImageFetcherUmaClient);
   image_fetcher_->FetchImage(
       server_request_url,
       base::BindOnce(&OnFetchIconFromGoogleServerComplete, favicon_service_,

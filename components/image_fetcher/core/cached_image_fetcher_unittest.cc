@@ -47,6 +47,8 @@ class FakeImageDecoder;
 namespace {
 
 const GURL kImageUrl = GURL("http://gstatic.img.com/foo.jpg");
+
+constexpr char kUmaClientName[] = "TestUma";
 constexpr char kImageData[] = "data";
 
 const char kCachedImageFetcherEventHistogramName[] =
@@ -174,7 +176,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCache) {
   EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
   cached_image_fetcher()->FetchImageAndData(
       kImageUrl, data_callback.Get(), image_callback.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
 
   RunUntilIdle();
 
@@ -201,7 +203,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCacheReadOnly) {
     EXPECT_CALL(image_callback, Run(EmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl, data_callback.Get(), image_callback.Get(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     RunUntilIdle();
 
     histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
@@ -221,7 +223,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCacheReadOnly) {
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl, data_callback.Get(), image_callback.Get(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     RunUntilIdle();
   }
 }
@@ -238,7 +240,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl, data_callback.Get(), image_callback.Get(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
 
     RunUntilIdle();
 
@@ -270,7 +272,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl, data_callback.Get(), image_callback.Get(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
 
     RunUntilIdle();
   }
@@ -289,7 +291,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
     EXPECT_CALL(image_callback, Run(NonEmptyImage(), _));
     cached_image_fetcher()->FetchImageAndData(
         kImageUrl, data_callback.Get(), image_callback.Get(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
 
     RunUntilIdle();
 
@@ -325,7 +327,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchDecodingErrorDeletesCache) {
   test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
   cached_image_fetcher()->FetchImageAndData(
       kImageUrl, data_callback.Get(), image_callback.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
   RunUntilIdle();
 
   histogram_tester().ExpectTotalCount(kNetworkLoadAfterCacheHitHistogram, 1);

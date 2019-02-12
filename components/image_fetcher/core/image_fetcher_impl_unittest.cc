@@ -31,8 +31,10 @@ namespace image_fetcher {
 
 namespace {
 
-const char kImageData[] = "data";
-const char kImageURL[] = "http://image.test/test.png";
+constexpr char kImageData[] = "data";
+constexpr char kImageURL[] = "http://image.test/test.png";
+
+constexpr char kImageUmaName[] = "TestUma";
 
 class ImageFetcherImplTest : public testing::Test {
  public:
@@ -79,7 +81,7 @@ TEST_F(ImageFetcherImplTest, FetchImageAndDataSuccess) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback.Get(), image_callback.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
   RunUntilIdle();
 }
 
@@ -93,7 +95,7 @@ TEST_F(ImageFetcherImplTest, FetchImageAndData3xSuccess) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback1.Get(), image_callback1.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   base::MockCallback<ImageDataFetcherCallback> data_callback2;
   base::MockCallback<ImageFetcherCallback> image_callback2;
@@ -103,7 +105,7 @@ TEST_F(ImageFetcherImplTest, FetchImageAndData3xSuccess) {
   // This call happens before the network request completes.
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback2.Get(), image_callback2.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   base::MockCallback<ImageDataFetcherCallback> data_callback3;
   base::MockCallback<ImageFetcherCallback> image_callback3;
@@ -116,7 +118,7 @@ TEST_F(ImageFetcherImplTest, FetchImageAndData3xSuccess) {
     test_url_loader_factory()->AddResponse(kImageURL, "", net::HTTP_NOT_FOUND);
     image_fetcher()->FetchImageAndData(
         GURL(kImageURL), data_callback3.Get(), image_callback3.Get(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
   }));
 
   RunUntilIdle();
@@ -133,7 +135,7 @@ TEST_F(ImageFetcherImplTest, FetchImageAndData2xFail) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback1.Get(), image_callback1.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   base::MockCallback<ImageDataFetcherCallback> data_callback2;
   base::MockCallback<ImageFetcherCallback> image_callback2;
@@ -142,7 +144,7 @@ TEST_F(ImageFetcherImplTest, FetchImageAndData2xFail) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback2.Get(), image_callback2.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   RunUntilIdle();
 }
@@ -155,7 +157,7 @@ TEST_F(ImageFetcherImplTest, FetchOnlyData) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback.Get(), ImageFetcherCallback(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   RunUntilIdle();
 }
@@ -167,14 +169,14 @@ TEST_F(ImageFetcherImplTest, FetchDataThenImage) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), data_callback.Get(), ImageFetcherCallback(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   base::MockCallback<ImageFetcherCallback> image_callback;
   EXPECT_CALL(image_callback, Run(ValidImage(), _));
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), ImageDataFetcherCallback(), image_callback.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   RunUntilIdle();
 }
@@ -187,7 +189,7 @@ TEST_F(ImageFetcherImplTest, FetchImageThenData) {
 
   image_fetcher()->FetchImageAndData(
       GURL(kImageURL), ImageDataFetcherCallback(), image_callback.Get(),
-      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+      ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
 
   base::MockCallback<ImageDataFetcherCallback> data_callback;
   EXPECT_CALL(data_callback, Run(kImageData, _));
@@ -198,7 +200,7 @@ TEST_F(ImageFetcherImplTest, FetchImageThenData) {
     test_url_loader_factory()->AddResponse(kImageURL, "", net::HTTP_NOT_FOUND);
     image_fetcher()->FetchImageAndData(
         GURL(kImageURL), data_callback.Get(), ImageFetcherCallback(),
-        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS));
+        ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kImageUmaName));
   }));
 
   RunUntilIdle();

@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.BitmapCache;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class InMemoryCachedImageFetcherTest {
+    private static final String UMA_CLIENT_NAME = "TestUmaClient";
     private static final String URL = "http://foo.bar";
     private static final int WIDTH_PX = 100;
     private static final int HEIGHT_PX = 200;
@@ -88,8 +89,8 @@ public class InMemoryCachedImageFetcherTest {
             mCallbackCaptor.getValue().onResult(bitmap);
             return null;
         }).when(mCachedImageFetcherImpl)
-                .fetchImage(eq(URL), mWidthCaptor.capture(), mHeightCaptor.capture(),
-                        mCallbackCaptor.capture());
+                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), mWidthCaptor.capture(),
+                        mHeightCaptor.capture(), mCallbackCaptor.capture());
         // clang-format on
 
         doReturn(bitmap)
@@ -101,19 +102,22 @@ public class InMemoryCachedImageFetcherTest {
     @SmallTest
     public void testFetchImageCachesFirstCall() throws Exception {
         answerFetch(mBitmap, mCachedImageFetcherImpl, false);
-        mInMemoryCachedImageFetcher.fetchImage(URL, WIDTH_PX, HEIGHT_PX, mCallback);
+        mInMemoryCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(mBitmap));
 
         reset(mCallback);
-        mInMemoryCachedImageFetcher.fetchImage(URL, WIDTH_PX, HEIGHT_PX, mCallback);
+        mInMemoryCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(mBitmap));
 
         verify(mCachedImageFetcherImpl, /* Should only go to native the first time. */ times(1))
-                .fetchImage(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
+                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
 
         // Verify metrics are reported.
         verify(mCachedImageFetcherImpl)
-                .reportEvent(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
+                .reportEvent(
+                        eq(UMA_CLIENT_NAME), eq(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT));
     }
 
     @Test
@@ -124,11 +128,12 @@ public class InMemoryCachedImageFetcherTest {
                 .when(mInMemoryCachedImageFetcher)
                 .tryToGetBitmap(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX));
 
-        mInMemoryCachedImageFetcher.fetchImage(URL, WIDTH_PX, HEIGHT_PX, mCallback);
+        mInMemoryCachedImageFetcher.fetchImage(
+                URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
         verify(mCallback).onResult(eq(null));
 
         verify(mCachedImageFetcherImpl, /* Shouldn't make the call at all. */ times(0))
-                .fetchImage(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
+                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), any());
     }
 
     @Test
@@ -172,7 +177,8 @@ public class InMemoryCachedImageFetcherTest {
             answerFetch(mBitmap, mCachedImageFetcherImpl, true);
 
             // No exception should be thrown here when bitmap cache is null.
-            mInMemoryCachedImageFetcher.fetchImage(URL, WIDTH_PX, HEIGHT_PX, (Bitmap bitmap) -> {});
+            mInMemoryCachedImageFetcher.fetchImage(
+                    URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, (Bitmap bitmap) -> {});
         } catch (Exception e) {
             fail("Destroy called in the middle of execution shouldn't throw");
         }

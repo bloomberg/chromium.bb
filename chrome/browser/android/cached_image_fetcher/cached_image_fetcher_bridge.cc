@@ -102,14 +102,14 @@ ScopedJavaLocalRef<jstring> CachedImageFetcherBridge::GetFilePath(
 void CachedImageFetcherBridge::FetchImage(JNIEnv* j_env,
                                           const JavaRef<jobject>& j_this,
                                           const JavaRef<jstring>& j_url,
-                                          const jint width_px,
-                                          const jint height_px,
+                                          const JavaRef<jstring>& j_client_name,
                                           const JavaRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
   std::string url = base::android::ConvertJavaStringToUTF8(j_url);
+  std::string client_name =
+      base::android::ConvertJavaStringToUTF8(j_client_name);
 
-  ImageFetcherParams params(kTrafficAnnotation);
-  params.set_frame_size(gfx::Size(width_px, height_px));
+  ImageFetcherParams params(kTrafficAnnotation, client_name);
 
   // TODO(wylieb): We checked disk in Java, so provide a way to tell
   // CachedImageFetcher to skip checking disk in native.
@@ -123,18 +123,25 @@ void CachedImageFetcherBridge::FetchImage(JNIEnv* j_env,
 void CachedImageFetcherBridge::ReportEvent(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
+    const base::android::JavaRef<jstring>& j_client_name,
     const jint j_event_id) {
+  std::string client_name =
+      base::android::ConvertJavaStringToUTF8(j_client_name);
   CachedImageFetcherEvent event =
       static_cast<CachedImageFetcherEvent>(j_event_id);
-  CachedImageFetcherMetricsReporter::ReportEvent(event);
+  CachedImageFetcherMetricsReporter::ReportEvent(client_name, event);
 }
 
 void CachedImageFetcherBridge::ReportCacheHitTime(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
+    const base::android::JavaRef<jstring>& j_client_name,
     const jlong start_time_millis) {
+  std::string client_name =
+      base::android::ConvertJavaStringToUTF8(j_client_name);
   base::Time start_time = base::Time::FromJavaTime(start_time_millis);
-  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTime(start_time);
+  CachedImageFetcherMetricsReporter::ReportImageLoadFromCacheTimeJava(
+      client_name, start_time);
 }
 
 void CachedImageFetcherBridge::OnImageFetched(

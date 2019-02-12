@@ -41,6 +41,8 @@ bool AccountSupportsUserInfo(const std::string& account_id) {
 
 }  // namespace
 
+const char kImageFetcherUmaClient[] = "AccountFetcherService";
+
 // This pref used to be in the AccountTrackerService, hence its string value.
 const char AccountFetcherService::kLastUpdatePref[] =
     "account_tracker_service_last_update";
@@ -304,8 +306,10 @@ void AccountFetcherService::FetchAccountImage(const std::string& account_id) {
       picture_url, kAccountImageDownloadSize, true /* no_silhouette */));
   auto callback = base::BindRepeating(&AccountFetcherService::OnImageFetched,
                                       base::Unretained(this), account_id);
+  image_fetcher::ImageFetcherParams params(traffic_annotation,
+                                           kImageFetcherUmaClient);
   GetOrCreateImageFetcher()->FetchImage(image_url_with_size, callback,
-                                        traffic_annotation);
+                                        std::move(params));
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(

@@ -28,6 +28,7 @@ namespace suggestions {
 
 namespace {
 
+const char kImageFetcherUmaClientName[] = "TestClientName";
 const char kTestImagePath[] = "/image_decoding/droids.png";
 const char kInvalidImagePath[] = "/DOESNOTEXIST";
 
@@ -80,6 +81,8 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
   void FetchImageAndDataHelper(const GURL& image_url) {
     std::unique_ptr<ImageFetcher> image_fetcher_(CreateImageFetcher());
+    image_fetcher::ImageFetcherParams params(TRAFFIC_ANNOTATION_FOR_TESTS,
+                                             kImageFetcherUmaClientName);
 
     base::RunLoop run_loop;
     image_fetcher_->FetchImageAndData(
@@ -88,7 +91,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
                        base::Unretained(this)),
         base::Bind(&ImageFetcherImplBrowserTest::OnImageAvailable,
                    base::Unretained(this), &run_loop),
-        TRAFFIC_ANNOTATION_FOR_TESTS);
+        std::move(params));
     run_loop.Run();
   }
 

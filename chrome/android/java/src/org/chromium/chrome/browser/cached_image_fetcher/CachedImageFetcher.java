@@ -22,15 +22,17 @@ public interface CachedImageFetcher {
     /**
      * Report an event metric.
      *
+     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
      * @param eventId The event to be reported
      */
-    void reportEvent(@CachedImageFetcherEvent int eventId);
+    void reportEvent(String clientName, @CachedImageFetcherEvent int eventId);
 
     /**
      * Fetches the image at url with the desired size. Image is null if not
      * found or fails decoding.
      *
      * @param url The url to fetch the image from.
+     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
      * @param width The new bitmap's desired width (in pixels). If the given value is <= 0, the
      * image won't be scaled.
      * @param height The new bitmap's desired height (in pixels). If the given value is <= 0, the
@@ -38,16 +40,18 @@ public interface CachedImageFetcher {
      * @param callback The function which will be called when the image is ready; will be called
      * with null result if fetching fails;
      */
-    void fetchImage(String url, int width, int height, Callback<Bitmap> callback);
+    void fetchImage(
+            String url, String clientName, int width, int height, Callback<Bitmap> callback);
 
     /**
      * Alias of fetchImage that ignores scaling.
      *
      * @param url The url to fetch the image from.
+     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
      * @param callback The function which will be called when the image is ready; will be called
      * with null result if fetching fails;
      */
-    void fetchImage(String url, Callback<Bitmap> callback);
+    void fetchImage(String url, String clientName, Callback<Bitmap> callback);
 
     /**
      * Destroy method, called to clear resources to prevent leakage.
