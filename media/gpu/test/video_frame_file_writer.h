@@ -25,15 +25,22 @@ constexpr const base::FilePath::CharType* kDefaultOutputFolder =
 class VideoFrameMapper;
 
 // The video frame file writer class implements functionality to write video
-// frames to file. Currently only the PNG output format is supported.
+// frames to file. The supported output formats are PNG and raw I420 YUV.
 class VideoFrameFileWriter : public VideoFrameProcessor {
  public:
+  // Supported output formats.
+  enum class OutputFormat {
+    kPNG = 0,
+    kYUV,
+  };
+
   ~VideoFrameFileWriter() override;
 
   // Create an instance of the video frame file writer.
   static std::unique_ptr<VideoFrameFileWriter> Create(
       const base::FilePath& output_folder =
-          base::FilePath(kDefaultOutputFolder));
+          base::FilePath(kDefaultOutputFolder),
+      OutputFormat output_format = OutputFormat::kPNG);
 
   // Interface VideoFrameProcessor
   void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
@@ -42,7 +49,8 @@ class VideoFrameFileWriter : public VideoFrameProcessor {
   bool WaitUntilDone() override;
 
  private:
-  explicit VideoFrameFileWriter(const base::FilePath& output_folder);
+  VideoFrameFileWriter(const base::FilePath& output_folder,
+                       OutputFormat output_format);
 
   // Initialize the video frame file writer.
   bool Initialize();
@@ -51,8 +59,17 @@ class VideoFrameFileWriter : public VideoFrameProcessor {
   void ProcessVideoFrameTask(scoped_refptr<const VideoFrame> video_frame,
                              size_t frame_index);
 
+  // Write the video frame to disk in PNG format.
+  void WriteVideoFramePNG(scoped_refptr<const VideoFrame> video_frame,
+                          const base::FilePath& filename);
+  // Write the video frame to disk in I420 YUV format.
+  void WriteVideoFrameYUV(scoped_refptr<const VideoFrame> video_frame,
+                          const base::FilePath& filename);
+
   // Output folder the frames will be written to.
-  base::FilePath output_folder_;
+  const base::FilePath output_folder_;
+  // Output format of the frames.
+  const OutputFormat output_format_;
 
   // The video frame mapper used to gain access to the raw video frame memory.
   std::unique_ptr<VideoFrameMapper> video_frame_mapper_;

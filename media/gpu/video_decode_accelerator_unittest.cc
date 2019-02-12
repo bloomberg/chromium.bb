@@ -68,6 +68,7 @@
 #include "media/gpu/test/texture_ref.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
+#include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
 #include "media/video/h264_parser.h"
 #include "mojo/core/embedder/embedder.h"
@@ -134,9 +135,12 @@ bool g_fake_decoder = 0;
 // requesting the VDA itself to allocate buffers.
 bool g_test_import = false;
 
-// VideoFrameValidator flags.
-// If this is set to non-zero, g_test_import becomes true.
-uint32_t g_frame_validator_flags = 0;
+// Validate decoded frames using frame validator.
+bool g_validate_frames = false;
+// Calculate decoded frame checksums using frame validator;
+bool g_calculate_checksums = false;
+// Write decoded frames to YUV files.
+bool g_output_frames = false;
 
 // This is the location of the test files. If empty, they're in the current
 // working directory.
@@ -292,6 +296,7 @@ class GLRenderingVDAClient
       std::string encoded_data,
       RenderingHelper* rendering_helper,
       std::unique_ptr<media::test::VideoFrameValidator> video_frame_validator,
+      std::unique_ptr<media::test::VideoFrameFileWriter> video_frame_writer,
       media::test::ClientStateNotification<ClientState>* note);
   ~GLRenderingVDAClient() override;
   void CreateAndStartDecoder();
@@ -394,6 +399,7 @@ class GLRenderingVDAClient
   const std::unique_ptr<media::test::EncodedDataHelper> encoded_data_helper_;
   const std::unique_ptr<media::test::VideoFrameValidator>
       video_frame_validator_;
+  const std::unique_ptr<media::test::VideoFrameFileWriter> video_frame_writer_;
 
   base::WeakPtr<GLRenderingVDAClient> weak_this_;
   base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_;
@@ -413,6 +419,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
     std::string encoded_data,
     RenderingHelper* rendering_helper,
     std::unique_ptr<media::test::VideoFrameValidator> video_frame_validator,
+    std::unique_ptr<media::test::VideoFrameFileWriter> video_frame_writer,
     media::test::ClientStateNotification<ClientState>* note)
     : config_(std::move(config)),
       rendering_helper_(rendering_helper),
@@ -434,6 +441,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
           std::move(encoded_data),
           config_.profile)),
       video_frame_validator_(std::move(video_frame_validator)),
+      video_frame_writer_(std::move(video_frame_writer)),
       weak_this_factory_(this) {
   DCHECK_NE(config.profile, VIDEO_CODEC_PROFILE_UNKNOWN);
   LOG_ASSERT(config_.num_in_flight_decodes > 0);
@@ -608,8 +616,15 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
     video_frame_validator_->ProcessVideoFrame(std::move(video_frame),
                                               frame_index_);
     video_frame_validator_->WaitUntilDone();
-    frame_index_++;
   }
+  if (video_frame_writer_) {
+    auto video_frame = texture_it->second->ExportVideoFrame(visible_rect);
+    ASSERT_NE(video_frame.get(), nullptr);
+    video_frame_writer_->ProcessVideoFrame(std::move(video_frame),
+                                           frame_index_);
+    video_frame_writer_->WaitUntilDone();
+  }
+  frame_index_++;
   rendering_helper_->ConsumeVideoFrame(config_.window_id,
                                        std::move(video_frame_texture));
 }
@@ -1151,21 +1166,12 @@ static void AssertWaitForStateOrDeleted(
 std::unique_ptr<media::test::VideoFrameValidator>
 CreateAndInitializeVideoFrameValidator(
     const base::FilePath::StringType& video_file) {
-  // Initialize prefix of yuv files.
-  base::FilePath prefix_output_yuv;
-  base::FilePath filepath(video_file);
-  if (g_frame_validator_flags & test::VideoFrameValidator::OUTPUTYUV) {
-    if (!g_thumbnail_output_dir.empty() &&
-        base::DirectoryExists(g_thumbnail_output_dir)) {
-      prefix_output_yuv = g_thumbnail_output_dir.Append(filepath.BaseName());
-    } else {
-      prefix_output_yuv = GetTestDataFile(filepath);
-    }
-  }
+  DCHECK(g_validate_frames || g_calculate_checksums);
 
   // Read md5 frame checksums.
+  base::FilePath filepath(video_file);
   std::vector<std::string> frame_checksums;
-  if (g_frame_validator_flags & test::VideoFrameValidator::CHECK) {
+  if (g_validate_frames) {
     base::FilePath md5_file_path =
         filepath.AddExtension(FILE_PATH_LITERAL(".frames.md5"));
     frame_checksums = test::ReadGoldenThumbnailMD5s(md5_file_path);
@@ -1175,8 +1181,25 @@ CreateAndInitializeVideoFrameValidator(
     }
   }
 
-  return media::test::VideoFrameValidator::Create(
-      g_frame_validator_flags, prefix_output_yuv, frame_checksums);
+  return media::test::VideoFrameValidator::Create(frame_checksums);
+}
+
+std::unique_ptr<media::test::VideoFrameFileWriter>
+CreateAndInitializeVideoFrameWriter(
+    const base::FilePath::StringType& video_file) {
+  DCHECK(g_output_frames);
+
+  // Initialize prefix of yuv files.
+  base::FilePath prefix_output_yuv;
+  base::FilePath filepath(video_file);
+  if (!g_thumbnail_output_dir.empty() &&
+      base::DirectoryExists(g_thumbnail_output_dir)) {
+    prefix_output_yuv = g_thumbnail_output_dir.Append(filepath.BaseName());
+  } else {
+    prefix_output_yuv = GetTestDataFile(filepath);
+  }
+  return media::test::VideoFrameFileWriter::Create(
+      prefix_output_yuv, media::test::VideoFrameFileWriter::OutputFormat::kYUV);
 }
 
 // Fails on Win only. crbug.com/849368
@@ -1215,8 +1238,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
   notes_.resize(num_concurrent_decoders);
   clients_.resize(num_concurrent_decoders);
 
-  bool use_video_frame_validator = g_frame_validator_flags != 0;
-  if (use_video_frame_validator) {
+  if (g_validate_frames) {
     LOG(INFO) << "Using Frame Validator..";
 #if !defined(OS_CHROMEOS)
     LOG(FATAL) << "FrameValidator (g_frame_validator) cannot be used on "
@@ -1253,14 +1275,20 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     config.num_frames = video_file->num_frames;
 
     std::unique_ptr<media::test::VideoFrameValidator> video_frame_validator;
-    if (use_video_frame_validator) {
+    if (g_validate_frames) {
       video_frame_validator =
           CreateAndInitializeVideoFrameValidator(video_file->file_name);
       ASSERT_NE(video_frame_validator.get(), nullptr);
     }
+    std::unique_ptr<media::test::VideoFrameFileWriter> video_frame_writer;
+    if (g_output_frames) {
+      video_frame_writer =
+          CreateAndInitializeVideoFrameWriter(video_file->file_name);
+    }
     clients_[index] = std::make_unique<GLRenderingVDAClient>(
         std::move(config), video_file->data_str, &rendering_helper_,
-        std::move(video_frame_validator), notes_[index].get());
+        std::move(video_frame_validator), std::move(video_frame_writer),
+        notes_[index].get());
   }
 
   RenderingHelperParams helper_params;
@@ -1621,7 +1649,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       std::move(config), video_file->data_str, &rendering_helper_, nullptr,
-      notes_[0].get()));
+      nullptr, notes_[0].get()));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
   InitializeRenderingHelper(helper_params);
@@ -1656,7 +1684,7 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
 
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       std::move(config), video_file->data_str, &rendering_helper_, nullptr,
-      notes_[0].get()));
+      nullptr, notes_[0].get()));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
   InitializeRenderingHelper(helper_params);
@@ -1670,7 +1698,8 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
 // --gtest_filter=VideoDecodeAcceleratorTest.DISABLED_GenMD5 and
 // --gtest_also_run_disabled_tests
 TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
-  g_frame_validator_flags = 0;
+  g_validate_frames = false;
+  g_calculate_checksums = true;
   g_test_import = true;
 
   ASSERT_EQ(test_video_files_.size(), 1u);
@@ -1688,7 +1717,7 @@ TEST_F(VideoDecodeAcceleratorTest, DISABLED_GenMD5) {
       video_frame_validator.get();
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       std::move(config), video_file->data_str, &rendering_helper_,
-      std::move(video_frame_validator), notes_[0].get()));
+      std::move(video_frame_validator), nullptr, notes_[0].get()));
   RenderingHelperParams helper_params;
   helper_params.num_windows = 1;
   InitializeRenderingHelper(helper_params);
@@ -1832,11 +1861,9 @@ int main(int argc, char** argv) {
                                      base::SPLIT_WANT_NONEMPTY);
       for (auto& f : flags) {
         if (f == "check") {
-          media::g_frame_validator_flags |=
-              media::test::VideoFrameValidator::CHECK;
+          media::g_validate_frames = true;
         } else if (f == "dump") {
-          media::g_frame_validator_flags |=
-              media::test::VideoFrameValidator::OUTPUTYUV;
+          media::g_output_frames = true;
         } else {
           LOG(FATAL) << "Unknown flag: " << f;
         }

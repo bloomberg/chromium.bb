@@ -76,21 +76,18 @@ source_set("frame_validator") {
   ]
 }
 
-# TODO(dstaessens@) Make this work on other platforms too.
-if (is_chromeos) {
-  source_set("frame_file_writer") {
-    testonly = true
-    sources = [
-      "video_frame_file_writer.cc",
-      "video_frame_file_writer.h",
-    ]
-    deps = [
-      ":frame_mapper",
-      ":render_helpers",
-      "//media/gpu",
-      "//ui/gfx/codec:codec",
-    ]
-  }
+source_set("frame_file_writer") {
+  testonly = true
+  sources = [
+    "video_frame_file_writer.cc",
+    "video_frame_file_writer.h",
+  ]
+  deps = [
+    ":frame_mapper",
+    ":render_helpers",
+    "//media/gpu",
+    "//ui/gfx/codec:codec",
+  ]
 }
 
 source_set("decode_helpers") {

@@ -28,36 +28,7 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
   }
 
   auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
-      VideoFrameValidator::CHECK, base::FilePath(), expected_frame_checksums,
-      std::move(video_frame_mapper)));
-  if (!video_frame_validator->Initialize()) {
-    LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
-    return nullptr;
-  }
-
-  return video_frame_validator;
-}
-
-// static
-std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
-    uint32_t flags,
-    const base::FilePath& prefix_output_yuv,
-    const std::vector<std::string>& expected_frame_checksums) {
-  if ((flags & VideoFrameValidator::OUTPUTYUV) && prefix_output_yuv.empty()) {
-    LOG(ERROR) << "Prefix of yuv files isn't specified with dump flags.";
-    return nullptr;
-  }
-
-  auto video_frame_mapper = VideoFrameMapperFactory::CreateMapper();
-
-  if (!video_frame_mapper) {
-    LOG(ERROR) << "Failed to create VideoFrameMapper.";
-    return nullptr;
-  }
-
-  auto video_frame_validator = base::WrapUnique(new VideoFrameValidator(
-      flags, prefix_output_yuv, std::move(expected_frame_checksums),
-      std::move(video_frame_mapper)));
+      expected_frame_checksums, std::move(video_frame_mapper)));
   if (!video_frame_validator->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameValidator.";
     return nullptr;
@@ -67,13 +38,9 @@ std::unique_ptr<VideoFrameValidator> VideoFrameValidator::Create(
 }
 
 VideoFrameValidator::VideoFrameValidator(
-    uint32_t flags,
-    const base::FilePath& prefix_output_yuv,
     std::vector<std::string> expected_frame_checksums,
     std::unique_ptr<VideoFrameMapper> video_frame_mapper)
-    : flags_(flags),
-      prefix_output_yuv_(prefix_output_yuv),
-      expected_frame_checksums_(std::move(expected_frame_checksums)),
+    : expected_frame_checksums_(std::move(expected_frame_checksums)),
       video_frame_mapper_(std::move(video_frame_mapper)),
       num_frames_validating_(0),
       frame_validator_thread_("FrameValidatorThread"),
@@ -158,7 +125,7 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   base::AutoLock auto_lock(frame_validator_lock_);
   frame_checksums_.push_back(computed_md5);
 
-  if (flags_ & Flags::CHECK) {
+  if (expected_frame_checksums_.size() > 0) {
     LOG_IF(FATAL, frame_index >= expected_frame_checksums_.size())
         << "Frame number is over than the number of read md5 values in file.";
     const auto& expected_md5 = expected_frame_checksums_[frame_index];
@@ -166,11 +133,6 @@ void VideoFrameValidator::ProcessVideoFrameTask(
       mismatched_frames_.push_back(
           MismatchedFrameInfo{frame_index, computed_md5, expected_md5});
     }
-  }
-
-  if (flags_ & Flags::OUTPUTYUV) {
-    LOG_IF(WARNING, !WriteI420ToFile(frame_index, standard_frame.get()))
-        << "Failed to write yuv into file.";
   }
 
   num_frames_validating_--;
@@ -198,43 +160,6 @@ std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return MD5DigestToBase16(digest);
-}
-
-// TODO(dstaessens@) Move to video_frame_writer.h
-bool VideoFrameValidator::WriteI420ToFile(
-    size_t frame_index,
-    const VideoFrame* const video_frame) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
-  if (video_frame->format() != PIXEL_FORMAT_I420) {
-    LOG(ERROR) << "No I420 format frame.";
-    return false;
-  }
-  if (video_frame->storage_type() !=
-      VideoFrame::StorageType::STORAGE_OWNED_MEMORY) {
-    LOG(ERROR) << "Video frame doesn't own memory.";
-    return false;
-  }
-  const int width = video_frame->visible_rect().width();
-  const int height = video_frame->visible_rect().height();
-  base::FilePath::StringType output_yuv_fname;
-  base::SStringPrintf(&output_yuv_fname,
-                      FILE_PATH_LITERAL("%04zu_%dx%d_I420.yuv"), frame_index,
-                      width, height);
-  base::File yuv_file(prefix_output_yuv_.AddExtension(output_yuv_fname),
-                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_APPEND);
-  const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-  for (size_t i = 0; i < num_planes; i++) {
-    size_t plane_w = VideoFrame::Columns(i, video_frame->format(), width);
-    size_t plane_h = VideoFrame::Rows(i, video_frame->format(), height);
-    int data_size = base::checked_cast<int>(plane_w * plane_h);
-    const uint8_t* data = video_frame->data(i);
-    if (yuv_file.Write(0, reinterpret_cast<const char*>(data), data_size) !=
-        data_size) {
-      LOG(ERROR) << "Fail to write file in plane #" << i;
-      return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace test
