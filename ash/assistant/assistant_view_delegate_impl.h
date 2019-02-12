@@ -5,6 +5,8 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_VIEW_DELEGATE_IMPL_H_
 #define ASH_ASSISTANT_ASSISTANT_VIEW_DELEGATE_IMPL_H_
 
+#include <string>
+
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "base/macros.h"
 
@@ -57,6 +59,8 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       content::mojom::NavigableContentsFactoryRequest request) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsTabletMode() const override;
+  void OnNotificationButtonPressed(const std::string& notification_id,
+                                   int notification_button_index) override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
   void OpenUrlFromView(const GURL& url) override;
   bool VoiceInteractionControllerSetupCompleted() const override;

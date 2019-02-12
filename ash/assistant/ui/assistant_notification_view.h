@@ -7,11 +7,13 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -27,6 +29,7 @@ class AssistantViewDelegate;
 // which appears in Assistant UI. Its parent is AssistantNotificationOverlay.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationView
     : public views::View,
+      public views::ButtonListener,
       public AssistantNotificationModelObserver {
  public:
   AssistantNotificationView(AssistantViewDelegate* delegate,
@@ -38,6 +41,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationView
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
+  // views::Button:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // AssistantNotificationModelObserver:
   void OnNotificationUpdated(
@@ -55,6 +61,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantNotificationView
   views::View* container_;  // Owned by view hierarchy.
   views::Label* title_;     // Owned by view hierarchy.
   views::Label* message_;   // Owned by view hierarchy.
+
+  std::vector<views::View*> buttons_;  // Owned by view hierarchy.
 
   // Background/shadow.
   ui::Layer background_layer_;

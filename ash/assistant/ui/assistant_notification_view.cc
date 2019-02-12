@@ -28,12 +28,12 @@ constexpr int kShadowElevationDip = 6;
 
 // Helpers ---------------------------------------------------------------------
 
-// TODO(dmblack): Handle button clicks.
 views::View* CreateButton(
-    const chromeos::assistant::mojom::AssistantNotificationButtonPtr& button) {
+    const chromeos::assistant::mojom::AssistantNotificationButtonPtr& button,
+    views::ButtonListener* listener) {
   SuggestionChipView::Params params;
   params.text = base::UTF8ToUTF16(button->label);
-  return new SuggestionChipView(params, /*listener=*/nullptr);
+  return new SuggestionChipView(params, listener);
 }
 
 }  // namespace
@@ -69,6 +69,14 @@ void AssistantNotificationView::OnBoundsChanged(
   UpdateBackground();
 }
 
+void AssistantNotificationView::ButtonPressed(views::Button* sender,
+                                              const ui::Event& event) {
+  const auto it = std::find(buttons_.begin(), buttons_.end(), sender);
+  const int notification_button_index = std::distance(buttons_.begin(), it);
+  delegate_->OnNotificationButtonPressed(notification_id_,
+                                         notification_button_index);
+}
+
 void AssistantNotificationView::OnNotificationUpdated(
     const AssistantNotification* notification) {
   if (notification->client_id != notification_id_)
@@ -79,14 +87,16 @@ void AssistantNotificationView::OnNotificationUpdated(
   message_->SetText(base::UTF8ToUTF16(notification->message));
 
   // Old buttons.
-  // Note that we don't remove the first two children of |container_| as those
-  // children are |title_| and |message_| respectively.
-  for (int i = container_->child_count() - 1; i > 1; --i)
-    delete container_->child_at(i);
+  for (views::View* button : buttons_)
+    delete button;
+  buttons_.clear();
 
   // New buttons.
-  for (const auto& button : notification->buttons)
-    container_->AddChildView(CreateButton(button));
+  for (const auto& notification_button : notification->buttons) {
+    views::View* button = CreateButton(notification_button, /*listener=*/this);
+    container_->AddChildView(button);
+    buttons_.push_back(button);
+  }
 
   // Because |container_| has a fixed size, we need to explicitly trigger a
   // layout/paint pass ourselves when manipulating child views.
@@ -151,8 +161,11 @@ void AssistantNotificationView::InitLayout(
   layout_manager->SetFlexForView(message_, 1);
 
   // Buttons.
-  for (const auto& button : notification->buttons)
-    container_->AddChildView(CreateButton(button));
+  for (const auto& notification_button : notification->buttons) {
+    views::View* button = CreateButton(notification_button, /*listener=*/this);
+    container_->AddChildView(button);
+    buttons_.push_back(button);
+  }
 }
 
 void AssistantNotificationView::UpdateBackground() {
