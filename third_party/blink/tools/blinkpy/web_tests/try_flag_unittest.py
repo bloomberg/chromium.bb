@@ -16,9 +16,9 @@ from blinkpy.web_tests.try_flag import TryFlag
 class TryFlagTest(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
-        self.linux_build = Build('linux_chromium_rel_ng', 100)
-        self.mac_build = Build('mac_chromium_rel_ng', 101)
-        self.win_build = Build('win7_chromium_rel_ng', 102)
+        self.linux_build = Build('linux-rel', 100)
+        self.mac_build = Build('mac-rel', 101)
+        self.win_build = Build('win7-rel', 102)
         self.mock_try_results = {
             self.linux_build: TryJobStatus('COMPLETED', 'SUCCESS'),
             self.win_build: TryJobStatus('COMPLETED', 'SUCCESS'),
@@ -57,11 +57,11 @@ class TryFlagTest(unittest.TestCase):
             ['git', 'cl', 'upload', '--bypass-hooks', '-f',
              '-m', 'Flag try job for --foo.'],
             ['git', 'cl', 'try', '-B', 'luci.chromium.try',
-             '-b', 'linux_chromium_rel_ng'],
-            ['git', 'cl', 'try', '-B', 'master.tryserver.chromium.mac',
-             '-b', 'mac_chromium_rel_ng'],
-            ['git', 'cl', 'try', '-B', 'master.tryserver.chromium.win',
-             '-b', 'win7_chromium_rel_ng']
+             '-b', 'linux-rel'],
+            ['git', 'cl', 'try', '-B', 'luci.chromium.try',
+             '-b', 'mac-rel'],
+            ['git', 'cl', 'try', '-B', 'luci.chromium.try',
+             '-b', 'win7-rel']
         ])
 
     def test_trigger(self):

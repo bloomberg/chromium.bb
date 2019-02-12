@@ -41,5 +41,5 @@ special configurations like ASAN and TSAN.
 You can use the -b flag to test against just one of those, like this:
 
 ```shell
-$ git cl try -b linux_chromium_rel_ng
+$ git cl try -b linux-rel
 ```

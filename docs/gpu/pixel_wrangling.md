@@ -179,19 +179,15 @@ shift, and a calendar appointment.
         waterfall, but instead run as part of the regular tryjobs on the
         Chromium waterfalls. The GPU tests run as part of the following
         tryservers' jobs:
-        1.  <code>[linux_chromium_rel_ng]</code> on the [luci.chromium.try]
-            waterfall
-        1.  <code>[mac_chromium_rel_ng]</code> on the [luci.chromium.try]
-            waterfall
-        1.  <code>[win7_chromium_rel_ng]</code> on the [luci.chromium.try]
-            waterfall
+        1.  `[linux-rel]` on the [luci.chromium.try] waterfall
+        1.  `[mac-rel]` on the [luci.chromium.try] waterfall
+        1.  `[win7-rel]` on the [luci.chromium.try] waterfall
     1.  The best tool to use to quickly find flakiness on the tryservers is the
         new [Chromium Try Flakes] tool. Look for the names of GPU tests (like
-        maps_pixel_test) as well as the test machines (e.g.
-        mac_chromium_rel_ng). If you see a flaky test, file a bug like [this
-        one](http://crbug.com/444430). Also look for compile flakes that may
-        indicate that a bot needs to be clobbered. Contact the Chromium
-        sheriffs or troopers if so.
+        maps_pixel_test) as well as the test machines (e.g. mac-rel). If you
+        see a flaky test, file a bug like [this one](http://crbug.com/444430).
+        Also look for compile flakes that may indicate that a bot needs to be
+        clobbered. Contact the Chromium sheriffs or troopers if so.
     1.  Glance at these trybots from time to time and see if any GPU tests are
         failing frequently. **Note** that test failures are **expected** on
         these bots: individuals' patches may fail to apply, fail to compile, or
@@ -257,11 +253,12 @@ shift, and a calendar appointment.
 [Sheriff-O-Matic now has support for the chromium.gpu.fyi waterfall]: https://sheriff-o-matic.appspot.com/chromium.gpu.fyi
 [Chromium tab]: https://sheriff-o-matic.appspot.com/chromium
 [tree sheriffing page]: https://sites.google.com/a/chromium.org/dev/developers/tree-sheriffs
-[linux_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng
+[linux-rel]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-rel
 [luci.chromium.try]: https://ci.chromium.org/p/chromium/g/luci.chromium.try/builders
-[mac_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_chromium_rel_ng
+[mac-rel]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac-rel
 [tryserver.chromium.mac]: https://ci.chromium.org/p/chromium/g/tryserver.chromium.mac/builders
-[win7_chromium_rel_ng]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7_chromium_rel_ng
+[win7-rel]:
+https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-rel
 [tryserver.chromium.win]: https://ci.chromium.org/p/chromium/g/tryserver.chromium.win/builders
 [Chromium Try Flakes]: http://chromium-try-flakes.appspot.com/
 <!-- TODO(kainino): link doesn't work, but is still included from chromium-swarm homepage so not removing it now -->

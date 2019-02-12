@@ -43,7 +43,7 @@ $ git cl try
 Launching a particular trybot:
 
 ```bash
-$ git cl try -B luci.chromium.try -b linux_chromium_rel_ng
+$ git cl try -B luci.chromium.try -b linux-rel
 ```
 
 Launching multiple trybots:
