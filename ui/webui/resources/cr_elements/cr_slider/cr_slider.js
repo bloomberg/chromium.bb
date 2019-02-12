@@ -161,6 +161,7 @@ cr_slider.SliderTick;
       'onTicksChanged_(ticks.*)',
       'updateLabelAndAria_(value, min, max)',
       'updateKnobAndBar_(value, min, max)',
+      'updateValue_(value, min, max)',
     ],
 
     listeners: {
