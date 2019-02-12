@@ -4,11 +4,14 @@
 
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
+import("//ios/third_party/earl_grey2/ios_eg2_test.gni")
 
 group("all_tests") {
   testonly = true
   deps = [
+    ":ios_web_shell_eg2tests",
     ":ios_web_shell_egtests",
+    ":ios_web_shell_test_app_host",
   ]
 }
 
@@ -102,5 +105,58 @@ bundle_data("bundle") {
   outputs = [
     "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
         "{{source_file_part}}",
+  ]
+}
+
+################################
+# EG2 targets.
+
+group("eg_app_support+eg2") {
+  testonly = true
+}
+
+group("eg_test_support+eg2") {
+  testonly = true
+}
+
+source_set("eg_tests+eg2") {
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = [
+    "web_shell_egtest.mm",
+  ]
+
+  include_dirs = [ "//ios/third_party/edo/src" ]
+
+  deps = [
+    ":eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
+ios_eg2_test_app_host("ios_web_shell_test_app_host") {
+  info_plist = "//ios/web/shell/Info.plist"
+
+  deps = [
+    "//ios/web/shell",
+
+    # Test support libraries.
+    ":eg_app_support+eg2",
+    "//ios/testing/earl_grey:eg_app_support+eg2",
+  ]
+}
+
+ios_eg2_test("ios_web_shell_eg2tests") {
+  xcode_test_application_name = "ios_web_shell_test_app_host"
+
+  deps = [
+    # Test support libraries.
+    ":eg_tests+eg2",
   ]
 }
