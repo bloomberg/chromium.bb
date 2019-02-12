@@ -565,11 +565,11 @@ bool IsOneTwoThreeMap(const HashMap<int, int>& map) {
   return map.size() == 3 && map.Contains(1) && map.Contains(2) &&
          map.Contains(3) && map.at(1) == 11 && map.at(2) == 22 &&
          map.at(3) == 33;
-};
+}
 
 HashMap<int, int> ReturnOneTwoThreeMap() {
   return {{1, 11}, {2, 22}, {3, 33}};
-};
+}
 
 TEST(HashMapTest, InitializerList) {
   HashMap<int, int> empty({});

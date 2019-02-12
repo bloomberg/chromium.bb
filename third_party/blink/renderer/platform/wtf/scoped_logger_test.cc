@@ -43,7 +43,7 @@ TEST(ScopedLoggerTest, ScopedLogger) {
       "  a2 0.5\n"
       ")\n",
       g_builder.ToString());
-};
+}
 #endif  // DCHECK_IS_ON()
 
 }  // namespace WTF

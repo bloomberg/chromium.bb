@@ -482,7 +482,7 @@ TYPED_TEST(ListOrLinkedHashSetRefPtrTest, ExerciseValuePeekInType) {
 }
 
 struct Simple {
-  Simple(int value) : value_(value){};
+  Simple(int value) : value_(value) {}
   int value_;
 };
 

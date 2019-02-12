@@ -19,7 +19,7 @@ class TestNode final : public DoublyLinkedListNode<TestNode> {
   friend class WTF::DoublyLinkedListNode<TestNode>;
 
  public:
-  TestNode(int i) : i_(i) { ++test_node_counter; };
+  TestNode(int i) : i_(i) { ++test_node_counter; }
   ~TestNode() { --test_node_counter; }
   int i() { return i_; }
 
@@ -57,7 +57,7 @@ void DoublyLinkedListTest::TearDown() {
 
 int DoublyLinkedListTest::CompareInt(TestNode* first, TestNode* second) {
   return first->i() - second->i();
-};
+}
 
 bool DoublyLinkedListTest::IsSorted() const {
   for (auto* node = list_.Head(); node && node->Next(); node = node->Next()) {
@@ -78,7 +78,7 @@ DoublyLinkedList<TestNode>::AddResult DoublyLinkedListTest::CheckedInsert(
             result.is_new_entry ? current_size + 1 : current_size);
   EXPECT_FALSE(list_.IsEmpty());
   return result;
-};
+}
 
 TEST_F(DoublyLinkedListTest, InsertEmpty) {
   CheckedInsert(1);
