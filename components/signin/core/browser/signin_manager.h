@@ -6,11 +6,6 @@
 // which user is signed in. See SigninManagerBase for full description of
 // responsibilities. The class defined in this file provides functionality
 // required by all platforms except Chrome OS.
-//
-// When a user is signed in, a ClientLogin request is run on their behalf.
-// Auth tokens are fetched from Google and the results are stored in the
-// TokenService.
-// TODO(tim): Bug 92948, 226464. ClientLogin is all but gone from use.
 
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
