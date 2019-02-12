@@ -176,7 +176,8 @@ void HeadlessContentBrowserClient::GetQuotaSettings(
     content::StoragePartition* partition,
     ::storage::OptionalQuotaSettingsCallback callback) {
   ::storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
+      partition->GetPath(), context->IsOffTheRecord(),
+      ::storage::GetDefaultDiskInfoHelper(), std::move(callback));
 }
 
 content::GeneratedCodeCacheSettings

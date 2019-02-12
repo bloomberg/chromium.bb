@@ -4,6 +4,7 @@
 
 #include "ash/shell/content/client/shell_content_browser_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/ash_service.h"
@@ -85,7 +86,8 @@ void ShellContentBrowserClient::GetQuotaSettings(
     content::StoragePartition* partition,
     storage::OptionalQuotaSettingsCallback callback) {
   storage::GetNominalDynamicSettings(
-      partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
+      partition->GetPath(), context->IsOffTheRecord(),
+      storage::GetDefaultDiskInfoHelper(), std::move(callback));
 }
 
 base::Optional<service_manager::Manifest>

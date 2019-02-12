@@ -5,6 +5,7 @@
 #include "storage/browser/quota/quota_settings.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/rand_util.h"
@@ -12,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "storage/browser/quota/quota_disk_info_helper.h"
 #include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_macros.h"
 
@@ -27,7 +29,8 @@ int64_t RandomizeByPercent(int64_t value, int percent) {
 
 base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
-    bool is_incognito) {
+    bool is_incognito,
+    QuotaDiskInfoHelper* disk_info_helper) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const int64_t kMBytes = 1024 * 1024;
   const int kRandomizedPercentage = 10;
@@ -99,7 +102,7 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 
   storage::QuotaSettings settings;
 
-  int64_t total = base::SysInfo::AmountOfTotalDiskSpace(partition_path);
+  int64_t total = disk_info_helper->AmountOfTotalDiskSpace(partition_path);
   if (total == -1) {
     LOG(ERROR) << "Unable to compute QuotaSettings.";
     return base::nullopt;
@@ -127,14 +130,20 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 
 void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,
+                               QuotaDiskInfoHelper* disk_info_helper,
                                OptionalQuotaSettingsCallback callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CalculateNominalDynamicSettings, partition_path,
-                     is_incognito),
+                     is_incognito, base::Unretained(disk_info_helper)),
       std::move(callback));
+}
+
+QuotaDiskInfoHelper* GetDefaultDiskInfoHelper() {
+  static base::NoDestructor<QuotaDiskInfoHelper> singleton;
+  return singleton.get();
 }
 
 }  // namespace storage
