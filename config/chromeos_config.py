@@ -210,6 +210,13 @@ def GeneralTemplates(site_config, ge_build_config):
       build_packages=False,
       upload_standalone_images=False,
       sync_chrome=False,
+      # The unittest only paladin needs to build everything from source
+      # as a way to ensure ISA compatibility with the remote builder and
+      # our binpkg selection mechanisms will provide incorrect binaries
+      # in this case, so we need to disable them entirely.
+      # TODO(cjmcdonald): Remove this once binpkg fallback selection
+      #                   correctly respects -march flags.
+      usepkg_build_packages=False,
       profile='generic_build'
   )
 
