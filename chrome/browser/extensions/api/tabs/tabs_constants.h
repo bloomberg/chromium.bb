@@ -107,7 +107,7 @@ extern const char kCannotDetermineLanguageOfUnloadedTab[];
 extern const char kMissingLockWindowFullscreenPrivatePermission[];
 extern const char kJavaScriptUrlsNotAllowedInTabsUpdate[];
 
-};  // namespace tabs_constants
-};  // namespace extensions
+}  // namespace tabs_constants
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_CONSTANTS_H_
