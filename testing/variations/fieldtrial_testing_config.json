@@ -3345,6 +3345,26 @@
             ]
         }
     ],
+    "PasswordFillOnAccountSelectOverHttp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FillOnAccountSelectHttp"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordGenerationRequirements": [
         {
             "platforms": [
