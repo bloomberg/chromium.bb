@@ -1,5 +1,4 @@
 include_rules = [
-  "+ash/components/quick_launch/public",
   "+ash/public",
   "+chrome/browser",
   "+chrome/child",
@@ -81,7 +80,6 @@ specific_include_rules = {
     "+third_party/blink/public/mojom",
   ],
   "chrome_packaged_service_manifests\.cc": [
-    "+ash/components/quick_launch/public",
     "+ash/components/shortcut_viewer/public",
     "+ash/components/tap_visualizer/public",
     "+chrome/services/cups_ipp_parser/public",

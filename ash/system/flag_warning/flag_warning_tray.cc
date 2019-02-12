@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
@@ -58,11 +58,11 @@ void FlagWarningTray::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   DCHECK_EQ(button_, sender);
 
-  // Open the quick launch mojo mini-app to demonstrate that mini-apps work.
-  //
-  // TODO(https://crbug.com/904148): This should not use |WarmService()|.
-  Shell::Get()->connector()->WarmService(service_manager::ServiceFilter::ByName(
-      quick_launch::mojom::kServiceName));
+  // Open the shortcut viewer mini-app to demonstrate that mini-apps work.
+  shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer_ptr;
+  Shell::Get()->connector()->BindInterface(shortcut_viewer::mojom::kServiceName,
+                                           &shortcut_viewer_ptr);
+  shortcut_viewer_ptr->Toggle(base::TimeTicks::Now());
 }
 
 void FlagWarningTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {

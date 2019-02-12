@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/keyboard/test_keyboard_ui.h"
@@ -155,8 +154,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(https://crbug.com/904148): These should not use |WarmService()|.
   connector->WarmService(service_manager::ServiceFilter::ByName(
       test_ime_driver::mojom::kServiceName));
-  connector->WarmService(service_manager::ServiceFilter::ByName(
-      quick_launch::mojom::kServiceName));
   connector->WarmService(service_manager::ServiceFilter::ByName(
       tap_visualizer::mojom::kServiceName));
   shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer;

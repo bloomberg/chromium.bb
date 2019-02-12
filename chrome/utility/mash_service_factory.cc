@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "ash/ash_service.h"
-#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
-#include "ash/components/quick_launch/quick_launch_application.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/shortcut_viewer/shortcut_viewer_application.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
@@ -25,8 +23,8 @@ namespace {
 // numeric values should never be reused.
 enum class MashService {
   kAsh = 0,
-  kAutoclickDeprecated = 1,  // Deleted Aug 2018, https://crbug.com/876115
-  kQuickLaunch = 2,
+  kAutoclickDeprecated = 1,    // Deleted Aug 2018, https://crbug.com/876115
+  kQuickLaunchDeprecated = 2,  // Deleted Feb 2019.
   kShortcutViewer = 3,
   kTapVisualizer = 4,
   kFontDeprecated = 5,  // Font Service is not in use for mash, but run
@@ -45,14 +43,6 @@ std::unique_ptr<service_manager::Service> CreateAshService(
   RecordMashServiceLaunch(MashService::kAsh);
   logging::SetLogPrefix("ash");
   return std::make_unique<ash::AshService>(std::move(request));
-}
-
-std::unique_ptr<service_manager::Service> CreateQuickLaunchService(
-    service_manager::mojom::ServiceRequest request) {
-  RecordMashServiceLaunch(MashService::kQuickLaunch);
-  logging::SetLogPrefix("quick");
-  return std::make_unique<quick_launch::QuickLaunchApplication>(
-      std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateShortcutViewerApp(
@@ -82,8 +72,6 @@ MashServiceFactory::HandleServiceRequest(
     service_manager::mojom::ServiceRequest request) {
   if (service_name == ash::mojom::kServiceName)
     return CreateAshService(std::move(request));
-  if (service_name == quick_launch::mojom::kServiceName)
-    return CreateQuickLaunchService(std::move(request));
   if (service_name == shortcut_viewer::mojom::kServiceName) {
     keyboard_shortcut_viewer::ShortcutViewerApplication ::
         RegisterForTraceEvents();

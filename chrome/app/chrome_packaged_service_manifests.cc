@@ -22,7 +22,6 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/components/quick_launch/public/cpp/manifest.h"
 #include "ash/components/shortcut_viewer/public/cpp/manifest.h"
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/public/cpp/manifest.h"
@@ -30,7 +29,6 @@
 #include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
-#include "mash/public/mojom/launchable.mojom.h"  // nogncheck
 #include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 #include "ui/accessibility/ax_host_manifest.h"  // nogncheck
 #endif
@@ -100,9 +98,6 @@ const service_manager::Manifest& GetChromeManifest() {
         .ExposeCapability("input_device_controller",
                           service_manager::Manifest::InterfaceList<
                               ws::mojom::InputDeviceController>())
-        .ExposeCapability(
-            "mash:launchable",
-            service_manager::Manifest::InterfaceList<mash::mojom::Launchable>())
 #endif
         .RequireCapability(chrome::mojom::kRendererServiceName, "browser")
         .Build()
@@ -169,7 +164,6 @@ GetChromePackagedServiceManifests() {
       GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
-      quick_launch::GetManifest(),
       shortcut_viewer::GetManifest(),
       tap_visualizer::GetManifest(),
       ash::GetManifest(),

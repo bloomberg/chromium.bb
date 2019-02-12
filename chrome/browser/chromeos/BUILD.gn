@@ -194,9 +194,6 @@ source_set("chromeos") {
     "//gpu",
     "//gpu/ipc/host",
     "//gpu/ipc/service",
-
-    # TODO(jamescook): Eliminate use of Launchable interface.
-    "//mash/public/mojom",
     "//media",
     "//media/mojo/interfaces",
     "//mojo/public/cpp/platform",
@@ -1017,8 +1014,6 @@ source_set("chromeos") {
     "input_method/input_method_syncer.h",
     "language_preferences.cc",
     "language_preferences.h",
-    "launchable.cc",
-    "launchable.h",
     "launcher_search_provider/error_reporter.cc",
     "launcher_search_provider/error_reporter.h",
     "launcher_search_provider/launcher_search_provider_service.cc",

@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "ash/ash_service.h"
-#include "ash/components/quick_launch/public/cpp/manifest.h"
-#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/cpp/manifest.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"
@@ -62,7 +60,6 @@ const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
       service_manager::ManifestBuilder()
           .PackageService(service_manager::Manifest(ash::GetManifest())
                               .Amend(ash::GetManifestOverlayForTesting()))
-          .PackageService(quick_launch::GetManifest())
           .PackageService(shortcut_viewer::GetManifest())
           .PackageService(tap_visualizer::GetManifest())
           .PackageService(test_ime_driver::GetManifest())
@@ -106,8 +103,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
-  (*services)[quick_launch::mojom::kServiceName] = base::BindRepeating(
-      &base::ASCIIToUTF16, quick_launch::mojom::kServiceName);
   (*services)[shortcut_viewer::mojom::kServiceName] = base::BindRepeating(
       &base::ASCIIToUTF16, shortcut_viewer::mojom::kServiceName);
   (*services)[tap_visualizer::mojom::kServiceName] = base::BindRepeating(

@@ -3683,9 +3683,6 @@
   <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
     Window manager
   </message>
-  <message name="IDS_ASH_QUICK_LAUNCH_APP_NAME" desc="Name of the app used to launch other apps by typing an app name. Appears in the task manager.">
-    Quick launch
-  </message>
   <message name="IDS_ASH_SHORTCUT_VIEWER_APP_NAME" desc="Name of the app that shows the list of keyboard shortcuts. Appears in the task manager.">
     Shortcut viewer
   </message>
