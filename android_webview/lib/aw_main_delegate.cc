@@ -276,7 +276,7 @@ void AwMainDelegate::PreSandboxStartup() {
 
   static ::crash_reporter::CrashKeyString<8> sdk_int_key(
       crash_keys::kAndroidSdkInt);
-  sdk_int_key.Set(base::IntToString(android_build_info->sdk_int()));
+  sdk_int_key.Set(base::NumberToString(android_build_info->sdk_int()));
 }
 
 int AwMainDelegate::RunProcess(

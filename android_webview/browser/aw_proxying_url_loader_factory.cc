@@ -69,7 +69,7 @@ class InterceptResponseDelegate
     std::string reason_phrase;
     if (response_->GetStatusInfo(env, &status_code, &reason_phrase)) {
       std::string status_line("HTTP/1.1 ");
-      status_line.append(base::IntToString(status_code));
+      status_line.append(base::NumberToString(status_code));
       status_line.append(" ");
       status_line.append(reason_phrase);
       headers->ReplaceStatusLine(status_line);
