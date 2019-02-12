@@ -25,7 +25,6 @@
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_utils.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"
 #include "media/base/audio_bus.h"
@@ -39,6 +38,7 @@
 #include "media/cast/cast_sender.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -166,18 +166,21 @@ std::vector<FrameSenderConfig> SupportedVideoConfigs(bool for_remoting_stream) {
 // handles this.  Otherwise, all methods and member variables of the outer class
 // must only be accessed on the render thread.
 class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
-                      public content::MediaStreamVideoSink {
+                      public blink::WebMediaStreamSink {
  public:
   // |track| provides data for this sink.
   // |error_callback| is called if video formats don't match.
   CastVideoSink(const blink::WebMediaStreamTrack& track,
                 const CastRtpStream::ErrorCallback& error_callback)
-      : track_(track), deliverer_(new Deliverer(error_callback)),
+      : track_(track),
+        deliverer_(new Deliverer(error_callback)),
         consecutive_refresh_count_(0),
-        expecting_a_refresh_frame_(false) {}
+        expecting_a_refresh_frame_(false),
+        is_connected_to_track_(false) {}
 
   ~CastVideoSink() override {
-    MediaStreamVideoSink::DisconnectFromTrack();
+    if (is_connected_to_track_)
+      content::RemoveSinkFromMediaStreamTrack(track_, this);
   }
 
   // Attach this sink to a video track represented by |track_|.
@@ -192,9 +195,10 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
         base::TimeDelta::FromMilliseconds(kRefreshIntervalMilliseconds),
         base::Bind(&CastVideoSink::OnRefreshTimerFired,
                    base::Unretained(this)));
-    MediaStreamVideoSink::ConnectToTrack(
-        track_, base::Bind(&Deliverer::OnVideoFrame, deliverer_),
+    content::AddSinkToMediaStreamTrack(
+        track_, this, base::BindRepeating(&Deliverer::OnVideoFrame, deliverer_),
         is_sink_secure);
+    is_connected_to_track_ = true;
   }
 
  private:
@@ -265,7 +269,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     DVLOG(1) << "CastVideoSink is requesting another refresh frame "
                 "(consecutive count=" << consecutive_refresh_count_ << ").";
     expecting_a_refresh_frame_ = true;
-    content::RequestRefreshFrameFromVideoTrack(connected_track());
+    content::RequestRefreshFrameFromVideoTrack(track_);
   }
 
   void DidReceiveFrame() {
@@ -296,6 +300,8 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // Set to true when a request for a refresh frame has been made.  This is
   // cleared once the next frame is received.
   bool expecting_a_refresh_frame_;
+
+  bool is_connected_to_track_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
 };

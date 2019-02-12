@@ -18,6 +18,7 @@
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/capture/video_capturer_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 
@@ -118,6 +119,34 @@ void RequestRefreshFrameFromVideoTrack(
       MediaStreamVideoSource::GetVideoSource(video_track.Source());
   if (source)
     source->RequestRefreshFrame();
+}
+
+void AddSinkToMediaStreamTrack(
+    const blink::WebMediaStreamTrack& track,
+    blink::WebMediaStreamSink* sink,
+    const blink::VideoCaptureDeliverFrameCB& callback,
+    bool is_sink_secure) {
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  DCHECK(video_track);
+  video_track->AddSink(sink, callback, is_sink_secure);
+}
+
+void RemoveSinkFromMediaStreamTrack(const blink::WebMediaStreamTrack& track,
+                                    blink::WebMediaStreamSink* sink) {
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  if (video_track)
+    video_track->RemoveSink(sink);
+}
+
+void OnFrameDroppedAtMediaStreamSink(
+    const blink::WebMediaStreamTrack& track,
+    media::VideoCaptureFrameDropReason reason) {
+  MediaStreamVideoTrack* const video_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  if (video_track)
+    video_track->OnFrameDropped(reason);
 }
 
 }  // namespace content

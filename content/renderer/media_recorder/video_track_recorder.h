@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/common/buildflags.h"
-#include "content/public/renderer/media_stream_video_sink.h"
+#include "content/renderer/media_stream_video_sink.h"
 #include "media/muxers/webm_muxer.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/skia/include/core/SkBitmap.h"

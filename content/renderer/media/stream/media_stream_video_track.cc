@@ -42,7 +42,7 @@ void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
 class MediaStreamVideoTrack::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
-  using VideoSinkId = MediaStreamVideoSink*;
+  using VideoSinkId = blink::WebMediaStreamSink*;
 
   FrameDeliverer(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -361,7 +361,7 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
 }
 
 void MediaStreamVideoTrack::AddSink(
-    MediaStreamVideoSink* sink,
+    blink::WebMediaStreamSink* sink,
     const blink::VideoCaptureDeliverFrameCB& callback,
     bool is_sink_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
@@ -378,7 +378,7 @@ void MediaStreamVideoTrack::AddSink(
                                      secure_tracker_.is_capturing_secure());
 }
 
-void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
+void MediaStreamVideoTrack::RemoveSink(blink::WebMediaStreamSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   auto it = std::find(sinks_.begin(), sinks_.end(), sink);
   DCHECK(it != sinks_.end());

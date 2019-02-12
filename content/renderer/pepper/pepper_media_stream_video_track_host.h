@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/renderer/media_stream_video_sink.h"
+#include "content/renderer/media_stream_video_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/base/video_frame.h"
 #include "ppapi/c/ppb_video_frame.h"
