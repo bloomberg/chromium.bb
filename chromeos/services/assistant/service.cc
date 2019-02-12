@@ -47,6 +47,7 @@ namespace {
 constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
 constexpr char kScopeAssistant[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
+constexpr char kScopeClearCutLog[] = "https://www.googleapis.com/auth/cclog";
 
 constexpr base::TimeDelta kMinTokenRefreshDelay =
     base::TimeDelta::FromMilliseconds(1000);
@@ -261,6 +262,8 @@ void Service::GetPrimaryAccountInfoCallback(
   identity::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
   scopes.insert(kScopeAuthGcm);
+  if (features::IsClearCutLogEnabled())
+    scopes.insert(kScopeClearCutLog);
   identity_manager_->GetAccessToken(
       account_info.value().account_id, scopes, "cros_assistant",
       base::BindOnce(&Service::GetAccessTokenCallback, base::Unretained(this)));
