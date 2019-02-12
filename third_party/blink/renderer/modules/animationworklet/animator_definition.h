@@ -24,7 +24,8 @@ class MODULES_EXPORT AnimatorDefinition final
  public:
   AnimatorDefinition(v8::Isolate*,
                      v8::Local<v8::Function> constructor,
-                     v8::Local<v8::Function> animate);
+                     v8::Local<v8::Function> animate,
+                     v8::Local<v8::Function> state);
   ~AnimatorDefinition();
   virtual void Trace(blink::Visitor* visitor);
   const char* NameInHeapSnapshot() const override {
@@ -33,12 +34,14 @@ class MODULES_EXPORT AnimatorDefinition final
 
   v8::Local<v8::Function> ConstructorLocal(v8::Isolate*);
   v8::Local<v8::Function> AnimateLocal(v8::Isolate*);
+  bool IsStateful() const { return !state_.IsEmpty(); }
 
  private:
-  // This object keeps the constructor function, and animate function alive.
-  // It participates in wrapper tracing as it holds onto V8 wrappers.
+  // This object keeps the constructor function, animate, and state function
+  // alive. It participates in wrapper tracing as it holds onto V8 wrappers.
   TraceWrapperV8Reference<v8::Function> constructor_;
   TraceWrapperV8Reference<v8::Function> animate_;
+  TraceWrapperV8Reference<v8::Function> state_;
 };
 
 }  // namespace blink

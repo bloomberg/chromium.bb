@@ -14,14 +14,18 @@ namespace blink {
 
 AnimatorDefinition::AnimatorDefinition(v8::Isolate* isolate,
                                        v8::Local<v8::Function> constructor,
-                                       v8::Local<v8::Function> animate)
-    : constructor_(isolate, constructor), animate_(isolate, animate) {}
+                                       v8::Local<v8::Function> animate,
+                                       v8::Local<v8::Function> state)
+    : constructor_(isolate, constructor),
+      animate_(isolate, animate),
+      state_(isolate, state) {}
 
 AnimatorDefinition::~AnimatorDefinition() = default;
 
 void AnimatorDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_);
   visitor->Trace(animate_);
+  visitor->Trace(state_);
 }
 
 v8::Local<v8::Function> AnimatorDefinition::ConstructorLocal(

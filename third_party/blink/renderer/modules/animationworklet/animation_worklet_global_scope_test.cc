@@ -226,6 +226,53 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     waitable_event->Signal();
   }
 
+  void RunStateExistenceTestOnWorklet(WorkerThread* thread,
+                                      WaitableEvent* waitable_event) {
+    ASSERT_TRUE(thread->IsCurrentThread());
+    auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    ASSERT_TRUE(script_state);
+    v8::Isolate* isolate = script_state->GetIsolate();
+    ASSERT_TRUE(isolate);
+
+    ScriptState::Scope scope(script_state);
+
+    String source_code =
+        R"JS(
+            class Stateful {
+              animate () {}
+              state () {}
+            }
+
+            class Stateless {
+              animate () {}
+            }
+
+            class Foo {
+              animate () {}
+            }
+            Foo.prototype.state = function() {};
+
+            registerAnimator('stateful_animator', Stateful);
+            registerAnimator('stateless_animator', Stateless);
+            registerAnimator('foo', Foo);
+        )JS";
+    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+
+    AnimatorDefinition* first_definition =
+        global_scope->FindDefinitionForTest("stateful_animator");
+    EXPECT_TRUE(first_definition->IsStateful());
+    AnimatorDefinition* second_definition =
+        global_scope->FindDefinitionForTest("stateless_animator");
+    EXPECT_FALSE(second_definition->IsStateful());
+    AnimatorDefinition* third_definition =
+        global_scope->FindDefinitionForTest("foo");
+    EXPECT_TRUE(third_definition->IsStateful());
+
+    waitable_event->Signal();
+  }
+
   void RunAnimateOutputTestOnWorklet(WorkerThread* thread,
                                      WaitableEvent* waitable_event) {
     AnimationWorkletGlobalScope* global_scope =
@@ -409,6 +456,11 @@ TEST_F(AnimationWorkletGlobalScopeTest, BasicParsing) {
 TEST_F(AnimationWorkletGlobalScopeTest, ConstructAndAnimate) {
   RunTestOnWorkletThread(
       &AnimationWorkletGlobalScopeTest::RunConstructAndAnimateTestOnWorklet);
+}
+
+TEST_F(AnimationWorkletGlobalScopeTest, StateExistence) {
+  RunTestOnWorkletThread(
+      &AnimationWorkletGlobalScopeTest::RunStateExistenceTestOnWorklet);
 }
 
 TEST_F(AnimationWorkletGlobalScopeTest, AnimationOutput) {

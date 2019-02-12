@@ -40,6 +40,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
                double current_time,
                AnimationWorkletDispatcherOutput::AnimationState*);
   std::vector<base::Optional<TimeDelta>> GetLocalTimes() const;
+  bool IsStateful() const;
 
  private:
   // This object keeps the definition object, and animator instance alive.

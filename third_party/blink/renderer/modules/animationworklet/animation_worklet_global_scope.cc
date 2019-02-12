@@ -195,8 +195,23 @@ void AnimationWorkletGlobalScope::registerAnimator(
                                      &exception_state))
     return;
 
-  AnimatorDefinition* definition =
-      MakeGarbageCollected<AnimatorDefinition>(isolate, constructor, animate);
+  // The function state is optional. We should only call ParseFunction when it's
+  // defined.
+  v8::Local<v8::Function> state;
+  v8::Local<v8::Value> function_value;
+  v8::TryCatch block(isolate);
+  if (!prototype->Get(context, V8AtomicString(isolate, "state"))
+           .ToLocal(&function_value)) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return;
+  }
+  if (!function_value->IsNullOrUndefined()) {
+    V8ObjectParser::ParseFunction(context, prototype, "state", &state,
+                                  &exception_state);
+  }
+
+  AnimatorDefinition* definition = MakeGarbageCollected<AnimatorDefinition>(
+      isolate, constructor, animate, state);
 
   // TODO(https://crbug.com/923063): Ensure worklet definitions are compatible
   // across global scopes.
@@ -236,6 +251,10 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
 
   return MakeGarbageCollected<Animator>(isolate, definition, instance,
                                         num_effects);
+}
+
+bool AnimationWorkletGlobalScope::IsAnimatorStateful(int animation_id) {
+  return animators_.at(animation_id)->IsStateful();
 }
 
 AnimatorDefinition* AnimationWorkletGlobalScope::FindDefinitionForTest(
