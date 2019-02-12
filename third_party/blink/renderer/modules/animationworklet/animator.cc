@@ -86,4 +86,8 @@ std::vector<base::Optional<TimeDelta>> Animator::GetLocalTimes() const {
   return local_times;
 }
 
+bool Animator::IsStateful() const {
+  return definition_->IsStateful();
+}
+
 }  // namespace blink

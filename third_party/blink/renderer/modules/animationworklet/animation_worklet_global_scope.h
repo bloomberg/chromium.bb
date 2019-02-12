@@ -57,6 +57,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
                         ExceptionState&);
 
   AnimatorDefinition* FindDefinitionForTest(const String& name);
+  bool IsAnimatorStateful(int animation_id);
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
