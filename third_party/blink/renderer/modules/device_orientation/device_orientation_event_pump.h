@@ -13,6 +13,9 @@
 
 namespace blink {
 
+class DeviceOrientationData;
+class DeviceSensorEntry;
+
 class MODULES_EXPORT DeviceOrientationEventPump
     : public GarbageCollectedFinalized<DeviceOrientationEventPump>,
       public DeviceSensorEventPump,
@@ -27,7 +30,6 @@ class MODULES_EXPORT DeviceOrientationEventPump
   explicit DeviceOrientationEventPump(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool absolute);
-
   ~DeviceOrientationEventPump() override;
 
   // Note that the returned object is owned by this class.
@@ -44,8 +46,8 @@ class MODULES_EXPORT DeviceOrientationEventPump
   void FireEvent(TimerBase*) override;
   void DidStartIfPossible() override;
 
-  SensorEntry relative_orientation_sensor_;
-  SensorEntry absolute_orientation_sensor_;
+  Member<DeviceSensorEntry> relative_orientation_sensor_;
+  Member<DeviceSensorEntry> absolute_orientation_sensor_;
 
  private:
   friend class DeviceOrientationEventPumpTest;
