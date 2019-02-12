@@ -217,6 +217,7 @@ void Controller::GetOrCheckScripts(const GURL& url) {
   if (script_domain_ != url.host()) {
     StopPeriodicScriptChecks();
     script_domain_ = url.host();
+    DVLOG(2) << "GetScripts for " << script_domain_;
     GetService()->GetScriptsForUrl(
         url, parameters_,
         base::BindOnce(&Controller::OnGetScripts, base::Unretained(this), url));
@@ -287,6 +288,8 @@ void Controller::OnGetScripts(const GURL& url,
 
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
+  DVLOG(2) << __func__ << " from " << url.host() << " returned "
+           << scripts.size() << " scripts";
   DCHECK(parse_result);
   script_tracker()->SetScripts(std::move(scripts));
   script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
