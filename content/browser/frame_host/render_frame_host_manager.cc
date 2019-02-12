@@ -517,9 +517,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // See https://crbug.com/926820 and https://crbug.com/927705.
   if (!current_frame_host()->is_active()) {
     NOTREACHED() << "Navigation in an inactive frame";
-    NavigationHandle* handle = request.navigation_handle();
-    DEBUG_ALIAS_FOR_GURL(url_from, handle->GetPreviousURL())
-    DEBUG_ALIAS_FOR_GURL(url_to, handle->GetURL())
+    DEBUG_ALIAS_FOR_GURL(url, request.common_params().url);
     base::debug::DumpWithoutCrashing();
   }
 

@@ -2540,6 +2540,12 @@ void NavigationControllerImpl::FindFramesToNavigate(
     ReloadType reload_type,
     std::vector<std::unique_ptr<NavigationRequest>>* same_document_loads,
     std::vector<std::unique_ptr<NavigationRequest>>* different_document_loads) {
+  // A frame pending deletion is not allowed to navigate anymore. It has been
+  // deleted and the browser already committed to destroying this
+  // RenderFrameHost. See https://crbug.com/930278.
+  if (!frame->current_frame_host()->is_active())
+    return;
+
   DCHECK(pending_entry_);
   DCHECK_GE(last_committed_entry_index_, 0);
   FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);

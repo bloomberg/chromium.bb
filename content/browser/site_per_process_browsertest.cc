@@ -14109,6 +14109,43 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(did_start_navigation_observer.observed());
 }
 
+// An history navigation from the renderer process is received while the
+// RenderFrameHost is pending deletion.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       HistoryNavigationWhilePendingDeletion) {
+  GURL url_ab(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_ab));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  NavigateFrameToURL(rfh_b->frame_tree_node(), url_c);
+  RenderFrameHostImpl* rfh_c = rfh_a->child_at(0)->current_frame_host();
+
+  // Frame C has a unload handler. The browser process needs to wait before
+  // deleting it.
+  EXPECT_TRUE(ExecJs(rfh_c, "onunload=function(){}"));
+
+  RenderFrameDeletedObserver deleted_observer(rfh_c);
+  TestNavigationManager navigation_observer(web_contents(), url_ab);
+
+  // History navigation on C.
+  ExecuteScriptAsync(rfh_c, "history.back();");
+
+  // Simulate A deleting C.
+  // It starts before receiving the history navigation. The detach ACK is
+  // received after.
+  rfh_c->DetachFromProxy();
+  deleted_observer.WaitUntilDeleted();
+
+  // The NavigationController won't be able to find the subframe to navigate
+  // since it was just detached, so it should fall back to navigating the main
+  // frame
+  navigation_observer.WaitForNavigationFinished();
+  EXPECT_TRUE(navigation_observer.was_successful());
+}
+
 // This test verifies that when scrolling an OOPIF in a pinched-zoomed page,
 // that the scroll-delta matches the distance between TouchStart/End as seen
 // by the oopif, i.e. the oopif content 'sticks' to the finger during scrolling.
