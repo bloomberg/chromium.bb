@@ -87,8 +87,6 @@ WebServiceWorkerNetworkProviderImplForWorker::
 
 void WebServiceWorkerNetworkProviderImplForWorker::WillSendRequest(
     blink::WebURLRequest& request) {
-  DCHECK_EQ(blink::mojom::RequestContextType::SHARED_WORKER,
-            request.GetRequestContext());
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(provider_id());
   extra_data->set_initiated_in_secure_context(is_secure_context_);
@@ -118,11 +116,15 @@ WebServiceWorkerNetworkProviderImplForWorker::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
         task_runner_handle) {
-  // We only get here for the main script request from the shadow page.
-  // importScripts() and other subresource fetches are handled on the worker
-  // thread by WebWorkerFetchContextImpl.
-  DCHECK_EQ(blink::mojom::RequestContextType::SHARED_WORKER,
-            request.GetRequestContext());
+  if (request.GetRequestContext() !=
+      blink::mojom::RequestContextType::SHARED_WORKER) {
+    // This provider is only used for requests from the shadow page, which is
+    // created to load the shared worker's main script. But shadow pages
+    // sometimes request strange things like CSS resources because consumers
+    // think it's a real frame. Just return nullptr to use the default loader
+    // instead of the script loader.
+    return nullptr;
+  }
 
   // S13nServiceWorker:
   // We only install our own URLLoader if Servicification is enabled.

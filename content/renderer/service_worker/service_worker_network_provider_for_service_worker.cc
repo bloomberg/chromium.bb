@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/debug/alias.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -18,22 +17,8 @@
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "url/gurl.h"
 
 namespace content {
-
-namespace {
-
-// TODO(https://crbug.com/929042): Remove this after the linked bug is fixed.
-void CrashBecauseNotMainScriptRequest(const blink::WebURLRequest& request) {
-  GURL url(request.Url());
-  DEBUG_ALIAS_FOR_GURL(url_buf, url);
-  blink::mojom::RequestContextType context = request.GetRequestContext();
-  base::debug::Alias(&context);
-  CHECK(false);
-}
-
-}  // namespace
 
 ServiceWorkerNetworkProviderForServiceWorker::
     ServiceWorkerNetworkProviderForServiceWorker(
@@ -48,9 +33,6 @@ ServiceWorkerNetworkProviderForServiceWorker::
 
 void ServiceWorkerNetworkProviderForServiceWorker::WillSendRequest(
     blink::WebURLRequest& request) {
-  ResourceType resource_type = WebURLRequestToResourceType(request);
-  DCHECK_EQ(resource_type, ResourceType::RESOURCE_TYPE_SERVICE_WORKER);
-
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(provider_id_);
   extra_data->set_originated_from_service_worker(true);
@@ -64,7 +46,7 @@ void ServiceWorkerNetworkProviderForServiceWorker::WillSendRequest(
   if (render_thread && render_thread->url_loader_throttle_provider()) {
     extra_data->set_url_loader_throttles(
         render_thread->url_loader_throttle_provider()->CreateThrottles(
-            MSG_ROUTING_NONE, request, resource_type));
+            MSG_ROUTING_NONE, request, WebURLRequestToResourceType(request)));
   }
 
   request.SetExtraData(std::move(extra_data));
@@ -75,16 +57,15 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
         task_runner_handle) {
-  // We only get here for the main script request from the shadow page.
-  // importScripts() and other subresource fetches are handled on the worker
-  // thread by ServiceWorkerFetchContextImpl.
   if (request.GetRequestContext() !=
       blink::mojom::RequestContextType::SERVICE_WORKER) {
-    CrashBecauseNotMainScriptRequest(request);
+    // This provider is only used for requests from the shadow page, which is
+    // created to load the service worker's main script. But shadow pages
+    // sometimes request strange things like CSS resources because consumers
+    // think it's a real frame. Just return nullptr to use the default loader
+    // instead of the script loader.
     return nullptr;
   }
-  DCHECK_EQ(blink::mojom::RequestContextType::SERVICE_WORKER,
-            request.GetRequestContext());
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // RenderThreadImpl may be null in some tests.
