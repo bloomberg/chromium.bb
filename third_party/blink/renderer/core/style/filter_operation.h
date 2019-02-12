@@ -126,7 +126,7 @@ class CORE_EXPORT FilterOperation
 #define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType)  \
   DEFINE_TYPE_CASTS(thisType, FilterOperation, op,                   \
                     op->GetType() == FilterOperation::operationType, \
-                    op.GetType() == FilterOperation::operationType);
+                    op.GetType() == FilterOperation::operationType)
 
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
@@ -342,6 +342,8 @@ class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
   BoxReflection reflection_;
 };
 DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
+
+#undef DEFINE_FILTER_OPERATION_TYPE_CASTS
 
 }  // namespace blink
 
