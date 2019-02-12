@@ -1059,9 +1059,6 @@ extern const char kSignedHTTPExchangeDescription[];
 extern const char kSimplifyHttpsIndicatorName[];
 extern const char kSimplifyHttpsIndicatorDescription[];
 
-extern const char kSingleTabMode[];
-extern const char kSingleTabModeDescription[];
-
 extern const char kSiteIsolationOptOutName[];
 extern const char kSiteIsolationOptOutDescription[];
 extern const char kSiteIsolationOptOutChoiceDefault[];

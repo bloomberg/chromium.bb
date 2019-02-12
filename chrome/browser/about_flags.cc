@@ -1458,9 +1458,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewTabLoadingAnimation)},
 #endif  // !defined(OS_ANDROID)
-    {"single-tab-mode", flag_descriptions::kSingleTabMode,
-     flag_descriptions::kSingleTabModeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSingleTabMode)},
     {"site-settings", flag_descriptions::kSiteSettings,
      flag_descriptions::kSiteSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSiteSettings)},

@@ -2913,11 +2913,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "single-tab-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "site-characteristics-database",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
