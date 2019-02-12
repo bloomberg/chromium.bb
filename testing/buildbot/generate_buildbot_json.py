@@ -1232,11 +1232,43 @@ class BBJSONGenerator(object):
     self.check_output_file_consistency(verbose) # pragma: no cover
 
   def parse_args(self, argv): # pragma: no cover
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
+
+    # RawTextHelpFormatter allows for styling of help statement
+    parser = argparse.ArgumentParser(formatter_class=
+                                     argparse.RawTextHelpFormatter)
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
       '-c', '--check', action='store_true', help=
       'Do consistency checks of configuration and generated files and then '
       'exit. Used during presubmit. Causes the tool to not generate any files.')
+    group.add_argument(
+      '--query', type=str, help=
+        ("Returns raw JSON information of buildbots and tests.\n" +
+        "Examples:\n" +
+          "  List all bots (all info):\n" +
+          "    --query bots\n\n" +
+          "  List all bots and only their associated tests:\n" +
+          "    --query bots/tests\n\n" +
+          "  List all information about 'bot1' " +
+               "(make sure you have quotes):\n" +
+          "    --query bot/'bot1'\n\n" +
+          "  List tests running for 'bot1' (make sure you have quotes):\n" +
+          "    --query bot/'bot1'/tests\n\n" +
+          "  List all tests:\n" +
+          "    --query tests\n\n" +
+          "  List all tests and the bots running them:\n" +
+          "    --query tests/bots\n\n"+
+          "  List all tests that satisfy multiple parameters\n" +
+          "  (separation of parameters by '&' symbol):\n" +
+          "    --query tests/'device_os:Android&device_type:hammerhead'\n\n" +
+          "  List all tests that run with a specific flag:\n" +
+          "    --query bots/'--test-launcher-print-test-studio=always'\n\n" +
+          "  List specific test (make sure you have quotes):\n"
+          "    --query test/'test1'\n\n"
+          "  List all bots running 'test1' " +
+               "(make sure you have quotes):\n" +
+          "    --query test/'test1'/bots" ))
     parser.add_argument(
       '-n', '--new-files', action='store_true', help=
       'Write output files as .new.json. Useful during development so old and '
@@ -1250,12 +1282,296 @@ class BBJSONGenerator(object):
     parser.add_argument(
       '--pyl-files-dir', type=os.path.realpath,
       help='Path to the directory containing the input .pyl files.')
+    parser.add_argument(
+      '--json', help=
+      ("Outputs results into a json file. Only works with query function.\n" +
+      "Examples:\n" +
+      "  Outputs file into specified json file: \n" +
+      "    --json <file-name-here.json>"))
     self.args = parser.parse_args(argv)
+    if self.args.json and not self.args.query:
+      parser.error("The --json flag can only be used with --query.")
+
+  def does_test_match(self, test_info, params_dict):
+    """Checks to see if the test matches the parameters given.
+
+    Compares the provided test_info with the params_dict to see
+    if the bot matches the parameters given. If so, returns True.
+    Else, returns false.
+
+    Args:
+      test_info (dict): Information about a specific bot provided
+                       in the format shown in waterfalls.pyl
+      params_dict (dict): Dictionary of parameters and their values
+                          to look for in the bot
+        Ex: {
+          'device_os':'android',
+          '--flag':True,
+          'mixins': ['mixin1', 'mixin2'],
+          'ex_key':'ex_value'
+        }
+
+    """
+    DIMENSION_PARAMS = ['device_os', 'device_type', 'os',
+                        'kvm', 'pool', 'integrity'] # dimension parameters
+    SWARMING_PARAMS = ['shards', 'hard_timeout', 'idempotent',
+                       'can_use_on_swarming_builders']
+    for param in params_dict:
+      # if dimension parameter
+      if param in DIMENSION_PARAMS or param in SWARMING_PARAMS:
+        if not 'swarming' in test_info:
+          return False
+        swarming = test_info['swarming']
+        if param in SWARMING_PARAMS:
+          if not param in swarming:
+            return False
+          if not str(swarming[param]) == params_dict[param]:
+            return False
+        else:
+          if not 'dimension_sets' in swarming:
+            return False
+          d_set = swarming['dimension_sets']
+          # only looking at the first dimension set
+          if not param in d_set[0]:
+            return False
+          if not d_set[0][param] == params_dict[param]:
+            return False
+
+      # if flag
+      elif param.startswith('--'):
+        if not 'args' in test_info:
+          return False
+        if not param in test_info['args']:
+          return False
+
+      # not dimension parameter/flag/mixin
+      else:
+        if not param in test_info:
+          return False
+        if not test_info[param] == params_dict[param]:
+          return False
+    return True
+  def error_msg(self, msg):
+    """Prints an error message.
+
+    In addition to a catered error message, also prints
+    out where the user can find more help. Then, program exits.
+    """
+    self.print_line(msg +  (' If you need more information, ' +
+                  'please run with -h or --help to see valid commands.'))
+    sys.exit(1)
+
+  def find_bots_that_run_test(self, test, bots):
+    matching_bots = []
+    for bot in bots:
+      bot_info = bots[bot]
+      tests = self.flatten_tests_for_bot(bot_info)
+      for test_info in tests:
+        test_name = ""
+        if 'name' in test_info:
+          test_name = test_info['name']
+        elif 'test' in test_info:
+          test_name = test_info['test']
+        if not test_name == test:
+          continue
+        matching_bots.append(bot)
+    return matching_bots
+
+  def find_tests_with_params(self, tests, params_dict):
+    matching_tests = []
+    for test_name in tests:
+      test_info = tests[test_name]
+      if not self.does_test_match(test_info, params_dict):
+        continue
+      if not test_name in matching_tests:
+        matching_tests.append(test_name)
+    return matching_tests
+
+  def flatten_waterfalls_for_query(self, waterfalls):
+    bots = {}
+    for waterfall in waterfalls:
+      waterfall_json = json.loads(self.generate_waterfall_json(waterfall))
+      for bot in waterfall_json:
+        bot_info = waterfall_json[bot]
+        if 'AAAAA' not in bot:
+          bots[bot] = bot_info
+    return bots
+
+  def flatten_tests_for_bot(self, bot_info):
+    """Returns a list of flattened tests.
+
+    Returns a list of tests not grouped by test category
+    for a specific bot.
+    """
+    TEST_CATS = self.get_test_generator_map().keys()
+    tests = []
+    for test_cat in TEST_CATS:
+      if not test_cat in bot_info:
+        continue
+      test_cat_tests = bot_info[test_cat]
+      tests = tests + test_cat_tests
+    return tests
+
+  def flatten_tests_for_query(self, test_suites):
+    """Returns a flattened dictionary of tests.
+
+    Returns a dictionary of tests associate with their
+    configuration, not grouped by their test suite.
+    """
+    tests = {}
+    for test_suite in test_suites.itervalues():
+      for test in test_suite:
+        test_info = test_suite[test]
+        test_name = test
+        if 'name' in test_info:
+          test_name = test_info['name']
+        tests[test_name] = test_info
+    return tests
+
+  def parse_query_filter_params(self, params):
+    """Parses the filter parameters.
+
+    Creates a dictionary from the parameters provided
+    to filter the bot array.
+    """
+    params_dict = {}
+    for p in params:
+      # flag
+      if p.startswith("--"):
+        params_dict[p] = True
+      else:
+        pair = p.split(":")
+        if len(pair) != 2:
+          self.error_msg('Invalid command.')
+        # regular parameters
+        if pair[1].lower() == "true":
+          params_dict[pair[0]] = True
+        elif pair[1].lower() == "false":
+          params_dict[pair[0]] = False
+        else:
+          params_dict[pair[0]] = pair[1]
+    return params_dict
+
+  def get_test_suites_dict(self, bots):
+    """Returns a dictionary of bots and their tests.
+
+    Returns a dictionary of bots and a list of their associated tests.
+    """
+    test_suite_dict = dict()
+    for bot in bots:
+      bot_info = bots[bot]
+      tests = self.flatten_tests_for_bot(bot_info)
+      test_suite_dict[bot] = tests
+    return test_suite_dict
+
+  def output_query_result(self, result, json_file=None):
+    """Outputs the result of the query.
+
+    If a json file parameter name is provided, then
+    the result is output into the json file. If not,
+    then the result is printed to the console.
+    """
+    output = json.dumps(result, indent=2)
+    if json_file:
+      self.write_file(json_file, output)
+    else:
+      self.print_line(output)
+    return
+
+  def query(self, args):
+    """Queries tests or bots.
+
+    Depending on the arguments provided, outputs a json of
+    tests or bots matching the appropriate optional parameters provided.
+    """
+    # split up query statement
+    query = args.query.split('/')
+    self.load_configuration_files()
+    self.resolve_configuration_files()
+
+    # flatten bots json
+    tests = self.test_suites
+    bots = self.flatten_waterfalls_for_query(self.waterfalls)
+
+    cmd_class = query[0]
+
+    # For queries starting with 'bots'
+    if cmd_class == "bots":
+      if len(query) == 1:
+        return self.output_query_result(bots, args.json)
+      # query with specific parameters
+      elif len(query) == 2:
+        if query[1] == 'tests':
+          test_suites_dict = self.get_test_suites_dict(bots)
+          return self.output_query_result(test_suites_dict, args.json)
+        else:
+          self.error_msg("This query should be in the format: bots/tests.")
+
+      else:
+        self.error_msg("This query should have 0 or 1 '/', found %s instead."
+                        % str(len(query)-1))
+
+    # For queries starting with 'bot'
+    elif cmd_class == "bot":
+      if not len(query) == 2 and not len(query) == 3:
+        self.error_msg("Command should have 1 or 2 '/', found %s instead."
+                        % str(len(query)-1))
+      bot_id = query[1]
+      if not bot_id in bots:
+        self.error_msg("No bot named '" + bot_id + "' found.")
+      bot_info = bots[bot_id]
+      if len(query) == 2:
+        return self.output_query_result(bot_info, args.json)
+      if not query[2] == 'tests':
+        self.error_msg("The query should be in the format:" +
+                       "bot/<bot-name>/tests.")
+
+      bot_tests = self.flatten_tests_for_bot(bot_info)
+      return self.output_query_result(bot_tests, args.json)
+
+    # For queries starting with 'tests'
+    elif cmd_class == "tests":
+      if not len(query) == 1 and not len(query) == 2:
+        self.error_msg("The query should have 0 or 1 '/', found %s instead."
+                        % str(len(query)-1))
+      flattened_tests = self.flatten_tests_for_query(tests)
+      if len(query) == 1:
+        return self.output_query_result(flattened_tests, args.json)
+
+      # create params dict
+      params = query[1].split('&')
+      params_dict = self.parse_query_filter_params(params)
+      matching_bots = self.find_tests_with_params(flattened_tests, params_dict)
+      return self.output_query_result(matching_bots)
+
+    # For queries starting with 'test'
+    elif cmd_class == "test":
+      if not len(query) == 2 and not len(query) == 3:
+        self.error_msg("The query should have 1 or 2 '/', found %s instead."
+                        % str(len(query)-1))
+      test_id = query[1]
+      if len(query) == 2:
+        flattened_tests = self.flatten_tests_for_query(tests)
+        for test in flattened_tests:
+          if test == test_id:
+            return self.output_query_result(flattened_tests[test], args.json)
+        self.error_msg("There is no test named %s." % test_id)
+      if not query[2] == 'bots':
+        self.error_msg("The query should be in the format: " +
+                       "test/<test-name>/bots")
+      bots_for_test = self.find_bots_that_run_test(test_id, bots)
+      return self.output_query_result(bots_for_test)
+
+    else:
+      self.error_msg("Your command did not match any valid commands." +
+                     "Try starting with 'bots', 'bot', 'tests', or 'test'.")
 
   def main(self, argv): # pragma: no cover
     self.parse_args(argv)
     if self.args.check:
       self.check_consistency(verbose=self.args.verbose)
+    elif self.args.query:
+      self.query(self.args)
     else:
       self.generate_waterfalls()
     return 0
