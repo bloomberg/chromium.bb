@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -1010,6 +1011,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool migrate_sessions_on_network_change_v2,
     bool migrate_sessions_early_v2,
     bool retry_on_alternate_network_before_handshake,
+    base::TimeDelta idle_session_migration_period,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
     int max_migrations_to_non_default_network_on_path_degrading,
@@ -1068,6 +1070,7 @@ QuicStreamFactory::QuicStreamFactory(
           retry_on_alternate_network_before_handshake &&
           migrate_sessions_on_network_change_v2_),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
+      idle_session_migration_period_(idle_session_migration_period),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(
           max_migrations_to_non_default_network_on_write_error),
@@ -1082,6 +1085,7 @@ QuicStreamFactory::QuicStreamFactory(
           headers_include_h2_stream_dependency),
       need_to_check_persisted_supports_quic_(true),
       num_push_streams_created_(0),
+      tick_clock_(nullptr),
       task_runner_(nullptr),
       ssl_config_service_(ssl_config_service),
       enable_socket_recv_optimization_(enable_socket_recv_optimization),
@@ -1302,6 +1306,9 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   // in the constructor after WebRequestActionWithThreadsTest.* tests are fixed.
   if (!task_runner_)
     task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
+
+  if (!tick_clock_)
+    tick_clock_ = base::DefaultTickClock::GetInstance();
 
   ignore_result(
       StartCertVerifyJob(session_key.server_id(), cert_verify_flags, net_log));
@@ -1819,15 +1826,16 @@ int QuicStreamFactory::CreateSession(
       clock_, transport_security_state_, ssl_config_service_,
       std::move(server_info), key.session_key(), require_confirmation,
       migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
-      default_network_, max_time_on_non_default_network_,
+      default_network_, idle_session_migration_period_,
+      max_time_on_non_default_network_,
       max_migrations_to_non_default_network_on_write_error_,
       max_migrations_to_non_default_network_on_path_degrading_,
       yield_after_packets_, yield_after_duration_, go_away_on_path_degrading_,
       headers_include_h2_stream_dependency_, cert_verify_flags, config,
       &crypto_config_, network_connection_.connection_description(),
       dns_resolution_start_time, dns_resolution_end_time, &push_promise_index_,
-      push_delegate_, task_runner_, std::move(socket_performance_watcher),
-      net_log.net_log());
+      push_delegate_, tick_clock_, task_runner_,
+      std::move(socket_performance_watcher), net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
   writer->set_delegate(*session);

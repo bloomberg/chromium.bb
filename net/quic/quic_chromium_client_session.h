@@ -107,6 +107,7 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_TIMEOUT,
   MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED,
   MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
+  MIGRATION_STATUS_IDLE_MIGRATION_TIMEOUT,
   MIGRATION_STATUS_MAX
 };
 
@@ -375,6 +376,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
       NetworkChangeNotifier::NetworkHandle default_network,
+      base::TimeDelta idle_migration_period,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
       int max_migrations_to_non_default_network_on_path_degrading,
@@ -390,6 +392,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       base::TimeTicks dns_resolution_end_time,
       quic::QuicClientPushPromiseIndex* push_promise_index,
       ServerPushDelegate* push_delegate,
+      const base::TickClock* tick_clock,
       base::SequencedTaskRunner* task_runner,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log);
@@ -710,9 +713,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void TryMigrateBackToDefaultNetwork(base::TimeDelta timeout);
   void MaybeRetryMigrateBackToDefaultNetwork();
 
-  // Returns true if session is migratable. If not, a task is posted to
-  // close the session later if |close_session_if_not_migratable| is true.
-  bool IsSessionMigratable(bool close_session_if_not_migratable);
+  // Returns true and post a task to close the connection if session's
+  // idle time exceeds the |idle_migration_period_|.
+  bool CheckIdleTimeExceedsIdleMigrationPeriod();
+
   // Close non-migratable streams in both directions by sending reset stream to
   // peer when connection migration attempts to migrate to the alternate
   // network.
@@ -745,6 +749,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool require_confirmation_;
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
+  // Session can be migrated if its idle time is within this period.
+  base::TimeDelta idle_migration_period_;
   base::TimeDelta max_time_on_non_default_network_;
   // Maximum allowed number of migrations to non-default network triggered by
   // packet write error per default network.
@@ -761,6 +767,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   base::TimeTicks most_recent_path_degrading_timestamp_;
   base::TimeTicks most_recent_network_disconnected_timestamp_;
+  const base::TickClock* tick_clock_;
+  base::TimeTicks most_recent_stream_close_time_;
 
   int most_recent_write_error_;
   base::TimeTicks most_recent_write_error_timestamp_;

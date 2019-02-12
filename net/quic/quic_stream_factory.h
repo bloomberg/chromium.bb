@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
@@ -78,6 +79,9 @@ class QuicStreamFactoryPeer;
 
 // When a connection is idle for 30 seconds it will be closed.
 const int kIdleConnectionTimeoutSeconds = 30;
+
+// Sessions can migrate if they have been idle for less than this period.
+const int kDefaultIdleSessionMigrationPeriodSeconds = 30;
 
 // The default maximum time QUIC session could be on non-default network before
 // migrate back to default network.
@@ -251,6 +255,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
       bool retry_on_alternate_network_before_handshake,
+      base::TimeDelta idle_session_migration_period,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
       int max_migrations_to_non_default_network_on_path_degrading,
@@ -551,6 +556,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Otherwise, always set to NetworkChangeNotifier::kInvalidNetwork.
   NetworkChangeNotifier::NetworkHandle default_network_;
 
+  // Sessions can migrate if they have been idle for less than this period.
+  const base::TimeDelta idle_session_migration_period_;
+
   // Maximum time sessions could use on non-default network before try to
   // migrate back to default network.
   const base::TimeDelta max_time_on_non_default_network_;
@@ -594,6 +602,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int num_push_streams_created_;
 
   quic::QuicClientPushPromiseIndex push_promise_index_;
+
+  const base::TickClock* tick_clock_;
 
   base::SequencedTaskRunner* task_runner_;
 
