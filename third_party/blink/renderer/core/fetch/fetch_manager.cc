@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/place_holder_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/fetch/response_init.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -71,94 +72,6 @@ bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
     return false;
   return !value.IsEmpty();
 }
-
-// A BytesConsumer implementation that acts as a place holder. The actual
-// BytesConsumer can be provided later by calling "Update()".
-class PlaceHolderBytesConsumer final : public BytesConsumer {
- public:
-  // BytesConsumer implementation
-  Result BeginRead(const char** buffer, size_t* available) override {
-    if (!underlying_) {
-      *buffer = nullptr;
-      *available = 0;
-      return is_cancelled_ ? Result::kDone : Result::kShouldWait;
-    }
-    return underlying_->BeginRead(buffer, available);
-  }
-  Result EndRead(size_t read_size) override {
-    DCHECK(underlying_);
-    return underlying_->EndRead(read_size);
-  }
-  scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
-      BlobSizePolicy policy) override {
-    return underlying_ ? underlying_->DrainAsBlobDataHandle(policy) : nullptr;
-  }
-  scoped_refptr<EncodedFormData> DrainAsFormData() override {
-    return underlying_ ? underlying_->DrainAsFormData() : nullptr;
-  }
-  void SetClient(BytesConsumer::Client* client) override {
-    DCHECK(!client_);
-    DCHECK(client);
-    if (underlying_)
-      underlying_->SetClient(client);
-    else
-      client_ = client;
-  }
-  void ClearClient() override {
-    if (underlying_)
-      underlying_->ClearClient();
-    else
-      client_ = nullptr;
-  }
-  void Cancel() override {
-    if (underlying_) {
-      underlying_->Cancel();
-    } else {
-      is_cancelled_ = true;
-      client_ = nullptr;
-    }
-  }
-  PublicState GetPublicState() const override {
-    return underlying_ ? underlying_->GetPublicState()
-                       : is_cancelled_ ? PublicState::kClosed
-                                       : PublicState::kReadableOrWaiting;
-  }
-  Error GetError() const override {
-    DCHECK(underlying_);
-    // We must not be in the errored state until we get updated.
-    return underlying_->GetError();
-  }
-  String DebugName() const override { return "PlaceHolderBytesConsumer"; }
-
-  // This function can be called at most once.
-  void Update(BytesConsumer* consumer) {
-    DCHECK(!underlying_);
-    if (is_cancelled_) {
-      // This consumer has already been closed.
-      return;
-    }
-
-    underlying_ = consumer;
-    if (client_) {
-      Client* client = client_;
-      client_ = nullptr;
-      underlying_->SetClient(client);
-      if (GetPublicState() != PublicState::kReadableOrWaiting)
-        client->OnStateChange();
-    }
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(underlying_);
-    visitor->Trace(client_);
-    BytesConsumer::Trace(visitor);
-  }
-
- private:
-  TraceWrapperMember<BytesConsumer> underlying_;
-  Member<Client> client_;
-  bool is_cancelled_ = false;
-};
 
 }  // namespace
 

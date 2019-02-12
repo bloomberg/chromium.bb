@@ -32,6 +32,8 @@ blink_core_sources("fetch") {
     "headers.h",
     "multipart_parser.cc",
     "multipart_parser.h",
+    "place_holder_bytes_consumer.cc",
+    "place_holder_bytes_consumer.h",
     "readable_stream_bytes_consumer.cc",
     "readable_stream_bytes_consumer.h",
     "request.cc",
