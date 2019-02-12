@@ -37,3 +37,23 @@ testcase.openSingleVideoOnDrive = function() {
         return waitForFunctionResult('isPlaying', 'world.ogv', false);
       });
 };
+
+/**
+ * Test that if player can sccussfully search subtitle with same url.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.openVideoWithSubtitle = async function() {
+  await openSingleVideo('local', 'downloads', ENTRIES.world, ENTRIES.subtitle);
+  await waitForFunctionResult('isPlaying', 'world.ogv', true);
+  await waitForFunctionResult('hasSubtitle', 'world.ogv', true);
+};
+
+/**
+ * Test that if player will ignore unrelated subtitle.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.openVideoWithoutSubtitle = async function() {
+  await openSingleVideo('local', 'downloads', ENTRIES.video, ENTRIES.subtitle);
+  await waitForFunctionResult('isPlaying', 'video_long.ogv', true);
+  await waitForFunctionResult('hasSubtitle', 'video_long.ogv', false);
+};

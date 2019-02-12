@@ -312,12 +312,48 @@ NativeControlsVideoPlayer.prototype.reloadCurrentVideo_ = function(
  * @param {function()=} opt_callback Completion callback.
  * @private
  */
-NativeControlsVideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
+NativeControlsVideoPlayer.prototype.loadVideo_ =
+    async function(video, opt_callback) {
   document.title = video.name;
+  const videoUrl = video.toURL();
 
-  this.videoElement_.src = video.toURL();
   if (opt_callback) {
     this.videoElement_.addEventListener(
         'loadedmetadata', opt_callback, {once: true});
+  }
+
+  this.videoElement_.src = videoUrl;
+
+  const subtitleUrl = await this.searchSubtitle_(videoUrl);
+  if (subtitleUrl) {
+    const track =
+        assertInstanceof(document.createElement('track'), HTMLTrackElement);
+    track.src = subtitleUrl;
+    track.kind = 'subtitles';
+    track.default = true;
+    this.videoElement_.appendChild(track);
+  }
+};
+
+/**
+ * Search subtitle file corresponding to a video.
+ * @param {string} url a url of a video.
+ * @return {Promise} a Promise returns url of subtitle file, or an empty string.
+ */
+NativeControlsVideoPlayer.prototype.searchSubtitle_ = async function(url) {
+  const baseUrl = util.splitExtension(url)[0];
+  const resolveLocalFileSystemWithExtension = function(extension) {
+    return new Promise(
+        window.webkitResolveLocalFileSystemURL.bind(null, baseUrl + extension));
+  };
+
+  try {
+    const subtitle = await resolveLocalFileSystemWithExtension('.vtt');
+    return subtitle.toURL();
+  } catch (error) {
+    // TODO: figure out if there could be any error other than
+    // file not found or not accessible. If not, remove this log.
+    console.error(error);
+    return '';
   }
 };

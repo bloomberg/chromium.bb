@@ -509,6 +509,17 @@ var ENTRIES = {
     typeText: 'OGG video'
   }),
 
+  subtitle: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'video.vtt',
+    targetPath: 'world.vtt',
+    mimeType: 'text/vtt',
+    lastModifiedTime: 'Feb 7, 2019, 15:03 PM',
+    nameText: 'world.vtt',
+    sizeText: '46 bytes',
+    typeText: 'VTT text'
+  }),
+
   unsupported: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'random.bin',
