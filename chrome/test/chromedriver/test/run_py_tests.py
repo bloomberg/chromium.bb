@@ -85,6 +85,8 @@ _NEGATIVE_FILTER = [
     'ChromeDriverAndroidTest.testScreenOrientationAcrossMultipleTabs',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2777
+    'ChromeDriverTest.testActionsTouchStart',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
