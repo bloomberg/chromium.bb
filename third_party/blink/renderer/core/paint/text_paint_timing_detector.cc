@@ -185,8 +185,9 @@ void TextPaintTimingDetector::ReportSwapTime(
   awaiting_swap_promise_ = false;
 }
 
-void TextPaintTimingDetector::RecordText(const LayoutObject& object,
-                                         const PaintLayer& painting_layer) {
+void TextPaintTimingDetector::RecordText(
+    const LayoutObject& object,
+    const PropertyTreeState& current_paint_chunk_properties) {
   if (!is_recording_)
     return;
   Node* node = object.GetNode();
@@ -204,10 +205,12 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
   // the text's first invalidation.
 
   uint64_t rect_size = 0;
-  LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
-  if (!invalidated_rect.IsEmpty()) {
+  // Compared to object.FirstFragment().VisualRect(), this will include other
+  // fragments of the object.
+  LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
+  if (!visual_rect.IsEmpty()) {
     rect_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-        invalidated_rect, painting_layer);
+        visual_rect, current_paint_chunk_properties);
   }
 
   // When rect_size == 0, it either means the text size is 0 or the text is out

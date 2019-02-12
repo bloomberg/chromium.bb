@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -77,6 +78,11 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
     paint_info.context.DrawBidiText(
         font, text_run_paint_info,
         FloatPoint(RoundToInt(text_x), RoundToInt(text_y)));
+    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+      PaintTimingDetector::NotifyTextPaint(
+          layout_file_upload_control_, paint_info.context.GetPaintController()
+                                           .CurrentPaintChunkProperties());
+    }
   }
 
   // Paint the children.
