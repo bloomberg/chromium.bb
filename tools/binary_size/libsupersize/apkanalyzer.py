@@ -29,18 +29,10 @@ def _ParseJarInfoFile(file_name):
   return source_map
 
 
-def _LoadSourceMap(apk_name, output_directory):
-  apk_jar_info_name = apk_name + '.jar.info'
-  jar_info_path = os.path.join(
-      output_directory, 'size-info', apk_jar_info_name)
-  return _ParseJarInfoFile(jar_info_path)
-
-
-def _RunApkAnalyzer(apk_path, output_directory):
+def _RunApkAnalyzer(apk_path, mapping_path, output_directory):
   args = [path_util.GetApkAnalyzerPath(output_directory), 'dex', 'packages',
           apk_path]
-  mapping_path = apk_path + '.mapping'
-  if os.path.exists(mapping_path):
+  if mapping_path and os.path.exists(mapping_path):
     args.extend(['--proguard-mappings', mapping_path])
   output = subprocess.check_output(args)
   data = []
@@ -138,10 +130,13 @@ def UndoHierarchicalSizing(data):
   return nodes
 
 
-def CreateDexSymbols(apk_path, output_directory):
-  apk_name = os.path.basename(apk_path)
-  source_map = _LoadSourceMap(apk_name, output_directory)
-  nodes = UndoHierarchicalSizing(_RunApkAnalyzer(apk_path, output_directory))
+def CreateDexSymbols(apk_path, mapping_path, size_info_prefix,
+                     output_directory):
+  source_map = _ParseJarInfoFile(size_info_prefix + '.jar.info')
+
+  nodes = _RunApkAnalyzer(apk_path, mapping_path, output_directory)
+  nodes = UndoHierarchicalSizing(nodes)
+
   dex_expected_size = _ExpectedDexTotalSize(apk_path)
   total_node_size = sum(map(lambda x: x[2], nodes))
   # TODO(agrieve): Figure out why this log is triggering for
