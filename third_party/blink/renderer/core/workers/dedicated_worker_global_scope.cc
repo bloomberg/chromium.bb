@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
@@ -119,7 +119,8 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
       exception_state);
   if (exception_state.HadException())
     return;
-  ThreadDebugger* debugger = ThreadDebugger::From(script_state->GetIsolate());
+  WorkerThreadDebugger* debugger =
+      WorkerThreadDebugger::From(script_state->GetIsolate());
   transferable_message.sender_stack_trace_id =
       debugger->StoreCurrentStackTrace("postMessage");
   WorkerObjectProxy().PostMessageToWorkerObject(
