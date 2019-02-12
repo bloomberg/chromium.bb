@@ -236,6 +236,8 @@ void DWriteFontLookupTableBuilder::BuildFontUniqueNameTable() {
     font_unique_name_table.clear_name_map();
   }
 
+  unsigned num_font_files = font_unique_name_table.fonts_size();
+
   // Sort names for using binary search on this proto in FontTableMatcher.
   std::sort(font_unique_name_table.mutable_name_map()->begin(),
             font_unique_name_table.mutable_name_map()->end(),
@@ -257,12 +259,19 @@ void DWriteFontLookupTableBuilder::BuildFontUniqueNameTable() {
     return;
   }
 
-  UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.Proxy.LookupTableBuildTime",
-                      base::TimeTicks::Now() - time_ticks);
+  base::TimeDelta duration = base::TimeTicks::Now() - time_ticks;
+  UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.Proxy.LookupTableBuildTime", duration);
   // The size is usually tens of kilobytes, ~50kb on a standard Windows 10
   // installation, 1MB should be a more than high enough upper limit.
   UMA_HISTOGRAM_CUSTOM_COUNTS("DirectWrite.Fonts.Proxy.LookupTableSize",
                               font_table_memory_.mapping.size() / 1024, 1, 1000,
+                              50);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("DirectWrite.Fonts.Proxy.NumFontFiles",
+                              num_font_files, 1, 5000, 50);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("DirectWrite.Fonts.Proxy.IndexingSpeed",
+                              num_font_files / duration.InSecondsF(), 1, 10000,
                               50);
 }
 
