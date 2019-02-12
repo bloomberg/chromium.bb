@@ -1642,9 +1642,11 @@ int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
   if (!IsCachingEnabled())
     return 0;
 
-  // OpenSSL passes a reference to |session|.
-  ssl_client_session_cache_->Insert(GetSessionCacheKey(), session);
-  return 0;
+  // OpenSSL optionally passes ownership of |session|. Returning one signals
+  // that this function has claimed it.
+  ssl_client_session_cache_->Insert(GetSessionCacheKey(),
+                                    bssl::UniquePtr<SSL_SESSION>(session));
+  return 1;
 }
 
 void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {

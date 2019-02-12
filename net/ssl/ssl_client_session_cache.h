@@ -60,7 +60,8 @@ class NET_EXPORT SSLClientSessionCache : public CertDatabase::Observer {
   // Inserts |session| into the cache at |cache_key|. If there is an existing
   // one, it is released. Every |expiration_check_count| calls, the cache is
   // checked for stale entries.
-  void Insert(const std::string& cache_key, SSL_SESSION* session);
+  void Insert(const std::string& cache_key,
+              bssl::UniquePtr<SSL_SESSION> session);
 
   // Removes all entries from the cache.
   void Flush();

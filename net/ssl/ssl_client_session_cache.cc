@@ -70,11 +70,11 @@ void SSLClientSessionCache::ResetLookupCount(const std::string& cache_key) {
 }
 
 void SSLClientSessionCache::Insert(const std::string& cache_key,
-                                   SSL_SESSION* session) {
+                                   bssl::UniquePtr<SSL_SESSION> session) {
   auto iter = cache_.Get(cache_key);
   if (iter == cache_.end())
     iter = cache_.Put(cache_key, Entry());
-  iter->second.Push(bssl::UpRef(session));
+  iter->second.Push(std::move(session));
 }
 
 void SSLClientSessionCache::Flush() {
