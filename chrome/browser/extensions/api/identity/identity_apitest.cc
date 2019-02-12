@@ -421,8 +421,8 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     IdentityGetAuthTokenFunction::StartGaiaRequest(login_access_token);
   }
 
-  OAuth2MintTokenFlow* CreateMintTokenFlow() override {
-    return flow_.release();
+  std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow() override {
+    return std::move(flow_);
   }
 
  private:

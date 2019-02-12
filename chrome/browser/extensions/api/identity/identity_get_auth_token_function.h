@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 
+#include <memory>
+
 #include "base/callback_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
@@ -105,7 +107,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   // Caller owns the returned instance.
   // Exposed for testing.
-  virtual OAuth2MintTokenFlow* CreateMintTokenFlow();
+  virtual std::unique_ptr<OAuth2MintTokenFlow> CreateMintTokenFlow();
 
   // Pending request for an access token from the device account (via
   // DeviceOAuth2TokenService).
