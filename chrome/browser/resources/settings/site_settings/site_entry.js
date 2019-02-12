@@ -75,10 +75,6 @@ Polymer({
     }
   },
 
-  listeners: {
-    'focus': 'onFocus_',
-  },
-
   /** @private {?settings.LocalDataBrowserProxy} */
   localDataBrowserProxy_: null,
 
@@ -345,136 +341,17 @@ Polymer({
   },
 
   /**
-   * Opens the overflow menu at event target.
-   * @param {!{target: !Element}} e
+   * Fires a custom event when the menu button is clicked. Sends the details
+   * of the site entry item and where the menu should appear.
+   * @param {!Event} e
    * @private
    */
   showOverflowMenu_: function(e) {
-    this.$.menu.get().showAt(e.target);
-  },
-
-  /** @private */
-  onCloseDialog_: function(e) {
-    e.target.closest('cr-dialog').close();
-    this.$.menu.get().close();
-  },
-
-  /**
-   * Confirms the resetting of all content settings for an origin.
-   * @param {!Event} e
-   * @private
-   */
-  onConfirmResetSettings_: function(e) {
-    e.preventDefault();
-    this.$.confirmResetSettings.showModal();
-  },
-
-  /**
-   * Confirms the clearing of all storage data for an etld+1.
-   * @param {!Event} e
-   * @private
-   */
-  onConfirmClearData_: function(e) {
-    e.preventDefault();
-    this.$.confirmClearData.showModal();
-  },
-
-  /**
-   * Resets all permissions for all origins listed in |siteGroup.origins|.
-   * @param {!Event} e
-   * @private
-   */
-  onResetSettings_: function(e) {
-    const contentSettingsTypes = this.getCategoryList();
-    for (let i = 0; i < this.siteGroup.origins.length; ++i) {
-      const origin = this.siteGroup.origins[i].origin;
-      this.browserProxy.setOriginPermissions(
-          origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
-      if (contentSettingsTypes.includes(
-              settings.ContentSettingsTypes.PLUGINS)) {
-        this.browserProxy.clearFlashPref(origin);
-      }
-      this.siteGroup.origins[i].hasPermissionSettings = false;
-    }
-    // Create a new |siteGroup| to make an observable change.
-    const updatedSiteGroup = {
-      etldPlus1: this.siteGroup.etldPlus1,
-      numCookies: this.siteGroup.numCookies,
-      origins: []
-    };
-    for (let i = 0; i < this.siteGroup.origins.length; ++i) {
-      const updatedOrigin = Object.assign({}, this.siteGroup.origins[i]);
-      if (updatedOrigin.numCookies > 0 || updatedOrigin.usage > 0) {
-        updatedOrigin.hasPermissionSettings = false;
-        updatedSiteGroup.origins.push(updatedOrigin);
-      }
-    }
-    if (updatedSiteGroup.origins.length > 0) {
-      this.siteGroup = updatedSiteGroup;
-    } else if (this.siteGroup.numCookies > 0) {
-      // If there is no origin for this site group that has any data,
-      // but the ETLD+1 has cookies in use, create a origin placeholder
-      // for display purposes.
-      const originPlaceHolder = {
-        origin: 'http://' + this.siteGroup.etldPlus1 + '/',
-        engagement: 0,
-        usage: 0,
-        numCookies: this.siteGroup.numCookies,
-        hasPermissionSettings: false
-      };
-      updatedSiteGroup.origins.push(originPlaceHolder);
-      this.siteGroup = updatedSiteGroup;
-    } else {
-      this.fire('delete-current-entry', {
-        etldPlus1: this.siteGroup.etldPlus1,
-      });
-    }
-    this.fire('iron-resize');
-    this.onCloseDialog_(e);
-  },
-
-  /**
-   * Clear data and cookies for an etldPlus1.
-   * @param {!Event} e
-   * @private
-   */
-  onClearData_: function(e) {
-    // Clean up the SiteGroup.
-    this.browserProxy.clearEtldPlus1DataAndCookies(this.siteGroup.etldPlus1);
-    // Create a new |siteGroup| to make an observable change.
-    const updatedSiteGroup = {
-      etldPlus1: this.siteGroup.etldPlus1,
-      numCookies: 0,
-      origins: []
-    };
-    for (let i = 0; i < this.siteGroup.origins.length; ++i) {
-      const updatedOrigin = Object.assign({}, this.siteGroup.origins[i]);
-      if (updatedOrigin.hasPermissionSettings) {
-        updatedOrigin.numCookies = 0;
-        updatedOrigin.usage = 0;
-        updatedSiteGroup.origins.push(updatedOrigin);
-      }
-    }
-    if (updatedSiteGroup.origins.length > 0) {
-      this.siteGroup = updatedSiteGroup;
-    } else {
-      this.fire('delete-current-entry', {
-        etldPlus1: this.siteGroup.etldPlus1,
-      });
-    }
-    this.fire('iron-resize');
-    this.onCloseDialog_(e);
-  },
-
-  /**
-   * Formats the |label| string with |name|, using $<num> as markers.
-   * @param {string} label
-   * @param {string} name
-   * @return {string}
-   * @private
-   */
-  getFormatString_: function(label, name) {
-    return loadTimeData.substituteString(label, name);
+    this.fire('open-menu', {
+      target: Polymer.dom(e).localTarget,
+      index: this.listIndex,
+      item: this.siteGroup,
+    });
   },
 
   /**
@@ -501,13 +378,5 @@ Polymer({
       return 'first';
     }
     return '';
-  },
-
-  /**
-   * Focuses the first focusable button in this site-entry.
-   * @private
-   */
-  onFocus_: function() {
-    this.button_.focus();
   },
 });
