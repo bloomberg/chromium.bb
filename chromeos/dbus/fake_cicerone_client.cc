@@ -66,6 +66,10 @@ bool FakeCiceroneClient::IsLxdContainerCreatedSignalConnected() {
   return is_lxd_container_created_signal_connected_;
 }
 
+bool FakeCiceroneClient::IsLxdContainerDeletedSignalConnected() {
+  return is_lxd_container_deleted_signal_connected_;
+}
+
 bool FakeCiceroneClient::IsLxdContainerDownloadingSignalConnected() {
   return is_lxd_container_downloading_signal_connected_;
 }
@@ -171,6 +175,15 @@ void FakeCiceroneClient::CreateLxdContainer(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerCreated,
                                 base::Unretained(this), std::move(signal)));
+}
+
+void FakeCiceroneClient::DeleteLxdContainer(
+    const vm_tools::cicerone::DeleteLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::DeleteLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), delete_lxd_container_response_));
 }
 
 void FakeCiceroneClient::StartLxdContainer(

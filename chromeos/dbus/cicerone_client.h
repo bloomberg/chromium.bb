@@ -46,6 +46,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnLxdContainerCreated(
         const vm_tools::cicerone::LxdContainerCreatedSignal& signal) = 0;
 
+    // OnLxdContainerDeleted is signaled from Cicerone when the long running
+    // deletion of an Lxd container is complete.
+    virtual void OnLxdContainerDeleted(
+        const vm_tools::cicerone::LxdContainerDeletedSignal& signal) = 0;
+
     // OnLxdContainerDownloading is signaled from Cicerone giving download
     // progress on the container.
     virtual void OnLxdContainerDownloading(
@@ -102,6 +107,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   virtual bool IsLxdContainerCreatedSignalConnected() = 0;
+
+  // This should be true prior to calling DeleteLxdContainer.
+  virtual bool IsLxdContainerDeletedSignalConnected() = 0;
 
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
@@ -162,6 +170,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   virtual void CreateLxdContainer(
       const vm_tools::cicerone::CreateLxdContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::CreateLxdContainerResponse>
+          callback) = 0;
+
+  // Deletes an Lxd Container.
+  // |callback| is called to indicate deletion status.
+  // |Observer::OnLxdContainerDeleted| will be called on completion.
+  virtual void DeleteLxdContainer(
+      const vm_tools::cicerone::DeleteLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::DeleteLxdContainerResponse>
           callback) = 0;
 
   // Starts a new Lxd Container.
