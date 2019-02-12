@@ -6,9 +6,10 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
@@ -148,6 +149,15 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   void FlushOriginForTesting(const url::Origin& origin);
 
+  void AddNamespacesWaitingForClone(const std::string& namespace_id) {
+    namespaces_waiting_for_clone_call_.insert(namespace_id);
+  }
+
+  bool HasNamespacesWaitingForClone() const {
+    return !namespaces_waiting_for_clone_call_.empty();
+  }
+  void CloneAllNamespacesWaitingForClone();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
                            PurgeMemoryDoesNotCrashOrHang);
@@ -165,6 +175,10 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   bool waiting_on_clone_population_ = false;
   bool bind_waiting_on_clone_population_ = false;
   std::vector<base::OnceClosure> run_after_clone_population_;
+  // Namespaces that are waiting for the |Clone| call to be called on this
+  // namespace. If this namespace is destructed, then these namespaces are still
+  // waiting and should be unblocked.
+  base::flat_set<std::string> namespaces_waiting_for_clone_call_;
 
   bool populated_ = false;
   OriginAreas origin_areas_;

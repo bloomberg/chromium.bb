@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -187,9 +188,9 @@ void SessionStorageContextMojo::CloneSessionNamespace(
 
   std::unique_ptr<SessionStorageNamespaceImplMojo> namespace_impl =
       CreateSessionStorageNamespaceImplMojo(clone_namespace_id);
+  auto clone_from_ns = namespaces_.find(namespace_id_to_clone);
   switch (clone_type) {
     case CloneType::kImmediate: {
-      auto clone_from_ns = namespaces_.find(namespace_id_to_clone);
       // If the namespace doesn't exist or it's not populated yet, just create
       // an empty session storage.
       if (clone_from_ns == namespaces_.end() ||
@@ -200,7 +201,32 @@ void SessionStorageContextMojo::CloneSessionNamespace(
       return;
     }
     case CloneType::kWaitForCloneOnNamespace:
-      namespace_impl->SetWaitingForClonePopulation();
+      if (clone_from_ns != namespaces_.end()) {
+        // The namespace exists and is in-use, so wait until receiving a clone
+        // call on that mojo binding.
+        namespace_impl->SetWaitingForClonePopulation();
+        clone_from_ns->second->AddNamespacesWaitingForClone(clone_namespace_id);
+      } else if (base::ContainsKey(metadata_.namespace_origin_map(),
+                                   namespace_id_to_clone)) {
+        // The namespace exists on disk but is not in-use, so do the appropriate
+        // metadata operations to clone the namespace and set up the new object.
+        std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+        auto source_namespace_entry =
+            metadata_.GetOrCreateNamespaceEntry(namespace_id_to_clone);
+        auto namespace_entry =
+            metadata_.GetOrCreateNamespaceEntry(clone_namespace_id);
+        metadata_.RegisterShallowClonedNamespace(
+            source_namespace_entry, namespace_entry, &save_operations);
+        if (database_) {
+          database_->Write(
+              std::move(save_operations),
+              base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                             base::Unretained(this)));
+        }
+        namespace_impl->PopulateFromMetadata(database_.get(), namespace_entry);
+      }
+      // If there is no sign of a source namespace, just run with an empty
+      // namespace.
       break;
     default:
       NOTREACHED();
@@ -213,9 +239,14 @@ void SessionStorageContextMojo::CloneSessionNamespace(
 void SessionStorageContextMojo::DeleteSessionNamespace(
     const std::string& namespace_id,
     bool should_persist) {
+  auto namespace_it = namespaces_.find(namespace_id);
+  // If the namespace has pending clones, do the clone now before destroying it.
+  if (namespace_it->second->HasNamespacesWaitingForClone()) {
+    namespace_it->second->CloneAllNamespacesWaitingForClone();
+  }
   // The object hierarchy uses iterators bound to the metadata object, so make
   // sure to delete the object hierarchy first.
-  namespaces_.erase(namespace_id);
+  namespaces_.erase(namespace_it);
 
   if (!has_scavenged_ && should_persist)
     protected_namespaces_from_scavenge_.insert(namespace_id);
@@ -981,7 +1012,7 @@ void SessionStorageContextMojo::GetStatistics(size_t* total_cache_size,
 
 void SessionStorageContextMojo::LogDatabaseOpenResult(OpenResult result) {
   if (result != OpenResult::kSuccess) {
-    LOG(ERROR) << "Got error when openning: " << static_cast<int>(result);
+    LOG(ERROR) << "Got error when opening: " << static_cast<int>(result);
     UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.OpenError", result);
   }
   if (open_result_histogram_) {
