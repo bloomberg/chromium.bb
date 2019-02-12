@@ -136,11 +136,6 @@ class SigninManagerBase : public KeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Gives access to the SigninClient instance associated with this instance.
-  SigninClient* signin_client() const { return client_; }
-
-  ProfileOAuth2TokenService* token_service() const { return token_service_; }
-
   // Adds a callback that will be called when this instance is shut down.Not
   // intended for general usage, but rather for usage only by the Identity
   // Service implementation during the time period of conversion of Chrome to
@@ -151,6 +146,10 @@ class SigninManagerBase : public KeyedService {
   }
 
  protected:
+  SigninClient* signin_client() const { return client_; }
+
+  ProfileOAuth2TokenService* token_service() const { return token_service_; }
+
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
   }
