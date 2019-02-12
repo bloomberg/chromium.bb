@@ -46,6 +46,10 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #define NET_TRACE(level, s) VLOG(level) << s << __FUNCTION__ << "() "
 
 namespace net {
@@ -2398,7 +2402,23 @@ int64_t CountWriteBytes(base::span<const MockWrite> writes) {
 }
 
 #if defined(OS_ANDROID)
+bool CanGetTaggedBytes() {
+  // In Android P, /proc/net/xt_qtaguid/stats is no longer guaranteed to be
+  // present, and has been replaced with eBPF Traffic Monitoring in netd. See:
+  // https://source.android.com/devices/tech/datausage/ebpf-traffic-monitor
+  //
+  // To read traffic statistics from netd, apps should use the API
+  // NetworkStatsManager.queryDetailsForUidTag(). But this API does not provide
+  // statistics for local traffic, only mobile and WiFi traffic, so it would not
+  // work in tests that spin up a local server. So for now, GetTaggedBytes is
+  // only supported on Android releases older than P.
+  return base::android::BuildInfo::GetInstance()->sdk_int() <
+         base::android::SDK_VERSION_P;
+}
+
 uint64_t GetTaggedBytes(int32_t expected_tag) {
+  EXPECT_TRUE(CanGetTaggedBytes());
+
   // To determine how many bytes the system saw with a particular tag read
   // the /proc/net/xt_qtaguid/stats file which contains the kernel's
   // dump of all the UIDs and their tags sent and received bytes.

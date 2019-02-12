@@ -1311,6 +1311,11 @@ TEST_F(UDPSocketTest, ReadWithSocketOptimizationTruncation) {
 // works as expected.
 #if defined(OS_ANDROID)
 TEST_F(UDPSocketTest, Tag) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   UDPServerSocket server(nullptr, NetLogSource());
   ASSERT_THAT(server.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
   IPEndPoint server_address;

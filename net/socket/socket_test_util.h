@@ -1413,6 +1413,9 @@ int64_t CountReadBytes(base::span<const MockRead> reads);
 int64_t CountWriteBytes(base::span<const MockWrite> writes);
 
 #if defined(OS_ANDROID)
+// Returns whether the device supports calling GetTaggedBytes().
+bool CanGetTaggedBytes();
+
 // Query the system to find out how many bytes were received with tag
 // |expected_tag| for our UID.  Return the count of recieved bytes.
 uint64_t GetTaggedBytes(int32_t expected_tag);

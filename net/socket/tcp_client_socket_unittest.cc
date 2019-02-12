@@ -229,6 +229,11 @@ TEST(TCPClientSocketTest, MAYBE_TestSocketPerformanceWatcher) {
 // TCPClientSocket::Tag works as expected.
 #if defined(OS_ANDROID)
 TEST(TCPClientSocketTest, Tag) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
@@ -284,6 +289,11 @@ TEST(TCPClientSocketTest, Tag) {
 }
 
 TEST(TCPClientSocketTest, TagAfterConnect) {
+  if (!CanGetTaggedBytes()) {
+    DVLOG(0) << "Skipping test - GetTaggedBytes unsupported.";
+    return;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
