@@ -155,7 +155,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
   window_delegate->set_window(window);
   aura::SetWindowType(window, window_type);
   ApplyProperties(window, property_converter, *properties);
-  window->Init(ui::LAYER_TEXTURED);
+  window->Init(ui::LAYER_NOT_DRAWN);
 
   if (container_window) {
     // |bounds| are in local coordinates.
