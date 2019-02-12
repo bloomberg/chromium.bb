@@ -47,7 +47,7 @@ namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;
 
-};
+}  // namespace gles2
 
 class GLManager : private GpuControl {
  public:

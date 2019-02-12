@@ -1211,7 +1211,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, BasicStatePreservation) {
   glDeleteFramebuffers(1, &framebuffer_id_);
 
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
-};
+}
 
 // Verify that invocation of the extension does not modify the bound
 // texture state.

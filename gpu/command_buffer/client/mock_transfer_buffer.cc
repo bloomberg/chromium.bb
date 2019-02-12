@@ -48,7 +48,7 @@ bool MockTransferBuffer::Initialize(unsigned int starting_buffer_size,
   // Just check they match.
   return size_ == starting_buffer_size && result_size_ == result_size &&
          alignment_ == alignment && !initialize_fail_;
-};
+}
 
 int MockTransferBuffer::GetShmId() {
   return buffer_ids_[actual_buffer_index_];

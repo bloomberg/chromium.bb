@@ -534,7 +534,7 @@ class StubImage : public gl::GLImageStub {
       ++update_counter_;
     }
     return true;
-  };
+  }
 
   void ReleaseTexImage(unsigned target) override { bound_ = false; }
 
