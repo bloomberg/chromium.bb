@@ -82,45 +82,71 @@ struct GetStackImplementation {
   const char *name;
 };
 
-#if HAVE_DECL_BACKTRACE
-#define STACKTRACE_INL_HEADER "stacktrace_generic-inl.h"
-#define GST_SUFFIX generic
-#include "stacktrace_impl_setup-inl.h"
-#undef GST_SUFFIX
-#undef STACKTRACE_INL_HEADER
-#define HAVE_GST_generic
+// ppc and i386 implementations prefer arch-specific asm implementations.
+// arm's asm implementation is broken
+#if defined(__i386__) || defined(__x86_64__) || defined(__ppc__) || \
+    defined(__PPC__)
+#if !defined(NO_FRAME_POINTER)
+#define TCMALLOC_DONT_PREFER_LIBUNWIND
+#endif
 #endif
 
-#ifdef HAVE_UNWIND_BACKTRACE
-#define STACKTRACE_INL_HEADER "stacktrace_libgcc-inl.h"
-#define GST_SUFFIX libgcc
+#undef UNWIND_APPROACH_SET
+
+#if defined(TCMALLOC_ENABLE_INSTRUMENT_STACKTRACE)
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    !defined(UNWIND_APPROACH_SET)
+#define STACKTRACE_INL_HEADER "stacktrace_instrument-inl.h"
+#define GST_SUFFIX instrument
 #include "stacktrace_impl_setup-inl.h"
 #undef GST_SUFFIX
 #undef STACKTRACE_INL_HEADER
-#define HAVE_GST_libgcc
+#define HAVE_GST_instrument
+#if !defined(UNWIND_APPROACH_SET)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__instrument;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
 #endif
 
-// libunwind uses __thread so we check for both libunwind.h and
-// __thread support
-#if defined(HAVE_LIBUNWIND_H) && defined(HAVE_TLS)
-#define STACKTRACE_INL_HEADER "stacktrace_libunwind-inl.h"
-#define GST_SUFFIX libunwind
+// The Windows case -- probably cygwin and mingw will use one of the
+// x86-includes above, but if not, we can fall back to windows intrinsics.
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || \
+    defined(__MINGW32__)
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    !defined(UNWIND_APPROACH_SET)
+#define STACKTRACE_INL_HEADER "stacktrace_win32-inl.h"
+#define GST_SUFFIX win32
 #include "stacktrace_impl_setup-inl.h"
 #undef GST_SUFFIX
 #undef STACKTRACE_INL_HEADER
-#define HAVE_GST_libunwind
-#endif // HAVE_LIBUNWIND_H
+#define HAVE_GST_win32
+#if !defined(UNWIND_APPROACH_SET)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__win32;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
+#endif
 
 #if defined(__i386__) || defined(__x86_64__)
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    (!defined(UNWIND_APPROACH_SET) && defined(TCMALLOC_DONT_PREFER_LIBUNWIND))
 #define STACKTRACE_INL_HEADER "stacktrace_x86-inl.h"
 #define GST_SUFFIX x86
 #include "stacktrace_impl_setup-inl.h"
 #undef GST_SUFFIX
 #undef STACKTRACE_INL_HEADER
 #define HAVE_GST_x86
+#if !defined(UNWIND_APPROACH_SET) && defined(TCMALLOC_DONT_PREFER_LIBUNWIND)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__x86;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
 #endif // i386 || x86_64
 
 #if defined(__ppc__) || defined(__PPC__)
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    (!defined(UNWIND_APPROACH_SET) && defined(TCMALLOC_DONT_PREFER_LIBUNWIND))
 #if defined(__linux__)
 #define STACKTRACE_INL_HEADER "stacktrace_powerpc-linux-inl.h"
 #else
@@ -131,36 +157,80 @@ struct GetStackImplementation {
 #undef GST_SUFFIX
 #undef STACKTRACE_INL_HEADER
 #define HAVE_GST_ppc
+#if !defined(UNWIND_APPROACH_SET) && defined(TCMALLOC_DONT_PREFER_LIBUNWIND)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__ppc;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
+#endif
+
+// libunwind uses __thread so we check for both libunwind.h and
+// __thread support
+#if defined(HAVE_LIBUNWIND_H) && defined(HAVE_TLS)
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    !defined(UNWIND_APPROACH_SET)
+#define STACKTRACE_INL_HEADER "stacktrace_libunwind-inl.h"
+#define GST_SUFFIX libunwind
+#include "stacktrace_impl_setup-inl.h"
+#undef GST_SUFFIX
+#undef STACKTRACE_INL_HEADER
+#define HAVE_GST_libunwind
+#if !defined(UNWIND_APPROACH_SET)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__libunwind;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
+#endif  // HAVE_LIBUNWIND_H
+
+#ifdef HAVE_UNWIND_BACKTRACE
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    !defined(UNWIND_APPROACH_SET)
+#define STACKTRACE_INL_HEADER "stacktrace_libgcc-inl.h"
+#define GST_SUFFIX libgcc
+#include "stacktrace_impl_setup-inl.h"
+#undef GST_SUFFIX
+#undef STACKTRACE_INL_HEADER
+#define HAVE_GST_libgcc
+#if !defined(UNWIND_APPROACH_SET)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__libgcc;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
+#endif
+
+#if HAVE_DECL_BACKTRACE
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    !defined(UNWIND_APPROACH_SET)
+#define STACKTRACE_INL_HEADER "stacktrace_generic-inl.h"
+#define GST_SUFFIX generic
+#include "stacktrace_impl_setup-inl.h"
+#undef GST_SUFFIX
+#undef STACKTRACE_INL_HEADER
+#define HAVE_GST_generic
+#if !defined(UNWIND_APPROACH_SET)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__generic;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
 #endif
 
 #if defined(__arm__)
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME) || \
+    !defined(UNWIND_APPROACH_SET)
 #define STACKTRACE_INL_HEADER "stacktrace_arm-inl.h"
 #define GST_SUFFIX arm
 #include "stacktrace_impl_setup-inl.h"
 #undef GST_SUFFIX
 #undef STACKTRACE_INL_HEADER
 #define HAVE_GST_arm
+#if !defined(UNWIND_APPROACH_SET)
+#define UNWIND_APPROACH_SET
+static GetStackImplementation* get_stack_impl = &impl__arm;
+#endif
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME || !UNWIND_APPROACH_SET
 #endif
 
-#ifdef TCMALLOC_ENABLE_INSTRUMENT_STACKTRACE
-#define STACKTRACE_INL_HEADER "stacktrace_instrument-inl.h"
-#define GST_SUFFIX instrument
-#include "stacktrace_impl_setup-inl.h"
-#undef GST_SUFFIX
-#undef STACKTRACE_INL_HEADER
-#define HAVE_GST_instrument
-#endif
-
-// The Windows case -- probably cygwin and mingw will use one of the
-// x86-includes above, but if not, we can fall back to windows intrinsics.
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__) || defined(__MINGW32__)
-#define STACKTRACE_INL_HEADER "stacktrace_win32-inl.h"
-#define GST_SUFFIX win32
-#include "stacktrace_impl_setup-inl.h"
-#undef GST_SUFFIX
-#undef STACKTRACE_INL_HEADER
-#define HAVE_GST_win32
-#endif
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME)
 
 static GetStackImplementation *all_impls[] = {
 #ifdef HAVE_GST_libgcc
@@ -190,33 +260,10 @@ static GetStackImplementation *all_impls[] = {
   NULL
 };
 
-// ppc and i386 implementations prefer arch-specific asm implementations.
-// arm's asm implementation is broken
-#if defined(__i386__) || defined(__x86_64__) || defined(__ppc__) || defined(__PPC__)
-#if !defined(NO_FRAME_POINTER)
-#define TCMALLOC_DONT_PREFER_LIBUNWIND
-#endif
-#endif
-
 static bool get_stack_impl_inited;
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME
 
-#if defined(HAVE_GST_instrument)
-static GetStackImplementation *get_stack_impl = &impl__instrument;
-#elif defined(HAVE_GST_win32)
-static GetStackImplementation *get_stack_impl = &impl__win32;
-#elif defined(HAVE_GST_x86) && defined(TCMALLOC_DONT_PREFER_LIBUNWIND)
-static GetStackImplementation *get_stack_impl = &impl__x86;
-#elif defined(HAVE_GST_ppc) && defined(TCMALLOC_DONT_PREFER_LIBUNWIND)
-static GetStackImplementation *get_stack_impl = &impl__ppc;
-#elif defined(HAVE_GST_libunwind)
-static GetStackImplementation *get_stack_impl = &impl__libunwind;
-#elif defined(HAVE_GST_libgcc)
-static GetStackImplementation *get_stack_impl = &impl__libgcc;
-#elif defined(HAVE_GST_generic)
-static GetStackImplementation *get_stack_impl = &impl__generic;
-#elif defined(HAVE_GST_arm)
-static GetStackImplementation *get_stack_impl = &impl__arm;
-#elif 0
+#if 0
 // This is for the benefit of code analysis tools that may have
 // trouble with the computed #include above.
 # include "stacktrace_x86-inl.h"
@@ -226,7 +273,7 @@ static GetStackImplementation *get_stack_impl = &impl__arm;
 # include "stacktrace_win32-inl.h"
 # include "stacktrace_arm-inl.h"
 # include "stacktrace_instrument-inl.h"
-#else
+#elif !defined(UNWIND_APPROACH_SET)
 #error Cannot calculate stack trace: will need to write for your environment
 #endif
 
@@ -306,6 +353,8 @@ PERFTOOLS_DLL_DECL int GetStackTraceWithContext(void** result, int max_depth,
                         result, max_depth, skip_count, uc));
 }
 
+#if defined(TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME)
+
 static void init_default_stack_impl_inner(void) {
   if (get_stack_impl_inited) {
     return;
@@ -338,3 +387,9 @@ static void init_default_stack_impl(void) {
 }
 
 REGISTER_MODULE_INITIALIZER(stacktrace_init_default_stack_impl, init_default_stack_impl());
+
+#else
+
+static void init_default_stack_impl_inner(void) {}
+
+#endif  // TCMALLOC_SELECT_UNWIND_METHOD_AT_RUNTIME
