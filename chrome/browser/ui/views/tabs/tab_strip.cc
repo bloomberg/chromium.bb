@@ -66,6 +66,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/mouse_watcher_view_host.h"
@@ -460,6 +461,8 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   if (was_single_tab_mode != SingleTabMode())
     SingleTabModeChanged();
 
+  UpdateAccessibleTabIndices();
+
   for (TabStripObserver& observer : observers_)
     observer.OnTabAdded(model_index);
 
@@ -509,6 +512,8 @@ void TabStrip::MoveTab(int from_model_index,
     new_tab_button_->SetVisible(false);
   }
   SwapLayoutIfNecessary();
+
+  UpdateAccessibleTabIndices();
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabMoved(from_model_index, to_model_index);
@@ -601,6 +606,8 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
   }
 
   SwapLayoutIfNecessary();
+
+  UpdateAccessibleTabIndices();
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabRemoved(model_index);
@@ -1794,6 +1801,12 @@ void TabStrip::SetTabVisibility() {
     for (Tab* tab : closing_tab.second)
       tab->SetVisible(ShouldTabBeVisible(tab));
   }
+}
+
+void TabStrip::UpdateAccessibleTabIndices() {
+  const int num_tabs = tab_count();
+  for (int i = 0; i < num_tabs; ++i)
+    tab_at(i)->GetViewAccessibility().OverridePosInSet(i + 1, num_tabs);
 }
 
 void TabStrip::DragActiveTabStacked(const std::vector<int>& initial_positions,

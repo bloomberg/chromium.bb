@@ -30,6 +30,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/ax_event_observer.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter.h"
@@ -221,6 +222,20 @@ class TabStripTest : public ChromeViewsTestBase,
     tab_strip_->StoppedDraggingTab(tab, &is_first_tab);
   }
 
+  // Makes sure that all tabs have the correct AX indices.
+  void VerifyTabIndices() {
+    for (int i = 0; i < tab_strip_->tab_count(); ++i) {
+      ui::AXNodeData ax_node_data;
+      tab_strip_->tab_at(i)->GetViewAccessibility().GetAccessibleNodeData(
+          &ax_node_data);
+      EXPECT_EQ(i + 1, ax_node_data.GetIntAttribute(
+                           ax::mojom::IntAttribute::kPosInSet));
+      EXPECT_EQ(
+          tab_strip_->tab_count(),
+          ax_node_data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize));
+    }
+  }
+
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
@@ -258,6 +273,22 @@ TEST_P(TabStripTest, AccessibilityEvents) {
   tab_strip_->RemoveTabAt(nullptr, 1, true);
   EXPECT_EQ(2, observer.add_count());
   EXPECT_EQ(1, observer.remove_count());
+}
+
+TEST_P(TabStripTest, AccessibilityData) {
+  // When adding tabs, indexes should be set.
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), true);
+  VerifyTabIndices();
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  VerifyTabIndices();
+
+  tab_strip_->RemoveTabAt(nullptr, 1, false);
+  VerifyTabIndices();
+
+  tab_strip_->MoveTab(1, 0, TabRendererData());
+  VerifyTabIndices();
 }
 
 TEST_P(TabStripTest, IsValidModelIndex) {
