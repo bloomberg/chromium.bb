@@ -71,7 +71,7 @@ class WatcherCallback {
     return errors_;
   }
 
-  int callback_count() const { return callback_count_; };
+  int callback_count() const { return callback_count_; }
 
  private:
   void OnRegistrationUpdated(
