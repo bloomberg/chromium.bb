@@ -782,6 +782,12 @@ void ReportShortcutModifications(ShortcutParserAPI* shortcut_parser) {
   if (!shortcut_parser)
     return;
 
+  // TODO(proberge): Temporarily allowing syncing to avoid crashes in debug
+  // mode. This isn't catastrophic since the cleanup tool doesn't have a UI and
+  // the system report is collected at the end of the process.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync;
+
   std::vector<int> keys_of_paths_to_explore = {
       base::DIR_USER_DESKTOP,      base::DIR_COMMON_DESKTOP,
       base::DIR_USER_QUICK_LAUNCH, base::DIR_START_MENU,
@@ -897,13 +903,6 @@ void SystemReportComponent::CreateFullSystemReport() {
 
   // Don't collect a system report if logs won't be uploaded.
   if (!logging_service->uploads_enabled()) {
-    // TODO(proberge): Remove this by EOQ4 2018.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDumpRawLogsSwitch)) {
-      ReportInstalledExtensions(json_parser_, &extension_file_logger);
-      ReportShortcutModifications(shortcut_parser_);
-      created_report_ = true;
-    }
-
     return;
   }
 

@@ -39,6 +39,9 @@ const char kDumpRawLogsSwitch[] = "dump-raw-logs";
 // don't try again.
 const char kElevatedSwitch[] = "elevated";
 
+// Limit the size of files the scanning engine is allowed to open.
+const char kFileSizeLimitSwitch[] = "max-file-size";
+
 // Force a logs upload failure to help test the logs upload retry.
 const char kForceLogsUploadFailureSwitch[] = "force-logs-upload-failure";
 
@@ -114,12 +117,6 @@ const char kQuarantineDirSwitch[] = "quarantine-dir";
 // only.
 const char kRemoveScanOnlyUwS[] = "remove-scan-only-uws";
 
-// Enable reporting modifications to the Chrome Lnk files.
-const char kReportChromeLnkChangesSwitch[] = "report-chrome-lnk-changes";
-
-// Enable reporting of force-installed Chrome extensions.
-const char kReportExtensionsSwitch[] = "report-extensions";
-
 // Mojo pipe token generated in the broker process and passed to the sandbox
 // process to bind with the EngineCommands IPC interface.
 const char kSandboxMojoPipeTokenSwitch[] = "sandbox-mojo-pipe-token";
@@ -138,6 +135,9 @@ const char kScanLocationsSwitch[] = "scan-locations";
 // WARNING: this switch is used by internal test systems. Be careful when making
 // changes.
 const char kScanningTimeoutMinutesSwitch[] = "scanning-timeout";
+
+// Set a path to save logs in while testing.
+const char kTestLoggingPathSwitch[] = "test-logging-path";
 
 // Set a test logging URL, where logs will be uploaded.
 const char kTestLoggingURLSwitch[] = "test-logging-url";
