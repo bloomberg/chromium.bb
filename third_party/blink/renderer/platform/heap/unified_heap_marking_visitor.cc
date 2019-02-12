@@ -32,7 +32,7 @@ UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,
 
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     const TraceWrapperV8Reference<v8::Value>& object) {
-  if (!ThreadState::IsAnyIncrementalMarking())
+  if (object.IsEmpty() || !ThreadState::IsAnyIncrementalMarking())
     return;
 
   ThreadState* thread_state = ThreadState::Current();
