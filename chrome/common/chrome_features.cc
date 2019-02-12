@@ -238,7 +238,7 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
 // Show the number of open incognito windows besides incognito icon on the
 // toolbar.
 const base::Feature kEnableIncognitoWindowCounter{
-    "EnableIncognitoWindowCounter", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableIncognitoWindowCounter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_CHROMEOS)
 // Enables event-based status reporting for child accounts in Chrome OS.
