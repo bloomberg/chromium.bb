@@ -605,18 +605,25 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     }
   }
 
-  DCHECK(current_.clip->IsAncestorOf(*target_clip));
-
   struct PendingClip {
     const ClipPaintPropertyNode* clip;
     CcEffectType type;
   };
   Vector<PendingClip> pending_clips;
-  for (; target_clip != current_.clip;
+  for (; target_clip && target_clip != current_.clip;
        target_clip = SafeUnalias(target_clip->Parent())) {
-    DCHECK(target_clip);
     if (auto type = NeedsSyntheticEffect(*target_clip))
       pending_clips.emplace_back(PendingClip{target_clip, *type});
+  }
+
+  if (!target_clip) {
+    // This means that current_.clip is not an ancestor of the target clip.
+    // which happens in pre-CompositeAfterPaint due to some clip-escaping
+    // corner cases that are very difficult to fix in legacy architecture.
+    // In CompositeAfterPaint this should never happen.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+      NOTREACHED();
+    return delegated_blend;
   }
 
   for (size_t i = pending_clips.size(); i--;) {
