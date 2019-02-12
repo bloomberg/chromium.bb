@@ -136,7 +136,7 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     re << "selectionrangeend:" << selection_range.end();
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(rs.str()));
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(re.str()));
-  };
+  }
 
  private:
   LinuxInputMethodContextDelegate* delegate_;
@@ -152,14 +152,14 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
 class LinuxInputMethodContextFactoryForTesting
     : public LinuxInputMethodContextFactory {
  public:
-  LinuxInputMethodContextFactoryForTesting(){};
+  LinuxInputMethodContextFactoryForTesting() {}
 
   std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override {
     return std::unique_ptr<ui::LinuxInputMethodContext>(
         new LinuxInputMethodContextForTesting(delegate));
-  };
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LinuxInputMethodContextFactoryForTesting);
@@ -199,7 +199,7 @@ class InputMethodDelegateForTesting : public internal::InputMethodDelegate {
 class TextInputClientForTesting : public DummyTextInputClient {
  public:
   explicit TextInputClientForTesting(TextInputType text_input_type)
-      : DummyTextInputClient(text_input_type){};
+      : DummyTextInputClient(text_input_type) {}
 
   base::string16 composition_text;
   gfx::Range text_range;
