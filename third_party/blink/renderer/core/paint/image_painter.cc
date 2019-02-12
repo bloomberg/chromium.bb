@@ -199,6 +199,9 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     placeholder_image->SetIconAndTextScaleFactor(
         layout_image_.GetFrame()->PageZoomFactor());
     image = std::move(placeholder_image);
+
+    // Report layout related image policy violation.
+    layout_image_.ReportImagePolicyViolation();
   }
 
   context.DrawImage(

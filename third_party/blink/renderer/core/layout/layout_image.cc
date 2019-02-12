@@ -247,6 +247,8 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
     return;
 
   // Check for oversized-images policy.
+  // TODO(loonybear): Support oversized-images policy on other image types
+  // in addition to HTMLImageElement (crbug.com/930281).
   if (IsHTMLImageElement(GetNode()) && image_resource_->CachedImage()) {
     is_oversized_image_ = CheckForOversizedImagesPolicy(
         GetDocument(), image_resource_->CachedImage(), this);
@@ -466,12 +468,27 @@ bool LayoutImage::IsImagePolicyViolated() const {
          ToHTMLImageElement(GetNode())->IsImagePolicyViolated();
 }
 
+void LayoutImage::ReportImagePolicyViolation() const {
+  if (is_oversized_image_) {
+    auto state = GetDocument().GetFeatureEnabledState(
+        mojom::FeaturePolicyFeature::kOversizedImages);
+    GetDocument().ReportFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kOversizedImages,
+        state == FeatureEnabledState::kReportOnly
+            ? mojom::FeaturePolicyDisposition::kReport
+            : mojom::FeaturePolicyDisposition::kEnforce);
+  }
+  // TODO(loonybear): move unsized-media violation here.
+}
+
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
 
+  // Check for oversized-images policy.
+  // TODO(loonybear): Support oversized-images policy on other image types
+  // in addition to HTMLImageElement.
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    // Check for oversized-images policy.
     if (image_resource_ && image_resource_->CachedImage()) {
       is_oversized_image_ = CheckForOversizedImagesPolicy(
           GetDocument(), image_resource_->CachedImage(), this);
