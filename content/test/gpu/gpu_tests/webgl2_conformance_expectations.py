@@ -88,6 +88,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
+    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
+        bug=928987)
+    self.Fail('conformance2/extensions/ext-float-blend.html',
+        bug=930993)
 
     # Nvidia bugs fixed in latest driver
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -113,6 +117,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'no_passthrough'], bug=3033) # angle bug ID
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html',
         ['win'], bug=1465) # anglebug.com/1465
+    self.Fail('conformance/textures/misc/texture-active-bind.html',
+        ['win'], bug=931006)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
@@ -548,8 +554,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    # self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
+    #     ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
@@ -838,14 +844,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'textureprojgrad.html',
         ['mac', 'intel'], bug=905004)
 
-    self.Fail('conformance2/textures/image_data/' +
-        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['mac', ('intel', 0x0a2e)], bug=665197)
-    self.Fail('conformance2/textures/image_data/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['mac', ('intel', 0x0a2e)], bug=665197)
-    self.Fail('conformance2/textures/image_data/' +
-        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
+    self.Fail('conformance2/textures/*/' +
+        'tex-2d-*_integer-unsigned_byte.html',
         ['mac', ('intel', 0x0a2e)], bug=665197)
 
     self.Fail('conformance2/textures/misc/' +
