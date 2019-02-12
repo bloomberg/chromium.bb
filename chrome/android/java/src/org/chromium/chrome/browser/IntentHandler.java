@@ -141,6 +141,13 @@ public class IntentHandler {
             "com.android.chrome.invoked_from_shortcut";
 
     /**
+     * An extra to indicate that the intent was triggered by the launch new incognito tab feature.
+     * See {@link org.chromium.chrome.browser.incognito.IncognitoTabLauncher}.
+     */
+    public static final String EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB =
+            "org.chromium.chrome.browser.incognito.invoked_from_launch_new_incognito_tab";
+
+    /**
      * Intent extra used to identify the sending application.
      */
     private static final String TRUSTED_APPLICATION_CODE_EXTRA = "trusted_application_code_extra";
@@ -1322,5 +1329,25 @@ public class IntentHandler {
      */
     public static @Nullable @TabLaunchType Integer getTabLaunchType(Intent intent) {
         return IntentUtils.safeGetSerializableExtra(intent, EXTRA_TAB_LAUNCH_TYPE);
+    }
+
+    /**
+     * Creates an Intent that will launch a ChromeTabbedActivity on the new tab page. The Intent
+     * will be trusted and therefore able to launch Incognito tabs.
+     * @param context A {@link Context} to access class and package information.
+     * @param incognito Whether the tab should be opened in Incognito.
+     * @return The {@link Intent} to launch.
+     */
+    public static Intent createTrustedOpenNewTabIntent(Context context, boolean incognito) {
+        Intent newIntent = new Intent();
+        newIntent.setAction(Intent.ACTION_VIEW);
+        newIntent.setData(Uri.parse(UrlConstants.NTP_URL));
+        newIntent.setClass(context, ChromeLauncherActivity.class);
+        newIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        newIntent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
+        IntentHandler.addTrustedIntentExtras(newIntent);
+
+        return newIntent;
     }
 }
