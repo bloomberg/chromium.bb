@@ -28,6 +28,9 @@ class FuchsiaFontManagerTest : public testing::Test {
 };
 
 // Verify that SkTypeface objects are cached.
+// TODO(https://crbug.com/931333): Currently font provider returns the same
+// font for sans and serif when used with the default font config. Update this
+// test to use the fonts //third_party/test_fonts.
 TEST_F(FuchsiaFontManagerTest, Caching) {
   sk_sp<SkTypeface> sans(
       font_manager_->matchFamilyStyle("sans", SkFontStyle()));
