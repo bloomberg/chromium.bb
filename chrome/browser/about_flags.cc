@@ -1476,10 +1476,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCaptivePortalRandomUrl,
      flag_descriptions::kEnableCaptivePortalRandomUrlDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalRandomUrl)},
-    {"disable-explicit-dma-fences",
-     flag_descriptions::kDisableExplicitDmaFencesName,
-     flag_descriptions::kDisableExplicitDmaFencesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kDisableExplicitDmaFences)},
+    {"enable-explicit-dma-fences",
+     flag_descriptions::kEnableExplicitDmaFencesName,
+     flag_descriptions::kEnableExplicitDmaFencesDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableExplicitDmaFences)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_PLUGINS)
     {"allow-nacl-socket-api", flag_descriptions::kAllowNaclSocketApiName,
