@@ -22,9 +22,13 @@ public class TaskTraits {
     // Keep in sync with base::TaskTraitsExtensionStorage::kStorageSize
     public static final int EXTENSION_STORAGE_SIZE = 8;
 
-    // A convenience variable explicitly specifying the default priority
+    // Convenience variables explicitly specifying common priorities
+    public static final TaskTraits USER_BLOCKING =
+            new TaskTraits().taskPriority(TaskPriority.USER_BLOCKING);
     public static final TaskTraits USER_VISIBLE =
             new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE);
+    public static final TaskTraits BEST_EFFORT =
+            new TaskTraits().taskPriority(TaskPriority.BEST_EFFORT);
 
     public TaskTraits() {}
 
