@@ -99,10 +99,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   SetEnabled(!IsIncognito() || IsIncognitoCounterActive());
 #endif  // !defined(OS_CHROMEOS)
 
-  // The incognito window counter uses left-aligned text.
-  if (IsIncognitoCounterActive())
-    SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
   // Set initial text and tooltip. UpdateIcon() needs to be called from the
   // outside as GetThemeProvider() is not available until the button is added to
   // ToolbarView's hierarchy.
@@ -131,13 +127,13 @@ void AvatarToolbarButton::UpdateText() {
     SetTextColor(STATE_DISABLED, *color);
   }
 
-  if (IsIncognitoCounterActive()) {
-    const int incognito_window_count =
+  if (IsIncognito()) {
+    int incognito_window_count =
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
-    if (incognito_window_count > 1)
-      text = base::NumberToString16(incognito_window_count);
-  } else if (IsIncognito()) {
-    text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_INCOGNITO);
+    if (!IsIncognitoCounterActive())
+      incognito_window_count = 1;
+    text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
+                                            incognito_window_count);
   } else if (sync_state == SyncState::kError) {
     color =
         AdjustHighlightColorForContrast(gfx::kGoogleRed300, gfx::kGoogleRed600,
@@ -394,21 +390,6 @@ void AvatarToolbarButton::SetInsets() {
   // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
   // is hard to read for user avatars, so we need to set corresponding insets.
   gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui() ? 0 : -2);
-
-  // When the incognito counter is displaying, we need to add additional insets
-  // to the icon side because the existing ones don't look balanced.
-  if (IsIncognitoCounterActive()) {
-    const int incognito_window_count =
-        BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
-    if (incognito_window_count > 1) {
-      const int highlight_radius =
-          ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-              views::EMPHASIS_MAXIMUM, size());
-      // These additional insets have been chosen to look reasonably well and
-      // scale with the (touchable or not) UI.
-      layout_insets.set_left(layout_insets.left() + highlight_radius / 4);
-    }
-  }
 
   SetLayoutInsetDelta(layout_insets);
 }
