@@ -947,7 +947,7 @@
   },
   {
     "name": "enable-blink-heap-unified-garbage-collection",
-    // "owners": [ "your-team" ],
+    "owners": [ "mlippautz" ],
     "expiry_milestone": 76
   },
   {
