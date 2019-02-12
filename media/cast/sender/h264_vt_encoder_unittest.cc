@@ -269,7 +269,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
 scoped_refptr<media::VideoFrame> H264VideoToolboxEncoderTest::frame_;
 FrameSenderConfig H264VideoToolboxEncoderTest::video_sender_config_;
 
-// Failed on mac_chromium_rel_ng trybot. http://crbug.com/627260
+// Failed on mac-rel trybot. http://crbug.com/627260
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
   scoped_refptr<MetadataRecorder> metadata_recorder(new MetadataRecorder());
   VideoEncoder::FrameEncodedCallback cb = base::Bind(
@@ -299,7 +299,7 @@ TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-// Failed on mac_chromium_rel_ng trybot. http://crbug.com/627260
+// Failed on mac-rel trybot. http://crbug.com/627260
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFramesAreDecodable) {
   VideoDecoderConfig config(
       kCodecH264, H264PROFILE_MAIN, frame_->format(), VideoColorSpace(),

@@ -19,16 +19,16 @@ of the configuration. Some examples:
   Android, using the *debug* configuration.
 * *android-kitkat-arm-rel* builds and runs tests for Chromium for Android,
   using the *release* configuration on a kitkat device.
-* *win7_chromium_rel_ng* builds and runs tests for Chromium on Windows, using
+* *win7-rel* builds and runs tests for Chromium on Windows, using
   the release configuration on a Windows 7 device. *ng* stands for next
   generation, but this has no meaning as the previous generation was already
   phased out.
 
 Green boxes refer to builds that passed. Red boxes refer to builds that failed.
 Some failed builds get automatically retried by the CQ. In this example,
-*linux_chromium_rel_ng* and *mac_chromium_rel_ng* were automatically retried
-[hence the two **X**s], but *win7_chromium_rel_ng* was not. The **X** on the
-left is the first build, and the **X** on the right is the second build.
+*linux-rel* and *mac-rel* were automatically retried [hence the two **X**s], but
+*win7-rel* was not. The **X** on the left is the first build, and the **X** on the right
+is the second build.
 
 Each of these boxes is a link that provides more information about the build
 failure.

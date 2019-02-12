@@ -128,7 +128,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # It seems that we should be able to set start_x to 2 * inset (one to
     # account for the inner div having left=1 and one to avoid sampling the
     # aa edge). For reasons not fully understood this is insufficent on
-    # several bots (N9, 6P, mac_chromium_rel_ng).
+    # several bots (N9, 6P, mac-rel).
     start_x = 10
     start_y = inset
     outer_size = 256 - inset

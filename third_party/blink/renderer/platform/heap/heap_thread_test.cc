@@ -129,7 +129,7 @@ class MemberSameThreadCheckTester : public AlternatingThreadTester {
 };
 
 #if DCHECK_IS_ON()
-// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
 #if !defined(OS_MACOSX)
 TEST(HeapDeathTest, MemberSameThreadCheck) {
@@ -152,7 +152,7 @@ class PersistentSameThreadCheckTester : public AlternatingThreadTester {
 };
 
 #if DCHECK_IS_ON()
-// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
 #if !defined(OS_MACOSX)
 TEST(HeapDeathTest, PersistentSameThreadCheck) {
@@ -192,7 +192,7 @@ class MarkingSameThreadCheckTester : public AlternatingThreadTester {
 };
 
 #if DCHECK_IS_ON()
-// TODO(keishi) This test is flaky on mac_chromium_rel_ng bot.
+// TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
 #if !defined(OS_MACOSX)
 TEST(HeapDeathTest, MarkingSameThreadCheck) {
