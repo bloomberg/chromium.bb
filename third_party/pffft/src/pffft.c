@@ -82,13 +82,6 @@
 #  define VLA_ARRAY_ON_STACK(type__, varname__, size__) type__ *varname__ = (type__*)_alloca(size__ * sizeof(type__))
 #endif
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-#ifndef M_SQRT2
-#define M_SQRT2 1.41421356237309504880
-#endif
 
 /* 
    vector support macros: the rest of the code is independant of
