@@ -193,7 +193,7 @@ class AppCacheRequestHandlerTest
 
     bool IsHandledProtocol(const std::string& scheme) const override {
       return scheme == "http";
-    };
+    }
 
     bool IsSafeRedirectTarget(const GURL& location) const override {
       return false;
