@@ -524,7 +524,8 @@ void ArcAuthService::OnAccountRemoved(
   // notifications. See crbug.com/904978.
 }
 
-void ArcAuthService::OnAccountRemovedWithInfo(const AccountInfo& account_info) {
+void ArcAuthService::OnExtendedAccountInfoRemoved(
+    const AccountInfo& account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!chromeos::switches::IsAccountManagerEnabled())

@@ -102,7 +102,7 @@ class ArcAuthService : public KeyedService,
       const chromeos::AccountManager::AccountKey& account_key) override;
 
   // IdentityManager::Observer:
-  void OnAccountRemovedWithInfo(const AccountInfo& account_info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& account_info) override;
 
   // ArcSessionManager::Observer:
   void OnArcInitialStart() override;

@@ -66,7 +66,7 @@ class AvatarToolbarButton : public ToolbarButton,
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;

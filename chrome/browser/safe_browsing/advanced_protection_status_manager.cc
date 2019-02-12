@@ -113,7 +113,7 @@ void AdvancedProtectionStatusManager::OnAccountUpdated(
   }
 }
 
-void AdvancedProtectionStatusManager::OnAccountRemovedWithInfo(
+void AdvancedProtectionStatusManager::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
   if (profile_->IsOffTheRecord())
     return;

@@ -34,7 +34,7 @@ void PasswordStoreSigninNotifierImpl::OnPrimaryAccountCleared(
 }
 
 // IdentityManager::Observer implementations.
-void PasswordStoreSigninNotifierImpl::OnAccountRemovedWithInfo(
+void PasswordStoreSigninNotifierImpl::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
   // Only reacts to content area (non-primary) Gaia account sign-out event.
   if (info.account_id !=

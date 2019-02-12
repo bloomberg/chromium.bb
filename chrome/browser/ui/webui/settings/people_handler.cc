@@ -467,7 +467,7 @@ void PeopleHandler::OnAccountUpdated(const AccountInfo& info) {
   FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 
-void PeopleHandler::OnAccountRemovedWithInfo(const AccountInfo& info) {
+void PeopleHandler::OnExtendedAccountInfoRemoved(const AccountInfo& info) {
   FireWebUIListener("stored-accounts-updated", GetStoredAccountsList());
 }
 

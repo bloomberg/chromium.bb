@@ -395,7 +395,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     account_from_account_updated_callback_ = info;
   }
 
-  void OnAccountRemovedWithInfo(const AccountInfo& info) override {
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override {
     was_called_account_removed_with_info_callback_ = true;
     account_from_account_removed_with_info_callback_ = info;
   }
