@@ -63,6 +63,7 @@ class AssistantDetailsViewBinder
         final ImageView mImageView;
         final TextView mTitleView;
         final TextView mSubtextView;
+        final TextView mTotalPriceView;
 
         public ViewHolder(Context context, View detailsView) {
             mDefaultImage = (GradientDrawable) context.getResources().getDrawable(
@@ -70,6 +71,7 @@ class AssistantDetailsViewBinder
             mImageView = detailsView.findViewById(R.id.details_image);
             mTitleView = detailsView.findViewById(R.id.details_title);
             mSubtextView = detailsView.findViewById(R.id.details_text);
+            mTotalPriceView = detailsView.findViewById(R.id.total_price);
         }
     }
 
@@ -112,6 +114,7 @@ class AssistantDetailsViewBinder
         String detailsText = makeDetailsText(details);
         viewHolder.mTitleView.setText(details.getTitle());
         viewHolder.mSubtextView.setText(detailsText);
+        viewHolder.mTotalPriceView.setText(details.getPrice());
 
         if (viewHolder.mImageView.getDrawable() == null) {
             // Set default image if no image was set before.
