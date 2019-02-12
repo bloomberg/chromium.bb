@@ -2647,10 +2647,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CARD_UNMASK_INPUT_HINT" desc="Hint text for an input field containing the user's credit card CVC (card verification code).">
         CVC
       </message>
-      <message name="IDS_CARD_UNMASK_MONTH_HINT" desc="Hint text for an input field containing a credit card expiration month in two digit format.">
+      <message name="IDS_AUTOFILL_EXPIRATION_DATE_MONTH_HINT" desc="Hint text for an input field containing a credit card expiration month in two digit format.">
         MM
       </message>
-      <message name="IDS_CARD_UNMASK_YEAR_HINT" desc="Hint text for an input field containing a credit card expiration year in two digit format.">
+      <message name="IDS_AUTOFILL_EXPIRATION_DATE_YEAR_HINT" desc="Hint text for an input field containing a credit card expiration year in two digit format.">
         YY
       </message>
 

@@ -2829,6 +2829,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="17" label="fp05cc03e1"/>
 </enum>
 
+<enum name="AutofillExpirationDateFixFlowPromptEvent">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Closed without user interaction"/>
+</enum>
+
 <enum name="AutofillFieldPredictionQuality">
   <int value="0" label="True Positive"/>
   <int value="1" label="True Negative (Ambiguous)"/>

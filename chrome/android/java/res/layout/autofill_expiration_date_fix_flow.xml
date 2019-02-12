@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/AlertDialogContent"
+    android:minHeight="36dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:layout_marginBottom="32dp"
+    android:paddingBottom="16dp"
+    android:layout_marginTop="6dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+
+    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
+    <EditText
+        tools:ignore="Autofill,LabelFor"
+        android:id="@+id/cc_month_edit"
+        android:hint="@string/autofill_expiration_date_month_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLength="2"
+        android:imeOptions="actionDone"
+        android:inputType="number"/>
+
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="@string/autofill_expiration_date_separator"/>
+
+    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
+    <EditText
+        tools:ignore="Autofill,LabelFor"
+        android:id="@+id/cc_year_edit"
+        android:hint="@string/autofill_expiration_date_year_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:imeOptions="actionDone"
+        android:maxLength="2"
+        android:inputType="number"/>
+
+    <View
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_width="0dp"/>
+
+    <ImageView
+        android:id="@+id/cc_name_tooltip_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:src="@drawable/btn_info"
+        android:layout_gravity="center"
+        android:contentDescription="@string/learn_more" />
+
+<!-- TODO(crbug.com/926316) Confirm the placement with UX and add a error text -->
+
+</LinearLayout>
+

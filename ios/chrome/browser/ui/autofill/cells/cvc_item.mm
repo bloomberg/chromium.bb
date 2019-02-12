@@ -145,8 +145,8 @@ const CGFloat kDateTextFieldWidth = 40;
     [_dateContainerView addSubview:_monthInput];
 
     _dateSeparator = [[UILabel alloc] init];
-    _dateSeparator.text = l10n_util::GetNSString(
-        IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR);
+    _dateSeparator.text =
+        l10n_util::GetNSString(IDS_AUTOFILL_EXPIRATION_DATE_SEPARATOR);
     _dateSeparator.translatesAutoresizingMaskIntoConstraints = NO;
     [_dateContainerView addSubview:_dateSeparator];
 

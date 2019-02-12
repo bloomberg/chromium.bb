@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
@@ -133,6 +134,15 @@ void TestAutofillClient::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const base::string16&)> callback) {
   credit_card_name_fix_flow_bubble_was_shown_ = true;
   std::move(callback).Run(base::string16(base::ASCIIToUTF16("Gaia Name")));
+}
+
+void TestAutofillClient::ConfirmExpirationDateFixFlow(
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  credit_card_name_fix_flow_bubble_was_shown_ = true;
+  std::move(callback).Run(
+      base::string16(base::ASCIIToUTF16("03")),
+      base::string16(base::ASCIIToUTF16(test::NextYear().c_str())));
 }
 #endif  // defined(OS_ANDROID)
 

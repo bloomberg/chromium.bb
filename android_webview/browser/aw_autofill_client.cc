@@ -162,6 +162,12 @@ void AwAutofillClient::ConfirmAccountNameFixFlow(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ConfirmExpirationDateFixFlow(
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,

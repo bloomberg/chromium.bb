@@ -245,7 +245,8 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
   DCHECK(show_prompt);
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-          /*upload=*/false, /*should_request_name_from_user=*/false, card,
+          /*upload=*/false, /*should_request_name_from_user=*/false,
+          /*should_request_expiration_date_from_user=*/false, card,
           std::make_unique<base::DictionaryValue>(),
           /*upload_save_card_callback=*/UploadSaveCardPromptCallback(),
           /*local_save_card_callback=*/std::move(callback), GetPrefs(),
@@ -262,7 +263,8 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
   DCHECK(show_prompt);
   auto save_card_info_bar_delegate_mobile =
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
-          /*upload=*/true, /*should_request_name_from_user=*/false, card,
+          /*upload=*/true, /*should_request_name_from_user=*/false,
+          /*should_request_expiration_date_from_user=*/false, card,
           std::move(legal_message),
           /*upload_save_card_callback=*/std::move(callback),
           /*local_save_card_callback=*/LocalSaveCardPromptCallback(),

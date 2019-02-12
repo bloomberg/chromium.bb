@@ -49,7 +49,8 @@ base::string16 CardNameFixFlowViewDelegateMobile::GetInferredCardHolderName()
 }
 
 base::string16 CardNameFixFlowViewDelegateMobile::GetSaveButtonLabel() const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_NAME_FIX_FLOW_PROMPT_SAVE_CARD);
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_FIX_FLOW_PROMPT_SAVE_CARD_LABEL);
 }
 
 void CardNameFixFlowViewDelegateMobile::Accept(const base::string16& name) {

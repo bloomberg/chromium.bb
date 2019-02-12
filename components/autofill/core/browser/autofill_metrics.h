@@ -602,7 +602,18 @@ class AutofillMetrics {
     CARDHOLDER_NAME_FIX_FLOW_PROMPT_DISMISSED,
     // The prompt was closed without user interaction.
     CARDHOLDER_NAME_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION,
-    NUM_FIXFLOW_PROMPT_EVENTS,
+    NUM_CARDHOLDER_NAME_FIXFLOW_PROMPT_EVENTS,
+  };
+
+  // Expiration date fix flow prompt metrics.
+  enum class ExpirationDateFixFlowPromptEvent {
+    // The prompt was accepted by user.
+    EXPIRATION_DATE_FIX_FLOW_PROMPT_ACCEPTED = 0,
+    // The prompt was dismissed by user.
+    EXPIRATION_DATE_FIX_FLOW_PROMPT_DISMISSED,
+    // The prompt was closed without user interaction.
+    EXPIRATION_DATE_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION,
+    kMaxValue = EXPIRATION_DATE_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION,
   };
 
   // Events related to the Unmask Credit Card Prompt.
@@ -873,6 +884,7 @@ class AutofillMetrics {
       InfoBarMetric metric,
       bool is_uploading,
       bool is_requesting_cardholder_name,
+      bool is_requesting_expiration_date,
       int previous_save_credit_card_prompt_user_decision);
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
   static void LogSaveCardRequestExpirationDateReasonMetric(
@@ -963,6 +975,13 @@ class AutofillMetrics {
   // Logs |event| to cardholder name fix flow prompt events histogram.
   static void LogCardholderNameFixFlowPromptEvent(
       CardholderNameFixFlowPromptEvent event);
+
+  // Logs |event| to expiration date fix flow prompt events histogram.
+  static void LogExpirationDateFixFlowPromptEvent(
+      ExpirationDateFixFlowPromptEvent event);
+
+  // Logs the count of expiration date fix flow prompts shown histogram.
+  static void LogExpirationDateFixFlowPromptShown();
 
   // Logs the time elapsed between the unmask prompt being shown and it
   // being closed.
