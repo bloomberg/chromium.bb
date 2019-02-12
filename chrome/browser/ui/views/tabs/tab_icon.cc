@@ -88,11 +88,6 @@ TabIcon::TabIcon()
                                  this) {
   set_can_process_events_within_subtree(false);
 
-  if (UseNewLoadingAnimation()) {
-    SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kNewLoadingAnimationStrokeWidthDp)));
-  }
-
   // The minimum size to avoid clipping the attention indicator.
   const int preferred_width =
       gfx::kFaviconSize + kAttentionIndicatorRadius + GetInsets().width();
@@ -254,11 +249,8 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
   const ui::ThemeProvider* tp = GetThemeProvider();
   base::Optional<SkScalar> stroke_width;
-  if (UseNewLoadingAnimation()) {
-    // The new loading animation paints just outside the favicon area.
-    bounds.Inset(-gfx::Insets(kNewLoadingAnimationStrokeWidthDp));
+  if (UseNewLoadingAnimation())
     stroke_width = kNewLoadingAnimationStrokeWidthDp;
-  }
 
   if (network_state_ == TabNetworkState::kWaiting) {
     gfx::PaintThrobberWaiting(
@@ -308,11 +300,16 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
   }
 
   std::unique_ptr<gfx::ScopedCanvas> scoped_canvas;
+  bool use_scale_filter = false;
 
   if (ShowingLoadingAnimation() || favicon_fade_in_animation_.is_animating()) {
     scoped_canvas = std::make_unique<gfx::ScopedCanvas>(canvas);
-
-    const float kInitialFaviconDiameterDp = gfx::kFaviconSize - 4;
+    use_scale_filter = true;
+    // The favicon is initially inset with the width of the loading-animation
+    // stroke + an additional dp to create some visual separation.
+    const float kInitialFaviconInsetDp = 1 + kNewLoadingAnimationStrokeWidthDp;
+    const float kInitialFaviconDiameterDp =
+        gfx::kFaviconSize - 2 * kInitialFaviconInsetDp;
     // This a full outset circle of the favicon square. The animation ends with
     // the entire favicon shown.
     const float kFinalFaviconDiameterDp = sqrt(2) * gfx::kFaviconSize;
@@ -328,10 +325,21 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
     gfx::PointF center = gfx::RectF(bounds).CenterPoint();
     path.addCircle(center.x(), center.y(), diameter / 2);
     canvas->ClipPath(path, true);
+    // This scales and offsets painting so that the drawn favicon is downscaled
+    // to fit in the cropping area.
+    const float offset =
+        (gfx::kFaviconSize -
+         std::min(diameter, SkFloatToScalar(gfx::kFaviconSize))) /
+        2;
+    const float scale = std::min(diameter, SkFloatToScalar(gfx::kFaviconSize)) /
+                        gfx::kFaviconSize;
+    canvas->Translate(gfx::Vector2d(offset, offset));
+    canvas->Scale(scale, scale);
   }
 
   canvas->DrawImageInt(icon, 0, 0, bounds.width(), bounds.height(), bounds.x(),
-                       bounds.y(), bounds.width(), bounds.height(), false);
+                       bounds.y(), bounds.width(), bounds.height(),
+                       use_scale_filter);
 }
 
 bool TabIcon::HasNonDefaultFavicon() const {
