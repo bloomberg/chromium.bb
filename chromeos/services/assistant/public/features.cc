@@ -25,6 +25,9 @@ const base::Feature kAssistantRoutines{"AssistantRoutines",
 const base::Feature kInAssistantNotifications{
     "InAssistantNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableClearCutLog{"EnableClearCutLog",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -44,6 +47,10 @@ const base::Feature kTimerTicks{"ChromeOSAssistantTimerTicks",
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
+}
+
+bool IsClearCutLogEnabled() {
+  return base::FeatureList::IsEnabled(kEnableClearCutLog);
 }
 
 bool IsDspHotwordEnabled() {

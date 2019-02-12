@@ -32,6 +32,10 @@ extern const base::Feature kAssistantRoutines;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kInAssistantNotifications;
 
+// Enables clear cut logging.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kEnableClearCutLog;
+
 // Enables DSP for hotword detection.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableDspHotword;
@@ -53,6 +57,8 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerTicks;
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsClearCutLogEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
 
