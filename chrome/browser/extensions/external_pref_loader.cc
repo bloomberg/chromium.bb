@@ -27,8 +27,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -101,8 +102,8 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     }
     // Start observing sync changes.
     DCHECK(profile_);
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
+    syncer::SyncService* service =
+        ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
     DCHECK(service);
     if (service->CanSyncFeatureStart() &&
         (service->GetUserSettings()->IsFirstSetupComplete() ||
@@ -146,8 +147,8 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     DCHECK(prefs);
     syncable_pref_observer_.Add(prefs);
 
-    browser_sync::ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
+    syncer::SyncService* service =
+        ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
     sync_service_observer_.Add(service);
   }
 
@@ -161,7 +162,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
   ScopedObserver<sync_preferences::PrefServiceSyncable,
                  sync_preferences::PrefServiceSyncableObserver>
       syncable_pref_observer_;
-  ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrioritySyncReadyWaiter);

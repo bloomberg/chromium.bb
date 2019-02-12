@@ -32,10 +32,10 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_handle.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -283,14 +283,14 @@ bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
                              features::kAutofillSaveCardSignInAfterLocalSave))
     return false;
 
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(GetProfile());
+  const syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(GetProfile());
 
   return !sync_service ||
          sync_service->HasDisableReason(
-             browser_sync::ProfileSyncService::DISABLE_REASON_NOT_SIGNED_IN) ||
+             syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN) ||
          sync_service->HasDisableReason(
-             browser_sync::ProfileSyncService::DISABLE_REASON_USER_CHOICE);
+             syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 }
 
 bool SaveCardBubbleControllerImpl::CanAnimate() const {

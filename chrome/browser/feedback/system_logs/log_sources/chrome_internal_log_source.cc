@@ -20,9 +20,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/about_sync_util.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/power/power_api.h"
 #include "extensions/browser/extension_registry.h"
@@ -269,12 +269,11 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
 void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   // We are only interested in sync logs for the primary user profile.
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (!profile ||
-      !ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(profile))
+  if (!profile || !ProfileSyncServiceFactory::HasProfileSyncService(profile))
     return;
 
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   std::unique_ptr<base::DictionaryValue> sync_logs(
       syncer::sync_ui_util::ConstructAboutInformation(service,
                                                       chrome::GetChannel()));

@@ -37,7 +37,6 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
@@ -122,7 +121,7 @@ namespace {
 
 const syncer::SyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
-    return ProfileSyncServiceFactory::GetForProfile(profile);
+    return ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   return nullptr;
 }
 
@@ -564,8 +563,8 @@ ChromePasswordManagerClient::GetPasswordStore() const {
 
 password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
     const {
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  const syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile_);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
@@ -799,10 +798,10 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
   if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
     return false;
 
-  browser_sync::ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!profile_sync_service || !profile_sync_service->IsSyncFeatureActive() ||
-      profile_sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
+  if (!sync_service || !sync_service->IsSyncFeatureActive() ||
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
     return false;
   }
 
