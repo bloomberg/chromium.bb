@@ -292,7 +292,7 @@ TEST_F(DeviceStatusListenerTest, NotifyObserverBatteryChange) {
             listener_->CurrentDeviceStatus().battery_percentage);
 
   listener_->Stop();
-};
+}
 
 // Verify a sequence of offline->online->offline network state changes.
 TEST_F(DeviceStatusListenerTest, OfflineOnlineOffline) {
