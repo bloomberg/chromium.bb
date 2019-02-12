@@ -1168,6 +1168,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/SuggestionListViewBinder.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/VoiceSuggestionProvider.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/AnswerSuggestionProcessor.java",
+  "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/AnswerSuggestionViewBinder.java",
+  "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/AnswerSuggestionView.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/AnswerText.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/AnswerTextClassic.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/basic/AnswerTextNewLayout.java",
