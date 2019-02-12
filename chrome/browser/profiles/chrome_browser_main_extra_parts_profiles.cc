@@ -71,9 +71,8 @@
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_investigator_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_profile_attributes_updater_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -227,7 +226,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   AccountFetcherServiceFactory::GetInstance();
   AccountInvestigatorFactory::GetInstance();
   AccountReconcilorFactory::GetInstance();
-  AccountTrackerServiceFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if BUILDFLAG(ENABLE_BACKGROUND_CONTENTS)
   BackgroundContentsServiceFactory::GetInstance();
@@ -292,6 +290,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
+  IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
   InMemoryURLIndexFactory::GetInstance();
   invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance();
 #if !defined(OS_ANDROID)
@@ -378,7 +377,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   SessionServiceFactory::GetInstance();
 #endif
   ShortcutsBackendFactory::GetInstance();
-  SigninManagerFactory::GetInstance();
   SigninProfileAttributesUpdaterFactory::GetInstance();
 
   if (SiteEngagementService::IsEnabled())

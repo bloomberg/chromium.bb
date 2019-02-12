@@ -44,6 +44,10 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   // Returns an instance of the IdentityManagerFactory singleton.
   static IdentityManagerFactory* GetInstance();
 
+  // Ensures that IdentityManagerFactory and the factories on which it depends
+  // are built.
+  static void EnsureFactoryAndDependeeFactoriesBuilt();
+
   // Exposes BuildServiceInstanceFor() publicly for usage to unittests,
   // returning an authenticated IdentityManager, useful specially in
   // ChromeOS scenarios.
