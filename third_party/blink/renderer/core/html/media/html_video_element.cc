@@ -502,8 +502,10 @@ bool HTMLVideoElement::UsesOverlayFullscreenVideo() const {
 void HTMLVideoElement::DidEnterFullscreen() {
   UpdateControlsVisibility();
 
-  if (DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture)
-    exitPictureInPicture(base::DoNothing());
+  if (DisplayType() == WebMediaPlayer::DisplayType::kPictureInPicture) {
+    PictureInPictureController::From(GetDocument())
+        .ExitPictureInPicture(this, nullptr);
+  }
 
   if (GetWebMediaPlayer()) {
     // FIXME: There is no embedder-side handling in web test mode.
@@ -661,19 +663,12 @@ bool HTMLVideoElement::SupportsPictureInPicture() const {
          PictureInPictureController::Status::kEnabled;
 }
 
-void HTMLVideoElement::enterPictureInPicture(
-    WebMediaPlayer::PipWindowOpenedCallback callback) {
+void HTMLVideoElement::enterPictureInPicture() {
   if (DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
     Fullscreen::ExitFullscreen(GetDocument());
 
   if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->EnterPictureInPicture(std::move(callback));
-}
-
-void HTMLVideoElement::exitPictureInPicture(
-    WebMediaPlayer::PipWindowClosedCallback callback) {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->ExitPictureInPicture(std::move(callback));
+    GetWebMediaPlayer()->EnterPictureInPicture();
 }
 
 void HTMLVideoElement::SendCustomControlsToPipWindow() {
@@ -710,6 +705,16 @@ WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
 
 bool HTMLVideoElement::IsInAutoPIP() const {
   return is_auto_picture_in_picture_;
+}
+
+void HTMLVideoElement::OnPictureInPictureStateChange() {
+  if (DisplayType() != WebMediaPlayer::DisplayType::kPictureInPicture ||
+      IsInAutoPIP()) {
+    return;
+  }
+
+  PictureInPictureController::From(GetDocument())
+      .OnPictureInPictureStateChange();
 }
 
 void HTMLVideoElement::OnEnteredPictureInPicture() {

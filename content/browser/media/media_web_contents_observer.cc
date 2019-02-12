@@ -77,11 +77,6 @@ void MediaWebContentsObserver::RenderFrameDeleted(
     picture_in_picture_allowed_in_fullscreen_.reset();
     fullscreen_player_.reset();
   }
-
-  // Usually the frame will exit PIP before it is deleted but for OOPIF, it
-  // seems that the player never notifies the browser process.
-  if (pip_player_ && pip_player_->render_frame_host == render_frame_host)
-    ExitPictureInPictureInternal();
 }
 
 void MediaWebContentsObserver::MaybeUpdateAudibleState() {
@@ -120,15 +115,6 @@ MediaWebContentsObserver::GetFullscreenVideoMediaPlayerId() const {
   return fullscreen_player_;
 }
 
-const base::Optional<WebContentsObserver::MediaPlayerId>&
-MediaWebContentsObserver::GetPictureInPictureVideoMediaPlayerId() const {
-  return pip_player_;
-}
-
-void MediaWebContentsObserver::ResetPictureInPictureVideoMediaPlayerId() {
-  pip_player_.reset();
-}
-
 bool MediaWebContentsObserver::OnMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
@@ -148,16 +134,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                         OnMediaSizeChanged)
     IPC_MESSAGE_HANDLER(
-        MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted,
-        OnPictureInPictureModeStarted)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
-                        OnPictureInPictureModeEnded)
-    IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls,
         OnSetPictureInPictureCustomControls)
-    IPC_MESSAGE_HANDLER(
-        MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged,
-        OnPictureInPictureSurfaceChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -187,16 +165,6 @@ bool MediaWebContentsObserver::IsPlayerActive(
   return MediaPlayerEntryExists(player_id, active_audio_players_);
 }
 
-void MediaWebContentsObserver::OnPictureInPictureWindowResize(
-    const gfx::Size& window_size) {
-  DCHECK(pip_player_.has_value());
-
-  pip_player_->render_frame_host->Send(
-      new MediaPlayerDelegateMsg_OnPictureInPictureWindowResize(
-          pip_player_->render_frame_host->GetRoutingID(),
-          pip_player_->delegate_id, window_size));
-}
-
 void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {
@@ -211,16 +179,6 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
       RemoveMediaPlayerEntry(player_id, &active_audio_players_);
   const bool removed_video =
       RemoveMediaPlayerEntry(player_id, &active_video_players_);
-
-  if (!web_contents()->IsBeingDestroyed() && pip_player_ == player_id) {
-    PictureInPictureWindowControllerImpl* pip_controller =
-        PictureInPictureWindowControllerImpl::FromWebContents(
-            web_contents_impl());
-    if (pip_controller) {
-      pip_controller->UpdatePlaybackState(false /* is not playing */,
-                                          reached_end_of_stream);
-    }
-  }
 
   if (removed_audio || removed_video) {
     // Notify observers the player has been "paused".
@@ -261,16 +219,6 @@ void MediaWebContentsObserver::OnMediaPlaying(
   if (!session_controllers_manager_.RequestPlay(
           id, has_audio, is_remote, media_content_type)) {
     return;
-  }
-
-  if (!web_contents()->IsBeingDestroyed() && pip_player_ == id) {
-    PictureInPictureWindowControllerImpl* pip_controller =
-        PictureInPictureWindowControllerImpl::FromWebContents(
-            web_contents_impl());
-    if (pip_controller) {
-      pip_controller->UpdatePlaybackState(true /* is not playing */,
-                                          false /* reached_end_of_stream */);
-    }
   }
 
   // Notify observers of the new player.
@@ -317,41 +265,6 @@ void MediaWebContentsObserver::OnMediaSizeChanged(
   web_contents_impl()->MediaResized(size, id);
 }
 
-void MediaWebContentsObserver::OnPictureInPictureModeStarted(
-    RenderFrameHost* render_frame_host,
-    int delegate_id,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size,
-    int request_id,
-    bool show_play_pause_button) {
-  DCHECK(surface_id.is_valid());
-  pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
-
-  gfx::Size window_size =
-      web_contents_impl()->EnterPictureInPicture(surface_id, natural_size);
-
-  if (auto* pip_controller =
-          PictureInPictureWindowControllerImpl::FromWebContents(
-              web_contents_impl()))
-    pip_controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
-
-  render_frame_host->Send(
-      new MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK(
-          render_frame_host->GetRoutingID(), delegate_id, request_id,
-          window_size));
-}
-
-void MediaWebContentsObserver::OnPictureInPictureModeEnded(
-    RenderFrameHost* render_frame_host,
-    int delegate_id,
-    int request_id) {
-  ExitPictureInPictureInternal();
-
-  render_frame_host->Send(
-      new MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK(
-          render_frame_host->GetRoutingID(), delegate_id, request_id));
-}
-
 void MediaWebContentsObserver::OnSetPictureInPictureCustomControls(
     RenderFrameHost* render_frame_host,
     int delegate_id,
@@ -361,26 +274,6 @@ void MediaWebContentsObserver::OnSetPictureInPictureCustomControls(
           web_contents_impl());
   if (pip_controller)
     pip_controller->SetPictureInPictureCustomControls(controls);
-}
-
-void MediaWebContentsObserver::OnPictureInPictureSurfaceChanged(
-    RenderFrameHost* render_frame_host,
-    int delegate_id,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size,
-    bool show_play_pause_button) {
-  DCHECK(surface_id.is_valid());
-
-  pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
-
-  // The PictureInPictureWindowController instance may not have been created by
-  // the embedder.
-  if (auto* pip_controller =
-          PictureInPictureWindowControllerImpl::FromWebContents(
-              web_contents_impl())) {
-    pip_controller->EmbedSurface(surface_id, natural_size);
-    pip_controller->SetAlwaysHidePlayPauseButton(show_play_pause_button);
-  }
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(
@@ -480,16 +373,6 @@ void MediaWebContentsObserver::RemoveAllMediaPlayerEntries(
     removed_players->insert(MediaPlayerId(render_frame_host, delegate_id));
 
   player_map->erase(it);
-}
-
-void MediaWebContentsObserver::ExitPictureInPictureInternal() {
-  DCHECK(pip_player_);
-
-  web_contents_impl()->ExitPictureInPicture();
-
-  // Reset must happen after notifying the WebContents because it may interact
-  // with it.
-  ResetPictureInPictureVideoMediaPlayerId();
 }
 
 WebContentsImpl* MediaWebContentsObserver::web_contents_impl() const {

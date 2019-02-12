@@ -10,6 +10,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/picture_in_picture/overlay_surface_embedder.h"
+#include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -57,7 +58,8 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
     WebContents* initiator)
-    : initiator_(static_cast<WebContentsImpl* const>(initiator)) {
+    : WebContentsObserver(initiator),
+      initiator_(static_cast<WebContentsImpl* const>(initiator)) {
   DCHECK(initiator_);
 
   media_web_contents_observer_ = initiator_->media_web_contents_observer();
@@ -126,9 +128,7 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
   // surface id was updated for the same video, this is a no-op. This could
   // be updated for a different video if another media player on the same
   // |initiator_| enters Picture-in-Picture mode.
-  media_player_id_ =
-      media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
-  UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
+  UpdateMediaPlayerId();
 
   window_->UpdateVideoSize(natural_size);
 
@@ -142,9 +142,9 @@ OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
-  if (media_player_id_.has_value() && window_ && window_->IsVisible()) {
-    media_web_contents_observer_->OnPictureInPictureWindowResize(
-        window_->GetBounds().size());
+  if (media_player_id_.has_value() && service_ && window_ &&
+      window_->IsVisible()) {
+    service_->NotifyWindowResized(window_->GetBounds().size());
   }
 
   if (embedder_)
@@ -152,10 +152,12 @@ void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
 }
 
 bool PictureInPictureWindowControllerImpl::IsPlayerActive() {
-  if (!media_player_id_.has_value()) {
-    media_player_id_ =
-        media_web_contents_observer_->GetPictureInPictureVideoMediaPlayerId();
-  }
+  if (!media_player_id_.has_value())
+    media_player_id_ = service_ ? service_->player_id() : base::nullopt;
+
+  // At creation time, the player id may not be set.
+  if (!media_player_id_.has_value())
+    return false;
 
   return media_player_id_.has_value() &&
          media_web_contents_observer_->IsPlayerActive(*media_player_id_);
@@ -219,6 +221,11 @@ void PictureInPictureWindowControllerImpl::CustomControlPressed(
           media_player_id_->delegate_id, control_id));
 }
 
+void PictureInPictureWindowControllerImpl::UpdateMediaPlayerId() {
+  media_player_id_ = service_ ? service_->player_id() : base::nullopt;
+  UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
+}
+
 void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
     bool is_visible) {
   always_hide_play_pause_button_ = is_visible;
@@ -254,6 +261,33 @@ void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
   window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
 }
 
+void PictureInPictureWindowControllerImpl::MediaStartedPlaying(
+    const MediaPlayerInfo&,
+    const MediaPlayerId& media_player_id) {
+  if (initiator_->IsBeingDestroyed())
+    return;
+
+  if (media_player_id_ != media_player_id)
+    return;
+
+  UpdatePlaybackState(true /* is_playing */, false /* reached_end_of_stream */);
+}
+
+void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
+    const MediaPlayerInfo&,
+    const MediaPlayerId& media_player_id,
+    WebContentsObserver::MediaStoppedReason reason) {
+  if (initiator_->IsBeingDestroyed())
+    return;
+
+  if (media_player_id_ != media_player_id)
+    return;
+
+  UpdatePlaybackState(
+      false /* is_playing */,
+      reason == WebContentsObserver::MediaStoppedReason::kReachedEndOfStream);
+}
+
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video,
     bool should_reset_pip_player) {
@@ -269,8 +303,12 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
         new MediaPlayerDelegateMsg_EndPictureInPictureMode(
             media_player_id_->render_frame_host->GetRoutingID(),
             media_player_id_->delegate_id));
-    if (should_reset_pip_player)
-      media_web_contents_observer_->ResetPictureInPictureVideoMediaPlayerId();
+
+    if (should_reset_pip_player) {
+      DCHECK(service_);
+      service_->ResetPlayerId();
+      media_player_id_.reset();
+    }
   }
 }
 

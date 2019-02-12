@@ -76,23 +76,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
                     int /* delegate_id, distinguishes instances */,
                     std::string /* control_id */)
 
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_OnPictureInPictureWindowResize,
-                    int /* delegate_id, distinguishes instances */,
-                    gfx::Size /* window_size */)
-
-// ----------------------------------------------------------------------------
-// Messages from the browser to the renderer acknowledging changes happened.
-// ----------------------------------------------------------------------------
-
-IPC_MESSAGE_ROUTED3(MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK,
-                    int /* delegate id */,
-                    int /* request_id */,
-                    gfx::Size /* window_size */)
-
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
-                    int /* delegate id */,
-                    int /* request_id */)
-
 // ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.
 // ----------------------------------------------------------------------------
@@ -123,23 +106,6 @@ IPC_MESSAGE_ROUTED2(
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     int /* delegate_id, distinguishes instances */,
                     gfx::Size /* new size of video */)
-
-IPC_MESSAGE_ROUTED5(MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted,
-                    int /* delegate id */,
-                    viz::SurfaceId /* surface_id */,
-                    gfx::Size /* natural_size */,
-                    int /* request_id */,
-                    bool /* show_play_pause_button */)
-
-IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
-                    int /* delegate id */,
-                    int /* request_id */)
-
-IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged,
-                    int /* delegate id */,
-                    viz::SurfaceId /* surface_id */,
-                    gfx::Size /* natural_size */,
-                    bool /* show_play_pause_button */)
 
 IPC_MESSAGE_ROUTED2(
     MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls,

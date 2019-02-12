@@ -1829,6 +1829,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+
   ASSERT_NE(nullptr, active_web_contents);
 
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
@@ -2566,6 +2567,24 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   // Check that video playback has resumed.
   expected_title = base::ASCIIToUTF16("play");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
+// Tests that exiting Picture-in-Picture when the video has no source fires the
+// event and resolves the callback.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       ExitFireEventAndCallbackWhenNoSource) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "video.src=''; exitPictureInPicture();"));
+
+  // 'left' is sent when the first video leaves Picture-in-Picture.
+  base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());

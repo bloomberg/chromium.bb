@@ -148,9 +148,9 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD1(ActivateViewportIntersectionMonitoring, void(bool));
   MOCK_METHOD1(MediaRemotingStarted, void(const blink::WebString&));
   MOCK_METHOD1(MediaRemotingStopped, void(blink::WebLocalizedString::Name));
-  MOCK_METHOD0(PictureInPictureStarted, void());
   MOCK_METHOD0(PictureInPictureStopped, void());
   MOCK_METHOD1(PictureInPictureControlClicked, void(const blink::WebString&));
+  MOCK_METHOD0(OnPictureInPictureStateChange, void());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
   MOCK_METHOD0(RequestPlay, void());
   MOCK_METHOD0(RequestPause, void());
@@ -215,21 +215,9 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     DCHECK_EQ(player_id_, delegate_id);
   }
 
-  MOCK_METHOD5(DidPictureInPictureModeStart,
-               void(int,
-                    const viz::SurfaceId&,
-                    const gfx::Size&,
-                    blink::WebMediaPlayer::PipWindowOpenedCallback,
-                    bool));
-  MOCK_METHOD2(DidPictureInPictureModeEnd,
-               void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
   MOCK_METHOD2(DidSetPictureInPictureCustomControls,
                void(int,
                     const std::vector<blink::PictureInPictureControlInfo>&));
-  MOCK_METHOD4(DidPictureInPictureSurfaceChange,
-               void(int, const viz::SurfaceId&, const gfx::Size&, bool));
-  MOCK_METHOD2(RegisterPictureInPictureWindowResizeCallback,
-               void(int, blink::WebMediaPlayer::PipWindowResizedCallback));
 
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);
@@ -1566,8 +1554,8 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
   }
 }
 
-// Tests delegate methods are called when Picture-in-Picture is triggered.
-TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
+// Tests that updating the surface id calls OnPictureInPictureStateChange.
+TEST_F(WebMediaPlayerImplTest, PictureInPictureStateChange) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
 
@@ -1588,68 +1576,10 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   EXPECT_CALL(client_, DisplayType())
       .WillRepeatedly(
           Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
-  EXPECT_CALL(delegate_,
-              DidPictureInPictureSurfaceChange(
-                  delegate_.player_id(), surface_id_, GetNaturalSize(), true))
-      .Times(2);
+  EXPECT_CALL(client_, OnPictureInPictureStateChange()).Times(1);
 
   wmpi_->OnSurfaceIdUpdated(surface_id_);
 
-  EXPECT_CALL(delegate_,
-              DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
-                                           GetNaturalSize(), _, true));
-
-  wmpi_->EnterPictureInPicture(base::DoNothing());
-  wmpi_->OnSurfaceIdUpdated(surface_id_);
-
-  // Updating SurfaceId should NOT exit Picture-in-Picture.
-  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
-      .Times(0);
-  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
-}
-
-// Tests delegate methods are called with the appropriate play/pause button
-// state when Picture-in-Picture is triggered and video duration is infinity.
-TEST_F(WebMediaPlayerImplTest,
-       PictureInPictureTriggerWithInfiniteDurationCallback) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
-
-  InitializeWebMediaPlayerImpl();
-  SetDuration(kInfiniteDuration);
-
-  EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
-  EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
-      .WillRepeatedly(ReturnRef(surface_id_));
-  EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
-      .WillRepeatedly(Return(base::TimeTicks()));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _));
-  EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-
-  PipelineMetadata metadata;
-  metadata.has_video = true;
-  OnMetadata(metadata);
-
-  EXPECT_CALL(client_, DisplayType())
-      .WillRepeatedly(
-          Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
-  EXPECT_CALL(delegate_,
-              DidPictureInPictureSurfaceChange(
-                  delegate_.player_id(), surface_id_, GetNaturalSize(), false))
-      .Times(2);
-
-  wmpi_->OnSurfaceIdUpdated(surface_id_);
-
-  EXPECT_CALL(delegate_,
-              DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
-                                           GetNaturalSize(), _, false));
-
-  wmpi_->EnterPictureInPicture(base::DoNothing());
-  wmpi_->OnSurfaceIdUpdated(surface_id_);
-
-  // Updating SurfaceId should NOT exit Picture-in-Picture.
-  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
-      .Times(0);
   EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
