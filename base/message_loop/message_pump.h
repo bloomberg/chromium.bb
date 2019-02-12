@@ -167,10 +167,13 @@ class BASE_EXPORT MessagePump {
   virtual void ScheduleWork() = 0;
 
   // Schedule a DoDelayedWork callback to happen at the specified time,
-  // cancelling any pending DoDelayedWork callback.  This method may only be
-  // used on the thread that called Run.
-  // TODO(gab): This method is obsolete in the DoSomeWork() variant, remove it
-  // once the migration is complete.
+  // cancelling any pending DoDelayedWork callback. This method may only be used
+  // on the thread that called Run.
+  //
+  // This is mostly a no-op in the DoSomeWork() world but must still be invoked
+  // when the new |delayed_work_time| is sooner than the last one returned from
+  // DoSomeWork(). TODO(gab): Clarify this API once all pumps have been
+  // migrated.
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) = 0;
 
   // Sets the timer slack to the specified value.
