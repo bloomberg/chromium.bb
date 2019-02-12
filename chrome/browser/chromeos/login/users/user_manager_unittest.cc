@@ -280,22 +280,9 @@ TEST_F(UserManagerTest, ProfileInitialized) {
   users = &user_manager::UserManager::Get()->GetUsers();
   ASSERT_EQ(1U, users->size());
   EXPECT_FALSE((*users)[0]->profile_ever_initialized());
-}
 
-TEST_F(UserManagerTest, ProfileInitializedMigration) {
-  user_manager::UserManager::Get()->UserLoggedIn(
-      owner_account_id_at_invalid_domain_,
-      owner_account_id_at_invalid_domain_.GetUserEmail(),
-      false /* browser_restart */, false /* is_child */);
-  const user_manager::UserList* users =
-      &user_manager::UserManager::Get()->GetUsers();
-  ASSERT_EQ(1U, users->size());
-  EXPECT_FALSE((*users)[0]->profile_ever_initialized());
-
-  // Clear the stored user data - when UserManager loads again, it should
-  // migrate existing users by setting session_initialized to true for them.
-  user_manager::known_user::RemoveSetProfileEverInitializedPrefForTesting(
-      (*users)[0]->GetAccountId());
+  user_manager::known_user::SetProfileEverInitialized(
+      (*users)[0]->GetAccountId(), true);
   ResetUserManager();
   users = &user_manager::UserManager::Get()->GetUsers();
   ASSERT_EQ(1U, users->size());

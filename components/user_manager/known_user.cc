@@ -490,19 +490,11 @@ bool IsUsingSAML(const AccountId& account_id) {
 
 bool WasProfileEverInitialized(const AccountId& account_id) {
   bool profile_ever_initialized;
-  const bool pref_set = GetBooleanPref(account_id, kProfileEverInitialized,
-                                       &profile_ever_initialized);
-  // TODO(atwilson): Remove migration code below once this UMA stat reports
-  // that migration is completed - crbug.com/736760.
-  UMA_HISTOGRAM_BOOLEAN("UserManager.ProfileEverInitializedMigrationCompleted",
-                        pref_set);
-  if (pref_set)
+  if (GetBooleanPref(account_id, kProfileEverInitialized,
+                     &profile_ever_initialized)) {
     return profile_ever_initialized;
-
-  // Sessions created before we started setting the session_initialized flag
-  // should default to "initialized = true".
-  LOG(WARNING) << "Treating unmigrated user as profile_ever_initialized=true";
-  return true;
+  }
+  return false;
 }
 
 void SetProfileEverInitialized(const AccountId& account_id, bool initialized) {
@@ -593,23 +585,6 @@ void CleanEphemeralUsers() {
     else
       it++;
   }
-}
-
-// Exported so tests can call this from other components.
-void RemoveSetProfileEverInitializedPrefForTesting(
-    const AccountId& account_id) {
-  const base::DictionaryValue* prefs = nullptr;
-  if (!FindPrefs(account_id, &prefs))
-    return;
-
-  if (!prefs->HasKey(kProfileEverInitialized))
-    return;
-
-  std::unique_ptr<base::DictionaryValue> new_prefs(prefs->CreateDeepCopy());
-  if (!new_prefs->RemoveKey(kProfileEverInitialized))
-    return;
-
-  UpdatePrefs(account_id, *new_prefs, true);
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
