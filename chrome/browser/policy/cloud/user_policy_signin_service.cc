@@ -139,7 +139,7 @@ void UserPolicySigninService::OnPrimaryAccountSet(
 }
 
 void UserPolicySigninService::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   // Ignore OAuth tokens or those for any account but the primary one.
   if (account_info.account_id != identity_manager()->GetPrimaryAccountId())
     return;

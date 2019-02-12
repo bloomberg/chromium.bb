@@ -142,7 +142,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   // identity::IdentityManager::Observer implementation:
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;

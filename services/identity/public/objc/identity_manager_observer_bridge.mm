@@ -43,7 +43,7 @@ void IdentityManagerObserverBridge::OnPrimaryAccountSigninFailed(
 }
 
 void IdentityManagerObserverBridge::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if ([delegate_
           respondsToSelector:@selector(onRefreshTokenUpdatedForAccount:)]) {
     [delegate_ onRefreshTokenUpdatedForAccount:account_info];

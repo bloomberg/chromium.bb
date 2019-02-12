@@ -50,7 +50,7 @@ class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
  private:
   // identity::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override {
+      const CoreAccountInfo& account_info) override {
     if (on_refresh_token_updated_callback_)
       std::move(on_refresh_token_updated_callback_)
           .Run(account_info.account_id);

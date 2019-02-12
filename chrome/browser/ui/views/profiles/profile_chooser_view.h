@@ -113,7 +113,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // identity::IdentityManager::Observer overrides.
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
 
   static ProfileChooserView* profile_bubble_;

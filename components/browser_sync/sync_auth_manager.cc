@@ -258,7 +258,7 @@ void SyncAuthManager::OnPrimaryAccountCleared(
 }
 
 void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if (UpdateSyncAccountIfNecessary()) {
     // If the syncing account was updated as a result of this, then all that's
     // necessary has been handled; nothing else to be done here.

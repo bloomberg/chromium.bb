@@ -546,7 +546,7 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
 }
 
 void IdentityGetAuthTokenFunction::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   if (account_listening_mode_ != AccountListeningMode::kListeningTokens)
     return;
 

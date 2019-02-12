@@ -49,7 +49,7 @@ class ArcAuthContext : public GaiaAuthConsumer,
 
   // identity::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   void OnRefreshTokensLoaded() override;
 
   // Ubertoken fetch completion callback.

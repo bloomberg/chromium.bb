@@ -393,7 +393,7 @@ void IdentityManager::GoogleSigninFailed(const GoogleServiceAuthError& error) {
 }
 
 void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       GetAccountInfoForAccountWithRefreshToken(account_id);
 
   for (auto& observer : observer_list_) {

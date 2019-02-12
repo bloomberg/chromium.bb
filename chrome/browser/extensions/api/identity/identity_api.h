@@ -130,7 +130,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   // identity::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   // NOTE: This class must listen for this callback rather than
   // OnRefreshTokenRemovedForAccount() to obtain the Gaia ID of the removed
   // account.

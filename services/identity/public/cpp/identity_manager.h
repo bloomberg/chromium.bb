@@ -91,7 +91,7 @@ class IdentityManager : public SigninManagerBase::Observer,
     // likely meet your needs. Otherwise, if this lack of ordering is
     // problematic for your use case, please contact blundell@chromium.org.
     virtual void OnRefreshTokenUpdatedForAccount(
-        const AccountInfo& account_info) {}
+        const CoreAccountInfo& account_info) {}
 
     // Called when the refresh token previously associated with |account_id|
     // has been removed. At the time that this callback is invoked, there is

@@ -230,7 +230,7 @@ class AuthenticationServiceTest : public PlatformTest,
 
   // IdentityManager::Observer
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override {
+      const CoreAccountInfo& account_info) override {
     refresh_token_available_count_++;
   }
 

@@ -111,7 +111,7 @@ void ProfileIdentityProvider::InvalidateAccessToken(
 }
 
 void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   ProcessRefreshTokenUpdateForAccount(account_info.account_id);
 }
 

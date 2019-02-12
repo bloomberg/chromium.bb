@@ -44,7 +44,7 @@ class ArcAndroidManagementChecker : public identity::IdentityManager::Observer {
 
   // identity::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
-      const AccountInfo& account_info) override;
+      const CoreAccountInfo& account_info) override;
   void OnRefreshTokensLoaded() override;
 
   // Unowned pointers.
