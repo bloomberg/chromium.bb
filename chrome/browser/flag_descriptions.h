@@ -409,9 +409,6 @@ extern const char kEnableGpuServiceLoggingDescription[];
 extern const char kEnableHDRName[];
 extern const char kEnableHDRDescription[];
 
-extern const char kEnableHeavyPageCappingName[];
-extern const char kEnableHeavyPageCappingDescription[];
-
 extern const char kEnableImplicitRootScrollerName[];
 extern const char kEnableImplicitRootScrollerDescription[];
 
