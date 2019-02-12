@@ -137,6 +137,7 @@ public class TabState {
     /** Navigation history of the WebContents. */
     public WebContentsState contentsState;
     public int parentId = Tab.INVALID_TAB_ID;
+    public int rootId;
 
     public long timestampMillis = TIMESTAMP_NOT_SET;
     public String openerAppId;
@@ -326,6 +327,14 @@ public class TabState {
                         "Failed to read tab launch type at creation from tab state. "
                                 + "Assuming tab launch type is null");
             }
+            try {
+                tabState.rootId = stream.readInt();
+            } catch (EOFException eof) {
+                tabState.rootId = Tab.INVALID_TAB_ID;
+                Log.w(TAG,
+                        "Failed to read tab root id from tab state. "
+                                + "Assuming root id is Tab.INVALID_TAB_ID");
+            }
             return tabState;
         } finally {
             stream.close();
@@ -392,6 +401,7 @@ public class TabState {
             dataOutputStream.writeInt(state.themeColor);
             dataOutputStream.writeInt(
                     state.tabLaunchTypeAtCreation != null ? state.tabLaunchTypeAtCreation : -1);
+            dataOutputStream.writeInt(state.rootId);
         } catch (FileNotFoundException e) {
             Log.w(TAG, "FileNotFoundException while attempting to save TabState.");
         } catch (IOException e) {
