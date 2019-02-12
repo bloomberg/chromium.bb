@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/i18n/base_i18n_switches.h"
-#include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
@@ -30,6 +29,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/gfx/bidi_line_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/decorated_text.h"
 #include "ui/gfx/font.h"
@@ -1698,18 +1698,9 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // If ICU fails to itemize the text, we create a run that spans the entire
   // text. This is needed because leaving the runs set empty causes some clients
   // to misbehave since they expect non-zero text metrics from a non-empty text.
-  base::i18n::BiDiLineIterator bidi_iterator;
-  base::i18n::BiDiLineIterator::CustomBehavior behavior =
-      base::i18n::BiDiLineIterator::CustomBehavior::NONE;
+  ui::gfx::BiDiLineIterator bidi_iterator;
 
-  // If the feature flag is enabled, use the special URL behaviour on the Bidi
-  // algorithm, if this is a URL.
-  if (base::FeatureList::IsEnabled(features::kLeftToRightUrls) &&
-      directionality_mode() == DIRECTIONALITY_AS_URL) {
-    behavior = base::i18n::BiDiLineIterator::CustomBehavior::AS_URL;
-  }
-
-  if (!bidi_iterator.Open(text, GetTextDirection(text), behavior)) {
+  if (!bidi_iterator.Open(text, GetTextDirection(text))) {
     auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range = Range(0, text.length());

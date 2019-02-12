@@ -24,13 +24,6 @@ const char kHeadless[] = "headless";
 
 namespace features {
 
-// Enables or disables an experimental Bidi URL rendering algorithm where the
-// URL components are always shown in order from left to right, regardless of
-// any RTL characters. (The contents of each component are still rendered with
-// the normal Bidi algorithm.)
-const base::Feature kLeftToRightUrls{"LeftToRightUrls",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables the use of cc::PaintRecords as a backing store for
 // ImageSkiaReps. This may reduce load on the UI thread by moving rasterization
 // of drawables away from this thread.

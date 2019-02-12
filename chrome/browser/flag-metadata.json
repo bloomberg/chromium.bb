@@ -2342,11 +2342,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "left-to-right-urls",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "load-media-router-component-extension",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

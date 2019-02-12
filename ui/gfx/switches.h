@@ -23,8 +23,6 @@ GFX_SWITCHES_EXPORT extern const char kHeadless[];
 
 namespace features {
 
-GFX_SWITCHES_EXPORT extern const base::Feature kLeftToRightUrls;
-
 GFX_SWITCHES_EXPORT extern const base::Feature kUsePaintRecordForImageSkia;
 
 }  // namespace features
