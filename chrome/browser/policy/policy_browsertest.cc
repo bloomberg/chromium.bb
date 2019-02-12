@@ -6559,6 +6559,39 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest,
   EXPECT_EQ(policy_app_url_, installed_app_url);
 }
 
+#if defined(OS_WIN)
+
+class ForceNetworkInProcessTest : public InProcessBrowserTest {
+ public:
+  // InProcessBrowserTest implementation:
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::PolicyMap values;
+    values.Set(policy::key::kForceNetworkInProcess,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
+               nullptr);
+    policy_provider_.UpdateChromePolicy(values);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(ForceNetworkInProcessTest, Enabled) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  ASSERT_TRUE(content::IsInProcessNetworkService());
+}
+
+#endif  // defined(OS_WIN)
+
 #if !defined(OS_ANDROID)
 
 // The possibilities for a boolean policy.

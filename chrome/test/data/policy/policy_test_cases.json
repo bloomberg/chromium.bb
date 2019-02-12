@@ -4203,6 +4203,10 @@
     ]
   },
 
+  "ForceNetworkInProcess": {
+    "note": "This policy is used directly through the policy service instead of through a pref."
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

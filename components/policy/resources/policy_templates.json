@@ -14583,6 +14583,27 @@
       If left unset, it has no effect and no reboot is forced after user sign out. The same applies if set to Never.
       ''',
     },
+    {
+      'name': 'ForceNetworkInProcess',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:72-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 521,
+      'caption': '''Force networking code to run in the browser process''',
+      'tags': [],
+      'desc': '''This policy forces networking code to run in the browser process.
+
+      This policy is disabled by default, and if enabled, leaves users open to the security issues once the networking process is sandboxed.
+
+      This policy is intended to give enterprises a chance to migrate to 3rd party software that does not depend on hooking the networking APIs. Proxy servers are recommended over LSPs and Win32 API patching.
+
+      If this policy is not set, networking code may run out of the browser process depending on field trials of the NetworkService experiment.''',
+    },
   ],
 
   'messages': {
@@ -14748,5 +14769,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  520
+  'highest_id_currently_used':  521
 }
