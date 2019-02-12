@@ -45,7 +45,7 @@ void FakePeripheral::SetServiceUUIDs(UUIDSet service_uuids) {
   // GattServiceMap even though it only uses the UUIDs.
   int count = 0;
   for (const auto& uuid : service_uuids) {
-    std::string id = base::IntToString(count++);
+    std::string id = base::NumberToString(count++);
     std::tie(std::ignore, inserted) =
         gatt_services.emplace(id, std::make_unique<FakeRemoteGattService>(
                                       id, uuid, /*is_primary=*/true, this));
