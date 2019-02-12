@@ -76,7 +76,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
     # crbug.com/469947
     'ChromeDriverTest.testTouchPinch',
-    'ChromeDriverTest.testReturningAFunctionInJavascript',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1367
     'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
     # TODO: re-enable tests when DevTools supports ScreenOrientation commands.
@@ -84,10 +83,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverAndroidTest.testMultipleScreenOrientationChanges',
     'ChromeDriverAndroidTest.testDeleteScreenOrientationManual',
     'ChromeDriverAndroidTest.testScreenOrientationAcrossMultipleTabs',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
-    'ChromeDriverTest.testShadowDomHover',
-    'ChromeDriverTest.testMouseMoveTo',
-    'ChromeDriverTest.testHoverOverElement',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
 ]
