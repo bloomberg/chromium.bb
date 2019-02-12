@@ -9503,6 +9503,8 @@ TEST_F(HttpCacheTest, SplitCache) {
 
   url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
   url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+  url::Origin origin_data =
+      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
 
   // A request without a top frame origin is cached normally.
   MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
@@ -9542,6 +9544,19 @@ TEST_F(HttpCacheTest, SplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
+
+  // Now make a request with an opaque top frame origin.  It shouldn't be
+  // cached.
+  trans_info.top_frame_origin = origin_data;
+  EXPECT_TRUE(trans_info.top_frame_origin->opaque());
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // On the second request, it still shouldn't be cached.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
 
   // Verify that a post transaction with a data stream uses a separate key.
   const int64_t kUploadId = 1;  // Just a dummy value.
