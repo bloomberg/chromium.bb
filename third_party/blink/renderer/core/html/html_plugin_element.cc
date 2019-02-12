@@ -316,9 +316,8 @@ ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
   // origin.
   // https://fullscreen.spec.whatwg.org/#model
   ParsedFeaturePolicy container_policy;
-  ParsedFeaturePolicyDeclaration allowlist;
-  allowlist.feature = mojom::FeaturePolicyFeature::kFullscreen;
-  allowlist.matches_all_origins = false;
+  ParsedFeaturePolicyDeclaration allowlist(
+      mojom::FeaturePolicyFeature::kFullscreen, mojom::PolicyValueType::kBool);
   container_policy.push_back(allowlist);
   return container_policy;
 }

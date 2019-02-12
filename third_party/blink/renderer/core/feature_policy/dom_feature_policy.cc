@@ -14,8 +14,11 @@ namespace blink {
 
 bool DOMFeaturePolicy::allowsFeature(const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
-    return GetPolicy()->IsFeatureEnabled(
-        GetDefaultFeatureNameMap().at(feature));
+    auto feature_name = GetDefaultFeatureNameMap().at(feature);
+    mojom::PolicyValueType feature_type =
+        GetPolicy()->GetFeatureList().at(feature_name).second;
+    PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
+    return GetPolicy()->IsFeatureEnabled(feature_name, value);
   }
 
   AddWarningForUnrecognizedFeature(feature);
@@ -38,8 +41,12 @@ bool DOMFeaturePolicy::allowsFeature(const String& feature,
     return false;
   }
 
-  return GetPolicy()->IsFeatureEnabledForOrigin(
-      GetDefaultFeatureNameMap().at(feature), origin->ToUrlOrigin());
+  auto feature_name = GetDefaultFeatureNameMap().at(feature);
+  mojom::PolicyValueType feature_type =
+      GetPolicy()->GetFeatureList().at(feature_name).second;
+  PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
+  return GetPolicy()->IsFeatureEnabledForOrigin(feature_name,
+                                                origin->ToUrlOrigin(), value);
 }
 
 Vector<String> DOMFeaturePolicy::features() const {
@@ -52,7 +59,11 @@ Vector<String> DOMFeaturePolicy::features() const {
 Vector<String> DOMFeaturePolicy::allowedFeatures() const {
   Vector<String> allowed_features;
   for (const auto& entry : GetDefaultFeatureNameMap()) {
-    if (GetPolicy()->IsFeatureEnabled(entry.value))
+    auto feature_name = entry.value;
+    mojom::PolicyValueType feature_type =
+        GetPolicy()->GetFeatureList().at(feature_name).second;
+    PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
+    if (GetPolicy()->IsFeatureEnabled(feature_name, value))
       allowed_features.push_back(entry.key);
   }
   return allowed_features;
@@ -61,14 +72,22 @@ Vector<String> DOMFeaturePolicy::allowedFeatures() const {
 Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
     const String& feature) const {
   if (GetDefaultFeatureNameMap().Contains(feature)) {
+    auto feature_name = GetDefaultFeatureNameMap().at(feature);
+    auto feature_type = GetPolicy()->GetFeatureList().at(feature_name).second;
+
     const FeaturePolicy::Allowlist allowlist =
-        GetPolicy()->GetAllowlistForFeature(
-            GetDefaultFeatureNameMap().at(feature));
-    if (allowlist.MatchesAll())
-      return Vector<String>({"*"});
+        GetPolicy()->GetAllowlistForFeature(feature_name);
+    auto values = allowlist.Values();
+    PolicyValue max_value = PolicyValue::CreateMaxPolicyValue(feature_type);
+    if (values.empty()) {
+      if (allowlist.GetFallbackValue().Type() !=
+              mojom::PolicyValueType::kNull &&
+          allowlist.GetFallbackValue() >= max_value)
+        return Vector<String>({"*"});
+    }
     Vector<String> result;
-    for (const auto& origin : allowlist.Origins()) {
-      result.push_back(WTF::String::FromUTF8(origin.Serialize().c_str()));
+    for (const auto& entry : values) {
+      result.push_back(WTF::String::FromUTF8(entry.first.Serialize().c_str()));
     }
     return result;
   }

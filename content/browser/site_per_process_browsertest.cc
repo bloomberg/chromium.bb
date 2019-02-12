@@ -117,6 +117,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -477,18 +478,18 @@ void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
 
 // Helper function to generate a feature policy for a single feature and a list
 // of origins. (Equivalent to the declared policy "feature origin1 origin2...".)
+// TODO(loonybear): Add a test for non-bool type PolicyValue.
 blink::ParsedFeaturePolicy CreateFPHeader(
     blink::mojom::FeaturePolicyFeature feature,
     const std::vector<GURL>& origins) {
   blink::ParsedFeaturePolicy result(1);
   result[0].feature = feature;
-  result[0].matches_all_origins = false;
+  result[0].fallback_value = blink::PolicyValue(false);
+  result[0].opaque_value = blink::PolicyValue(false);
   DCHECK(!origins.empty());
   for (const GURL& origin : origins)
-    result[0].origins.push_back(url::Origin::Create(origin));
-  // We expect the parsed features to be sorted so that they can reliably be
-  // compared.
-  std::sort(result[0].origins.begin(), result[0].origins.end());
+    result[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
+        url::Origin::Create(origin), blink::PolicyValue(true)));
   return result;
 }
 
@@ -498,7 +499,8 @@ blink::ParsedFeaturePolicy CreateFPHeaderMatchesAll(
     blink::mojom::FeaturePolicyFeature feature) {
   blink::ParsedFeaturePolicy result(1);
   result[0].feature = feature;
-  result[0].matches_all_origins = true;
+  result[0].fallback_value = blink::PolicyValue(true);
+  result[0].opaque_value = blink::PolicyValue(true);
   return result;
 }
 
@@ -8912,8 +8914,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // origin.
   const blink::ParsedFeaturePolicy initial_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
-  EXPECT_EQ(1UL, initial_effective_policy[0].origins.size());
-  EXPECT_FALSE(initial_effective_policy[0].origins[0].opaque());
+  EXPECT_EQ(1UL, initial_effective_policy[0].values.size());
+  EXPECT_FALSE(initial_effective_policy[0].values.begin()->first.opaque());
 
   // Set the "sandbox" attribute; pending policy should update, and should now
   // be flagged as matching the opaque origin of the frame (without containing
@@ -8925,17 +8927,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(2)->effective_frame_policy().container_policy;
   const blink::ParsedFeaturePolicy updated_pending_policy =
       root->child_at(2)->pending_frame_policy().container_policy;
-  EXPECT_EQ(1UL, updated_effective_policy[0].origins.size());
-  EXPECT_FALSE(updated_effective_policy[0].origins[0].opaque());
-  EXPECT_TRUE(updated_pending_policy[0].matches_opaque_src);
-  EXPECT_EQ(0UL, updated_pending_policy[0].origins.size());
+  EXPECT_EQ(1UL, updated_effective_policy[0].values.size());
+  EXPECT_FALSE(updated_effective_policy[0].values.begin()->first.opaque());
+  EXPECT_GE(updated_pending_policy[0].opaque_value, blink::PolicyValue(true));
+  EXPECT_EQ(0UL, updated_pending_policy[0].values.size());
 
   // Navigate the frame; pending policy should now be committed.
   NavigateFrameToURL(root->child_at(2), nav_url);
   const blink::ParsedFeaturePolicy final_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
-  EXPECT_TRUE(final_effective_policy[0].matches_opaque_src);
-  EXPECT_EQ(0UL, final_effective_policy[0].origins.size());
+  EXPECT_GE(final_effective_policy[0].opaque_value, blink::PolicyValue(true));
+  EXPECT_EQ(0UL, final_effective_policy[0].values.size());
 }
 
 // Test that creating a new remote frame at the same origin as its parent
