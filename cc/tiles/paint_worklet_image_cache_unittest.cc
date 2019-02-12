@@ -78,25 +78,28 @@ TEST(PaintWorkletImageCacheTest, GetTaskForImage) {
     EXPECT_TRUE(result.paint_record());
     TestPaintRecord(result.paint_record());
 
-    base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+    base::flat_map<PaintWorkletInput*,
+                   PaintWorkletImageCache::PaintWorkletImageCacheValue>
         records = cache.GetRecordsForTest();
     // Test the ref count.
-    EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 1u);
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
   }
-  base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+  base::flat_map<PaintWorkletInput*,
+                 PaintWorkletImageCache::PaintWorkletImageCacheValue>
       records = cache.GetRecordsForTest();
   // Test the ref count, which should have been decremented when the result
   // goes out of the scope.
-  EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 0u);
+  EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 0u);
 
   {
     ImageProvider::ScopedResult result =
         provider.GetPaintRecordResult(paint_image.paint_worklet_input());
 
-    base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+    base::flat_map<PaintWorkletInput*,
+                   PaintWorkletImageCache::PaintWorkletImageCacheValue>
         records = cache.GetRecordsForTest();
     // Test the ref count.
-    EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 1u);
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
 
     ImageProvider::ScopedResult moved_result = std::move(result);
 
@@ -108,9 +111,9 @@ TEST(PaintWorkletImageCacheTest, GetTaskForImage) {
     // Once moved, the ref count from |result| should have been transferred to
     // |moved_result|, so there should be only one un-ref when they both go out
     // of scope.
-    EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 1u);
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
   }
-  EXPECT_EQ(records[paint_image.paint_worklet_input()].second, 0u);
+  EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 0u);
 }
 
 TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
@@ -127,17 +130,18 @@ TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
   TestTileTaskRunner::ProcessTask(task1.get());
   TestTileTaskRunner::ProcessTask(task2.get());
 
-  base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+  base::flat_map<PaintWorkletInput*,
+                 PaintWorkletImageCache::PaintWorkletImageCacheValue>
       records = cache.GetRecordsForTest();
   EXPECT_EQ(records.size(), 2u);
 
   PaintRecord* record1 =
-      records[paint_image1.paint_worklet_input()].first.get();
+      records[paint_image1.paint_worklet_input()].record.get();
   EXPECT_TRUE(record1);
   TestPaintRecord(record1);
 
   PaintRecord* record2 =
-      records[paint_image2.paint_worklet_input()].first.get();
+      records[paint_image2.paint_worklet_input()].record.get();
   EXPECT_TRUE(record2);
   TestPaintRecord(record2);
 }
