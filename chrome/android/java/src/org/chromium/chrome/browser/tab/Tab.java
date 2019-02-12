@@ -202,6 +202,13 @@ public class Tab
     private int mParentId = INVALID_TAB_ID;
 
     /**
+     * By default, this id inherits from the tab that caused it to be opened, or it equals to tab
+     * id. This is used to restore the relationship that defined by {@link TabModelFilter} between
+     * this tab and other tabs. This id can be re-set whenever is needed.
+     */
+    private int mRootId;
+
+    /**
      * If this tab was opened from another tab in another Activity, this is the Intent that can be
      * fired to bring the parent Activity back.
      * TODO(dfalcantara): Remove this mechanism when we have a global TabManager.
@@ -479,6 +486,13 @@ public class Tab
         if (frozenState != null) {
             assert type == TabLaunchType.FROM_RESTORE;
             restoreFieldsFromState(frozenState);
+        } else {
+            if (mParentId == INVALID_TAB_ID || getTabModelSelector() == null
+                    || getTabModelSelector().getTabById(mParentId) == null) {
+                mRootId = mId;
+            } else {
+                mRootId = getTabModelSelector().getTabById(mParentId).getRootId();
+            }
         }
 
         addObserver(mTabObserver);
@@ -534,6 +548,7 @@ public class Tab
                 && LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
                         == LocalizationUtils.RIGHT_TO_LEFT;
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
+        mRootId = state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId;
     }
 
     /**
@@ -771,6 +786,7 @@ public class Tab
         tabState.timestampMillis = mTimestampMillis;
         tabState.tabLaunchTypeAtCreation = mLaunchTypeAtCreation;
         tabState.themeColor = TabThemeColorHelper.getColor(this);
+        tabState.rootId = mRootId;
         return tabState;
     }
 
@@ -919,6 +935,21 @@ public class Tab
     @CalledByNative
     public int getId() {
         return mId;
+    }
+
+    /**
+     * This is used to change how this tab related to other tabs.
+     * @param rootId New relationship id to be set.
+     */
+    public void setRootId(int rootId) {
+        mRootId = rootId;
+    }
+
+    /**
+     * @return Tab's relationship id.
+     */
+    public int getRootId() {
+        return mRootId;
     }
 
     public boolean isIncognito() {
