@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -17,6 +18,8 @@
 namespace {
 // Minimum gap between the label and the text field.
 const CGFloat kLabelAndFieldGap = 5;
+// Height/width of the edit icon.
+const CGFloat kEditIconLength = 18;
 }  // namespace
 
 @implementation AutofillEditItem
@@ -54,14 +57,19 @@ const CGFloat kLabelAndFieldGap = 5;
     cell.textField.backgroundColor = styler.tableViewBackgroundColor;
   }
   cell.textField.enabled = self.textFieldEnabled;
-  cell.textField.textColor =
-      self.textFieldEnabled
-          ? UIColorFromRGB(kTableViewTextLabelColorBlue)
-          : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+    cell.textField.textColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    cell.editIconDisplayed = self.textFieldEnabled;
+  } else {
+    cell.textField.textColor =
+        self.textFieldEnabled
+            ? UIColorFromRGB(kTableViewTextLabelColorBlue)
+            : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  }
   [cell.textField addTarget:self
                      action:@selector(textFieldChanged:)
            forControlEvents:UIControlEventEditingChanged];
-  cell.textField.inputView = self.inputView;
   cell.textField.returnKeyType = self.returnKeyType;
   cell.textField.keyboardType = self.keyboardType;
   cell.textField.autocapitalizationType = self.autoCapitalizationType;
@@ -85,6 +93,9 @@ const CGFloat kLabelAndFieldGap = 5;
 @property(nonatomic, strong) NSLayoutConstraint* textFieldTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* textLabelTrailingConstraint;
 
+@property(nonatomic, strong) NSLayoutConstraint* editIconHeightConstraint;
+@property(nonatomic, strong) NSLayoutConstraint* iconTrailingConstraint;
+
 // When they are activated, the label and the text field are on one line.
 // They conflict with the |accessibilityConstraints|.
 @property(nonatomic, strong) NSArray<NSLayoutConstraint*>* standardConstraints;
@@ -95,6 +106,9 @@ const CGFloat kLabelAndFieldGap = 5;
 
 // UIImageView containing the icon identifying |textField| or its current value.
 @property(nonatomic, readonly, strong) UIImageView* identifyingIconView;
+
+// UIImageView containing the icon indicating that |textField| is editable.
+@property(nonatomic, strong) UIImageView* editIconView;
 
 @end
 
@@ -137,16 +151,29 @@ const CGFloat kLabelAndFieldGap = 5;
     _identifyingIconView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_identifyingIconView];
 
+    // Edit icon.
+    UIImage* editImage = [[UIImage imageNamed:@"autofill_edit_item_icon"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _editIconView = [[UIImageView alloc] initWithImage:editImage];
+    _editIconView.tintColor =
+        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _editIconView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:_editIconView];
+
     // Set up the icons size constraints. They are activated here and updated in
     // layoutSubviews.
     _iconHeightConstraint =
         [_identifyingIconView.heightAnchor constraintEqualToConstant:0];
     _iconWidthConstraint =
         [_identifyingIconView.widthAnchor constraintEqualToConstant:0];
+    _editIconHeightConstraint =
+        [_editIconView.heightAnchor constraintEqualToConstant:0];
 
     _textFieldTrailingConstraint = [_textField.trailingAnchor
-        constraintEqualToAnchor:_identifyingIconView.leadingAnchor];
+        constraintEqualToAnchor:_editIconView.leadingAnchor];
     _textLabelTrailingConstraint = [_textLabel.trailingAnchor
+        constraintEqualToAnchor:_editIconView.leadingAnchor];
+    _iconTrailingConstraint = [_editIconView.trailingAnchor
         constraintEqualToAnchor:_identifyingIconView.leadingAnchor];
 
     _standardConstraints = @[
@@ -177,8 +204,14 @@ const CGFloat kLabelAndFieldGap = 5;
                          constant:-kTableViewHorizontalSpacing],
       [_identifyingIconView.centerYAnchor
           constraintEqualToAnchor:contentView.centerYAnchor],
+      [_editIconView.centerYAnchor
+          constraintEqualToAnchor:contentView.centerYAnchor],
       _iconHeightConstraint,
       _iconWidthConstraint,
+      _iconTrailingConstraint,
+      _editIconHeightConstraint,
+      [_editIconView.widthAnchor
+          constraintEqualToAnchor:_editIconView.heightAnchor],
     ]];
     AddOptionalVerticalPadding(contentView, _textLabel,
                                kTableViewLargeVerticalSpacing);
@@ -194,18 +227,35 @@ const CGFloat kLabelAndFieldGap = 5;
 
 #pragma mark Public
 
+- (void)setEditIconDisplayed:(BOOL)editIconDisplayed {
+  if (editIconDisplayed == _editIconDisplayed)
+    return;
+
+  _editIconDisplayed = editIconDisplayed;
+  self.editIconView.hidden = !editIconDisplayed;
+  if (editIconDisplayed) {
+    self.textFieldTrailingConstraint.constant = -kLabelAndFieldGap;
+    self.textLabelTrailingConstraint.constant = -kLabelAndFieldGap;
+
+    _editIconHeightConstraint.constant = kEditIconLength;
+  } else {
+    self.textFieldTrailingConstraint.constant = 0;
+    self.textLabelTrailingConstraint.constant = 0;
+
+    _editIconHeightConstraint.constant = 0;
+  }
+}
+
 - (void)setIdentifyingIcon:(UIImage*)icon {
   self.identifyingIconView.image = icon;
   if (icon) {
-    self.textFieldTrailingConstraint.constant = -kLabelAndFieldGap;
-    self.textLabelTrailingConstraint.constant = -kLabelAndFieldGap;
+    self.iconTrailingConstraint.constant = -kLabelAndFieldGap;
 
     // Set the size constraints of the icon view to the dimensions of the image.
     self.iconHeightConstraint.constant = icon.size.height;
     self.iconWidthConstraint.constant = icon.size.width;
   } else {
-    self.textFieldTrailingConstraint.constant = 0;
-    self.textLabelTrailingConstraint.constant = 0;
+    self.iconTrailingConstraint.constant = 0;
     self.iconHeightConstraint.constant = 0;
     self.iconWidthConstraint.constant = 0;
   }
