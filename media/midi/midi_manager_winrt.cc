@@ -777,8 +777,8 @@ MidiManagerWinrt::MidiManagerWinrt(MidiService* service)
 MidiManagerWinrt::~MidiManagerWinrt() {
   // Unbind and take a lock to ensure that InitializeOnComRunner should not run
   // after here.
-  bool result = service()->task_service()->UnbindInstance();
-  CHECK(result);
+  if (!service()->task_service()->UnbindInstance())
+    return;
 
   base::AutoLock auto_lock(lazy_init_member_lock_);
   service()->task_service()->PostStaticTask(
@@ -788,11 +788,8 @@ MidiManagerWinrt::~MidiManagerWinrt() {
 }
 
 void MidiManagerWinrt::StartInitialization() {
-  if (!service()->task_service()->BindInstance()) {
-    NOTREACHED();
-    CompleteInitialization(Result::INITIALIZATION_ERROR);
-    return;
-  }
+  if (!service()->task_service()->BindInstance())
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
 
   service()->task_service()->PostBoundTask(
       kComTaskRunner, base::BindOnce(&MidiManagerWinrt::InitializeOnComRunner,

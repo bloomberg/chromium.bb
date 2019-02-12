@@ -12,12 +12,14 @@
 #include <mmsystem.h>
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -104,8 +106,8 @@ constexpr size_t kSysExSizeLimit = 256 * 1024;
 constexpr size_t kBufferLength = 32 * 1024;
 
 // Global variables to identify MidiManager instance.
-constexpr int kInvalidInstanceId = -1;
-int g_active_instance_id = kInvalidInstanceId;
+constexpr int64_t kInvalidInstanceId = -1;
+int64_t g_active_instance_id = kInvalidInstanceId;
 MidiManagerWin* g_manager_instance = nullptr;
 
 // Obtains base::Lock instance pointer to lock instance_id.
@@ -115,8 +117,15 @@ base::Lock* GetInstanceIdLock() {
 }
 
 // Issues unique MidiManager instance ID.
-int IssueNextInstanceId() {
-  static int id = kInvalidInstanceId;
+int64_t IssueNextInstanceId(base::Optional<int64_t> override_id) {
+  static int64_t id = kInvalidInstanceId;
+  if (override_id) {
+    int64_t result = ++id;
+    id = *override_id;
+    return result;
+  }
+  if (id == std::numeric_limits<int64_t>::max())
+    return kInvalidInstanceId;
   return ++id;
 }
 
@@ -687,9 +696,14 @@ MidiManagerWin::PortManager::HandleMidiOutCallback(HMIDIOUT hmo,
   }
 }
 
+// static
+void MidiManagerWin::OverflowInstanceIdForTesting() {
+  IssueNextInstanceId(std::numeric_limits<int64_t>::max());
+}
+
 MidiManagerWin::MidiManagerWin(MidiService* service)
     : MidiManager(service),
-      instance_id_(IssueNextInstanceId()),
+      instance_id_(IssueNextInstanceId(base::nullopt)),
       port_manager_(std::make_unique<PortManager>()) {
   base::AutoLock lock(*GetInstanceIdLock());
   CHECK_EQ(kInvalidInstanceId, g_active_instance_id);
@@ -699,6 +713,11 @@ MidiManagerWin::MidiManagerWin(MidiService* service)
 }
 
 MidiManagerWin::~MidiManagerWin() {
+  // Initialization failed. Exit without running actual finalization that should
+  // not be needed.
+  if (instance_id_ == kInvalidInstanceId)
+    return;
+
   // Unregisters on the I/O thread. OnDevicesChanged() won't be called any more.
   CHECK(thread_runner_->BelongsToCurrentThread());
   base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
@@ -733,6 +752,9 @@ MidiManagerWin::~MidiManagerWin() {
 void MidiManagerWin::StartInitialization() {
   {
     base::AutoLock lock(*GetInstanceIdLock());
+    if (instance_id_ == kInvalidInstanceId)
+      return CompleteInitialization(mojom::Result::INITIALIZATION_ERROR);
+
     CHECK_EQ(kInvalidInstanceId, g_active_instance_id);
     g_active_instance_id = instance_id_;
     CHECK_EQ(nullptr, g_manager_instance);
