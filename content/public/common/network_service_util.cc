@@ -27,6 +27,10 @@ constexpr base::FeatureParam<int> kNetworkServiceOutOfProcessThresholdMb{
     1077};
 #endif
 
+// Indicates whether the network service is forced to be running in the browser
+// process.
+bool g_force_in_process_network_service = false;
+
 }  // namespace
 
 bool IsOutOfProcessNetworkService() {
@@ -38,7 +42,8 @@ bool IsInProcessNetworkService() {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return false;
 
-  if (base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
+  if (g_force_in_process_network_service ||
+      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
     return true;
@@ -49,6 +54,10 @@ bool IsInProcessNetworkService() {
          kNetworkServiceOutOfProcessThresholdMb.Get();
 #endif
   return false;
+}
+
+void ForceInProcessNetworkService(bool is_forced) {
+  g_force_in_process_network_service = is_forced;
 }
 
 }  // namespace content
