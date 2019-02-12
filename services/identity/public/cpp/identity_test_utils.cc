@@ -394,7 +394,7 @@ void SetFreshnessOfAccountsInGaiaCookie(IdentityManager* identity_manager,
                                         bool accounts_are_fresh) {
   GaiaCookieManagerService* cookie_manager =
       identity_manager->GetGaiaCookieManagerService();
-  cookie_manager->set_list_accounts_stale_for_testing(accounts_are_fresh);
+  cookie_manager->set_list_accounts_stale_for_testing(!accounts_are_fresh);
 }
 
 std::string GetTestGaiaIdForEmail(const std::string& email) {
