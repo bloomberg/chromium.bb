@@ -51,7 +51,7 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
     return delete_surrounding_text_call_count_;
   }
 
-  const std::string& last_commit_text() const { return last_commit_text_; };
+  const std::string& last_commit_text() const { return last_commit_text_; }
 
   const UpdateCompositionTextArg& last_update_composition_arg() const {
     return last_update_composition_arg_;
