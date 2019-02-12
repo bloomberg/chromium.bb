@@ -120,9 +120,11 @@ void PreviewsUKMObserver::OnComplete(
 void PreviewsUKMObserver::RecordPreviewsTypes(
     const page_load_metrics::PageLoadExtraInfo& info) {
   // Record the page end reason in UMA.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Previews.PageEndReason", info.page_end_reason,
-      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+  if (committed_preview_ != PreviewsType::NONE) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Previews.PageEndReason", info.page_end_reason,
+        page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+  }
   base::UmaHistogramExactLinear(
       base::StringPrintf(
           "Previews.PageEndReason.%s",
