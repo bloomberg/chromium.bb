@@ -22,6 +22,7 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/browser/web_package/signed_exchange_prologue.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -185,6 +186,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     int load_flags,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
+    SignedExchangeReporter* reporter,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
     : is_secure_transport_(is_secure_transport),
       has_nosniff_(has_nosniff),
@@ -193,6 +195,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       load_flags_(load_flags),
       devtools_proxy_(std::move(devtools_proxy)),
+      reporter_(reporter),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
@@ -426,6 +429,11 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
     return SignedExchangeLoadResult::kHeaderParseError;
   }
 
+  if (reporter_) {
+    reporter_->set_inner_url(envelope_->request_url().url);
+    reporter_->set_cert_url(envelope_->signature().cert_url);
+  }
+
   const GURL cert_url = envelope_->signature().cert_url;
   // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
   // may be empty.
@@ -441,7 +449,7 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
                           cert_url, force_fetch,
                           base::BindOnce(&SignedExchangeHandler::OnCertReceived,
                                          base::Unretained(this)),
-                          devtools_proxy_.get());
+                          devtools_proxy_.get(), reporter_);
 
   state_ = State::kFetchingCertificate;
   return SignedExchangeLoadResult::kSuccess;

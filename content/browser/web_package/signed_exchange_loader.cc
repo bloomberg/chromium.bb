@@ -17,6 +17,7 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -116,6 +117,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     uint32_t url_loader_options,
     bool should_redirect_on_failure,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
+    std::unique_ptr<SignedExchangeReporter> reporter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
@@ -129,6 +131,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       url_loader_options_(url_loader_options),
       should_redirect_on_failure_(should_redirect_on_failure),
       devtools_proxy_(std::move(devtools_proxy)),
+      reporter_(std::move(reporter)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
@@ -224,7 +227,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), outer_request_.load_flags,
-      std::move(devtools_proxy_), frame_tree_node_id_getter_);
+      std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_getter_);
 }
 
 void SignedExchangeLoader::OnComplete(
@@ -284,6 +287,9 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   }
 
   if (error) {
+    DCHECK_NE(result, SignedExchangeLoadResult::kSuccess);
+    if (reporter_)
+      reporter_->ReportResult(result);
     if (error != net::ERR_INVALID_SIGNED_EXCHANGE ||
         !should_redirect_on_failure_ || !request_url.is_valid()) {
       // Let the request fail.
@@ -302,6 +308,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     forwarding_client_.reset();
     return;
   }
+  DCHECK_EQ(result, SignedExchangeLoadResult::kSuccess);
   inner_request_url_ = request_url;
 
   DCHECK(outer_response_timing_info_);
@@ -364,6 +371,13 @@ void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
   // nothing and rely on the subsequent call to notify client.
   if (!encoded_data_length_ || !decoded_body_read_result_)
     return;
+
+  if (reporter_) {
+    reporter_->ReportResult(
+        *decoded_body_read_result_ == net::OK
+            ? SignedExchangeLoadResult::kSuccess
+            : SignedExchangeLoadResult::kMerkleIntegrityError);
+  }
 
   // TODO(https://crbug.com/803774): Fill the data length information (
   // encoded_body_length, decoded_body_length) too.

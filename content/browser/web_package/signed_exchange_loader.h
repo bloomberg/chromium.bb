@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_LOADER_H_
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_LOADER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
@@ -32,6 +35,7 @@ class SignedExchangeDevToolsProxy;
 class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
 class SignedExchangePrefetchMetricRecorder;
+class SignedExchangeReporter;
 class URLLoaderThrottle;
 class SourceStreamToDataPipe;
 
@@ -57,6 +61,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       uint32_t url_loader_options,
       bool should_redirect_on_failure,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
+      std::unique_ptr<SignedExchangeReporter> reporter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
@@ -149,6 +154,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const uint32_t url_loader_options_;
   const bool should_redirect_on_failure_;
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
+  std::unique_ptr<SignedExchangeReporter> reporter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
