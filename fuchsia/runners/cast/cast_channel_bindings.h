@@ -11,14 +11,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "fuchsia/common/fuchsia_export.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 
 // Handles the injection of cast.__platform__.channel bindings into pages'
 // scripting context, and establishes a bidirectional message pipe over
 // which the two communicate.
-class FUCHSIA_EXPORT CastChannelBindings {
+class CastChannelBindings {
  public:
   // Attaches CastChannel bindings and port to a |frame|.
   // |frame|: The frame to be provided with a CastChannel.

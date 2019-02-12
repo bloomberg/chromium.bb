@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
-#include "fuchsia/common/mem_buffer_util.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -83,7 +83,7 @@ base::Optional<chromium::web::WebMessage> FromMojoMessage(
 // Returns a null mojo::Message if |message| was invalid.
 mojo::Message FromFidlMessage(chromium::web::WebMessage message) {
   base::string16 data_utf16;
-  if (!webrunner::ReadUTF8FromVMOAsUTF16(message.data, &data_utf16))
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data, &data_utf16))
     return mojo::Message();
 
   // TODO(crbug.com/893236): support >1 transferable when fidlc cycle detection

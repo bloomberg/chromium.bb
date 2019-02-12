@@ -12,14 +12,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "fuchsia/common/fuchsia_export.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 // The implementation actively creates a MessagePort for each registered Id,
 // passing them all to the web container every time a page-load occurs. It then
 // waits for the page to acknowledge each MessagePort, before invoking its
 // registered |handler| to notify the called that it is ready for use.
-class FUCHSIA_EXPORT NamedMessagePortConnector {
+class NamedMessagePortConnector {
  public:
   using PortConnectedCallback =
       base::RepeatingCallback<void(chromium::web::MessagePortPtr)>;

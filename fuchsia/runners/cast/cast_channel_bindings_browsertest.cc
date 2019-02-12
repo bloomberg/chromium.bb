@@ -12,8 +12,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
-#include "fuchsia/common/mem_buffer_util.h"
-#include "fuchsia/engine/test/promise.h"
+#include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/test/test_common.h"
 #include "fuchsia/engine/test/webrunner_browser_test.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
@@ -92,10 +93,10 @@ class CastChannelBindingsTest : public cr_fuchsia::test::WebRunnerBrowserTest,
 
   std::string ReadStringFromChannel() {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> message(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> message(
         run_loop.QuitClosure());
     connected_channel_->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(message.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
     return cr_fuchsia::test::StringFromMemBufferOrDie(message->data);
   }
@@ -187,13 +188,13 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
     // Send a message to the channel.
     {
       chromium::web::WebMessage message;
-      message.data = webrunner::MemBufferFromString("hello");
+      message.data = cr_fuchsia::MemBufferFromString("hello");
 
       base::RunLoop run_loop;
-      cr_fuchsia::test::Promise<bool> post_result(run_loop.QuitClosure());
-      connected_channel_->PostMessage(std::move(message),
-                                      cr_fuchsia::test::ConvertToFitFunction(
-                                          post_result.GetReceiveCallback()));
+      cr_fuchsia::ResultReceiver<bool> post_result(run_loop.QuitClosure());
+      connected_channel_->PostMessage(
+          std::move(message),
+          cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
       run_loop.Run();
       EXPECT_EQ(true, *post_result);
     }

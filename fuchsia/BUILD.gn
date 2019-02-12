@@ -7,22 +7,6 @@ assert(is_fuchsia)
 import("//build/config/fuchsia/fidl_library.gni")
 import("//build/util/process_version.gni")
 
-config("webrunner_implementation") {
-  defines = [ "WEBRUNNER_IMPLEMENTATION" ]
-}
-
-source_set("mem_buffer_common") {
-  sources = [
-    "common/fuchsia_export.h",
-    "common/mem_buffer_util.cc",
-    "common/mem_buffer_util.h",
-  ]
-  deps = [
-    "//base",
-    "//third_party/fuchsia-sdk/sdk:mem",
-  ]
-}
-
 fidl_library("web_fidl") {
   library_name = "web"
   namespace = "chromium"
@@ -134,11 +118,11 @@ group("archive_sources") {
 group("gn_all") {
   testonly = true
   deps = [
+    "base:cr_fuchsia_base_unittests",
     "engine:web_engine",
     "engine:web_engine_browsertests",
     "engine:web_engine_unittests",
     "http:http_service_tests",
-    "modular:modular_unittests",
     "runners:cast_runner",
     "runners:cast_runner_browsertests",
     "runners:cast_runner_integration_tests",

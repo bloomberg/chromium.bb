@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chromium/web/cpp/fidl.h"
-#include "fuchsia/common/fuchsia_export.h"
+#include "fuchsia/engine/web_engine_export.h"
 
 namespace base {
 class CommandLine;
@@ -19,7 +19,7 @@ struct LaunchOptions;
 class Process;
 }  // namespace base
 
-class FUCHSIA_EXPORT ContextProviderImpl
+class WEB_ENGINE_EXPORT ContextProviderImpl
     : public chromium::web::ContextProvider {
  public:
   ContextProviderImpl();

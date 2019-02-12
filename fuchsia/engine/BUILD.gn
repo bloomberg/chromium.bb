@@ -9,12 +9,15 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
+config("web_engine_implementation") {
+  defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
+}
+
 source_set("test_support") {
   testonly = true
   sources = [
     "test/fake_context.cc",
     "test/fake_context.h",
-    "test/promise.h",
     "test/test_common.cc",
     "test/test_common.h",
   ]
@@ -22,7 +25,7 @@ source_set("test_support") {
     "//base",
     "//base/test:test_config",
     "//content/test:test_support",
-    "//fuchsia:mem_buffer_common",
+    "//fuchsia/base",
   ]
   public_deps = [
     "//fuchsia:web_fidl",
@@ -87,7 +90,7 @@ component("web_engine_core") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
-    "//fuchsia:mem_buffer_common",
+    "//fuchsia/base",
     "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
     "//services/service_manager/sandbox",
@@ -110,7 +113,7 @@ component("web_engine_core") {
   public_deps = [
     "//fuchsia:web_fidl",
   ]
-  configs += [ "//fuchsia:webrunner_implementation" ]
+  configs += [ ":web_engine_implementation" ]
   sources = [
     "browser/context_impl.cc",
     "browser/context_impl.h",
@@ -142,6 +145,7 @@ component("web_engine_core") {
     "renderer/on_load_script_injector.h",
     "renderer/webrunner_content_renderer_client.cc",
     "renderer/webrunner_content_renderer_client.h",
+    "web_engine_export.h",
     "webrunner_content_client.cc",
     "webrunner_content_client.h",
     "webrunner_main_delegate.cc",
@@ -212,7 +216,8 @@ test("web_engine_browsertests") {
     ":web_engine_core",
     "//base/test:test_support",
     "//content/public/browser",
-    "//fuchsia:mem_buffer_common",
+    "//fuchsia/base",
+    "//fuchsia/base:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

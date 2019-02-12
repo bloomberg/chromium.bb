@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "content/public/app/content_main_delegate.h"
-#include "fuchsia/common/fuchsia_export.h"
+#include "fuchsia/engine/web_engine_export.h"
 
 namespace content {
 class ContentClient;
@@ -20,7 +20,7 @@ class ContentClient;
 class WebRunnerContentBrowserClient;
 class WebRunnerContentRendererClient;
 
-class FUCHSIA_EXPORT WebRunnerMainDelegate
+class WEB_ENGINE_EXPORT WebRunnerMainDelegate
     : public content::ContentMainDelegate {
  public:
   explicit WebRunnerMainDelegate(zx::channel context_channel);

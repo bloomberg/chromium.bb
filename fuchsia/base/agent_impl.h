@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_MODULAR_AGENT_IMPL_H_
-#define FUCHSIA_MODULAR_AGENT_IMPL_H_
+#ifndef FUCHSIA_BASE_AGENT_IMPL_H_
+#define FUCHSIA_BASE_AGENT_IMPL_H_
 
 #include <fuchsia/modular/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 
-namespace modular {
+namespace cr_fuchsia {
 
 // AgentImpl allows the set of services published to each component to be
 // configured via a caller-supplied factory function for per-component state.
@@ -52,7 +52,7 @@ class AgentImpl : public ::fuchsia::modular::Agent {
     virtual ~ComponentStateBase();
 
    protected:
-    ComponentStateBase(base::StringPiece component_id);
+    explicit ComponentStateBase(base::StringPiece component_id);
 
     // Returns the identity of the component served by this instance.
     const base::StringPiece component_id() const { return component_id_; }
@@ -124,6 +124,6 @@ class AgentImpl : public ::fuchsia::modular::Agent {
   DISALLOW_COPY_AND_ASSIGN(AgentImpl);
 };
 
-}  // namespace modular
+}  // namespace cr_fuchsia
 
-#endif  // FUCHSIA_MODULAR_AGENT_IMPL_H_
+#endif  // FUCHSIA_BASE_AGENT_IMPL_H_

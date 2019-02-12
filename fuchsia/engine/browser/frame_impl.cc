@@ -19,7 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences_util.h"
 #include "content/public/common/was_activated_option.h"
-#include "fuchsia/common/mem_buffer_util.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/message_port_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -314,7 +314,7 @@ void FrameImpl::ExecuteJavaScript(std::vector<std::string> origins,
     origins_strings.push_back(origin);
 
   base::string16 script_utf16;
-  if (!webrunner::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
     callback(false);
     return;
   }
@@ -333,7 +333,7 @@ void FrameImpl::ExecuteJavaScript(std::vector<std::string> origins,
 
     // Create a read-only VMO from |script|.
     fuchsia::mem::Buffer script_buffer =
-        webrunner::MemBufferFromString16(script_utf16);
+        cr_fuchsia::MemBufferFromString16(script_utf16);
     if (!script_buffer.vmo) {
       LOG(WARNING) << "Couldn't read script contents from VMO.";
       callback(false);
@@ -370,7 +370,7 @@ void FrameImpl::PostMessage(chromium::web::WebMessage message,
     target_origin_utf16 = base::UTF8ToUTF16(target_origin);
 
   base::string16 data_utf16;
-  if (!webrunner::ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
+  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
     DLOG(WARNING) << "PostMessage() rejected non-UTF8 |message.data|.";
     callback(false);
     return;
