@@ -30,6 +30,7 @@ namespace {{namespace}} {
 class Value;
 
 using String = std::string;
+using ProtocolMessage = std::string;
 
 class {{config.lib.export_macro}} StringBuilder {
  public:
@@ -91,6 +92,10 @@ class {{config.lib.export_macro}} StringUtil {
   }
 
   static std::unique_ptr<Value> parseJSON(const String&);
+  static std::unique_ptr<Value> parseProtocolMessage(const ProtocolMessage&);
+  static ProtocolMessage toProtocolMessage(const Value& value);
+  static String jsonComponent(const ProtocolMessage& message);
+  static ProtocolMessage fromJsonComponent(const String& message);
 };
 
 // A read-only sequence of uninterpreted bytes with reference-counted storage.

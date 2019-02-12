@@ -539,7 +539,7 @@ void InspectorDOMDebuggerAgent::BreakProgramOnDOMEvent(Node* target,
   DCHECK(breakpoint_owner_node_id);
   description->setInteger("nodeId", breakpoint_owner_node_id);
   description->setString("type", DomTypeName(breakpoint_type));
-  String json = description->serialize();
+  String json = description->toJSONString();
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::DOM),
@@ -579,7 +579,7 @@ void InspectorDOMDebuggerAgent::PauseOnNativeEventIfNeeded(
     bool synchronous) {
   if (!event_data)
     return;
-  String json = event_data->serialize();
+  String json = event_data->toJSONString();
   if (synchronous)
     v8_session_->breakProgram(
         ToV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::
@@ -722,7 +722,7 @@ void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
       protocol::DictionaryValue::create();
   event_data->setString("breakpointURL", breakpoint_url);
   event_data->setString("url", url);
-  String json = event_data->serialize();
+  String json = event_data->toJSONString();
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::XHR),

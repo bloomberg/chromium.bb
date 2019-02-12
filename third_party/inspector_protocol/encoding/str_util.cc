@@ -13,7 +13,8 @@ bool StrEq(span<uint8_t> left, span<uint8_t> right) {
 }
 
 bool StrEq(span<uint8_t> left, const char* null_terminated_right) {
-  return size_t(left.size()) == strlen(null_terminated_right) &&
+  return static_cast<std::size_t>(left.size()) ==
+             strlen(null_terminated_right) &&
          0 == memcmp(left.data(), null_terminated_right, left.size());
 }
 }  // namespace inspector_protocol

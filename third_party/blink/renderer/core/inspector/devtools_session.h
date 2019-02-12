@@ -59,9 +59,9 @@ class CORE_EXPORT DevToolsSession
       int call_id,
       const String& method,
       mojom::blink::DevToolsMessagePtr message) override;
-  void DispatchProtocolCommandMessage(int call_id,
-                                      const String& method,
-                                      const String& message);
+  void DispatchProtocolCommandImpl(int call_id,
+                                   const String& method,
+                                   std::vector<uint8_t> message);
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
@@ -71,7 +71,7 @@ class CORE_EXPORT DevToolsSession
       std::unique_ptr<protocol::Serializable> message) override;
   void fallThrough(int call_id,
                    const String& method,
-                   const String& message) override;
+                   const protocol::ProtocolMessage& message) override;
   void flushProtocolNotifications() override;
 
   // v8_inspector::V8Inspector::Channel implementation.
@@ -82,7 +82,8 @@ class CORE_EXPORT DevToolsSession
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
 
   bool IsDetached();
-  void SendProtocolResponse(int call_id, const String& message);
+  void SendProtocolResponse(int call_id,
+                            const protocol::ProtocolMessage& message);
 
   Member<DevToolsAgent> agent_;
   mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;

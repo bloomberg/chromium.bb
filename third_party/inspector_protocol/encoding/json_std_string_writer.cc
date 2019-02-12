@@ -53,7 +53,7 @@ void Base64Encode(const std::vector<uint8_t>& in, std::string* out) {
   // The following three cases are based on the tables in the example
   // section in https://en.wikipedia.org/wiki/Base64. We process three
   // input bytes at a time, emitting 4 output bytes at a time.
-  size_t ii = 0;
+  std::size_t ii = 0;
 
   // While possible, process three input bytes.
   for (; ii + 3 <= in.size(); ii += 3) {
@@ -210,6 +210,6 @@ class Writer : public JSONParserHandler {
 std::unique_ptr<JSONParserHandler> NewJSONWriter(Platform* platform,
                                                  std::string* out,
                                                  Status* status) {
-  return std::make_unique<Writer>(platform, out, status);
+  return std::unique_ptr<Writer>(new Writer(platform, out, status));
 }
 }  // namespace inspector_protocol

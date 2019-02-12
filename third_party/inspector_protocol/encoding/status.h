@@ -54,6 +54,8 @@ struct Status {
 
   Error error = Error::OK;
   std::ptrdiff_t pos = npos();
+  Status(Error error, std::ptrdiff_t pos) : error(error), pos(pos) {}
+  Status() = default;
 };
 }  // namespace inspector_protocol
 #endif  // INSPECTOR_PROTOCOL_ENCODING_STATUS_H_

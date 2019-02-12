@@ -68,7 +68,7 @@ public:
 
     class {{config.lib.export_macro}} Callback {
     public:
-        Callback(std::unique_ptr<WeakPtr> backendImpl, int callId, const String& method, const String& message);
+        Callback(std::unique_ptr<WeakPtr> backendImpl, int callId, const String& method, const ProtocolMessage& message);
         virtual ~Callback();
         void dispose();
 
@@ -80,14 +80,14 @@ public:
         std::unique_ptr<WeakPtr> m_backendImpl;
         int m_callId;
         String m_method;
-        String m_message;
+        ProtocolMessage m_message;
     };
 
     explicit DispatcherBase(FrontendChannel*);
     virtual ~DispatcherBase();
 
     virtual bool canDispatch(const String& method) = 0;
-    virtual void dispatch(int callId, const String& method, const String& rawMessage, std::unique_ptr<protocol::DictionaryValue> messageObject) = 0;
+    virtual void dispatch(int callId, const String& method, const ProtocolMessage& rawMessage, std::unique_ptr<protocol::DictionaryValue> messageObject) = 0;
     FrontendChannel* channel() { return m_frontendChannel; }
 
     void sendResponse(int callId, const DispatchResponse&, std::unique_ptr<protocol::DictionaryValue> result);
@@ -111,7 +111,8 @@ public:
     void setupRedirects(const std::unordered_map<String, String>&);
     bool parseCommand(Value* message, int* callId, String* method);
     bool canDispatch(const String& method);
-    void dispatch(int callId, const String& method, std::unique_ptr<Value> message, const String& rawMessage);
+    void dispatch(int callId, const String& method, const ProtocolMessage& rawMessage);
+    void dispatch(int callId, const String& method, std::unique_ptr<Value> message, const ProtocolMessage& rawMessage);
     FrontendChannel* channel() { return m_frontendChannel; }
     virtual ~UberDispatcher();
 
@@ -128,7 +129,7 @@ public:
     static std::unique_ptr<InternalResponse> createResponse(int callId, std::unique_ptr<Serializable> params);
     static std::unique_ptr<InternalResponse> createNotification(const String& notification, std::unique_ptr<Serializable> params = nullptr);
 
-    String serialize() override;
+    ProtocolMessage serialize() override;
 
     ~InternalResponse() override {}
 
@@ -142,24 +143,24 @@ private:
 
 class InternalRawNotification : public Serializable {
 public:
-    static std::unique_ptr<InternalRawNotification> create(const String& notification)
+    static std::unique_ptr<InternalRawNotification> create(const ProtocolMessage& notification)
     {
         return std::unique_ptr<InternalRawNotification>(new InternalRawNotification(notification));
     }
     ~InternalRawNotification() override {}
 
-    String serialize() override
+    ProtocolMessage serialize() override
     {
         return m_notification;
     }
 
 private:
-  explicit InternalRawNotification(const String& notification)
+  explicit InternalRawNotification(const ProtocolMessage& notification)
     : m_notification(notification)
   {
   }
 
-  String m_notification;
+  ProtocolMessage m_notification;
 };
 
 {% for namespace in config.protocol.namespace %}

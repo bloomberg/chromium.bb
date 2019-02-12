@@ -100,7 +100,8 @@ public:
     {% endfor %}
 
     std::unique_ptr<protocol::DictionaryValue> toValue() const;
-    String serialize() override { return toValue()->serialize(); }
+    ProtocolMessage serialize() override { return toValue()->serialize(); }
+    String toJSON() const { return toValue()->toJSONString(); }
     std::unique_ptr<{{type.id}}> clone() const;
     {% if protocol.is_exported(domain.domain, type.id) %}
     {{config.exported.string_out}} toJSONString() const override;
@@ -266,7 +267,7 @@ public:
   {% endfor %}
 
     void flush();
-    void sendRawNotification(const String&);
+    void sendRawNotification(const ProtocolMessage&);
 private:
     FrontendChannel* m_frontendChannel;
 };

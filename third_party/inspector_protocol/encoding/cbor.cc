@@ -34,7 +34,7 @@ static constexpr uint8_t kAdditionalInformation8Bytes = 27u;
 // Encodes the initial byte, consisting of the |type| in the first 3 bits
 // followed by 5 bits of |additional_info|.
 constexpr uint8_t EncodeInitialByte(MajorType type, uint8_t additional_info) {
-  return (uint8_t(type) << kMajorTypeBitShift) |
+  return (static_cast<uint8_t>(type) << kMajorTypeBitShift) |
          (additional_info & kAdditionalInformationMask);
 }
 
@@ -116,7 +116,7 @@ void WriteTokenStart(MajorType type, uint64_t value,
   if (value < 24) {
     // Values 0-23 are encoded directly into the additional info of the
     // initial byte.
-    encoded->push_back(EncodeInitialByte(type, /*additiona_info=*/value));
+    encoded->push_back(EncodeInitialByte(type, /*additional_info=*/value));
     return;
   }
   if (value <= std::numeric_limits<uint8_t>::max()) {
@@ -150,9 +150,9 @@ namespace {
 // See also: https://commandcenter.blogspot.com/2012/04/byte-order-fallacy.html
 template <typename T>
 T ReadBytesMostSignificantByteFirst(span<uint8_t> in) {
-  assert(size_t(in.size()) >= sizeof(T));
+  assert(static_cast<std::size_t>(in.size()) >= sizeof(T));
   T result = 0;
-  for (size_t shift_bytes = 0; shift_bytes < sizeof(T); ++shift_bytes)
+  for (std::size_t shift_bytes = 0; shift_bytes < sizeof(T); ++shift_bytes)
     result |= T(in[sizeof(T) - 1 - shift_bytes]) << (shift_bytes * 8);
   return result;
 }
@@ -179,19 +179,22 @@ int8_t ReadTokenStart(span<uint8_t> bytes, MajorType* type, uint64_t* value) {
   }
   if (additional_information == kAdditionalInformation2Bytes) {
     // Values 256-65535: 1 initial byte + 2 bytes payload.
-    if (static_cast<size_t>(bytes.size()) < 1 + sizeof(uint16_t)) return -1;
+    if (static_cast<std::size_t>(bytes.size()) < 1 + sizeof(uint16_t))
+      return -1;
     *value = ReadBytesMostSignificantByteFirst<uint16_t>(bytes.subspan(1));
     return 3;
   }
   if (additional_information == kAdditionalInformation4Bytes) {
     // 32 bit uint: 1 initial byte + 4 bytes payload.
-    if (static_cast<size_t>(bytes.size()) < 1 + sizeof(uint32_t)) return -1;
+    if (static_cast<std::size_t>(bytes.size()) < 1 + sizeof(uint32_t))
+      return -1;
     *value = ReadBytesMostSignificantByteFirst<uint32_t>(bytes.subspan(1));
     return 5;
   }
   if (additional_information == kAdditionalInformation8Bytes) {
     // 64 bit uint: 1 initial byte + 8 bytes payload.
-    if (static_cast<size_t>(bytes.size()) < 1 + sizeof(uint64_t)) return -1;
+    if (static_cast<std::size_t>(bytes.size()) < 1 + sizeof(uint64_t))
+      return -1;
     *value = ReadBytesMostSignificantByteFirst<uint64_t>(bytes.subspan(1));
     return 9;
   }
@@ -367,7 +370,7 @@ class JSONToCBOREncoder : public JSONParserHandler {
 
 std::unique_ptr<JSONParserHandler> NewJSONToCBOREncoder(
     std::vector<uint8_t>* out, Status* status) {
-  return std::make_unique<JSONToCBOREncoder>(out, status);
+  return std::unique_ptr<JSONParserHandler>(new JSONToCBOREncoder(out, status));
 }
 
 namespace {
@@ -663,7 +666,8 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
         SetError(Error::CBOR_INVALID_BINARY);
         return;
       }
-      SetToken(CBORTokenTag::BINARY, std::ptrdiff_t(token_byte_length));
+      SetToken(CBORTokenTag::BINARY,
+               static_cast<std::ptrdiff_t>(token_byte_length));
       return;
     }
     case kInitialByteForDouble: {  // DOUBLE
@@ -690,7 +694,7 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
       // Make sure the payload is contained within the message.
       if (token_start_internal_value_ + kEncodedEnvelopeHeaderSize +
               status_.pos >
-          size_t(bytes_.size())) {
+          static_cast<std::size_t>(bytes_.size())) {
         SetError(Error::CBOR_INVALID_ENVELOPE);
         return;
       }
@@ -725,8 +729,8 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
           SetToken(CBORTokenTag::INT32, token_start_length);
           return;
         case MajorType::STRING: {  // STRING8.
-          if (!success ||
-              remainder.size() < int64_t(token_start_internal_value_)) {
+          if (!success || remainder.size() < static_cast<int64_t>(
+                                                 token_start_internal_value_)) {
             SetError(Error::CBOR_INVALID_STRING8);
             return;
           }
@@ -736,7 +740,8 @@ void CBORTokenizer::ReadNextToken(bool enter_envelope) {
         }
         case MajorType::BYTE_STRING: {  // STRING16.
           if (!success ||
-              remainder.size() < int64_t(token_start_internal_value_) ||
+              remainder.size() <
+                  static_cast<int64_t>(token_start_internal_value_) ||
               // Must be divisible by 2 since UTF16 is 2 bytes per character.
               token_start_internal_value_ & 1) {
             SetError(Error::CBOR_INVALID_STRING16);
