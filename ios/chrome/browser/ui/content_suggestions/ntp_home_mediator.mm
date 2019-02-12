@@ -237,6 +237,11 @@ const char kNTPHelpURL[] =
 
 - (void)openMostVisitedItem:(CollectionViewItem*)item
                     atIndex:(NSInteger)mostVisitedIndex {
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTPHelper && NTPHelper->IgnoreLoadRequests())
+    return;
+
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
     ContentSuggestionsMostVisitedActionItem* mostVisitedItem =
         base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedActionItem>(
@@ -261,11 +266,6 @@ const char kNTPHelpURL[] =
     }
     return;
   }
-
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(self.webState);
-  if (NTPHelper && NTPHelper->IgnoreLoadRequests())
-    return;
 
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
@@ -458,6 +458,15 @@ const char kNTPHelpURL[] =
 
 - (BOOL)isScrolledToTop {
   return self.suggestionsViewController.scrolledToTop;
+}
+
+- (BOOL)ignoreLoadRequests {
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTPHelper && NTPHelper->IgnoreLoadRequests()) {
+    return YES;
+  }
+  return NO;
 }
 
 #pragma mark - WebStateListObserving
