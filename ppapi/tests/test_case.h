@@ -315,8 +315,8 @@ struct Stringinator {
 
 // Define some full specializations for types that can just use stringstream.
 #define DEFINE_STRINGINATOR_FOR_TYPE(type) \
-template <> \
-struct Stringinator<type> : public StringinatorBase<type> {};
+  template <>                              \
+  struct Stringinator<type> : public StringinatorBase<type> {}
 DEFINE_STRINGINATOR_FOR_TYPE(int32_t);
 DEFINE_STRINGINATOR_FOR_TYPE(uint32_t);
 DEFINE_STRINGINATOR_FOR_TYPE(int64_t);
