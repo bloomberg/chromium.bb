@@ -203,13 +203,6 @@ class RasterImplementationTest : public testing::Test {
 
   QueryTracker* GetQueryTracker() { return gl_->query_tracker_.get(); }
 
-  void* MapRasterCHROMIUM(GLsizeiptr size) {
-    return gl_->MapRasterCHROMIUM(size);
-  }
-  void UnmapRasterCHROMIUM(GLsizeiptr written_size) {
-    gl_->UnmapRasterCHROMIUM(written_size, written_size);
-  }
-
   struct ContextInitOptions {
     ContextInitOptions()
         : bind_generates_resource_client(true),

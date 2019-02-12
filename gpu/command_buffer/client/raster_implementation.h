@@ -242,7 +242,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                              GLenum value,
                              const char* label);
 
-  void* MapRasterCHROMIUM(GLsizeiptr size);
+  // Try to map a transfer buffer of |size|.  Will return a pointer to a
+  // buffer of |size_allocated|, which will be equal to or lesser than |size|.
+  void* MapRasterCHROMIUM(uint32_t size, uint32_t* size_allocated);
 
   // |raster_written_size| is the size of buffer used by raster commands.
   // |total_written_size| is the total size of the buffer written to, including
