@@ -237,8 +237,8 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
       paint_image.GetSupportedDecodeSize(pixmap.bounds().size());
   // We can directly decode into target pixmap if we are doing an original
   // decode or we are decoding to scale without nearest neighbor filtering.
-  // Although the JPEG decoder supports decoding to scale, we have not yet
-  // implemented YUV + decoding to scale, so we skip it for YUV.
+  // TODO(crbug.com/927437): Although the JPEG decoder supports decoding to
+  // scale, we have not yet implemented YUV + decoding to scale, so we skip it.
   const bool can_directly_decode =
       is_original_decode || (!is_nearest_neighbor && !do_yuv_decode);
   if (supported_size == pixmap.bounds().size() && can_directly_decode) {
@@ -1778,16 +1778,14 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
   sk_sp<SkColorSpace> color_space =
       SupportsColorSpaceConversion() ? target_color_space_ : nullptr;
-  // For RGBX decoding, sometimes color conversion happens during the decode, so
-  // |decode.image()| has the most up-to-date colorspace. For YUV this is not
-  // the case, so we look at |paint_image|.
-  // TODO(crbug.com/911246): Currently we avoid YUV decoding for images with an
-  // ICC profile, so |decoded_target_colorspace| will be nullptr in those cases.
-  SkColorSpace* decoded_target_colorspace =
-      image_data->is_yuv ? draw_image.paint_image().color_space()
-                         : image_data->decode.image()->colorSpace();
-  if (color_space &&
-      SkColorSpace::Equals(color_space.get(), decoded_target_colorspace)) {
+  // The value of |decoded_target_colorspace| takes into account the fact
+  // that we might need to ignore an embedded image color space if |color_type_|
+  // does not support color space conversions or that color conversion might
+  // have happened at decode time.
+  sk_sp<SkColorSpace> decoded_target_colorspace =
+      ColorSpaceForImageDecode(draw_image, image_data->mode);
+  if (color_space && SkColorSpace::Equals(color_space.get(),
+                                          decoded_target_colorspace.get())) {
     color_space = nullptr;
   }
 
@@ -1835,7 +1833,6 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     sk_sp<SkImage> uploaded_y_image = image_data->decode.y_image();
     sk_sp<SkImage> uploaded_u_image = image_data->decode.u_image();
     sk_sp<SkImage> uploaded_v_image = image_data->decode.v_image();
-
     image_data->decode.mark_used();
 
     // For kGpu, we upload and color convert (if necessary).
@@ -1848,8 +1845,6 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
       // on image type.
       SkYUVColorSpace yuva_color_space =
           SkYUVColorSpace::kRec601_SkYUVColorSpace;
-      SkColorSpace* decoded_target_colorspace =
-          draw_image.paint_image().color_space();
 
       uploaded_y_image = uploaded_y_image->makeTextureImage(
           context_->GrContext(), nullptr /* colorspace */, image_needs_mips);
@@ -1857,14 +1852,17 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
           context_->GrContext(), nullptr /* colorspace */, image_needs_mips);
       uploaded_v_image = uploaded_v_image->makeTextureImage(
           context_->GrContext(), nullptr /* colorspace */, image_needs_mips);
-      if (!uploaded_y_image || !uploaded_u_image || !uploaded_v_image)
+      if (!uploaded_y_image || !uploaded_u_image || !uploaded_v_image) {
+        DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
         return;
+      }
+
       size_t image_width = uploaded_y_image->width();
       size_t image_height = uploaded_y_image->height();
       uploaded_image = CreateImageFromYUVATexturesInternal(
           uploaded_y_image.get(), uploaded_u_image.get(),
           uploaded_v_image.get(), image_width, image_height, &yuva_color_space,
-          sk_ref_sp(decoded_target_colorspace));
+          color_space);
     }
 
     // At-raster may have decoded this while we were unlocked. If so, ignore our
@@ -1887,8 +1885,10 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     // TODO(crbug.com/740737): |uploaded_image| is sometimes null in certain
     // context-lost situations, so it is handled with an early out.
     if (!uploaded_image || !uploaded_y_image || !uploaded_u_image ||
-        !uploaded_v_image)
+        !uploaded_v_image) {
+      DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
       return;
+    }
 
     uploaded_y_image = TakeOwnershipOfSkImageBacking(
         context_->GrContext(), std::move(uploaded_y_image));
@@ -1945,7 +1945,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   // TODO(crbug.com/740737): uploaded_image is sometimes null in certain
   // context-lost situations.
   if (!uploaded_image) {
-    LOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
+    DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
     return;
   }
 
@@ -2358,6 +2358,7 @@ sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
   auto found = persistent_cache_.Peek(image.frame_key());
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
+  DCHECK(!image_data->is_yuv);
   return image_data->decode.ImageForTesting();
 }
 
@@ -2441,9 +2442,9 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
       context_->GrContext(), *yuva_color_space, yuv_textures, indices,
       SkISize::Make(image_width, image_height), origin_temp,
       std::move(decoded_color_space));
-
   if (target_color_space)
     return yuva_image->makeColorSpace(target_color_space);
+
   return yuva_image;
 }
 
@@ -2485,8 +2486,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
         context_->GrContext(), nullptr, GrMipMapped::kYes);
 
     // Handle lost context.
-    if (!image_y_with_mips || !image_u_with_mips || !image_v_with_mips)
+    if (!image_y_with_mips || !image_u_with_mips || !image_v_with_mips) {
+      DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
       return;
+    }
 
     // No need to do anything if mipping this image results in the same
     // textures. Deleting it below will result in lifetime issues.
@@ -2509,8 +2512,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
 
     // Handle lost context
     if (!image_y_with_mips_owned || !image_u_with_mips_owned ||
-        !image_v_with_mips_owned)
+        !image_v_with_mips_owned) {
+      DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
       return;
+    }
 
     // WebP documentation says to use Rec 601 for converting to RGB.
     // TODO(crbug.com/915707): Change QueryYUVA8 to set the colorspace based
@@ -2525,8 +2530,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
             image_v_with_mips_owned.get(), width, height, &yuva_color_space,
             sk_ref_sp(decoded_color_space));
     // In case of lost context
-    if (!yuv_image_with_mips_owned)
+    if (!yuv_image_with_mips_owned) {
+      DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
       return;
+    }
 
     // The previous images might be in the in-use cache, potentially held
     // externally. We must defer deleting them until the entry is unlocked.
@@ -2559,8 +2566,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
       context_->GrContext(), nullptr, GrMipMapped::kYes);
 
   // Handle lost context.
-  if (!image_with_mips)
+  if (!image_with_mips) {
+    DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
     return;
+  }
 
   // No need to do anything if mipping this image results in the same texture.
   // Deleting it below will result in lifetime issues.
@@ -2572,8 +2581,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
       context_->GrContext(), std::move(image_with_mips));
 
   // Handle lost context
-  if (!image_with_mips_owned)
+  if (!image_with_mips_owned) {
+    DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
     return;
+  }
 
   // The previous image might be in the in-use cache, potentially held
   // externally. We must defer deleting it until the entry is unlocked.
