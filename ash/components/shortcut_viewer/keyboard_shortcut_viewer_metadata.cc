@@ -1183,6 +1183,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {{ui::VKEY_LWIN}}},
 
       {// |categories|
+       {ShortcutCategory::kSystemAndDisplay},
+       IDS_KSV_DESCRIPTION_TOGGLE_APP_LIST_FULLSCREEN,
+       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_LWIN, ui::EF_SHIFT_DOWN}}},
+
+      {// |categories|
        {ShortcutCategory::kTabAndWindow},
        IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,

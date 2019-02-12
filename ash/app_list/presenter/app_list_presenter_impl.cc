@@ -184,12 +184,26 @@ bool AppListPresenterImpl::CloseOpenedPage() {
 
 ash::ShelfAction AppListPresenterImpl::ToggleAppList(
     int64_t display_id,
+    app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
+  bool request_fullscreen = show_source == kSearchKeyFullscreen ||
+                            show_source == kShelfButtonFullscreen;
   if (IsVisible()) {
+    if (request_fullscreen) {
+      if (view_->app_list_state() == AppListViewState::PEEKING) {
+        view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+        return ash::SHELF_ACTION_APP_LIST_SHOWN;
+      } else if (view_->app_list_state() == AppListViewState::HALF) {
+        view_->SetState(AppListViewState::FULLSCREEN_SEARCH);
+        return ash::SHELF_ACTION_APP_LIST_SHOWN;
+      }
+    }
     Dismiss(event_time_stamp);
     return ash::SHELF_ACTION_APP_LIST_DISMISSED;
   }
   Show(display_id, event_time_stamp);
+  if (request_fullscreen)
+    view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
   return ash::SHELF_ACTION_APP_LIST_SHOWN;
 }
 

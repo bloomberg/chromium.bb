@@ -430,7 +430,7 @@ void AppListControllerImpl::Show(int64_t display_id,
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp) {
   UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
-                            show_source, app_list::kMaxAppListToggleMethod);
+                            show_source);
 
   if (!presenter_.GetTargetVisibility() && IsVisible()) {
     // The launcher is running close animation, so close it immediately before
@@ -472,11 +472,13 @@ ash::ShelfAction AppListControllerImpl::ToggleAppList(
     int64_t display_id,
     app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
-  if (!IsVisible()) {
+  ash::ShelfAction action =
+      presenter_.ToggleAppList(display_id, show_source, event_time_stamp);
+  if (action == SHELF_ACTION_APP_LIST_SHOWN) {
     UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
-                              show_source, app_list::kMaxAppListToggleMethod);
+                              show_source);
   }
-  return presenter_.ToggleAppList(display_id, event_time_stamp);
+  return action;
 }
 
 app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {

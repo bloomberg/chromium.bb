@@ -558,6 +558,9 @@
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_APP_LIST" desc="Description of the command in keyboard shortcut viewer.">
     Open/close the launcher
   </message>
+  <message name="IDS_KSV_DESCRIPTION_TOGGLE_APP_LIST_FULLSCREEN" desc="Description of the command in keyboard shortcut viewer.">
+    Open/close the fullscreen launcher
+  </message>
   <message name="IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT" desc="Description of the command in keyboard shortcut viewer.">
     Take window screenshot
   </message>

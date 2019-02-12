@@ -643,9 +643,9 @@ void ShelfView::ButtonPressed(views::Button* sender,
   scoped_root_window_for_new_windows_ =
       std::make_unique<ScopedRootWindowForNewWindows>(window->GetRootWindow());
 
-  // Slow down activation animations if shift key is pressed.
+  // Slow down activation animations if Control key is pressed.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> slowing_animations;
-  if (event.IsShiftDown()) {
+  if (event.IsControlDown()) {
     slowing_animations.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::SLOW_DURATION));
   }
