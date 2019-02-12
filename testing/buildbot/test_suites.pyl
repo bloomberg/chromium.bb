@@ -4032,7 +4032,7 @@
           '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 2,
         },
         'test': 'content_browsertests',
       },
@@ -4140,16 +4140,16 @@
         'swarming': {
           'shards': 10,
         },
-	'test': 'browser_tests',
+        'test': 'browser_tests',
       },
       'skia_renderer_content_browsertests': {
         'args': [
-	  '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
-	],
+          '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
         'swarming': {
-          'shards': 10,
+          'shards': 2,
         },
-	'test': 'content_browsertests',
+        'test': 'content_browsertests',
       },
     },
 
