@@ -38,7 +38,7 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow(
     ScopedProgressReporter scoped_reporter(progress_reporter);
     return func(args...);
   };
-};
+}
 
 const GLubyte* GetStringHook(const char* version_string, GLenum name) {
   switch (name) {
