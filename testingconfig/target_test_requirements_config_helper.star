@@ -20,6 +20,7 @@ def set_up_graph():
 def target_test_requirements(
     reference_design=None,
     build_target=None,
+    hw_test_configs=[],
     test_suites=[]):
   """Create a PerTargetTestRestriction and binds it in the Starlark graph.
 
@@ -37,10 +38,8 @@ def target_test_requirements(
     fail('Expected exactly one of reference_design and build_target to be set. '
          + 'Instead, got %s and %s'%(reference_design, build_target))
 
-  sorted(test_suites)
-  test_suite_pbs = (
-      [config_pb.TestSuite(test_suite_name=test_suite)
-       for test_suite in test_suites])
+  hw_test_configs = sorted(hw_test_configs, key=lambda t: t.suite)
+  hw_test_cfg = config_pb.HwTestCfg(hw_test=hw_test_configs)
 
   if reference_design:
     target_name = reference_design
@@ -53,11 +52,115 @@ def target_test_requirements(
 
   testing_reqs = config_pb.PerTargetTestRequirements(
       build_criteria=build_criteria,
-      test_suite=test_suite_pbs)
+      hw_test_cfg=hw_test_cfg)
   graph.add_node(
       graph.key(test_reqs_kind, target_name),
       props={'target_test_requirements': testing_reqs})
   graph.add_edge(root_key, graph.key(test_reqs_kind, target_name))
+
+
+def _hw_test_config(
+    suite_name,
+    blocking,
+    minimum_duts,
+    timeout_sec=5400,
+    pool='cq',
+    async=False,
+    warn_only=False,
+    critical=False,
+    priority='CQ',
+    file_bugs=False,
+    retry=True,
+    max_retries=5,
+    suite_min_duts=0,
+    offload_failures_only=False):
+  """Creates a HwTest with the supplied settings.
+
+  See the proto for full descriptions of what each arg is.
+
+  Args:
+    suite_name: string
+    blocking: bool
+    minimum_duts: int
+    timeout_sec: int
+    pool: string
+    async: bool
+    warn_only: bool
+    critical: bool
+    priority: bool
+    file_bugs: bool
+    retry: bool
+    max_retries: int
+    suite_min_duts: int
+    offload_failures_only: bool
+
+  Returns:
+    config_pb.HwTest
+  """
+  return config_pb.HwTestCfg.HwTest(
+    suite=suite_name,
+    blocking=blocking,
+    minimum_duts=minimum_duts,
+    timeout_sec=timeout_sec,
+    pool=pool,
+    async=async,
+    warn_only=warn_only,
+    critical=critical,
+    priority=priority,
+    file_bugs=file_bugs,
+    retry=retry,
+    max_retries=max_retries,
+    suite_min_duts=suite_min_duts,
+    offload_failures_only=offload_failures_only)
+
+
+def standard_bvt_inline():
+  """Creates a bvt-inline HwTest with default settings.
+
+  Returns:
+    config_pb.HwTest
+  """
+  return _hw_test_config(
+    suite_name='bvt-inline',
+    blocking=False,
+    minimum_duts=4)
+
+
+def standard_bvt_cq():
+  """Creates a bvt-cq HwTest with default settings.
+
+  Returns:
+    config_pb.HwTest
+  """
+  return _hw_test_config(
+    suite_name='bvt-cq',
+    blocking=False,
+    minimum_duts=4)
+
+
+def standard_bvt_tast_cq():
+  """Creates a bvt-tast-cq HwTest with default settings.
+
+  Returns:
+    config_pb.HwTest
+  """
+  return _hw_test_config(
+    suite_name='bvt-tast-cq',
+    blocking=False,
+    minimum_duts=1)
+
+
+def standard_bvt_arc():
+  """Creates a bvt-arc HwTest with default settings.
+
+  Returns:
+    config_pb.HwTest
+  """
+  return _hw_test_config(
+    suite_name='bvt-arc',
+    blocking=False,
+    minimum_duts=4)
+
 
 
 def gen(ctx):

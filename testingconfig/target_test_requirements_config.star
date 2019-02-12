@@ -9,9 +9,13 @@
 #
 # lucicfg generate ./target_test_requirements_config.star
 
-load("//target_test_requirements_config_helper.star",
-     "set_up_graph",
-     "target_test_requirements")
+load('//target_test_requirements_config_helper.star',
+     'set_up_graph',
+     'standard_bvt_arc',
+     'standard_bvt_cq',
+     'standard_bvt_inline',
+     'standard_bvt_tast_cq',
+     'target_test_requirements')
 
 set_up_graph()
 
@@ -24,241 +28,241 @@ set_up_graph()
 
 # daisy (Exynos5250)
 target_test_requirements(
-  build_target = "daisy",
-  test_suites = [],
+  build_target = 'daisy',
+  hw_test_configs = [],
 )
 
 # slippy (HSW)
 target_test_requirements(
-  reference_design = "Google_Slippy",
-  test_suites = [
-      "bvt-inline",
-      "bvt-cq",
-      "bvt-tast-cq",
+  reference_design = 'Google_Slippy',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_cq(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # peach (Exynos5420)
 target_test_requirements(
-  build_target = "peach_pit",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'peach_pit',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # rambi (BYT)
 target_test_requirements(
-  build_target = "winky",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'winky',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "kip",
-  test_suites = [
-      "bvt-cq",
+  build_target = 'kip',
+  hw_test_configs = [
+      standard_bvt_cq(),
   ],
 )
 
 # nyan (K1)
 target_test_requirements(
-  build_target = "nyan_big",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'nyan_big',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "nyan_kitty",
-  test_suites = [
-      "bvt-cq",
+  build_target = 'nyan_kitty',
+  hw_test_configs = [
+      standard_bvt_cq(),
   ],
 )
 
 # auron (BDW)
 target_test_requirements(
-  build_target = "auron_paine",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'auron_paine',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "tidus",
-  test_suites = [
-      "bvt-cq",
+  build_target = 'tidus',
+  hw_test_configs = [
+      standard_bvt_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "auron_yuna",
-  test_suites = [
-      "bvt-arc",
+  build_target = 'auron_yuna',
+  hw_test_configs = [
+      standard_bvt_arc(),
   ],
 )
 
 # pinky (RK3288)
 target_test_requirements(
-  build_target = "veyron_mighty",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'veyron_mighty',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "veyron_speedy",
-  test_suites = [
-      "bvt-cq",
+  build_target = 'veyron_speedy',
+  hw_test_configs = [
+      standard_bvt_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "veyron_minnie",
-  test_suites = [
-      "bvt-arc",
+  build_target = 'veyron_minnie',
+  hw_test_configs = [
+      standard_bvt_arc(),
   ],
 )
 
 # strago (BSW)
 target_test_requirements(
-  build_target = "wizpig",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'wizpig',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "edgar",
-  test_suites = [
-      "bvt-cq",
+  build_target = 'edgar',
+  hw_test_configs = [
+      standard_bvt_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "cyan",
-  test_suites = [
-      "bvt-arc",
+  build_target = 'cyan',
+  hw_test_configs = [
+      standard_bvt_arc(),
   ],
 )
 
 # glados (SKL)
 target_test_requirements(
-  reference_design = "Google_Glados",
-  test_suites = [
-      "bvt-inline",
-      "bvt-cq",
-      "bvt-tast-cq",
+  reference_design = 'Google_Glados',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_cq(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # oak (MTK8173)
 target_test_requirements(
-  build_target = "elm",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'elm',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "hana",
-  test_suites = [
-      "bvt-arc",
+  build_target = 'hana',
+  hw_test_configs = [
+      standard_bvt_arc(),
   ],
 )
 
 # gru (RK3399)
 target_test_requirements(
-  build_target = "bob",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'bob',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 target_test_requirements(
-  build_target = "kevin",
-  test_suites = [
-      "bvt-arc",
+  build_target = 'kevin',
+  hw_test_configs = [
+      standard_bvt_arc(),
   ],
 )
 
 # reef (APL)
 target_test_requirements(
-  reference_design = "Google_Reef",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  reference_design = 'Google_Reef',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # coral (APL)
 target_test_requirements(
-  reference_design = "Google_Coral",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  reference_design = 'Google_Coral',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # poppy (KBL)
 target_test_requirements(
-  reference_design = "Google_Poppy",
-  test_suites = [
-      "bvt-cq",
-      "bvt-arc",
-      "bvt-tast-cq",
+  reference_design = 'Google_Poppy',
+  hw_test_configs = [
+      standard_bvt_cq(),
+      standard_bvt_arc(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # Nocturne (KBL)
 target_test_requirements(
-  reference_design = "Google_Nocturne",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  reference_design = 'Google_Nocturne',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # gru + arcnext
 target_test_requirements(
-  build_target = "kevin-arcnext",
-  test_suites = [
-      "bvt-arc",
-      "bvt-tast-cq",
+  build_target = 'kevin-arcnext',
+  hw_test_configs = [
+      standard_bvt_arc(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # arcnext
 target_test_requirements(
-  build_target = "caroline-arcnext",
-  test_suites = [
-      "bvt-arc",
-      "bvt-tast-cq",
+  build_target = 'caroline-arcnext',
+  hw_test_configs = [
+      standard_bvt_arc(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # Add for Skylab test
 target_test_requirements(
-  build_target = "nyan_blaze",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'nyan_blaze',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # scarlet (RK3399 unibuild)
 target_test_requirements(
-  build_target = "scarlet",
-  test_suites = [
-      "bvt-inline",
-      "bvt-tast-cq",
+  build_target = 'scarlet',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_tast_cq(),
   ],
 )
 
 # grunt (AMD unibuild)
 target_test_requirements(
-  build_target = "grunt",
-  test_suites = [
-      "bvt-inline",
-      "bvt-arc",
-      "bvt-tast-cq",
+  build_target = 'grunt',
+  hw_test_configs = [
+      standard_bvt_inline(),
+      standard_bvt_arc(),
+      standard_bvt_tast_cq(),
   ],
 )
