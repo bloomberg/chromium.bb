@@ -267,6 +267,14 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
       }
       return true;
     }
+    case ui::VKEY_UP:
+    case ui::VKEY_DOWN: {
+      if (actions_view_->has_children()) {
+        return list_view_->HandleVerticalFocusMovement(
+            this, event.key_code() == ui::VKEY_UP);
+      }
+      break;
+    }
     default:
       break;
   }
