@@ -681,6 +681,7 @@ bool LayerTreeHost::UpdateLayers() {
   base::ElapsedTimer timer;
 
   bool result = DoUpdateLayers();
+  client_->DidUpdateLayers();
   micro_benchmark_controller_.DidUpdateLayers();
 
   if (const char* client_name = GetClientNameForMetrics()) {
@@ -749,6 +750,13 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
   }
 
   gpu_rasterization_histogram_recorded_ = true;
+}
+
+std::string LayerTreeHost::LayersAsString() const {
+  std::string layers;
+  for (const auto* layer : *this)
+    layers += layer->ToString() + "\n";
+  return layers;
 }
 
 bool LayerTreeHost::CaptureContent(std::vector<NodeHolder>* content) {
@@ -832,21 +840,6 @@ bool LayerTreeHost::DoUpdateLayers() {
   LayerList update_layer_list;
   draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
                                                  &update_layer_list);
-
-  // Dump property trees and layers if run with:
-  //   --vmodule=layer_tree_host=3
-  // This only prints output in unit test or for the renderer.
-  if (VLOG_IS_ON(3) && (!GetClientNameForMetrics() ||
-                        GetClientNameForMetrics() == std::string("Renderer"))) {
-    std::ostringstream layers;
-    for (auto* layer : *this)
-      layers << layer->ToString() << "\n";
-    VLOG(3) << "After updating layers on the main thread:\n"
-            << "property trees:\n"
-            << property_trees_.ToString() << "\n"
-            << "cc::Layers:\n"
-            << layers.str();
-  }
 
   bool painted_content_has_slow_paths = false;
   bool painted_content_has_non_aa_paint = false;

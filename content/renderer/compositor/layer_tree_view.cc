@@ -573,6 +573,16 @@ void LayerTreeView::WillBeginMainFrame() {
 
 void LayerTreeView::DidBeginMainFrame() {}
 
+void LayerTreeView::DidUpdateLayers() {
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_view=3
+  VLOG(3) << "After updating layers:\n"
+          << "property trees:\n"
+          << layer_tree_host_->property_trees()->ToString() << "\n"
+          << "cc::Layers:\n"
+          << layer_tree_host_->LayersAsString();
+}
+
 void LayerTreeView::BeginMainFrame(const viz::BeginFrameArgs& args) {
   web_main_thread_scheduler_->WillBeginFrame(args);
   delegate_->BeginMainFrame(args.frame_time);
