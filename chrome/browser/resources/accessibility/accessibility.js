@@ -13,6 +13,7 @@ cr.define('accessibility', function() {
     kInlineTextBoxes: 1 << 2,
     kScreenReader: 1 << 3,
     kHTML: 1 << 4,
+    kLabelImages: 1 << 5,
 
     get kAXModeWebContentsOnly() {
       return AXMode.kWebContents | AXMode.kInlineTextBoxes |
@@ -47,7 +48,11 @@ cr.define('accessibility', function() {
     }
   }
 
-  function toggleAccessibility(data, element, mode) {
+  function toggleAccessibility(data, element, mode, globalStateName) {
+    if (!data[globalStateName]) {
+      return;
+    }
+
     const id = getIdFromData(data);
     const tree = $(id + ':tree');
     // If the tree is visible, request a new tree with the updated mode.
@@ -86,6 +91,7 @@ cr.define('accessibility', function() {
     bindCheckbox('text', data['text']);
     bindCheckbox('screenreader', data['screenreader']);
     bindCheckbox('html', data['html']);
+    bindCheckbox('label_images', data['label_images']);
     bindCheckbox('internal', data['internal']);
 
     $('pages').textContent = '';
@@ -157,11 +163,13 @@ cr.define('accessibility', function() {
       }
       row.appendChild(siteInfo);
 
-      row.appendChild(createModeElement(AXMode.kNativeAPIs, data));
-      row.appendChild(createModeElement(AXMode.kWebContents, data));
-      row.appendChild(createModeElement(AXMode.kInlineTextBoxes, data));
-      row.appendChild(createModeElement(AXMode.kScreenReader, data));
-      row.appendChild(createModeElement(AXMode.kHTML, data));
+      row.appendChild(createModeElement(AXMode.kNativeAPIs, data, 'native'));
+      row.appendChild(createModeElement(AXMode.kWebContents, data, 'native'));
+      row.appendChild(createModeElement(AXMode.kInlineTextBoxes, data, 'web'));
+      row.appendChild(createModeElement(AXMode.kScreenReader, data, 'web'));
+      row.appendChild(createModeElement(AXMode.kHTML, data, 'web'));
+      row.appendChild(
+          createModeElement(AXMode.kLabelImages, data, 'label_images'));
     } else {
       const siteInfo = document.createElement('span');
       siteInfo.appendChild(formatValue(data, 'name'));
@@ -230,20 +238,29 @@ cr.define('accessibility', function() {
         return 'Screen reader';
       case AXMode.kHTML:
         return 'HTML';
+      case AXMode.kLabelImages:
+        return 'Label images';
     }
     return 'unknown';
   }
 
-  function createModeElement(mode, data) {
+  function createModeElement(mode, data, globalStateName) {
     const currentMode = data['a11y_mode'];
     const link = document.createElement('a', 'action-link');
     link.setAttribute('role', 'button');
 
     const stateText = ((currentMode & mode) != 0) ? 'true' : 'false';
-    link.textContent = getNameForAccessibilityMode(mode) + ': ' + stateText;
+    const isEnabled = data[globalStateName];
+    if (isEnabled) {
+      link.textContent = getNameForAccessibilityMode(mode) + ': ' + stateText;
+    } else {
+      link.textContent = getNameForAccessibilityMode(mode) + ': disabled';
+      link.classList.add('disabled');
+    }
     link.setAttribute('aria-pressed', stateText);
     link.addEventListener(
-        'click', toggleAccessibility.bind(this, data, link, mode));
+        'click',
+        toggleAccessibility.bind(this, data, link, mode, globalStateName));
     return link;
   }
 

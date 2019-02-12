@@ -47,6 +47,9 @@ class AXMode {
   // for all accessibility nodes that come from web content.
   static constexpr uint32_t kHTML = 1 << 4;
 
+  // The accessibility tree will contain automatic image annotations.
+  static constexpr uint32_t kLabelImages = 1 << 5;
+
   constexpr AXMode() : flags_(0) {}
   constexpr AXMode(uint32_t flags) : flags_(flags) {}
 
@@ -58,11 +61,7 @@ class AXMode {
 
   uint32_t mode() const { return flags_; }
 
-  bool operator==(AXMode rhs) const {
-    if (flags_ == rhs.flags_)
-      return true;
-    return false;
-  }
+  bool operator==(AXMode rhs) const { return flags_ == rhs.flags_; }
 
   bool is_mode_off() const { return flags_ == 0; }
 
