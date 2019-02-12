@@ -5,7 +5,10 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_COOKIE_MUTATOR_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_COOKIE_MUTATOR_H_
 
+#include <string>
+
 #include "base/macros.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 
 namespace identity {
 
@@ -15,6 +18,18 @@ class AccountsCookieMutator {
  public:
   AccountsCookieMutator() = default;
   virtual ~AccountsCookieMutator() = default;
+
+  // Adds an account identified by |account_id| to the cookie responsible for
+  // tracking the list of logged-in Google sessions across the web.
+  virtual void AddAccountToCookie(const std::string& account_id,
+                                  gaia::GaiaSource source) = 0;
+
+  // Adds an account identified by |account_id| and with |access_token| to the
+  // cookie responsible for tracking the list of logged-in Google sessions
+  // across the web.
+  virtual void AddAccountToCookieWithToken(const std::string& account_id,
+                                           const std::string& access_token,
+                                           gaia::GaiaSource source) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutator);
