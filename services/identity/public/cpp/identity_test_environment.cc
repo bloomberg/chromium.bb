@@ -513,8 +513,8 @@ bool IdentityTestEnvironment::IsAccessTokenRequestPending() {
 
 void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
     bool accounts_are_fresh) {
-  gaia_cookie_manager_service_->set_list_accounts_stale_for_testing(
-      accounts_are_fresh);
+  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager(),
+                                               accounts_are_fresh);
 }
 
 void IdentityTestEnvironment::

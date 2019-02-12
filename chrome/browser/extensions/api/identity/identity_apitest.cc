@@ -1542,9 +1542,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   content::RunAllTasksUntilIdle();  // Flush pending ListAccounts calls.
   signin::SetListAccountsResponseOneAccount(
       account_info.email, account_info.gaia, &test_url_loader_factory_);
-  GaiaCookieManagerService* gcms =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
-  gcms->set_list_accounts_stale_for_testing(true);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager, true);
 
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());

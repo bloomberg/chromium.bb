@@ -421,6 +421,9 @@ class IdentityManager : public SigninManagerBase::Observer,
                                            const std::string& account_id);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
+  friend void SetFreshnessOfAccountsInGaiaCookie(
+      IdentityManager* identity_manager,
+      bool accounts_are_fresh);
   friend void UpdatePersistentErrorOfRefreshTokenForAccount(
       IdentityManager* identity_manager,
       const std::string& account_id,

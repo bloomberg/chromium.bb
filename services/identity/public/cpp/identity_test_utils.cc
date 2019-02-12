@@ -390,6 +390,13 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
   account_tracker_service->SeedAccountInfo(account_info);
 }
 
+void SetFreshnessOfAccountsInGaiaCookie(IdentityManager* identity_manager,
+                                        bool accounts_are_fresh) {
+  GaiaCookieManagerService* cookie_manager =
+      identity_manager->GetGaiaCookieManagerService();
+  cookie_manager->set_list_accounts_stale_for_testing(accounts_are_fresh);
+}
+
 std::string GetTestGaiaIdForEmail(const std::string& email) {
   std::string gaia_id =
       std::string("gaia_id_for_") + gaia::CanonicalizeEmail(email);
