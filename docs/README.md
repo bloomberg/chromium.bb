@@ -163,7 +163,7 @@ used when committed.
     Running web tests by hand.
 *   [Web Platform Tests](testing/web_platform_tests.md) - Shared tests across
     browser vendors
-*   [Using Breakpad with `content_shell`](testing/using_breakpad_with_content_shell.md) -
+*   [Using Crashpad with `content_shell`](testing/using_crashpad_with_content_shell.md) -
     Capture stack traces on layout test crashes without an attached debugger
 *   [Test Descriptions](test_descriptions.md) - Unit test targets that can be
     built, with associated desciptions.
