@@ -135,7 +135,6 @@ cvox.CommandStore.CMD_WHITELIST = {
   'toggleStickyMode': {
     announce: false,
     msgId: 'toggle_sticky_mode',
-    'disallowOOBE': true,
     category: 'modifier_keys'
   },
   'passThroughMode': {
