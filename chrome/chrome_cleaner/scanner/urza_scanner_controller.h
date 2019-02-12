@@ -9,6 +9,7 @@
 
 #include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/logging/registry_logger.h"
+#include "chrome/chrome_cleaner/parsers/shortcut_parser/broker/shortcut_parser_api.h"
 #include "chrome/chrome_cleaner/scanner/scanner_controller.h"
 #include "chrome/chrome_cleaner/scanner/signature_matcher_api.h"
 #include "chrome/chrome_cleaner/scanner/urza_scanner_impl.h"
@@ -21,7 +22,8 @@ class UrzaScannerController : public ScannerController {
  public:
   UrzaScannerController(MatchingOptions* options,
                         std::unique_ptr<SignatureMatcherAPI> signature_matcher,
-                        RegistryLogger* registry_logger);
+                        RegistryLogger* registry_logger,
+                        ShortcutParserAPI* shortcut_parser);
   ~UrzaScannerController() override;
 
  protected:
