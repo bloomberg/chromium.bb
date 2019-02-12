@@ -7,11 +7,11 @@
 
 #include <zircon/processargs.h>
 
-#include "fuchsia/common/fuchsia_export.h"
+#include "fuchsia/engine/web_engine_export.h"
 
 // Switch passed to content process when running in incognito mode, i.e. when
 // there is no kWebContextDataPath.
-FUCHSIA_EXPORT extern const char kIncognitoSwitch[];
+WEB_ENGINE_EXPORT extern const char kIncognitoSwitch[];
 
 // This file contains constants and functions shared between Context and
 // ContextProvider processes.

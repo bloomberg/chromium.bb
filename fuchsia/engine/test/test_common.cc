@@ -9,7 +9,7 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/run_loop.h"
-#include "fuchsia/common/mem_buffer_util.h"
+#include "fuchsia/base/mem_buffer_util.h"
 
 namespace cr_fuchsia {
 namespace test {
@@ -35,7 +35,7 @@ void MockNavigationObserver::OnNavigationStateChanged(
 
 std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
   std::string output;
-  CHECK(webrunner::StringFromMemBuffer(buffer, &output));
+  CHECK(cr_fuchsia::StringFromMemBuffer(buffer, &output));
   return output;
 }
 

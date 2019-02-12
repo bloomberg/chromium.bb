@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/common/mem_buffer_util.h"
+#include "fuchsia/base/mem_buffer_util.h"
 
 #include <lib/fdio/io.h>
 
@@ -16,7 +16,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 
-namespace webrunner {
+namespace cr_fuchsia {
 
 bool ReadUTF8FromVMOAsUTF16(const fuchsia::mem::Buffer& buffer,
                             base::string16* output) {
@@ -85,4 +85,4 @@ fuchsia::mem::Buffer CloneBuffer(const fuchsia::mem::Buffer& buffer) {
   return output;
 }
 
-}  // namespace webrunner
+}  // namespace cr_fuchsia

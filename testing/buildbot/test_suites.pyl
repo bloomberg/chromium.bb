@@ -2749,6 +2749,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
         ],
       },
+      'cr_fuchsia_base_unittests': {},
       'cronet_tests': {},
       'cronet_unittests': {},
       'crypto_unittests': {},
@@ -2757,7 +2758,6 @@
       'http_service_tests': {},
       'ipc_tests': {},
       'media_unittests': {},
-      'modular_unittests': {},
       'mojo_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',

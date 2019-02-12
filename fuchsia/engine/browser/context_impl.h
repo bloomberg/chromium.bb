@@ -11,7 +11,7 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "fuchsia/common/fuchsia_export.h"
+#include "fuchsia/engine/web_engine_export.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 
 namespace content {
@@ -23,7 +23,7 @@ class FrameImpl;
 // Implementation of Context from //fuchsia/fidl/context.fidl.
 // Owns a BrowserContext instance and uses it to create new WebContents/Frames.
 // All created Frames are owned by this object.
-class FUCHSIA_EXPORT ContextImpl : public chromium::web::Context {
+class WEB_ENGINE_EXPORT ContextImpl : public chromium::web::Context {
  public:
   // |browser_context| must outlive ContextImpl.
   explicit ContextImpl(content::BrowserContext* browser_context);

@@ -5,11 +5,11 @@
 #ifndef FUCHSIA_ENGINE_CONTEXT_PROVIDER_MAIN_H_
 #define FUCHSIA_ENGINE_CONTEXT_PROVIDER_MAIN_H_
 
-#include "fuchsia/common/fuchsia_export.h"
+#include "fuchsia/engine/web_engine_export.h"
 
 // Main function for the process that implements web::ContextProvider interface.
 // Called by WebRunnerMainDelegate when the process is started without --type
 // argument.
-FUCHSIA_EXPORT int ContextProviderMain();
+WEB_ENGINE_EXPORT int ContextProviderMain();
 
 #endif  // FUCHSIA_ENGINE_CONTEXT_PROVIDER_MAIN_H_

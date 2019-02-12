@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/modular/agent_impl.h"
+#include "fuchsia/base/agent_impl.h"
 
 #include "base/bind.h"
 
-namespace modular {
+namespace cr_fuchsia {
 
 AgentImpl::ComponentStateBase::~ComponentStateBase() = default;
 
@@ -80,4 +80,4 @@ void AgentImpl::MaybeRunOnLastClientCallback() {
   std::move(on_last_client_callback_).Run();
 }
 
-}  // namespace modular
+}  // namespace cr_fuchsia

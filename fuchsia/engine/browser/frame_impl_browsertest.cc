@@ -11,10 +11,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "fuchsia/common/mem_buffer_util.h"
+#include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/common.h"
-#include "fuchsia/engine/test/promise.h"
 #include "fuchsia/engine/test/test_common.h"
 #include "fuchsia/engine/test/webrunner_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -399,8 +400,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("window.location.href = \"" +
-                                     title2.spec() + "\";"),
+      cr_fuchsia::MemBufferFromString("window.location.href = \"" +
+                                      title2.spec() + "\";"),
       chromium::web::ExecuteMode::IMMEDIATE_ONCE,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -422,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("stashed_title = 'hello';"),
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -440,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadVmoDestroyed) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("stashed_title = 'hello';"),
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -458,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("stashed_title = 'hello';"),
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -480,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("stashed_title = 'hello';"),
+      cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -507,12 +508,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
 
   std::vector<std::string> origins = {url.GetOrigin().spec()};
   frame->ExecuteJavaScript(
-      origins, webrunner::MemBufferFromString("stashed_title = 'hello';"),
+      origins, cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("stashed_title += ' there';"),
+      cr_fuchsia::MemBufferFromString("stashed_title += ' there';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -530,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
   std::vector<std::string> origins = {url.GetOrigin().spec()};
 
   frame->ExecuteJavaScript(
-      origins, webrunner::MemBufferFromString("stashed_title = 'hello';"),
+      origins, cr_fuchsia::MemBufferFromString("stashed_title = 'hello';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -540,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      webrunner::MemBufferFromString("stashed_title += ' there';"),
+      cr_fuchsia::MemBufferFromString("stashed_title += ' there';"),
       chromium::web::ExecuteMode::ON_PAGE_LOAD,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -567,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
   // 0xFE is an illegal UTF-8 byte; it should cause UTF-8 conversion to fail.
   std::vector<std::string> origins = {url.host()};
   frame->ExecuteJavaScript(
-      std::move(origins), webrunner::MemBufferFromString("true;\xfe"),
+      std::move(origins), cr_fuchsia::MemBufferFromString("true;\xfe"),
       chromium::web::ExecuteMode::IMMEDIATE_ONCE, [&run_loop](bool success) {
         EXPECT_FALSE(success);
         run_loop.Quit();
@@ -740,11 +741,11 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
                controller.get());
 
   chromium::web::WebMessage message;
-  message.data = webrunner::MemBufferFromString(kPage1Path);
-  cr_fuchsia::test::Promise<bool> post_result;
+  message.data = cr_fuchsia::MemBufferFromString(kPage1Path);
+  cr_fuchsia::ResultReceiver<bool> post_result;
   frame->PostMessage(
       std::move(message), post_message_url.GetOrigin().spec(),
-      cr_fuchsia::test::ConvertToFitFunction(post_result.GetReceiveCallback()));
+      cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
   base::RunLoop run_loop;
   EXPECT_CALL(navigation_observer_,
               MockableOnNavigationStateChanged(
@@ -774,33 +775,33 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     msg.outgoing_transfer =
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
-    msg.data = webrunner::MemBufferFromString("hi");
-    cr_fuchsia::test::Promise<bool> post_result;
-    frame->PostMessage(std::move(msg), post_message_url.GetOrigin().spec(),
-                       cr_fuchsia::test::ConvertToFitFunction(
-                           post_result.GetReceiveCallback()));
+    msg.data = cr_fuchsia::MemBufferFromString("hi");
+    cr_fuchsia::ResultReceiver<bool> post_result;
+    frame->PostMessage(
+        std::move(msg), post_message_url.GetOrigin().spec(),
+        cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
         run_loop.QuitClosure());
     message_port->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ("got_port",
               cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
   }
 
   {
-    msg.data = webrunner::MemBufferFromString("ping");
-    cr_fuchsia::test::Promise<bool> post_result;
-    message_port->PostMessage(std::move(msg),
-                              cr_fuchsia::test::ConvertToFitFunction(
-                                  post_result.GetReceiveCallback()));
+    msg.data = cr_fuchsia::MemBufferFromString("ping");
+    cr_fuchsia::ResultReceiver<bool> post_result;
+    message_port->PostMessage(
+        std::move(msg),
+        cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
         run_loop.QuitClosure());
     message_port->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ("ack ping",
               cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
@@ -827,17 +828,17 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
     msg.outgoing_transfer =
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
-    msg.data = webrunner::MemBufferFromString("hi");
-    cr_fuchsia::test::Promise<bool> post_result;
-    frame->PostMessage(std::move(msg), post_message_url.GetOrigin().spec(),
-                       cr_fuchsia::test::ConvertToFitFunction(
-                           post_result.GetReceiveCallback()));
+    msg.data = cr_fuchsia::MemBufferFromString("hi");
+    cr_fuchsia::ResultReceiver<bool> post_result;
+    frame->PostMessage(
+        std::move(msg), post_message_url.GetOrigin().spec(),
+        cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
         run_loop.QuitClosure());
     message_port->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ("got_port",
               cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
@@ -876,17 +877,17 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     msg.outgoing_transfer =
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
-    msg.data = webrunner::MemBufferFromString("hi");
-    cr_fuchsia::test::Promise<bool> post_result;
-    frame->PostMessage(std::move(msg), "*",
-                       cr_fuchsia::test::ConvertToFitFunction(
-                           post_result.GetReceiveCallback()));
+    msg.data = cr_fuchsia::MemBufferFromString("hi");
+    cr_fuchsia::ResultReceiver<bool> post_result;
+    frame->PostMessage(
+        std::move(msg), "*",
+        cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
         run_loop.QuitClosure());
     message_port->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ("got_port",
               cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
@@ -898,11 +899,11 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
   // the MessagePortImpl buffer.
   for (int i = 0; i < 3; ++i) {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<bool> post_result(run_loop.QuitClosure());
-    msg.data = webrunner::MemBufferFromString("ping");
-    incoming_message_port->PostMessage(std::move(msg),
-                                       cr_fuchsia::test::ConvertToFitFunction(
-                                           post_result.GetReceiveCallback()));
+    cr_fuchsia::ResultReceiver<bool> post_result(run_loop.QuitClosure());
+    msg.data = cr_fuchsia::MemBufferFromString("ping");
+    incoming_message_port->PostMessage(
+        std::move(msg),
+        cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_TRUE(*post_result);
   }
@@ -915,19 +916,19 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     msg.outgoing_transfer =
         std::make_unique<chromium::web::OutgoingTransferable>();
     msg.outgoing_transfer->set_message_port(ack_message_port.NewRequest());
-    msg.data = webrunner::MemBufferFromString("hi");
+    msg.data = cr_fuchsia::MemBufferFromString("hi");
 
     // Quit the runloop only after we've received a WebMessage AND a PostMessage
     // result.
-    cr_fuchsia::test::Promise<bool> post_result;
-    frame->PostMessage(std::move(msg), "*",
-                       cr_fuchsia::test::ConvertToFitFunction(
-                           post_result.GetReceiveCallback()));
+    cr_fuchsia::ResultReceiver<bool> post_result;
+    frame->PostMessage(
+        std::move(msg), "*",
+        cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
         run_loop.QuitClosure());
     ack_message_port->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ("got_port",
               cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
@@ -937,10 +938,10 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
   // Pull the three 'ack ping's from the buffer.
   for (int i = 0; i < 3; ++i) {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
         run_loop.QuitClosure());
     incoming_message_port->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ("ack ping",
               cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));
@@ -967,14 +968,14 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   msg.outgoing_transfer =
       std::make_unique<chromium::web::OutgoingTransferable>();
   msg.outgoing_transfer->set_message_port(unused_message_port.NewRequest());
-  msg.data = webrunner::MemBufferFromString("bad origin, bad!");
-  cr_fuchsia::test::Promise<bool> unused_post_result;
+  msg.data = cr_fuchsia::MemBufferFromString("bad origin, bad!");
+  cr_fuchsia::ResultReceiver<bool> unused_post_result;
   frame->PostMessage(std::move(msg), "https://example.com",
-                     cr_fuchsia::test::ConvertToFitFunction(
+                     cr_fuchsia::CallbackToFitFunction(
                          unused_post_result.GetReceiveCallback()));
-  cr_fuchsia::test::Promise<chromium::web::WebMessage> unused_message_read;
+  cr_fuchsia::ResultReceiver<chromium::web::WebMessage> unused_message_read;
   bad_origin_incoming_message_port->ReceiveMessage(
-      cr_fuchsia::test::ConvertToFitFunction(
+      cr_fuchsia::CallbackToFitFunction(
           unused_message_read.GetReceiveCallback()));
 
   // PostMessage() with a valid origin should succeed.
@@ -987,16 +988,16 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   msg.outgoing_transfer =
       std::make_unique<chromium::web::OutgoingTransferable>();
   msg.outgoing_transfer->set_message_port(message_port.NewRequest());
-  msg.data = webrunner::MemBufferFromString("good origin");
-  cr_fuchsia::test::Promise<bool> post_result;
+  msg.data = cr_fuchsia::MemBufferFromString("good origin");
+  cr_fuchsia::ResultReceiver<bool> post_result;
   frame->PostMessage(
       std::move(msg), "*",
-      cr_fuchsia::test::ConvertToFitFunction(post_result.GetReceiveCallback()));
+      cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
   base::RunLoop run_loop;
-  cr_fuchsia::test::Promise<chromium::web::WebMessage> receiver(
+  cr_fuchsia::ResultReceiver<chromium::web::WebMessage> receiver(
       run_loop.QuitClosure());
   message_port->ReceiveMessage(
-      cr_fuchsia::test::ConvertToFitFunction(receiver.GetReceiveCallback()));
+      cr_fuchsia::CallbackToFitFunction(receiver.GetReceiveCallback()));
   run_loop.Run();
   EXPECT_EQ("got_port",
             cr_fuchsia::test::StringFromMemBufferOrDie(receiver->data));

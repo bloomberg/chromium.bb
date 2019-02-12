@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "fuchsia/common/mem_buffer_util.h"
+#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 
 // Unique identifier of the Cast Channel message port, used by the JavaScript
@@ -49,7 +49,7 @@ CastChannelBindings::CastChannelBindings(
   // mem::Buffer.
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
-  fuchsia::mem::Buffer bindings_buf = webrunner::MemBufferFromFile(base::File(
+  fuchsia::mem::Buffer bindings_buf = cr_fuchsia::MemBufferFromFile(base::File(
       assets_path.AppendASCII("fuchsia/runners/cast/cast_channel_bindings.js"),
       base::File::FLAG_OPEN | base::File::FLAG_READ));
   CHECK(bindings_buf.vmo);

@@ -45,7 +45,7 @@ source_set("cast_runner_core") {
   ]
   deps = [
     "//base",
-    "//fuchsia:mem_buffer_common",
+    "//fuchsia/base",
     "//url",
   ]
   public_deps = [
@@ -53,7 +53,6 @@ source_set("cast_runner_core") {
     "//fuchsia:cast_fidl",
     "//fuchsia:web_fidl",
   ]
-  configs += [ "//fuchsia:webrunner_implementation" ]
   visibility = [ ":*" ]
 }
 
@@ -114,6 +113,7 @@ test("cast_runner_integration_tests") {
     ":cast_runner_test_core",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//fuchsia/base:test_support",
     "//fuchsia/engine:test_support",
     "//net:test_support",
     "//testing/gtest",
@@ -137,7 +137,8 @@ test("cast_runner_browsertests") {
     ":cast_runner_core",
     "//base/test:test_support",
     "//content/public/browser",
-    "//fuchsia:mem_buffer_common",
+    "//fuchsia/base",
+    "//fuchsia/base:test_support",
     "//fuchsia/engine:browsertest_core",
     "//fuchsia/engine:test_support",
     "//testing/gmock",

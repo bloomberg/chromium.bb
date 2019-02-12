@@ -11,7 +11,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
-#include "fuchsia/engine/test/promise.h"
+#include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/test/test_common.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
@@ -157,7 +158,7 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   chromium::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<WebComponent*> web_component(
+    cr_fuchsia::ResultReceiver<WebComponent*> web_component(
         run_loop.QuitClosure());
     cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
     run_loop.Run();
@@ -170,10 +171,10 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   // Ensure the NavigationEntry has the expected URL.
   {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<std::unique_ptr<chromium::web::NavigationEntry>>
+    cr_fuchsia::ResultReceiver<std::unique_ptr<chromium::web::NavigationEntry>>
         nav_entry(run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
-        cr_fuchsia::test::ConvertToFitFunction(nav_entry.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ(nav_entry->get()->url, test_server_.GetURL(kBlankAppPath).spec());
   }
@@ -197,7 +198,7 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
 
   // Ensure no WebComponent was created.
   base::RunLoop run_loop;
-  cr_fuchsia::test::Promise<WebComponent*> web_component(
+  cr_fuchsia::ResultReceiver<WebComponent*> web_component(
       run_loop.QuitClosure());
   cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
   run_loop.Run();
@@ -222,7 +223,7 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
   chromium::web::NavigationControllerPtr nav_controller;
   {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<WebComponent*> web_component(
+    cr_fuchsia::ResultReceiver<WebComponent*> web_component(
         run_loop.QuitClosure());
     cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
     run_loop.Run();
@@ -235,10 +236,10 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
   // Ensure the NavigationEntry has the expected URL.
   {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<std::unique_ptr<chromium::web::NavigationEntry>>
+    cr_fuchsia::ResultReceiver<std::unique_ptr<chromium::web::NavigationEntry>>
         nav_entry(run_loop.QuitClosure());
     nav_controller->GetVisibleEntry(
-        cr_fuchsia::test::ConvertToFitFunction(nav_entry.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(nav_entry.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_EQ(nav_entry->get()->url,
               test_server_.GetURL(kCastChannelAppPath).spec());
@@ -249,10 +250,10 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
   auto expected_list = {"this", "is", "a", "test"};
   for (const std::string& expected : expected_list) {
     base::RunLoop run_loop;
-    cr_fuchsia::test::Promise<chromium::web::WebMessage> message(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> message(
         run_loop.QuitClosure());
     connected_channel_->ReceiveMessage(
-        cr_fuchsia::test::ConvertToFitFunction(message.GetReceiveCallback()));
+        cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
     EXPECT_EQ(cr_fuchsia::test::StringFromMemBufferOrDie(message->data),

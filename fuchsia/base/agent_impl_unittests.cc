@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/modular/agent_impl.h"
+#include "fuchsia/base/agent_impl.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
@@ -10,10 +10,11 @@
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "fuchsia/engine/test/promise.h"
+#include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/result_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace modular {
+namespace cr_fuchsia {
 
 namespace {
 
@@ -105,9 +106,9 @@ void SetBoolToTrue(bool* bool_value) {
 
 // Verify that the Agent can publish and unpublish itself.
 TEST_F(AgentImplTest, PublishAndUnpublish) {
-  cr_fuchsia::test::Promise<zx_status_t> client_disconnect_status1;
+  cr_fuchsia::ResultReceiver<zx_status_t> client_disconnect_status1;
   fuchsia::modular::AgentPtr agent = CreateAgentAndConnect();
-  agent.set_error_handler(cr_fuchsia::test::ConvertToFitFunction(
+  agent.set_error_handler(cr_fuchsia::CallbackToFitFunction(
       client_disconnect_status1.GetReceiveCallback()));
 
   base::RunLoop().RunUntilIdle();
@@ -121,9 +122,9 @@ TEST_F(AgentImplTest, PublishAndUnpublish) {
   EXPECT_EQ(*client_disconnect_status1, ZX_ERR_PEER_CLOSED);
 
   // Verify that the Agent service is no longer available.
-  cr_fuchsia::test::Promise<zx_status_t> client_disconnect_status2;
+  cr_fuchsia::ResultReceiver<zx_status_t> client_disconnect_status2;
   services_client_->ConnectToService(agent.NewRequest());
-  agent.set_error_handler(cr_fuchsia::test::ConvertToFitFunction(
+  agent.set_error_handler(cr_fuchsia::CallbackToFitFunction(
       client_disconnect_status2.GetReceiveCallback()));
 
   base::RunLoop().RunUntilIdle();
@@ -284,4 +285,4 @@ TEST_F(AgentImplTest, SameComponentIdSameService) {
   test_interface2.set_error_handler(nullptr);
 }
 
-}  // namespace modular
+}  // namespace cr_fuchsia
