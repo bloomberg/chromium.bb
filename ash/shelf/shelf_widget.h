@@ -117,6 +117,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
   SkColor GetShelfBackgroundColor() const;
+  bool GetHitTestRects(aura::Window* target,
+                       gfx::Rect* hit_test_rect_mouse,
+                       gfx::Rect* hit_test_rect_touch);
 
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const { return shelf_view_; }

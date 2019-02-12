@@ -102,6 +102,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   int ui_update_count() const { return ui_update_count_; }
+  gfx::Rect get_button_union_bounds() const { return button_union_bounds_; }
 
  protected:
   // TrayActionObserver:
@@ -127,6 +128,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Updates the visibility of buttons based on state changes, e.g. shutdown
   // policy updates, session state changes etc.
   void UpdateUi();
+
+  // Updates the total bounds of all buttons.
+  void UpdateButtonUnionBounds();
 
   mojom::OobeDialogState dialog_state_ = mojom::OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
@@ -154,6 +158,11 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // This is used in tests to wait until UI is updated.
   int ui_update_count_ = 0;
+
+  // The bounds of all the buttons that this view is showing. Useful for
+  // letting events that target the "empty space" pass through. These
+  // coordinates are local to the view.
+  gfx::Rect button_union_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfView);
 };
