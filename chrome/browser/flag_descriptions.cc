@@ -1719,6 +1719,13 @@ const char kServiceWorkerLongRunningMessageDescription[] =
     "Messages sent with this method do not timeout, allowing the service "
     "worker to run indefinitely.";
 
+const char kSessionRestorePrioritizesBackgroundUseCasesName[] =
+    "Session restore prioritizes background use cases.";
+const char kSessionRestorePrioritizesBackgroundUseCasesDescription[] =
+    "When enabled session restore logic will prioritize sites that make use of "
+    "background communication mechanisms (favicon and tab title switches, "
+    "notifications, etc) over sites that do not.";
+
 const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";

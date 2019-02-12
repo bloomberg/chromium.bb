@@ -10,6 +10,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
@@ -17,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -96,7 +99,14 @@ SessionRestorePolicy::SessionRestorePolicy()
       simultaneous_tab_loads_(CalculateSimultaneousTabLoads()),
       weak_factory_(this) {}
 
-SessionRestorePolicy::~SessionRestorePolicy() = default;
+SessionRestorePolicy::~SessionRestorePolicy() {
+  // Record the number of tabs involved in the session restore that use
+  // background communications mechanisms.
+  UMA_HISTOGRAM_COUNTS_100("SessionRestore.BackgroundUseCaseTabCount.Total",
+                           tabs_used_in_bg_);
+  UMA_HISTOGRAM_COUNTS_100("SessionRestore.BackgroundUseCaseTabCount.Restored",
+                           tabs_used_in_bg_restored_);
+}
 
 float SessionRestorePolicy::AddTabForScoring(content::WebContents* contents) {
   DCHECK(!base::ContainsKey(tab_data_, contents));
@@ -183,9 +193,16 @@ float SessionRestorePolicy::AddTabForScoring(content::WebContents* contents) {
 void SessionRestorePolicy::RemoveTabForScoring(content::WebContents* contents) {
   auto it = tab_data_.find(contents);
   DCHECK(it != tab_data_.end());
+  auto* tab_data = &it->second;
 
-  if (HasFinalScore(&it->second))
+  if (HasFinalScore(tab_data)) {
     --tabs_scored_;
+
+    // Tabs are removed from the policy engine when they start loading.
+    if (tab_data->used_in_bg)
+      ++tabs_used_in_bg_restored_;
+  }
+
   tab_data_.erase(it);
   DispatchNotifyAllTabsScoredIfNeeded();
 }
@@ -198,9 +215,8 @@ bool SessionRestorePolicy::ShouldLoad(content::WebContents* contents) const {
   if (tab_loads_started_ < min_tabs_to_restore_)
     return true;
 
-  if (max_tabs_to_restore_ != 0 && tab_loads_started_ >= max_tabs_to_restore_) {
+  if (max_tabs_to_restore_ != 0 && tab_loads_started_ >= max_tabs_to_restore_)
     return false;
-  }
 
   // If there is a free memory constraint then enforce it.
   if (mb_free_memory_per_tab_to_restore_ != 0) {
@@ -221,9 +237,22 @@ bool SessionRestorePolicy::ShouldLoad(content::WebContents* contents) const {
       return false;
   }
 
-  // Enforce a minimum site engagement score.
-  if (tab_data.site_engagement < min_site_engagement_to_restore_)
+  // Only enforce the site engagement score for tabs that don't make use of
+  // background communication mechanisms. These sites often have low engagements
+  // because they are only used very sporadically, but it is important that they
+  // are loaded because if not loaded the user can miss important messages.
+  bool enforce_site_engagement_score = true;
+  if (base::FeatureList::IsEnabled(
+          features::kSessionRestorePrioritizesBackgroundUseCases) &&
+      tab_data.used_in_bg) {
+    enforce_site_engagement_score = false;
+  }
+
+  // Enforce a minimum site engagement score if applicable.
+  if (enforce_site_engagement_score &&
+      tab_data.site_engagement < min_site_engagement_to_restore_) {
     return false;
+  }
 
   return true;
 }
@@ -343,6 +372,9 @@ void SessionRestorePolicy::OnDataLoaded(content::WebContents* contents) {
     notify_tab_score_changed_callback_.Run(contents, it->second.score);
 
   ++tabs_scored_;
+  if (tab_data->used_in_bg)
+    ++tabs_used_in_bg_;
+
   DispatchNotifyAllTabsScoredIfNeeded();
 }
 
@@ -356,23 +388,35 @@ bool SessionRestorePolicy::RescoreTabAfterDataLoaded(
 bool SessionRestorePolicy::ScoreTab(TabData* tab_data) {
   float score = 0.0f;
 
-  // Replicate the logic of the existing ordering mechanism:
-  // - apps
-  // - pinned tabs
-  // - normal tabs
-  // - internal tabs
-  // Within each category, restore newest tab first.
-  if (tab_data->is_app) {
-    score = 3;
-  } else if (tab_data->is_pinned) {
-    score = 2;
-  } else if (!tab_data->is_internal) {
-    score = 1;
+  if (base::FeatureList::IsEnabled(
+          features::kSessionRestorePrioritizesBackgroundUseCases)) {
+    // Give higher priorities to tabs used in the background, and lowest
+    // priority to internal tabs. Apps and pinned tabs are simply treated as
+    // normal tabs.
+    if (tab_data->used_in_bg) {
+      score = 2;
+    } else if (!tab_data->is_internal) {
+      score = 1;
+    }
+  } else {
+    // Replicate the logic of the existing ordering mechanism:
+    // - apps
+    // - pinned tabs
+    // - normal tabs
+    // - internal tabs
+    // Within each category, restore newest tab first.
+    if (tab_data->is_app) {
+      score = 3;
+    } else if (tab_data->is_pinned) {
+      score = 2;
+    } else if (!tab_data->is_internal) {
+      score = 1;
+    }
   }
-  score += CalculateAgeScore(tab_data);
 
-  // TODO(chrisha): Add a Finch configurable alternate scoring mechanism that
-  // takes into account background tab usage data.
+  // Refine the score using the age of the tab. More recently used tabs have
+  // higher scores.
+  score += CalculateAgeScore(tab_data);
 
   if (score == tab_data->score)
     return false;
