@@ -145,7 +145,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       // If assistant overlay animation starts, we need to make sure the event
       // is handled in order to end the animation in |ET_GESTURE_TAP| or
       // |ET_GESTURE_TAP_CANCEL|.
-      DCHECK(event->stopped_propagation());
+      DCHECK(event->handled());
       return;
     case ui::ET_GESTURE_LONG_PRESS:
       if (UseVoiceInteractionStyle()) {

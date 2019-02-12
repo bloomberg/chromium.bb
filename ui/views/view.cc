@@ -1015,8 +1015,7 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       }
       FALLTHROUGH;
     case ui::ET_MOUSE_DRAGGED:
-      if (ProcessMouseDragged(*event))
-        event->SetHandled();
+      ProcessMouseDragged(event);
       return;
 
     case ui::ET_MOUSE_RELEASED:
@@ -2441,25 +2440,31 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
   return !!context_menu_controller || result;
 }
 
-bool View::ProcessMouseDragged(const ui::MouseEvent& event) {
+void View::ProcessMouseDragged(ui::MouseEvent* event) {
   // Copy the field, that way if we're deleted after drag and drop no harm is
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
   const bool possible_drag = GetDragInfo()->possible_drag;
   if (possible_drag &&
-      ExceededDragThreshold(GetDragInfo()->start_pt - event.location()) &&
+      ExceededDragThreshold(GetDragInfo()->start_pt - event->location()) &&
       (!drag_controller_ ||
-       drag_controller_->CanStartDragForView(
-           this, GetDragInfo()->start_pt, event.location()))) {
-    DoDrag(event, GetDragInfo()->start_pt,
-           ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+       drag_controller_->CanStartDragForView(this, GetDragInfo()->start_pt,
+                                             event->location()))) {
+    if (DoDrag(*event, GetDragInfo()->start_pt,
+               ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE)) {
+      event->StopPropagation();
+      return;
+    }
   } else {
-    if (OnMouseDragged(event))
-      return true;
+    if (OnMouseDragged(*event)) {
+      event->SetHandled();
+      return;
+    }
     // Fall through to return value based on context menu controller.
   }
   // WARNING: we may have been deleted.
-  return (context_menu_controller != nullptr) || possible_drag;
+  if ((context_menu_controller != nullptr) || possible_drag)
+    event->SetHandled();
 }
 
 void View::ProcessMouseReleased(const ui::MouseEvent& event) {
