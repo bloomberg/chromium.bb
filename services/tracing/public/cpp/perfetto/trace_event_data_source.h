@@ -5,6 +5,7 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TRACE_EVENT_DATA_SOURCE_H_
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TRACE_EVENT_DATA_SOURCE_H_
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -120,12 +121,14 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   base::OnceClosure stop_complete_callback_;
 
+  // Incremented and accessed atomically but without memory order guarantees.
+  // This ID is incremented whenever a new tracing session is started.
+  static constexpr uint32_t kInvalidSessionID = 0;
+  static constexpr uint32_t kFirstSessionID = 1;
+  std::atomic<uint32_t> session_id_{kInvalidSessionID};
+
   base::Lock lock_;  // Protects subsequent members.
-  // Regular accesses to |target_buffer_| in conjunction with other fields are
-  // protected by |lock_|, thus no memory order guarantees are required when
-  // writing or reading it in those places. Note that OnAddTraceEvent()
-  // accesses its atomic value racily without holding |lock_|.
-  std::atomic<uint32_t> target_buffer_{0};
+  uint32_t target_buffer_ = 0;
   ProducerClient* producer_client_ = nullptr;
   // We own the registry during startup, but transfer its ownership to the
   // ProducerClient once the perfetto service is available. Only set if
