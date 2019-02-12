@@ -208,8 +208,8 @@ MockProducerHost::MockProducerHost(
 MockProducerHost::~MockProducerHost() = default;
 
 void MockProducerHost::RegisterDataSource(
-    mojom::DataSourceRegistrationPtr registration_info) {
-  ProducerHost::RegisterDataSource(std::move(registration_info));
+    const perfetto::DataSourceDescriptor& registration_info) {
+  ProducerHost::RegisterDataSource(registration_info);
 
   on_commit_callback_for_testing_ =
       base::BindRepeating(&MockProducerHost::OnCommit, base::Unretained(this));

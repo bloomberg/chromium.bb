@@ -151,9 +151,9 @@ void ProducerClient::AddDataSourceOnSequence(DataSourceBase* data_source) {
 }
 
 void ProducerClient::RegisterDataSourceWithHost(DataSourceBase* data_source) {
-  auto new_registration = mojom::DataSourceRegistration::New();
-  new_registration->name = data_source->name();
-  new_registration->will_notify_on_stop = true;
+  perfetto::DataSourceDescriptor new_registration;
+  new_registration.set_name(data_source->name());
+  new_registration.set_will_notify_on_stop(true);
   producer_host_->RegisterDataSource(std::move(new_registration));
 }
 
