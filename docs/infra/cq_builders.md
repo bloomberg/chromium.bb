@@ -1,7 +1,7 @@
 # List of CQ builders
 
 This page is auto generated using the script
-//infra/config/global/cq_config_presubmit.py. Do not manually edit.
+//infra/config/cq_config_presubmit.py. Do not manually edit.
 
 [TOC]
 

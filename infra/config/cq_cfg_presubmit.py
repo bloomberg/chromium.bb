@@ -13,7 +13,7 @@ import sys
 
 # Path to the root of the current chromium checkout.
 CHROMIUM_DIR = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..'))
+    os.path.dirname(__file__), '..', '..',))
 
 
 MD_HEADER = """# List of CQ builders
@@ -339,7 +339,7 @@ def main():
   exit_code = 0
 
   cfg = CQConfig.from_file(os.path.join(
-      CHROMIUM_DIR, 'infra', 'config', 'global', 'commit-queue.cfg'))
+      CHROMIUM_DIR, 'infra', 'config', 'commit-queue.cfg'))
 
   # Only force sorting on luci.chromium.try builders. Others should go away soon
   # anyways...
@@ -370,7 +370,7 @@ def main():
       if cfg.get_markdown_doc() != f.read():
         print (
             'Markdown file is out of date. Please run '
-            '`//infra/config/global/cq_cfg_presubmit.py` to regenerate the '
+            '`//infra/config/cq_cfg_presubmit.py` to regenerate the '
             'docs.')
         exit_code = 1
   else:
