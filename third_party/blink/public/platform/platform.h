@@ -55,6 +55,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
+#include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
@@ -109,6 +110,7 @@ class WebCanvasCaptureHandler;
 class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
+class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebImageCaptureFrameGrabber;
 class WebLocalFrame;
@@ -669,6 +671,11 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // WebWorker ----------------------------------------------------------
 
+  virtual std::unique_ptr<WebDedicatedWorkerHostFactoryClient>
+  CreateDedicatedWorkerHostFactoryClient(WebDedicatedWorker*,
+                                         service_manager::InterfaceProvider*) {
+    return nullptr;
+  }
   virtual void DidStartWorkerThread() {}
   virtual void WillStopWorkerThread() {}
   virtual void WorkerContextCreated(const v8::Local<v8::Context>& worker) {}

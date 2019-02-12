@@ -66,6 +66,7 @@
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
+#include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "content/renderer/worker/worker_thread_registry.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -1036,6 +1037,14 @@ blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
 }
 
 //------------------------------------------------------------------------------
+
+std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
+RendererBlinkPlatformImpl::CreateDedicatedWorkerHostFactoryClient(
+    blink::WebDedicatedWorker* worker,
+    service_manager::InterfaceProvider* interface_provider) {
+  return std::make_unique<DedicatedWorkerHostFactoryClient>(worker,
+                                                            interface_provider);
+}
 
 void RendererBlinkPlatformImpl::DidStartWorkerThread() {
   WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();

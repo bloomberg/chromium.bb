@@ -229,6 +229,8 @@ source_set("blink_headers") {
     "platform/web_data.h",
     "platform/web_data_consumer_handle.h",
     "platform/web_database_observer.h",
+    "platform/web_dedicated_worker.h",
+    "platform/web_dedicated_worker_host_factory_client.h",
     "platform/web_distillability.h",
     "platform/web_document_subresource_filter.h",
     "platform/web_double_point.h",

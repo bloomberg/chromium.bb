@@ -560,6 +560,8 @@ target(link_target_type, "renderer") {
     "web_ui_extension_data.h",
     "webgraphicscontext3d_provider_impl.cc",
     "webgraphicscontext3d_provider_impl.h",
+    "worker/dedicated_worker_host_factory_client.cc",
+    "worker/dedicated_worker_host_factory_client.h",
     "worker/embedded_shared_worker_stub.cc",
     "worker/embedded_shared_worker_stub.h",
     "worker/shared_worker_factory_impl.cc",
