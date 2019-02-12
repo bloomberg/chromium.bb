@@ -34,7 +34,7 @@
     </style>
     <div class="list-item" focus-row-container>
       <div class="settings-row"
-          actionable$="[[enableSiteSettings_]]" on-click="onOriginTap_">
+          actionable$="[[allowNavigateToSiteDetail_]]" on-click="onOriginTap_">
         <site-favicon url="[[model.origin]]"></site-favicon>
         <div class="middle no-min-width">
           <div class="text-elide">
@@ -45,14 +45,12 @@
           <div class="secondary text-elide"
               id="siteDescription">[[siteDescription_]]</div>
         </div>
-        <template is="dom-if" if="[[enableSiteSettings_]]">
-          <div on-click="onOriginTap_" actionable>
-            <paper-icon-button-light class="subpage-arrow">
-              <button aria-label$="[[model.displayName]]"
-                  aria-describedby="siteDescription" focus-row-control
-                  focus-type="site-details"></button>
-            </paper-icon-button-light>
-          </div>
+        <template is="dom-if" if="[[allowNavigateToSiteDetail_]]">
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label$="[[model.displayName]]"
+                aria-describedby="siteDescription" focus-row-control
+                focus-type="site-details"></button>
+          </paper-icon-button-light>
           <div class="separator"></div>
         </template>
       </div>

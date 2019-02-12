@@ -1373,8 +1373,10 @@ CrSettingsSiteListEntryTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../cr_elements/cr_policy_strings.js',
+    '../test_browser_proxy.js',
     'site_list_entry_tests.js',
     'test_util.js',
+    'test_site_settings_prefs_browser_proxy.js',
   ]),
 };
 
