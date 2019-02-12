@@ -402,7 +402,8 @@ static std::vector<VAConfigAttrib> GetRequiredAttribs(
     required_attribs.push_back({VAConfigAttribRateControl, VA_RC_CBR});
 
   // VAConfigAttribEncPackedHeaders is H.264 specific.
-  if (profile >= VAProfileH264Baseline && profile <= VAProfileH264High) {
+  if ((profile >= VAProfileH264Baseline && profile <= VAProfileH264High) ||
+      (profile == VAProfileH264ConstrainedBaseline)) {
     required_attribs.push_back(
         {VAConfigAttribEncPackedHeaders,
          VA_ENC_PACKED_HEADER_SEQUENCE | VA_ENC_PACKED_HEADER_PICTURE});
