@@ -14,10 +14,11 @@
 
 namespace content {
 
+class MediaWebContentsObserver;
 class OverlaySurfaceEmbedder;
+class PictureInPictureServiceImpl;
 class WebContents;
 class WebContentsImpl;
-class MediaWebContentsObserver;
 
 // TODO(thakis,mlamouri): PictureInPictureWindowControllerImpl isn't
 // CONTENT_EXPORT'd because it creates complicated build issues with
@@ -27,7 +28,8 @@ class MediaWebContentsObserver;
 // work with it. https://crbug.com/589840.
 class PictureInPictureWindowControllerImpl
     : public PictureInPictureWindowController,
-      public WebContentsUserData<PictureInPictureWindowControllerImpl> {
+      public WebContentsUserData<PictureInPictureWindowControllerImpl>,
+      public WebContentsObserver {
  public:
   // Gets a reference to the controller associated with |initiator| and creates
   // one if it does not exist. The returned pointer is guaranteed to be
@@ -62,6 +64,22 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT void MediaSessionActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
 
+  // WebContentsObserver:
+  void MediaStartedPlaying(const MediaPlayerInfo&,
+                           const MediaPlayerId&) override;
+  void MediaStoppedPlaying(const MediaPlayerInfo&,
+                           const MediaPlayerId&,
+                           WebContentsObserver::MediaStoppedReason) override;
+
+  // TODO(mlamouri): temporary method used because of the media player id is
+  // stored in a different location from the one that is used to update the
+  // state of this object.
+  void UpdateMediaPlayerId();
+
+  void set_service(PictureInPictureServiceImpl* service) {
+    service_ = service;
+  };
+
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;
 
@@ -89,6 +107,7 @@ class PictureInPictureWindowControllerImpl
 
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
+  // TODO(929156): remove this as it should be accessible via `web_contents()`.
   WebContentsImpl* const initiator_;
 
   // Used to determine the state of the media player and route messages to
@@ -108,6 +127,11 @@ class PictureInPictureWindowControllerImpl
   // duration. Play/pause button visibility can be overridden by the Media
   // Session API in UpdatePlayPauseButtonVisibility().
   bool always_hide_play_pause_button_ = false;
+
+  // Service currently associated with the Picture-in-Picture window. The
+  // service makes the bridge with the renderer process by sending enter/exit
+  // requests. It is also holding the Picture-in-Picture MediaPlayerId.
+  PictureInPictureServiceImpl* service_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
