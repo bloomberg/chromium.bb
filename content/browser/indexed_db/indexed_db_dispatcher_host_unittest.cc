@@ -193,6 +193,11 @@ class IndexedDBDispatcherHostTest : public testing::Test {
   }
 
   void SetUp() override {
+    // ChromeBlobStorageContext::GetFor() issues PostTask() calls to the IO
+    // thread.  Let those run before calling AddBinding().
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+
     host_->AddBinding(::mojo::MakeRequest(&idb_mojo_factory_),
                       {url::Origin::Create(GURL(kOrigin))});
   }

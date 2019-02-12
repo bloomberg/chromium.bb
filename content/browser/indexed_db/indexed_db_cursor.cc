@@ -174,7 +174,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
              blink::mojom::IDBCursor::AdvanceCallback callback,
              IndexedDBKey key, IndexedDBKey primary_key,
              IndexedDBValue* value) {
-            if (!dispatcher_host)
+            if (!dispatcher_host || !dispatcher_host->blob_storage_context())
               return;
 
             blink::mojom::IDBValuePtr mojo_value;

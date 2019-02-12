@@ -88,6 +88,7 @@ class BlobHandleImpl : public BlobHandle {
 
 ChromeBlobStorageContext::ChromeBlobStorageContext() {}
 
+// static
 ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

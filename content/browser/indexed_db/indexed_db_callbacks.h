@@ -47,7 +47,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
   static bool CreateAllBlobs(
-      storage::BlobStorageContext* blob_context,
+      base::WeakPtr<storage::BlobStorageContext> blob_context,
       IndexedDBContextImpl* indexed_db_context,
       const std::vector<IndexedDBBlobInfo>& blob_info,
       std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);

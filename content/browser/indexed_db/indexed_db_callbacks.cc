@@ -94,7 +94,7 @@ class SafeIOThreadCursorWrapper {
 };
 
 std::unique_ptr<storage::BlobDataHandle> CreateBlobData(
-    storage::BlobStorageContext* blob_context,
+    base::WeakPtr<storage::BlobStorageContext> blob_context,
     IndexedDBContextImpl* indexed_db_context,
     const IndexedDBBlobInfo& blob_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -180,7 +180,7 @@ class IndexedDBCallbacks::IOThreadHelper {
 
 // static
 bool IndexedDBCallbacks::CreateAllBlobs(
-    storage::BlobStorageContext* blob_context,
+    base::WeakPtr<storage::BlobStorageContext> blob_context,
     IndexedDBContextImpl* indexed_db_context,
     const std::vector<IndexedDBBlobInfo>& blob_info,
     std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
@@ -504,7 +504,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendError(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -516,7 +516,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessNamesAndVersionsList(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -528,7 +528,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessStringList(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -537,7 +537,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessStringList(
 
 void IndexedDBCallbacks::IOThreadHelper::SendBlocked(int64_t existing_version) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -554,7 +554,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendUpgradeNeeded(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -577,7 +577,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessDatabase(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -603,7 +603,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursor(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -629,7 +629,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessValue(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -649,7 +649,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessArray(
 
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -672,7 +672,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursorContinue(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -694,7 +694,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessCursorPrefetch(
 
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -716,7 +716,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessKey(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -727,7 +727,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccessInteger(int64_t value) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
@@ -738,7 +738,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendSuccess() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!callbacks_)
     return;
-  if (!dispatcher_host_) {
+  if (!dispatcher_host_ || !dispatcher_host_->blob_storage_context()) {
     OnConnectionError();
     return;
   }
