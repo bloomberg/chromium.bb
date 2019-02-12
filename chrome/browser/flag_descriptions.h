@@ -750,9 +750,6 @@ extern const char kKeyboardLockApiDescription[];
 extern const char kLcdTextName[];
 extern const char kLcdTextDescription[];
 
-extern const char kLeftToRightUrlsName[];
-extern const char kLeftToRightUrlsDescription[];
-
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
 

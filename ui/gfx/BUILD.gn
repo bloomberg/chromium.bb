@@ -297,6 +297,8 @@ jumbo_component("gfx") {
 
   if (!is_ios) {
     sources += [
+      "bidi_line_iterator.cc",
+      "bidi_line_iterator.h",
       "harfbuzz_font_skia.cc",
       "harfbuzz_font_skia.h",
       "paint_vector_icon.cc",
@@ -710,7 +712,10 @@ test("gfx_unittests") {
   ]
 
   if (!is_ios) {
-    sources += [ "render_text_unittest.cc" ]
+    sources += [
+      "bidi_line_iterator_unittest.cc",
+      "render_text_unittest.cc",
+    ]
     deps += [ "//third_party:freetype_harfbuzz" ]
   }
 
