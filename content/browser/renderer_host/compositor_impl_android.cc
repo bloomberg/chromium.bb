@@ -767,7 +767,6 @@ void CompositorImpl::SetVisible(bool visible) {
 
   if (!visible) {
     DCHECK(host_->IsVisible());
-    CompositorDependencies::Get().OnCompositorHidden(this);
     // Tear down the display first, synchronously completing any pending
     // draws/readbacks if poosible.
     TearDownDisplayAndUnregisterRootFrameSink();
@@ -776,6 +775,10 @@ void CompositorImpl::SetVisible(bool visible) {
     host_->ReleaseLayerTreeFrameSink();
     has_layer_tree_frame_sink_ = false;
     pending_frames_ = 0;
+
+    // Notify CompositorDependencies of visibility changes last, to ensure that
+    // we don't disable the GPU watchdog until sync IPCs above are completed.
+    CompositorDependencies::Get().OnCompositorHidden(this);
   } else {
     DCHECK(!host_->IsVisible());
     CompositorDependencies::Get().OnCompositorVisible(this);
