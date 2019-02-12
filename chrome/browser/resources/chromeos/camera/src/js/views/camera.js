@@ -244,8 +244,8 @@ cca.views.Camera.prototype.beginTake_ = function() {
   Promise.resolve(this.ticks_).then(() => {
     // Play a sound before starting to record and delay the take to avoid the
     // sound being recorded if necessary.
-    var delay = (this.recordMode && this.options_.playSound(
-        cca.views.camera.Options.Sound.RECORDSTART)) ? 250 : 0;
+    var delay =
+        (this.recordMode && cca.sound.play('#sound-rec-start')) ? 250 : 0;
     this.takeTimeout_ = setTimeout(() => {
       if (this.recordMode) {
         // Take of recording will be ended by another shutter click.
@@ -287,9 +287,7 @@ cca.views.Camera.prototype.endTake_ = function() {
       // Play a sound and save the result after a successful take.
       blob.handled = true;
       var recordMode = this.recordMode;
-      this.options_.playSound(recordMode ?
-          cca.views.camera.Options.Sound.RECORDEND :
-          cca.views.camera.Options.Sound.SHUTTER);
+      cca.sound.play(recordMode ? '#sound-rec-end' : '#sound-shutter');
       return this.model_.savePicture(blob, recordMode).catch((error) => {
         cca.toast.show('error_msg_save_file_failed');
         throw error;

@@ -44,30 +44,6 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   this.toggleMirror_ = document.querySelector('#toggle-mirror');
 
   /**
-   * @type {Audio}
-   * @private
-   */
-  this.shutterSound_ = document.createElement('audio');
-
-  /**
-   * @type {Audio}
-   * @private
-   */
-  this.tickSound_ = document.createElement('audio');
-
-  /**
-   * @type {Audio}
-   * @private
-   */
-  this.recordStartSound_ = document.createElement('audio');
-
-  /**
-   * @type {Audio}
-   * @private
-   */
-  this.recordEndSound_ = document.createElement('audio');
-
-  /**
    * Device id of the camera device currently used or selected.
    * @type {?string}
    * @private
@@ -117,12 +93,6 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   this.toggleMic_.addEventListener('click', () => this.updateAudioByMic_());
   this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
 
-  // Load the shutter, tick, and recording sound.
-  this.shutterSound_.src = '../sounds/shutter.ogg';
-  this.tickSound_.src = '../sounds/tick.ogg';
-  this.recordStartSound_.src = '../sounds/record_start.ogg';
-  this.recordEndSound_.src = '../sounds/record_end.ogg';
-
   // Restore saved mirroring states per video device.
   chrome.storage.local.get({mirroringToggles: {}},
       (values) => this.mirroringToggles_ = values.mirroringToggles);
@@ -133,17 +103,6 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   this.maybeRefreshVideoDeviceIds_();
   setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
 };
-
-/**
- * Sounds.
- * @enum {number}
- */
-cca.views.camera.Options.Sound = Object.freeze({
-  SHUTTER: 0,
-  TICK: 1,
-  RECORDSTART: 2,
-  RECORDEND: 3,
-});
 
 cca.views.camera.Options.prototype = {
   get newStreamRequestDisabled() {
@@ -207,31 +166,6 @@ cca.views.camera.Options.prototype.animatePreviewGrid_ = function() {
 };
 
 /**
- * Handles playing the sound by the speaker option.
- * @param {cca.views.camera.Options.Sound} sound Sound to be played.
- * @return {boolean} Whether the sound being played.
- * TODO(yuli): Move this function into sounds.js.
- */
-cca.views.camera.Options.prototype.playSound = function(sound) {
-  // TODO(yuli): Don't play sounds if the speaker settings is muted.
-  var play = (element) => {
-    element.currentTime = 0;
-    element.play();
-    return true;
-  };
-  switch (sound) {
-    case cca.views.camera.Options.Sound.SHUTTER:
-      return play(this.shutterSound_);
-    case cca.views.camera.Options.Sound.TICK:
-      return play(this.tickSound_);
-    case cca.views.camera.Options.Sound.RECORDSTART:
-      return play(this.recordStartSound_);
-    case cca.views.camera.Options.Sound.RECORDEND:
-      return play(this.recordEndSound_);
-  }
-};
-
-/**
  * Schedules ticks by the timer option if any.
  * @return {?Promise} Promise for the operation.
  * TODO(yuli): Move this function into timerticks.js.
@@ -249,7 +183,7 @@ cca.views.camera.Options.prototype.timerTicks = function() {
       if (tickCounter == 0) {
         resolve();
       } else {
-        this.playSound(cca.views.camera.Options.Sound.TICK);
+        cca.sound.play('#sound-tick');
         tickMsg.textContent = tickCounter + '';
         cca.util.animateOnce(tickMsg);
         tickTimeout = setTimeout(onTimerTick, 1000);
