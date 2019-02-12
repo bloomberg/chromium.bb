@@ -3139,6 +3139,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
 
+    {"omnibox-material-design-weather-icons",
+     flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
+     flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxMaterialDesignWeatherIcons)},
+
     {"use-suggestions-even-if-few",
      flag_descriptions::kUseSuggestionsEvenIfFewFeatureName,
      flag_descriptions::kUseSuggestionsEvenIfFewFeatureDescription, kOsAll,

@@ -2572,6 +2572,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-material-design-weather-icons",
+    "owners": [ "manukh", "chromium-omnibox-team" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "omnibox-new-answer-layout",
     "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76

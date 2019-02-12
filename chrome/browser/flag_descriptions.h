@@ -835,6 +835,9 @@ extern const char kOfflineAutoReloadVisibleOnlyDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxMaterialDesignWeatherIconsName[];
+extern const char kOmniboxMaterialDesignWeatherIconsDescription[];
+
 extern const char kOmniboxNewAnswerLayoutName[];
 extern const char kOmniboxNewAnswerLayoutDescription[];
 
