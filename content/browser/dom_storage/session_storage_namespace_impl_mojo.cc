@@ -30,7 +30,9 @@ SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
       register_new_map_callback_(std::move(register_new_map_callback)),
       delegate_(delegate) {}
 
-SessionStorageNamespaceImplMojo::~SessionStorageNamespaceImplMojo() = default;
+SessionStorageNamespaceImplMojo::~SessionStorageNamespaceImplMojo() {
+  DCHECK(namespaces_waiting_for_clone_call_.empty());
+}
 
 bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
     const url::Origin& origin) const {
@@ -181,6 +183,7 @@ void SessionStorageNamespaceImplMojo::OpenArea(
 
 void SessionStorageNamespaceImplMojo::Clone(
     const std::string& clone_to_namespace) {
+  namespaces_waiting_for_clone_call_.erase(clone_to_namespace);
   delegate_->RegisterShallowClonedNamespace(namespace_entry_,
                                             clone_to_namespace, origin_areas_);
 }
@@ -193,6 +196,15 @@ void SessionStorageNamespaceImplMojo::FlushOriginForTesting(
   if (it == origin_areas_.end())
     return;
   it->second->data_map()->storage_area()->ScheduleImmediateCommit();
+}
+
+void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone() {
+  for (const std::string& waiting_namespace_id :
+       namespaces_waiting_for_clone_call_) {
+    delegate_->RegisterShallowClonedNamespace(
+        namespace_entry_, waiting_namespace_id, origin_areas_);
+  }
+  namespaces_waiting_for_clone_call_.clear();
 }
 
 }  // namespace content
