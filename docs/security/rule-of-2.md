@@ -46,10 +46,10 @@ account representing a person; this includes the Chrome browser process. We
 consider such processes to have high privilege. (After all, they can do anything
 the person can do, with any and all of the person's valuable data and accounts.)
 
-Processes with slightly reduced privilege include (as of January 2019) the
-network process and the GPU process. These are still pretty high-privilege
-processes. We are always looking for ways to reduce their privilege without
-breaking them.
+Processes with slightly reduced privilege include (as of February 2019) the GPU
+process and (hopefully soon) the network process. These are still pretty
+high-privilege processes. We are always looking for ways to reduce their
+privilege without breaking them.
 
 Low-privilege processes include sandboxed utility processes and renderer
 processes with [Site
