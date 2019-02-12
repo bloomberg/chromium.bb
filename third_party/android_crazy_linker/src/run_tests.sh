@@ -165,7 +165,6 @@ crazy_linker_test_dl_wrappers_recursive \
 crazy_linker_test_dl_wrappers_with_system_handle \
 crazy_linker_test_dl_wrappers_valid_handles \
 crazy_linker_test_load_library \
-crazy_linker_test_load_library_callbacks \
 crazy_linker_test_load_library_depends \
 crazy_linker_test_load_library_with_gnu_hash_table \
 crazy_linker_test_load_library_with_relr_relocations \

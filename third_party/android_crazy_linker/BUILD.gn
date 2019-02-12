@@ -31,7 +31,6 @@ if (is_android) {
       ":crazy_linker_test_dl_wrappers_valid_handles",
       ":crazy_linker_test_dl_wrappers_with_system_handle",
       ":crazy_linker_test_load_library",
-      ":crazy_linker_test_load_library_callbacks",
       ":crazy_linker_test_load_library_depends",
       ":crazy_linker_test_load_library_with_gnu_hash_table",
       ":crazy_linker_test_load_library_with_relr_relocations",
@@ -375,19 +374,6 @@ if (is_android) {
     sources = [
       "src/tests/test_load_library_depends.cpp",
     ]
-    data_deps = [
-      ":crazy_linker_tests_libbar",
-    ]
-    deps = [
-      ":android_crazy_linker",
-    ]
-  }
-
-  executable("crazy_linker_test_load_library_callbacks") {
-    sources = [
-      "src/tests/test_load_library_callbacks.cpp",
-    ]
-    include_dirs = [ "src/src" ]  # Needed for crazy_linker_util_threads.h
     data_deps = [
       ":crazy_linker_tests_libbar",
     ]

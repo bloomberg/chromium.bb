@@ -239,99 +239,7 @@ void RDebug::CallRBrk(int state) {
 #endif  // !CRAZY_DISABLE_R_BRK
 }
 
-namespace {
-
-// Helper runnable class. Handler is one of the two static functions
-// AddEntryInternal() or DelEntryInternal(). Calling these invokes
-// AddEntryImpl() or DelEntryImpl() respectively on rdebug.
-class RDebugRunnable {
- public:
-  RDebugRunnable(rdebug_callback_handler_t handler,
-                 RDebug* rdebug,
-                 link_map_t* entry,
-                 bool is_blocking)
-      : handler_(handler),
-        rdebug_(rdebug),
-        entry_(entry),
-        is_blocking_(is_blocking) {}
-
-  static void Run(void* opaque);
-  static void WaitForCallback(void* opaque);
-
- private:
-  rdebug_callback_handler_t handler_;
-  RDebug* rdebug_;
-  link_map_t* entry_;
-  bool is_blocking_;
-  WaitableEvent has_run_;
-};
-
-// Callback entry point.
-void RDebugRunnable::Run(void* opaque) {
-  auto* runnable = static_cast<RDebugRunnable*>(opaque);
-
-  LOG("Callback received, runnable=%p", runnable);
-  (*runnable->handler_)(runnable->rdebug_, runnable->entry_);
-
-  if (!runnable->is_blocking_) {
-    delete runnable;
-    return;
-  }
-
-  LOG("Signalling callback, runnable=%p", runnable);
-  runnable->has_run_.Signal();
-}
-
-// For blocking callbacks, wait for the call to Run().
-void RDebugRunnable::WaitForCallback(void* opaque) {
-  auto* runnable = static_cast<RDebugRunnable*>(opaque);
-
-  if (!runnable->is_blocking_) {
-    LOG("Non-blocking, not waiting, runnable=%p", runnable);
-    return;
-  }
-
-  LOG("Waiting for signal, runnable=%p", runnable);
-  runnable->has_run_.Wait();
-
-  delete runnable;
-}
-
-}  // namespace
-
-// Helper function to schedule AddEntry() and DelEntry() calls onto another
-// thread where possible. Running them there avoids races with the system
-// linker, which expects to be able to set r_map pages readonly when it
-// is not using them and which may run simultaneously on the main thread.
-bool RDebug::PostCallback(rdebug_callback_handler_t handler,
-                          link_map_t* entry,
-                          bool is_blocking) {
-  if (!post_for_later_execution_) {
-    LOG("Deferred execution disabled");
-    return false;
-  }
-
-  RDebugRunnable* runnable =
-      new RDebugRunnable(handler, this, entry, is_blocking);
-  void* context = post_for_later_execution_context_;
-
-  if (!(*post_for_later_execution_)(context, &RDebugRunnable::Run, runnable)) {
-    LOG("Deferred execution enabled, but posting failed");
-    delete runnable;
-    return false;
-  }
-
-  LOG("Posted for later execution, runnable=%p", runnable);
-
-  if (is_blocking) {
-    RDebugRunnable::WaitForCallback(runnable);
-    LOG("Completed execution, runnable=%p", runnable);
-  }
-
-  return true;
-}
-
-void RDebug::AddEntryImpl(link_map_t* entry) {
+void RDebug::AddEntry(link_map_t* entry) {
   LOG("Adding: %s", entry->l_name);
   if (!init_)
     Init();
@@ -391,7 +299,7 @@ void RDebug::AddEntryImpl(link_map_t* entry) {
   CallRBrk(RT_CONSISTENT);
 }
 
-void RDebug::DelEntryImpl(link_map_t* entry) {
+void RDebug::DelEntry(link_map_t* entry) {
   if (!r_debug_)
     return;
 

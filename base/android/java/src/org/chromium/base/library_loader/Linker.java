@@ -15,11 +15,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.SysUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.AccessedByNative;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JniIgnoreNatives;
-import org.chromium.base.annotations.MainDex;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -1074,32 +1071,6 @@ public class Linker {
             entry.getValue().close();
         }
     }
-
-    /**
-     * Move activity from the native thread to the main UI thread.
-     * Called from native code on its own thread. Posts a callback from
-     * the UI thread back to native code.
-     *
-     * @param opaque Opaque argument.
-     */
-    @CalledByNative
-    @MainDex
-    private static void postCallbackOnMainThread(final long opaque) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                nativeRunCallbackOnUiThread(opaque);
-            }
-        });
-    }
-
-    /**
-     * Native method to run callbacks on the main UI thread.
-     * Supplied by the crazy linker and called by postCallbackOnMainThread.
-     *
-     * @param opaque Opaque crazy linker arguments.
-     */
-    private static native void nativeRunCallbackOnUiThread(long opaque);
 
     /**
      * Native method used to load a library.
