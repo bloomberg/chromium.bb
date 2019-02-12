@@ -80,6 +80,8 @@ class BackForwardMenuModel : public ui::MenuModel {
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, ChapterStops);
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, EscapeLabel);
   FRIEND_TEST_ALL_PREFIXES(BackFwdMenuModelTest, FaviconLoadTest);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNavigationBrowserTest,
+                           NoUserActivationSetSkipOnBackForward);
 
   // Requests a favicon from the FaviconService. Called by GetIconAt if the
   // NavigationEntry has an invalid favicon.

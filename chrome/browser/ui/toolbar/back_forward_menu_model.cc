@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
@@ -182,6 +183,12 @@ void BackForwardMenuModel::ActivatedAt(int index, int event_flags) {
   }
 
   int controller_index = MenuIndexToNavEntryIndex(index);
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "Navigation.BackForward.NavigatingToEntryMarkedToBeSkipped",
+      GetWebContents()->GetController().IsEntryMarkedToBeSkipped(
+          controller_index));
+
   WindowOpenDisposition disposition =
       ui::DispositionFromEventFlags(event_flags);
   if (!chrome::NavigateToIndexWithDisposition(browser_,
