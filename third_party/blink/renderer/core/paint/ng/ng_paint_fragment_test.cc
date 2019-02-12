@@ -218,7 +218,6 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
                           .ToString());
   // TODO(kojii): This is still incorrect.
   EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.VisualRect());
-  EXPECT_EQ(LayoutRect(), outer_text.SelectionVisualRect());
 
   // Test |InlineFragmentsFor| can find the outer text.
   LayoutObject* layout_outer_text =
@@ -235,7 +234,6 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(NGPhysicalFragment::kAtomicInline,
             box1.PhysicalFragment().BoxType());
   EXPECT_EQ(LayoutRect(60, 0, 10, 10), box1.VisualRect());
-  EXPECT_EQ(LayoutRect(), box1.SelectionVisualRect());
 
   // Test |InlineFragmentsFor| can find "box1".
   LayoutObject* layout_box1 = GetLayoutObjectByElementId("box1");
@@ -256,7 +254,6 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(NGPhysicalFragment::kFragmentText,
             inner_text.PhysicalFragment().Type());
   EXPECT_EQ(LayoutRect(60, 0, 10, 10), inner_text.VisualRect());
-  EXPECT_EQ(LayoutRect(), inner_text.SelectionVisualRect());
 
   // Test |InlineFragmentsFor| can find the inner text of "box1".
   LayoutObject* layout_inner_text = layout_box1->SlowFirstChild();
@@ -272,18 +269,13 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(NGPhysicalFragment::kAtomicInline,
             box2.PhysicalFragment().BoxType());
   EXPECT_EQ(LayoutRect(70, 10, 10, 10), box2.VisualRect());
-  EXPECT_EQ(LayoutRect(), box2.SelectionVisualRect());
 
   GetDocument().GetFrame()->Selection().SelectAll();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.VisualRect());
-  EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.SelectionVisualRect());
   EXPECT_EQ(LayoutRect(60, 0, 10, 10), box1.VisualRect());
-  EXPECT_EQ(LayoutRect(), box1.SelectionVisualRect());
   EXPECT_EQ(LayoutRect(60, 0, 10, 10), inner_text.VisualRect());
-  EXPECT_EQ(LayoutRect(60, 0, 10, 10), inner_text.SelectionVisualRect());
   EXPECT_EQ(LayoutRect(70, 10, 10, 10), box2.VisualRect());
-  EXPECT_EQ(LayoutRect(), box2.SelectionVisualRect());
 }
 
 TEST_F(NGPaintFragmentTest, RelativeBlock) {

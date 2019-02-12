@@ -39,7 +39,7 @@
         {
           "object": "NGPhysicalTextFragment 'test'",
           "rect": [0, 610, 22, 20],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ],
       "transform": 1

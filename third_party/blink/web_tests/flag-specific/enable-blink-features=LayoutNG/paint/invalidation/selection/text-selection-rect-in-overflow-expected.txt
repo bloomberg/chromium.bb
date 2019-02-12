@@ -20,7 +20,7 @@
         {
           "object": "NGPhysicalTextFragment 'Should have green background'",
           "rect": [8, 8, 197, 20],
-          "reason": "selection"
+          "reason": "geometry"
         }
       ]
     }

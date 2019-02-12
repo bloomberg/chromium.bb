@@ -448,6 +448,7 @@ crbug.com/591099 fast/webgl/texImage-imageBitmap-from-canvas-resize.html [ Pass 
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
 crbug.com/591099 fast/writing-mode/table-percent-width-quirk.html [ Pass ]
+crbug.com/930034 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 crbug.com/591099 html/marquee/marquee-destroyed-without-removed-from-crash.html [ Pass ]
 crbug.com/591099 http/tests/activedomobject/media.html [ Crash Pass ]
 crbug.com/591099 http/tests/appcache/abort-cache-ondownloading.html [ Crash Pass ]
