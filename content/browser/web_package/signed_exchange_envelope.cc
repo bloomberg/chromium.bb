@@ -232,7 +232,7 @@ bool ParseResponseMap(const cbor::Value& value,
   if (!IsCacheableBySharedCache(out->response_headers(), devtools_proxy))
     return false;
 
-  // https://wicg.github.io/webpackage/loading.html#parsing-b1
+  // https://wicg.github.io/webpackage/loading.html#parsing-a-signed-exchange
   // Step 26. If parsedExchange’s response's status is a redirect status or the
   //          signed exchange version of parsedExchange’s response is not
   //          undefined, return a failure. [spec text]
