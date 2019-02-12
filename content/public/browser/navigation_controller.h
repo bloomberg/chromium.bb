@@ -482,6 +482,13 @@ class NavigationController {
   virtual void DeleteNavigationEntries(
       const DeletionPredicate& deletionPredicate) = 0;
 
+  // Returns whether entry at the given index is marked to be skipped on
+  // back/forward UI. The history manipulation intervention marks entries to be
+  // skipped in order to intervene against pages that manipulate browser history
+  // such that the user is not able to use the back button to go to the previous
+  // page they interacted with.
+  virtual bool IsEntryMarkedToBeSkipped(int index) = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class NavigationControllerImpl;

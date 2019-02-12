@@ -91,6 +91,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void PruneAllButLastCommitted() override;
   void DeleteNavigationEntries(
       const DeletionPredicate& deletionPredicate) override;
+  bool IsEntryMarkedToBeSkipped(int index) override;
 
   // Starts a navigation in a newly created subframe as part of a history
   // navigation. Returns true if the history navigation could start, false
