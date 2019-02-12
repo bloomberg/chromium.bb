@@ -49,29 +49,17 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsBootstrapListener {
 // Establishes and holds mojo connection to DriveFS.
 class COMPONENT_EXPORT(DRIVEFS) DriveFsConnection {
  public:
-  DriveFsConnection(
-      std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener,
-      mojom::DriveFsConfigurationPtr config,
-      mojom::DriveFsDelegate* delegate,
-      base::OnceClosure on_disconnected);
-  virtual ~DriveFsConnection();
+  DriveFsConnection() = default;
+  virtual ~DriveFsConnection() = default;
+  virtual base::UnguessableToken Connect(mojom::DriveFsDelegate* delegate,
+                                         base::OnceClosure on_disconnected) = 0;
+  virtual mojom::DriveFs& GetDriveFs() = 0;
 
-  const base::UnguessableToken& pending_token() const {
-    return bootstrap_listener_ ? bootstrap_listener_->pending_token()
-                               : base::UnguessableToken::Null();
-  }
-  mojom::DriveFs* drivefs_interface() const { return drivefs_.get(); }
+  static std::unique_ptr<DriveFsConnection> Create(
+      std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener,
+      mojom::DriveFsConfigurationPtr config);
 
  private:
-  void OnMojoConnectionError();
-
-  std::unique_ptr<DriveFsBootstrapListener> bootstrap_listener_;
-
-  mojo::Binding<mojom::DriveFsDelegate> delegate_binding_;
-  mojom::DriveFsPtr drivefs_;
-
-  base::OnceClosure on_disconnected_;
-
   DISALLOW_COPY_AND_ASSIGN(DriveFsConnection);
 };
 

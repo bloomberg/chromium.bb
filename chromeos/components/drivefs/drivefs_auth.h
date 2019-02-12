@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
     return delegate_->GetObfuscatedAccountId();
   }
 
-  base::Optional<std::string> TakeCachedAccessToken();
+  base::Optional<std::string> GetCachedAccessToken();
 
   virtual void GetAccessToken(
       bool use_cached,
@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
                             base::Time expiration_time,
                             const GoogleServiceAuthError& error);
 
-  const std::string& MaybeGetCachedToken(bool use_cached);
+  const std::string& GetOrResetCachedToken(bool use_cached);
 
   void UpdateCachedToken(const std::string& token, base::Time expiry);
 
