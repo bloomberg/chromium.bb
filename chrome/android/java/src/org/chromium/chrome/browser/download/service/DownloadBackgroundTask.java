@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -15,6 +16,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.components.download.DownloadTaskType;
 import org.chromium.components.download.internal.BatteryStatusListenerAndroid;
+import org.chromium.content_public.browser.BrowserStartupController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +45,9 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
     @DownloadTaskType
     private int mCurrentTaskType;
 
+    // Whether only service manager is required to start.
+    private boolean mStartsServiceManagerOnly;
+
     @Override
     protected @StartBeforeNativeResult int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
@@ -51,6 +56,11 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         int optimalBatteryPercentage = taskParameters.getExtras().getInt(
                 DownloadTaskScheduler.EXTRA_OPTIMAL_BATTERY_PERCENTAGE);
         mCurrentTaskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
+        // Return value from DownloadUtils.shouldStartServiceManagerOnly() could change during
+        // native initialization, store it first.
+        mStartsServiceManagerOnly =
+                mCurrentTaskType == DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK
+                && DownloadUtils.shouldStartServiceManagerOnly();
         // Reschedule if minimum battery level is not satisfied.
         if (!requiresCharging
                 && BatteryStatusListenerAndroid.getBatteryPercentage() < optimalBatteryPercentage) {
@@ -82,7 +92,10 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
             }
         };
 
-        Profile profile = supportsServiceManagerOnly()
+        assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()
+                || mStartsServiceManagerOnly;
+        Profile profile = mStartsServiceManagerOnly
                 ? null
                 : Profile.getLastUsedProfile().getOriginalProfile();
         incrementPendingCallbackCount(mCurrentTaskType);
@@ -97,8 +110,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
 
     @Override
     protected boolean supportsServiceManagerOnly() {
-        return mCurrentTaskType == DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK
-                && DownloadUtils.shouldStartServiceManagerOnly();
+        return mStartsServiceManagerOnly;
     }
 
     private void incrementPendingCallbackCount(@DownloadTaskType int taskType) {
@@ -131,7 +143,7 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         int taskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
         mPendingTaskCounters.remove(taskType);
 
-        Profile profile = supportsServiceManagerOnly()
+        Profile profile = mStartsServiceManagerOnly
                 ? null
                 : Profile.getLastUsedProfile().getOriginalProfile();
         boolean needsReschedule = nativeStopBackgroundTask(profile, taskType);
