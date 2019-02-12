@@ -14,7 +14,7 @@ using Type = WebScrollIntoViewParams::Type;
 using Behavior = WebScrollIntoViewParams::Behavior;
 
 // Make sure we keep the public enums in sync with the internal ones.
-ASSERT_SIZE(AlignmentBehavior, ScrollAlignmentBehavior)
+ASSERT_SIZE(AlignmentBehavior, ScrollAlignmentBehavior);
 STATIC_ASSERT_ENUM(AlignmentBehavior::kNoScroll,
                    ScrollAlignmentBehavior::kScrollAlignmentNoScroll);
 STATIC_ASSERT_ENUM(AlignmentBehavior::kCenter,
@@ -30,14 +30,14 @@ STATIC_ASSERT_ENUM(AlignmentBehavior::kRight,
 STATIC_ASSERT_ENUM(AlignmentBehavior::kClosestEdge,
                    ScrollAlignmentBehavior::kScrollAlignmentClosestEdge);
 
-ASSERT_SIZE(Type, ScrollType)
+ASSERT_SIZE(Type, ScrollType);
 STATIC_ASSERT_ENUM(Type::kUser, ScrollType::kUserScroll);
 STATIC_ASSERT_ENUM(Type::kProgrammatic, ScrollType::kProgrammaticScroll);
 STATIC_ASSERT_ENUM(Type::kClamping, ScrollType::kClampingScroll);
 STATIC_ASSERT_ENUM(Type::kAnchoring, ScrollType::kAnchoringScroll);
 STATIC_ASSERT_ENUM(Type::kSequenced, ScrollType::kSequencedScroll);
 
-ASSERT_SIZE(Behavior, ScrollBehavior)
+ASSERT_SIZE(Behavior, ScrollBehavior);
 STATIC_ASSERT_ENUM(Behavior::kAuto, ScrollBehavior::kScrollBehaviorAuto);
 STATIC_ASSERT_ENUM(Behavior::kInstant, ScrollBehavior::kScrollBehaviorInstant);
 STATIC_ASSERT_ENUM(Behavior::kSmooth, ScrollBehavior::kScrollBehaviorSmooth);
