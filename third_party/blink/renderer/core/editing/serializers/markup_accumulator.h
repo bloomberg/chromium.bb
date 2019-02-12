@@ -77,8 +77,8 @@ class MarkupAccumulator {
   void AppendAttributeAsXMLWithNamespace(const Element& element,
                                          const Attribute& attribute,
                                          const String& value);
-  static bool ShouldAddNamespaceAttribute(const Attribute& attribute,
-                                          const Element& element);
+  bool ShouldAddNamespaceAttribute(const Attribute& attribute,
+                                   const AtomicString& candidate_prefix);
 
   void AppendEndTag(const Element&);
 
@@ -86,6 +86,7 @@ class MarkupAccumulator {
 
   void PushNamespaces(const Element& element);
   void PopNamespaces(const Element& element);
+  void RecordNamespaceInformation(const Element& element);
   void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
   AtomicString LookupNamespaceURI(const AtomicString& prefix);
   AtomicString GeneratePrefix(const AtomicString& new_namespace);

@@ -93,6 +93,7 @@ bool MarkupAccumulator::ShouldIgnoreElement(const Element& element) const {
 
 void MarkupAccumulator::AppendElement(const Element& element) {
   // https://html.spec.whatwg.org/multipage/parsing.html#html-fragment-serialisation-algorithm
+  RecordNamespaceInformation(element);
   AppendStartTagOpen(element);
 
   AttributeCollection attributes = element.Attributes();
@@ -161,9 +162,6 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
   if (attribute_namespace == xmlns_names::kNamespaceURI) {
     if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
       candidate_prefix = g_xmlns_atom;
-    // Account for the namespace attribute we're about to append.
-    AddPrefix(attribute.Prefix() ? attribute.LocalName() : g_empty_atom,
-              attribute.Value());
   } else if (attribute_namespace == xml_names::kNamespaceURI) {
     // TODO(tkent): Remove this block when we implement 'retrieving a
     // preferred prefix string'.
@@ -179,8 +177,8 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
 
     // 3.5.3. Otherwise, the attribute namespace in not the XMLNS namespace.
     // Run these steps:
-    if (ShouldAddNamespaceAttribute(attribute, element)) {
-      if (!candidate_prefix) {
+    if (ShouldAddNamespaceAttribute(attribute, candidate_prefix)) {
+      if (!candidate_prefix || LookupNamespaceURI(candidate_prefix)) {
         // 3.5.3.1. Let candidate prefix be the result of generating a prefix
         // providing map, attribute namespace, and prefix index as input.
         candidate_prefix = GeneratePrefix(attribute_namespace);
@@ -198,8 +196,9 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
                                    attribute.LocalName(), value, false);
 }
 
-bool MarkupAccumulator::ShouldAddNamespaceAttribute(const Attribute& attribute,
-                                                    const Element& element) {
+bool MarkupAccumulator::ShouldAddNamespaceAttribute(
+    const Attribute& attribute,
+    const AtomicString& candidate_prefix) {
   // xmlns and xmlns:prefix attributes should be handled by another branch in
   // AppendAttributeAsXMLWithNamespace().
   DCHECK_NE(attribute.NamespaceURI(), xmlns_names::kNamespaceURI);
@@ -210,10 +209,11 @@ bool MarkupAccumulator::ShouldAddNamespaceAttribute(const Attribute& attribute,
 
   // Attributes without a prefix will need one generated for them, and an xmlns
   // attribute for that prefix.
-  if (!attribute.Prefix())
+  if (!candidate_prefix)
     return true;
 
-  return !element.hasAttribute(WTF::g_xmlns_with_colon + attribute.Prefix());
+  return !EqualIgnoringNullity(LookupNamespaceURI(candidate_prefix),
+                               attribute.NamespaceURI());
 }
 
 void MarkupAccumulator::AppendNamespace(const AtomicString& prefix,
@@ -250,6 +250,16 @@ void MarkupAccumulator::PopNamespaces(const Element& element) {
   if (SerializeAsHTMLDocument(element))
     return;
   namespace_stack_.pop_back();
+}
+
+// https://w3c.github.io/DOM-Parsing/#dfn-recording-the-namespace-information
+void MarkupAccumulator::RecordNamespaceInformation(const Element& element) {
+  if (SerializeAsHTMLDocument(element))
+    return;
+  for (const auto& attr : element.Attributes()) {
+    if (attr.NamespaceURI() == xmlns_names::kNamespaceURI)
+      AddPrefix(attr.Prefix() ? attr.LocalName() : g_empty_atom, attr.Value());
+  }
 }
 
 // https://w3c.github.io/DOM-Parsing/#dfn-add
