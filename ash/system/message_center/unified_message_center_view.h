@@ -80,7 +80,8 @@ class ASH_EXPORT UnifiedMessageCenterView
 
  protected:
   // Virtual for testing.
-  virtual void SetNotificationHeightBelowScroll(int height_below_scroll);
+  virtual void SetNotificationRectBelowScroll(
+      const gfx::Rect& rect_below_scroll);
 
  private:
   friend class UnifiedMessageCenterViewTest;
@@ -90,9 +91,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Scroll the notification list to the target position.
   void ScrollToTarget();
 
-  // Notifies height below scroll to |parent_| so that it can update
+  // Notifies rect below scroll to |parent_| so that it can update
   // TopCornerBorder.
-  void NotifyHeightBelowScroll();
+  void NotifyRectBelowScroll();
 
   UnifiedSystemTrayView* const parent_;
   UnifiedSystemTrayModel* const model_;
