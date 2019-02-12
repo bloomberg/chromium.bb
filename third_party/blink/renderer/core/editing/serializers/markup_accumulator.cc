@@ -345,20 +345,20 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
     // Traverses other DOM tree, i.e., shadow tree.
     std::pair<Node*, Element*> auxiliary_pair =
         GetAuxiliaryDOMTree(target_element);
-    Node* auxiliary_tree = auxiliary_pair.first;
-    Element* enclosing_element = auxiliary_pair.second;
-    if (auxiliary_tree) {
-      if (auxiliary_pair.second)
+    if (Node* auxiliary_tree = auxiliary_pair.first) {
+      Element* enclosing_element = auxiliary_pair.second;
+      if (enclosing_element)
         AppendElement(*enclosing_element);
       for (const Node& child : Strategy::ChildrenOf(*auxiliary_tree))
         SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
       if (enclosing_element)
         AppendEndTag(*enclosing_element);
     }
+
+    if (!children_only)
+      AppendEndTag(target_element);
   }
 
-  if (!children_only && has_end_tag)
-    AppendEndTag(target_element);
   PopNamespaces(target_element);
 }
 
