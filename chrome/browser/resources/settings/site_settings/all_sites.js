@@ -95,6 +95,16 @@ Polymer({
      * focusRowBehavior.
      */
     listBlurred_: Boolean,
+
+    /**
+     * @private {?{
+     *   index: number,
+     *   item: !SiteGroup,
+     *   path: string,
+     *   target: !HTMLElement
+     * }}
+     */
+    actionMenuModel_: Object,
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -107,7 +117,7 @@ Polymer({
   },
 
   listeners: {
-    'delete-current-entry': 'onDeleteCurrentEntry_',
+    'open-menu': 'onOpenMenu_',
   },
 
   /** @override */
@@ -258,8 +268,6 @@ Polymer({
   /**
    * Comparator used to sort SiteGroups by the amount of storage they use. Note
    * this sorts in descending order.
-   * TODO(https://crbug.com/835712): Account for website storage in sorting by
-   * storage used.
    * @param {!SiteGroup} siteGroup1
    * @param {!SiteGroup} siteGroup2
    * @private
@@ -340,16 +348,6 @@ Polymer({
   },
 
   /**
-   * Delete an entry from |siteGroupMap| for given etldPlus1.
-   * @param {!CustomEvent<!{etldPlus1: string}>} e
-   * @private
-   */
-  onDeleteCurrentEntry_: function(e) {
-    this.siteGroupMap.delete(e.detail.etldPlus1);
-    this.forceListUpdate_();
-  },
-
-  /**
    * Focus on previously selected entry.
    * @private
    */
@@ -363,5 +361,158 @@ Polymer({
     const index =
         Math.max(0, Math.min(this.selectedItem_.index, this.siteGroupMap.size));
     this.$.allSitesList.focusItem(index);
-  }
+  },
+
+  /**
+   * Open the overflow menu and ensure that the item is visible in the scroll
+   * pane when its menu is opened (it is possible to open off-screen items using
+   * keyboard shortcuts).
+   * @param {!CustomEvent<{
+   *    index: number, item: !SiteGroup,
+   *    path: string, target: !HTMLElement
+   *    }>} e
+   * @private
+   */
+  onOpenMenu_: function(e) {
+    if (this.actionMenuModel_) {
+      return;
+    }
+    const index = e.detail.index;
+    const list = /** @type {IronListElement} */ (this.$['allSitesList']);
+    if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
+      list.scrollToIndex(index);
+    }
+    const target = e.detail.target;
+    this.actionMenuModel_ = e.detail;
+    const menu = /** @type {CrActionMenuElement} */ (this.$.menu.get());
+    menu.showAt(target);
+  },
+
+  /**
+   * Confirms the resetting of all content settings for an origin.
+   * @param {!Event} e
+   * @private
+   */
+  onConfirmResetSettings_: function(e) {
+    e.preventDefault();
+    this.$.confirmResetSettings.get().showModal();
+  },
+
+  /**
+   * Confirms the clearing of all storage data for an etld+1.
+   * @param {!Event} e
+   * @private
+   */
+  onConfirmClearData_: function(e) {
+    e.preventDefault();
+    this.$.confirmClearData.get().showModal();
+  },
+
+  /** @private */
+  onCloseDialog_: function(e) {
+    e.target.closest('cr-dialog').close();
+    this.actionMenuModel_ = null;
+    this.$.menu.get().close();
+  },
+
+  /**
+   * Formats the |label| string with |name|, using $<num> as markers.
+   * @param {string} label
+   * @param {string} name
+   * @return {string}
+   * @private
+   */
+  getFormatString_: function(label, name) {
+    return loadTimeData.substituteString(label, name);
+  },
+
+  /**
+   * Resets all permissions for all origins listed in |siteGroup.origins|.
+   * @param {!Event} e
+   * @private
+   */
+  onResetSettings_: function(e) {
+    const contentSettingsTypes = this.getCategoryList();
+    const index = this.actionMenuModel_.index;
+    if (this.actionMenuModel_.item.etldPlus1 !=
+        this.filteredList_[index].etldPlus1) {
+      return;
+    }
+    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
+      const origin = this.filteredList_[index].origins[i].origin;
+      this.browserProxy.setOriginPermissions(
+          origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
+      if (contentSettingsTypes.includes(
+              settings.ContentSettingsTypes.PLUGINS)) {
+        this.browserProxy.clearFlashPref(origin);
+      }
+      this.filteredList_[index].origins[i].hasPermissionSettings = false;
+    }
+    const updatedSiteGroup = {
+      etldPlus1: this.filteredList_[index].etldPlus1,
+      numCookies: this.filteredList_[index].numCookies,
+      origins: []
+    };
+    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
+      const updatedOrigin =
+          Object.assign({}, this.filteredList_[index].origins[i]);
+      if (updatedOrigin.numCookies > 0 || updatedOrigin.usage > 0) {
+        updatedOrigin.hasPermissionSettings = false;
+        updatedSiteGroup.origins.push(updatedOrigin);
+      }
+    }
+    if (updatedSiteGroup.origins.length > 0) {
+      this.set('filteredList_.' + index, updatedSiteGroup);
+    } else if (this.filteredList_[index].numCookies > 0) {
+      // If there is no origin for this site group that has any data,
+      // but the ETLD+1 has cookies in use, create a origin placeholder
+      // for display purposes.
+      const originPlaceHolder = {
+        origin: 'http://' + this.filteredList_[index].etldPlus1 + '/',
+        engagement: 0,
+        usage: 0,
+        numCookies: this.filteredList_[index].numCookies,
+        hasPermissionSettings: false
+      };
+      updatedSiteGroup.origins.push(originPlaceHolder);
+      this.set('filteredList_.' + index, updatedSiteGroup);
+    } else {
+      this.splice('filteredList_', index, 1);
+    }
+    this.$.allSitesList.fire('iron-resize');
+    this.onCloseDialog_(e);
+  },
+
+  /**
+   * Clear data and cookies for an etldPlus1.
+   * @param {!Event} e
+   * @private
+   */
+  onClearData_: function(e) {
+    const index = this.actionMenuModel_.index;
+    // Clean up the SiteGroup.
+    this.browserProxy.clearEtldPlus1DataAndCookies(
+        this.filteredList_[index].etldPlus1);
+    const updatedSiteGroup = {
+      etldPlus1: this.filteredList_[index].etldPlus1,
+      numCookies: 0,
+      origins: []
+    };
+    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
+      const updatedOrigin =
+          Object.assign({}, this.filteredList_[index].origins[i]);
+      if (updatedOrigin.hasPermissionSettings) {
+        updatedOrigin.numCookies = 0;
+        updatedOrigin.usage = 0;
+        updatedSiteGroup.origins.push(updatedOrigin);
+      }
+    }
+    if (updatedSiteGroup.origins.length > 0) {
+      this.set('filteredList_.' + index, updatedSiteGroup);
+    } else {
+      this.splice('filteredList_', index, 1);
+    }
+    this.$.allSitesList.fire('iron-resize');
+    this.onCloseDialog_(e);
+  },
 });
