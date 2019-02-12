@@ -55,8 +55,13 @@
 #pragma mark - Public
 
 - (void)setPage:(TabGridPage)page {
-  if (page == _page)
-    return;
+  // TODO(crbug.com/929981): "traitCollectionDidChange:" method won't get called
+  // when the view is not displayed, and in that case the only chance
+  // TabGridBottomToolbar can update its layout is when the TabGrid sets its
+  // "page" property in the
+  // "viewWillTransitionToSize:withTransitionCoordinator:" method. An early
+  // return for "self.page == page" can be added here once UIKit fixes its
+  // issue or TabGridBottomToolbar is turned into a view controller.
   _page = page;
   self.newTabButton.page = page;
   [self updateLayout];
@@ -130,10 +135,16 @@
 
 // Returns YES if should use compact bottom toolbar layout.
 - (BOOL)shouldUseCompactLayout {
-  return self.traitCollection.verticalSizeClass ==
-             UIUserInterfaceSizeClassRegular &&
-         self.traitCollection.horizontalSizeClass ==
-             UIUserInterfaceSizeClassCompact;
+  // TODO(crbug.com/929981): UIView's |traitCollection| can be wrong and
+  // contradict the keyWindow's |traitCollection| because UIView's
+  // |-traitCollectionDidChange:| is not properly called when the view rotates
+  // while it is in a ViewController deeper in the ViewController hierarchy. Use
+  // self.traitCollection once this is fixed by UIKit, or remove this function
+  // if TabGridBottomToolbar is turned into a view controller.
+  return UIApplication.sharedApplication.keyWindow.traitCollection
+                 .verticalSizeClass == UIUserInterfaceSizeClassRegular &&
+         UIApplication.sharedApplication.keyWindow.traitCollection
+                 .horizontalSizeClass == UIUserInterfaceSizeClassCompact;
 }
 
 @end
