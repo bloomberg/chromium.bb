@@ -782,7 +782,7 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
     const std::string& login_access_token) {
   DCHECK(!login_access_token.empty());
-  mint_token_flow_.reset(CreateMintTokenFlow());
+  mint_token_flow_ = CreateMintTokenFlow();
   mint_token_flow_->Start(GetProfile()->GetURLLoaderFactory(),
                           login_access_token);
 }
@@ -810,10 +810,11 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
   gaia_web_auth_flow_->Start();
 }
 
-OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
+std::unique_ptr<OAuth2MintTokenFlow>
+IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
   std::string signin_scoped_device_id =
       GetSigninScopedDeviceIdForProfile(GetProfile());
-  OAuth2MintTokenFlow* mint_token_flow = new OAuth2MintTokenFlow(
+  auto mint_token_flow = std::make_unique<OAuth2MintTokenFlow>(
       this, OAuth2MintTokenFlow::Parameters(
                 extension()->id(), oauth2_client_id_,
                 std::vector<std::string>(token_key_.scopes.begin(),
