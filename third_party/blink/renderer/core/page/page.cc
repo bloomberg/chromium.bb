@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -664,6 +665,15 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       }
       break;
     }
+    case SettingsDelegate::kPaintChange:
+      for (Frame* frame = MainFrame(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        if (!frame->IsLocalFrame())
+          continue;
+        if (LayoutView* view = ToLocalFrame(frame)->ContentLayoutObject())
+          view->InvalidatePaintForViewAndCompositedLayers();
+      }
+      break;
   }
 }
 
