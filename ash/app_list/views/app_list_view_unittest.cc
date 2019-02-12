@@ -387,10 +387,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   }
 
   // Test the behavior triggered by left and right key when focus is on the
-  // |textfield|. |text_rtl| indicates whether to type RTL or non-RTL text in
-  // the |textfield| during the test.
-  void TestLeftAndRightKeyOnTextfield(views::Textfield* textfield,
-                                      bool text_rtl) {
+  // |textfield|. Does not insert text.
+  void TestLeftAndRightKeyTraversalOnTextfield(views::Textfield* textfield) {
     EXPECT_TRUE(textfield->text().empty());
     EXPECT_EQ(textfield, focused_view());
 
@@ -414,6 +412,14 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
     SimulateKeyPress(ui::VKEY_RIGHT, false);
     EXPECT_EQ(textfield, focused_view());
+  }
+
+  // Test the behavior triggered by left and right key when focus is on the
+  // |textfield|. This includes typing text into the field.
+  void TestLeftAndRightKeyOnTextfieldWithText(views::Textfield* textfield,
+                                              bool text_rtl) {
+    // Test initial traversal
+    TestLeftAndRightKeyTraversalOnTextfield(textfield);
 
     // Type something in textfield.
     base::string16 text =
@@ -423,10 +429,12 @@ class AppListViewFocusTest : public views::ViewsTestBase,
                   "\xd8\xa7\xd8\xae\xd8\xaa\xd8\xa8\xd8\xa7\xd8\xb1")
             : base::UTF8ToUTF16("test");
     textfield->InsertText(text);
-    next_view = view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
-        textfield, view_->GetWidget(), false, false);
-    prev_view = view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
-        textfield, view_->GetWidget(), true, false);
+    views::View* next_view = next_view =
+        view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
+            textfield, view_->GetWidget(), false, false);
+    views::View* prev_view = prev_view =
+        view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
+            textfield, view_->GetWidget(), true, false);
     EXPECT_EQ(text.length(), textfield->GetCursorPosition());
     EXPECT_FALSE(textfield->HasSelection());
     EXPECT_EQ(textfield, focused_view());
@@ -565,6 +573,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
 
+INSTANTIATE_TEST_SUITE_P(, AppListViewFocusTest, testing::Bool());
+
 }  // namespace
 
 // Tests that the initial focus is on search box.
@@ -634,8 +644,8 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
                      ui::VKEY_LEFT, false);
 }
 
-// Tests the linear focus traversal in HALF state with opened search box.
-TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
+// Tests focus traversal in HALF state with opened search box using |VKEY_TAB|.
+TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -671,21 +681,61 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
 
   // Test traversal triggered by shift+tab.
   TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
+}
 
-  // Test traversal triggered by right. When the search box is focused, all
-  // text are selected. Hitting right key will move the cursor to the right end
-  // and unselect the text. Hitting right key again will move the focus to the
-  // next view. Left key is handled in similar way.
-  forward_view_list.insert(forward_view_list.begin(),
-                           search_box_view()->search_box());
+// Tests focus traversal in HALF state with opened search box using |VKEY_LEFT|
+// and |VKEY_RIGHT|.
+TEST_P(AppListViewFocusTest, LeftRightFocusTraversalInHalfState) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake search results.
+  // Type something in textfield.
+  base::string16 text =
+      is_rtl_
+          // Arabic word of "test".
+          ? base::UTF8ToUTF16(
+                "\xd8\xa7\xd8\xae\xd8\xaa\xd8\xa8\xd8\xa7\xd8\xb1")
+          : base::UTF8ToUTF16("test");
+  search_box_view()->search_box()->InsertText(text);
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListViewState::HALF);
+
+  constexpr int kTileResults = 6;
+  SetUpSearchResults(kTileResults, 0, false);
+
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      contents_view()
+          ->search_result_tile_item_list_view_for_test()
+          ->tile_views_for_test();
+  for (int i = 1; i < kTileResults; ++i)
+    forward_view_list.push_back(tile_views[i]);
+  forward_view_list.push_back(search_box_view()->search_box());
+
+  TestFocusTraversal(forward_view_list,
+                     is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT, false);
+
+  std::vector<views::View*> backward_view_list = forward_view_list;
+
+  // Backwards traversal won't skip any items, as the first view won't be
+  // highlighted.
+  backward_view_list.insert(backward_view_list.begin() + 1, tile_views[0]);
+
+  // The intuitive focus is where the highlight is, on the first result.
+  // Because of this, the 'x' is effectively behind us and should only be
+  // traversed in the backwards list. The view in front of us it the second
+  // result, so that is what we should jump to next.
+  backward_view_list.insert(backward_view_list.begin() + 1,
+                            search_box_view()->close_button());
+  std::reverse(backward_view_list.begin(), backward_view_list.end());
+
+  // The text in the box will be highlighted, the first press should deselect.
   backward_view_list.insert(backward_view_list.begin(),
                             search_box_view()->search_box());
-  TestFocusTraversal(is_rtl_ ? backward_view_list : forward_view_list,
-                     ui::VKEY_RIGHT, false);
 
-  // Test traversal triggered by left.
-  TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
-                     ui::VKEY_LEFT, false);
+  TestFocusTraversal(backward_view_list,
+                     is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT, false);
 }
 
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state within folder.
@@ -1303,15 +1353,15 @@ TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
   folder_name_view->RequestFocus();
 
   // Test folder name.
-  TestLeftAndRightKeyOnTextfield(folder_name_view, false);
-  TestLeftAndRightKeyOnTextfield(folder_name_view, true);
+  TestLeftAndRightKeyOnTextfieldWithText(folder_name_view, false);
+  TestLeftAndRightKeyOnTextfieldWithText(folder_name_view, true);
 
   // Set focus on the search box.
   search_box_view()->search_box()->RequestFocus();
 
-  // Test search box.
-  TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), false);
-  TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), true);
+  // Test search box. Active traversal has been tested at this point. This will
+  // specifically test inactive traversal with no search results set up.
+  TestLeftAndRightKeyTraversalOnTextfield(search_box_view()->search_box());
 }
 
 // Tests that the focus is reset onto the search box and the folder exits after
