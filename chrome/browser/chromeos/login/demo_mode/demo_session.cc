@@ -42,9 +42,10 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -345,7 +346,7 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
 
   // TODO(michaelpg): Update shelf when network status changes.
   // TODO(michaelpg): Also check for captive portal.
-  if (!net::NetworkChangeNotifier::IsOffline())
+  if (!content::GetNetworkConnectionTracker()->IsOffline())
     return false;
 
   return base::ContainsValue(ignore_pin_policy_offline_apps_,

@@ -112,8 +112,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/grit/extensions_browser_resources.h"
-#include "net/base/mock_network_change_notifier.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
@@ -4558,8 +4557,8 @@ class ChromeLauncherControllerDemoModeTest
 };
 
 TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
-  net::test::MockNetworkChangeNotifier notifier;
-  notifier.SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
 
   InitLauncherControllerWithBrowser();
 
@@ -4608,8 +4607,8 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
 }
 
 TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
-  net::test::MockNetworkChangeNotifier notifier;
-  notifier.SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
 
   InitLauncherControllerWithBrowser();
 
