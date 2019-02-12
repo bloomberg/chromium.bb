@@ -1107,9 +1107,12 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
 
     NavigateToUntrackedUrl();
 
-    tester.ExpectUniqueSample(
-        "Previews.PageEndReason",
-        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+    // The top level metric is not recorded on a non-preview.
+    if (type != PreviewsType::NONE) {
+      tester.ExpectUniqueSample(
+          "Previews.PageEndReason",
+          page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+    }
     tester.ExpectUniqueSample(
         "Previews.PageEndReason." + GetStringNameForType(type),
         page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
