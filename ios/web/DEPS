@@ -17,5 +17,7 @@ include_rules = [
   # For tests.
   "+ios/testing",
   "+ios/third_party/earl_grey/src",
+  "+ios/third_party/earl_grey2/src/CommonLib",
+  "+ios/third_party/earl_grey2/src/TestLib",
   "+mojo/core/embedder/embedder.h",
 ]
