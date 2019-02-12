@@ -1493,32 +1493,43 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     float position,
     unsigned start_index,
     unsigned length) {
+  DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
-  // Tab characters are always LTR or RTL, not TTB, even when
-  // isVerticalAnyUpright().
-  scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
-      font_data, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
-      CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index, length,
-      length);
-  float start_position = position;
-  for (unsigned i = 0; i < length; i++) {
-    float advance = font->TabWidth(font_data, tab_size, position);
-    HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
-    glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, advance,
-                                    FloatSize(), true);
-
-    position += advance;
-  }
-  run->width_ = position - start_position;
-
   scoped_refptr<ShapeResult> result =
       ShapeResult::Create(font, length, direction);
-  result->width_ = run->width_;
   result->num_glyphs_ = length;
   DCHECK_EQ(result->num_glyphs_, length);  // no overflow
   result->has_vertical_offsets_ =
       font_data->PlatformData().IsVerticalAnyUpright();
-  result->runs_.push_back(std::move(run));
+  // Tab characters are always LTR or RTL, not TTB, even when
+  // isVerticalAnyUpright().
+  hb_direction_t hb_direction =
+      IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL;
+  // Only the advance of the first tab is affected by |position|.
+  float advance = font->TabWidth(font_data, tab_size, position);
+  do {
+    unsigned run_length = std::min(length, HarfBuzzRunGlyphData::kMaxGlyphs);
+    scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
+        font_data, hb_direction, CanvasRotationInVertical::kRegular,
+        HB_SCRIPT_COMMON, start_index, run_length, run_length);
+    float start_position = position;
+    for (unsigned i = 0; i < run_length; i++) {
+      // 2nd and following tabs have the base width, without using |position|.
+      if (i == 1)
+        advance = font->TabWidth(font_data, tab_size);
+      HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
+      glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, advance,
+                                      FloatSize(), true);
+
+      position += advance;
+    }
+    run->width_ = position - start_position;
+    result->width_ += run->width_;
+    result->runs_.push_back(std::move(run));
+    DCHECK_GE(length, run_length);
+    length -= run_length;
+    start_index += run_length;
+  } while (length);
   result->UpdateStartIndex();
   return result;
 }
