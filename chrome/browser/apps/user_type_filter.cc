@@ -8,12 +8,22 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace apps {
 
-namespace {
+// kUserType is required key that specifies enumeration of user types for which
+// web app is visible. See kUserType* constants
+const char kKeyUserType[] = "user_type";
+
+const char kUserTypeChild[] = "child";
+const char kUserTypeGuest[] = "guest";
+const char kUserTypeManaged[] = "managed";
+const char kUserTypeSupervised[] = "supervised";
+const char kUserTypeUnmanaged[] = "unmanaged";
 
 std::string DetermineUserType(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!profile->IsOffTheRecord());
   if (profile->IsGuestSession())
     return kUserTypeGuest;
@@ -28,23 +38,10 @@ std::string DetermineUserType(Profile* profile) {
   return kUserTypeUnmanaged;
 }
 
-}  // namespace
-
-// kUserType is required key that specifies enumeration of user types for which
-// web app is visible. See kUserType* constants
-const char kKeyUserType[] = "user_type";
-
-const char kUserTypeChild[] = "child";
-const char kUserTypeGuest[] = "guest";
-const char kUserTypeManaged[] = "managed";
-const char kUserTypeSupervised[] = "supervised";
-const char kUserTypeUnmanaged[] = "unmanaged";
-
-bool ProfileMatchJsonUserType(Profile* profile,
-                              const std::string& app_id,
-                              const base::Value* json_root,
-                              const base::ListValue* default_user_types) {
-  DCHECK(profile);
+bool UserTypeMatchesJsonUserType(const std::string& user_type,
+                                 const std::string& app_id,
+                                 const base::Value* json_root,
+                                 const base::ListValue* default_user_types) {
   DCHECK(json_root);
 
   if (!json_root->is_dict()) {
@@ -66,7 +63,6 @@ bool ProfileMatchJsonUserType(Profile* profile,
   }
 
   bool user_type_match = false;
-  const std::string user_type = DetermineUserType(profile);
   for (const auto& it : value->GetList()) {
     if (!it.is_string()) {
       LOG(ERROR) << "Invalid user type value for " << app_id << ".";

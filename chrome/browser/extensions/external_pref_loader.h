@@ -112,6 +112,10 @@ class ExternalPrefLoader : public ExternalLoader {
   // Needed for waiting for waiting priority sync.
   Profile* profile_;
 
+  // User type determined by |profile_|. Used to filter extensions. In some unit
+  // tests may not be set.
+  const std::string user_type_;
+
   std::vector<std::unique_ptr<PrioritySyncReadyWaiter>> pending_waiter_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);

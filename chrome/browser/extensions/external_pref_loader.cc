@@ -170,7 +170,10 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
 ExternalPrefLoader::ExternalPrefLoader(int base_path_id,
                                        int options,
                                        Profile* profile)
-    : base_path_id_(base_path_id), options_(options), profile_(profile) {
+    : base_path_id_(base_path_id),
+      options_(options),
+      profile_(profile),
+      user_type_(profile ? apps::DetermineUserType(profile) : std::string()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -349,9 +352,9 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
       continue;
 
     if (options_ & USE_USER_TYPE_PROFILE_FILTER &&
-        !apps::ProfileMatchJsonUserType(profile_, id /* app_id */,
-                                        ext_prefs.get(),
-                                        default_user_types.get())) {
+        !apps::UserTypeMatchesJsonUserType(user_type_, id /* app_id */,
+                                           ext_prefs.get(),
+                                           default_user_types.get())) {
       // Already logged.
       continue;
     }

@@ -88,7 +88,7 @@ bool IsFeatureEnabled(const std::string& feature_name) {
 
 std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
     const base::FilePath& dir,
-    Profile* profile) {
+    const std::string& user_type) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
@@ -116,8 +116,8 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
       continue;
     }
 
-    if (!apps::ProfileMatchJsonUserType(
-            profile, file.MaybeAsASCII() /* app_id */, dict.get(),
+    if (!apps::UserTypeMatchesJsonUserType(
+            user_type, file.MaybeAsASCII() /* app_id */, dict.get(),
             nullptr /* default_user_types */)) {
       // Already logged.
       continue;
@@ -214,7 +214,7 @@ namespace web_app {
 std::vector<web_app::PendingAppManager::AppInfo>
 ScanDirForExternalWebAppsForTesting(const base::FilePath& dir,
                                     Profile* profile) {
-  return ScanDir(dir, profile);
+  return ScanDir(dir, apps::DetermineUserType(profile));
 }
 
 void ScanForExternalWebApps(Profile* profile,
@@ -238,7 +238,8 @@ void ScanForExternalWebApps(Profile* profile,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ScanDir, dir, profile), std::move(callback));
+      base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile)),
+      std::move(callback));
 }
 
 }  //  namespace web_app

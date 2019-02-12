@@ -55,16 +55,17 @@ class UserTypeFilterTest : public testing::Test {
 
   bool Match(const std::unique_ptr<TestingProfile>& profile,
              const std::unique_ptr<base::Value>& json_root) {
-    return ProfileMatchJsonUserType(profile.get(), std::string() /* app_id */,
-                                    json_root.get(),
-                                    nullptr /* default_user_types */);
+    return UserTypeMatchesJsonUserType(
+        DetermineUserType(profile.get()), std::string() /* app_id */,
+        json_root.get(), nullptr /* default_user_types */);
   }
 
   bool MatchDefault(const std::unique_ptr<TestingProfile>& profile,
                     const base::ListValue& default_user_types) {
     base::DictionaryValue json_root;
-    return ProfileMatchJsonUserType(profile.get(), std::string() /* app_id */,
-                                    &json_root, &default_user_types);
+    return UserTypeMatchesJsonUserType(DetermineUserType(profile.get()),
+                                       std::string() /* app_id */, &json_root,
+                                       &default_user_types);
   }
 
  private:
