@@ -771,6 +771,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendFloating(
     LayoutObject* layout_object) {
+  changes_may_affect_earlier_lines_ = true;
   AppendOpaque(NGInlineItem::kFloating, kObjectReplacementCharacter, nullptr,
                layout_object);
 }
@@ -778,6 +779,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendFloating(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendOutOfFlowPositioned(LayoutObject* layout_object) {
+  changes_may_affect_earlier_lines_ = true;
   AppendOpaque(NGInlineItem::kOutOfFlowPositioned, kObjectReplacementCharacter,
                nullptr, layout_object);
 }
@@ -951,6 +953,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
         // Plaintext is handled as the paragraph level by
         // NGBidiParagraph::SetParagraph().
         has_bidi_controls_ = true;
+        // It's not easy to compute which lines will change with `unicode-bidi:
+        // plaintext`. Since it is quite uncommon that just disable line cache.
+        changes_may_affect_earlier_lines_ = true;
         break;
     }
   } else {
@@ -994,6 +999,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
                          kPopDirectionalIsolateCharacter);
         break;
       case UnicodeBidi::kPlaintext:
+        changes_may_affect_earlier_lines_ = true;
         EnterBidiContext(node, kFirstStrongIsolateCharacter,
                          kPopDirectionalIsolateCharacter);
         break;

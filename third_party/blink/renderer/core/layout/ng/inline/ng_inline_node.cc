@@ -516,6 +516,8 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   // doesn't contain any RTL characters.
   data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
   data->is_empty_inline_ = builder.IsEmptyInline();
+  data->changes_may_affect_earlier_lines_ =
+      builder.ChangesMayAffectEarlierLines();
 }
 
 void NGInlineNode::SegmentText(NGInlineNodeData* data) {
@@ -963,10 +965,16 @@ bool NGInlineNode::PrepareReuseFragments(
   if (!block_flow->AreCachedLinesValidFor(constraint_space))
     return false;
 
+  if (MaybeDirtyData().changes_may_affect_earlier_lines_)
+    return false;
+
   if (!MarkLineBoxesDirty(block_flow))
     return false;
 
   PrepareLayoutIfNeeded();
+
+  if (Data().changes_may_affect_earlier_lines_)
+    return false;
 
   return true;
 }
