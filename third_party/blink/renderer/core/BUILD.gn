@@ -1871,6 +1871,7 @@ jumbo_source_set("unit_tests") {
     "fetch/fetch_response_data_test.cc",
     "fetch/form_data_bytes_consumer_test.cc",
     "fetch/multipart_parser_test.cc",
+    "fetch/place_holder_bytes_consumer_test.cc",
     "fetch/readable_stream_bytes_consumer_test.cc",
     "fetch/request_test.cc",
     "fetch/response_test.cc",
