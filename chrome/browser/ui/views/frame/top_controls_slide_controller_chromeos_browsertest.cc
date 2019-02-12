@@ -1084,9 +1084,12 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
 
   {
     // We will start scrolling while top-chrome is fully shown, in which case
-    // the `DoBrowserControlsShrinkRendererSize` bit is true. It should remain
-    // true while sliding is in progress.
-    const bool expected_shrink_renderer_size = true;
+    // the `DoBrowserControlsShrinkRendererSize` bit is true ...
+    EXPECT_TRUE(
+        browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
+    // ... It should change to false at the beginning of sliding and remain
+    // false while sliding is in progress.
+    const bool expected_shrink_renderer_size = false;
 
     TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
     IntermediateShownRatioWaiter fractional_ratio_waiter(
@@ -1102,7 +1105,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
     CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyHidden);
 
     // Now that sliding ended, and top-chrome is fully hidden, the
-    // `DoBrowserControlsShrinkRendererSize` bit should be false ...
+    // `DoBrowserControlsShrinkRendererSize` bit should remain false ...
     EXPECT_FALSE(
         browser_view()->DoBrowserControlsShrinkRendererSize(active_contents));
   }
@@ -1179,6 +1182,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   views::Widget::GetWidgetForNativeView(permission_manager->GetBubbleWindow())
       ->CloseNow();
   EXPECT_FALSE(permission_manager->IsBubbleVisible());
+  content::WaitForResizeComplete(active_contents);
 
   // Now it is possible to hide top-chrome again.
   ScrollAndExpectTopChromeToBe(ScrollDirection::kDown,
