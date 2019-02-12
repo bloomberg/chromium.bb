@@ -16,7 +16,10 @@ class TextPaintTimingDetectorTest
  public:
   TextPaintTimingDetectorTest()
       : ScopedFirstContentfulPaintPlusPlusForTest(true) {}
-  void SetUp() override { RenderingTest::SetUp(); }
+  void SetUp() override {
+    RenderingTest::SetUp();
+    RenderingTest::EnableCompositing();
+  }
 
  protected:
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }

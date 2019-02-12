@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/decoration_info.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -412,6 +413,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if (should_rotate) {
     context.ConcatCTM(TextPainterBase::Rotation(
         box_rect, TextPainterBase::kCounterclockwise));
+  }
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    PaintTimingDetector::NotifyTextPaint(
+        InlineLayoutObject(),
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 }
 
