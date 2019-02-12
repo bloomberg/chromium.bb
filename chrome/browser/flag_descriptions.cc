@@ -2854,6 +2854,10 @@ const char kPromosOnLocalNtpDescription[] =
     "Show promos on the local New Tab page if Google is the "
     "default search engine.";
 
+const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
+const char kRemoveNtpFakeboxDescription[] =
+    "Do not show the fakebox on the New Tab page.";
+
 const char kEnableWebAuthenticationBleSupportName[] =
     "Web Authentication API BLE support";
 const char kEnableWebAuthenticationBleSupportDescription[] =
