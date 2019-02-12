@@ -701,6 +701,8 @@ const char kPullToRefresh[] = "pull-to-refresh";
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
 // Enables remote debug over stdio pipes [in=3, out=4].
+// Optionally, specifies the format for the protocol messages, can be either
+// "JSON" (the default) or "CBOR".
 const char kRemoteDebuggingPipe[] = "remote-debugging-pipe";
 
 // Enables remote debug over HTTP on the specified port.
