@@ -201,6 +201,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
   blink::WebPushProvider* PushProvider() override;
+  std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
+  CreateDedicatedWorkerHostFactoryClient(
+      blink::WebDedicatedWorker*,
+      service_manager::InterfaceProvider*) override;
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;

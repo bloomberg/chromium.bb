@@ -5,7 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_H_
 
+#include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_dedicated_worker.h"
+#include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
@@ -41,7 +44,8 @@ class WorkerClients;
 // created the worker or a worker thread in the case of nested workers.
 class CORE_EXPORT DedicatedWorker final
     : public AbstractWorker,
-      public ActiveScriptWrappable<DedicatedWorker> {
+      public ActiveScriptWrappable<DedicatedWorker>,
+      public WebDedicatedWorker {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorker);
   // Eager finalization is needed to notify the parent object destruction of the
@@ -77,6 +81,13 @@ class CORE_EXPORT DedicatedWorker final
   // (via AbstractWorker -> EventTargetWithInlineData -> EventTarget).
   bool HasPendingActivity() const final;
 
+  // Implements WebDedicatedWorker.
+  // Called only when PlzDedicatedWorker is enabled.
+  void OnWorkerHostCreated(
+      mojo::ScopedMessagePipeHandle interface_provider) override;
+  void OnScriptLoaded() override;
+  void OnScriptLoadFailed() override;
+
   void DispatchErrorEventForScriptFetchFailure();
 
   // Returns the name specified by WorkerOptions.
@@ -109,6 +120,11 @@ class CORE_EXPORT DedicatedWorker final
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
   Member<WorkerClassicScriptLoader> classic_script_loader_;
+
+  // Used only when PlzDedicatedWorker is enabled.
+  std::unique_ptr<WebDedicatedWorkerHostFactoryClient> factory_client_;
+
+  service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider_;
 };
 
 }  // namespace blink

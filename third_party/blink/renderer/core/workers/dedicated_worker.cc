@@ -4,11 +4,12 @@
 
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 
-#include <memory>
+#include <utility>
 #include "base/feature_list.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-blink.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -53,6 +55,7 @@ service_manager::mojom::blink::InterfaceProviderPtrInfo
 ConnectToWorkerInterfaceProvider(
     ExecutionContext* execution_context,
     scoped_refptr<const SecurityOrigin> script_origin) {
+  DCHECK(!features::IsPlzDedicatedWorkerEnabled());
   mojom::blink::DedicatedWorkerHostFactoryPtr worker_host_factory;
   execution_context->GetInterfaceProvider()->GetInterface(&worker_host_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
@@ -216,6 +219,25 @@ void DedicatedWorker::Start() {
 
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
     scope->EnsureFetcher();
+  if (blink::features::IsPlzDedicatedWorkerEnabled()) {
+    mojom::blink::BlobURLTokenPtr blob_url_token;
+    if (script_request_url_.ProtocolIs("blob") &&
+        BlobUtils::MojoBlobURLsEnabled()) {
+      GetExecutionContext()->GetPublicURLManager().Resolve(
+          script_request_url_, MakeRequest(&blob_url_token));
+    }
+
+    DCHECK(!factory_client_);
+    factory_client_ =
+        Platform::Current()->CreateDedicatedWorkerHostFactoryClient(
+            this, GetExecutionContext()->GetInterfaceProvider());
+    factory_client_->CreateWorkerHost(
+        script_request_url_,
+        WebSecurityOrigin(GetExecutionContext()->GetSecurityOrigin()),
+        blob_url_token.PassInterface().PassHandle());
+    // Continue in OnScriptLoaded().
+    return;
+  }
   if (base::FeatureList::IsEnabled(
           features::kOffMainThreadDedicatedWorkerScriptFetch) ||
       options_->type() == "module") {
@@ -286,6 +308,7 @@ void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
   DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_)
     classic_script_loader_->Cancel();
+  factory_client_.reset();
   terminate();
 }
 
@@ -294,6 +317,25 @@ bool DedicatedWorker::HasPendingActivity() const {
   // The worker context does not exist while loading, so we must ensure that the
   // worker object is not collected, nor are its event listeners.
   return context_proxy_->HasPendingActivity() || classic_script_loader_;
+}
+
+void DedicatedWorker::OnWorkerHostCreated(
+    mojo::ScopedMessagePipeHandle interface_provider) {
+  DCHECK(features::IsPlzDedicatedWorkerEnabled());
+  interface_provider_ = service_manager::mojom::blink::InterfaceProviderPtrInfo(
+      std::move(interface_provider),
+      service_manager::mojom::blink::InterfaceProvider::Version_);
+}
+
+void DedicatedWorker::OnScriptLoaded() {
+  DCHECK(features::IsPlzDedicatedWorkerEnabled());
+  // TODO(nhiroki): Continue worker start.
+}
+
+void DedicatedWorker::OnScriptLoadFailed() {
+  DCHECK(features::IsPlzDedicatedWorkerEnabled());
+  context_proxy_->DidFailToFetchScript();
+  factory_client_.reset();
 }
 
 void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
@@ -427,8 +469,10 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       OriginTrialContext::GetTokens(GetExecutionContext()).get(),
       parent_devtools_token, std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,
-      ConnectToWorkerInterfaceProvider(GetExecutionContext(),
-                                       SecurityOrigin::Create(script_url)),
+      interface_provider_
+          ? std::move(interface_provider_)
+          : ConnectToWorkerInterfaceProvider(
+                GetExecutionContext(), SecurityOrigin::Create(script_url)),
       CreateBeginFrameProviderParams(),
       GetExecutionContext()->GetSecurityContext().GetFeaturePolicy(),
       GetExecutionContext()->GetAgentClusterID());
