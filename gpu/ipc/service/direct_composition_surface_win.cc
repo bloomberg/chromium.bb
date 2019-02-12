@@ -1274,7 +1274,10 @@ void DCLayerTree::SwapChainPresenter::RecordPresentationStatistics() {
       is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA;
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.SwapChainFormat2",
                             swap_chain_format);
-
+  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
+                       "SwapChain::Present", TRACE_EVENT_SCOPE_THREAD,
+                       "PixelFormat", swap_chain_format, "ZeroCopy",
+                       !!decode_swap_chain_);
   HRESULT hr = 0;
   Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
   if (decode_swap_chain_) {
@@ -1283,7 +1286,6 @@ void DCLayerTree::SwapChainPresenter::RecordPresentationStatistics() {
     DCHECK(swap_chain_);
     hr = swap_chain_.As(&swap_chain_media);
   }
-
   if (SUCCEEDED(hr)) {
     DCHECK(swap_chain_media);
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
@@ -1294,19 +1296,17 @@ void DCLayerTree::SwapChainPresenter::RecordPresentationStatistics() {
     // Waiting for the DXGI adapter to finish presenting before calling the
     // function doesn't get rid of the failure.
     HRESULT hr = swap_chain_media->GetFrameStatisticsMedia(&stats);
+    int mode = -1;
     if (SUCCEEDED(hr)) {
       base::UmaHistogramSparse("GPU.DirectComposition.CompositionMode",
                                stats.CompositionMode);
       presentation_history_.AddSample(stats.CompositionMode);
-      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
-                           "SwapChainFrameInfo", TRACE_EVENT_SCOPE_THREAD,
-                           "SwapChain.PresentationMode", stats.CompositionMode,
-                           "SwapChain.PixelFormat", swap_chain_format);
-    } else {
-      TRACE_EVENT_INSTANT1(
-          TRACE_DISABLED_BY_DEFAULT("gpu.service"), "SwapChainFrameInfoInvalid",
-          TRACE_EVENT_SCOPE_THREAD, "ErrorCode", static_cast<uint32_t>(hr));
+      mode = stats.CompositionMode;
     }
+    // Record CompositionMode as -1 if GetFrameStatisticsMedia() fails.
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
+                         "GetFrameStatisticsMedia", TRACE_EVENT_SCOPE_THREAD,
+                         "CompositionMode", mode);
   }
 }
 

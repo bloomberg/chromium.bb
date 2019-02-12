@@ -4,20 +4,31 @@
 
 var video;
 
+// Some videos are less than 60 fps, so actual video frame presentations
+// could be much less than 30.
+var g_swaps_before_success = 30
+
 function main() {
   video = document.getElementById("video");
   video.loop = true;
-  video.addEventListener('timeupdate', waitForSwapToComplete);
+  video.addEventListener('timeupdate', waitForVideoToPlay);
   video.play();
 }
 
-function waitForSwapToComplete() {
+function waitForVideoToPlay() {
   if (video.currentTime > 0) {
-    video.removeEventListener('timeupdate', waitForSwapToComplete);
-    chrome.gpuBenchmarking.addSwapCompletionEventListener(sendSuccess);
+    video.removeEventListener('timeupdate', waitForVideoToPlay);
+    chrome.gpuBenchmarking.addSwapCompletionEventListener(
+        waitForSwapsToComplete);
   }
 }
 
-function sendSuccess() {
-  domAutomationController.send("SUCCESS");
+function waitForSwapsToComplete() {
+  g_swaps_before_success--;
+  if (g_swaps_before_success > 0) {
+    chrome.gpuBenchmarking.addSwapCompletionEventListener(
+        waitForSwapsToComplete);
+  } else {
+    domAutomationController.send("SUCCESS");
+  }
 }
