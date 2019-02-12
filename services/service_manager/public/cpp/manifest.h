@@ -5,6 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_MANIFEST_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_MANIFEST_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -13,20 +14,6 @@
 #include "base/files/file_path.h"
 
 namespace service_manager {
-
-namespace internal {
-
-template <typename InterfaceType>
-const char* GetInterfaceName() {
-  return InterfaceType::Name_;
-}
-
-template <typename... InterfaceTypes>
-std::set<std::string> GetInterfaceNames() {
-  return std::set<std::string>({GetInterfaceName<InterfaceTypes>()...});
-}
-
-}  // namespace internal
 
 // Represents metadata about a service that the Service Manager needs in order
 // to start and control instances of that given service. This data is provided
@@ -43,6 +30,15 @@ std::set<std::string> GetInterfaceNames() {
 // defined in manifest_builder.h for more readable and maintainable manifest
 // definitions.
 struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
+ public:
+  using ServiceName = std::string;
+  using CapabilityName = std::string;
+  using InterfaceName = std::string;
+  using InterfaceNameSet = std::set<InterfaceName>;
+  using CapabilityNameSet = std::set<CapabilityName>;
+  using ExposedCapabilityMap = std::map<CapabilityName, InterfaceNameSet>;
+  using RequiredCapabilityMap = std::map<ServiceName, CapabilityNameSet>;
+
   // Represents the display name of this service (in e.g. a task manager).
   //
   // TODO(https://crbug.com/915806): Extend this to support resource IDs in
@@ -133,122 +129,6 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   template <typename... InterfaceTypes>
   struct InterfaceList {};
 
-  // Represents a capability exposed by a service. Every exposed capability
-  // consists of a name (implicitly scoped to the service) and a list of
-  // interfaces the service is willing to bind on behalf of clients who have
-  // been granted the capability.
-  //
-  // See RequiredCapability for more details on how exposed capabilities are
-  // used by the system.
-  struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ExposedCapability {
-    ExposedCapability();
-    ExposedCapability(const ExposedCapability&);
-    ExposedCapability(ExposedCapability&&);
-
-    template <typename... InterfaceTypes>
-    ExposedCapability(const std::string& capability_name,
-                      InterfaceList<InterfaceTypes...> interfaces)
-        : capability_name(capability_name),
-          interface_names(internal::GetInterfaceNames<InterfaceTypes...>()) {}
-
-    // Prefer the above constructor. This exists to support genenerated code.
-    ExposedCapability(const std::string& capability_name,
-                      std::set<const char*> interface_names);
-
-    ~ExposedCapability();
-
-    ExposedCapability& operator=(const ExposedCapability&);
-    ExposedCapability& operator=(ExposedCapability&&);
-
-    // The name of this capability.
-    std::string capability_name;
-
-    // The list of interfaces accessible to clients granted this capability.
-    std::set<std::string> interface_names;
-  };
-
-  // Represents a capability required by a service. Every required capability
-  // is a simple pairwise combination of service name and capability name, where
-  // the capability name corresponds to a capability exposed by the named
-  // service.
-  //
-  // A service which requires a specific capability is implicitly granted that
-  // capability by the Service Manager. If a service requests an interface from
-  // another service but has not been granted any capability which includes that
-  // interface, the Service Manager will block the request without ever routing
-  // it to an instance of the target service.
-  struct RequiredCapability {
-    // The name of the service which exposes this required capability.
-    std::string service_name;
-
-    // The name of the capability to require. This must match the name of a
-    // capability exposed by |service_name|'s own Manifest.
-    std::string capability_name;
-  };
-
-  // DEPRECATED: This will be removed soon. Don't add new uses of interface
-  // filters. Instead prefer to define explicit broker interfaces and expose
-  // them through a top-level ExposedCapability.
-  //
-  // Services may define capabilities to be scoped within a named interface
-  // filter. These capabilities do not apply to normal interface binding
-  // requests (i.e. requests made by clients through |Connector.BindInterface|).
-  // Instead, the exposing service may use |Connector.FilterInterfaces| to
-  // set up an InterfaceProvider pipe proxied through the Service Manager. The
-  // Service Manager will filter interface requests on that pipe according to
-  // the given filter name and remote service name. The remote service must in
-  // turn require one or more capabilities from the named filter in order to
-  // access any interfaces via the proxied InterfaceProvider, which the exposing
-  // service must pass to the remote service somehow.
-  //
-  // If this all sounds very confusing, that's because it is very confusing.
-  // Hence the "DEPRECATED" bit.
-  struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP)
-      ExposedInterfaceFilterCapability {
-    ExposedInterfaceFilterCapability();
-    ExposedInterfaceFilterCapability(ExposedInterfaceFilterCapability&&);
-    ExposedInterfaceFilterCapability(const ExposedInterfaceFilterCapability&);
-
-    template <typename... InterfaceTypes>
-    ExposedInterfaceFilterCapability(
-        const std::string& filter_name,
-        const std::string& capability_name,
-        InterfaceList<InterfaceTypes...> interfaces)
-        : filter_name(filter_name),
-          capability_name(capability_name),
-          interface_names(internal::GetInterfaceNames<InterfaceTypes...>()) {}
-
-    // Prefer the above constructor. This exists to support genenerated code.
-    ExposedInterfaceFilterCapability(const std::string& filter_name,
-                                     const std::string& capability_name,
-                                     std::set<const char*> interface_names);
-
-    ~ExposedInterfaceFilterCapability();
-
-    ExposedInterfaceFilterCapability& operator=(
-        const ExposedInterfaceFilterCapability&);
-    ExposedInterfaceFilterCapability& operator=(
-        ExposedInterfaceFilterCapability&&);
-
-    std::string filter_name;
-    std::string capability_name;
-    std::set<std::string> interface_names;
-  };
-
-  // DEPRECATED: This will be removed soon. Don't add new uses of interface
-  // filters.
-  //
-  // This is like RequiredCapability, except that it only grants the requiring
-  // service access to a set of interfaces on a specific InterfaceProvider,
-  // filtered by the exposing service according to an
-  // ExposedInterfaceFilterCapability in that service's manifest. See notes on
-  // ExposedInterfaceFilterCapability.
-  struct RequiredInterfaceFilterCapability {
-    std::string service_name;
-    std::string filter_name;
-    std::string capability_name;
-  };
-
   Manifest();
   Manifest(const Manifest&);
   Manifest(Manifest&&);
@@ -263,21 +143,66 @@ struct COMPONENT_EXPORT(SERVICE_MANAGER_CPP) Manifest {
   // services, and preloaded files are all added from |other| if present.
   Manifest& Amend(Manifest other);
 
-  std::string service_name;
+  ServiceName service_name;
   DisplayName display_name;
   Options options;
-  std::vector<ExposedCapability> exposed_capabilities;
-  std::vector<RequiredCapability> required_capabilities;
-  std::vector<ExposedInterfaceFilterCapability>
+
+  // All capabilities exposed by this service. The key is the name of the
+  // capability, which is an arbitrary string value chosen by and scoped to the
+  // service. The value is a set of mojom interface names, conveying the set of
+  // interfaces to which this capability grants access via the Service Manager.
+  // See |required_capabilities| for information on how another service can have
+  // that access granted to them.
+  ExposedCapabilityMap exposed_capabilities;
+
+  // All capabilities required by this service. The key is the name of another
+  // service, and the corresponding value is the set of (names of) capabilities
+  // required from that service.
+  //
+  // If a service A declares in its manifest that it requires a capability X
+  // from service B, then A will be allowed to request any interface exposed
+  // through X (i.e. through the capability in the |exposed_capabilities| field
+  // of B's manifest), using |BindInterface()| on A's Connector.
+  RequiredCapabilityMap required_capabilities;
+
+  // DEPRECATED: This will be removed soon. Don't add new uses of interface
+  // filters. Instead prefer to define explicit broker interfaces and expose
+  // them through |exposed_capabilities|.
+  //
+  // Services may define capabilities to be scoped within a named interface
+  // filter. These capabilities do not apply to normal interface binding
+  // requests (i.e. requests made by clients through |Connector.BindInterface|).
+  // Instead, the exposing service may use |Connector.FilterInterfaces| to
+  // set up an InterfaceProvider pipe proxied through the Service Manager. The
+  // Service Manager will filter interface requests on that pipe according to
+  // the given filter name and remote service name. The remote service must in
+  // turn require one or more capabilities from the named filter in order to
+  // access any interfaces via the proxied InterfaceProvider, which the exposing
+  // service must pass to the remote service somehow.
+  //
+  // If this all sounds very confusing, that's because it is very confusing.
+  // Hence the "DEPRECATED" bit.
+  using FilterName = std::string;
+  std::map<FilterName, ExposedCapabilityMap>
       exposed_interface_filter_capabilities;
-  std::vector<RequiredInterfaceFilterCapability>
+
+  // DEPRECATED: This will be removed soon. Don't add new uses of interface
+  // filters.
+  //
+  // This is like |required_capabilities|, except that it only grants the
+  // requiring/ service access to a set of interfaces on a specific
+  // InterfaceProvider, filtered by the exposing service according to an
+  // |exposed_interface_filter_capabilities| in that service's manifest. See
+  // notes on that field above.
+  std::map<FilterName, RequiredCapabilityMap>
       required_interface_filter_capabilities;
+
   std::vector<Manifest> packaged_services;
   std::vector<PreloadedFileInfo> preloaded_files;
 
   // The list of interfaces that this service are allowed to connect to
   // unconditionally on any service.
-  std::set<std::string> interfaces_bindable_on_any_service;
+  InterfaceNameSet interfaces_bindable_on_any_service;
 };
 
 }  // namespace service_manager

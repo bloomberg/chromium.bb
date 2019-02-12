@@ -5,10 +5,27 @@
 #ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_MANIFEST_BUILDER_H_
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_MANIFEST_BUILDER_H_
 
+#include <set>
+#include <utility>
+
 #include "base/component_export.h"
 #include "services/service_manager/public/cpp/manifest.h"
 
 namespace service_manager {
+
+namespace internal {
+
+template <typename InterfaceType>
+const char* GetInterfaceName() {
+  return InterfaceType::Name_;
+}
+
+template <typename... InterfaceTypes>
+Manifest::InterfaceNameSet GetInterfaceNames() {
+  return Manifest::InterfaceNameSet({GetInterfaceName<InterfaceTypes>()...});
+}
+
+}  // namespace internal
 
 // Helper for building Manifest structures in a more readable and writable
 // manner than direct construction.
@@ -36,21 +53,22 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestBuilder {
   ManifestBuilder& ExposeCapability(
       const char* name,
       Manifest::InterfaceList<InterfaceTypes...> interfaces) {
-    manifest_.exposed_capabilities.emplace_back(name, std::move(interfaces));
+    manifest_.exposed_capabilities[name] =
+        internal::GetInterfaceNames<InterfaceTypes...>();
     return *this;
   }
 
   // Prefer the above override. This one exists to support generated code.
   ManifestBuilder& ExposeCapability(const char* name,
                                     std::set<const char*> interface_names) {
-    manifest_.exposed_capabilities.emplace_back(name,
-                                                std::move(interface_names));
+    manifest_.exposed_capabilities[name].insert(interface_names.begin(),
+                                                interface_names.end());
     return *this;
   }
 
   ManifestBuilder& RequireCapability(const char* service_name,
                                      const char* capability_name) {
-    manifest_.required_capabilities.push_back({service_name, capability_name});
+    manifest_.required_capabilities[service_name].insert(capability_name);
     return *this;
   }
 
@@ -59,8 +77,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestBuilder {
       const char* filter_name,
       const char* capability_name,
       Manifest::InterfaceList<InterfaceTypes...> interfaces) {
-    manifest_.exposed_interface_filter_capabilities.emplace_back(
-        filter_name, capability_name, std::move(interfaces));
+    manifest_
+        .exposed_interface_filter_capabilities[filter_name][capability_name] =
+        internal::GetInterfaceNames<InterfaceTypes...>();
     return *this;
   }
 
@@ -70,8 +89,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestBuilder {
       const char* filter_name,
       const char* capability_name,
       std::set<const char*> interface_names) {
-    manifest_.exposed_interface_filter_capabilities.emplace_back(
-        filter_name, capability_name, std::move(interface_names));
+    manifest_
+        .exposed_interface_filter_capabilities[filter_name][capability_name]
+        .insert(interface_names.begin(), interface_names.end());
     return *this;
   }
 
@@ -79,8 +99,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ManifestBuilder {
       const char* service_name,
       const char* filter_name,
       const char* capability_name) {
-    manifest_.required_interface_filter_capabilities.push_back(
-        {service_name, filter_name, capability_name});
+    manifest_.required_interface_filter_capabilities[filter_name][service_name]
+        .insert(capability_name);
     return *this;
   }
 

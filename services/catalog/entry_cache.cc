@@ -65,27 +65,18 @@ std::unique_ptr<Entry> MakeEntryFromManifest(
   entry->AddOptions(options);
 
   service_manager::InterfaceProviderSpec main_spec;
-  for (const auto& entry : manifest.exposed_capabilities)
-    main_spec.provides.emplace(entry.capability_name, entry.interface_names);
-  for (const auto& entry : manifest.required_capabilities) {
-    main_spec.requires[entry.service_name].insert(entry.capability_name);
-  }
+  main_spec.provides = manifest.exposed_capabilities;
+  main_spec.requires = manifest.required_capabilities;
 
   entry->AddInterfaceProviderSpec(
       service_manager::mojom::kServiceManager_ConnectorSpec,
       std::move(main_spec));
 
   std::map<std::string, service_manager::InterfaceProviderSpec> other_specs;
-  for (const auto& entry : manifest.exposed_interface_filter_capabilities) {
-    other_specs[entry.filter_name].provides.emplace(entry.capability_name,
-                                                    entry.interface_names);
-  }
-
-  for (const auto& entry : manifest.required_interface_filter_capabilities) {
-    other_specs[entry.filter_name].requires[entry.service_name].insert(
-        entry.capability_name);
-  }
-
+  for (const auto& entry : manifest.exposed_interface_filter_capabilities)
+    other_specs[entry.first].provides = entry.second;
+  for (const auto& entry : manifest.required_interface_filter_capabilities)
+    other_specs[entry.first].requires = entry.second;
   for (auto& spec : other_specs)
     entry->AddInterfaceProviderSpec(spec.first, std::move(spec.second));
 
