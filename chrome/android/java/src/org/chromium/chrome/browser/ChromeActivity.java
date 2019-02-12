@@ -2244,8 +2244,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
         } else if (id == R.id.request_desktop_site_id || id == R.id.request_desktop_site_check_id) {
             final boolean reloadOnChange = !currentTab.isNativePage();
-            final boolean usingDesktopUserAgent = currentTab.getUseDesktopUserAgent();
-            currentTab.setUseDesktopUserAgent(!usingDesktopUserAgent, reloadOnChange);
+            final boolean usingDesktopUserAgent =
+                    currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
+            currentTab.getWebContents().getNavigationController().setUseDesktopUserAgent(
+                    !usingDesktopUserAgent, reloadOnChange);
             RecordUserAction.record("MobileMenuRequestDesktopSite");
         } else if (id == R.id.reader_mode_prefs_id) {
             DomDistillerUIUtils.openSettings(currentTab.getWebContents());

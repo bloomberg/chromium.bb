@@ -1475,7 +1475,7 @@ public class CustomTabActivityTest {
             @Override
             public boolean isSatisfied() {
                 final Tab currentTab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-                return currentTab.isLoadingAndRenderingDone();
+                return ChromeTabUtils.isLoadingAndRenderingDone(currentTab);
             }
         });
         Assert.assertTrue(connection.postMessage(token, "Message", null)
