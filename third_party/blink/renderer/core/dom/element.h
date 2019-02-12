@@ -402,8 +402,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   String nodeName() const override;
 
-  Element* CloneWithChildren(Document* = nullptr) const;
-  Element* CloneWithoutChildren(Document* = nullptr) const;
+  Element& CloneWithChildren(Document* = nullptr) const;
+  Element& CloneWithoutChildren(Document* = nullptr) const;
 
   void SetBooleanAttribute(const QualifiedName&, bool);
 
@@ -1072,7 +1072,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // Clone is private so that non-virtual CloneElementWithChildren and
   // CloneElementWithoutChildren are used instead.
   Node* Clone(Document&, CloneChildrenFlag) const override;
-  virtual Element* CloneWithoutAttributesAndChildren(Document& factory) const;
+  virtual Element& CloneWithoutAttributesAndChildren(Document& factory) const;
 
   QualifiedName tag_name_;
 

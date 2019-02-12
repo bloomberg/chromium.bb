@@ -62,7 +62,7 @@ class SliderThumbElement final : public HTMLDivElement {
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
-  Element* CloneWithoutAttributesAndChildren(Document&) const override;
+  Element& CloneWithoutAttributesAndChildren(Document&) const override;
   bool IsDisabledFormControl() const override;
   bool MatchesReadOnlyPseudoClass() const override;
   bool MatchesReadWritePseudoClass() const override;
@@ -73,9 +73,9 @@ class SliderThumbElement final : public HTMLDivElement {
       in_drag_mode_;  // Mouse only. Touch is handled by SliderContainerElement.
 };
 
-inline Element* SliderThumbElement::CloneWithoutAttributesAndChildren(
+inline Element& SliderThumbElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
-  return Create(factory);
+  return *Create(factory);
 }
 
 // FIXME: There are no ways to check if a node is a SliderThumbElement.

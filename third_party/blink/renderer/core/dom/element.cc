@@ -293,38 +293,38 @@ bool Element::IsFocusableStyle() const {
 }
 
 Node* Element::Clone(Document& factory, CloneChildrenFlag flag) const {
-  return flag == CloneChildrenFlag::kClone ? CloneWithChildren(&factory)
-                                           : CloneWithoutChildren(&factory);
+  return flag == CloneChildrenFlag::kClone ? &CloneWithChildren(&factory)
+                                           : &CloneWithoutChildren(&factory);
 }
 
-Element* Element::CloneWithChildren(Document* nullable_factory) const {
-  Element* clone = CloneWithoutAttributesAndChildren(
+Element& Element::CloneWithChildren(Document* nullable_factory) const {
+  Element& clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
-  DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
+  DCHECK_EQ(IsHTMLElement(), clone.IsHTMLElement());
 
-  clone->CloneAttributesFrom(*this);
-  clone->CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kClone);
-  clone->CloneChildNodesFrom(*this);
+  clone.CloneAttributesFrom(*this);
+  clone.CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kClone);
+  clone.CloneChildNodesFrom(*this);
   return clone;
 }
 
-Element* Element::CloneWithoutChildren(Document* nullable_factory) const {
-  Element* clone = CloneWithoutAttributesAndChildren(
+Element& Element::CloneWithoutChildren(Document* nullable_factory) const {
+  Element& clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
   // copied.  This is a sanity check as HTML overloads some of the DOM methods.
-  DCHECK_EQ(IsHTMLElement(), clone->IsHTMLElement());
+  DCHECK_EQ(IsHTMLElement(), clone.IsHTMLElement());
 
-  clone->CloneAttributesFrom(*this);
-  clone->CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kSkip);
+  clone.CloneAttributesFrom(*this);
+  clone.CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kSkip);
   return clone;
 }
 
-Element* Element::CloneWithoutAttributesAndChildren(Document& factory) const {
-  return factory.CreateElement(TagQName(), CreateElementFlags::ByCloneNode(),
-                               IsValue());
+Element& Element::CloneWithoutAttributesAndChildren(Document& factory) const {
+  return *factory.CreateElement(TagQName(), CreateElementFlags::ByCloneNode(),
+                                IsValue());
 }
 
 Attr* Element::DetachAttribute(wtf_size_t index) {
