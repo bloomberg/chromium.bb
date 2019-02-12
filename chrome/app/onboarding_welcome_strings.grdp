@@ -55,6 +55,9 @@
   <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DESCRIPTION" desc="Description of what this section in the onboarding workflow does.">
     Pick a wallpaper for your start page
   </message>
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DEFAULT_TITLE" desc="Label for the default option when selecting a background. The default is to not have a background.">
+    Default
+  </message>
   <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_ART_TITLE" desc="Label for choosing a background/wallpaper from the 'Art' category">
     Art
   </message>
