@@ -14,10 +14,28 @@
 #include "components/unified_consent/pref_names.h"
 
 namespace unified_consent {
-
 namespace metrics {
 
 namespace {
+
+// Sync data types that can be customized in settings.
+// Used in histograms. Do not change existing values, append new values at the
+// end.
+enum class SyncDataType {
+  kNone = 0,
+  kApps = 1,
+  kBookmarks = 2,
+  kExtensions = 3,
+  kHistory = 4,
+  kSettings = 5,
+  kThemes = 6,
+  kTabs = 7,
+  kPasswords = 8,
+  kAutofill = 9,
+  kPayments = 10,
+
+  kMaxValue = kPayments
+};
 
 typedef std::pair<SyncDataType, syncer::ModelType> DT;
 
@@ -86,5 +104,4 @@ void RecordSyncSetupDataTypesHistrogam(syncer::SyncUserSettings* sync_settings,
 }
 
 }  // namespace metrics
-
 }  // namespace unified_consent
