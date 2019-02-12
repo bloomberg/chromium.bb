@@ -175,6 +175,13 @@ class IdentityManager : public SigninManagerBase::Observer,
     // Called when an access token was removed.
     virtual void OnAccessTokenRemovedFromCache(const std::string& account_id,
                                                const ScopeSet& scopes) {}
+
+    // Called when a new refresh token is available. Contains diagnostic
+    // information about the source of the operation.
+    virtual void OnRefreshTokenUpdatedForAccountFromSource(
+        const std::string& account_id,
+        bool is_refresh_token_valid,
+        const std::string& source) {}
   };
 
   // Possible values for the account ID migration state, needs to be kept in
@@ -505,6 +512,9 @@ class IdentityManager : public SigninManagerBase::Observer,
       const OAuth2TokenService::ScopeSet& scopes) override;
   void OnAccessTokenRemoved(const std::string& account_id,
                             const ScopeSet& scopes) override;
+  void OnRefreshTokenAvailableFromSource(const std::string& account_id,
+                                         bool is_refresh_token_valid,
+                                         const std::string& source) override;
 
   // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;

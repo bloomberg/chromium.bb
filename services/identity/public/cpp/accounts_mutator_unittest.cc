@@ -68,12 +68,52 @@ class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
       on_refresh_token_removed_callback_;
 };
 
+// Class that observes diagnostics updates from identity::IdentityManager.
+class TestIdentityManagerDiagnosticsObserver
+    : public identity::IdentityManager::DiagnosticsObserver {
+ public:
+  explicit TestIdentityManagerDiagnosticsObserver(
+      identity::IdentityManager* identity_manager)
+      : identity_manager_(identity_manager) {
+    identity_manager_->AddDiagnosticsObserver(this);
+  }
+  ~TestIdentityManagerDiagnosticsObserver() override {
+    identity_manager_->RemoveDiagnosticsObserver(this);
+  }
+
+  const std::string& token_updator_account_id() {
+    return token_updator_account_id_;
+  }
+  const std::string& token_updator_source() { return token_updator_source_; }
+  bool is_token_updator_refresh_token_valid() {
+    return is_token_updator_refresh_token_valid_;
+  }
+
+ private:
+  // identity::IdentityManager::DiagnosticsObserver:
+  void OnRefreshTokenUpdatedForAccountFromSource(
+      const std::string& account_id,
+      bool is_refresh_token_valid,
+      const std::string& source) override {
+    token_updator_account_id_ = account_id;
+    is_token_updator_refresh_token_valid_ = is_refresh_token_valid;
+    token_updator_source_ = source;
+  }
+
+  identity::IdentityManager* identity_manager_;
+  std::string token_updator_account_id_;
+  std::string token_updator_source_;
+  bool is_token_updator_refresh_token_valid_;
+};
+
 }  // namespace
 
 namespace identity {
 class AccountsMutatorTest : public testing::Test {
  public:
-  AccountsMutatorTest() : identity_manager_observer_(identity_manager()) {}
+  AccountsMutatorTest()
+      : identity_manager_observer_(identity_manager()),
+        identity_manager_diagnostics_observer_(identity_manager()) {}
 
   ~AccountsMutatorTest() override {}
 
@@ -85,6 +125,11 @@ class AccountsMutatorTest : public testing::Test {
     return &identity_manager_observer_;
   }
 
+  TestIdentityManagerDiagnosticsObserver*
+  identity_manager_diagnostics_observer() {
+    return &identity_manager_diagnostics_observer_;
+  }
+
   AccountsMutator* accounts_mutator() {
     return identity_manager()->GetAccountsMutator();
   }
@@ -93,6 +138,7 @@ class AccountsMutatorTest : public testing::Test {
   base::MessageLoop message_loop_;
   identity::IdentityTestEnvironment identity_test_env_;
   TestIdentityManagerObserver identity_manager_observer_;
+  TestIdentityManagerDiagnosticsObserver identity_manager_diagnostics_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorTest);
 };
@@ -641,6 +687,36 @@ TEST_F(AccountsMutatorTest, LegacySetRefreshTokenForSupervisedUser) {
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           accounts[0].account_id));
+}
+
+TEST_F(AccountsMutatorTest, UpdateAccessTokenFromSource) {
+  // Abort the test if the current platform does not support accounts mutation.
+  if (!accounts_mutator())
+    return;
+
+  // Add a default account.
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  EXPECT_EQ(
+      account_id,
+      identity_manager_diagnostics_observer()->token_updator_account_id());
+  EXPECT_TRUE(identity_manager_diagnostics_observer()
+                  ->is_token_updator_refresh_token_valid());
+  EXPECT_EQ("Unknown",
+            identity_manager_diagnostics_observer()->token_updator_source());
+
+  // Update the default account with different source.
+  accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, "refresh_token2", true,
+      signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
+  EXPECT_EQ(
+      account_id,
+      identity_manager_diagnostics_observer()->token_updator_account_id());
+  EXPECT_TRUE(identity_manager_diagnostics_observer()
+                  ->is_token_updator_refresh_token_valid());
+  EXPECT_EQ("Settings::Signout",
+            identity_manager_diagnostics_observer()->token_updator_source());
 }
 
 }  // namespace identity

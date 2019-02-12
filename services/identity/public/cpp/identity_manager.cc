@@ -472,6 +472,15 @@ void IdentityManager::OnAccessTokenRemoved(const std::string& account_id,
     observer.OnAccessTokenRemovedFromCache(account_id, scopes);
 }
 
+void IdentityManager::OnRefreshTokenAvailableFromSource(
+    const std::string& account_id,
+    bool is_refresh_token_valid,
+    const std::string& source) {
+  for (auto& observer : diagnostics_observer_list_)
+    observer.OnRefreshTokenUpdatedForAccountFromSource(
+        account_id, is_refresh_token_valid, source);
+}
+
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
   for (auto& observer : observer_list_) {
     observer.OnExtendedAccountInfoUpdated(info);
