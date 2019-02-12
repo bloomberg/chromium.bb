@@ -51,19 +51,19 @@ scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
 void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
   sk_sp<PaintRecord> record = painter_->Paint();
   records_[paint_image.paint_worklet_input()] =
-      std::make_pair(std::move(record), 0);
+      PaintWorkletImageCacheValue(std::move(record), 0);
 }
 
 std::pair<PaintRecord*, base::OnceCallback<void()>>
 PaintWorkletImageCache::GetPaintRecordAndRef(PaintWorkletInput* input) {
-  records_[input].second++;
+  records_[input].used_ref_count++;
   // The PaintWorkletImageCache object lives as long as the LayerTreeHostImpl,
   // and that ensures that this pointer and the input will be alive when this
   // callback is executed.
   auto callback =
       base::BindOnce(&PaintWorkletImageCache::DecrementCacheRefCount,
                      base::Unretained(this), base::Unretained(input));
-  return std::make_pair(records_[input].first.get(), std::move(callback));
+  return std::make_pair(records_[input].record.get(), std::move(callback));
 }
 
 void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
@@ -71,8 +71,22 @@ void PaintWorkletImageCache::DecrementCacheRefCount(PaintWorkletInput* input) {
   DCHECK(it != records_.end());
 
   auto& pair = it->second;
-  DCHECK_GT(pair.second, 0u);
-  pair.second--;
+  DCHECK_GT(pair.used_ref_count, 0u);
+  pair.used_ref_count--;
 }
+
+PaintWorkletImageCache::PaintWorkletImageCacheValue::
+    PaintWorkletImageCacheValue() = default;
+
+PaintWorkletImageCache::PaintWorkletImageCacheValue::
+    PaintWorkletImageCacheValue(sk_sp<PaintRecord> record, size_t ref_count)
+    : record(std::move(record)), used_ref_count(ref_count) {}
+
+PaintWorkletImageCache::PaintWorkletImageCacheValue::
+    PaintWorkletImageCacheValue(const PaintWorkletImageCacheValue& other)
+    : record(other.record), used_ref_count(other.used_ref_count) {}
+
+PaintWorkletImageCache::PaintWorkletImageCacheValue::
+    ~PaintWorkletImageCacheValue() = default;
 
 }  // namespace cc

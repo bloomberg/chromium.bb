@@ -22,6 +22,16 @@ namespace cc {
 // results when requested.
 class CC_EXPORT PaintWorkletImageCache {
  public:
+  struct CC_EXPORT PaintWorkletImageCacheValue {
+    PaintWorkletImageCacheValue();
+    PaintWorkletImageCacheValue(sk_sp<PaintRecord> record, size_t ref_count);
+    PaintWorkletImageCacheValue(const PaintWorkletImageCacheValue&);
+    ~PaintWorkletImageCacheValue();
+
+    sk_sp<PaintRecord> record;
+    size_t used_ref_count;
+  };
+
   PaintWorkletImageCache();
 
   ~PaintWorkletImageCache();
@@ -37,8 +47,7 @@ class CC_EXPORT PaintWorkletImageCache {
   std::pair<PaintRecord*, base::OnceCallback<void()>> GetPaintRecordAndRef(
       PaintWorkletInput* input);
 
-  const base::flat_map<PaintWorkletInput*,
-                       std::pair<sk_sp<PaintRecord>, size_t>>&
+  const base::flat_map<PaintWorkletInput*, PaintWorkletImageCacheValue>&
   GetRecordsForTest() {
     return records_;
   }
@@ -50,8 +59,7 @@ class CC_EXPORT PaintWorkletImageCache {
   // output based on the input, and the reference count is the number of times
   // that it is used for tile rasterization.
   // TODO(xidachen): use a struct instead of std::pair.
-  base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
-      records_;
+  base::flat_map<PaintWorkletInput*, PaintWorkletImageCacheValue> records_;
   // The PaintWorkletImageCache is owned by ImageController, which has the same
   // life time as the LayerTreeHostImpl, that guarantees that the painter will
   // live as long as the LayerTreeHostImpl.
