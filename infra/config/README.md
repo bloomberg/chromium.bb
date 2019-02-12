@@ -1,26 +1,11 @@
-## Configurations files for chrome-infra services.
+**IMPORTANT:** If you see this in a branch which is not `master`,
+**this directory has no effect and should be ignored.**
 
-There are two kinds of configs: **global** and **ref-specific**.
+This directory contains chromium project-wide configurations
+for Chrome Operations services.
+For example, [cr-buildbucket.cfg](cr-buildbucket.cfg) defines builders.
 
-
-## Global configs.
-
-Apply to the whole repo regardless of the ref (branch).
-
-Located in [global](global) directory.
+**Remember** Change these configs on `master` branch only!
 
 Currently active version can be checked at
 https://luci-config.appspot.com/#/projects/chromium .
-
-
-## Ref-specific configs.
-
-Apply only to a ref(branch) they are located in.
-
-Located in [branch](branch) directory.
-
-Currently active version can be checked at
-
-    https://luci-config.appspot.com/#/projects/chromium/<ref>
-    # For example, for master branch:
-    #   https://luci-config.appspot.com/#/projects/chromium/refs/heads/master
