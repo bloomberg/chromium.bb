@@ -43,7 +43,6 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
-#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -114,7 +113,6 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(mojom::kPrefConnectorServiceName, "pref_connector")
           .RequireCapability(viz::mojom::kVizServiceName, "ozone")
           .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
-          .RequireCapability(catalog::mojom::kServiceName, "directory")
           .RequireCapability(ws::mojom::kServiceName, "ozone")
           .RequireCapability(ws::mojom::kServiceName, "window_manager")
           .RequireCapability(device::mojom::kServiceName,

@@ -1275,7 +1275,6 @@ component("ash") {
     "//ash/assistant/util",
     "//ash/components/cursor",
     "//ash/components/fast_ink",
-    "//ash/components/quick_launch/public/mojom",
     "//ash/components/shortcut_viewer/public/mojom",
     "//ash/components/tap_visualizer/public/mojom",
     "//ash/keyboard/arc",
@@ -1461,9 +1460,6 @@ static_library("ash_shell_lib_with_content") {
   deps = [
     ":ash_shell_lib",
     ":test_support",
-    "//ash/components/quick_launch:lib",
-    "//ash/components/quick_launch/public/cpp:manifest",
-    "//ash/components/quick_launch/public/mojom",
     "//ash/components/shortcut_viewer:lib",
     "//ash/components/shortcut_viewer/public/cpp:manifest",
     "//ash/components/shortcut_viewer/public/mojom",
@@ -1537,7 +1533,6 @@ test("ash_unittests") {
     "accessibility/touch_accessibility_enabler_unittest.cc",
     "accessibility/touch_exploration_controller_unittest.cc",
     "accessibility/touch_exploration_manager_unittest.cc",
-    "app_launch_unittest.cc",
     "app_list/app_list_controller_impl_unittest.cc",
     "app_list/app_list_presenter_delegate_unittest.cc",
     "app_list/app_list_unittest.cc",
@@ -1847,8 +1842,6 @@ test("ash_unittests") {
     "//ash/assistant/util",
     "//ash/components/fast_ink",
     "//ash/components/fast_ink:unit_tests",
-    "//ash/components/quick_launch/public/cpp:manifest",
-    "//ash/components/quick_launch/public/mojom:constants",
     "//ash/components/shortcut_viewer:unit_tests",
     "//ash/components/tap_visualizer:unit_tests",
     "//ash/keyboard/arc",
@@ -1948,7 +1941,6 @@ test("ash_unittests") {
     ":ash_service_resources",
     ":ash_service",
     "//ash/resources:ash_test_resources_100_percent",
-    "//ash/components/quick_launch:quick_launch_app",
   ]
 
   data = [

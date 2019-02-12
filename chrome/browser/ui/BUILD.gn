@@ -1273,7 +1273,6 @@ jumbo_split_static_library("ui") {
       "//components/web_modal",
       "//components/zoom",
       "//device/bluetooth",
-      "//mash/public/mojom",
       "//services/device/public/cpp:device_features",
       "//services/device/public/mojom",
       "//services/identity/public/cpp",

@@ -3360,7 +3360,6 @@ jumbo_split_static_library("browser") {
       "upgrade_detector/upgrade_detector_chromeos.h",
     ]
     deps += [
-      "//ash/components/quick_launch/public/mojom:constants",
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
       "//chromeos/services/assistant/public:feature_flags",

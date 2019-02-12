@@ -390,10 +390,7 @@ static_library("test_support") {
   }
 
   if (enable_mus) {
-    deps += [
-      "//ash/components/quick_launch/public/mojom:constants",
-      "//services/ws/public/mojom:constants",
-    ]
+    deps += [ "//services/ws/public/mojom:constants" ]
   }
 
   if (enable_gwp_asan) {
@@ -606,7 +603,6 @@ source_set("chrome_packaged_service_manifests") {
 
   if (is_chromeos) {
     deps += [
-      "//ash/components/quick_launch/public/cpp:manifest",
       "//ash/components/shortcut_viewer/public/cpp:manifest",
       "//ash/components/tap_visualizer/public/cpp:manifest",
       "//ash/public/cpp:manifest",
@@ -614,7 +610,6 @@ source_set("chrome_packaged_service_manifests") {
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
-      "//mash/public/mojom",
       "//services/ws/public/mojom/input_devices",
       "//ui/accessibility:ax_host_manifest",
     ]

@@ -80,7 +80,7 @@ class ScopedBundleSwizzlerMac;
 // InProcessBrowserTest::SetUpCommandLine(). If a test needs to change the
 // default command line, it can override SetUpDefaultCommandLine(), where it
 // should invoke InProcessBrowserTest::SetUpDefaultCommandLine() to get the
-// default swtiches, and modify them as needed.
+// default switches, and modify them as needed.
 //
 // SetUpOnMainThread() is called just after creating the default browser object
 // and before executing the real test code. It's mainly for setting up things

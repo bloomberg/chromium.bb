@@ -22,7 +22,7 @@ namespace {
 // The total number of Ash accelerators.
 constexpr int kAshAcceleratorsTotalNum = 101;
 // The hash of Ash accelerators.
-constexpr char kAshAcceleratorsHash[] = "56daf349457b3dfaf54b804dbc6779a1";
+constexpr char kAshAcceleratorsHash[] = "8163b19db508bf57e9bf4f388b529ef3";
 #if defined(GOOGLE_CHROME_BUILD)
 // Internal builds add an extra accelerator for the Feedback app.
 // The total number of Chrome accelerators (available on Chrome OS).
@@ -80,7 +80,7 @@ struct ChromeAcceleratorMappingCmp {
 };
 
 std::string HashAshAcceleratorData(
-    const std::vector<ash::AcceleratorData> accelerators) {
+    const std::vector<ash::AcceleratorData>& accelerators) {
   base::MD5Context context;
   base::MD5Init(&context);
   for (const auto& accelerator : accelerators)
@@ -92,7 +92,7 @@ std::string HashAshAcceleratorData(
 }
 
 std::string HashChromeAcceleratorMapping(
-    const std::vector<AcceleratorMapping> accelerators) {
+    const std::vector<AcceleratorMapping>& accelerators) {
   base::MD5Context context;
   base::MD5Init(&context);
   for (const auto& accelerator : accelerators)
