@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/browser/network_service_instance.h"
 
 namespace chromeos {
 
@@ -49,7 +50,7 @@ EventBasedStatusReportingService::EventBasedStatusReportingService(
   if (arc_app_prefs)
     arc_app_prefs->AddObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
@@ -85,9 +86,9 @@ void EventBasedStatusReportingService::OnSessionStateChanged() {
   }
 }
 
-void EventBasedStatusReportingService::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
+void EventBasedStatusReportingService::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  if (type != network::mojom::ConnectionType::CONNECTION_NONE)
     RequestStatusReport(StatusReportEvent::kDeviceOnline);
 }
 
@@ -115,7 +116,7 @@ void EventBasedStatusReportingService::Shutdown() {
   if (arc_app_prefs)
     arc_app_prefs->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 

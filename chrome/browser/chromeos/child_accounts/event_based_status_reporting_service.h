@@ -13,7 +13,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager_observer.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace content {
 class BrowserContext;
@@ -33,7 +33,7 @@ class EventBasedStatusReportingService
     : public KeyedService,
       public ArcAppListPrefs::Observer,
       public session_manager::SessionManagerObserver,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public PowerManagerClient::Observer {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
@@ -64,14 +64,15 @@ class EventBasedStatusReportingService
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& duration) override;
 
  private:
+  friend class EventBasedStatusReportingServiceTest;
+
   void RequestStatusReport(StatusReportEvent event);
 
   void LogStatusReportEventUMA(StatusReportEvent event);

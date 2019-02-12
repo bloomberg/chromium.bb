@@ -22,7 +22,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/base/mock_network_change_notifier.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -82,17 +82,18 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
     test_consumer_status_reporting_service_ =
         static_cast<TestingConsumerStatusReportingService*>(
             consumer_status_reporting_service);
+    service_ = std::make_unique<EventBasedStatusReportingService>(&profile_);
   }
 
   void TearDown() override {
+    service_->Shutdown();
     arc_test_.TearDown();
     DBusThreadManager::Shutdown();
   }
 
-  void SetConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    notifier_.SetConnectionType(type);
-    notifier_.NotifyObserversOfNetworkChangeForTests(
-        notifier_.GetConnectionType());
+  void SetConnectionType(network::mojom::ConnectionType type) {
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        type);
     thread_bundle_.RunUntilIdle();
   }
 
@@ -127,14 +128,12 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
   TestingConsumerStatusReportingService*
       test_consumer_status_reporting_service_;
   session_manager::SessionManager session_manager_;
-  net::test::MockNetworkChangeNotifier notifier_;
+  std::unique_ptr<EventBasedStatusReportingService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(EventBasedStatusReportingServiceTest);
 };
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppInstall) {
-  EventBasedStatusReportingService service(profile());
-
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
   app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
@@ -149,8 +148,6 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppInstall) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppUpdate) {
-  EventBasedStatusReportingService service(profile());
-
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
   app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
@@ -165,8 +162,6 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppUpdate) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, DoNotReportWhenUserJustSignIn) {
-  EventBasedStatusReportingService service(profile());
-
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
@@ -178,8 +173,6 @@ TEST_F(EventBasedStatusReportingServiceTest, DoNotReportWhenUserJustSignIn) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsLocked) {
-  EventBasedStatusReportingService service(profile());
-
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
@@ -197,8 +190,6 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsLocked) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsActive) {
-  EventBasedStatusReportingService service(profile());
-
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
@@ -222,14 +213,11 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsActive) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenDeviceGoesOnline) {
-  EventBasedStatusReportingService service(profile());
-  SetConnectionType(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
 
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
-  SetConnectionType(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
 
@@ -241,8 +229,6 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenDeviceGoesOnline) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSuspendIsDone) {
-  EventBasedStatusReportingService service(profile());
-
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
   power_manager_client()->SendSuspendDone();
@@ -257,9 +243,7 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSuspendIsDone) {
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
-  EventBasedStatusReportingService service(profile());
-  SetConnectionType(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
 
   ASSERT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
@@ -272,8 +256,7 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(
       2, test_consumer_status_reporting_service()->performed_status_reports());
-  SetConnectionType(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
+  SetConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   EXPECT_EQ(
       3, test_consumer_status_reporting_service()->performed_status_reports());
   app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
