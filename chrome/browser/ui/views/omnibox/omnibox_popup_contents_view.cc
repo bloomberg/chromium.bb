@@ -314,10 +314,6 @@ void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {
   result_view_at(match_index)->OnMatchIconUpdated();
 }
 
-void OmniboxPopupContentsView::PaintUpdatesNow() {
-  // TODO(beng): remove this from the interface.
-}
-
 void OmniboxPopupContentsView::OnDragCanceled() {
   SetMouseHandler(nullptr);
 }
