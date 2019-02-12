@@ -16,8 +16,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -688,6 +690,16 @@ GaiaCookieManagerService::GetURLLoaderFactory() {
   return shared_url_loader_factory_getter_.Run();
 }
 
+void GaiaCookieManagerService::MarkListAccountsStale() {
+  list_accounts_stale_ = true;
+#if defined(OS_IOS)
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GaiaCookieManagerService::ForceOnCookieChangeProcessing,
+                     weak_ptr_factory_.GetWeakPtr()));
+#endif  // defined(OS_IOS)
+}
+
 void GaiaCookieManagerService::OnCookieChange(
     const net::CanonicalCookie& cookie,
     network::mojom::CookieChangeCause cause) {
@@ -824,8 +836,7 @@ void GaiaCookieManagerService::OnMergeSessionSuccess(const std::string& data) {
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::ADD_ACCOUNT);
 
-  list_accounts_stale_ = true;
-
+  MarkListAccountsStale();
   HandleNextRequest();
   SignalComplete(account_id, GoogleServiceAuthError::AuthErrorNone());
 
@@ -983,7 +994,7 @@ void GaiaCookieManagerService::OnLogOutSuccess() {
   VLOG(1) << "GaiaCookieManagerService::OnLogOutSuccess";
   RecordLogoutRequestState(LogoutRequestState::kSuccess);
 
-  list_accounts_stale_ = true;
+  MarkListAccountsStale();
   fetcher_backoff_.InformOfRequest(true);
   for (auto& observer : observer_list_) {
     observer.OnLogOutAccountsFromCookieCompleted(
@@ -1091,9 +1102,7 @@ void GaiaCookieManagerService::StartFetchingListAccounts() {
 
 void GaiaCookieManagerService::OnSetAccountsFinished(
     const GoogleServiceAuthError& error) {
-  // Set ListAccounts result to stale manually because on iOS
-  // GaiaCookieManagerService is not notified about changes in cookie storage.
-  list_accounts_stale_ = true;
+  MarkListAccountsStale();
   access_tokens_.clear();
   token_requests_.clear();
   cookies_to_set_.clear();
