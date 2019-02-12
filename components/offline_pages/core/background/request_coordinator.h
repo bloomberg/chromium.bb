@@ -108,6 +108,9 @@ class RequestCoordinator : public KeyedService,
 
     // The origin of the request, if any.
     std::string request_origin;
+
+    // Additional options for adding the request.
+    RequestQueue::AddOptions add_options;
   };
 
   // Callback specifying which request IDs were actually removed.

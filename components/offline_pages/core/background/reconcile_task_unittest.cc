@@ -45,7 +45,9 @@ class ReconcileTaskTest : public RequestQueueTaskTestBase {
 
   void SetUp() override;
 
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   void GetRequestsCallback(
       bool success,
@@ -78,10 +80,6 @@ void ReconcileTaskTest::SetUp() {
   InitializeStore();
 }
 
-void ReconcileTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void ReconcileTaskTest::GetRequestsCallback(
     bool success,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
@@ -101,10 +99,10 @@ void ReconcileTaskTest::QueueRequests(const SavePageRequest& request1,
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  store_.AddRequest(request1, base::BindOnce(&ReconcileTaskTest::AddRequestDone,
-                                             base::Unretained(this)));
-  store_.AddRequest(request2, base::BindOnce(&ReconcileTaskTest::AddRequestDone,
-                                             base::Unretained(this)));
+  store_.AddRequest(request1, RequestQueue::AddOptions(),
+                    base::BindOnce(&ReconcileTaskTest::AddRequestDone));
+  store_.AddRequest(request2, RequestQueue::AddOptions(),
+                    base::BindOnce(&ReconcileTaskTest::AddRequestDone));
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();

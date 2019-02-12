@@ -43,7 +43,9 @@ class GetRequestsTaskTest : public RequestQueueTaskTestBase {
   }
 
  private:
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   bool callback_called_ = false;
   bool success_ = false;
@@ -54,15 +56,13 @@ void GetRequestsTaskTest::AddItemsToStore(RequestQueueStore* store) {
   base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store->AddRequest(request_1,
-                    base::BindOnce(&GetRequestsTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store->AddRequest(request_1, RequestQueue::AddOptions(),
+                    base::BindOnce(&GetRequestsTaskTest::AddRequestDone));
   creation_time = OfflineTimeNow();
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
-  store->AddRequest(request_2,
-                    base::BindOnce(&GetRequestsTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store->AddRequest(request_2, RequestQueue::AddOptions(),
+                    base::BindOnce(&GetRequestsTaskTest::AddRequestDone));
   PumpLoop();
 }
 
@@ -72,10 +72,6 @@ void GetRequestsTaskTest::GetRequestsCallback(
   callback_called_ = true;
   success_ = success;
   requests_ = std::move(requests);
-}
-
-void GetRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
 }
 
 TEST_F(GetRequestsTaskTest, GetFromEmptyStore) {

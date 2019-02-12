@@ -342,10 +342,11 @@ int64_t RequestCoordinator::SavePageLater(
 
   // Put the request on the request queue.
   queue_->AddRequest(
-      request, base::BindOnce(&RequestCoordinator::AddRequestResultCallback,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              std::move(save_page_later_callback),
-                              save_page_later_params.availability));
+      request, save_page_later_params.add_options,
+      base::BindOnce(&RequestCoordinator::AddRequestResultCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(save_page_later_callback),
+                     save_page_later_params.availability));
 
   // Record the network quality when this request is made.
 

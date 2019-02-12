@@ -86,7 +86,9 @@ class CleanupTaskTest : public RequestQueueTaskTestBase {
 
   void SetUp() override;
 
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   void GetRequestsCallback(
       bool success,
@@ -127,10 +129,6 @@ void CleanupTaskTest::SetUp() {
   InitializeStore();
 }
 
-void CleanupTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void CleanupTaskTest::GetRequestsCallback(
     bool success,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
@@ -143,10 +141,10 @@ void CleanupTaskTest::QueueRequests(const SavePageRequest& request1,
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  store_.AddRequest(request1, base::BindOnce(&CleanupTaskTest::AddRequestDone,
-                                             base::Unretained(this)));
-  store_.AddRequest(request2, base::BindOnce(&CleanupTaskTest::AddRequestDone,
-                                             base::Unretained(this)));
+  store_.AddRequest(request1, RequestQueue::AddOptions(),
+                    base::BindOnce(&CleanupTaskTest::AddRequestDone));
+  store_.AddRequest(request2, RequestQueue::AddOptions(),
+                    base::BindOnce(&CleanupTaskTest::AddRequestDone));
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();

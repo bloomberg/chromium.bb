@@ -99,8 +99,6 @@ class OfflinePageUtils {
   // custom tab.
   static bool CurrentlyShownInCustomTab(content::WebContents* web_contents);
 
-  static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);
-
   // Returns original URL of the given web contents. Empty URL is returned if
   // no redirect occurred.
   static GURL GetOriginalURLFromWebContents(content::WebContents* web_contents);

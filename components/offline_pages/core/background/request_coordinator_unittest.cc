@@ -498,7 +498,7 @@ void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
   // Mark request as started and add it to the queue,
   // then wait for callback to finish.
   request->MarkAttemptStarted(OfflineTimeNow());
-  queue()->AddRequest(*request, base::DoNothing());
+  queue()->AddRequest(*request, RequestQueue::AddOptions(), base::DoNothing());
   PumpLoop();
 
   // Override the processing callback for test visiblity.
@@ -523,14 +523,14 @@ void RequestCoordinatorTest::SendOfflinerDoneCallback(
 SavePageRequest RequestCoordinatorTest::AddRequest1() {
   offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
                                           OfflineTimeNow(), kUserRequested);
-  queue()->AddRequest(request1, base::DoNothing());
+  queue()->AddRequest(request1, RequestQueue::AddOptions(), base::DoNothing());
   return request1;
 }
 
 SavePageRequest RequestCoordinatorTest::AddRequest2() {
   offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
                                           OfflineTimeNow(), kUserRequested);
-  queue()->AddRequest(request2, base::DoNothing());
+  queue()->AddRequest(request2, RequestQueue::AddOptions(), base::DoNothing());
   return request2;
 }
 
@@ -1044,7 +1044,7 @@ TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
 
   offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
                                           OfflineTimeNow(), !kUserRequested);
-  queue()->AddRequest(request2, base::DoNothing());
+  queue()->AddRequest(request2, RequestQueue::AddOptions(), base::DoNothing());
   PumpLoop();
 
   // Trigger the scheduler to schedule for the least restrictive condition.
@@ -1346,7 +1346,7 @@ TEST_F(RequestCoordinatorTest,
   // Set request to allow one more completed attempt.
   int max_tries = coordinator()->policy()->GetMaxCompletedTries();
   request.set_completed_attempt_count(max_tries - 1);
-  queue()->AddRequest(request, base::DoNothing());
+  queue()->AddRequest(request, RequestQueue::AddOptions(), base::DoNothing());
   PumpLoop();
 
   // Ensure that the new request does not finish - we simulate it being
@@ -1417,7 +1417,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   offline_pages::SavePageRequest request2(kRequestId1 + 1, kUrl1, kClientId1,
                                           OfflineTimeNow(), kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
-  queue()->AddRequest(request2, base::DoNothing());
+  queue()->AddRequest(request2, RequestQueue::AddOptions(), base::DoNothing());
   PumpLoop();
 
   // Sending the request to the offliner.
@@ -1742,7 +1742,7 @@ TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForScheduledProcessing) {
   // be the last retry.
   int max_tries = coordinator()->policy()->GetMaxCompletedTries();
   request.set_completed_attempt_count(max_tries - 1);
-  queue()->AddRequest(request, base::DoNothing());
+  queue()->AddRequest(request, RequestQueue::AddOptions(), base::DoNothing());
   PumpLoop();
 
   // Ensure that the new request does not finish - we simulate it being

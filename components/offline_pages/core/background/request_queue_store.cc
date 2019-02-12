@@ -18,6 +18,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -253,7 +254,7 @@ ItemActionStatus DeleteRequestByIdSync(sql::Database* db, int64_t request_id) {
   return ItemActionStatus::SUCCESS;
 }
 
-ItemActionStatus InsertSync(sql::Database* db, const SavePageRequest& request) {
+AddRequestResult InsertSync(sql::Database* db, const SavePageRequest& request) {
   static const char kSql[] = "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
                              " (" REQUEST_QUEUE_FIELDS
                              ") VALUES"
@@ -278,10 +279,10 @@ ItemActionStatus InsertSync(sql::Database* db, const SavePageRequest& request) {
       13, static_cast<int64_t>(request.auto_fetch_notification_state()));
 
   if (!statement.Run())
-    return ItemActionStatus::STORE_ERROR;
+    return AddRequestResult::STORE_FAILURE;
   if (db->GetLastChangeCount() == 0)
-    return ItemActionStatus::ALREADY_EXISTS;
-  return ItemActionStatus::SUCCESS;
+    return AddRequestResult::ALREADY_EXISTS;
+  return AddRequestResult::SUCCESS;
 }
 
 ItemActionStatus UpdateSync(sql::Database* db, const SavePageRequest& request) {
@@ -419,6 +420,43 @@ UpdateRequestsResult GetRequestsByIdsSync(
     return StoreErrorForAllIds(request_ids);
 
   return result;
+}
+
+AddRequestResult AddRequestSync(sql::Database* db,
+                                const SavePageRequest& request,
+                                const RequestQueueStore::AddOptions& options) {
+  // If we need to check preconditions, read the set of active requests and
+  // check preconditions.
+  if (options.maximum_in_flight_requests_for_namespace > 0 ||
+      options.disallow_duplicate_requests) {
+    base::Optional<std::vector<std::unique_ptr<SavePageRequest>>> requests =
+        GetAllRequestsSync(db);
+    if (!requests)
+      return AddRequestResult::STORE_FAILURE;
+
+    if (options.maximum_in_flight_requests_for_namespace > 0) {
+      int existing_requests = 0;
+      for (const std::unique_ptr<SavePageRequest>& existing_request :
+           requests.value()) {
+        if (existing_request->client_id().name_space ==
+            request.client_id().name_space)
+          ++existing_requests;
+      }
+      if (existing_requests >= options.maximum_in_flight_requests_for_namespace)
+        return AddRequestResult::REQUEST_QUOTA_HIT;
+    }
+
+    if (options.disallow_duplicate_requests) {
+      for (const std::unique_ptr<SavePageRequest>& existing_request :
+           requests.value()) {
+        if (existing_request->client_id().name_space ==
+                request.client_id().name_space &&
+            EqualsIgnoringFragment(existing_request->url(), request.url()))
+          return AddRequestResult::DUPLICATE_URL;
+      }
+    }
+  }
+  return InsertSync(db, request);
 }
 
 UpdateRequestsResult UpdateRequestsSync(
@@ -577,17 +615,19 @@ void RequestQueueStore::GetRequestsByIds(
 }
 
 void RequestQueueStore::AddRequest(const SavePageRequest& request,
+                                   AddOptions options,
                                    AddCallback callback) {
   if (!CheckDb()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), ItemActionStatus::STORE_ERROR));
+        base::BindOnce(std::move(callback), AddRequestResult::STORE_FAILURE));
     return;
   }
 
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&InsertSync, db_.get(), request), std::move(callback));
+      base::BindOnce(&AddRequestSync, db_.get(), request, options),
+      std::move(callback));
 }
 
 void RequestQueueStore::UpdateRequests(

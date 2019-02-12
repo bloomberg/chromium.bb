@@ -69,7 +69,6 @@ class OfflinePageAutoFetcherServiceTest : public testing::Test {
 
   void TearDown() override {
     thread_bundle_.RunUntilIdle();
-    ASSERT_TRUE(service_->IsTaskQueueEmptyForTesting());
     service_.reset();
   }
   RequestCoordinator* request_coordinator() {

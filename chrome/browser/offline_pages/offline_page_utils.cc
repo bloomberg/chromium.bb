@@ -32,6 +32,7 @@
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/browser_context.h"
@@ -266,18 +267,6 @@ bool OfflinePageUtils::IsShowingDownloadButtonInErrorPage(
   chrome_browser_net::NetErrorTabHelper* tab_helper =
       chrome_browser_net::NetErrorTabHelper::FromWebContents(web_contents);
   return tab_helper && tab_helper->is_showing_download_button_in_error_page();
-}
-
-// static
-bool OfflinePageUtils::EqualsIgnoringFragment(const GURL& lhs,
-                                              const GURL& rhs) {
-  GURL::Replacements remove_params;
-  remove_params.ClearRef();
-
-  GURL lhs_stripped = lhs.ReplaceComponents(remove_params);
-  GURL rhs_stripped = rhs.ReplaceComponents(remove_params);
-
-  return lhs_stripped == rhs_stripped;
 }
 
 // static
