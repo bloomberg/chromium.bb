@@ -2798,6 +2798,7 @@ void WebContentsImpl::CreateNewWindow(
   // Track the delegate on which WebContentsCreated may be called.
   // TODO(ericrk): Remove this once debugging complete. https://crbug.com/758186
   web_contents_created_delegate_ = delegate_;
+  web_contents_added_to_delegate_ = false;
   if (delegate_) {
     delegate_->WebContentsCreated(this, render_process_id,
                                   opener->GetRoutingID(), params.frame_name,
@@ -2936,6 +2937,10 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
                     "WebContentsCreated. "
                  << delegate_ << " vs " << web_contents_created_delegate_;
     }
+    if (web_contents_added_to_delegate_) {
+      LOG(ERROR) << "WebContents added to delegate twice";
+    }
+    web_contents_added_to_delegate_ = true;
 
     // Mark the web contents as pending resume, then immediately do
     // the resume if the delegate wants it.
