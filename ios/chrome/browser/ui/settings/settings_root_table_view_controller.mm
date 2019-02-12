@@ -156,6 +156,13 @@ NSString* const kSettingsToolbarDeleteButtonId =
     [self.navigationController setToolbarHidden:YES animated:YES];
 }
 
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  // TODO(crbug.com/931173): This is a workaround to fix the vertical alignment
+  // of the back button. Remove once the UIKit bug is fixed.
+  [self.navigationController.navigationBar setNeedsLayout];
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
