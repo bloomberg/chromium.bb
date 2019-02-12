@@ -344,6 +344,18 @@ int GetQuicMaxTimeOnNonDefaultNetworkSeconds(
   return 0;
 }
 
+int GetQuicIdleSessionMigrationPeriodSeconds(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(quic_trial_params,
+                            "idle_session_migration_period_seconds"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
 int GetQuicMaxNumMigrationsToNonDefaultNetworkOnWriteError(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -479,6 +491,12 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicGoawayOnPathDegrading(quic_trial_params);
     params->quic_race_stale_dns_on_connection =
         ShouldQuicRaceStaleDNSOnConnection(quic_trial_params);
+    int idle_session_migration_period_seconds =
+        GetQuicIdleSessionMigrationPeriodSeconds(quic_trial_params);
+    if (idle_session_migration_period_seconds > 0) {
+      params->quic_idle_session_migration_period =
+          base::TimeDelta::FromSeconds(idle_session_migration_period_seconds);
+    }
     int max_time_on_non_default_network_seconds =
         GetQuicMaxTimeOnNonDefaultNetworkSeconds(quic_trial_params);
     if (max_time_on_non_default_network_seconds > 0) {
