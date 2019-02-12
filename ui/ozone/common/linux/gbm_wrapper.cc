@@ -15,14 +15,6 @@
 
 namespace gbm_wrapper {
 
-namespace {
-
-// Temporary defines while we migrate to GBM_BO_IMPORT_FD_MODIFIER.
-#define GBM_BO_IMPORT_FD_PLANAR_5504 0x5504
-#define GBM_BO_IMPORT_FD_PLANAR_5505 0x5505
-
-}  // namespace
-
 class Buffer final : public ui::GbmBuffer {
  public:
   Buffer(struct gbm_bo* bo,
@@ -240,17 +232,10 @@ class Device final : public ui::GbmDevice {
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
-    //
-    // See the comment regarding the GBM_BO_IMPORT_FD_PLANAR_550X above.
-    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR_5505, &fd_data,
-                       gbm_flags);
+    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR, &fd_data, gbm_flags);
     if (!bo) {
-      bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR_5504, &fd_data,
-                         gbm_flags);
-      if (!bo) {
-        LOG(ERROR) << "nullptr returned from gbm_bo_import";
-        return nullptr;
-      }
+      LOG(ERROR) << "nullptr returned from gbm_bo_import";
+      return nullptr;
     }
 
     return std::make_unique<Buffer>(bo, format, gbm_flags, planes[0].modifier,
