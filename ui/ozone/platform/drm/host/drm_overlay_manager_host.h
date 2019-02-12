@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
-#define UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
+#ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_HOST_H_
+#define UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_HOST_H_
 
 #include <stdint.h>
 
@@ -12,42 +12,42 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
-#include "ui/ozone/public/overlay_manager_ozone.h"
 
 namespace ui {
 class DrmWindowHostManager;
 class OverlaySurfaceCandidate;
 
-class DrmOverlayManager : public OverlayManagerOzone {
+// This is an implementation of DrmOverlayManager where the driver is asked
+// about overlay capabilities via IPC. We have no way of querying abstract
+// capabilities, only if a particular configuration is supported or not.
+// Each time we we are asked if a particular configuration is supported, if we
+// have not seen that configuration before, it is IPCed to the GPU via
+// OzoneGpuMsg_CheckOverlayCapabilities, a test commit is then performed and
+// the result is returned in OzoneHostMsg_OverlayCapabilitiesReceived. Testing
+// is asynchronous, until the reply arrives that configuration will be failed.
+//
+// All widgets share a single cache of tested configurations stored in the
+// overlay manager.
+class DrmOverlayManagerHost : public DrmOverlayManager {
  public:
-  DrmOverlayManager(GpuThreadAdapter* proxy,
-                    DrmWindowHostManager* window_manager);
-  ~DrmOverlayManager() override;
+  DrmOverlayManagerHost(GpuThreadAdapter* proxy,
+                        DrmWindowHostManager* window_manager);
+  ~DrmOverlayManagerHost() override;
 
-  // OverlayManagerOzone:
-  std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
-      gfx::AcceleratedWidget w) override;
-
-  bool SupportsOverlays() const override;
-
-  // Invoked on changes to the window (aka display) that require re-populating
-  // the cache from the DRM thread.
-  void ResetCache();
+  // DrmOverlayManager:
+  void ResetCache() override;
+  void CheckOverlaySupport(
+      OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
+      gfx::AcceleratedWidget widget) override;
 
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
   void GpuSentOverlayResult(gfx::AcceleratedWidget widget,
                             const OverlaySurfaceCandidateList& params,
                             const OverlayStatusList& returns);
-
-  // Service method for DrmOverlayCandidatesHost
-  void CheckOverlaySupport(
-      OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
-      gfx::AcceleratedWidget widget);
-
-  void set_supports_overlays(bool yes) { supports_overlays_ = yes; }
 
  private:
   // Value for the request cache, that keeps track of how many times a
@@ -67,9 +67,6 @@ class DrmOverlayManager : public OverlayManagerOzone {
   bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
                           gfx::AcceleratedWidget widget) const;
 
-  // Whether we have DRM atomic capabilities and we can support HW overlays.
-  bool supports_overlays_ = false;
-
   GpuThreadAdapter* const proxy_;               // Not owned.
   DrmWindowHostManager* const window_manager_;  // Not owned.
 
@@ -84,9 +81,9 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // the lock, but will require farther refactoring.
   base::Lock cache_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);
+  DISALLOW_COPY_AND_ASSIGN(DrmOverlayManagerHost);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
+#endif  // UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_HOST_H_

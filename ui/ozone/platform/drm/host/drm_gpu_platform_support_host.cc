@@ -14,11 +14,11 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
+#include "ui/ozone/platform/drm/common/drm_overlay_candidates.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager_host.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 
 namespace ui {
@@ -304,7 +304,7 @@ bool DrmGpuPlatformSupportHost::GpuRemoveGraphicsDevice(
 
 // Overlays
 void DrmGpuPlatformSupportHost::RegisterHandlerForDrmOverlayManager(
-    DrmOverlayManager* handler) {
+    DrmOverlayManagerHost* handler) {
   overlay_manager_ = handler;
 }
 

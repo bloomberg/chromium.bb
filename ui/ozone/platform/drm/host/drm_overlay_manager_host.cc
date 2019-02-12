@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager_host.h"
 
 #include <stddef.h>
 
@@ -12,7 +12,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
@@ -30,29 +29,21 @@ const size_t kMaxCacheSize = 10;
 const int kThrottleRequestSize = 3;
 }  // namespace
 
-DrmOverlayManager::DrmOverlayManager(GpuThreadAdapter* proxy,
-                                     DrmWindowHostManager* window_manager)
+DrmOverlayManagerHost::DrmOverlayManagerHost(
+    GpuThreadAdapter* proxy,
+    DrmWindowHostManager* window_manager)
     : proxy_(proxy), window_manager_(window_manager), cache_(kMaxCacheSize) {
   proxy_->RegisterHandlerForDrmOverlayManager(this);
 }
 
-DrmOverlayManager::~DrmOverlayManager() {
+DrmOverlayManagerHost::~DrmOverlayManagerHost() {
   proxy_->UnRegisterHandlerForDrmOverlayManager();
 }
 
-std::unique_ptr<OverlayCandidatesOzone>
-DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
-  return std::make_unique<DrmOverlayCandidatesHost>(this, w);
-}
-
-bool DrmOverlayManager::SupportsOverlays() const {
-  return supports_overlays_;
-}
-
-void DrmOverlayManager::CheckOverlaySupport(
+void DrmOverlayManagerHost::CheckOverlaySupport(
     OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
     gfx::AcceleratedWidget widget) {
-  TRACE_EVENT0("hwoverlays", "DrmOverlayManager::CheckOverlaySupport");
+  TRACE_EVENT0("hwoverlays", "DrmOverlayManagerHost::CheckOverlaySupport");
 
   OverlaySurfaceCandidateList result_candidates;
   for (auto& candidate : *candidates) {
@@ -112,36 +103,29 @@ void DrmOverlayManager::CheckOverlaySupport(
   }
 }
 
-void DrmOverlayManager::ResetCache() {
+void DrmOverlayManagerHost::ResetCache() {
   base::AutoLock lock(cache_lock_);
   cache_.Clear();
 }
 
-DrmOverlayManager::OverlayValidationCacheValue::OverlayValidationCacheValue() =
-    default;
-
-DrmOverlayManager::OverlayValidationCacheValue::OverlayValidationCacheValue(
-    const OverlayValidationCacheValue&) = default;
-DrmOverlayManager::OverlayValidationCacheValue::~OverlayValidationCacheValue() =
-    default;
-
-void DrmOverlayManager::SendOverlayValidationRequest(
+void DrmOverlayManagerHost::SendOverlayValidationRequest(
     const OverlaySurfaceCandidateList& candidates,
     gfx::AcceleratedWidget widget) const {
   if (!proxy_->IsConnected())
     return;
   TRACE_EVENT_ASYNC_BEGIN0(
-      "hwoverlays", "DrmOverlayManager::SendOverlayValidationRequest", this);
+      "hwoverlays", "DrmOverlayManagerHost::SendOverlayValidationRequest",
+      this);
   proxy_->GpuCheckOverlayCapabilities(widget, candidates);
 }
 
-void DrmOverlayManager::GpuSentOverlayResult(
+void DrmOverlayManagerHost::GpuSentOverlayResult(
     gfx::AcceleratedWidget widget,
     const OverlaySurfaceCandidateList& candidates,
     const OverlayStatusList& returns) {
-  TRACE_EVENT_ASYNC_END0(
-      "hwoverlays", "DrmOverlayManager::SendOverlayValidationRequest response",
-      this);
+  TRACE_EVENT_ASYNC_END0("hwoverlays",
+                         "DrmOverlayManagerHost::SendOverlayValidationRequest",
+                         this);
   base::AutoLock lock(cache_lock_);
   auto iter = cache_.Peek(candidates);
   if (iter != cache_.end()) {
@@ -149,7 +133,7 @@ void DrmOverlayManager::GpuSentOverlayResult(
   }
 }
 
-bool DrmOverlayManager::CanHandleCandidate(
+bool DrmOverlayManagerHost::CanHandleCandidate(
     const OverlaySurfaceCandidate& candidate,
     gfx::AcceleratedWidget widget) const {
   if (candidate.buffer_size.IsEmpty())
@@ -178,5 +162,12 @@ bool DrmOverlayManager::CanHandleCandidate(
 
   return true;
 }
+
+DrmOverlayManagerHost::OverlayValidationCacheValue::
+    OverlayValidationCacheValue() = default;
+DrmOverlayManagerHost::OverlayValidationCacheValue::OverlayValidationCacheValue(
+    const OverlayValidationCacheValue&) = default;
+DrmOverlayManagerHost::OverlayValidationCacheValue::
+    ~OverlayValidationCacheValue() = default;
 
 }  // namespace ui

@@ -41,7 +41,7 @@
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_native_display_delegate.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
@@ -237,18 +237,20 @@ class OzonePlatformGbm : public OzonePlatform {
       adapter = gpu_platform_support_host_.get();
     }
 
-    overlay_manager_.reset(
-        new DrmOverlayManager(adapter, window_manager_.get()));
+    auto overlay_manager_host =
+        std::make_unique<DrmOverlayManagerHost>(adapter, window_manager_.get());
     display_manager_.reset(new DrmDisplayHostManager(
-        adapter, device_manager_.get(), overlay_manager_.get(),
+        adapter, device_manager_.get(), overlay_manager_host.get(),
         event_factory_ozone_->input_controller()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
 
     if (using_mojo_) {
       host_drm_device_->ProvideManagers(display_manager_.get(),
-                                        overlay_manager_.get());
+                                        overlay_manager_host.get());
       host_drm_device_->AsyncStartDrmDevice(*drm_device_connector_);
     }
+
+    overlay_manager_ = std::move(overlay_manager_host);
   }
 
   void InitializeGPU(const InitParams& args) override {
