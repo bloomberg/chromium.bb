@@ -21,7 +21,7 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   // |other| must not be nullptr and must outlive this object.
   explicit ForwardingModelTypeChangeProcessor(ModelTypeChangeProcessor* other)
       : other_(other) {}
-  ~ForwardingModelTypeChangeProcessor() override{};
+  ~ForwardingModelTypeChangeProcessor() override {}
 
   void Put(const std::string& client_tag,
            std::unique_ptr<EntityData> entity_data,

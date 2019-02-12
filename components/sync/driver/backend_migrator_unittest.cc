@@ -287,4 +287,4 @@ TEST_F(SyncBackendMigratorTest, ConfigureFailure) {
   EXPECT_EQ(BackendMigrator::IDLE, migrator()->state());
 }
 
-};  // namespace syncer
+}  // namespace syncer
