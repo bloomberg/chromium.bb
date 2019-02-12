@@ -381,8 +381,12 @@ void OfflineAudioContext::FireCompletionEvent() {
   PerformCleanupOnMainThread();
 }
 
-bool OfflineAudioContext::HandlePreOfflineRenderTasks() {
+bool OfflineAudioContext::HandlePreRenderTasks(
+    const AudioIOPosition* output_position,
+    const AudioIOCallbackMetric* metric) {
   DCHECK(IsAudioThread());
+  DCHECK_EQ(output_position, nullptr);
+  DCHECK_EQ(metric, nullptr);
 
   // OfflineGraphAutoLocker here locks the audio graph for this scope. Note
   // that this locker does not use tryLock() inside because the timing of
@@ -398,7 +402,7 @@ bool OfflineAudioContext::HandlePreOfflineRenderTasks() {
   return ShouldSuspend();
 }
 
-void OfflineAudioContext::HandlePostOfflineRenderTasks() {
+void OfflineAudioContext::HandlePostRenderTasks() {
   DCHECK(IsAudioThread());
 
   // OfflineGraphAutoLocker here locks the audio graph for the same reason

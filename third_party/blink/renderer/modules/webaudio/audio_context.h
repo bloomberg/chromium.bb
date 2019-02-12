@@ -67,6 +67,16 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // the AudioContext if it is now allowed to start.
   void NotifySourceNodeStart() final;
 
+  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
+
+  bool HandlePreRenderTasks(const AudioIOPosition* output_position,
+                            const AudioIOCallbackMetric* metric) final;
+
+  // Called at the end of each render quantum.
+  void HandlePostRenderTasks() final;
+
+  void HandleAudibility(AudioBus* destination_bus);
+
  protected:
   void Uninitialize() final;
 
@@ -119,16 +129,25 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   void DidClose();
 
+  // Called by the audio thread to handle Promises for resume() and suspend(),
+  // posting a main thread task to perform the actual resolving, if needed.
+  void ResolvePromisesForUnpause();
+
+  AudioIOPosition OutputPosition() const;
+
   // Send notification to browser that an AudioContext has started or stopped
   // playing audible audio.
-  void NotifyAudibleAudioStarted() final;
-  void NotifyAudibleAudioStopped() final;
+  void NotifyAudibleAudioStarted();
+  void NotifyAudibleAudioStopped();
 
   void EnsureAudioContextManagerService();
   void OnAudioContextManagerServiceConnectionError();
 
   unsigned context_id_;
   Member<ScriptPromiseResolver> close_resolver_;
+
+  AudioIOPosition output_position_;
+  AudioIOCallbackMetric callback_metric_;
 
   // Whether a user gesture is required to start this AudioContext.
   bool user_gesture_required_ = false;
@@ -148,6 +167,15 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
 
   // AudioContextManager for reporting audibility.
   mojom::blink::AudioContextManagerPtr audio_context_manager_;
+
+  // Keeps track if the output of this destination was audible, before the
+  // current rendering quantum.  Used for recording "playback" time.
+  bool was_audible_ = false;
+
+  // Counts the number of render quanta where audible sound was played.  We
+  // determine audibility on render quantum boundaries, so counting quanta is
+  // all that's needed.
+  size_t total_audible_renders_ = 0;
 };
 
 }  // namespace blink

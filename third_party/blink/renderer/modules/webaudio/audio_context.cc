@@ -21,15 +21,19 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_timestamp.h"
 #include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -499,12 +503,125 @@ void AudioContext::ContextDestroyed(ExecutionContext*) {
   Uninitialize();
 }
 
+bool AudioContext::HandlePreRenderTasks(const AudioIOPosition* output_position,
+                                        const AudioIOCallbackMetric* metric) {
+  DCHECK(IsAudioThread());
+
+  // At the beginning of every render quantum, try to update the internal
+  // rendering graph state (from main thread changes).  It's OK if the tryLock()
+  // fails, we'll just take slightly longer to pick up the changes.
+  if (TryLock()) {
+    GetDeferredTaskHandler().HandleDeferredTasks();
+
+    ResolvePromisesForUnpause();
+
+    // Check to see if source nodes can be stopped because the end time has
+    // passed.
+    HandleStoppableSourceNodes();
+
+    // Update the dirty state of the listener.
+    listener()->UpdateState();
+
+    // Update output timestamp and metric.
+    output_position_ = *output_position;
+    callback_metric_ = *metric;
+
+    unlock();
+  }
+
+  // Realtime context ignores the return result, but return true, just in case.
+  return true;
+}
+
 void AudioContext::NotifyAudibleAudioStarted() {
   DCHECK(IsMainThread());
 
   EnsureAudioContextManagerService();
   if (audio_context_manager_)
     audio_context_manager_->AudioContextAudiblePlaybackStarted(context_id_);
+}
+
+void AudioContext::HandlePostRenderTasks() {
+  DCHECK(IsAudioThread());
+
+  // Must use a tryLock() here too.  Don't worry, the lock will very rarely be
+  // contended and this method is called frequently.  The worst that can happen
+  // is that there will be some nodes which will take slightly longer than usual
+  // to be deleted or removed from the render graph (in which case they'll
+  // render silence).
+  if (TryLock()) {
+    // Take care of AudioNode tasks where the tryLock() failed previously.
+    GetDeferredTaskHandler().BreakConnections();
+
+    GetDeferredTaskHandler().HandleDeferredTasks();
+    GetDeferredTaskHandler().RequestToDeleteHandlersOnMainThread();
+
+    unlock();
+  }
+}
+
+static bool IsAudible(const AudioBus* rendered_data) {
+  // Compute the energy in each channel and sum up the energy in each channel
+  // for the total energy.
+  float energy = 0;
+
+  uint32_t data_size = rendered_data->length();
+  for (uint32_t k = 0; k < rendered_data->NumberOfChannels(); ++k) {
+    const float* data = rendered_data->Channel(k)->Data();
+    float channel_energy;
+    vector_math::Vsvesq(data, 1, &channel_energy, data_size);
+    energy += channel_energy;
+  }
+
+  return energy > 0;
+}
+
+void AudioContext::HandleAudibility(AudioBus* destination_bus) {
+  DCHECK(IsAudioThread());
+
+  // Detect silence (or not) for MEI
+  bool is_audible = IsAudible(destination_bus);
+
+  if (is_audible) {
+    ++total_audible_renders_;
+  }
+
+  if (was_audible_ != is_audible) {
+    // Audibility changed in this render, so report the change.
+    was_audible_ = is_audible;
+    if (is_audible) {
+      PostCrossThreadTask(
+          *task_runner_, FROM_HERE,
+          CrossThreadBind(&AudioContext::NotifyAudibleAudioStarted,
+                          WrapCrossThreadPersistent(this)));
+    } else {
+      PostCrossThreadTask(
+          *task_runner_, FROM_HERE,
+          CrossThreadBind(&AudioContext::NotifyAudibleAudioStopped,
+                          WrapCrossThreadPersistent(this)));
+    }
+  }
+}
+
+void AudioContext::ResolvePromisesForUnpause() {
+  // This runs inside the BaseAudioContext's lock when handling pre-render
+  // tasks.
+  DCHECK(IsAudioThread());
+  AssertGraphOwner();
+
+  // Resolve any pending promises created by resume(). Only do this if we
+  // haven't already started resolving these promises. This gets called very
+  // often and it takes some time to resolve the promises in the main thread.
+  if (!is_resolving_resume_promises_ && resume_resolvers_.size() > 0) {
+    is_resolving_resume_promises_ = true;
+    ScheduleMainThreadCleanup();
+  }
+}
+
+AudioIOPosition AudioContext::OutputPosition() const {
+  DCHECK(IsMainThread());
+  GraphAutoLocker locker(this);
+  return output_position_;
 }
 
 void AudioContext::NotifyAudibleAudioStopped() {

@@ -25,15 +25,15 @@
 
 #include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
-#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
@@ -169,15 +169,17 @@ void DefaultAudioDestinationHandler::Render(
   // take care of all AudioNode processes within this scope.
   DenormalDisabler denormal_disabler;
 
+  AudioContext* context = static_cast<AudioContext*>(Context());
+
   // A sanity check for the associated context, but this does not guarantee the
   // safe execution of the subsequence operations because the hanlder holds
   // the context as |UntracedMember| and it can go away anytime.
-  DCHECK(Context());
-  if (!Context()) {
+  DCHECK(context);
+  if (!context) {
     return;
   }
 
-  Context()->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
+  context->GetDeferredTaskHandler().SetAudioThreadToCurrentThread();
 
   // If this node is not initialized yet, pass silence to the platform audio
   // destination. It is for the case where this node is in the middle of
@@ -187,7 +189,7 @@ void DefaultAudioDestinationHandler::Render(
     return;
   }
 
-  Context()->HandlePreRenderTasks(output_position, metric);
+  context->HandlePreRenderTasks(&output_position, &metric);
 
   // Renders the graph by pulling all the input(s) to this node. This will in
   // turn pull on their input(s), all the way backwards through the graph.
@@ -206,15 +208,16 @@ void DefaultAudioDestinationHandler::Render(
 
   // Processes "automatic" nodes that are not connected to anything. This can
   // be done after copying because it does not affect the rendered result.
-  Context()->GetDeferredTaskHandler().ProcessAutomaticPullNodes(
-      number_of_frames);
+  context->GetDeferredTaskHandler().ProcessAutomaticPullNodes(number_of_frames);
 
-  Context()->HandlePostRenderTasks(destination_bus);
+  context->HandlePostRenderTasks();
+
+  context->HandleAudibility(destination_bus);
 
   // Advances the current sample-frame.
   AdvanceCurrentSampleFrame(number_of_frames);
 
-  Context()->UpdateWorkletGlobalScopeOnRenderingThread();
+  context->UpdateWorkletGlobalScopeOnRenderingThread();
 }
 
 uint32_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
@@ -263,14 +266,14 @@ void DefaultAudioDestinationHandler::StopPlatformDestination() {
 // -----------------------------------------------------------------------------
 
 DefaultAudioDestinationNode::DefaultAudioDestinationNode(
-    BaseAudioContext& context,
+    AudioContext& context,
     const WebAudioLatencyHint& latency_hint)
     : AudioDestinationNode(context) {
   SetHandler(DefaultAudioDestinationHandler::Create(*this, latency_hint));
 }
 
 DefaultAudioDestinationNode* DefaultAudioDestinationNode::Create(
-    BaseAudioContext* context,
+    AudioContext* context,
     const WebAudioLatencyHint& latency_hint) {
   return MakeGarbageCollected<DefaultAudioDestinationNode>(*context,
                                                            latency_hint);

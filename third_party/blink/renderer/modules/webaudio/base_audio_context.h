@@ -237,11 +237,21 @@ class MODULES_EXPORT BaseAudioContext
   void NotifySourceNodeFinishedProcessing(AudioHandler*);
 
   // Called at the start of each render quantum.
-  void HandlePreRenderTasks(const AudioIOPosition& output_position,
-                            const AudioIOCallbackMetric& metric);
+  //
+  // For an AudioContext:
+  //   - |output_position| must be a valid pointer to an AudioIOPosition
+  //   - The return value is ignored.
+  //
+  // For an OfflineAudioContext, we have the following conditions:
+  //   - |output_position| must be nullptr because there is no defined
+  //   AudioIOPosition.
+  //   - The return value indicates whether the context needs to be suspended or
+  //   not after rendering.
+  virtual bool HandlePreRenderTasks(const AudioIOPosition* output_position,
+                                    const AudioIOCallbackMetric* metric) = 0;
 
   // Called at the end of each render quantum.
-  void HandlePostRenderTasks(const AudioBus* destination_bus);
+  virtual void HandlePostRenderTasks() = 0;
 
   DeferredTaskHandler& GetDeferredTaskHandler() const {
     return *deferred_task_handler_;
@@ -305,8 +315,6 @@ class MODULES_EXPORT BaseAudioContext
   // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
 
-  void set_was_audible_for_testing(bool value) { was_audible_ = value; }
-
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -333,8 +341,6 @@ class MODULES_EXPORT BaseAudioContext
 
   void RejectPendingDecodeAudioDataResolvers();
 
-  AudioIOPosition OutputPosition() const;
-
   // Returns the Document wich wich the instance is associated.
   Document* GetDocument() const;
 
@@ -349,6 +355,13 @@ class MODULES_EXPORT BaseAudioContext
   // etc. Actions that should happen, but can happen asynchronously to the
   // audio thread making rendering progress.
   void PerformCleanupOnMainThread();
+
+  // True if we're in the process of resolving promises for resume().  Resolving
+  // can take some time and the audio context process loop is very fast, so we
+  // don't want to call resolve an excessive number of times.
+  bool is_resolving_resume_promises_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
  private:
   friend class AudioContextAutoplayTest;
@@ -382,21 +395,9 @@ class MODULES_EXPORT BaseAudioContext
   // this.
   HeapVector<Member<AudioNode>> active_source_nodes_;
 
-  // Called by the audio thread to handle Promises for resume() and suspend(),
-  // posting a main thread task to perform the actual resolving, if needed.
-  //
-  // TODO(dominicc): Move to AudioContext because only it creates
-  // these Promises.
-  void ResolvePromisesForUnpause();
-
   // When the context is going away, reject any pending script promise
   // resolvers.
   virtual void RejectPendingResolvers();
-
-  // True if we're in the process of resolving promises for resume().  Resolving
-  // can take some time and the audio context process loop is very fast, so we
-  // don't want to call resolve an excessive number of times.
-  bool is_resolving_resume_promises_;
 
   // Set to |true| by the audio thread when it posts a main-thread task to
   // perform delayed state sync'ing updates that needs to be done on the main
@@ -428,9 +429,6 @@ class MODULES_EXPORT BaseAudioContext
   // It is somewhat arbitrary and could be increased if necessary.
   enum { kMaxNumberOfChannels = 32 };
 
-  AudioIOPosition output_position_;
-  AudioIOCallbackMetric callback_metric_;
-
   // The handler associated with the above |destination_node_|.
   scoped_refptr<AudioDestinationHandler> destination_handler_;
 
@@ -442,22 +440,6 @@ class MODULES_EXPORT BaseAudioContext
   // This cannot be nullptr once it is assigned from AudioWorkletThread until
   // the BaseAudioContext goes away.
   WorkerThread* audio_worklet_thread_ = nullptr;
-
-  // Notifies browser when audible audio starts or stops.  This should
-  // only apply for AudioContexts.
-  virtual void NotifyAudibleAudioStarted() { NOTREACHED(); }
-  virtual void NotifyAudibleAudioStopped() { NOTREACHED(); }
-
-  // Keeps track if the output of this destination was audible, before the
-  // current rendering quantum.  Used for recording "playback" time.
-  bool was_audible_ = false;
-
-  // Counts the number of render quanta where audible sound was played.  We
-  // determine audibility on render quantum boundaries, so counting quanta is
-  // all that's needed.
-  size_t total_audible_renders_ = 0;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink
