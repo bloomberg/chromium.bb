@@ -134,7 +134,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   // NOTE: This class must listen for this callback rather than
   // OnRefreshTokenRemovedForAccount() to obtain the Gaia ID of the removed
   // account.
-  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // Fires the chrome.identity.onSignInChanged event.
   void FireOnAccountSignInChanged(const std::string& gaia_id,

@@ -80,7 +80,7 @@ class ChildAccountService : public KeyedService,
 
   // identity::IdentityManager::Observer implementation.
   void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // FamilyInfoFetcher::Consumer implementation.
   void OnGetFamilyMembersSuccess(

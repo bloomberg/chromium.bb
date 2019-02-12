@@ -265,7 +265,8 @@ void ChildAccountService::OnAccountUpdated(const AccountInfo& info) {
   SetIsChildAccount(info.is_child_account);
 }
 
-void ChildAccountService::OnAccountRemovedWithInfo(const AccountInfo& info) {
+void ChildAccountService::OnExtendedAccountInfoRemoved(
+    const AccountInfo& info) {
   SetIsChildAccount(false);
 }
 

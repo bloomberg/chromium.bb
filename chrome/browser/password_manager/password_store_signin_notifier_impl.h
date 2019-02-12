@@ -29,7 +29,7 @@ class PasswordStoreSigninNotifierImpl
 
   // IdentityManager::Observer implementations.
   void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
-  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
  private:
   Profile* const profile_;

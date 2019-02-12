@@ -85,7 +85,7 @@ class AdvancedProtectionStatusManager
   void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
   void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
   void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemovedWithInfo(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   void OnAdvancedProtectionEnabled();
 

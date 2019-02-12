@@ -635,8 +635,8 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
 
   AccountFetcherService* account_fetcher_service =
       AccountFetcherServiceFactory::GetForProfile(profile());
-  // Necessary to ensure that the OnAccountRemovedWithInfo() observer will be
-  // sent.
+  // Necessary to ensure that the OnExtendedAccountInfoRemoved() observer will
+  // be sent.
   account_fetcher_service->EnableNetworkFetchesForTest();
   identity_manager->GetAccountsMutator()->RemoveAccount(
       maybe_account_info.value().account_id,

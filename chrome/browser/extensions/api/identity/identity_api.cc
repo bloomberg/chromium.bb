@@ -175,7 +175,8 @@ void IdentityAPI::OnRefreshTokenUpdatedForAccount(
   FireOnAccountSignInChanged(account_info.gaia, true);
 }
 
-void IdentityAPI::OnAccountRemovedWithInfo(const AccountInfo& account_info) {
+void IdentityAPI::OnExtendedAccountInfoRemoved(
+    const AccountInfo& account_info) {
   DCHECK(!account_info.gaia.empty());
   FireOnAccountSignInChanged(account_info.gaia, false);
 }

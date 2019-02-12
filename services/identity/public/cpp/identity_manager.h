@@ -154,7 +154,7 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnAccountUpdated(const AccountInfo& info) {}
 
     // Called after removing an account info.
-    virtual void OnAccountRemovedWithInfo(const AccountInfo& info) {}
+    virtual void OnExtendedAccountInfoRemoved(const AccountInfo& info) {}
   };
 
   // Observer interface for classes that want to monitor status of various

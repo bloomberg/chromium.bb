@@ -239,7 +239,8 @@ void AvatarToolbarButton::OnAccountUpdated(const AccountInfo& info) {
   UpdateIcon();
 }
 
-void AvatarToolbarButton::OnAccountRemovedWithInfo(const AccountInfo& info) {
+void AvatarToolbarButton::OnExtendedAccountInfoRemoved(
+    const AccountInfo& info) {
   UpdateIcon();
 }
 
