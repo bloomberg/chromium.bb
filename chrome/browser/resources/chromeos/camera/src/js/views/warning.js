@@ -44,10 +44,10 @@ cca.views.Warning.prototype.updateMessage_ = function() {
   var message = '';
   switch (this.errorNames_[this.errorNames_.length - 1]) {
     case 'no-camera':
-      message = 'errorMsgNoCamera';
+      message = 'error_msg_no_camera';
       break;
     case 'filesystem-failure':
-      message = 'errorMsgFileSystemFailed';
+      message = 'error_msg_file_system_failed';
       break;
   }
   document.querySelector('#error-msg').textContent =

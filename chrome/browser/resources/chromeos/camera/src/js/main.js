@@ -132,7 +132,7 @@ cca.App.prototype.setupToggles_ = function() {
 cca.App.prototype.start = function() {
   cca.models.FileSystem.initialize(() => {
     // Prompt to migrate pictures if needed.
-    var message = chrome.i18n.getMessage('migratePicturesMsg');
+    var message = chrome.i18n.getMessage('migrate_pictures_msg');
     return cca.nav.open('dialog', message, false).then((acked) => {
       if (!acked) {
         throw new Error('no-migrate');

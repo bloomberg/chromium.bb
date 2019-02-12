@@ -1,21 +1,21 @@
 {
-  "name": {
+  "NAME": {
     "message": "Камера",
     "description": "Name of the Camera App."
   },
-  "description": {
+  "DESCRIPTION": {
     "message": "Правете снимки и записвайте видеоклипове с камерата си.",
     "description": "Short description of the Camera App."
   },
-  "errorMsgFileSystemFailed": {
+  "ERROR_MSG_FILE_SYSTEM_FAILED": {
     "message": "Грешки в системата за съхранение на файлове.",
     "description": "Error message shown when failing to read or write the file system."
   },
-  "errorMsgNoCamera": {
+  "ERROR_MSG_NO_CAMERA": {
     "message": "Понастоящем няма достъп до камерата ви.\nМоля, проверете дали е свързана правилно.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgGalleryExportFailed": {
+  "ERROR_MSG_GALLERY_EXPORT_FAILED": {
     "message": "$file$ не може да се експортира",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
@@ -25,27 +25,27 @@
       }
     }
   },
-  "errorMsgSaveFileFailed": {
+  "ERROR_MSG_SAVE_FILE_FAILED": {
     "message": "Файлът не може да бъде запазен",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
-  "errorMsgTakePhotoFailed": {
+  "ERROR_MSG_TAKE_PHOTO_FAILED": {
     "message": "Не може да се направи снимка",
     "description": "Error message shown when failing to take photo."
   },
-  "errorMsgRecordStartFailed": {
+  "ERROR_MSG_RECORD_START_FAILED": {
     "message": "Записването не може да се стартира",
     "description": "Error message shown when failing to start recording video."
   },
-  "errorMsgEmptyRecording": {
+  "ERROR_MSG_EMPTY_RECORDING": {
     "message": "Нищо не е записано",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
-  "statusMsgRecordingStopped": {
+  "STATUS_MSG_RECORDING_STOPPED": {
     "message": "Записването спря",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
-  "statusMsgCameraSwitched": {
+  "STATUS_MSG_CAMERA_SWITCHED": {
     "message": "$camera$ е активна",
     "description": "Status message for spoken feedback when switching over to another camera.",
     "placeholders": {
@@ -55,131 +55,131 @@
       }
     }
   },
-  "galleryButton": {
+  "GALLERY_BUTTON": {
     "message": "Към галерията",
     "description": "Label for the gallery button."
   },
-  "deleteButton": {
+  "DELETE_BUTTON": {
     "message": "Изтриване",
     "description": "Label for the delete button."
   },
-  "exportButton": {
+  "EXPORT_BUTTON": {
     "message": "Експортиране в диска",
     "description": "Label for the exporting button."
   },
-  "printButton": {
+  "PRINT_BUTTON": {
     "message": "Печат",
     "description": "Label for the printing button."
   },
-  "backButton": {
+  "BACK_BUTTON": {
     "message": "Назад",
     "description": "Label for the back button."
   },
-  "galleryImages": {
+  "GALLERY_IMAGES": {
     "message": "Изображения в галерията",
     "description": "Text to speech label for the gallery list."
   },
-  "settingsButton": {
+  "SETTINGS_BUTTON": {
     "message": "Настройки",
     "description": "Label for the settings button."
   },
-  "gridTypeButton": {
+  "GRID_TYPE_BUTTON": {
     "message": "Тип решетка",
     "description": "Label for the button of grid-type options."
   },
-  "timerDurationButton": {
+  "TIMER_DURATION_BUTTON": {
     "message": "Продължителност на таймера",
     "description": "Label for the button of timer-duration options."
   },
-  "feedbackButton": {
+  "FEEDBACK_BUTTON": {
     "message": "Изпращане на отзиви",
     "description": "Label for the feedback button."
   },
-  "helpButton": {
+  "HELP_BUTTON": {
     "message": "Помощ",
     "description": "Label for the help button."
   },
-  "labelGrid3x3": {
+  "LABEL_GRID_3X3": {
     "message": "3 x 3",
     "description": "Label for for grid-type: 3x3."
   },
-  "ariaGrid3x3": {
+  "ARIA_GRID_3X3": {
     "message": "3 на 3",
     "description": "Label for spoken feedback to read out grid-type: 3x3."
   },
-  "labelGrid4x4": {
+  "LABEL_GRID_4X4": {
     "message": "4 x 4",
     "description": "Label for for grid-type: 4x4."
   },
-  "ariaGrid4x4": {
+  "ARIA_GRID_4X4": {
     "message": "4 на 4",
     "description": "Label for spoken feedback to read out grid-type: 4x4."
   },
-  "labelGridGolden": {
+  "LABEL_GRID_GOLDEN": {
     "message": "Златното сечение",
     "description": "Label for grid-type: golden ratio."
   },
-  "labelTimer3s": {
+  "LABEL_TIMER_3S": {
     "message": "3 секунди",
     "description": "Label for timer-duration: 3 seconds."
   },
-  "labelTimer10s": {
+  "LABEL_TIMER_10S": {
     "message": "10 секунди",
     "description": "Label for timer-duration: 10 seconds."
   },
-  "takePhotoButton": {
+  "TAKE_PHOTO_BUTTON": {
     "message": "Правене на снимка",
     "description": "Label for the shutter button to take photo."
   },
-  "takePhotoCancelButton": {
+  "TAKE_PHOTO_CANCEL_BUTTON": {
     "message": "Спиране на правенето на снимка",
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
-  "recordVideoStartButton": {
+  "RECORD_VIDEO_START_BUTTON": {
     "message": "Започване на запис",
     "description": "Label for the shutter button to start recording."
   },
-  "recordVideoStopButton": {
+  "RECORD_VIDEO_STOP_BUTTON": {
     "message": "Спиране на записа",
     "description": "Label for the shutter button to stop recording."
   },
-  "switchCameraButton": {
+  "SWITCH_CAMERA_BUTTON": {
     "message": "Превключване към следващата камера",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
-  "switchRecordVideoButton": {
+  "SWITCH_RECORD_VIDEO_BUTTON": {
     "message": "Превключване към режима за запис на видеоклипове",
     "description": "Label for the button to switch to record video mode."
   },
-  "switchTakePhotoButton": {
+  "SWITCH_TAKE_PHOTO_BUTTON": {
     "message": "Превключване към режима за правене на снимки",
     "description": "Label for the button to switch to take photo mode."
   },
-  "toggleTimerButton": {
+  "TOGGLE_TIMER_BUTTON": {
     "message": "Таймер",
     "description": "Label for the checkbox to toggle the countdown timer."
   },
-  "toggleMirrorButton": {
+  "TOGGLE_MIRROR_BUTTON": {
     "message": "Функция за огледално обръщане",
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
-  "toggleGridButton": {
+  "TOGGLE_GRID_BUTTON": {
     "message": "Решетка",
     "description": "Label for the checkbox to toggle the grid shown on preview."
   },
-  "toggleMicButton": {
+  "TOGGLE_MIC_BUTTON": {
     "message": "Микрофон",
     "description": "Label for the checkbox to toggle the microphone for recording video."
   },
-  "dialogOKButton": {
+  "DIALOG_OK_BUTTON": {
     "message": "OK",
     "description": "Label for the accepting button in the dialog."
   },
-  "dialogCancelButton": {
+  "DIALOG_CANCEL_BUTTON": {
     "message": "Отказ",
     "description": "Label for the dismissing button in the dialog."
   },
-  "deleteConfirmationMsg": {
+  "DELETE_CONFIRMATION_MSG": {
     "message": "Наистина ли искате да премахнете $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
@@ -189,7 +189,7 @@
       }
     }
   },
-  "deleteMultiConfirmationMsg": {
+  "DELETE_MULTI_CONFIRMATION_MSG": {
     "message": "Наистина ли искате да премахнете $count$ елемента?",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
@@ -199,7 +199,7 @@
       }
     }
   },
-  "migratePicturesMsg": {
+  "MIGRATE_PICTURES_MSG": {
     "message": "Направените с камерата снимки и видеоклипове ще бъдат преместени в папката „Изтегляния“. Можете да осъществите достъп до тях от „Файлове“.\n\nПриложенията с разрешения за хранилището ще имат достъп до снимките и видеоклиповете ви.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }

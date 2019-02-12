@@ -105,7 +105,7 @@ cca.views.GalleryBase.prototype.exportSelection = function() {
             this.model_.exportPicture(picture, entry).catch((error) => {
               console.error(error);
               cca.toast.show(chrome.i18n.getMessage(
-                  'errorMsgGalleryExportFailed', entry.name));
+                  'error_msg_gallery_export_failed', entry.name));
             });
           });
     });
@@ -126,7 +126,7 @@ cca.views.GalleryBase.prototype.deleteSelection = function() {
   var param = multi ? selectedIndexes.length.toString() :
       this.lastSelectedPicture().picture.pictureEntry.name;
   var message = chrome.i18n.getMessage(
-      multi ? 'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param);
+      multi ? 'delete_multi_confirmation_msg' : 'delete_confirmation_msg', param);
   cca.nav.open('dialog', message, true).then((confirmed) => {
     if (!confirmed) {
       return;
