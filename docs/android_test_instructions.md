@@ -243,13 +243,9 @@ ninja -C out/Release chrome_public_test_apk
 out/Release/bin/run_chrome_public_test_apk [-vv]
 ```
 
-AndroidWebView tests:
+Android WebView tests:
 
-```shell
-ninja -C out/Release webview_instrumentation_apk
-ninja -C out/Release webview_instrumentation_test_apk
-out/Release/bin/run_webview_instrumentation_test_apk [-vv]
-```
+See [WebView's instructions](/android_webview/docs/test-instructions.md).
 
 In order to run a subset of tests, use -f to filter based on test class/method
 or -A/-E to filter using annotations.
