@@ -269,7 +269,7 @@ template <typename OffsetMappingBuilder>
 bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     const String& original_string,
     LayoutText* layout_text) {
-  const Vector<NGInlineItem*>& items = layout_text->InlineItems();
+  const NGInlineItems& items = layout_text->InlineItems();
   // Don't reuse existing items if they might be affected by whitespace
   // collapsing.
   // TODO(layout-dev): This could likely be optimized further.
@@ -277,7 +277,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   const ComputedStyle& new_style = layout_text->StyleRef();
   bool collapse_spaces = new_style.CollapseWhiteSpace();
   if (NGInlineItem* last_item = LastItemToCollapseWith(items_)) {
-    const NGInlineItem& old_item0 = *items[0];
+    const NGInlineItem& old_item0 = items.front();
     if (collapse_spaces) {
       DCHECK_GT(old_item0.Length(), 0u);
       switch (last_item->EndCollapseType()) {
@@ -325,7 +325,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   } else if (collapse_spaces) {
     // If the original string starts with a collapsible space, it may be
     // collapsed because it is now a leading collapsible space.
-    const NGInlineItem& old_item0 = *items[0];
+    const NGInlineItem& old_item0 = items.front();
     DCHECK_GT(old_item0.Length(), 0u);
     if (original_string[old_item0.StartOffset()] == kSpaceCharacter)
       return false;
@@ -339,37 +339,36 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
       return false;
   }
 
-  for (const NGInlineItem* item : items) {
+  for (const NGInlineItem& item : items) {
     // Collapsed space item at the start will not be restored, and that not
     // needed to add.
-    if (!text_.length() && !item->Length() && collapse_spaces)
+    if (!text_.length() && !item.Length() && collapse_spaces)
       continue;
 
     unsigned start = text_.length();
-    text_.Append(original_string, item->StartOffset(), item->Length());
+    text_.Append(original_string, item.StartOffset(), item.Length());
 
     // If the item's position within the container remains unchanged the item
     // itself may be reused.
-    if (item->StartOffset() == start) {
-      items_->push_back(*item);
-      is_empty_inline_ &= item->IsEmptyItem();
+    if (item.StartOffset() == start) {
+      items_->push_back(item);
+      is_empty_inline_ &= item.IsEmptyItem();
       continue;
     }
 
     // If the position has shifted the item and the shape result needs to be
     // adjusted to reflect the new start and end offsets.
-    unsigned end = start + item->Length();
+    unsigned end = start + item.Length();
     scoped_refptr<ShapeResult> adjusted_shape_result;
-    if (item->TextShapeResult()) {
-      DCHECK_EQ(item->Type(), NGInlineItem::kText);
-      adjusted_shape_result =
-          item->TextShapeResult()->CopyAdjustedOffset(start);
+    if (item.TextShapeResult()) {
+      DCHECK_EQ(item.Type(), NGInlineItem::kText);
+      adjusted_shape_result = item.TextShapeResult()->CopyAdjustedOffset(start);
       DCHECK(adjusted_shape_result);
     } else {
       // The following should be true, but some unit tests fail.
       // DCHECK_EQ(item->Type(), NGInlineItem::kControl);
     }
-    NGInlineItem adjusted_item(*item, start, end,
+    NGInlineItem adjusted_item(item, start, end,
                                std::move(adjusted_shape_result));
 
 #if DCHECK_IS_ON()
@@ -379,7 +378,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
       DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndex());
       DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndex());
     }
-    DCHECK_EQ(item->IsEmptyItem(), adjusted_item.IsEmptyItem());
+    DCHECK_EQ(item.IsEmptyItem(), adjusted_item.IsEmptyItem());
 #endif
 
     items_->push_back(adjusted_item);
@@ -692,8 +691,12 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendForcedBreak(
   if (!bidi_context_.IsEmpty()) {
     typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
                                                          nullptr);
-    for (auto it = bidi_context_.rbegin(); it != bidi_context_.rend(); ++it)
-      AppendOpaque(NGInlineItem::kBidiControl, it->exit);
+    // These bidi controls need to be associated with the |layout_object| so
+    // that items from a LayoutObject are consecutive.
+    for (auto it = bidi_context_.rbegin(); it != bidi_context_.rend(); ++it) {
+      AppendOpaque(NGInlineItem::kBidiControl, it->exit, nullptr,
+                   layout_object);
+    }
   }
 
   Append(NGInlineItem::kControl, kNewlineCharacter, style, layout_object);
@@ -708,8 +711,10 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendForcedBreak(
   if (!bidi_context_.IsEmpty()) {
     typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
                                                          nullptr);
-    for (const auto& bidi : bidi_context_)
-      AppendOpaque(NGInlineItem::kBidiControl, bidi.enter);
+    for (const auto& bidi : bidi_context_) {
+      AppendOpaque(NGInlineItem::kBidiControl, bidi.enter, nullptr,
+                   layout_object);
+    }
   }
 }
 

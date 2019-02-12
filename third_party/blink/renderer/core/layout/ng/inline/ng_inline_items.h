@@ -22,12 +22,25 @@ class NGInlineItems final {
  public:
   NGInlineItems() = default;
 
-  void Add(NGInlineItem* item) { items_.push_back(item); }
-  void Clear() { items_.clear(); }
-  const Vector<NGInlineItem*>& Items() const { return items_; }
+  void SetRange(NGInlineItem* begin, NGInlineItem* end) {
+    begin_ = begin;
+    end_ = end;
+  }
+  void Clear() { begin_ = end_ = nullptr; }
+
+  bool IsEmpty() const { return begin_ == end_; }
+
+  const NGInlineItem& front() const {
+    CHECK(!IsEmpty());
+    return *begin_;
+  }
+
+  const NGInlineItem* begin() const { return begin_; }
+  const NGInlineItem* end() const { return end_; }
 
  private:
-  Vector<NGInlineItem*> items_;
+  NGInlineItem* begin_ = nullptr;
+  NGInlineItem* end_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NGInlineItems);
 };

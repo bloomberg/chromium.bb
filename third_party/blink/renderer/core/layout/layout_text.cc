@@ -2486,13 +2486,17 @@ LayoutRect LayoutText::DebugRect() const {
   return rect;
 }
 
-void LayoutText::AddInlineItem(NGInlineItem* item) {
-  DCHECK_EQ(this, item->GetLayoutObject());
+void LayoutText::SetInlineItems(NGInlineItem* begin, NGInlineItem* end) {
+#if DCHECK_IS_ON()
+  for (NGInlineItem* item = begin; item != end; ++item) {
+    DCHECK_EQ(item->GetLayoutObject(), this);
+  }
+#endif
   NGInlineItems* items = GetNGInlineItems();
   if (!items)
     return;
   valid_ng_items_ = true;
-  items->Add(item);
+  items->SetRange(begin, end);
 }
 
 void LayoutText::ClearInlineItems() {
@@ -2501,10 +2505,11 @@ void LayoutText::ClearInlineItems() {
     items->Clear();
 }
 
-const Vector<NGInlineItem*>& LayoutText::InlineItems() const {
+const NGInlineItems& LayoutText::InlineItems() const {
   DCHECK(valid_ng_items_);
-  DCHECK(!GetNGInlineItems()->Items().IsEmpty());
-  return GetNGInlineItems()->Items();
+  DCHECK(GetNGInlineItems());
+  DCHECK(!GetNGInlineItems()->IsEmpty());
+  return *GetNGInlineItems();
 }
 
 }  // namespace blink

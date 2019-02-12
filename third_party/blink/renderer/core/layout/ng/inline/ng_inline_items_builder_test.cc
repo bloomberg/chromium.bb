@@ -103,9 +103,17 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     for (Input& input : inputs) {
       // Collect items for this LayoutObject.
       DCHECK(input.layout_text);
-      for (auto& item : items_) {
-        if (item.GetLayoutObject() == input.layout_text)
-          input.layout_text->AddInlineItem(&item);
+      for (NGInlineItem* item = items_.begin(); item != items_.end();) {
+        if (item->GetLayoutObject() == input.layout_text) {
+          NGInlineItem* begin = item;
+          for (++item; item != items_.end(); ++item) {
+            if (item->GetLayoutObject() != input.layout_text)
+              break;
+          }
+          input.layout_text->SetInlineItems(begin, item);
+        } else {
+          ++item;
+        }
       }
 
       // Try to re-use previous items, or Append if it was not re-usable.
