@@ -89,6 +89,18 @@ TEST_F(PluginListTest, GetPluginInfoArray) {
   std::vector<std::string> actual_mime_types;
   bool is_stale;
 
+  // The PluginList starts out in a stale state.
+  is_stale = plugin_list_.GetPluginInfoArray(
+      target_url, "application/octet-stream",
+      /*allow_wildcard=*/false, &plugins, &actual_mime_types);
+  EXPECT_TRUE(is_stale);
+  EXPECT_EQ(0u, plugins.size());
+  EXPECT_EQ(0u, actual_mime_types.size());
+
+  // Refresh it.
+  plugin_list_.GetPlugins(&plugins);
+  plugins.clear();
+
   // The file type of the URL is supported by |foo_plugin_|. However,
   // GetPluginInfoArray should not match |foo_plugin_| because the MIME type is
   // application/octet-stream.

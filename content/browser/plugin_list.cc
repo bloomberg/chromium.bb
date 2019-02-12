@@ -233,7 +233,6 @@ bool PluginList::GetPluginInfoArray(
   DCHECK(mime_type == base::ToLowerASCII(mime_type));
   DCHECK(info);
 
-  LoadPlugins();
   base::AutoLock lock(lock_);
   bool is_stale = loading_state_ != LOADING_STATE_UP_TO_DATE;
   info->clear();
