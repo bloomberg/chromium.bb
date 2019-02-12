@@ -28,7 +28,8 @@ struct ValueConversions<{{"::".join(config.imported.namespace)}}::{{domain.domai
             errors->addError("value expected");
             return nullptr;
         }
-        String json = value->serialize();
+        ProtocolMessage message = value->serialize();
+        String json = StringUtil::jsonComponent(message);
         auto result = {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}::fromJSONString({{config.imported.to_imported_string % "json"}});
         if (!result)
             errors->addError("cannot parse");
@@ -38,7 +39,8 @@ struct ValueConversions<{{"::".join(config.imported.namespace)}}::{{domain.domai
     static std::unique_ptr<protocol::Value> toValue(const {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}* value)
     {
         auto json = value->toJSONString();
-        return SerializedValue::create({{config.imported.from_imported_string % "std::move(json)"}});
+        ProtocolMessage message = StringUtil::fromJsonComponent({{config.imported.from_imported_string % "std::move(json)"}});
+        return SerializedValue::create(message);
     }
 
     static std::unique_ptr<protocol::Value> toValue(const std::unique_ptr<{{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}>& value)

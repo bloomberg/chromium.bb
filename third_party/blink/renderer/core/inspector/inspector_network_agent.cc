@@ -1644,9 +1644,9 @@ String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
   auto it =
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
   if (it != frame_navigation_initiator_map_.end())
-    return it->value->serialize();
+    return it->value->toJSON();
   return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo())
-      ->serialize();
+      ->toJSON();
 }
 
 void InspectorNetworkAgent::RemoveFinishedReplayXHRFired(TimerBase*) {

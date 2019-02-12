@@ -82,7 +82,7 @@ class EnvelopeEncoder {
   bool EncodeStop(std::vector<uint8_t>* out);
 
  private:
-  std::vector<uint8_t>::size_type byte_size_pos_ = 0;
+  std::size_t byte_size_pos_ = 0;
 };
 
 // This can be used to convert from JSON to CBOR, by passing the

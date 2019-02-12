@@ -134,6 +134,26 @@ std::unique_ptr<Value> StringUtil::parseJSON(
   return toProtocolValue(value.get(), 1000);
 }
 
+// static
+std::unique_ptr<protocol::Value> StringUtil::parseProtocolMessage(const ProtocolMessage& message) {
+  return StringUtil::parseJSON(message);
+}
+
+// static
+ProtocolMessage StringUtil::toProtocolMessage(const Value& value) {
+  return value.toJSONString();
+}
+
+// static
+String StringUtil::jsonComponent(const ProtocolMessage& message) {
+  return message;
+}
+
+// static
+ProtocolMessage StringUtil::fromJsonComponent(const String& message) {
+  return message;
+}
+
 StringBuilder::StringBuilder() {}
 
 StringBuilder::~StringBuilder() {}

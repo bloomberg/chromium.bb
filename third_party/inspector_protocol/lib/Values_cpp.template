@@ -82,11 +82,6 @@ bool Value::asString(String*) const
     return false;
 }
 
-bool Value::asSerialized(String*) const
-{
-    return false;
-}
-
 void Value::writeJSON(StringBuilder* output) const
 {
     DCHECK(m_type == TypeNull);
@@ -98,12 +93,17 @@ std::unique_ptr<Value> Value::clone() const
     return Value::null();
 }
 
-String Value::serialize()
+String Value::toJSONString() const
 {
     StringBuilder result;
     StringUtil::builderReserve(result, 512);
     writeJSON(&result);
     return StringUtil::builderToString(result);
+}
+
+ProtocolMessage Value::serialize()
+{
+    return StringUtil::toProtocolMessage(*this);
 }
 
 bool FundamentalValue::asBoolean(bool* output) const
@@ -183,16 +183,10 @@ std::unique_ptr<Value> StringValue::clone() const
     return StringValue::create(m_stringValue);
 }
 
-bool SerializedValue::asSerialized(String* output) const
-{
-    *output = m_serializedValue;
-    return true;
-}
-
 void SerializedValue::writeJSON(StringBuilder* output) const
 {
     DCHECK(type() == TypeSerialized);
-    StringUtil::builderAppend(*output, m_serializedValue);
+    StringUtil::builderAppend(*output, StringUtil::jsonComponent(m_serializedValue));
 }
 
 std::unique_ptr<Value> SerializedValue::clone() const

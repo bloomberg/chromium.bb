@@ -1059,7 +1059,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
   ToLocalFrame(OverlayPage()->MainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
-          "dispatch(" + command->serialize() + ")",
+          "dispatch(" + command->toJSONString() + ")",
           ScriptSourceLocationType::kInspector,
           ScriptController::kExecuteScriptWhenScriptsDisabled);
 }
@@ -1074,7 +1074,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(
   ToLocalFrame(OverlayPage()->MainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
-          "dispatch(" + command->serialize() + ")",
+          "dispatch(" + command->toJSONString() + ")",
           ScriptSourceLocationType::kInspector,
           ScriptController::kExecuteScriptWhenScriptsDisabled);
 }
@@ -1347,7 +1347,7 @@ Response InspectorOverlayAgent::SetSearchingForNode(
 
   String serialized_config =
       highlight_inspector_object.isJust()
-          ? highlight_inspector_object.fromJust()->serialize()
+          ? highlight_inspector_object.fromJust()->toJSON()
           : String();
   std::unique_ptr<InspectorHighlightConfig> config;
   Response response = HighlightConfigFromInspectorObject(

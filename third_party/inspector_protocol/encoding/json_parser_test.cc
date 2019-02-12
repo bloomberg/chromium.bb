@@ -248,7 +248,8 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
                     exceeded.size()),
       &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
-  EXPECT_EQ(int64_t(strlen("{\"foo\":") * 1001), log_.status().pos);
+  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 1001),
+            log_.status().pos);
   // Now way past the limit. Still, the point of exceeding is 1001.
   log_ = Log();
   std::string far_out = MakeNestedJson(10000);
@@ -257,7 +258,8 @@ TEST_F(JsonParserTest, StackLimitExceededError) {
                                far_out.size()),
                  &log_);
   EXPECT_EQ(Error::JSON_PARSER_STACK_LIMIT_EXCEEDED, log_.status().error);
-  EXPECT_EQ(int64_t(strlen("{\"foo\":") * 1001), log_.status().pos);
+  EXPECT_EQ(static_cast<std::ptrdiff_t>(strlen("{\"foo\":") * 1001),
+            log_.status().pos);
 }
 
 TEST_F(JsonParserTest, NoInputError) {

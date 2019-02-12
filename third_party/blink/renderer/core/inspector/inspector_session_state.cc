@@ -39,7 +39,7 @@ mojom::blink::DevToolsSessionStatePtr InspectorSessionState::TakeUpdates() {
 void InspectorAgentState::EncodeToJSON(bool v, WTF::String* out) {
   std::unique_ptr<protocol::FundamentalValue> value =
       blink::protocol::FundamentalValue::create(v);
-  *out = value->serialize();
+  *out = value->toJSONString();
 }
 
 /*static*/
@@ -52,7 +52,7 @@ bool InspectorAgentState::DecodeFromJSON(const WTF::String& in, bool* v) {
 void InspectorAgentState::EncodeToJSON(int32_t v, WTF::String* out) {
   std::unique_ptr<protocol::FundamentalValue> value =
       blink::protocol::FundamentalValue::create(v);
-  *out = value->serialize();
+  *out = value->toJSONString();
 }
 
 /*static*/
@@ -65,7 +65,7 @@ bool InspectorAgentState::DecodeFromJSON(const WTF::String& in, int32_t* v) {
 void InspectorAgentState::EncodeToJSON(double v, WTF::String* out) {
   std::unique_ptr<protocol::FundamentalValue> value =
       blink::protocol::FundamentalValue::create(v);
-  *out = value->serialize();
+  *out = value->toJSONString();
 }
 
 /*static*/
@@ -78,7 +78,7 @@ bool InspectorAgentState::DecodeFromJSON(const WTF::String& in, double* v) {
 void InspectorAgentState::EncodeToJSON(const WTF::String& v, WTF::String* out) {
   std::unique_ptr<protocol::StringValue> value =
       protocol::StringValue::create(v);
-  *out = value->serialize();
+  *out = value->toJSONString();
 }
 
 /*static*/

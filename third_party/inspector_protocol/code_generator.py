@@ -632,6 +632,7 @@ def main():
             "Array_h.template",
             "DispatcherBase_h.template",
             "Parser_h.template",
+            "CBOR_h.template",
         ]
 
         protocol_cpp_templates = [
@@ -641,6 +642,7 @@ def main():
             "Object_cpp.template",
             "DispatcherBase_cpp.template",
             "Parser_cpp.template",
+            "CBOR_cpp.template",
         ]
 
         forward_h_templates = [

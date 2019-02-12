@@ -39,7 +39,7 @@ class JsonParser {
   JsonParser(const Platform* platform, JSONParserHandler* handler)
       : platform_(platform), handler_(handler) {}
 
-  void Parse(const Char* start, size_t length) {
+  void Parse(const Char* start, std::size_t length) {
     start_pos_ = start;
     const Char* end = start + length;
     const Char* tokenEnd;
@@ -50,10 +50,12 @@ class JsonParser {
   }
 
  private:
-  bool CharsToDouble(const uint16_t* chars, size_t length, double* result) {
+  bool CharsToDouble(const uint16_t* chars,
+                     std::size_t length,
+                     double* result) {
     std::string buffer;
     buffer.reserve(length + 1);
-    for (size_t ii = 0; ii < length; ++ii) {
+    for (std::size_t ii = 0; ii < length; ++ii) {
       bool is_ascii = !(chars[ii] & ~0x7F);
       if (!is_ascii) return false;
       buffer.push_back(static_cast<char>(chars[ii]));
@@ -61,7 +63,7 @@ class JsonParser {
     return platform_->StrToD(buffer.c_str(), result);
   }
 
-  bool CharsToDouble(const uint8_t* chars, size_t length, double* result) {
+  bool CharsToDouble(const uint8_t* chars, std::size_t length, double* result) {
     std::string buffer(reinterpret_cast<const char*>(chars), length);
     return platform_->StrToD(buffer.c_str(), result);
   }
@@ -573,13 +575,13 @@ class JsonParser {
 
 void ParseJSONChars(const Platform* platform, span<uint8_t> chars,
                     JSONParserHandler* handler) {
-  JsonParser<uint8_t> parser(deps, handler);
+  JsonParser<uint8_t> parser(platform, handler);
   parser.Parse(chars.data(), chars.size());
 }
 
 void ParseJSONChars(const Platform* platform, span<uint16_t> chars,
                     JSONParserHandler* handler) {
-  JsonParser<uint16_t> parser(deps, handler);
+  JsonParser<uint16_t> parser(platform, handler);
   parser.Parse(chars.data(), chars.size());
 }
 }  // namespace inspector_protocol

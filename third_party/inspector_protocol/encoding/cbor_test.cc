@@ -60,7 +60,8 @@ TEST(EncodeDecodeInt32Test, RoundtripsUint16) {
   // 500 is encoded as a uint16 after the initial byte.
   std::vector<uint8_t> encoded;
   EncodeInt32(500, &encoded);
-  EXPECT_EQ(size_t(3), encoded.size());  // 1 for initial byte, 2 for uint16.
+  // 1 for initial byte, 2 for uint16.
+  EXPECT_EQ(static_cast<std::size_t>(3), encoded.size());
   // first three bits: major type = 0;
   // remaining five bits: additional info = 25, indicating payload is uint16.
   EXPECT_EQ(25, encoded[0]);
@@ -192,7 +193,7 @@ TEST(EncodeDecodeString16Test, RoundtripsEmpty) {
   // CBORTokenizer.
   std::vector<uint8_t> encoded;
   EncodeString16(span<uint16_t>(), &encoded);
-  EXPECT_EQ(size_t(1), encoded.size());
+  EXPECT_EQ(static_cast<std::size_t>(1), encoded.size());
   // first three bits: major type = 2; remaining five bits: additional info =
   // size 0.
   EXPECT_EQ(2 << 5, encoded[0]);
@@ -261,7 +262,7 @@ TEST(EncodeDecodeString16Test, Roundtrips500) {
   for (uint16_t ii = 0; ii < 250; ++ii) two_fifty.push_back(ii);
   std::vector<uint8_t> encoded;
   EncodeString16(span<uint16_t>(two_fifty.data(), two_fifty.size()), &encoded);
-  EXPECT_EQ(size_t(3 + 250 * 2), encoded.size());
+  EXPECT_EQ(static_cast<std::size_t>(3 + 250 * 2), encoded.size());
   // Now check the first three bytes:
   // Major type: 2 (BYTE_STRING)
   // Additional information: 25, indicating size is represented by 2 bytes.
@@ -637,7 +638,7 @@ TEST(ParseCBORTest, UnexpectedEofExpectedValueError) {
       NewJSONWriter(GetLinuxDevPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_EXPECTED_VALUE, status.error);
-  EXPECT_EQ(int64_t(bytes.size()), status.pos);
+  EXPECT_EQ(static_cast<int64_t>(bytes.size()), status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -655,7 +656,7 @@ TEST(ParseCBORTest, UnexpectedEofInArrayError) {
       NewJSONWriter(GetLinuxDevPlatform(), &out, &status);
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_UNEXPECTED_EOF_IN_ARRAY, status.error);
-  EXPECT_EQ(int64_t(bytes.size()), status.pos);
+  EXPECT_EQ(static_cast<int64_t>(bytes.size()), status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -737,7 +738,7 @@ TEST(ParseCBORTest, StackLimitExceededError) {
   // the second envelope start.
   std::vector<uint8_t> small_example = MakeNestedCBOR(3);
   int64_t opening_segment_size = 1;  // Start after the first envelope start.
-  while (opening_segment_size < int64_t(small_example.size()) &&
+  while (opening_segment_size < static_cast<int64_t>(small_example.size()) &&
          small_example[opening_segment_size] != 0xd8)
     opening_segment_size++;
 

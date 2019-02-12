@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_SESSION_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"

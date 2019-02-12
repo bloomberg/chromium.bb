@@ -47,11 +47,11 @@ public:
     virtual bool asDouble(double* output) const;
     virtual bool asInteger(int* output) const;
     virtual bool asString(String* output) const;
-    virtual bool asSerialized(String* output) const;
 
     virtual void writeJSON(StringBuilder* output) const;
     virtual std::unique_ptr<Value> clone() const;
-    String serialize() override;
+    String toJSONString() const;
+    ProtocolMessage serialize() override;
 
 protected:
     Value() : m_type(TypeNull) { }
@@ -124,19 +124,17 @@ private:
 
 class {{config.lib.export_macro}} SerializedValue : public Value {
 public:
-    static std::unique_ptr<SerializedValue> create(const String& value)
+    static std::unique_ptr<SerializedValue> create(const ProtocolMessage& value)
     {
         return std::unique_ptr<SerializedValue>(new SerializedValue(value));
     }
 
-    bool asSerialized(String* output) const override;
     void writeJSON(StringBuilder* output) const override;
     std::unique_ptr<Value> clone() const override;
 
 private:
-    explicit SerializedValue(const String& value) : Value(TypeSerialized), m_serializedValue(value) { }
-
-    String m_serializedValue;
+    explicit SerializedValue(const ProtocolMessage& value) : Value(TypeSerialized), m_serializedValue(value) { }
+    ProtocolMessage m_serializedValue;
 };
 
 class {{config.lib.export_macro}} DictionaryValue : public Value {
