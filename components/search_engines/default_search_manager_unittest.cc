@@ -80,7 +80,7 @@ void SetPolicy(sync_preferences::TestingPrefServiceSyncable* prefs,
 
 class DefaultSearchManagerTest : public testing::Test {
  public:
-  DefaultSearchManagerTest() {};
+  DefaultSearchManagerTest() {}
 
   void SetUp() override {
     pref_service_.reset(new sync_preferences::TestingPrefServiceSyncable);
