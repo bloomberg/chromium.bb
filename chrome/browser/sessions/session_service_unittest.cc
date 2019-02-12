@@ -280,7 +280,7 @@ TEST_F(SessionServiceTest, Pruning) {
                                      3 /* count */);
 
   std::pair<int, int> available_range;
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(0, available_range.first);
   EXPECT_EQ(2, available_range.second);
 
@@ -642,7 +642,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
                                              2 /* count */);
 
   std::pair<int, int> available_range;
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(0, available_range.first);
   EXPECT_EQ(2, available_range.second);
 
@@ -694,7 +694,7 @@ TEST_F(SessionServiceTest, PruneFromMiddle) {
                                              2 /* count */);
 
   std::pair<int, int> available_range;
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(0, available_range.first);
   EXPECT_EQ(2, available_range.second);
 
@@ -737,7 +737,7 @@ TEST_F(SessionServiceTest, AvailableRanges) {
                                              2 /* count */);
 
   std::pair<int, int> available_range;
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(2, available_range.first);
   EXPECT_EQ(5, available_range.second);
 
@@ -747,7 +747,7 @@ TEST_F(SessionServiceTest, AvailableRanges) {
   // 2. Test when range is before the pruned entries.
   helper_.service()->TabNavigationPathPruned(window_id, tab_id, 8 /* index */,
                                              2 /* count */);
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(4, available_range.first);
   EXPECT_EQ(7, available_range.second);
 
@@ -757,7 +757,7 @@ TEST_F(SessionServiceTest, AvailableRanges) {
   // 3. Test when range is within the pruned entries.
   helper_.service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
                                              5 /* count */);
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(0, available_range.first);
   EXPECT_EQ(0, available_range.second);
 
@@ -767,7 +767,7 @@ TEST_F(SessionServiceTest, AvailableRanges) {
   // 4. Test when only range.first is within the pruned entries.
   helper_.service()->TabNavigationPathPruned(window_id, tab_id, 3 /* index */,
                                              3 /* count */);
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(3, available_range.first);
   EXPECT_EQ(4, available_range.second);
 
@@ -777,7 +777,7 @@ TEST_F(SessionServiceTest, AvailableRanges) {
   // 4. Test when only range.second is within the pruned entries.
   helper_.service()->TabNavigationPathPruned(window_id, tab_id, 5 /* index */,
                                              3 /* count */);
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(4, available_range.first);
   EXPECT_EQ(4, available_range.second);
 
@@ -787,7 +787,7 @@ TEST_F(SessionServiceTest, AvailableRanges) {
   // 4. Test when only range contains all the pruned entries.
   helper_.service()->TabNavigationPathPruned(window_id, tab_id, 5 /* index */,
                                              2 /* count */);
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(4, available_range.first);
   EXPECT_EQ(5, available_range.second);
 }
@@ -816,7 +816,7 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
                                              5 /* count */);
 
   std::pair<int, int> available_range;
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(0, available_range.first);
   EXPECT_EQ(0, available_range.second);
 
@@ -1052,7 +1052,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
                                              5 /* count */);
 
   std::pair<int, int> available_range;
-  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, available_range));
+  EXPECT_TRUE(helper_.GetAvailableRange(tab_id, &available_range));
   EXPECT_EQ(0, available_range.first);
   EXPECT_EQ(0, available_range.second);
 
