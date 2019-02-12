@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -167,6 +168,7 @@ public class BookmarksTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
+    @DisabledTest // https://crbug.com/930729
     public void testDownloadMovedBookmark() throws Exception {
         // Add the entity to test moving.
         addServerBookmark(TITLE, URL);
