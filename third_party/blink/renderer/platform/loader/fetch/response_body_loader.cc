@@ -43,11 +43,19 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
     if (result == Result::kOk) {
       *available = std::min(*available, lookahead_bytes_);
       if (*available == 0) {
+        result = bytes_consumer_->EndRead(0);
         *buffer = nullptr;
-        result = Result::kShouldWait;
-        task_runner_->PostTask(
-            FROM_HERE, base::BindOnce(&DelegatingBytesConsumer::OnStateChange,
-                                      WrapPersistent(this)));
+        if (result == Result::kOk) {
+          result = Result::kShouldWait;
+          if (in_on_state_change_) {
+            waiting_for_lookahead_bytes_ = true;
+          } else {
+            task_runner_->PostTask(
+                FROM_HERE,
+                base::BindOnce(&DelegatingBytesConsumer::OnStateChange,
+                               WrapPersistent(this)));
+          }
+        }
       }
     }
     HandleResult(result);
@@ -112,7 +120,7 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
     bytes_consumer_->Cancel();
 
     if (in_on_state_change_) {
-      has_pending_signal_ = true;
+      has_pending_state_change_signal_ = true;
       return;
     }
     task_runner_->PostTask(
@@ -138,34 +146,49 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
 
   void OnStateChange() override {
     DCHECK(!in_on_state_change_);
-    base::AutoReset<bool> auto_reset(&in_on_state_change_, true);
+    DCHECK(!has_pending_state_change_signal_);
+    DCHECK(!waiting_for_lookahead_bytes_);
+    base::AutoReset<bool> auto_reset_for_in_on_state_change(
+        &in_on_state_change_, true);
+    base::AutoReset<bool> auto_reset_for_has_pending_state_change_signal(
+        &has_pending_state_change_signal_, false);
+    base::AutoReset<bool> auto_reset_for_waiting_for_lookahead_bytes(
+        &waiting_for_lookahead_bytes_, false);
 
     if (loader_->IsAborted() || loader_->IsSuspended() ||
         state_ == State::kCancelled) {
       return;
     }
-
-    // Peek available bytes from |bytes_consumer_| and report them to
-    // |loader_|.
-    const char* buffer = nullptr;
-    size_t available = 0;
-    // Poissible state change caused by BeginRead will be realized by the
-    // following logic, so we don't need to worry about it here.
-    auto result = bytes_consumer_->BeginRead(&buffer, &available);
-    if (result == Result::kOk) {
-      if (lookahead_bytes_ < available) {
-        loader_->DidReceiveData(base::make_span(buffer + lookahead_bytes_,
-                                                available - lookahead_bytes_));
-        lookahead_bytes_ = available;
-      }
-      // Poissible state change caused by EndRead will be realized by the
+    while (state_ == State::kLoading) {
+      // Peek available bytes from |bytes_consumer_| and report them to
+      // |loader_|.
+      const char* buffer = nullptr;
+      size_t available = 0;
+      // Possible state change caused by BeginRead will be realized by the
       // following logic, so we don't need to worry about it here.
-      Result unused = bytes_consumer_->EndRead(0);
-      ALLOW_UNUSED_LOCAL(unused);
-    }
-
-    if (bytes_consumer_client_) {
-      bytes_consumer_client_->OnStateChange();
+      auto result = bytes_consumer_->BeginRead(&buffer, &available);
+      if (result == Result::kOk) {
+        if (lookahead_bytes_ < available) {
+          loader_->DidReceiveData(base::make_span(
+              buffer + lookahead_bytes_, available - lookahead_bytes_));
+          lookahead_bytes_ = available;
+        }
+        // Possible state change caused by EndRead will be realized by the
+        // following logic, so we don't need to worry about it here.
+        result = bytes_consumer_->EndRead(0);
+      }
+      waiting_for_lookahead_bytes_ = false;
+      if ((result == Result::kOk || result == Result::kShouldWait) &&
+          lookahead_bytes_ == 0) {
+        // We have no information to notify the client.
+        break;
+      }
+      if (bytes_consumer_client_) {
+        bytes_consumer_client_->OnStateChange();
+      }
+      if (!waiting_for_lookahead_bytes_) {
+        break;
+      }
     }
 
     switch (GetPublicState()) {
@@ -179,8 +202,7 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
         break;
     }
 
-    if (has_pending_signal_) {
-      has_pending_signal_ = false;
+    if (has_pending_state_change_signal_) {
       switch (state_) {
         case State::kLoading:
           NOTREACHED();
@@ -221,7 +243,7 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
     if (result == Result::kDone) {
       state_ = State::kDone;
       if (in_on_state_change_) {
-        has_pending_signal_ = true;
+        has_pending_state_change_signal_ = true;
       } else {
         task_runner_->PostTask(
             FROM_HERE, base::BindOnce(&ResponseBodyLoader::DidFinishLoadingBody,
@@ -232,7 +254,7 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
     if (result == Result::kError) {
       state_ = State::kErrored;
       if (in_on_state_change_) {
-        has_pending_signal_ = true;
+        has_pending_state_change_signal_ = true;
       } else {
         task_runner_->PostTask(
             FROM_HERE, base::BindOnce(&ResponseBodyLoader::DidFailLoadingBody,
@@ -250,7 +272,11 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
   size_t lookahead_bytes_ = 0;
   State state_ = State::kLoading;
   bool in_on_state_change_ = false;
-  bool has_pending_signal_ = false;
+  // Set when |state_| changes in OnStateChange.
+  bool has_pending_state_change_signal_ = false;
+  // Set when BeginRead returns kShouldWait due to |lookahead_bytes_| in
+  // OnStateChange.
+  bool waiting_for_lookahead_bytes_ = false;
 };
 
 ResponseBodyLoader::ResponseBodyLoader(

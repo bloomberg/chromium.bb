@@ -18,6 +18,7 @@ ReplayingBytesConsumer::~ReplayingBytesConsumer() {}
 
 BytesConsumer::Result ReplayingBytesConsumer::BeginRead(const char** buffer,
                                                         size_t* available) {
+  DCHECK(!is_in_two_phase_read_);
   ++notification_token_;
   if (commands_.IsEmpty()) {
     switch (state_) {
@@ -37,6 +38,7 @@ BytesConsumer::Result ReplayingBytesConsumer::BeginRead(const char** buffer,
       DCHECK_LE(offset_, command.Body().size());
       *buffer = command.Body().data() + offset_;
       *available = command.Body().size() - offset_;
+      is_in_two_phase_read_ = true;
       return Result::kOk;
     case Command::kDone:
       commands_.pop_front();
@@ -61,7 +63,10 @@ BytesConsumer::Result ReplayingBytesConsumer::BeginRead(const char** buffer,
 }
 
 BytesConsumer::Result ReplayingBytesConsumer::EndRead(size_t read) {
+  DCHECK(is_in_two_phase_read_);
   DCHECK(!commands_.IsEmpty());
+
+  is_in_two_phase_read_ = false;
   const Command& command = commands_[0];
   const auto name = command.GetName();
   DCHECK(name == Command::kData || name == Command::kDataAndDone);

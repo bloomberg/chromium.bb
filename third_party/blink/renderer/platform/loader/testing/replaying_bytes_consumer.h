@@ -80,6 +80,7 @@ class ReplayingBytesConsumer final : public BytesConsumer {
   BytesConsumer::Error error_;
   int notification_token_ = 0;
   bool is_cancelled_ = false;
+  bool is_in_two_phase_read_ = false;
 };
 
 }  // namespace blink
