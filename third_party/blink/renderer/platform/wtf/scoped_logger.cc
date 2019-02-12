@@ -36,7 +36,7 @@ ScopedLogger::~ScopedLogger() {
 
 void ScopedLogger::SetPrintFuncForTests(PrintFunctionPtr ptr) {
   print_func_ = ptr;
-};
+}
 
 void ScopedLogger::Init(const char* format, va_list args) {
   Current() = this;
