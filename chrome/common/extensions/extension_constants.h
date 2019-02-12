@@ -231,8 +231,6 @@ extern const char kZipArchiverExtensionId[];
 extern const char kZipArchiverExtensionPath[];
 // The app ID of Chrome camera app.
 extern const char kChromeCameraAppId[];
-// Path to preinstalled Chrome camera app.
-extern const char kChromeCameraAppPath[];
 // The app ID of the contained home app.
 extern const char kContainedHomeAppId[];
 #endif
