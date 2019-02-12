@@ -4753,18 +4753,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <if expr="not use_titlecase">
         <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
-          Pa&amp;ste and go
+          Pa&amp;ste and go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
         </message>
         <message name="IDS_PASTE_AND_SEARCH" desc="The text label of the Paste And Go menu item when the clipboard contains a string to search for">
-          Pa&amp;ste and search
+          Pa&amp;ste and search for “<ph name="SEARCH_TERMS">$1<ex>flowers</ex></ph>”
         </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_PASTE_AND_GO" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a URL">
-          Pa&amp;ste and Go
+          Pa&amp;ste and Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
         </message>
         <message name="IDS_PASTE_AND_SEARCH" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a string to search for">
-          Pa&amp;ste and Search
+          Pa&amp;ste and Search for “<ph name="SEARCH_TERMS">$1<ex>flowers</ex></ph>”
         </message>
       </if>
       <message name="IDS_SHOW_URL" desc="The text label of the Show URL menu item when the omnibox contains an elided URL or search query terms">

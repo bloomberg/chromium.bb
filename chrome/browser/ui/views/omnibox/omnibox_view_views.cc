@@ -36,6 +36,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -60,6 +61,8 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/selection_model.h"
+#include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
@@ -465,7 +468,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
   DestroyTouchSelection();
   switch (command_id) {
     // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
-    case IDS_PASTE_AND_GO:
+    case IDC_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
       return;
     case IDS_SHOW_URL:
@@ -960,20 +963,40 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
-  return command_id == IDS_PASTE_AND_GO;
+  return command_id == IDC_PASTE_AND_GO;
 }
 
 base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
-  DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
-  base::string16 clipboard_text = GetClipboardText();
+  DCHECK_EQ(IDC_PASTE_AND_GO, command_id);
+
+  constexpr size_t kMaxSelectionTextLength = 50;
+  const base::string16 clipboard_text = GetClipboardText();
+
+  base::string16 selection_text = gfx::TruncateString(
+      clipboard_text, kMaxSelectionTextLength, gfx::WORD_BREAK);
+
   // If the clipboard text is too long, this command will be disabled, so
   // we skip the potentially expensive classification of the text and default to
   // IDS_PASTE_AND_SEARCH.
   bool paste_and_search =
       clipboard_text.size() > OmniboxEditModel::kMaxPasteAndGoTextLength ||
       model()->ClassifiesAsSearch(clipboard_text);
-  return l10n_util::GetStringUTF16(paste_and_search ? IDS_PASTE_AND_SEARCH
-                                                    : IDS_PASTE_AND_GO);
+
+  if (paste_and_search) {
+    return l10n_util::GetStringFUTF16(IDS_PASTE_AND_SEARCH, selection_text);
+  }
+
+  // To ensure the search and url strings began to truncate at the exact same
+  // number of characters, the pixel width at which the url begins to elide is
+  // derived from the truncated selection text. However, ideally there would be
+  // a better way to do this.
+  const float kMaxSelectionPixelWidth = GetStringWidthF(
+      selection_text, Textfield::GetFontList(), gfx::Typesetter::BROWSER);
+  base::string16 url = url_formatter::ElideUrl(
+      GURL(clipboard_text), Textfield::GetFontList(), kMaxSelectionPixelWidth,
+      gfx::Typesetter::BROWSER);
+
+  return l10n_util::GetStringFUTF16(IDS_PASTE_AND_GO, url);
 }
 
 const char* OmniboxViewViews::GetClassName() const {
@@ -1294,7 +1317,7 @@ void OmniboxViewViews::OnBlur() {
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_APP_PASTE)
     return !read_only() && !GetClipboardText().empty();
-  if (command_id == IDS_PASTE_AND_GO)
+  if (command_id == IDC_PASTE_AND_GO)
     return !read_only() && model()->CanPasteAndGo(GetClipboardText());
 
   // Menu item is only shown when it is valid.
@@ -1666,8 +1689,8 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
 void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
   DCHECK_GE(paste_position, 0);
-  menu_contents->InsertItemWithStringIdAt(
-      paste_position + 1, IDS_PASTE_AND_GO, IDS_PASTE_AND_GO);
+  menu_contents->InsertItemWithStringIdAt(paste_position + 1, IDC_PASTE_AND_GO,
+                                          IDS_PASTE_AND_GO);
 
   // Only add this menu entry if Query in Omnibox feature is enabled.
   if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox)) {

@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/command_updater.h"
@@ -30,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ui_base_features.h"
@@ -217,6 +219,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   OmniboxViewViewsTest() : OmniboxViewViewsTest(std::vector<base::Feature>()) {}
 
   TestLocationBarModel* location_bar_model() { return &location_bar_model_; }
+  CommandUpdaterImpl* command_updater() { return &command_updater_; }
   TestingOmniboxView* omnibox_view() const { return omnibox_view_; }
 
   // TODO(tommycli): These base class accessors exist because Textfield and
@@ -567,6 +570,47 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
   omnibox_textfield()->OnKeyEvent(&backspace);
   EXPECT_TRUE(omnibox_view()->GetText().empty());
   EXPECT_TRUE(omnibox_view()->model()->keyword().empty());
+}
+
+TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ClipboardType clipboard_type = ui::CLIPBOARD_TYPE_COPY_PASTE;
+  command_updater()->UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, true);
+
+  // Test command is disabled for an empty clipboard.
+  clipboard->Clear(clipboard_type);
+  EXPECT_FALSE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
+
+  // Test command is enabled and the correct label text is returned with a URL
+  // on the clipboard.
+  base::string16 expected_text =
+#if defined(OS_MACOSX)
+      base::ASCIIToUTF16("Pa&ste and Go to https://test.com");
+#else
+      base::ASCIIToUTF16("Pa&ste and go to https://test.com");
+#endif
+  ui::ScopedClipboardWriter(clipboard_type)
+      .WriteText(base::ASCIIToUTF16("https://test.com/"));
+  base::string16 returned_text =
+      omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
+  EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
+  EXPECT_EQ(expected_text, returned_text);
+
+  // Test command is enabled and the correct label text is returned with a
+  // search on the clipboard.
+  expected_text =
+#if defined(OS_MACOSX)
+      base::WideToUTF16(
+          L"Pa&ste and Search for \x201Cthis is a test sentence\x201D");
+#else
+      base::WideToUTF16(
+          L"Pa&ste and search for \x201Cthis is a test sentence\x201D");
+#endif
+  ui::ScopedClipboardWriter(clipboard_type)
+      .WriteText(base::ASCIIToUTF16("this is a test sentence"));
+  returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
+  EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
+  EXPECT_EQ(expected_text, returned_text);
 }
 
 class OmniboxViewViewsClipboardTest
