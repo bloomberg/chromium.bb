@@ -396,6 +396,8 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
             @"%@%li",
             kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
             indexPath.row];
+    [self.collectionViewModel itemAtIndexPath:indexPath]
+        .accessibilityIdentifier = cell.accessibilityIdentifier;
   }
 
   return cell;
