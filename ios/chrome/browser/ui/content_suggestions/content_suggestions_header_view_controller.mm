@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -306,6 +307,8 @@ using base::UserMetricsAction;
 - (void)loadVoiceSearch:(id)sender {
   [self.commandHandler dismissModals];
 
+  if ([self.delegate ignoreLoadRequests])
+    return;
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
   UIView* voiceSearchButton = base::mac::ObjCCastStrict<UIView>(sender);
@@ -335,11 +338,15 @@ using base::UserMetricsAction;
 }
 
 - (void)fakeboxTapped {
+  if ([self.delegate ignoreLoadRequests])
+    return;
   base::RecordAction(base::UserMetricsAction("MobileFakeboxNTPTapped"));
   [self focusFakebox];
 }
 
 - (void)focusFakebox {
+  if ([self.delegate ignoreLoadRequests])
+    return;
   [self shiftTilesUp];
 }
 
