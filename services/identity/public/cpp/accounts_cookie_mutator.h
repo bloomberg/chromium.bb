@@ -31,6 +31,10 @@ class AccountsCookieMutator {
                                            const std::string& access_token,
                                            gaia::GaiaSource source) = 0;
 
+  // Triggers a ListAccounts fetch. Can be used in circumstances where clients
+  // know that the contents of the Gaia cookie might have changed.
+  virtual void TriggerCookieJarUpdate() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutator);
 };

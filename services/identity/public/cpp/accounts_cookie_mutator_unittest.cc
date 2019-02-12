@@ -10,10 +10,12 @@
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -24,11 +26,14 @@ namespace {
 
 const char kTestUnavailableAccountId[] = "unavailable_account_id";
 const char kTestAccountEmail[] = "test_user@test.com";
+const char kTestAccountGaiaId[] = "gaia_id_for_test_user_test.com";
 const char kTestAccessToken[] = "access_token";
 const char kTestUberToken[] = "test_uber_token";
 
 enum class AccountsCookiesMutatorAction {
   kAddAccountToCookie,
+  kTriggerCookieJarUpdateNoAccounts,
+  kTriggerCookieJarUpdateOneAccount,
 };
 
 // Class that observes updates from identity::IdentityManager.
@@ -43,6 +48,12 @@ class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
     identity_manager_->RemoveObserver(this);
   }
 
+  void set_on_accounts_in_cookie_updated_callback(
+      base::OnceCallback<void(const identity::AccountsInCookieJarInfo&,
+                              const GoogleServiceAuthError&)> callback) {
+    on_accounts_in_cookie_updated_callback_ = std::move(callback);
+  }
+
   void set_on_add_account_to_cookie_completed_callback(
       base::OnceCallback<void(const std::string&,
                               const GoogleServiceAuthError&)> callback) {
@@ -51,6 +62,14 @@ class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
 
  private:
   // identity::IdentityManager::Observer:
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override {
+    if (on_accounts_in_cookie_updated_callback_)
+      std::move(on_accounts_in_cookie_updated_callback_)
+          .Run(accounts_in_cookie_jar_info, error);
+  }
+
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override {
@@ -60,6 +79,9 @@ class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
   }
 
   identity::IdentityManager* identity_manager_;
+  base::OnceCallback<void(const identity::AccountsInCookieJarInfo&,
+                          const GoogleServiceAuthError&)>
+      on_accounts_in_cookie_updated_callback_;
   base::OnceCallback<void(const std::string&, const GoogleServiceAuthError&)>
       on_add_account_to_cookie_completed_callback_;
 };
@@ -83,28 +105,40 @@ class AccountsCookieMutatorTest : public testing::Test {
   // Feed the TestURLLoaderFactory with the responses for the requests that will
   // be created by UberTokenFetcher when mergin accounts into the cookie jar.
   void PrepareURLLoaderResponsesForAction(AccountsCookiesMutatorAction action) {
-    test_url_loader_factory_.AddResponse(
-        GaiaUrls::GetInstance()
-            ->oauth1_login_url()
-            .Resolve(base::StringPrintf("?source=%s&issueuberauth=1",
-                                        GaiaConstants::kChromeSource))
-            .spec(),
-        kTestUberToken, net::HTTP_OK);
+    switch (action) {
+      case AccountsCookiesMutatorAction::kAddAccountToCookie:
+        test_url_loader_factory_.AddResponse(
+            GaiaUrls::GetInstance()
+                ->oauth1_login_url()
+                .Resolve(base::StringPrintf("?source=%s&issueuberauth=1",
+                                            GaiaConstants::kChromeSource))
+                .spec(),
+            kTestUberToken, net::HTTP_OK);
 
-    test_url_loader_factory_.AddResponse(
-        GaiaUrls::GetInstance()
-            ->GetCheckConnectionInfoURLWithSource(GaiaConstants::kChromeSource)
-            .spec(),
-        std::string(), net::HTTP_OK);
+        test_url_loader_factory_.AddResponse(
+            GaiaUrls::GetInstance()
+                ->GetCheckConnectionInfoURLWithSource(
+                    GaiaConstants::kChromeSource)
+                .spec(),
+            std::string(), net::HTTP_OK);
 
-    test_url_loader_factory_.AddResponse(
-        GaiaUrls::GetInstance()
-            ->merge_session_url()
-            .Resolve(base::StringPrintf(
-                "?uberauth=%s&continue=http://www.google.com&source=%s",
-                kTestUberToken, GaiaConstants::kChromeSource))
-            .spec(),
-        std::string(), net::HTTP_OK);
+        test_url_loader_factory_.AddResponse(
+            GaiaUrls::GetInstance()
+                ->merge_session_url()
+                .Resolve(base::StringPrintf(
+                    "?uberauth=%s&continue=http://www.google.com&source=%s",
+                    kTestUberToken, GaiaConstants::kChromeSource))
+                .spec(),
+            std::string(), net::HTTP_OK);
+        break;
+      case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts:
+        signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
+        break;
+      case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateOneAccount:
+        signin::SetListAccountsResponseOneAccount(
+            kTestAccountEmail, kTestAccountGaiaId, &test_url_loader_factory_);
+        break;
+    }
   }
 
   identity::IdentityTestEnvironment* identity_test_env() {
@@ -231,6 +265,58 @@ TEST_F(AccountsCookieMutatorTest,
   accounts_cookie_mutator()->AddAccountToCookieWithToken(
       account_id, kTestAccessToken, gaia::GaiaSource::kChrome);
 
+  run_loop.Run();
+}
+
+// Test triggering the update of a cookie jar with no accounts works.
+TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_NoListedAccounts) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
+
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const identity::AccountsInCookieJarInfo& accounts_in_jar_info,
+             const GoogleServiceAuthError& error) {
+            EXPECT_EQ(accounts_in_jar_info.signed_in_accounts.size(), 0U);
+            EXPECT_EQ(accounts_in_jar_info.signed_out_accounts.size(), 0U);
+            EXPECT_TRUE(accounts_in_jar_info.accounts_are_fresh);
+            EXPECT_EQ(error.state(), GoogleServiceAuthError::NONE);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+
+  accounts_cookie_mutator()->TriggerCookieJarUpdate();
+  run_loop.Run();
+}
+
+// Test triggering the update of a cookie jar with one accounts works and that
+// the received accounts match the data injected via the TestURLLoaderFactory.
+TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_OneListedAccounts) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateOneAccount);
+
+  base::RunLoop run_loop;
+  identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const identity::AccountsInCookieJarInfo& accounts_in_jar_info,
+             const GoogleServiceAuthError& error) {
+            EXPECT_EQ(accounts_in_jar_info.signed_in_accounts.size(), 1U);
+            EXPECT_EQ(accounts_in_jar_info.signed_in_accounts[0].gaia_id,
+                      kTestAccountGaiaId);
+            EXPECT_EQ(accounts_in_jar_info.signed_in_accounts[0].email,
+                      kTestAccountEmail);
+
+            EXPECT_EQ(accounts_in_jar_info.signed_out_accounts.size(), 0U);
+            EXPECT_TRUE(accounts_in_jar_info.accounts_are_fresh);
+            EXPECT_EQ(error.state(), GoogleServiceAuthError::NONE);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+
+  accounts_cookie_mutator()->TriggerCookieJarUpdate();
   run_loop.Run();
 }
 
