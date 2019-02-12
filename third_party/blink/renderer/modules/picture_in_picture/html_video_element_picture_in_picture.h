@@ -34,11 +34,11 @@ class MODULES_EXPORT HTMLVideoElementPictureInPicture {
                                   bool);
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(enterpictureinpicture,
-                                         kEnterpictureinpicture);
+                                         kEnterpictureinpicture)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(leavepictureinpicture,
-                                         kLeavepictureinpicture);
+                                         kLeavepictureinpicture)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pictureinpicturecontrolclick,
-                                         kPictureinpicturecontrolclick);
+                                         kPictureinpicturecontrolclick)
 
   static std::vector<PictureInPictureControlInfo>
   ToPictureInPictureControlInfoVector(

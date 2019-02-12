@@ -95,7 +95,7 @@ class BackgroundFetchRegistration final
 
   const String& unique_id() const { return unique_id_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
 
   ScriptPromise abort(ScriptState* script_state);
 

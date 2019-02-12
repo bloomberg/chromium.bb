@@ -94,8 +94,8 @@ class TextTrackCue : public EventTargetWithInlineData {
   virtual String ToString() const = 0;
 #endif
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(enter, kEnter);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(exit, kExit);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(enter, kEnter)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(exit, kExit)
 
   void Trace(Visitor*) override;
 

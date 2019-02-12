@@ -106,10 +106,10 @@ class MODULES_EXPORT MediaStream final
 
   bool active() const { return descriptor_->Active(); }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(active, kActive);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive, kInactive);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(active, kActive)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive, kInactive)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack)
 
   void TrackEnded();
 

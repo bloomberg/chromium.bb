@@ -51,7 +51,7 @@ class MODULES_EXPORT PresentationRequest final
 
   const Vector<KURL>& Urls() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable)
 
   void Trace(blink::Visitor*) override;
 

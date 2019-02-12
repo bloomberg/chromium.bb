@@ -65,7 +65,7 @@ class MODULES_EXPORT SpeechSynthesis final
   // Used in testing to use a mock platform synthesizer
   void SetPlatformSynthesizer(PlatformSpeechSynthesizer*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged, kVoiceschanged);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged, kVoiceschanged)
 
   ExecutionContext* GetExecutionContext() const override {
     return ContextClient::GetExecutionContext();

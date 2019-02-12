@@ -78,14 +78,14 @@ class XRSession final : public EventTargetWithInlineData,
 
   bool immersive() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(blur, kBlur);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(focus, kFocus);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose, kResetpose);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(focus, kFocus)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose, kResetpose)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd)
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect)
 
   void updateRenderState(XRRenderStateInit*, ExceptionState&);
   ScriptPromise requestReferenceSpace(ScriptState*,

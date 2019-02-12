@@ -85,7 +85,7 @@ class CookieStore final : public EventTargetWithInlineData,
   void ContextDestroyed(ExecutionContext*) override;
 
   // EventTargetWithInlineData
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   void RemoveAllEventListeners() override;

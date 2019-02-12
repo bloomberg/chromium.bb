@@ -58,7 +58,7 @@ class IdleStatus final : public EventTargetWithInlineData,
 
   // IdleStatus IDL interface.
   String state() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
   // mojom::blink::IdleMonitor implementation. Invoked on a state change, and
   // causes an event to be dispatched.

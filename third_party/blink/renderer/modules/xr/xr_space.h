@@ -27,7 +27,7 @@ class XRSpace : public EventTargetWithInlineData {
 
   XRSession* session() const { return session_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
 
   // EventTarget overrides.
   ExecutionContext* GetExecutionContext() const override;

@@ -44,9 +44,9 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
                                                    ReadyProperty::kReady)) {}
   ~FontFaceSet() override = default;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone, kLoadingdone);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror, kLoadingerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone, kLoadingdone)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror, kLoadingerror)
 
   bool check(const String& font, const String& text, ExceptionState&);
   ScriptPromise load(ScriptState*, const String& font, const String& text);

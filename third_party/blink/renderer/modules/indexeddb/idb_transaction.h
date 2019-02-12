@@ -158,9 +158,9 @@ class MODULES_EXPORT IDBTransaction final
   void SetActive(bool);
   void SetError(DOMException*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(complete, kComplete);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(complete, kComplete)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   void OnAbort(DOMException*);
   void OnComplete();

@@ -37,9 +37,9 @@ class TrackListBase : public EventTargetWithInlineData {
     return nullptr;
   }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack)
 
   // EventTarget interface
   ExecutionContext* GetExecutionContext() const override {

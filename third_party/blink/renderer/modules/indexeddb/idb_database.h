@@ -113,10 +113,10 @@ class MODULES_EXPORT IDBDatabase final
   void deleteObjectStore(const String& name, ExceptionState&);
   void close();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange, kVersionchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange, kVersionchange)
 
   // IDBDatabaseCallbacks
   void OnVersionChange(int64_t old_version, int64_t new_version);

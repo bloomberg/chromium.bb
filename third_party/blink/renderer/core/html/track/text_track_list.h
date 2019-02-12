@@ -63,9 +63,9 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack)
 
   HTMLMediaElement* Owner() const;
 

@@ -58,14 +58,14 @@ class ApplicationCache final : public EventTargetWithInlineData,
 
   // Explicitly named attribute event listener helpers
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(checking, kChecking);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate, kNoupdate);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading, kDownloading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready, kUpdateready);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(cached, kCached);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete, kObsolete);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(checking, kChecking)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(noupdate, kNoupdate)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(downloading, kDownloading)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(updateready, kUpdateready)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(cached, kCached)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(obsolete, kObsolete)
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

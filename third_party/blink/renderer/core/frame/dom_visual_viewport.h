@@ -68,8 +68,8 @@ class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
   double height() const;
   double scale() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resize, kResize);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resize, kResize)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll)
 
  private:
   Member<LocalDOMWindow> window_;

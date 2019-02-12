@@ -52,12 +52,12 @@ class MODULES_EXPORT MediaRecorder final
   uint32_t videoBitsPerSecond() const { return video_bits_per_second_; }
   uint32_t audioBitsPerSecond() const { return audio_bits_per_second_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(stop, kStop);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(dataavailable, kDataavailable);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause, kPause);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume, kResume);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(stop, kStop)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dataavailable, kDataavailable)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause, kPause)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume, kResume)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   void start(ExceptionState& exception_state);
   void start(int time_slice, ExceptionState& exception_state);

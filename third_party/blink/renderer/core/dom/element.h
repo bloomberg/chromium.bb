@@ -162,10 +162,10 @@ class CORE_EXPORT Element : public ContainerNode {
 
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste, kBeforepaste)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch)
 
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;

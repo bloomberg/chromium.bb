@@ -108,17 +108,17 @@ class MODULES_EXPORT SpeechRecognition final
   // PageVisibilityObserver
   void PageVisibilityChanged() override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart, kAudiostart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart, kSoundstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechstart, kSpeechstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechend, kSpeechend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundend, kSoundend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioend, kAudioend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(result, kResult);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(nomatch, kNomatch);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart, kAudiostart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart, kSoundstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechstart, kSpeechstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechend, kSpeechend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundend, kSoundend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioend, kAudioend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(result, kResult)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(nomatch, kNomatch)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd)
 
   void Trace(blink::Visitor*) override;
 

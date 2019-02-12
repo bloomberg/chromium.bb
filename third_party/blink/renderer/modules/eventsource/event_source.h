@@ -78,9 +78,9 @@ class MODULES_EXPORT EventSource final
 
   State readyState() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(open, kOpen);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(open, kOpen)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   void close();
 

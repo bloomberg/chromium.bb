@@ -105,7 +105,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   ScriptPromise waitForReadable(ScriptState* script_state,
                                 uint32_t amount,
                                 ExceptionState& exception_state);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;

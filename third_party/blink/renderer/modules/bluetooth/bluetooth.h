@@ -57,8 +57,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived,
-                                  kAdvertisementreceived);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived, kAdvertisementreceived)
 
   void CancelScan(mojo::BindingId);
 
