@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -526,11 +527,15 @@ TEST_F(NGInlineNodeTest, AssociatedItemsWithControlItem) {
   LayoutText* const layout_text = ToLayoutText(
       GetDocument().getElementById("t")->firstChild()->GetLayoutObject());
   ASSERT_TRUE(layout_text->HasValidInlineItems());
-  const Vector<NGInlineItem*>& items = layout_text->InlineItems();
-  ASSERT_EQ(3u, items.size());
+  Vector<const NGInlineItem*> items;
+  for (const NGInlineItem& item : layout_text->InlineItems())
+    items.push_back(&item);
+  ASSERT_EQ(5u, items.size());
   TEST_ITEM_TYPE_OFFSET((*items[0]), kText, 1u, 3u);
-  TEST_ITEM_TYPE_OFFSET((*items[1]), kControl, 4u, 5u);
-  TEST_ITEM_TYPE_OFFSET((*items[2]), kText, 6u, 8u);
+  TEST_ITEM_TYPE_OFFSET((*items[1]), kBidiControl, 3u, 4u);
+  TEST_ITEM_TYPE_OFFSET((*items[2]), kControl, 4u, 5u);
+  TEST_ITEM_TYPE_OFFSET((*items[3]), kBidiControl, 5u, 6u);
+  TEST_ITEM_TYPE_OFFSET((*items[4]), kText, 6u, 8u);
 }
 
 TEST_F(NGInlineNodeTest, InvalidateAddSpan) {

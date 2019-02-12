@@ -868,18 +868,26 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
 }
 
 void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
-  LayoutObject* last_object = nullptr;
-  for (auto& item : data->items) {
-    LayoutObject* object = item.GetLayoutObject();
-    if (!object)
+#if DCHECK_IS_ON()
+  HashSet<LayoutObject*> associated_objects;
+#endif
+  Vector<NGInlineItem>& items = data->items;
+  for (NGInlineItem* item = items.begin(); item != items.end();) {
+    LayoutObject* object = item->GetLayoutObject();
+    if (LayoutNGText* layout_text = ToLayoutNGTextOrNull(object)) {
+#if DCHECK_IS_ON()
+      // Items split from a LayoutObject should be consecutive.
+      DCHECK(associated_objects.insert(object).is_new_entry);
+#endif
+      NGInlineItem* begin = item;
+      for (++item; item != items.end(); ++item) {
+        if (item->GetLayoutObject() != object)
+          break;
+      }
+      layout_text->SetInlineItems(begin, item);
       continue;
-    if (object->IsText()) {
-      LayoutText* layout_text = ToLayoutText(object);
-      if (object != last_object)
-        layout_text->ClearInlineItems();
-      layout_text->AddInlineItem(&item);
     }
-    last_object = object;
+    ++item;
   }
 }
 

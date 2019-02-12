@@ -314,10 +314,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                                        unsigned* start,
                                        unsigned* end) const;
 
-  void AddInlineItem(NGInlineItem* item);
+  void SetInlineItems(NGInlineItem* begin, NGInlineItem* end);
   void ClearInlineItems();
   bool HasValidInlineItems() const { return valid_ng_items_; }
-  const Vector<NGInlineItem*>& InlineItems() const;
+  const NGInlineItems& InlineItems() const;
   // Inline items depends on context. It needs to be invalidated not only when
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
