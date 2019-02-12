@@ -629,6 +629,16 @@ void LoginShelfView::UpdateUi() {
        dialog_state_ == mojom::OobeDialogState::GAIA_SIGNIN) &&
       kiosk_apps_button_->HasApps() && is_login_primary);
   Layout();
+  UpdateButtonUnionBounds();
+}
+
+void LoginShelfView::UpdateButtonUnionBounds() {
+  button_union_bounds_ = gfx::Rect();
+  View::Views children = GetChildrenInZOrder();
+  for (auto* child : children) {
+    if (child->visible())
+      button_union_bounds_.Union(child->bounds());
+  }
 }
 
 }  // namespace ash

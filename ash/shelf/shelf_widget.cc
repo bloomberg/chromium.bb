@@ -282,6 +282,25 @@ SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {
   return opaque_background_.background_color();
 }
 
+bool ShelfWidget::GetHitTestRects(aura::Window* target,
+                                  gfx::Rect* hit_test_rect_mouse,
+                                  gfx::Rect* hit_test_rect_touch) {
+  // This should only get called when the login shelf is visible, i.e. not
+  // during an active session. In an active session, hit test rects should be
+  // calculated higher up in the class hierarchy by |EasyResizeWindowTargeter|.
+  // When in OOBE or locked/login screen, let events pass through empty parts
+  // of the shelf.
+  DCHECK(login_shelf_view_->visible());
+  gfx::Rect login_view_button_bounds =
+      login_shelf_view_->get_button_union_bounds();
+  aura::Window* source = login_shelf_view_->GetWidget()->GetNativeWindow();
+  aura::Window::ConvertRectToTarget(source, target->parent(),
+                                    &login_view_button_bounds);
+  *hit_test_rect_mouse = login_view_button_bounds;
+  *hit_test_rect_touch = login_view_button_bounds;
+  return true;
+}
+
 ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
     : shelf_(shelf),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
