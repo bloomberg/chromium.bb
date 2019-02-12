@@ -104,7 +104,7 @@ class FakeGPUImageDecodeTestGLES2Interface : public viz::TestGLES2Interface,
       TransferCacheTestHelper* transfer_cache_helper)
       : extension_string_(
             "GL_EXT_texture_format_BGRA8888 GL_OES_rgb8_rgba8 "
-            "GL_OES_texture_npot "
+            "GL_OES_texture_npot GL_EXT_texture_rg "
             "GL_OES_texture_half_float GL_OES_texture_half_float_linear"),
         discardable_manager_(discardable_manager),
         transfer_cache_helper_(transfer_cache_helper) {}
@@ -249,11 +249,20 @@ SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
   return matrix;
 }
 
+#define EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(condition) \
+  if (!use_transfer_cache_)                                \
+    EXPECT_TRUE(condition);
+
+#define EXPECT_FALSE_IF_NOT_USING_TRANSFER_CACHE(condition) \
+  if (!use_transfer_cache_)                                 \
+    EXPECT_FALSE(condition);
+
 size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;
 
 class GpuImageDecodeCacheTest
-    : public ::testing::TestWithParam<
-          std::pair<SkColorType, bool /* use_transfer_cache */>> {
+    : public ::testing::TestWithParam<std::tuple<SkColorType,
+                                                 bool /* use_transfer_cache */,
+                                                 bool /* do_yuv_decode */>> {
  public:
   void SetUp() override {
     context_provider_ = GPUImageDecodeTestMockContextProvider::Create(
@@ -268,8 +277,9 @@ class GpuImageDecodeCacheTest
       max_texture_size_ =
           context_provider_->ContextCapabilities().max_texture_size;
     }
-    use_transfer_cache_ = GetParam().second;
-    color_type_ = GetParam().first;
+    color_type_ = std::get<0>(GetParam());
+    use_transfer_cache_ = std::get<1>(GetParam());
+    do_yuv_decode_ = std::get<2>(GetParam());
   }
 
   std::unique_ptr<GpuImageDecodeCache> CreateCache() {
@@ -292,7 +302,7 @@ class GpuImageDecodeCacheTest
 
   // Returns dimensions for an image that will fit in GPU memory.
   gfx::Size GetNormalImageSize() const {
-    size_t dimension = std::min(100, max_texture_size_ - 1);
+    int dimension = std::min(100, max_texture_size_ - 1);
     return gfx::Size(dimension, dimension);
   }
 
@@ -301,11 +311,41 @@ class GpuImageDecodeCacheTest
       sk_sp<SkColorSpace> color_space = nullptr,
       PaintImage::Id id = PaintImage::kInvalidId) {
     const bool allocate_encoded_memory = true;
-    return CreateDiscardablePaintImage(
-        size, color_space, allocate_encoded_memory, id, color_type_);
+    return CreateDiscardablePaintImage(size, color_space,
+                                       allocate_encoded_memory, id, color_type_,
+                                       do_yuv_decode_);
+  }
+
+  PaintImage CreateLargePaintImageForSoftwareFallback() {
+    return CreateLargePaintImageForSoftwareFallback(GetLargeImageSize());
+  }
+
+  // Create an image that's too large to upload and will trigger falling back to
+  // software rendering and decoded data storage.
+  PaintImage CreateLargePaintImageForSoftwareFallback(
+      const gfx::Size test_image_size) {
+    CHECK(test_image_size.width() > max_texture_size_ ||
+          test_image_size.height() > max_texture_size_);
+    SkImageInfo info = SkImageInfo::Make(
+        test_image_size.width(), test_image_size.height(), color_type_,
+        kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
+    sk_sp<FakePaintImageGenerator> generator;
+    if (do_yuv_decode_) {
+      generator = sk_make_sp<FakePaintImageGenerator>(
+          info, GetYUV420SizeInfo(test_image_size));
+      generator->SetExpectFallbackToRGB();
+    } else {
+      generator = sk_make_sp<FakePaintImageGenerator>(info);
+    }
+    PaintImage image = PaintImageBuilder::WithDefault()
+                           .set_id(PaintImage::GetNextId())
+                           .set_paint_image_generator(generator)
+                           .TakePaintImage();
+    return image;
   }
 
   PaintImage CreateBitmapImageInternal(const gfx::Size& size) {
+    DCHECK(!do_yuv_decode_);
     return CreateBitmapImage(size, color_type_);
   }
 
@@ -320,10 +360,17 @@ class GpuImageDecodeCacheTest
     return context_provider_.get();
   }
 
-  void ExpectIfNotUsingTransferCache(bool value) {
-    if (!use_transfer_cache_) {
-      EXPECT_TRUE(value);
+  size_t GetBytesNeededForSingleImage(gfx::Size image_dimensions) {
+    // TODO(crbug.com/915972): Assumes YUV 420.
+    if (do_yuv_decode_) {
+      return GetYUV420SizeInfo(image_dimensions).computeTotalBytes();
     }
+    const size_t test_image_area_bytes =
+        base::checked_cast<size_t>(image_dimensions.GetArea());
+    base::CheckedNumeric<size_t> bytes_for_rgb_image_safe(
+        test_image_area_bytes);
+    bytes_for_rgb_image_safe *= SkColorTypeBytesPerPixel(color_type_);
+    return bytes_for_rgb_image_safe.ValueOrDie();
   }
 
   void SetCachedTexturesLimit(size_t limit) {
@@ -368,6 +415,7 @@ class GpuImageDecodeCacheTest
   TransferCacheTestHelper transfer_cache_helper_;
   bool use_transfer_cache_;
   SkColorType color_type_;
+  bool do_yuv_decode_;
   int max_texture_size_ = 0;
 };
 
@@ -417,12 +465,23 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForImageSmallerScale) {
   EXPECT_TRUE(result.need_unref);
   EXPECT_TRUE(result.task);
 
+  // |result| is an upload task which depends on a decode task.
+  EXPECT_EQ(result.task->dependencies().size(), 1u);
+  EXPECT_TRUE(result.task->dependencies()[0]);
+
   DrawImage another_draw_image(
       image, SkIRect::MakeWH(image.width(), image.height()), quality,
       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
       PaintImage::kDefaultFrameIndex);
   ImageDecodeCache::TaskResult another_result = cache->GetTaskForImageAndRef(
       another_draw_image, ImageDecodeCache::TracingInfo());
+
+  // |another_draw_image| represents previous image but at a different scale.
+  // It still has one dependency (decoding), and its upload task is equivalent
+  // to the larger decoded textures being uploaded.
+  EXPECT_EQ(another_result.task->dependencies().size(), 1u);
+  EXPECT_TRUE(another_result.task->dependencies()[0]);
+
   EXPECT_TRUE(another_result.need_unref);
   EXPECT_TRUE(result.task.get() == another_result.task.get());
 
@@ -899,6 +958,8 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
   EXPECT_TRUE(result.task);
+  EXPECT_EQ(result.task->dependencies().size(), 1u);
+  EXPECT_TRUE(result.task->dependencies()[0]);
 
   TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
   TestTileTaskRunner::ProcessTask(result.task.get());
@@ -922,7 +983,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
+  PaintImage image = CreateLargePaintImageForSoftwareFallback();
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -943,7 +1004,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
-  ExpectIfNotUsingTransferCache(
+  EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1119,8 +1180,12 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
-  EXPECT_EQ(decoded_draw_image.image()->width(), 50);
-  EXPECT_EQ(decoded_draw_image.image()->height(), 50);
+  const int expected_width =
+      image.width() * std::abs(draw_image.scale().width());
+  const int expected_height =
+      image.height() * std::abs(draw_image.scale().height());
+  EXPECT_EQ(decoded_draw_image.image()->width(), expected_width);
+  EXPECT_EQ(decoded_draw_image.image()->height(), expected_height);
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
@@ -1133,7 +1198,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  PaintImage image = CreatePaintImageInternal(
+  PaintImage image = CreateLargePaintImageForSoftwareFallback(
       gfx::Size(GetLargeImageSize().width(), GetLargeImageSize().height() * 2));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
@@ -1161,7 +1226,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
 
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
-  ExpectIfNotUsingTransferCache(
+  EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1173,13 +1238,14 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
+  const gfx::Size test_image_size = GetNormalImageSize();
 
   cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
 
-  PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
+  PaintImage image = CreatePaintImageInternal(test_image_size);
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
-                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
                        PaintImage::kDefaultFrameIndex);
 
   ImageDecodeCache::TaskResult result =
@@ -1198,11 +1264,11 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
 
-  // Increase memory limit and attempt to use the same image. It should be in
-  // available for ref.
-  size_t bytes_for_image =
-      SkColorTypeBytesPerPixel(color_type_) * image.width() * image.height();
-  cache->SetWorkingSetLimitsForTesting(bytes_for_image /* max_bytes */,
+  // Increase memory limit to allow the image and attempt to use the same image.
+  // It should be available for ref.
+  const size_t bytes_for_test_image =
+      GetBytesNeededForSingleImage(test_image_size);
+  cache->SetWorkingSetLimitsForTesting(bytes_for_test_image /* max_bytes */,
                                        256 /* max_items */);
   ImageDecodeCache::TaskResult another_result =
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
@@ -1256,7 +1322,8 @@ TEST_P(GpuImageDecodeCacheTest,
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
-  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
+
+  PaintImage image = CreateLargePaintImageForSoftwareFallback();
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -1270,7 +1337,7 @@ TEST_P(GpuImageDecodeCacheTest,
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
-  ExpectIfNotUsingTransferCache(
+  EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1281,7 +1348,7 @@ TEST_P(GpuImageDecodeCacheTest,
   EXPECT_TRUE(second_decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.is_budgeted());
   EXPECT_FALSE(second_decoded_draw_image.image()->isTextureBacked());
-  ExpectIfNotUsingTransferCache(
+  EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE(
       cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, second_decoded_draw_image);
@@ -1320,12 +1387,12 @@ TEST_P(GpuImageDecodeCacheTest, NonOverlappingSrcRectImagesAreSkipped) {
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
-  DrawImage draw_image(
-      image,
-      SkIRect::MakeXYWH(image.width() + 50, image.height() + 50, image.width(),
-                        image.height()),
-      quality, CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
-      PaintImage::kDefaultFrameIndex);
+  DrawImage draw_image(image,
+                       SkIRect::MakeXYWH(image.width() + 1, image.height() + 1,
+                                         image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex);
 
   ImageDecodeCache::TaskResult result =
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
@@ -1839,8 +1906,7 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForLargeImage) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  // Create an image that's too large to cache.
-  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
+  PaintImage image = CreateLargePaintImageForSoftwareFallback();
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -1865,12 +1931,14 @@ TEST_P(GpuImageDecodeCacheTest, CacheDecodesExpectedFrames) {
       FrameMetadata(true, base::TimeDelta::FromMilliseconds(4)),
       FrameMetadata(true, base::TimeDelta::FromMilliseconds(5)),
   };
+  const gfx::Size test_image_size = GetNormalImageSize();
+  SkImageInfo info =
+      SkImageInfo::Make(test_image_size.width(), test_image_size.height(),
+                        color_type_, kPremul_SkAlphaType);
   sk_sp<FakePaintImageGenerator> generator =
-      sk_make_sp<FakePaintImageGenerator>(
-          SkImageInfo::Make(GetNormalImageSize().width(),
-                            GetNormalImageSize().height(), color_type_,
-                            kPremul_SkAlphaType),
-          frames);
+      do_yuv_decode_ ? sk_make_sp<FakePaintImageGenerator>(
+                           info, GetYUV420SizeInfo(test_image_size), frames)
+                     : sk_make_sp<FakePaintImageGenerator>(info, frames);
   PaintImage image = PaintImageBuilder::WithDefault()
                          .set_id(PaintImage::GetNextId())
                          .set_paint_image_generator(generator)
@@ -1902,8 +1970,12 @@ TEST_P(GpuImageDecodeCacheTest, CacheDecodesExpectedFrames) {
   cache->DrawWithImageFinished(scaled_draw_image, decoded_image);
 
   // Subset.
+  const int32_t subset_width = 5;
+  const int32_t subset_height = 5;
+  ASSERT_LT(subset_width, test_image_size.width());
+  ASSERT_LT(subset_height, test_image_size.height());
   DrawImage subset_draw_image(
-      image, SkIRect::MakeWH(5, 5), quality,
+      image, SkIRect::MakeWH(subset_width, subset_height), quality,
       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable), 3u);
   decoded_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(subset_draw_image));
@@ -1972,19 +2044,21 @@ TEST_P(GpuImageDecodeCacheTest, OrphanedDataCancelledWhileReplaced) {
 TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
   auto cache = CreateCache();
   bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  const gfx::Size test_image_size = GetNormalImageSize();
 
-  // Allow a single small image and lock it.
-  size_t bytes_for_image = SkColorTypeBytesPerPixel(color_type_) *
-                           GetNormalImageSize().width() *
-                           GetNormalImageSize().height();
-  cache->SetWorkingSetLimitsForTesting(bytes_for_image /* max_bytes */,
-                                       1 /* max_items */);
-  PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
+  PaintImage image = CreatePaintImageInternal(test_image_size);
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
                        PaintImage::kDefaultFrameIndex);
+  const size_t bytes_for_test_image =
+      GetBytesNeededForSingleImage(test_image_size);
+
+  // Allow a single small image and lock it.
+  cache->SetWorkingSetLimitsForTesting(bytes_for_test_image,
+                                       1u /* max_items */);
+
   ImageDecodeCache::TaskResult result =
       cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
   EXPECT_TRUE(result.need_unref);
@@ -2011,16 +2085,16 @@ TEST_P(GpuImageDecodeCacheTest, AlreadyBudgetedImagesAreNotAtRaster) {
 TEST_P(GpuImageDecodeCacheTest, ImageBudgetingByCount) {
   auto cache = CreateCache();
   bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  const gfx::Size test_image_size = GetNormalImageSize();
 
   // Allow a single image by count. Use a high byte limit as we want to test the
   // count restriction.
-  size_t bytes_for_image = SkColorTypeBytesPerPixel(color_type_) *
-                           GetNormalImageSize().width() *
-                           GetNormalImageSize().height();
-  cache->SetWorkingSetLimitsForTesting(bytes_for_image * 100 /* max_bytes */,
-                                       1 /* max_items */);
-  PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
+  const size_t bytes_for_test_image =
+      GetBytesNeededForSingleImage(test_image_size);
+  cache->SetWorkingSetLimitsForTesting(
+      bytes_for_test_image * 100 /* max_bytes */, 1u /* max_items */);
+  PaintImage image = CreatePaintImageInternal(test_image_size);
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -2039,6 +2113,7 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingByCount) {
       SkIRect::MakeWH(image.width(), image.height()), quality,
       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
       PaintImage::kDefaultFrameIndex);
+
   // Should be at raster.
   ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
       second_draw_image, ImageDecodeCache::TracingInfo());
@@ -2057,20 +2132,22 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingByCount) {
 TEST_P(GpuImageDecodeCacheTest, ImageBudgetingBySize) {
   auto cache = CreateCache();
   bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
+  const gfx::Size test_image_size = GetNormalImageSize();
 
-  // Allow a single small image by size. Don't restrict the items limit as we
-  // want to test the size limit.
-  size_t bytes_for_image = SkColorTypeBytesPerPixel(color_type_) *
-                           GetNormalImageSize().width() *
-                           GetNormalImageSize().height();
-  cache->SetWorkingSetLimitsForTesting(bytes_for_image /* max_bytes */,
-                                       256 /* max_items */);
-  PaintImage image = CreateDiscardablePaintImage(GetNormalImageSize());
+  PaintImage image = CreatePaintImageInternal(test_image_size);
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
                        PaintImage::kDefaultFrameIndex);
+
+  const size_t bytes_for_test_image =
+      GetBytesNeededForSingleImage(test_image_size);
+
+  // Allow a single small image by size. Don't restrict the
+  // items limit as we want to test the size limit.
+  cache->SetWorkingSetLimitsForTesting(bytes_for_test_image,
+                                       256 /* max_items */);
 
   // The image counts against our budget.
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
@@ -2081,10 +2158,11 @@ TEST_P(GpuImageDecodeCacheTest, ImageBudgetingBySize) {
 
   // Try another image, it shouldn't be budgeted and should be at-raster.
   DrawImage second_draw_image(
-      CreateDiscardablePaintImage(GetNormalImageSize()),
+      CreatePaintImageInternal(test_image_size),
       SkIRect::MakeWH(image.width(), image.height()), quality,
       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
       PaintImage::kDefaultFrameIndex);
+
   // Should be at raster.
   ImageDecodeCache::TaskResult result = cache->GetTaskForImageAndRef(
       second_draw_image, ImageDecodeCache::TracingInfo());
@@ -2105,10 +2183,9 @@ TEST_P(GpuImageDecodeCacheTest,
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   auto cache = CreateCache(color_space);
   bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  // Create an image that's too large to upload.
-  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
+  PaintImage image = CreateLargePaintImageForSoftwareFallback();
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -2161,7 +2238,7 @@ TEST_P(GpuImageDecodeCacheTest,
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateDisplayP3D65();
   auto cache = CreateCache(color_space);
   bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
 
   PaintImage image = CreatePaintImageInternal(gfx::Size(11, 12));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
@@ -2207,9 +2284,13 @@ TEST_P(GpuImageDecodeCacheTest,
 }
 
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScale) {
+  if (do_yuv_decode_) {
+    // YUV bitmap images do not happen, so this test will always skip for YUV.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
-  SkFilterQuality quality = kHigh_SkFilterQuality;
+  const SkFilterQuality quality = kHigh_SkFilterQuality;
 
   PaintImage image = CreateBitmapImageInternal(GetNormalImageSize());
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
@@ -2228,6 +2309,10 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadNoScale) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskHasNoDeps) {
+  if (do_yuv_decode_) {
+    // YUV bitmap images do not happen, so this test will always skip for YUV.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -2248,6 +2333,10 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskHasNoDeps) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskCancelled) {
+  if (do_yuv_decode_) {
+    // YUV bitmap images do not happen, so this test will always skip for YUV.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -2269,6 +2358,10 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadTaskCancelled) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageLargeImageColorConverted) {
+  if (do_yuv_decode_) {
+    // YUV bitmap images do not happen, so this test will always skip for YUV.
+    return;
+  }
   auto color_space = gfx::ColorSpace::CreateDisplayP3D65();
   auto cache = CreateCache(color_space);
   const bool should_cache_sw_image =
@@ -2299,6 +2392,10 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageLargeImageColorConverted) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
+  if (do_yuv_decode_) {
+    // YUV bitmap images do not happen, so this test will always skip for YUV.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -2318,8 +2415,8 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
   // cached.
   auto sw_image = cache->GetSWImageDecodeForTesting(draw_image);
   EXPECT_TRUE(sw_image);
-  EXPECT_EQ(sw_image->width(), GetNormalImageSize().width() / 2);
-  EXPECT_EQ(sw_image->height(), GetNormalImageSize().height() / 2);
+  EXPECT_EQ(sw_image->width(), (GetNormalImageSize().width() + 1) / 2);
+  EXPECT_EQ(sw_image->height(), (GetNormalImageSize().height() + 1) / 2);
 }
 
 TEST_P(GpuImageDecodeCacheTest, KeepOnlyLast2ContentIds) {
@@ -2368,20 +2465,25 @@ TEST_P(GpuImageDecodeCacheTest, KeepOnlyLast2ContentIds) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, DecodeToScale) {
+  if (do_yuv_decode_) {
+    // TODO(crbug.com/927437): Modify test after decoding to scale for YUV is
+    // implemented.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
-  SkISize full_size = SkISize::Make(100, 100);
-  std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
-                                          SkISize::Make(50, 50)};
-  std::vector<FrameMetadata> frames = {FrameMetadata()};
+  const SkISize full_size = SkISize::Make(100, 100);
+  const std::vector<SkISize> supported_sizes = {SkISize::Make(25, 25),
+                                                SkISize::Make(50, 50)};
+  const std::vector<FrameMetadata> frames = {FrameMetadata()};
+  const SkImageInfo info =
+      SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
+                                 DefaultColorSpace().ToSkColorSpace());
   sk_sp<FakePaintImageGenerator> generator =
-      sk_make_sp<FakePaintImageGenerator>(
-          SkImageInfo::MakeN32Premul(full_size.width(), full_size.height(),
-                                     DefaultColorSpace().ToSkColorSpace()),
-          frames, true, supported_sizes);
+      sk_make_sp<FakePaintImageGenerator>(info, frames, true, supported_sizes);
   PaintImage paint_image = PaintImageBuilder::WithDefault()
                                .set_id(PaintImage::GetNextId())
                                .set_paint_image_generator(generator)
@@ -2393,18 +2495,28 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScale) {
       PaintImage::kDefaultFrameIndex);
   DecodedDrawImage decoded_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  const int expected_width =
+      paint_image.width() * std::abs(draw_image.scale().width());
+  const int expected_height =
+      paint_image.height() * std::abs(draw_image.scale().height());
   ASSERT_TRUE(decoded_image.image());
-  EXPECT_EQ(decoded_image.image()->width(), 50);
-  EXPECT_EQ(decoded_image.image()->height(), 50);
+  EXPECT_EQ(decoded_image.image()->width(), expected_width);
+  EXPECT_EQ(decoded_image.image()->height(), expected_height);
 
   // We should have requested a scaled decode from the generator.
   ASSERT_EQ(generator->decode_infos().size(), 1u);
-  EXPECT_EQ(generator->decode_infos().at(0).width(), 50);
-  EXPECT_EQ(generator->decode_infos().at(0).height(), 50);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), expected_width);
+  EXPECT_EQ(generator->decode_infos().at(0).height(), expected_height);
+
   cache->DrawWithImageFinished(draw_image, decoded_image);
 }
 
 TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
+  if (do_yuv_decode_) {
+    // TODO(crbug.com/927437): Modify test after decoding to scale for YUV is
+    // implemented.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   SkFilterQuality quality = kNone_SkFilterQuality;
@@ -2431,17 +2543,25 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
   DecodedDrawImage decoded_image =
       EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
   ASSERT_TRUE(decoded_image.image());
-  EXPECT_EQ(decoded_image.image()->width(), 50);
-  EXPECT_EQ(decoded_image.image()->height(), 50);
+  const int expected_drawn_width =
+      paint_image.width() * std::abs(draw_image.scale().width());
+  const int expected_drawn_height =
+      paint_image.height() * std::abs(draw_image.scale().height());
+  EXPECT_EQ(decoded_image.image()->width(), expected_drawn_width);
+  EXPECT_EQ(decoded_image.image()->height(), expected_drawn_height);
 
   // We should have requested the original decode from the generator.
   ASSERT_EQ(generator->decode_infos().size(), 1u);
-  EXPECT_EQ(generator->decode_infos().at(0).width(), 100);
-  EXPECT_EQ(generator->decode_infos().at(0).height(), 100);
+  EXPECT_EQ(generator->decode_infos().at(0).width(), full_size.width());
+  EXPECT_EQ(generator->decode_infos().at(0).height(), full_size.height());
   cache->DrawWithImageFinished(draw_image, decoded_image);
 }
 
 TEST_P(GpuImageDecodeCacheTest, BasicMips) {
+  if (do_yuv_decode_) {
+    // We will modify this test for YUV.
+    return;
+  }
   auto decode_and_check_mips = [this](SkFilterQuality filter_quality,
                                       SkSize scale,
                                       const gfx::ColorSpace& color_space,
@@ -2502,6 +2622,10 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
+  if (do_yuv_decode_) {
+    // We will modify this test for YUV.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   auto filter_quality = kMedium_SkFilterQuality;
@@ -2576,11 +2700,15 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
+  if (do_yuv_decode_) {
+    // We will modify this test for YUV.
+    return;
+  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   auto filter_quality = kMedium_SkFilterQuality;
 
-  PaintImage image = CreateDiscardablePaintImage(GetNormalImageSize());
+  PaintImage image = CreatePaintImageInternal(GetNormalImageSize());
 
   struct Decode {
     DrawImage image;
@@ -2666,16 +2794,67 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
   }
 }
 
+TEST_P(GpuImageDecodeCacheTest, GetBorderlineLargeDecodedImageForDraw) {
+  // We will create a texture that's at the maximum size the GPU says it can
+  // support for uploads.
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage almost_too_large_image =
+      CreatePaintImageInternal(gfx::Size(max_texture_size_, max_texture_size_));
+  DrawImage draw_image(almost_too_large_image,
+                       SkIRect::MakeWH(almost_too_large_image.width(),
+                                       almost_too_large_image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+
+  EXPECT_TRUE(result.need_unref);
+  ASSERT_TRUE(result.task);
+  ASSERT_EQ(result.task->dependencies().size(), 1u);
+  ASSERT_TRUE(result.task->dependencies()[0]);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+SkColorType test_color_types[] = {kN32_SkColorType, kARGB_4444_SkColorType,
+                                  kRGBA_F16_SkColorType};
+bool false_array[] = {false};
+bool true_array[] = {true};
+
 INSTANTIATE_TEST_CASE_P(
-    GpuImageDecodeCacheTests,
+    GpuImageDecodeCacheTestsInProcessRaster,
     GpuImageDecodeCacheTest,
-    ::testing::Values(
-        std::make_pair(kN32_SkColorType, false /* use_transfer_cache */),
-        std::make_pair(kARGB_4444_SkColorType, false /* use_transfer_cache */),
-        std::make_pair(kRGBA_F16_SkColorType, false /* use_transfer_cache */),
-        std::make_pair(kN32_SkColorType, true /* use_transfer_cache */),
-        std::make_pair(kARGB_4444_SkColorType, true /* use_transfer_cache */),
-        std::make_pair(kRGBA_F16_SkColorType, true /* use_transfer_cache */)));
+    testing::Combine(testing::ValuesIn(test_color_types),
+                     testing::ValuesIn(false_array) /* use_transfer_cache */,
+                     testing::Bool() /* do_yuv_decode */));
+
+INSTANTIATE_TEST_CASE_P(
+    GpuImageDecodeCacheTestsOOPR,
+    GpuImageDecodeCacheTest,
+    testing::Combine(testing::ValuesIn(test_color_types),
+                     testing::ValuesIn(true_array) /* use_transfer_cache */,
+                     testing::ValuesIn(false_array) /* do_yuv_decode */));
+
+#undef EXPECT_TRUE_IF_NOT_USING_TRANSFER_CACHE
+#undef EXPECT_FALSE_IF_NOT_USING_TRANSFER_CACHE
 
 }  // namespace
 }  // namespace cc

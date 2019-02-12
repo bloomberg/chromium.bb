@@ -99,11 +99,37 @@ PaintImage CreatePaintWorkletPaintImage(
   return paint_image;
 }
 
+SkYUVASizeInfo GetYUV420SizeInfo(const gfx::Size& image_size, bool has_alpha) {
+  const SkISize uv_size = SkISize::Make((image_size.width() + 1) / 2,
+                                        (image_size.height() + 1) / 2);
+  const size_t uv_width = base::checked_cast<size_t>(uv_size.width());
+  SkYUVASizeInfo yuva_size_info;
+  yuva_size_info.fSizes[SkYUVAIndex::kY_Index].set(image_size.width(),
+                                                   image_size.height());
+  yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index] =
+      base::checked_cast<size_t>(image_size.width());
+  yuva_size_info.fSizes[SkYUVAIndex::kU_Index] = uv_size;
+  yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index] = uv_width;
+  yuva_size_info.fSizes[SkYUVAIndex::kV_Index] = uv_size;
+  yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index] = uv_width;
+  if (has_alpha) {
+    yuva_size_info.fSizes[SkYUVAIndex::kA_Index].set(image_size.width(),
+                                                     image_size.height());
+    yuva_size_info.fWidthBytes[SkYUVAIndex::kA_Index] =
+        base::checked_cast<size_t>(image_size.width());
+  } else {
+    yuva_size_info.fSizes[SkYUVAIndex::kA_Index] = SkISize::MakeEmpty();
+    yuva_size_info.fWidthBytes[SkYUVAIndex::kA_Index] = 0u;
+  }
+  return yuva_size_info;
+}
+
 PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
                                        sk_sp<SkColorSpace> color_space,
                                        bool allocate_encoded_data,
                                        PaintImage::Id id,
-                                       SkColorType color_type) {
+                                       SkColorType color_type,
+                                       bool is_yuv) {
   if (!color_space)
     color_space = SkColorSpace::MakeSRGB();
   if (id == PaintImage::kInvalidId)
@@ -111,12 +137,22 @@ PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
 
   SkImageInfo info = SkImageInfo::Make(size.width(), size.height(), color_type,
                                        kPremul_SkAlphaType, color_space);
+  sk_sp<PaintImageGenerator> generator;
+  if (is_yuv) {
+    // TODO(crbug.com/915972): Remove assumption of YUV420 in tests once we
+    // support other subsamplings.
+    generator = sk_make_sp<FakePaintImageGenerator>(
+        info, GetYUV420SizeInfo(size),
+        std::vector<FrameMetadata>{FrameMetadata()}, allocate_encoded_data);
+  } else {
+    generator = sk_make_sp<FakePaintImageGenerator>(
+        info, std::vector<FrameMetadata>{FrameMetadata()},
+        allocate_encoded_data);
+  }
   auto paint_image =
       PaintImageBuilder::WithDefault()
           .set_id(id)
-          .set_paint_image_generator(sk_make_sp<FakePaintImageGenerator>(
-              info, std::vector<FrameMetadata>{FrameMetadata()},
-              allocate_encoded_data))
+          .set_paint_image_generator(generator)
           // For simplicity, assume that any paint image created for testing is
           // unspecified decode mode as would be the case with most img tags on
           // the web.
