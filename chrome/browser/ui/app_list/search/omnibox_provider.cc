@@ -84,10 +84,14 @@ void OmniboxProvider::OnResultChanged(bool default_match_changed) {
 }
 
 void OmniboxProvider::RecordQueryLatencyHistogram() {
-  UMA_HISTOGRAM_TIMES(is_zero_state_input_
-                          ? "Apps.AppList.OmniboxProvider.ZeroStateLatency"
-                          : "Apps.AppList.OmniboxProvider.QueryTime",
-                      base::TimeTicks::Now() - query_start_time_);
+  base::TimeDelta query_latency = base::TimeTicks::Now() - query_start_time_;
+  if (is_zero_state_input_) {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.OmniboxProvider.ZeroStateLatency",
+                        query_latency);
+  } else {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.OmniboxProvider.QueryTime",
+                        query_latency);
+  }
 }
 
 }  // namespace app_list

@@ -186,6 +186,16 @@ void AutocompleteResult::SortAndCull(
        ++num_matches) {}
   matches_.resize(num_matches);
 
+  // There is no default match for chromeOS launcher zero prefix query
+  // suggestions.
+  if ((input.text().empty() &&
+       input.current_page_classification() ==
+           metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+    default_match_ = end();
+    alternate_nav_url_ = GURL();
+    return;
+  }
+
   default_match_ = matches_.begin();
 
   if (default_match_ != matches_.end()) {
@@ -688,7 +698,6 @@ void AutocompleteResult::MergeMatchesByProvider(
   if (i == new_matches.end())
     i = matches_.begin();
 
-  DCHECK(i->allowed_to_be_default_match);
   const int max_relevance = i->relevance - 1;
 
   // Because the goal is a visibly-stable popup, rather than one that preserves
