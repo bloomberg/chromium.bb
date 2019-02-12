@@ -34,7 +34,7 @@ class RedirectLoader : public network::mojom::URLLoader {
     binding_.set_connection_error_handler(
         base::BindOnce([](RedirectLoader* self) { delete self; }, this));
     NotifyRedirect(std::move(url));
-  };
+  }
 
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
