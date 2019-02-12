@@ -18,7 +18,6 @@ AutocompleteMatch VerbatimMatchForURL(
     const base::string16& destination_description,
     HistoryURLProvider* history_url_provider,
     int verbatim_relevance) {
-  DCHECK(!input.text().empty());
   AutocompleteMatch match;
   // If the caller already knows where the verbatim match should go and has
   // provided a HistoryURLProvider to aid in its construction, construct the
