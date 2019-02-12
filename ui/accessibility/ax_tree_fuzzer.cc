@@ -8,7 +8,7 @@
 class EmptyAXTreeObserver : public ui::AXTreeObserver {
  public:
   EmptyAXTreeObserver() {}
-  ~EmptyAXTreeObserver() override{};
+  ~EmptyAXTreeObserver() override {}
 };
 
 // Entry point for LibFuzzer.
