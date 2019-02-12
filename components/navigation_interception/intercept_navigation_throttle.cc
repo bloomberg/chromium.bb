@@ -9,14 +9,16 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "url/gurl.h"
 
 namespace navigation_interception {
 
+// Note: this feature is a no-op on non-Android platforms.
 const base::Feature InterceptNavigationThrottle::kAsyncCheck{
-    "AsyncNavigationIntercept", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AsyncNavigationIntercept", base::FEATURE_ENABLED_BY_DEFAULT};
 
 InterceptNavigationThrottle::InterceptNavigationThrottle(
     content::NavigationHandle* navigation_handle,
@@ -49,21 +51,7 @@ InterceptNavigationThrottle::WillRedirectRequest() {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-InterceptNavigationThrottle::WillFailRequest() {
-  return WillFinish();
-}
-
-content::NavigationThrottle::ThrottleCheckResult
 InterceptNavigationThrottle::WillProcessResponse() {
-  return WillFinish();
-}
-
-const char* InterceptNavigationThrottle::GetNameForLogging() {
-  return "InterceptNavigationThrottle";
-}
-
-content::NavigationThrottle::ThrottleCheckResult
-InterceptNavigationThrottle::WillFinish() {
   DCHECK(!deferring_);
   if (should_ignore_)
     return content::NavigationThrottle::CANCEL_AND_IGNORE;
@@ -74,6 +62,10 @@ InterceptNavigationThrottle::WillFinish() {
   }
 
   return content::NavigationThrottle::PROCEED;
+}
+
+const char* InterceptNavigationThrottle::GetNameForLogging() {
+  return "InterceptNavigationThrottle";
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -120,14 +112,19 @@ void InterceptNavigationThrottle::RunCheckAsync(
 
 bool InterceptNavigationThrottle::ShouldCheckAsynchronously() const {
   // Do not apply the async optimization for:
+  // - Non-Android platforms (where the check is always fast)
   // - POST navigations, to ensure we aren't violating idempotency.
   // - Subframe navigations, which aren't observed on Android, and should be
   //   fast on other platforms.
   // - non-http/s URLs, which are more likely to be intercepted.
+#if defined(OS_ANDROID)
   return navigation_handle()->IsInMainFrame() &&
          !navigation_handle()->IsPost() &&
          navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS() &&
          base::FeatureList::IsEnabled(kAsyncCheck);
+#else
+  return false;
+#endif
 }
 
 NavigationParams InterceptNavigationThrottle::GetNavigationParams(
