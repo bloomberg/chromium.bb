@@ -132,7 +132,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                         mutator_task_runner) override;
 
   // WebFrameWidgetBase overrides:
-  void Initialize() override;
   void SetLayerTreeView(WebLayerTreeView*) override;
   bool ForSubframe() const override { return true; }
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
