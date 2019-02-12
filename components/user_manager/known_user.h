@@ -193,10 +193,6 @@ void RemovePrefs(const AccountId& account_id);
 // Removes all ephemeral users.
 void CleanEphemeralUsers();
 
-// Clears kProfileEverInitialized for a user.
-void USER_MANAGER_EXPORT
-RemoveSetProfileEverInitializedPrefForTesting(const AccountId& account_id);
-
 // Register known user prefs.
 void USER_MANAGER_EXPORT RegisterPrefs(PrefRegistrySimple* registry);
 }

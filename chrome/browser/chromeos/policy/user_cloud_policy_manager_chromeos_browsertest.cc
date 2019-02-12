@@ -209,8 +209,10 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 }
 
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, MigrateForExistingUser) {
-  // Mark user as already having initialized the profile - this should allow
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
+                       PolicyCheckRequiredForInitializedProfile) {
+  // Mark user as already having initialized the profile - this should not
+  // change how the policy code treats unknown policy.
   // the policy code to ignore errors (because we presume we already have a
   // valid cache). We can remove this test when we fix crbug.com/731726 and
   // remove the associated migration code from UserPolicyManagerFactoryChromeOS.
@@ -232,14 +234,16 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, MigrateForExistingUser) {
   // Delete the policy file - this will cause a 500 error on policy requests.
   user_policy_helper()->DeletePolicyFile();
   SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  // User should be marked as having a valid OAuth token.
-  EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
-            user_manager->GetActiveUser()->oauth_token_status());
-
-  // User should still be marked as having completed profile initialization.
-  EXPECT_TRUE(user_manager->GetActiveUser()->profile_ever_initialized());
+  CountNotificationObserver observer(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  chromeos::LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetGaiaScreenView()
+      ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
+  RunUntilBrowserProcessQuits();
+  // Should not receive a SESSION_STARTED notification.
+  ASSERT_EQ(0, observer.notification_count());
 
   // Policy status should still be unknown since we haven't managed to load
   // policy from disk nor have we been able to talk to the server.
