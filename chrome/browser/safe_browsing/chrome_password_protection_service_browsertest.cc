@@ -9,8 +9,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,7 +26,6 @@
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -102,10 +99,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     IdentityTestEnvironmentProfileAdaptor::
         SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
-
-    AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
-        context,
-        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
   }
 
   // Makes user signed-in with the stub account's email and |hosted_domain|.
@@ -121,10 +114,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 #endif
     ASSERT_EQ(account_info.email, user_manager::kStubUserEmail);
 
-    FakeAccountFetcherService* account_fetcher_service =
-        static_cast<FakeAccountFetcherService*>(
-            AccountFetcherServiceFactory::GetForProfile(browser()->profile()));
-    account_fetcher_service->FakeUserInfoFetchSuccess(
+    identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
         account_info.account_id, account_info.email, account_info.gaia,
         hosted_domain, "full_name", "given_name", "locale",
         "http://picture.example.com/picture.jpg");

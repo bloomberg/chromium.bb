@@ -8,13 +8,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
-#include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -44,15 +41,10 @@ class ProfileDownloaderTest
 
   void SetUp() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        AccountFetcherServiceFactory::GetInstance(),
-        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
 
     profile_ = IdentityTestEnvironmentProfileAdaptor::
         CreateProfileForIdentityTestEnvironment(builder);
 
-    account_fetcher_service_ = static_cast<FakeAccountFetcherService*>(
-        AccountFetcherServiceFactory::GetForProfile(profile_.get()));
     profile_downloader_.reset(new ProfileDownloader(this));
 
     identity_test_env_profile_adaptor_ =
@@ -82,7 +74,7 @@ class ProfileDownloaderTest
 
   void SimulateUserInfoSuccess(const std::string& picture_url,
                                const AccountInfo& account_info) {
-    account_fetcher_service_->FakeUserInfoFetchSuccess(
+    identity_test_env_->SimulateSuccessfulFetchOfAccountInfo(
         account_info.account_id, account_info.email, account_info.gaia,
         kTestHostedDomain, kTestFullName, kTestGivenName, kTestLocale,
         picture_url);
@@ -105,7 +97,6 @@ class ProfileDownloaderTest
     on_access_token_request_callback_ = std::move(callback);
   }
 
-  FakeAccountFetcherService* account_fetcher_service_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<Profile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
