@@ -962,7 +962,7 @@ class InlineRunToApplyStyle {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::InlineRunToApplyStyle);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::InlineRunToApplyStyle)
 
 namespace blink {
 

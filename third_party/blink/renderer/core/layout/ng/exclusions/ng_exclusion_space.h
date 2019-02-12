@@ -389,6 +389,6 @@ class CORE_EXPORT NGExclusionSpace {
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::NGExclusionSpaceInternal::NGShelfEdge);
+    blink::NGExclusionSpaceInternal::NGShelfEdge)
 
 #endif  // NGExclusionSpace_h

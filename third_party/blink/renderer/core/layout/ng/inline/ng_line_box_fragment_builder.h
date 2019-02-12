@@ -237,6 +237,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::NGLineBoxFragmentBuilder::Child);
+    blink::NGLineBoxFragmentBuilder::Child)
 
 #endif  // NGLineBoxFragmentBuilder

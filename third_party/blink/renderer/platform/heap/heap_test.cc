@@ -1446,11 +1446,11 @@ class TerminatedArrayItem {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::TerminatedArrayItem);
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObject);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::TerminatedArrayItem)
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObject)
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::VectorObjectInheritedTrace);
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObjectNoTrace);
+    blink::VectorObjectInheritedTrace)
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObjectNoTrace)
 
 namespace blink {
 
@@ -4311,7 +4311,7 @@ int InlinedVectorObjectWithVtable::destructor_calls_ = 0;
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::InlinedVectorObject);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::InlinedVectorObject)
 
 namespace blink {
 
@@ -5728,7 +5728,7 @@ class PartObjectWithRef {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::PartObjectWithRef);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::PartObjectWithRef)
 
 namespace blink {
 

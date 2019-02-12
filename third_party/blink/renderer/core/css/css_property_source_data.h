@@ -53,7 +53,7 @@ class SourceRange {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SourceRange);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SourceRange)
 
 namespace blink {
 
@@ -79,7 +79,7 @@ class CSSPropertySourceData {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSPropertySourceData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSPropertySourceData)
 
 namespace blink {
 

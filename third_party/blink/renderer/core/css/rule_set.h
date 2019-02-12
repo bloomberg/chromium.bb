@@ -67,7 +67,7 @@ class MinimalRuleData {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData)
 
 namespace blink {
 
@@ -146,7 +146,7 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
 
 }  // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData)
 
 namespace blink {
 

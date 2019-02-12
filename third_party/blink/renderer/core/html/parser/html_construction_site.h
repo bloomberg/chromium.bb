@@ -76,7 +76,7 @@ struct HTMLConstructionSiteTask {
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::HTMLConstructionSiteTask);
+    blink::HTMLConstructionSiteTask)
 
 namespace blink {
 

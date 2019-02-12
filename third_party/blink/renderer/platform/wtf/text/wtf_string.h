@@ -667,7 +667,7 @@ inline StringView::StringView(const String& string)
 
 }  // namespace WTF
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(String);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(String)
 
 using WTF::CString;
 using WTF::kStrictUTF8Conversion;

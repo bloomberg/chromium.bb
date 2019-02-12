@@ -1749,6 +1749,6 @@ DEFINE_TYPE_CASTS(WebGLRenderingContextBase,
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::WebGLRenderingContextBase::TextureUnitState);
+    blink::WebGLRenderingContextBase::TextureUnitState)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_

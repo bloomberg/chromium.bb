@@ -316,7 +316,7 @@ inline StringView::StringView(const AtomicString& string)
 
 }  // namespace WTF
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(AtomicString);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(AtomicString)
 
 using WTF::AtomicString;
 using WTF::g_null_atom;
