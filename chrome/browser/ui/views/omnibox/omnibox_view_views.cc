@@ -588,26 +588,18 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
 
   // If tabbing forwards (shift is not pressed) and suggestion button is not
   // selected, select it.
-  if (model()->popup_model()->SelectedLineHasButton() &&
-      model()->popup_model()->selected_line_state() ==
-          OmniboxPopupModel::NORMAL &&
-      !event.IsShiftDown()) {
-    model()->popup_model()->SetSelectedLineState(
-        OmniboxPopupModel::BUTTON_FOCUSED);
-    popup_view_->ProvideButtonFocusHint(
-        model()->popup_model()->selected_line());
-    return true;
+  if (!event.IsShiftDown()) {
+    if (MaybeFocusTabButton())
+      return true;
   }
 
   // If tabbing backwards (shift is pressed), handle cases involving selecting
   // the tab switch button.
   if (event.IsShiftDown()) {
     // If tab switch button is focused, unfocus it.
-    if (model()->popup_model()->selected_line_state() ==
-        OmniboxPopupModel::BUTTON_FOCUSED) {
-      model()->popup_model()->SetSelectedLineState(OmniboxPopupModel::NORMAL);
+    if (MaybeUnfocusTabButton())
       return true;
-    }
+
     // Otherwise, if at top of results, do nothing.
     if (model()->popup_model()->selected_line() == 0)
       return false;
