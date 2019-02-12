@@ -40,37 +40,17 @@ class VideoFrameMapper;
 // performance measurements.
 class VideoFrameValidator : public VideoFrameProcessor {
  public:
-  enum Flags : uint32_t {
-    // Checks soundness of video frames.
-    CHECK = 1 << 0,
-    // Writes out video frames to files.
-    OUTPUTYUV = 1 << 1,
-  };
-
   struct MismatchedFrameInfo {
     size_t frame_index;
     std::string computed_md5;
     std::string expected_md5;
   };
 
-  // Creates an instance of the video frame validator in 'CHECK' mode.
-  // |frame_checksums| should contain the ordered list of md5 frame checksums to
-  // be used by the validator
+  // Create an instance of the video frame validator. The calculated checksums
+  // will be compared to the values in |expected_frame_checksums|. If no
+  // checksums are provided only checksum calculation will be done.
   static std::unique_ptr<VideoFrameValidator> Create(
       const std::vector<std::string>& expected_frame_checksums);
-
-  // |flags| decides the behavior of created video frame validator. See the
-  // detail in Flags.
-  // |prefix_output_yuv| is the prefix name of saved yuv files.
-  // VideoFrameValidator saves all I420 video frames.
-  // If |prefix_output_yuv_| is not specified, no yuv file will be saved.
-  // |frame_checksums| should contain the ordered list of md5 frame checksums to
-  // be used by the validator.
-  // Returns nullptr on failure.
-  static std::unique_ptr<VideoFrameValidator> Create(
-      uint32_t flags,
-      const base::FilePath& prefix_output_yuv,
-      const std::vector<std::string>& frame_checksums);
 
   ~VideoFrameValidator() override;
 
@@ -95,9 +75,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
   bool WaitUntilDone() override;
 
  private:
-  VideoFrameValidator(uint32_t flags,
-                      const base::FilePath& prefix_output_yuv,
-                      std::vector<std::string> md5_of_frames,
+  VideoFrameValidator(std::vector<std::string> expected_frame_checksums,
                       std::unique_ptr<VideoFrameMapper> video_frame_mapper);
 
   // Start the frame validation thread.
@@ -128,15 +106,10 @@ class VideoFrameValidator : public VideoFrameProcessor {
   std::vector<MismatchedFrameInfo> mismatched_frames_
       GUARDED_BY(frame_validator_lock_);
 
-  const uint32_t flags_;
-
-  // Prefix of saved yuv files.
-  const base::FilePath prefix_output_yuv_;
-
   // The list of calculated MD5 frame checksums.
   std::vector<std::string> frame_checksums_ GUARDED_BY(frame_validator_lock_);
 
-  // The list of golden MD5 frame checksums.
+  // The list of expected MD5 frame checksums.
   const std::vector<std::string> expected_frame_checksums_;
 
   const std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
