@@ -5767,4 +5767,15 @@ TEST_F(WebViewTest, PotentialViolationReportsForLayoutAnimations) {
   histogram_tester.ExpectTotalCount(kHistogramName, 2);
 }
 
+TEST_F(WebViewTest, ForceDarkModeInvalidatesPaint) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  web_view->MainFrameWidget()->Resize(WebSize(500, 500));
+  UpdateAllLifecyclePhases();
+
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  ASSERT_TRUE(document);
+  web_view->GetSettings()->SetForceDarkModeEnabled(true);
+  EXPECT_TRUE(document->GetLayoutView()->ShouldDoFullPaintInvalidation());
+}
+
 }  // namespace blink

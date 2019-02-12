@@ -67,6 +67,7 @@ class CORE_EXPORT SettingsDelegate {
     kMediaControlsChange,
     kPluginsChange,
     kHighlightAdsChange,
+    kPaintChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;

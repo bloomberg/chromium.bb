@@ -901,20 +901,24 @@
       name: "highContrastMode",
       initial: "HighContrastMode::kOff",
       type: "HighContrastMode",
+      invalidate: "Paint",
     },
     {
       name: "highContrastGrayscale",
       initial: false,
+      invalidate: "Paint",
     },
     {
       name: "highContrastContrast",
       initial: 0,
       type: "double",
+      invalidate: "Paint",
     },
     {
       name: "highContrastImagePolicy",
       initial: "HighContrastImagePolicy::kFilterAll",
       type: "HighContrastImagePolicy",
+      invalidate: "Paint",
     },
     {
       name: "mediaDownloadInProductHelpEnabled",

@@ -117,7 +117,6 @@ void Settings::SetForceDarkModeEnabled(bool enabled) {
   } else {
     SetHighContrastMode(HighContrastMode::kOff);
   }
-  Invalidate(SettingsDelegate::kStyleChange);
 }
 
 }  // namespace blink
