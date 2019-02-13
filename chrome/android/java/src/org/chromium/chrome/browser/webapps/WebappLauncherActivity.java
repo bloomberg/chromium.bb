@@ -33,6 +33,8 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkValidator;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Launches web apps.  This was separated from the ChromeLauncherActivity because the
  * ChromeLauncherActivity is not allowed to be excluded from Android's Recents: crbug.com/517426.
@@ -96,21 +98,13 @@ public class WebappLauncherActivity extends Activity {
      * @return True if a live WebappActivity was found, false otherwise.
      */
     public static boolean bringWebappToFront(int tabId) {
-        if (tabId == Tab.INVALID_TAB_ID) return false;
+        WeakReference<WebappActivity> webappActivity =
+                WebappActivity.findWebappActivityWithTabId(tabId);
+        if (webappActivity == null || webappActivity.get() == null) return false;
 
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (!(activity instanceof WebappActivity)) continue;
-
-            WebappActivity webappActivity = (WebappActivity) activity;
-            if (webappActivity.getActivityTab() != null
-                    && webappActivity.getActivityTab().getId() == tabId) {
-                Tab tab = webappActivity.getActivityTab();
-                tab.getTabWebContentsDelegateAndroid().activateContents();
-                return true;
-            }
-        }
-
-        return false;
+        Tab tab = webappActivity.get().getActivityTab();
+        tab.getTabWebContentsDelegateAndroid().activateContents();
+        return true;
     }
 
     /**
@@ -138,9 +132,14 @@ public class WebappLauncherActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         long createTimestamp = SystemClock.elapsedRealtime();
+        Intent intent = getIntent();
+
+        if (WebappActionsNotificationManager.handleNotificationAction(intent)) {
+            finish();
+            return;
+        }
 
         ChromeWebApkHost.init();
-        Intent intent = getIntent();
         WebappInfo webappInfo = tryCreateWebappInfo(intent);
 
         if (shouldRelaunchWebApk(intent, webappInfo)) {
@@ -389,13 +388,6 @@ public class WebappLauncherActivity extends Activity {
         // clicks a link to takes them back to the scope of a WebAPK, we want to destroy the
         // CustomTabActivity activity and go back to the WebAPK activity. It is intentional that
         // Custom Tab will not be reachable with a back button.
-
-        // In addition FLAG_ACTIVITY_NEW_DOCUMENT is required otherwise on Samsung Lollipop devices
-        // an Intent to an existing top Activity (such as sent from the Webapp Actions Notification)
-        // will trigger a new WebappActivity to be launched and onCreate called instead of
-        // onNewIntent of the existing WebappActivity being called.
-        // TODO(pkotwicz): Route Webapp Actions Notification actions through new intent filter
-        //                 instead of WebappLauncherActivity. http://crbug.com/894610
         if (webappInfo.isSplashProvidedByWebApk()) {
             webappActivityLaunchIntent.setFlags(
                     Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
