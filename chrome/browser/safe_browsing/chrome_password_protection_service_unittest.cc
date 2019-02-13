@@ -163,12 +163,16 @@ class ChromePasswordProtectionServiceTest
         ->SetTestingFactory(
             browser_context(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+
+    identity_test_env_profile_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
   }
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
     service_.reset();
     request_ = nullptr;
+    identity_test_env_profile_adaptor_.reset();
     content_setting_map_->ShutdownOnUIThread();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -190,9 +194,6 @@ class ChromePasswordProtectionServiceTest
 
   content::BrowserContext* CreateBrowserContext() override {
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ChromeSigninClientFactory::GetInstance(),
-        base::BindRepeating(&signin::BuildTestSigninClient));
     std::unique_ptr<TestingProfile> profile =
         IdentityTestEnvironmentProfileAdaptor::
             CreateProfileForIdentityTestEnvironment(builder);
@@ -236,21 +237,15 @@ class ChromePasswordProtectionServiceTest
   }
 
   CoreAccountInfo SetPrimaryAccount(const std::string& email) {
-    IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
-        profile());
-    return identity_test_env_profile_adaptor.identity_test_env()
-        ->SetPrimaryAccount(email);
+    return identity_test_env()->SetPrimaryAccount(email);
   }
 
   void SetUpSyncAccount(const std::string& hosted_domain,
                         const CoreAccountInfo& account_info) {
-    IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
-        profile());
-    identity_test_env_profile_adaptor.identity_test_env()
-        ->SimulateSuccessfulFetchOfAccountInfo(
-            account_info.account_id, account_info.email, account_info.gaia,
-            hosted_domain, "full_name", "given_name", "locale",
-            "http://picture.example.com/picture.jpg");
+    identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
+        account_info.account_id, account_info.email, account_info.gaia,
+        hosted_domain, "full_name", "given_name", "locale",
+        "http://picture.example.com/picture.jpg");
   }
 
   void PrepareRequest(
@@ -272,12 +267,18 @@ class ChromePasswordProtectionServiceTest
     return request_ ? request_->throttles_.size() : 0u;
   }
 
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_profile_adaptor_->identity_test_env();
+  }
+
  protected:
   sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   scoped_refptr<HostContentSettingsMap> content_setting_map_;
   std::unique_ptr<MockChromePasswordProtectionService> service_;
   scoped_refptr<PasswordProtectionRequest> request_;
   std::unique_ptr<LoginReputationClientResponse> verdict_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_profile_adaptor_;
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
   extensions::TestEventRouter* test_event_router_;
