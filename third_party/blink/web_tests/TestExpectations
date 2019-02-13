@@ -6106,3 +6106,6 @@ crbug.com/930934 [ Android ] paint/invalidation/compositing/should-not-repaint-c
 crbug.com/930934 [ Android ] paint/invalidation/svg/animated-svg-as-image-transformed-offscreen.html [ Failure ]
 crbug.com/930934 [ Android ] paint/selection/selection-drag-image-in-iframe.html [ Failure ]
 crbug.com/930934 [ Android ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Failure ]
+
+# Sheriff 2019-02-13
+crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
