@@ -1352,4 +1352,4 @@ TEST(PNGTests, crbug827754) {
   ASSERT_FALSE(decoder->Failed());
 }
 
-};  // namespace blink
+}  // namespace blink
