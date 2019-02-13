@@ -37,7 +37,8 @@ bool AreWebAppsEnabled(Profile* profile) {
 }
 
 bool AreWebAppsUserInstallable(Profile* profile) {
-  return AreWebAppsEnabled(profile) && !profile->IsGuestSession();
+  return AreWebAppsEnabled(profile) && !profile->IsGuestSession() &&
+         !profile->IsOffTheRecord();
 }
 
 content::BrowserContext* GetBrowserContextForWebApps(

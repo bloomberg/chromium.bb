@@ -57,7 +57,7 @@ TEST_F(WebAppUtilsTest, AreWebAppsUserInstallable) {
 
   EXPECT_FALSE(AreWebAppsEnabled(nullptr));
   EXPECT_TRUE(AreWebAppsUserInstallable(regular_profile));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       AreWebAppsUserInstallable(regular_profile->GetOffTheRecordProfile()));
 
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());

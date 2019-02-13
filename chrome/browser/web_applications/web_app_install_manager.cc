@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
@@ -32,7 +33,10 @@ WebAppInstallManager::~WebAppInstallManager() = default;
 
 bool WebAppInstallManager::CanInstallWebApp(
     content::WebContents* web_contents) {
-  return AreWebAppsUserInstallable(profile_) &&
+  Profile* web_contents_profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  return AreWebAppsUserInstallable(web_contents_profile) &&
          IsValidWebAppUrl(web_contents->GetLastCommittedURL());
 }
 
