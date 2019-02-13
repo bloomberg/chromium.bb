@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
@@ -1758,9 +1759,9 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
   // Fling up that exceeds the velocity threshold should show the fullscreen app
   // list.
   StartScroll(start);
-  UpdateScroll(-ShelfLayoutManager::kAppListDragSnapToPeekingThreshold);
+  UpdateScroll(-app_list::AppListView::kDragSnapToPeekingThreshold);
   EndScroll(true /* is_fling */,
-            -(ShelfLayoutManager::kAppListDragVelocityThreshold + 10));
+            -(app_list::AppListView::kDragVelocityThreshold + 10));
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
@@ -1773,9 +1774,9 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
 
   // Fling down that exceeds the velocity threshold should close the app list.
   StartScroll(start);
-  UpdateScroll(-ShelfLayoutManager::kAppListDragSnapToPeekingThreshold);
+  UpdateScroll(-app_list::AppListView::kDragSnapToPeekingThreshold);
   EndScroll(true /* is_fling */,
-            ShelfLayoutManager::kAppListDragVelocityThreshold + 10);
+            app_list::AppListView::kDragVelocityThreshold + 10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
@@ -1783,9 +1784,9 @@ TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
   // Fling the app list not exceed the velocity threshold, the state depends on
   // the drag amount.
   StartScroll(start);
-  UpdateScroll(-(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10));
+  UpdateScroll(-(app_list::AppListView::kDragSnapToPeekingThreshold - 10));
   EndScroll(true /* is_fling */,
-            -(ShelfLayoutManager::kAppListDragVelocityThreshold - 10));
+            -(app_list::AppListView::kDragVelocityThreshold - 10));
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
@@ -1805,8 +1806,7 @@ TEST_F(ShelfLayoutManagerTest, DuplicateDragUpFromBezel) {
                  shelf_widget_bounds.bottom() + 1);
   gfx::Point end = gfx::Point(
       start.x(), shelf_widget_bounds.bottom() -
-                     ShelfLayoutManager::kAppListDragSnapToPeekingThreshold -
-                     10);
+                     app_list::AppListView::kDragSnapToPeekingThreshold - 10);
   ui::test::EventGenerator* generator = GetEventGenerator();
   constexpr base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
   constexpr int kNumScrollSteps = 4;
@@ -1828,7 +1828,7 @@ TEST_F(ShelfLayoutManagerTest, DuplicateDragUpFromBezel) {
   start.set_y(
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area().y());
   end.set_y(shelf_widget_bounds.bottom() -
-            ShelfLayoutManager::kAppListDragSnapToClosedThreshold + 10);
+            app_list::AppListView::kDragSnapToClosedThreshold + 10);
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
@@ -1843,7 +1843,7 @@ TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   StartScroll(GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint());
-  UpdateScroll(-ShelfLayoutManager::kAppListDragSnapToPeekingThreshold);
+  UpdateScroll(-app_list::AppListView::kDragSnapToPeekingThreshold);
   GetAppListTestHelper()->WaitUntilIdle();
   shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
   // Note, value -10 here has no specific meaning, it only used to make the
@@ -1870,7 +1870,7 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
   gfx::Vector2d delta;
 
   // Swiping up less than the close threshold should close the app list.
-  delta.set_y(ShelfLayoutManager::kAppListDragSnapToClosedThreshold - 10);
+  delta.set_y(app_list::AppListView::kDragSnapToClosedThreshold - 10);
   gfx::Point end = start - delta;
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -1880,7 +1880,7 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
 
   // Swiping up more than the close threshold but less than peeking threshold
   // should keep the app list at PEEKING state.
-  delta.set_y(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10);
+  delta.set_y(app_list::AppListView::kDragSnapToPeekingThreshold - 10);
   end = start - delta;
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -1895,7 +1895,7 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
 
   // Swiping up more than the peeking threshold should keep the app list at
   // FULLSCREEN_ALL_APPS state.
-  delta.set_y(ShelfLayoutManager::kAppListDragSnapToPeekingThreshold + 10);
+  delta.set_y(app_list::AppListView::kDragSnapToPeekingThreshold + 10);
   end = start - delta;
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -1926,7 +1926,7 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
   // Swiping up on the auto-hide shelf to drag up the app list. Close the app
   // list on drag ended since the short drag distance but keep the previous
   // shown auto-hide shelf still visible.
-  delta.set_y(ShelfLayoutManager::kAppListDragSnapToClosedThreshold - 10);
+  delta.set_y(app_list::AppListView::kDragSnapToClosedThreshold - 10);
   end = start - delta;
   generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
   GetAppListTestHelper()->WaitUntilIdle();

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_ui_model.h"
@@ -15,7 +16,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
@@ -79,7 +79,7 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
   // Swiping up less than the threshold should trigger a peeking app list.
   gfx::Point end = start;
   end.set_y(shelf->GetIdealBounds().bottom() -
-            ShelfLayoutManager::kAppListDragSnapToPeekingThreshold + 10);
+            app_list::AppListView::kDragSnapToPeekingThreshold + 10);
   GetEventGenerator()->GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   GetAppListTestHelper()->WaitUntilIdle();
@@ -93,7 +93,7 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
 
   // Swiping above the threshold should trigger a fullscreen app list.
   end.set_y(shelf->GetIdealBounds().bottom() -
-            ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10);
+            app_list::AppListView::kDragSnapToPeekingThreshold - 10);
   GetEventGenerator()->GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
   base::RunLoop().RunUntilIdle();
