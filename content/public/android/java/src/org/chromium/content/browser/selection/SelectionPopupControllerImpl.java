@@ -1380,12 +1380,17 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return mContext;
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void onSelectionChanged(String text) {
-        if (text.length() == 0 && hasSelection() && mSelectionMetricsLogger != null) {
-            mSelectionMetricsLogger.logSelectionAction(mLastSelectedText, mLastSelectionOffset,
-                    SmartSelectionMetricsLogger.ActionType.ABANDON,
-                    /* SelectionClient.Result = */ null);
+    /* package */ void onSelectionChanged(String text) {
+        final boolean unSelected = TextUtils.isEmpty(text) && hasSelection();
+        if (unSelected) {
+            if (mSelectionMetricsLogger != null) {
+                mSelectionMetricsLogger.logSelectionAction(mLastSelectedText, mLastSelectionOffset,
+                        SmartSelectionMetricsLogger.ActionType.ABANDON,
+                        /* SelectionClient.Result = */ null);
+            }
+            destroyActionModeAndKeepSelection();
         }
         mLastSelectedText = text;
         if (mSelectionClient != null) {

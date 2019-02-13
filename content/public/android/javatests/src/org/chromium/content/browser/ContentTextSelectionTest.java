@@ -542,7 +542,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCut();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
         waitForClipboardContents("SampleInputText");
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
     }
@@ -575,7 +575,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarCut();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
         waitForClipboardContents("SampleTextArea");
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
     }
@@ -700,7 +700,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarPaste();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
 
         // Ensure the new text matches the pasted text.
         DOMUtils.longPressNode(mWebContents, "input_text");
@@ -727,7 +727,7 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
         selectActionBarPaste();
         waitForSelectActionBarVisible(false);
-        Assert.assertFalse(mSelectionPopupController.hasSelection());
+        Assert.assertEquals(mSelectionPopupController.getSelectedText(), "");
 
         // Ensure the new text matches the pasted text. Note that we can't
         // actually compare strings as password field selections only provide
