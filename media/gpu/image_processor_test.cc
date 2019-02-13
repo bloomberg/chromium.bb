@@ -93,7 +93,7 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
   std::string expected_md5 = output_image.Checksum();
   std::string computed_md5 = MD5DigestToBase16(digest);
   EXPECT_EQ(expected_md5, computed_md5);
-};
+}
 
 // I420->NV12
 INSTANTIATE_TEST_SUITE_P(ConvertI420ToNV12,
