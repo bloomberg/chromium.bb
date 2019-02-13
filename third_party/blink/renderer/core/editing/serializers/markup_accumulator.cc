@@ -154,8 +154,8 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
   // 3.5.1. Let candidate prefix be the result of retrieving a preferred
   // prefix string from map given namespace attribute namespace with preferred
   // prefix being attr's prefix value.
-  // TODO(tkent): Implement it. crbug.com/906807
-  candidate_prefix = attribute.Prefix();
+  candidate_prefix =
+      RetrievePreferredPrefixString(attribute_namespace, attribute.Prefix());
 
   // 3.5.2. If the value of attribute namespace is the XMLNS namespace, then
   // run these steps:
@@ -243,13 +243,16 @@ void MarkupAccumulator::PushNamespaces(const Element& element) {
   // We can't do |namespace_stack_.emplace_back(namespace_stack_.back())|
   // because back() returns a reference in the vector backing, and
   // emplace_back() can reallocate it.
-  namespace_stack_.push_back(Namespaces(namespace_stack_.back()));
+  namespace_stack_.push_back(PrefixToNamespaceMap(namespace_stack_.back()));
+  ns_prefixes_map_stack_.push_back(
+      NamespaceToPrefixesMap(ns_prefixes_map_stack_.back()));
 }
 
 void MarkupAccumulator::PopNamespaces(const Element& element) {
   if (SerializeAsHTMLDocument(element))
     return;
   namespace_stack_.pop_back();
+  ns_prefixes_map_stack_.pop_back();
 }
 
 // https://w3c.github.io/DOM-Parsing/#dfn-recording-the-namespace-information
@@ -262,10 +265,60 @@ void MarkupAccumulator::RecordNamespaceInformation(const Element& element) {
   }
 }
 
+// https://w3c.github.io/DOM-Parsing/#dfn-retrieving-a-preferred-prefix-string
+AtomicString MarkupAccumulator::RetrievePreferredPrefixString(
+    const AtomicString& ns,
+    const AtomicString& preferred_prefix) {
+  // TODO(tkent): We'll apply this function to elements too.
+  const bool kForAttribute = true;
+  AtomicString ns_for_preferred = LookupNamespaceURI(preferred_prefix);
+  // Preserve the prefix if the prefix is used in the scope and the namespace
+  // for it is matches to the node's one.
+  // This is equivalent to the following step in the specification:
+  // 2.1. If prefix matches preferred prefix, then stop running these steps and
+  // return prefix.
+  if ((!kForAttribute || !preferred_prefix.IsEmpty()) &&
+      !ns_for_preferred.IsNull() && EqualIgnoringNullity(ns_for_preferred, ns))
+    return preferred_prefix;
+
+  const Vector<AtomicString>& candidate_list =
+      ns_prefixes_map_stack_.back().at(ns ? ns : g_empty_atom);
+  // Get the last effective prefix.
+  //
+  // <el1 xmlns:p="U1" xmlns:q="U1">
+  //   <el2 xmlns:q="U2">
+  //    el2.setAttributeNS(U1, 'n', 'v');
+  // We should get 'p'.
+  //
+  // <el1 xmlns="U1">
+  //  el1.setAttributeNS(U1, 'n', 'v');
+  // We should not get '' for attributes.
+  for (auto it = candidate_list.rbegin(); it != candidate_list.rend(); ++it) {
+    AtomicString candidate_prefix = *it;
+    if (kForAttribute && candidate_prefix.IsEmpty())
+      continue;
+    AtomicString ns_for_candaite = LookupNamespaceURI(candidate_prefix);
+    if (EqualIgnoringNullity(ns_for_candaite, ns))
+      return candidate_prefix;
+  }
+
+  // No prefixes for |ns|.
+  // Preserve the prefix if the prefix is not used in the current scope.
+  if (!preferred_prefix.IsEmpty() && ns_for_preferred.IsNull())
+    return preferred_prefix;
+  // If a prefix is not specified, or the prefix is mapped to a
+  // different namespace, we should generate new prefix.
+  return g_null_atom;
+}
+
 // https://w3c.github.io/DOM-Parsing/#dfn-add
 void MarkupAccumulator::AddPrefix(const AtomicString& prefix,
                                   const AtomicString& namespace_uri) {
-  namespace_stack_.back().Set(prefix ? prefix : g_empty_atom, namespace_uri);
+  const AtomicString& non_null_prefix = prefix ? prefix : g_empty_atom;
+  namespace_stack_.back().Set(non_null_prefix, namespace_uri);
+  auto result = ns_prefixes_map_stack_.back().insert(
+      namespace_uri ? namespace_uri : g_empty_atom, Vector<AtomicString>());
+  result.stored_value->value.push_back(non_null_prefix);
 }
 
 AtomicString MarkupAccumulator::LookupNamespaceURI(const AtomicString& prefix) {
@@ -370,6 +423,7 @@ String MarkupAccumulator::SerializeNodes(const Node& target_node,
     DCHECK_EQ(namespace_stack_.size(), 0u);
     // 2. Let prefix map be a new namespace prefix map.
     namespace_stack_.emplace_back();
+    ns_prefixes_map_stack_.emplace_back();
     // 3. Add the XML namespace with prefix value "xml" to prefix map.
     AddPrefix(g_xml_atom, xml_names::kNamespaceURI);
     // 4. Let prefix index be a generated namespace prefix index with value 1.
