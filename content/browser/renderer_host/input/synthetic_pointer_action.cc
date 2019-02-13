@@ -102,7 +102,9 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
       case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
         return GestureState::INVALID;
     }
-    synthetic_pointer_driver_->DispatchEvent(target, timestamp);
+    base::TimeTicks dispatch_timestamp =
+        param.timestamp().is_null() ? timestamp : param.timestamp();
+    synthetic_pointer_driver_->DispatchEvent(target, dispatch_timestamp);
   }
 
   num_actions_dispatched_++;

@@ -20,6 +20,8 @@ struct FuzzTraits;
 
 namespace content {
 
+// It contains all the parameters to create the synthetic events of touch,
+// mouse and pen inputs in SyntheticPointerAction::ForwardInputEvents function.
 struct CONTENT_EXPORT SyntheticPointerActionParams {
  public:
   // All the pointer actions that will be dispatched together will be grouped
@@ -47,6 +49,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
 
   SyntheticPointerActionParams();
   explicit SyntheticPointerActionParams(PointerActionType action_type);
+  SyntheticPointerActionParams(const SyntheticPointerActionParams& other);
   ~SyntheticPointerActionParams();
 
   void set_pointer_action_type(PointerActionType pointer_action_type) {
@@ -97,6 +100,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     force_ = force;
   }
 
+  void set_timestamp(base::TimeTicks timestamp) { timestamp_ = timestamp; }
+
   PointerActionType pointer_action_type() const { return pointer_action_type_; }
 
   uint32_t pointer_id() const { return pointer_id_; }
@@ -143,6 +148,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     return force_;
   }
 
+  base::TimeTicks timestamp() const { return timestamp_; }
+
   static unsigned GetWebMouseEventModifier(
       SyntheticPointerActionParams::Button button);
   static blink::WebMouseEvent::Button GetWebMouseEventButton(
@@ -168,6 +175,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
   float height_ = 40.f;
   float rotation_angle_ = 0.f;
   float force_ = 1.f;
+  base::TimeTicks timestamp_;
 };
 
 }  // namespace content

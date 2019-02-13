@@ -17,6 +17,9 @@
 
 namespace content {
 
+// It generates and dispatches the synthetic events of touch, mouse and pen
+// inputs. The synthetic events are dispatched to each platform in browser and
+// sent to renderer to manipulate the DOM elements on the web pages.
 class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
  public:
   explicit SyntheticPointerAction(
