@@ -88,6 +88,10 @@ class TestIdentityManagerDiagnosticsObserver
   bool is_token_updator_refresh_token_valid() {
     return is_token_updator_refresh_token_valid_;
   }
+  const std::string& token_remover_account_id() {
+    return token_remover_account_id_;
+  }
+  const std::string& token_remover_source() { return token_remover_source_; }
 
  private:
   // identity::IdentityManager::DiagnosticsObserver:
@@ -100,9 +104,18 @@ class TestIdentityManagerDiagnosticsObserver
     token_updator_source_ = source;
   }
 
+  void OnRefreshTokenRemovedForAccountFromSource(
+      const std::string& account_id,
+      const std::string& source) override {
+    token_remover_account_id_ = account_id;
+    token_remover_source_ = source;
+  }
+
   identity::IdentityManager* identity_manager_;
   std::string token_updator_account_id_;
   std::string token_updator_source_;
+  std::string token_remover_account_id_;
+  std::string token_remover_source_;
   bool is_token_updator_refresh_token_valid_;
 };
 
@@ -717,6 +730,24 @@ TEST_F(AccountsMutatorTest, UpdateAccessTokenFromSource) {
                   ->is_token_updator_refresh_token_valid());
   EXPECT_EQ("Settings::Signout",
             identity_manager_diagnostics_observer()->token_updator_source());
+}
+
+TEST_F(AccountsMutatorTest, RemoveRefreshTokenFromSource) {
+  // Abort the test if the current platform does not support accounts mutation.
+  if (!accounts_mutator())
+    return;
+
+  // Add a default account.
+  std::string account_id = accounts_mutator()->AddOrUpdateAccount(
+      kTestGaiaId, kTestEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
+
+  // Remove the default account.
+  accounts_mutator()->RemoveAccount(
+      kTestGaiaId,
+      signin_metrics::SourceForRefreshTokenOperation::kSettings_Signout);
+  EXPECT_EQ("Settings::Signout",
+            identity_manager_diagnostics_observer()->token_remover_source());
 }
 
 }  // namespace identity

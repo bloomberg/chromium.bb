@@ -488,6 +488,13 @@ void IdentityManager::OnRefreshTokenAvailableFromSource(
         account_id, is_refresh_token_valid, source);
 }
 
+void IdentityManager::OnRefreshTokenRevokedFromSource(
+    const std::string& account_id,
+    const std::string& source) {
+  for (auto& observer : diagnostics_observer_list_)
+    observer.OnRefreshTokenRemovedForAccountFromSource(account_id, source);
+}
+
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
   for (auto& observer : observer_list_) {
     observer.OnExtendedAccountInfoUpdated(info);
