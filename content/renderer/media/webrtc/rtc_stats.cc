@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 
@@ -65,12 +66,10 @@ std::vector<const webrtc::RTCStatsMemberInterface*> StandardizedMembers(
   // Note that using "is_standarized" avoids having to maintain a whitelist of
   // every single standardized member, as we do at the "stats object" level
   // with "RTCStatsWhitelist".
-  stats_members.erase(
-      std::remove_if(stats_members.begin(), stats_members.end(),
-                     [](const webrtc::RTCStatsMemberInterface* member) {
-                       return !member->is_standardized();
-                     }),
-      stats_members.end());
+  base::EraseIf(stats_members,
+                [](const webrtc::RTCStatsMemberInterface* member) {
+                  return !member->is_standardized();
+                });
   return stats_members;
 }
 

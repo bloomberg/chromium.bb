@@ -11,6 +11,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
@@ -216,11 +217,9 @@ void TouchEventAckQueue::ReportTouchEventAckQueueUmaStats() {
 void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
     RenderWidgetHostViewBase* target_view) {
   // If a queue entry's root view is being destroyed, just delete it.
-  ack_queue_.erase(remove_if(ack_queue_.begin(), ack_queue_.end(),
-                             [target_view](AckData data) {
-                               return data.root_view == target_view;
-                             }),
-                   ack_queue_.end());
+  base::EraseIf(ack_queue_, [target_view](AckData data) {
+    return data.root_view == target_view;
+  });
 
   // Otherwise, mark its status accordingly.
   for_each(ack_queue_.begin(), ack_queue_.end(), [target_view](AckData& data) {
