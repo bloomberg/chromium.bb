@@ -13,10 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestSigninClient::TestSigninClient(PrefService* pref_service)
-    : shared_factory_(
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       are_signin_cookies_allowed_(true),
       network_calls_delayed_(false),
       is_signout_allowed_(true) {}
@@ -39,7 +36,7 @@ void TestSigninClient::PreSignOut(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 TestSigninClient::GetURLLoaderFactory() {
-  return shared_factory_;
+  return test_url_loader_factory_.GetSafeWeakWrapper();
 }
 
 network::mojom::CookieManager* TestSigninClient::GetCookieManager() {

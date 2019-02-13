@@ -91,7 +91,6 @@ class TestSigninClient : public SigninClient {
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
   PrefService* pref_service_;
   std::unique_ptr<network::mojom::CookieManager> cookie_manager_;
