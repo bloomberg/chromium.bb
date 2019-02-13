@@ -1184,22 +1184,6 @@
             ]
         }
     ],
-    "CCTModulePhase1": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_With_Cache",
-                    "enable_features": [
-                        "CCTModule",
-                        "CCTModuleCache"
-                    ]
-                }
-            ]
-        }
-    ],
     "CertificateTransparencyLogAuditing": [
         {
             "platforms": [
