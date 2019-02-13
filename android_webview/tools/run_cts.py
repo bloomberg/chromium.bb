@@ -35,8 +35,11 @@ _TEST_RUNNER_PATH = os.path.join(
 
 _EXPECTED_FAILURES_FILE = os.path.join(
     os.path.dirname(__file__), 'cts_config', 'expected_failure_on_bot.json')
+
 _WEBVIEW_CTS_GCS_PATH_FILE = os.path.join(
     os.path.dirname(__file__), 'cts_config', 'webview_cts_gcs_path.json')
+_ARCH_SPECIFIC_CTS_INFO = ["filename", "unzip_dir", "_origin"]
+
 _CTS_ARCHIVE_DIR = os.path.join(os.path.dirname(__file__), 'cts_archive')
 
 _SDK_PLATFORM_DICT = {
@@ -49,12 +52,21 @@ _SDK_PLATFORM_DICT = {
     version_codes.OREO_MR1: 'O'
 }
 
-# TODO(aluo): support 'x86' and 'x86_64'
+# The test apks are apparently compatible across all architectures, the
+# arm vs x86 split is to match the current cts releases and in case things
+# start to diverge in the future.  Keeping the arm64 (instead of arm) dict
+# key to avoid breaking the bots that specify --arch arm64 to invoke the tests.
 _SUPPORTED_ARCH_DICT = {
-    abis.ARM_64: 'arm64',
+    # TODO(aluo): Investigate how to force WebView abi on platforms supporting
+    # multiple abis.
     # The test apks under 'arm64' support both arm and arm64 devices.
     abis.ARM: 'arm64',
+    abis.ARM_64: 'arm64',
+    # The test apks under 'x86' support both x86 and x86_64 devices.
+    abis.X86: 'x86',
+    abis.X86_64: 'x86'
 }
+
 
 FILE_FILTER_OPT = '--test-launcher-filter-file'
 TEST_FILTER_OPT = '--test-filter'
@@ -68,7 +80,10 @@ def GetCtsInfo(arch, platform, item):
   with open(_WEBVIEW_CTS_GCS_PATH_FILE) as f:
     cts_gcs_path_info = json.load(f)
   try:
-    return cts_gcs_path_info[arch][platform][item]
+    if item in _ARCH_SPECIFIC_CTS_INFO:
+      return cts_gcs_path_info[platform]['arch'][arch][item]
+    else:
+      return cts_gcs_path_info[platform][item]
   except KeyError:
     raise Exception('No %s info available for arch:%s, android:%s' %
                     (item, arch, platform))
