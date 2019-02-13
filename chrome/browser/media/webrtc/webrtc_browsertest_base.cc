@@ -140,7 +140,8 @@ class PermissionRequestObserver : public PermissionRequestManager::Observer {
 
 std::vector<std::string> JsonArrayToVectorOfStrings(
     const std::string& json_array) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_array);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(json_array);
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->is_list());
   std::unique_ptr<base::ListValue> list =
@@ -560,8 +561,8 @@ scoped_refptr<content::TestStatsReportDictionary>
 WebRtcTestBase::GetStatsReportDictionary(content::WebContents* tab) const {
   std::string result = ExecuteJavascript("getStatsReportDictionary()", tab);
   EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
-  std::unique_ptr<base::Value> parsed_json = base::JSONReader::Read(
-      result.substr(3));
+  std::unique_ptr<base::Value> parsed_json =
+      base::JSONReader::ReadDeprecated(result.substr(3));
   base::DictionaryValue* dictionary;
   CHECK(parsed_json);
   CHECK(parsed_json->GetAsDictionary(&dictionary));

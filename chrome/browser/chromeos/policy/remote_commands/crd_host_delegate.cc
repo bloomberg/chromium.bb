@@ -249,7 +249,8 @@ void CRDHostDelegate::OnICEConfigurationLoaded(
     std::unique_ptr<std::string> response_body) {
   ice_config_loader_.reset();
   if (response_body) {
-    std::unique_ptr<base::Value> value = base::JSONReader::Read(*response_body);
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::ReadDeprecated(*response_body);
     if (!value || !value->is_dict()) {
       ice_success_callback_.Reset();
       std::move(error_callback_)
@@ -317,7 +318,8 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
 }
 
 void CRDHostDelegate::PostMessageFromNativeHost(const std::string& message) {
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::ReadDeprecated(message);
   if (!message_value->is_dict()) {
     OnProtocolBroken("Message is not a dictionary");
     return;

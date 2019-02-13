@@ -164,8 +164,8 @@ void CALLBACK SaveAccountInfoW(HWND /*hwnd*/,
 
   HRESULT hr = S_OK;
   base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> properties =
-      base::JSONReader::Read(buffer, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> properties = base::JSONReader::ReadDeprecated(
+      buffer, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!properties || !properties->GetAsDictionary(&dict)) {
     LOGFN(ERROR) << "base::JSONReader::Read failed length=" << buffer_len_bytes;
     hr = E_FAIL;

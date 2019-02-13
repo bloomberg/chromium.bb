@@ -46,7 +46,8 @@ EcryptfsMigrationAction GetDefaultEcryptfsMigrationActionForManagedUser(
 
 std::set<std::string> GetRequestedPackagesFromArcPolicy(
     const std::string& arc_policy) {
-  std::unique_ptr<base::Value> dict = base::JSONReader::Read(arc_policy);
+  std::unique_ptr<base::Value> dict =
+      base::JSONReader::ReadDeprecated(arc_policy);
   if (!dict || !dict->is_dict())
     return {};
 

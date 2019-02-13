@@ -53,7 +53,8 @@ bool ExtensionJSBrowserTest::RunJavascriptTestF(bool is_async,
           load_waiter_->extension_id(),
           script);
 
-  std::unique_ptr<base::Value> value_result = base::JSONReader::Read(result);
+  std::unique_ptr<base::Value> value_result =
+      base::JSONReader::ReadDeprecated(result);
   CHECK_EQ(base::Value::Type::DICTIONARY, value_result->type());
   base::DictionaryValue* dict_value =
       static_cast<base::DictionaryValue*>(value_result.get());

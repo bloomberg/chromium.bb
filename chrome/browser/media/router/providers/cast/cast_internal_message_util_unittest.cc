@@ -34,7 +34,7 @@ std::unique_ptr<base::Value> ReceiverStatus() {
         "transportId":"transportId"
       }]
   })";
-  return base::JSONReader::Read(receiver_status_str);
+  return base::JSONReader::ReadDeprecated(receiver_status_str);
 }
 
 void ExpectNoCastSession(const MediaSinkInternal& sink,

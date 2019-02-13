@@ -887,7 +887,7 @@ void HttpHandler::HandleCommand(
   if (request.data.length()) {
     base::DictionaryValue* body_params;
     std::unique_ptr<base::Value> parsed_body =
-        base::JSONReader::Read(request.data);
+        base::JSONReader::ReadDeprecated(request.data);
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
       if (kW3CDefault) {
         PrepareResponse(trimmed_path, send_response_func,

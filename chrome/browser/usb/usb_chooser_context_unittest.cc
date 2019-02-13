@@ -457,7 +457,7 @@ TEST_F(UsbChooserContextTest,
   ExpectNoPermissions(store, *specific_device_info);
 
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   ExpectCorrectPermissions(store, kValidRequestingOrigins,
                            kInvalidRequestingOrigins, *specific_device_info);
@@ -480,7 +480,7 @@ TEST_F(UsbChooserContextTest,
   ExpectNoPermissions(store, *vendor_related_device_info);
 
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   ExpectCorrectPermissions(store, kValidRequestingOrigins,
                            kInvalidRequestingOrigins,
@@ -505,7 +505,7 @@ TEST_F(UsbChooserContextTest,
   ExpectNoPermissions(store, *unrelated_device_info);
 
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   EXPECT_TRUE(store->HasDevicePermission(kGadgetOrigin, kCoolOrigin,
                                          *unrelated_device_info));
@@ -552,7 +552,7 @@ TEST_F(UsbChooserContextTest,
                                           *unrelated_device_info));
 
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   EXPECT_TRUE(store->HasDevicePermission(
       kProductVendorOrigin, kProductVendorOrigin, *specific_device_info));
@@ -775,7 +775,7 @@ TEST_F(UsbChooserContextTest,
        GetAllGrantedObjectsWithOnlyPolicyAllowedDevices) {
   auto* store = GetChooserContext(profile());
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   auto objects = store->GetAllGrantedObjects();
   ASSERT_EQ(objects.size(), 4u);
@@ -817,7 +817,7 @@ TEST_F(UsbChooserContextTest,
 TEST_F(UsbChooserContextTest,
        GetAllGrantedObjectsWithUserAndPolicyAllowedDevices) {
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   const GURL kGoogleOrigin("https://www.google.com");
   UsbDeviceInfoPtr persistent_device_info =
@@ -898,7 +898,7 @@ TEST_F(UsbChooserContextTest,
        GetAllGrantedObjectsWithSpecificPolicyAndUserGrantedDevice) {
   auto* store = GetChooserContext(profile());
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   const GURL kProductVendorOrigin("https://product.vendor.com");
   UsbDeviceInfoPtr persistent_device_info = device_manager_.CreateAndAddDevice(
@@ -960,7 +960,7 @@ TEST_F(UsbChooserContextTest,
 
   auto* store = GetChooserContext(profile());
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   EXPECT_CALL(
       mock_permission_observer_,
@@ -1015,7 +1015,7 @@ TEST_F(UsbChooserContextTest,
 
   auto* store = GetChooserContext(profile());
   profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                             *base::JSONReader::Read(kPolicySetting));
+                             *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   EXPECT_CALL(
       mock_permission_observer_,

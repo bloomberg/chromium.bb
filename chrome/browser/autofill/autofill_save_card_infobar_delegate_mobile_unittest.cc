@@ -112,7 +112,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
   std::unique_ptr<base::DictionaryValue> legal_message;
   if (!legal_message_string.empty()) {
     std::unique_ptr<base::Value> value(
-        base::JSONReader::Read(legal_message_string));
+        base::JSONReader::ReadDeprecated(legal_message_string));
     EXPECT_TRUE(value);
     base::DictionaryValue* dictionary;
     EXPECT_TRUE(value->GetAsDictionary(&dictionary));

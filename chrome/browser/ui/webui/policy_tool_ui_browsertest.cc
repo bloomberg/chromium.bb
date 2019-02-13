@@ -235,7 +235,7 @@ std::unique_ptr<base::DictionaryValue> PolicyToolUITest::ExtractPolicyValues(
   std::string json;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript, &json));
-  return base::DictionaryValue::From(base::JSONReader::Read(json));
+  return base::DictionaryValue::From(base::JSONReader::ReadDeprecated(json));
 }
 
 std::unique_ptr<base::ListValue> PolicyToolUITest::ExtractSessionsList() {
@@ -249,7 +249,7 @@ std::unique_ptr<base::ListValue> PolicyToolUITest::ExtractSessionsList() {
   std::string json;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript, &json));
-  return base::ListValue::From(base::JSONReader::Read(json));
+  return base::ListValue::From(base::JSONReader::ReadDeprecated(json));
 }
 
 bool PolicyToolUITest::IsInvalidSessionNameErrorMessageDisplayed() {
@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DISABLED_Editing) {
   std::string file_contents;
   base::ReadFileToString(GetSessionPath(GetDefaultSessionName()),
                          &file_contents);
-  values = base::JSONReader::Read(file_contents);
+  values = base::JSONReader::ReadDeprecated(file_contents);
   expected.SetDictionary("extensionPolicies",
                          std::make_unique<base::DictionaryValue>());
   expected.Remove("chromePolicies." + name + ".status", nullptr);
@@ -798,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUIExportTest, ExportSessionToMac) {
   base::ReadFileToString(GetSessionPath(FILE_PATH_LITERAL("test_session")),
                          &file_session_content);
   // The format of every session file is JSON.
-  policy::PlistWrite(*base::JSONReader::Read(file_session_content),
+  policy::PlistWrite(*base::JSONReader::ReadDeprecated(file_session_content),
                      &file_session_content);
   EXPECT_TRUE(file_export_content == file_session_content);
   TestSelectFileDialogPolicyTool::SetFactory(nullptr);

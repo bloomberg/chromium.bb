@@ -90,7 +90,7 @@ ArcTracingModel::ArcTracingModel() = default;
 ArcTracingModel::~ArcTracingModel() = default;
 
 bool ArcTracingModel::Build(const std::string& data) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value) {
     LOG(ERROR) << "Cannot parse trace data";
     return false;

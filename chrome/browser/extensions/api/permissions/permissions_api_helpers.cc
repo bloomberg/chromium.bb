@@ -44,7 +44,7 @@ std::unique_ptr<APIPermission> UnpackPermissionWithArguments(
     const std::string& permission_str,
     std::string* error) {
   std::unique_ptr<base::Value> permission_json =
-      base::JSONReader::Read(permission_arg);
+      base::JSONReader::ReadDeprecated(permission_arg);
   if (!permission_json.get()) {
     *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, permission_str);
     return nullptr;

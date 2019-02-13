@@ -379,8 +379,9 @@ ExtensionActionViewControllerGrayscaleTest::CreateExtension(
       .SetLocation(extensions::Manifest::INTERNAL);
   switch (permission_type) {
     case PermissionType::kScriptableHost: {
-      std::unique_ptr<base::Value> content_scripts = base::JSONReader::Read(
-          R"([{
+      std::unique_ptr<base::Value> content_scripts =
+          base::JSONReader::ReadDeprecated(
+              R"([{
                      "matches": ["https://www.google.com/*"],
                      "js": ["script.js"]
                  }])");

@@ -562,7 +562,7 @@ std::string GetExitTypePreferenceFromDisk(Profile* profile) {
   if (!base::ReadFileToString(prefs_path, &prefs))
     return std::string();
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(prefs);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(prefs);
   if (!value)
     return std::string();
 

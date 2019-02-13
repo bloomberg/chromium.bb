@@ -132,7 +132,7 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
     return;
 
   std::unique_ptr<base::DictionaryValue> json =
-      base::DictionaryValue::From(base::JSONReader::Read(voice_id));
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(voice_id));
   std::string name;
   std::string extension_id;
   json->GetString("name", &name);

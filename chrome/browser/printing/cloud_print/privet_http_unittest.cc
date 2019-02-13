@@ -266,7 +266,7 @@ const char* const kTestParams[] = {"8.8.4.4", "2001:4860:4860::8888"};
 // string.
 std::string NormalizeJson(const std::string& json) {
   std::string result = json;
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(result);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(result);
   DCHECK(value) << result;
   base::JSONWriter::Write(*value, &result);
   return result;

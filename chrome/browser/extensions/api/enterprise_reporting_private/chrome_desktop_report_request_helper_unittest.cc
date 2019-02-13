@@ -93,7 +93,7 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, ExtensionList) {
 
   // Extension list will be a empty list by default.
   expected_extension_list = "[]";
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport": {"chromeUserProfileReport":[{}]}})"));
   ASSERT_TRUE(report);
   request = GenerateChromeDesktopReportRequest(*report, &profile_);
@@ -104,7 +104,7 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, ExtensionList) {
 
   // Extension list will be copied from the |report|.
   expected_extension_list = R"([{"id":"1\\\""}])";
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
            {"chromeUserProfileReport":
              [
@@ -126,7 +126,7 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, PluginList) {
   std::string expected_plugin_list;
 
   expected_plugin_list = R"([{"id":"1\\\""}])";
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
            {"chromeUserProfileReport":
              [
@@ -147,7 +147,7 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, SignedInUser) {
   std::string expected_signed_in_user;
 
   expected_signed_in_user = R"({"email":"a\\@example.com"})";
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
            {"chromeUserProfileReport":
              [
@@ -175,8 +175,8 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, ProfileID) {
 
   // Profile ID will be merged into the first item of
   // |chrome_user_profile_reports|
-  std::unique_ptr<base::DictionaryValue> report =
-      base::DictionaryValue::From(base::JSONReader::Read(R"({"browserReport":
+  std::unique_ptr<base::DictionaryValue> report = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(R"({"browserReport":
                                   {"chromeUserProfileReport":[
                                     {"extensionData": [{"id":"1"}]}
                                   ]}
@@ -191,13 +191,13 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, ProfileID) {
 TEST_F(ChromeDesktopReportRequestGeneratorTest, InvalidInput) {
   // |request| will not be generated if the type of input is invalid.
   std::unique_ptr<base::DictionaryValue> report;
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
          {"chromeUserProfileReport":[{"extensionData":{}}]}})"));
   ASSERT_TRUE(report);
   EXPECT_FALSE(GenerateChromeDesktopReportRequest(*report, &profile_));
 
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
          {"chromeUserProfileReport":[{"chromeSignInUser":""}]}})"));
   ASSERT_TRUE(report);
@@ -209,8 +209,8 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, SafeBrowsing) {
                                   true);
 
   std::unique_ptr<base::DictionaryValue> report;
-  report =
-      base::DictionaryValue::From(base::JSONReader::Read(R"({"browserReport":
+  report = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(R"({"browserReport":
                                   {"chromeUserProfileReport":[{
                                     "safeBrowsingWarnings":"invalid"
                                     }]
@@ -219,7 +219,7 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, SafeBrowsing) {
   ASSERT_TRUE(report);
   EXPECT_FALSE(GenerateChromeDesktopReportRequest(*report, &profile_));
 
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
            {"chromeUserProfileReport":[{
              "safeBrowsingWarningsClickThrough": "invalid"}]
@@ -228,7 +228,7 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, SafeBrowsing) {
   ASSERT_TRUE(report);
   EXPECT_FALSE(GenerateChromeDesktopReportRequest(*report, &profile_));
 
-  report = base::DictionaryValue::From(base::JSONReader::Read(
+  report = base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
       R"({"browserReport":
            {"chromeUserProfileReport":[{
               "safeBrowsingWarnings":3,
@@ -268,8 +268,8 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest,
   prefs->SetBoolean(enterprise_reporting::kReportExtensionsAndPluginsData,
                     false);
 
-  std::unique_ptr<base::DictionaryValue> report =
-      base::DictionaryValue::From(base::JSONReader::Read(R"({"browserReport":
+  std::unique_ptr<base::DictionaryValue> report = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(R"({"browserReport":
                                   {"chromeUserProfileReport":[
                                     {"extensionData": [{"id":"1"}],
                                      "plugins": [{"id":"2"}]
@@ -289,8 +289,8 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, DontReportSafeBrowsingData) {
   PrefService* prefs = profile_.GetPrefs();
   prefs->SetBoolean(enterprise_reporting::kReportSafeBrowsingData, false);
 
-  std::unique_ptr<base::DictionaryValue> report =
-      base::DictionaryValue::From(base::JSONReader::Read(R"({"browserReport":
+  std::unique_ptr<base::DictionaryValue> report = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(R"({"browserReport":
                                   {"chromeUserProfileReport":[
                                     {"safeBrowsingWarnings" : 1,
                                      "safeBrowsingWarningsClickThrough": 2

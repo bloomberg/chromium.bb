@@ -296,7 +296,7 @@ bool NSSDecryptor::ReadAndParseLogins(
   std::string json_content;
   base::ReadFileToString(json_file, &json_content);
   std::unique_ptr<base::Value> parsed_json(
-      base::JSONReader::Read(json_content));
+      base::JSONReader::ReadDeprecated(json_content));
   const base::DictionaryValue* password_dict;
   const base::ListValue* password_list;
   const base::ListValue* blacklist_domains;

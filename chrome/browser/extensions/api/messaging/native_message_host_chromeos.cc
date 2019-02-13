@@ -53,7 +53,7 @@ class EchoHost : public NativeMessageHost {
 
   void OnMessage(const std::string& request_string) override {
     std::unique_ptr<base::Value> request_value =
-        base::JSONReader::Read(request_string);
+        base::JSONReader::ReadDeprecated(request_string);
     std::unique_ptr<base::DictionaryValue> request(
         static_cast<base::DictionaryValue*>(request_value.release()));
     if (request_string.find("stopHostTest") != std::string::npos) {

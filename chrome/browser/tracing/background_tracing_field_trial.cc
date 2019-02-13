@@ -84,7 +84,8 @@ std::unique_ptr<content::BackgroundTracingConfig> GetBackgroundTracingConfig() {
   if (g_config_text_filter_for_testing)
     (*g_config_text_filter_for_testing)(&config_text);
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(config_text);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(config_text);
   if (!value)
     return nullptr;
 
@@ -104,7 +105,8 @@ void SetupBackgroundTracingFromConfigFile(const base::FilePath& config_file,
     return;
   }
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(config_text);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(config_text);
   if (!value) {
     LOG(ERROR) << "Background tracing has incorrect config: " << config_text;
     return;

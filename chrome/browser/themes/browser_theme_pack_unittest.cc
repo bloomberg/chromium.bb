@@ -152,7 +152,7 @@ void BrowserThemePackTest::VerifyColorMap(
 }
 
 void BrowserThemePackTest::LoadColorJSON(const std::string& json) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(value->is_dict());
   LoadColorDictionary(static_cast<base::DictionaryValue*>(value.get()));
 }
@@ -163,7 +163,7 @@ void BrowserThemePackTest::LoadColorDictionary(base::DictionaryValue* value) {
 }
 
 void BrowserThemePackTest::LoadTintJSON(const std::string& json) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(value->is_dict());
   LoadTintDictionary(static_cast<base::DictionaryValue*>(value.get()));
 }
@@ -173,7 +173,7 @@ void BrowserThemePackTest::LoadTintDictionary(base::DictionaryValue* value) {
 }
 
 void BrowserThemePackTest::LoadDisplayPropertiesJSON(const std::string& json) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(value->is_dict());
   LoadDisplayPropertiesDictionary(
       static_cast<base::DictionaryValue*>(value.get()));
@@ -187,7 +187,7 @@ void BrowserThemePackTest::LoadDisplayPropertiesDictionary(
 void BrowserThemePackTest::ParseImageNamesJSON(
     const std::string& json,
     TestFilePathMap* out_file_paths) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(value->is_dict());
   ParseImageNamesDictionary(static_cast<base::DictionaryValue*>(value.get()),
                             out_file_paths);

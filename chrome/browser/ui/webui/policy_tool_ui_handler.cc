@@ -86,7 +86,7 @@ std::unique_ptr<base::Value> ParseSinglePolicyType(
     return nullptr;
   if (policy_value->type() == base::Value::Type::STRING &&
       policy_schema.type() != base::Value::Type::STRING) {
-    return base::JSONReader::Read(policy_value->GetString());
+    return base::JSONReader::ReadDeprecated(policy_value->GetString());
   }
   return base::Value::ToUniquePtrValue(policy_value->Clone());
 }
@@ -244,7 +244,7 @@ void PolicyToolUIHandler::OnSessionContentReceived(
     return;
   }
   std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(base::JSONReader::Read(contents));
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(contents));
 
   // If contents is not a properly formed JSON string, disable editing in the
   // UI to prevent the user from accidentally overriding it.

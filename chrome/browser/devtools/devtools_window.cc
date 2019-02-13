@@ -116,7 +116,7 @@ bool FindInspectedBrowserAndTabIndex(
 
 void SetPreferencesFromJson(Profile* profile, const std::string& json) {
   base::DictionaryValue* dict = nullptr;
-  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> parsed = base::JSONReader::ReadDeprecated(json);
   if (!parsed || !parsed->GetAsDictionary(&dict))
     return;
   DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
@@ -266,7 +266,8 @@ class DevToolsEventForwarder {
 
 void DevToolsEventForwarder::SetWhitelistedShortcuts(
     const std::string& message) {
-  std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> parsed_message =
+      base::JSONReader::ReadDeprecated(message);
   base::ListValue* shortcut_list;
   if (!parsed_message || !parsed_message->GetAsList(&shortcut_list))
       return;
@@ -1449,7 +1450,8 @@ void DevToolsWindow::RenderProcessGone(bool crashed) {
 }
 
 void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(cert_chain);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(cert_chain);
   if (!value || value->type() != base::Value::Type::LIST) {
     NOTREACHED();
     return;

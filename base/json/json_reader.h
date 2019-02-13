@@ -91,19 +91,40 @@ class BASE_EXPORT JSONReader {
 
   ~JSONReader();
 
+  // Work in progress. Please use ReadDeprecated() for now.
+  // https://crbug.com/925165
+  // A new version of Read() that returns a Value will be available as soon as
+  // all existing callers have been migrated to ReadDeprecated().
+  static std::unique_ptr<Value> Read(StringPiece json,
+                                     int options = JSON_PARSE_RFC,
+                                     int max_depth = kStackMaxDepth);
+
   // Reads and parses |json|, returning a Value.
   // If |json| is not a properly formed JSON string, returns nullptr.
   // Wrap this in base::FooValue::From() to check the Value is of type Foo and
   // convert to a FooValue at the same time.
-  static std::unique_ptr<Value> Read(StringPiece json,
-                                     int options = JSON_PARSE_RFC,
-                                     int max_depth = kStackMaxDepth);
+  static std::unique_ptr<Value> ReadDeprecated(StringPiece json,
+                                               int options = JSON_PARSE_RFC,
+                                               int max_depth = kStackMaxDepth);
+
+  // Work in progress. Please use ReadAndReturnErrorDeprecated() for now.
+  // https://crbug.com/925165
+  // A new version of ReadAndReturnError() that returns a Value will be
+  // available as soon as all existing callers have been migrated to
+  // ReadAndReturnErrorDeprecated().
+  static std::unique_ptr<Value> ReadAndReturnError(
+      StringPiece json,
+      int options,  // JSONParserOptions
+      int* error_code_out,
+      std::string* error_msg_out,
+      int* error_line_out = nullptr,
+      int* error_column_out = nullptr);
 
   // Reads and parses |json| like Read(). |error_code_out| and |error_msg_out|
   // are optional. If specified and nullptr is returned, they will be populated
   // an error code and a formatted error message (including error location if
   // appropriate). Otherwise, they will be unmodified.
-  static std::unique_ptr<Value> ReadAndReturnError(
+  static std::unique_ptr<Value> ReadAndReturnErrorDeprecated(
       StringPiece json,
       int options,  // JSONParserOptions
       int* error_code_out,

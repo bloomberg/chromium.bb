@@ -47,7 +47,8 @@ base::Optional<base::Value> LoadPrefsFromDisk(
     return base::nullopt;
   }
 
-  std::unique_ptr<base::Value> prefs_value = base::JSONReader::Read(prefs_str);
+  std::unique_ptr<base::Value> prefs_value =
+      base::JSONReader::ReadDeprecated(prefs_str);
   if (!prefs_value) {
     LOG(ERROR) << "Unable to parse demo extensions prefs.";
     return base::nullopt;

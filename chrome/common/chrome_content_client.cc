@@ -264,8 +264,9 @@ bool TryCreatePepperFlashInfo(const base::FilePath& flash_filename,
   if (!base::ReadFileToString(manifest_path, &manifest_data))
     return false;
 
-  std::unique_ptr<base::DictionaryValue> manifest = base::DictionaryValue::From(
-      base::JSONReader::Read(manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
+  std::unique_ptr<base::DictionaryValue> manifest =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
+          manifest_data, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!manifest)
     return false;
 

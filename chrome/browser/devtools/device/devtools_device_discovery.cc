@@ -459,7 +459,8 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedVersion(
   if (result < 0)
     return;
   // Parse version, append to package name if available,
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response);
   base::DictionaryValue* dict;
   if (value && value->GetAsDictionary(&dict)) {
     std::string browser_name;
@@ -490,7 +491,8 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedPages(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result < 0)
     return;
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response);
   base::ListValue* list_value;
   if (value && value->GetAsList(&list_value)) {
     for (const auto& page_value : *list_value) {

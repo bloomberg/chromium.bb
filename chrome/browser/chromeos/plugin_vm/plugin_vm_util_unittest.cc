@@ -68,7 +68,7 @@ TEST_F(PluginVmUtilTest,
   EXPECT_FALSE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 
   testing_profile_->GetPrefs()->Set(plugin_vm::prefs::kPluginVmImage,
-                                    *base::JSONReader::Read(R"(
+                                    *base::JSONReader::ReadDeprecated(R"(
     {
         "url": "https://example.com/plugin_vm_image",
         "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"

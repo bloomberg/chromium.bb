@@ -103,7 +103,7 @@ TEST_F(ArcSupportMessageHostTest, SendMessage) {
 
   ASSERT_EQ(1u, client()->messages().size());
   std::unique_ptr<base::Value> recieved_value =
-      base::JSONReader::Read(client()->messages()[0]);
+      base::JSONReader::ReadDeprecated(client()->messages()[0]);
   EXPECT_EQ(value, *recieved_value);
 }
 

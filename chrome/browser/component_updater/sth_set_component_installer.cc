@@ -100,8 +100,8 @@ void LoadSTHsFromDisk(
     int error_code = 0;
     std::string error_message;
     std::unique_ptr<base::Value> parsed_json =
-        base::JSONReader::ReadAndReturnError(json_sth, base::JSON_PARSE_RFC,
-                                             &error_code, &error_message);
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            json_sth, base::JSON_PARSE_RFC, &error_code, &error_message);
 
     if (!parsed_json || error_code != base::JSONReader::JSON_NO_ERROR) {
       DVLOG(1) << "STH loading failed: " << error_message << " for log: "

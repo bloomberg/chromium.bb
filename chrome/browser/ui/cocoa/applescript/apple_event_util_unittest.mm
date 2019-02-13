@@ -230,7 +230,7 @@ TEST_F(AppleEventUtilTest, ValueToAppleEventDescriptor) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(cases[i].json_input);
+        base::JSONReader::ReadDeprecated(cases[i].json_input);
     NSAppleEventDescriptor* descriptor =
         chrome::mac::ValueToAppleEventDescriptor(value.get());
 
