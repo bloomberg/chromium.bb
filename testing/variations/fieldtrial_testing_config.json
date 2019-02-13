@@ -4500,7 +4500,7 @@
             ]
         }
     ],
-    "SimpleCachePrefetchExperiment2": [
+    "SimpleCachePrefetchExperiment": [
         {
             "platforms": [
                 "android",
@@ -4509,11 +4509,11 @@
             ],
             "experiments": [
                 {
-                    "name": "PrefetchFull32KTrailer4k",
+                    "name": "PrefetchTrailerHint2",
                     "params": {
-                        "FullPrefetchBytes": "32768",
+                        "FullPrefetchBytes": "0",
                         "TrailerPrefetchHint": "true",
-                        "TrailerPrefetchSpeculativeBytes": "4096"
+                        "TrailerPrefetchSpeculativeBytes": "0"
                     },
                     "enable_features": [
                         "SimpleCachePrefetchExperiment2"
@@ -4525,13 +4525,20 @@
     "SimpleCacheTrial": [
         {
             "platforms": [
-                "chromeos",
-                "linux",
-                "mac"
+                "mac",
+                "windows"
             ],
             "experiments": [
                 {
-                    "name": "ExperimentYes"
+                    "name": "ExperimentNoTrailerPrefetchHint4",
+                    "params": {
+                        "FullPrefetchBytes": "0",
+                        "TrailerPrefetchInt": "true",
+                        "TrailerPrefetchSpeculativeBytes": "0"
+                    },
+                    "enable_features": [
+                        "SimpleCachePrefetchExperiment2"
+                    ]
                 }
             ]
         }
