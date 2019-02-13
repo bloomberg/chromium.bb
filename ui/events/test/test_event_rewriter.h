@@ -21,12 +21,9 @@ class TestEventRewriter : public ui::EventRewriter {
   int events_seen() const { return events_seen_; }
 
   // ui::EventRewriter:
-  ui::EventRewriteStatus RewriteEvent(
+  ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override;
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
+      const Continuation continuation) override;
 
  private:
   int events_seen_ = 0;

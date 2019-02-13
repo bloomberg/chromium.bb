@@ -13,17 +13,11 @@ TestEventRewriter::TestEventRewriter() = default;
 
 TestEventRewriter::~TestEventRewriter() = default;
 
-ui::EventRewriteStatus TestEventRewriter::RewriteEvent(
+ui::EventDispatchDetails TestEventRewriter::RewriteEvent(
     const ui::Event& event,
-    std::unique_ptr<ui::Event>* new_event) {
+    const Continuation continuation) {
   ++events_seen_;
-  return ui::EVENT_REWRITE_CONTINUE;
-}
-
-ui::EventRewriteStatus TestEventRewriter::NextDispatchEvent(
-    const ui::Event& last_event,
-    std::unique_ptr<ui::Event>* new_event) {
-  return ui::EVENT_REWRITE_CONTINUE;
+  return SendEvent(continuation, &event);
 }
 
 }  // namespace test
