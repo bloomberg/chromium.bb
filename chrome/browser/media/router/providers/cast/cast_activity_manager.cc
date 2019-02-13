@@ -804,7 +804,7 @@ CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
       callback(std::move(callback)) {}
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
-    DoLaunchSessionParams&& other) noexcept = default;
+    DoLaunchSessionParams&& other) = default;
 
 CastActivityManager::DoLaunchSessionParams::~DoLaunchSessionParams() = default;
 
