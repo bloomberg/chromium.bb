@@ -243,6 +243,9 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm,
                         const MB_MODE_INFO *const mi, int mi_row, int mi_col,
                         int x_mis, int y_mis);
 
+// The global_mvs output parameter points to an array of REF_FRAMES elements.
+// The caller may pass a null global_mvs if it does not need the global_mvs
+// output.
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MB_MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t ref_mv_count[MODE_CTX_REF_FRAMES],

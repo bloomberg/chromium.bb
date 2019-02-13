@@ -821,7 +821,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   MV_REFERENCE_FRAME rf[2];
   av1_set_ref_frame(rf, ref_frame);
 
-  if (ref_frame < REF_FRAMES) {
+  if (global_mvs != NULL && ref_frame < REF_FRAMES) {
     if (ref_frame != INTRA_FRAME) {
       global_mvs[ref_frame] = gm_get_motion_vector(
           &cm->global_motion[ref_frame], cm->allow_high_precision_mv, bsize,
