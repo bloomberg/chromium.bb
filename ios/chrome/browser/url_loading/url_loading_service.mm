@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -61,5 +64,44 @@ void UrlLoadingService::SwitchToTab(
 
 void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
   DCHECK(delegate_);
-  [delegate_ openURLInNewTabWithCommand:command];
+  DCHECK(browser_);
+  ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+
+  notifier_->NewTabWillOpenUrl(command.URL, command.inIncognito);
+
+  if (command.inIncognito != browser_state->IsOffTheRecord()) {
+    // When sending an open command that switches modes, ensure the tab
+    // ends up appended to the end of the model, not just next to what is
+    // currently selected in the other mode. This is done with the |appendTo|
+    // parameter.
+    command.appendTo = kLastTab;
+    [delegate_ openURLInNewTabWithCommand:command];
+    return;
+  }
+
+  TabModel* tab_model = browser_->GetTabModel();
+
+  Tab* adjacent_tab = nil;
+  if (command.appendTo == kCurrentTab)
+    adjacent_tab = tab_model.currentTab;
+
+  GURL captured_url = command.URL;
+  web::Referrer captured_referrer = command.referrer;
+  auto openTab = ^{
+    [tab_model insertTabWithURL:captured_url
+                       referrer:captured_referrer
+                     transition:ui::PAGE_TRANSITION_LINK
+                         opener:adjacent_tab
+                    openedByDOM:NO
+                        atIndex:TabModelConstants::kTabPositionAutomatically
+                   inBackground:command.inBackground];
+
+    notifier_->NewTabDidOpenUrl(captured_url, command.inIncognito);
+  };
+
+  if (!command.inBackground) {
+    openTab();
+  } else {
+    [delegate_ animateOpenBackgroundTabFromCommand:command completion:openTab];
+  }
 }

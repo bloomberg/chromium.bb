@@ -250,6 +250,11 @@ void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
   }
 }
 
+bool IsHelpURL(GURL& URL) {
+  GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
+  return helpUrl == URL;
+}
+
 // Histogram that tracks user actions related to the WKWebView 3D touch link
 // preview API. These values are persisted to logs. Entries should not be
 // renumbered and numeric values should never be reused.
@@ -1353,6 +1358,33 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // If no view controllers are presented, we should be ok with dispatching
     // the completion block directly.
     dispatch_async(dispatch_get_main_queue(), completion);
+  }
+}
+
+- (void)animateOpenBackgroundTabFromOriginPoint:(CGPoint)originPoint
+                                     completion:(void (^)())completion {
+  if ([self canShowTabStrip] || CGPointEqualToPoint(originPoint, CGPointZero)) {
+    completion();
+  } else {
+    self.inNewTabAnimation = YES;
+    // Exit fullscreen if needed.
+    FullscreenControllerFactory::GetInstance()
+        ->GetForBrowserState(_browserState)
+        ->ExitFullscreen();
+    const CGFloat kAnimatedViewSize = 50;
+    BackgroundTabAnimationView* animatedView =
+        [[BackgroundTabAnimationView alloc]
+            initWithFrame:CGRectMake(0, 0, kAnimatedViewSize,
+                                     kAnimatedViewSize)];
+    __weak UIView* weakAnimatedView = animatedView;
+    auto completionBlock = ^() {
+      self.inNewTabAnimation = NO;
+      [weakAnimatedView removeFromSuperview];
+      completion();
+    };
+    [self.view addSubview:animatedView];
+    [animatedView animateFrom:originPoint
+        toTabGridButtonWithCompletion:completionBlock];
   }
 }
 
@@ -3241,7 +3273,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
                                         appendTo:kCurrentTab];
       command.originPoint = originPoint;
-      [strongSelf openNewTabInCurrentMode:command];
+      [strongSelf webPageOrderedOpen:command];
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
 
@@ -3406,6 +3438,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     if (NTPHelper && NTPHelper->IsActive()) {
       NTPHelper->Deactivate();
     }
+  }
+}
+
+- (void)newTabWillOpenURL:(GURL)URL inIncognito:(BOOL)inIncognito {
+  if (!IsHelpURL(URL)) {
+    // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
+    // feature_engagement::Tracker based on |inIncognito|.
+    feature_engagement::NotifyNewTabEvent(_browserState, inIncognito);
   }
 }
 
@@ -3945,71 +3985,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
-  // TODO(crbug.com/907527): move to UrlLoadingService::OpenUrlInNewTab.
-
-  // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
-  // feature_engagement::Tracker based on |inIncognito|.
-  feature_engagement::NotifyNewTabEvent(self.tabModel.browserState,
-                                        command.inIncognito);
-
-  if (command.inIncognito == _isOffTheRecord) {
-    [self openNewTabInCurrentMode:command];
-    return;
-  }
-  // When sending an open command that switches modes, ensure the tab
-  // ends up appended to the end of the model, not just next to what is
-  // currently selected in the other mode. This is done with the |append|
-  // parameter.
-  command.appendTo = kLastTab;
-  [self.dispatcher openURLInNewTab:command];
+  // TODO(crbug.com/907527): call UrlLoadingService directly where we call
+  // this method.
+  UrlLoadingService* urlLoadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+  urlLoadingService->OpenUrlInNewTab(command);
 }
 
 #pragma mark - UrlLoader helpers
-
-// Opens a new tab in the current mode, following |command| parameters. The
-// |inIncognito| parameter is not taken into account.
-- (void)openNewTabInCurrentMode:(OpenNewTabCommand*)command {
-  Tab* adjacentTab = nil;
-  if (command.appendTo == kCurrentTab)
-    adjacentTab = self.tabModel.currentTab;
-
-  GURL capturedURL = command.URL;
-  web::Referrer capturedReferrer = command.referrer;
-  auto openTab = ^{
-    [self.tabModel insertTabWithURL:capturedURL
-                           referrer:capturedReferrer
-                         transition:ui::PAGE_TRANSITION_LINK
-                             opener:adjacentTab
-                        openedByDOM:NO
-                            atIndex:TabModelConstants::kTabPositionAutomatically
-                       inBackground:command.inBackground];
-  };
-
-  if (!command.inBackground || [self canShowTabStrip] ||
-      CGPointEqualToPoint(command.originPoint, CGPointZero)) {
-    openTab();
-  } else {
-    self.inNewTabAnimation = YES;
-    // Exit fullscreen if needed.
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(_browserState)
-        ->ExitFullscreen();
-    const CGFloat kAnimatedViewSize = 50;
-    BackgroundTabAnimationView* animatedView =
-        [[BackgroundTabAnimationView alloc]
-            initWithFrame:CGRectMake(0, 0, kAnimatedViewSize,
-                                     kAnimatedViewSize)];
-    __weak UIView* weakAnimatedView = animatedView;
-    auto completionBlock = ^() {
-      self.inNewTabAnimation = NO;
-      [weakAnimatedView removeFromSuperview];
-      openTab();
-    };
-    [self.view addSubview:animatedView];
-    [animatedView animateFrom:command.originPoint
-        toTabGridButtonWithCompletion:completionBlock];
-  }
-}
 
 // Switch to the tab corresponding to |params|.
 - (void)switchToTabWithParams:
@@ -4315,7 +4298,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                  inIncognito:NO
                                 inBackground:NO
                                     appendTo:kCurrentTab];
-  [self openNewTabInCurrentMode:command];
+  [self webPageOrderedOpen:command];
 }
 
 - (void)showBookmarksManager {

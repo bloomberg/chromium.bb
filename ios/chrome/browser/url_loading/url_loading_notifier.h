@@ -47,6 +47,13 @@ class UrlLoadingNotifier : public KeyedService {
   // The loader initiated the |url| loading successfully.
   void TabDidOpenUrl(const GURL& url, ui::PageTransition transition_type);
 
+  // The loader will open |url| in a new tab. Next state will be
+  // NewTabDidOpenUrl.
+  void NewTabWillOpenUrl(const GURL& url, bool in_incognito);
+
+  // The loader initiated the |url| loading in a new tab successfully.
+  void NewTabDidOpenUrl(const GURL& url, bool in_incognito);
+
  private:
   base::ObserverList<UrlLoadingObserverBridge>::Unchecked observers_;
 

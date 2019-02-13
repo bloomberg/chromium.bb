@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
@@ -174,6 +175,12 @@ using web::WebStateImpl;
 
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
   [self.bvc webPageOrderedOpen:command];
+}
+
+- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
+                                 completion:(void (^)())completion {
+  [self.bvc animateOpenBackgroundTabFromOriginPoint:command.originPoint
+                                         completion:completion];
 }
 
 @end

@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -432,7 +433,14 @@
 }
 
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
-  [self.viewController webPageOrderedOpen:command];
+  [self.viewController.dispatcher openURLInNewTab:command];
+}
+
+- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
+                                 completion:(void (^)())completion {
+  [self.viewController
+      animateOpenBackgroundTabFromOriginPoint:command.originPoint
+                                   completion:completion];
 }
 
 // TODO(crbug.com/906525) : Move WebStateListObserving out of
