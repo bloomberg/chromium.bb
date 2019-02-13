@@ -216,7 +216,7 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
   if (!identity_manager->HasPrimaryAccount())
     return;
 
-  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+  CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
   if (profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) &&
       identity::LegacyIsUsernameAllowedByPatternFromPrefs(
           g_browser_process->local_state(), primary_account.email,

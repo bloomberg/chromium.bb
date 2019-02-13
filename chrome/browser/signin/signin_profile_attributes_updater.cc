@@ -54,7 +54,7 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
   std::string old_gaia_id = entry->GetGAIAId();
 
   if (identity_manager_->HasPrimaryAccount()) {
-    AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
+    CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
     entry->SetAuthInfo(account_info.gaia,
                        base::UTF8ToUTF16(account_info.email));
   } else {
