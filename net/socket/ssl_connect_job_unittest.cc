@@ -370,7 +370,7 @@ TEST_F(SSLConnectJobTest, RequestPriority) {
   // Make resolution eventually fail, so old jobs can easily be removed from the
   // socket pool.
   host_resolver_.rules()->AddSimulatedFailure(
-      direct_transport_socket_params_->destination().hostname());
+      direct_transport_socket_params_->destination().host());
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);
@@ -602,7 +602,7 @@ TEST_F(SSLConnectJobTest, SOCKSRequestPriority) {
   // Make resolution eventually fail, so old jobs can easily be removed from the
   // socket pool.
   host_resolver_.rules()->AddSimulatedFailure(
-      socks_socket_params_->transport_params()->destination().hostname());
+      socks_socket_params_->transport_params()->destination().host());
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);
@@ -694,7 +694,7 @@ TEST_F(SSLConnectJobTest, HttpProxyRequestPriority) {
   // Make resolution eventually fail, so old jobs can easily be removed from the
   // socket pool.
   host_resolver_.rules()->AddSimulatedFailure(
-      socks_socket_params_->transport_params()->destination().hostname());
+      socks_socket_params_->transport_params()->destination().host());
   for (int initial_priority = MINIMUM_PRIORITY;
        initial_priority <= MAXIMUM_PRIORITY; ++initial_priority) {
     SCOPED_TRACE(initial_priority);

@@ -180,7 +180,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   void SetConnectTimer(base::TimeDelta duration);
   void ConnectTimeout();
 
-  const HostResolver::RequestInfo& GetDestination();
+  const HostPortPair& GetDestination();
 
   State next_state_;
 
