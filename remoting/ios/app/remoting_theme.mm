@@ -16,17 +16,6 @@
 
 @implementation RemotingTheme
 
-+ (void)applyColorSchemes {
-  MDCBasicColorScheme* colorScheme = [[MDCBasicColorScheme alloc]
-      initWithPrimaryColor:RemotingTheme.flatButtonTextColor];
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  // TODO(crbug.com/930714): +[MDCAlertColorThemer applyColorScheme:] is
-  // deprecated. Needs to be replaced.
-  [MDCAlertColorThemer applyColorScheme:colorScheme];
-#pragma GCC diagnostic pop
-}
-
 #pragma mark - Colors
 
 + (UIColor*)firstLaunchViewBackgroundColor {
