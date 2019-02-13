@@ -138,7 +138,6 @@ CONTENT_EXPORT extern const char kEnableUserMediaScreenCapturing[];
 CONTENT_EXPORT extern const char kEnableUseZoomForDSF[];
 CONTENT_EXPORT extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kEnableVtune[];
-CONTENT_EXPORT extern const char kEnableVulkan[];
 CONTENT_EXPORT extern const char kEnableWebAuthTestingAPI[];
 CONTENT_EXPORT extern const char kEnableWebBluetoothScanning[];
 CONTENT_EXPORT extern const char kEnableWebGL2ComputeContext[];
