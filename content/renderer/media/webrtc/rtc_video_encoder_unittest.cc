@@ -53,7 +53,7 @@ class EncodedImageCallbackWrapper : public webrtc::EncodedImageCallback {
       const webrtc::RTPFragmentationHeader* fragmentation) override {
     encoded_callback_.Run(encoded_image, codec_specific_info, fragmentation);
     return Result(Result::OK);
-  };
+  }
 
  private:
   EncodedCallback encoded_callback_;
