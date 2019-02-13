@@ -364,6 +364,7 @@ template("proto_library") {
     configs += [ "//build/config/sanitizers:not_fuzzed" ]
 
     public_configs = [ "//third_party/protobuf:using_proto" ]
+    public_deps = []
 
     if (generate_cc || generate_with_plugin) {
       # Not necessary if all protos are located in the same directory.
@@ -379,13 +380,9 @@ template("proto_library") {
       if (generate_cc) {
         if (defined(invoker.use_protobuf_full) &&
             invoker.use_protobuf_full == true) {
-          public_deps = [
-            "//third_party/protobuf:protobuf_full",
-          ]
+          public_deps += [ "//third_party/protobuf:protobuf_full" ]
         } else {
-          public_deps = [
-            "//third_party/protobuf:protobuf_lite",
-          ]
+          public_deps += [ "//third_party/protobuf:protobuf_lite" ]
         }
 
         if (is_win) {
@@ -400,9 +397,8 @@ template("proto_library") {
       }
     }
 
-    deps = [
-      ":$action_name",
-    ]
+    public_deps += [ ":$action_name" ]
+    deps = []
 
     # This will link any libraries in the deps (the use of invoker.deps in the
     # action won't link it).
