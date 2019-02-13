@@ -17877,6 +17877,7 @@ Called by update_net_error_codes.py.-->
   <int value="1314" label="AUTOFILLPRIVATE_GETSERVERCREDITCARDLIST"/>
   <int value="1315" label="PASSWORDSPRIVATE_CHANGESAVEDPASSWORD"/>
   <int value="1316" label="AUTOTESTPRIVATE_SETWHITELISTEDPREF"/>
+  <int value="1317" label="SAFEBROWSINGPRIVATE_GETREFERRERCHAIN"/>
 </enum>
 
 <enum name="ExtensionIconState">

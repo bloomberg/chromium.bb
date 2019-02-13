@@ -59,6 +59,10 @@ class TrackedPreferenceValidationDelegate;
 }
 }  // namespace prefs
 
+namespace extensions {
+class SafeBrowsingPrivateApiUnitTest;
+}  // namespace extensions
+
 namespace safe_browsing {
 class PingManager;
 class ClientSideDetectionService;
@@ -223,6 +227,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   friend class base::DeleteHelper<SafeBrowsingService>;
   friend class SafeBrowsingBlockingPageTestBase;
   friend class SafeBrowsingBlockingQuietPageTest;
+  friend class extensions::SafeBrowsingPrivateApiUnitTest;
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingUIManagerTest;
   friend class SafeBrowsingURLRequestContextGetter;
