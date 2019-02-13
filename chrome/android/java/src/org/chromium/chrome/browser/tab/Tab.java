@@ -264,11 +264,6 @@ public class Tab
     private WebContentsState mFrozenContentsState;
 
     /**
-     * Whether the restoration from frozen state failed.
-     */
-    private boolean mFailedToRestore;
-
-    /**
      * URL load to be performed lazily when the Tab is next shown.
      */
     private LoadUrlParams mPendingLoadParams;
@@ -1216,23 +1211,6 @@ public class Tab
     }
 
     /**
-     * Reparents this Tab to the provided Activity. Unlike {@link #detachAndStartReparenting} which
-     * launches the target Activity which can then reparent the Tab with
-     * {@link #attachAndFinishReparenting}, this method should be called from the target Activity on
-     * a Tab that belongs to a different one.
-     * @param activity - The ChromeActivity that will own the Tab.
-     * @param tabDelegateFactory - The TabDelegateFactory from the Activity for that Tab.
-     */
-    public void reparent(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
-        detach();
-        // TODO(peconn): Figure out why this is necessary - it is something to do with
-        // Tab.mIsDetached being true and TabModelSelectorImpl#requestToShowTab not calling
-        // |mVisibleTab.hide()| because of it.
-        hide(TabHidingType.REPARENTED);
-        attachAndFinishReparenting(activity, tabDelegateFactory, null);
-    }
-
-    /**
      * Begins the tab reparenting process. Detaches the tab from its current activity and fires
      * an Intent to reparent the tab into its new host activity.
      *
@@ -1643,16 +1621,6 @@ public class Tab
     }
 
     /**
-     * @return The ID of the renderer process that backs this tab or
-     *         {@link #INVALID_RENDER_PROCESS_PID} if there is none.
-     */
-    @VisibleForTesting
-    public int getCurrentRenderProcessIdForTesting() {
-        assert mNativeTabAndroid != 0;
-        return nativeGetCurrentRenderProcessId(mNativeTabAndroid);
-    }
-
-    /**
      * Calls onContentChanged on all TabObservers and updates accessibility visibility.
      */
     void notifyContentChanged() {
@@ -1861,20 +1829,21 @@ public class Tab
      * frozen with a saved TabState, and NOT if it was frozen for a lazy load.
      * @return Whether or not the restoration was successful.
      */
-    protected boolean unfreezeContents() {
+    private void unfreezeContents() {
         try {
             TraceEvent.begin("Tab.unfreezeContents");
             assert mFrozenContentsState != null;
 
             WebContents webContents =
                     mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
+            boolean failedToRestore = false;
             if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
                 // an error page instead of a blank page in that case (and the last loaded URL).
                 webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
                 TabUma.create(this, TabCreationState.FROZEN_ON_RESTORE_FAILED);
-                mFailedToRestore = true;
+                failedToRestore = true;
             }
             View compositorView = getActivity().getCompositorViewHolder();
             webContents.setSize(compositorView.getWidth(), compositorView.getHeight());
@@ -1882,21 +1851,13 @@ public class Tab
             mFrozenContentsState = null;
             initWebContents(webContents);
 
-            if (mFailedToRestore) {
+            if (failedToRestore) {
                 String url = TextUtils.isEmpty(mUrl) ? UrlConstants.NTP_URL : mUrl;
                 loadUrl(new LoadUrlParams(url, PageTransition.GENERATED));
             }
-            return !mFailedToRestore;
         } finally {
             TraceEvent.end("Tab.unfreezeContents");
         }
-    }
-
-    /**
-     * @return Whether the unfreeze attempt from a saved tab state failed.
-     */
-    public boolean didFailToRestore() {
-        return mFailedToRestore;
     }
 
     /**
@@ -2979,6 +2940,5 @@ public class Tab
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
     private native void nativeMediaDownloadInProductHelpDismissed(long nativeTabAndroid);
-    private native int nativeGetCurrentRenderProcessId(long nativeTabAndroid);
     private native boolean nativeAreRendererInputEventsIgnored(long nativeTabAndroid);
 }
