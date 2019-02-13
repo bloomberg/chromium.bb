@@ -129,6 +129,8 @@ class AppListClientImpl
 
   app_list::SearchController* GetSearchControllerForTest();
 
+  AppListModelUpdater* GetModelUpdaterForTest();
+
   // Flushes all pending mojo call to Ash for testing.
   void FlushMojoForTesting();
 

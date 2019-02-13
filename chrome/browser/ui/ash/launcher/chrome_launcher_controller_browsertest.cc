@@ -24,8 +24,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -1002,6 +1004,47 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   controller_->LaunchApp(id, ash::LAUNCH_FROM_UNKNOWN, 0,
                          display::kInvalidDisplayId);
   EXPECT_EQ(++tab_count, tab_strip->count());
+}
+
+// Launching an app from the shelf when not in Demo Mode should not record app
+// launch stat.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, NoDemoModeAppLaunchSourceReported) {
+  EXPECT_FALSE(chromeos::DemoSession::IsDeviceInDemoMode());
+
+  base::HistogramTester histogram_tester;
+
+  // Should see 0 apps launched from the Shelf in the histogram at first.
+  histogram_tester.ExpectTotalCount("DemoMode.AppLaunchSource", 0);
+
+  ash::ShelfID id(LoadExtension(test_data_dir_.AppendASCII("app1"))->id());
+  controller_->LaunchApp(id, ash::LAUNCH_FROM_SHELF, 0,
+                         display::kInvalidDisplayId);
+
+  // Should still see 0 apps launched from the Shelf in the histogram.
+  histogram_tester.ExpectTotalCount("DemoMode.AppLaunchSource", 0);
+}
+
+// Launching an app from the shelf in Demo Mode should record app
+// launch stat.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DemoModeAppLaunchSourceReported) {
+  // Set Demo mode
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(chromeos::DemoSession::IsDeviceInDemoMode());
+
+  base::HistogramTester histogram_tester;
+
+  // Should see 0 apps launched from the Shelf in the histogram at first.
+  histogram_tester.ExpectTotalCount("DemoMode.AppLaunchSource", 0);
+
+  ash::ShelfID id(LoadExtension(test_data_dir_.AppendASCII("app1"))->id());
+  controller_->LaunchApp(id, ash::LAUNCH_FROM_SHELF, 0,
+                         display::kInvalidDisplayId);
+
+  // Should see 1 app launched from the shelf in the histogram.
+  histogram_tester.ExpectUniqueSample(
+      "DemoMode.AppLaunchSource",
+      chromeos::DemoSession::AppLaunchSource::kShelf, 1);
 }
 
 // Confirm that a page can be navigated from and to while maintaining the
