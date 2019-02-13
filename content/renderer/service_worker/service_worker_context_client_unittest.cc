@@ -359,6 +359,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
     auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
         CreateCallbackWithCalledFlag(&is_idle_),
         task_runner()->GetMockTickClock());
+    timer->Start();
     context_client->SetTimeoutTimerForTesting(std::move(timer));
 
     // Ensure the idle state.
@@ -486,6 +487,7 @@ TEST_F(ServiceWorkerContextClientTest,
   auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
       CreateCallbackWithCalledFlag(&is_idle),
       task_runner()->GetMockTickClock());
+  timer->Start();
   context_client->SetTimeoutTimerForTesting(std::move(timer));
 
   // The dispatched fetch event should be recorded by |mock_proxy|.

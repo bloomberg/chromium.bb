@@ -446,6 +446,12 @@ void ServiceWorkerContextClient::WorkerContextStarted(
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
         std::move(pending_controller_request_), std::move(weak_ptr));
   }
+
+  // Create the idle timer. At this point the timer is not started. It will be
+  // started after the WorkerStarted message is sent.
+  context_->timeout_timer =
+      std::make_unique<ServiceWorkerTimeoutTimer>(base::BindRepeating(
+          &ServiceWorkerContextClient::OnIdleTimeout, base::Unretained(this)));
 }
 
 void ServiceWorkerContextClient::WillEvaluateScript() {
@@ -1006,11 +1012,15 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
 
 int ServiceWorkerContextClient::WillStartTask() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(context_);
+  DCHECK(context_->timeout_timer);
   return context_->timeout_timer->StartEvent(base::DoNothing());
 }
 
 void ServiceWorkerContextClient::DidEndTask(int task_id) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(context_);
+  DCHECK(context_->timeout_timer);
   context_->timeout_timer->EndEvent(task_id);
 }
 
@@ -1250,13 +1260,12 @@ void ServiceWorkerContextClient::SendWorkerStarted(
   (*instance_host_)
       ->OnStarted(status, WorkerThread::GetCurrentId(),
                   std::move(start_timing_));
+
+  DCHECK(context_);
+  DCHECK(context_->timeout_timer);
+  context_->timeout_timer->Start();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
                                   this);
-
-  // Start the idle timer.
-  context_->timeout_timer =
-      std::make_unique<ServiceWorkerTimeoutTimer>(base::BindRepeating(
-          &ServiceWorkerContextClient::OnIdleTimeout, base::Unretained(this)));
 }
 
 void ServiceWorkerContextClient::DispatchActivateEvent(
