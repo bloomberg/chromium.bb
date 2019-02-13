@@ -414,9 +414,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Discards only the transient entry.
   void DiscardTransientEntry();
 
-  // If we have the maximum number of entries, remove the oldest one in
-  // preparation to add another.
-  void PruneOldestEntryIfFull();
+  // If we have the maximum number of entries, remove the oldest entry that is
+  // marked to be skipped on back/forward button, in preparation to add another.
+  // If no entry is skippable, then the oldest entry will be pruned.
+  void PruneOldestSkippableEntryIfFull();
 
   // Removes all entries except the last committed entry.  If there is a new
   // pending navigation it is preserved. In contrast to

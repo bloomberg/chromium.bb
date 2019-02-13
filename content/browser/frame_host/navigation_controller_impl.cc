@@ -1917,7 +1917,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   // adding the entries from source won't put us over the limit.
   DCHECK_EQ(1, GetEntryCount());
   if (!replace_entry)
-    source->PruneOldestEntryIfFull();
+    source->PruneOldestSkippableEntryIfFull();
 
   // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
   // we don't want to copy over the transient entry. Ignore any pending entry,
@@ -2416,22 +2416,40 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
     }
   }
 
-  PruneOldestEntryIfFull();
+  PruneOldestSkippableEntryIfFull();
 
   entries_.push_back(std::move(entry));
   last_committed_entry_index_ = static_cast<int>(entries_.size()) - 1;
 }
 
-void NavigationControllerImpl::PruneOldestEntryIfFull() {
+void NavigationControllerImpl::PruneOldestSkippableEntryIfFull() {
   if (entries_.size() < max_entry_count())
     return;
 
   DCHECK_EQ(max_entry_count(), entries_.size());
   DCHECK_GT(last_committed_entry_index_, 0);
-  RemoveEntryAtIndex(0);
-  NotifyPrunedEntries(this, 0 /* start index */, 1 /* count */);
-  // TODO(crbug.com/907167): Consider removing the earliest skippable entry
-  // instead of the first entry.
+  CHECK_EQ(pending_entry_index_, -1);
+
+  int index = 0;
+  if (base::FeatureList::IsEnabled(
+          features::kHistoryManipulationIntervention)) {
+    // Retrieve the oldest skippable entry.
+    for (; index < GetEntryCount(); index++) {
+      if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui())
+        break;
+    }
+  }
+
+  // If there is no skippable entry or if it is the last committed entry then
+  // fall back to pruning the oldest entry. It is not safe to prune the last
+  // committed entry.
+  if (index == GetEntryCount() || index == last_committed_entry_index_)
+    index = 0;
+
+  bool should_succeed = RemoveEntryAtIndex(index);
+  DCHECK_EQ(true, should_succeed);
+
+  NotifyPrunedEntries(this, index, 1);
 }
 
 void NavigationControllerImpl::NavigateToExistingPendingEntry(
