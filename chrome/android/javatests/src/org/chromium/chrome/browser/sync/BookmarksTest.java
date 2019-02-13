@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -168,7 +167,6 @@ public class BookmarksTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
-    @DisabledTest // https://crbug.com/930729
     public void testDownloadMovedBookmark() throws Exception {
         // Add the entity to test moving.
         addServerBookmark(TITLE, URL);
@@ -203,8 +201,9 @@ public class BookmarksTest {
         mSyncTestRule.pollInstrumentationThread(new ClientBookmarksCriteria() {
             @Override
             public boolean isSatisfied(List<Bookmark> bookmarks) {
+                Bookmark modifiedBookmark = bookmarks.get(bookmarks.get(0).isFolder() ? 1 : 0);
                 // The "s" is prepended because the server adds one to the parentId.
-                return bookmarks.get(bookmarkIndex).parentId.equals("s" + folder.id);
+                return modifiedBookmark.parentId.equals("s" + folder.id);
             }
         });
     }
