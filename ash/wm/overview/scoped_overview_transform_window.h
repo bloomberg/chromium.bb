@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -20,8 +21,7 @@
 
 namespace aura {
 class Window;
-class WindowTargeter;
-}  // namespace aura
+}
 
 namespace gfx {
 class Rect;
@@ -209,6 +209,11 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original opacity of the window before entering overview mode.
   float original_opacity_;
 
+  // For the duration of this object |window_| event targeting policy will be
+  // sent to NONE. Store the original so we can change it back when destroying
+  // this object.
+  ws::mojom::EventTargetingPolicy original_event_targeting_policy_;
+
   // Specifies how the window is laid out in the grid.
   GridWindowFillMode type_ = GridWindowFillMode::kNormal;
 
@@ -231,15 +236,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // The original mask layer of the window before entering overview mode.
   ui::Layer* original_mask_layer_ = nullptr;
-
-  // Stores the targeter for the window. For the duration of this object,
-  // |window_|'s event targeter will be replaced by a NullWindowTargeter to
-  // prevent events from reaching |window_|.
-  // TODO(sammiequon): Investigate if we can use a custom event targeter on
-  // windows for overview mode and remove the need for the extra widget which
-  // blocks events in OverviewItem.
-  std::unique_ptr<aura::WindowTargeter> original_targeter_;
-  aura::WindowTargeter* null_targeter_ = nullptr;
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_;
 

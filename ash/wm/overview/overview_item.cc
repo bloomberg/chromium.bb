@@ -160,23 +160,6 @@ void OverviewItem::EnsureVisible() {
 }
 
 void OverviewItem::Shutdown() {
-  if (transform_window_.GetTopInset()) {
-    // Activating a window (even when it is the window that was active before
-    // overview) results in stacking it at the top. Maintain the label window
-    // stacking position above the item to make the header transformation more
-    // gradual upon exiting the overview mode.
-    aura::Window* widget_window = item_widget_->GetNativeWindow();
-
-    // |widget_window| was originally created in the same container as the
-    // |transform_window_| but when closing overview the |transform_window_|
-    // could have been reparented if a drag was active. Only change stacking
-    // if the windows still belong to the same container.
-    if (widget_window->parent() == transform_window_.window()->parent()) {
-      widget_window->parent()->StackChildAbove(widget_window,
-                                               transform_window_.window());
-    }
-  }
-
   // On swiping from the shelf, the caller handles the animation via calls to
   // UpdateYAndOpacity, so do not additional fade out or slide animation to the
   // window.
@@ -192,7 +175,9 @@ void OverviewItem::Shutdown() {
 
 void OverviewItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
-  RestackItemWidget();
+  aura::Window* widget_window = item_widget_->GetNativeWindow();
+  widget_window->parent()->StackChildBelow(widget_window,
+                                           GetWindowForStacking());
 }
 
 void OverviewItem::SlideWindowIn() {
@@ -479,12 +464,6 @@ void OverviewItem::ScaleUpSelectedItem(OverviewAnimationType animation_type) {
   SetBounds(scaled_bounds, animation_type);
 }
 
-void OverviewItem::RestackItemWidget() {
-  aura::Window* widget_window = item_widget_->GetNativeWindow();
-  widget_window->parent()->StackChildAbove(widget_window,
-                                           GetWindowForStacking());
-}
-
 void OverviewItem::HandlePressEvent(const gfx::Point& location_in_screen) {
   // We allow switching finger while dragging, but do not allow dragging two or
   // more items.
@@ -564,8 +543,8 @@ void OverviewItem::OnDragAnimationCompleted() {
         Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
     if (snapped_window->parent() == parent_window &&
         dragged_window->parent() == parent_window) {
-      parent_window->StackChildBelow(dragged_widget_window, snapped_window);
-      parent_window->StackChildBelow(dragged_window, dragged_widget_window);
+      parent_window->StackChildBelow(dragged_window, snapped_window);
+      parent_window->StackChildBelow(dragged_widget_window, dragged_window);
     }
   }
 
@@ -583,8 +562,8 @@ void OverviewItem::OnDragAnimationCompleted() {
       }
     }
     if (overview_items[index].get() == this && stacking_target) {
-      parent_window->StackChildBelow(dragged_widget_window, stacking_target);
-      parent_window->StackChildBelow(dragged_window, dragged_widget_window);
+      parent_window->StackChildBelow(dragged_window, stacking_target);
+      parent_window->StackChildBelow(dragged_widget_window, dragged_window);
       break;
     }
   }
@@ -792,8 +771,7 @@ void OverviewItem::CreateWindowLabel() {
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(params_label);
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  // Stack the widget above the transform window so that it can block events.
-  widget_window->parent()->StackChildAbove(widget_window,
+  widget_window->parent()->StackChildBelow(widget_window,
                                            transform_window_.window());
 
   shadow_ = std::make_unique<ui::Shadow>();
@@ -874,8 +852,8 @@ void OverviewItem::StartDrag() {
   if (widget_window && widget_window->parent() == window->parent()) {
     // TODO(xdai): This might not work if there is an always on top window.
     // See crbug.com/733760.
-    widget_window->parent()->StackChildAtTop(widget_window);
-    widget_window->parent()->StackChildBelow(window, widget_window);
+    widget_window->parent()->StackChildAtTop(window);
+    widget_window->parent()->StackChildBelow(widget_window, window);
   }
 }
 
