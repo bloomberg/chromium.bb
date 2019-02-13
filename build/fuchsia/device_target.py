@@ -76,15 +76,25 @@ class DeviceTarget(target.Target):
     """Returns the IP address and port of a Fuchsia instance discovered on
     the local area network."""
 
-    netaddr_path = os.path.join(SDK_ROOT, 'tools', 'netaddr')
-    command = [netaddr_path, '--fuchsia', '--nowait', node_name]
+    # TODO(crbug.com/929874): Use the nodename when it's respected by Zircon.
+    dev_finder_path = os.path.join(SDK_ROOT, 'tools', 'dev_finder')
+    command = [dev_finder_path, 'list']
     logging.debug(' '.join(command))
     proc = subprocess.Popen(command,
                             stdout=subprocess.PIPE,
                             stderr=open(os.devnull, 'w'))
     proc.wait()
     if proc.returncode == 0:
-      return proc.stdout.readlines()[0].strip()
+      entries = proc.stdout.readlines()
+      host = entries[0].strip()
+
+      if len(entries) > 1:
+        logging.warn('Found more than one device on the network:')
+        logging.warn(' , '.join(set(map(lambda x: x.strip(), entries))))
+        logging.warn('Automatically using the first device in the list.')
+
+      return host
+
     return None
 
   def Start(self):
