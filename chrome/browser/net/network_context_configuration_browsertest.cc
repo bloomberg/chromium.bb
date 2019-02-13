@@ -36,6 +36,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
@@ -1230,7 +1231,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // Now change the profile a different language, and see if the headers
   // get updated.
-  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages, "uk");
+  browser()->profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
+                                              "uk");
   FlushNetworkInterface();
   std::string accept_language2, user_agent2;
   ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language2));
@@ -1239,7 +1241,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_EQ(::GetUserAgent(), user_agent2);
 
   // Try a more complicated one, with multiple languages.
-  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
+  browser()->profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
                                               "uk, en_US");
   FlushNetworkInterface();
   std::string accept_language3, user_agent3;

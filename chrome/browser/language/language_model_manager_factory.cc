@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/language/content/browser/geo_language_model.h"
@@ -37,7 +36,8 @@ void PrepareLanguageModels(Profile* const profile,
         language::LanguageModelManager::ModelType::HEURISTIC,
         std::make_unique<language::HeuristicLanguageModel>(
             profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
-            prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile));
+            language::prefs::kAcceptLanguages,
+            language::prefs::kUserLanguageProfile));
   }
 
   if (override_model_mode == language::OverrideLanguageModel::GEO) {
@@ -51,7 +51,7 @@ void PrepareLanguageModels(Profile* const profile,
         language::LanguageModelManager::ModelType::BASELINE,
         std::make_unique<language::BaselineLanguageModel>(
             profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
-            prefs::kAcceptLanguages));
+            language::prefs::kAcceptLanguages));
   }
 
   // Set the primary Language Model to use based on the state of experiments.

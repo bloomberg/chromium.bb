@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
 #include "chrome/grit/platform_locale_settings.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/pref_service.h"
@@ -358,10 +359,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kWebKitPasswordEchoEnabled,
                                 pref_defaults.password_echo_enabled);
 #endif
-  registry->RegisterStringPref(
-      prefs::kAcceptLanguages,
-      l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kDefaultCharset,
       l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),

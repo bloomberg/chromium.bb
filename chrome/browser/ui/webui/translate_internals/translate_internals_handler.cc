@@ -17,6 +17,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_error_details.h"
@@ -225,7 +226,7 @@ void TranslateInternalsHandler::SendPrefsToJs() {
       translate::TranslatePrefs::kPrefTranslateAcceptedCount,
       translate::TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage,
       translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage,
-      prefs::kAcceptLanguages,
+      language::prefs::kAcceptLanguages,
   };
   for (const char* key : keys) {
     const PrefService::Preference* pref = prefs->FindPreference(key);

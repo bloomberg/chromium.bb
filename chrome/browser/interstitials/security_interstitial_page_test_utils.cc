@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -42,7 +42,7 @@ bool IsInterstitialDisplayingText(content::RenderFrameHost* interstitial_frame,
 
 void SecurityInterstitialIDNTest::SetUpOnMainThread() {
   // Clear AcceptLanguages to force punycode decoding.
-  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
+  browser()->profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
                                               std::string());
 }
 

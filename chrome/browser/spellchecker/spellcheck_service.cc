@@ -21,6 +21,7 @@
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -101,7 +102,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::OnUseSpellingServiceChanged,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kAcceptLanguages,
+      language::prefs::kAcceptLanguages,
       base::BindRepeating(&SpellcheckService::OnAcceptLanguagesChanged,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
@@ -144,8 +145,8 @@ void SpellcheckService::GetDictionaries(base::SupportsUserData* browser_context,
 
   dictionaries->clear();
   std::vector<std::string> accept_languages =
-      base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
+                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& accept_language : accept_languages) {
     Dictionary dictionary;
     dictionary.language =
@@ -369,8 +370,8 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
 void SpellcheckService::OnAcceptLanguagesChanged() {
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   std::vector<std::string> accept_languages =
-      base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ",",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
+                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::transform(accept_languages.begin(), accept_languages.end(),
                  accept_languages.begin(),
                  &spellcheck::GetCorrespondingSpellCheckLanguage);

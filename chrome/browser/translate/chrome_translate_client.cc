@@ -33,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/language/core/browser/language_model_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
@@ -146,12 +147,12 @@ translate::LanguageState& ChromeTranslateClient::GetLanguageState() {
 std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
 #if defined(OS_CHROMEOS)
-  const char* preferred_languages_prefs = prefs::kLanguagePreferredLanguages;
+  const char* preferred_languages_prefs = language::prefs::kPreferredLanguages;
 #else
   const char* preferred_languages_prefs = NULL;
 #endif
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
-      new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages,
+      new translate::TranslatePrefs(prefs, language::prefs::kAcceptLanguages,
                                     preferred_languages_prefs));
 
   // We need to obtain the country here, since it comes from VariationsService.

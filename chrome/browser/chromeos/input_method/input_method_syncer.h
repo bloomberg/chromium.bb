@@ -58,7 +58,7 @@ class InputMethodSyncer : public sync_preferences::PrefServiceSyncableObserver {
       const std::string& synced_pref,
       const char* pref_name);
 
-  // Sets prefs::kLanguagePreferredLanguages and sets |merging_| to false.
+  // Sets language::prefs::kPreferredLanguages and sets |merging_| to false.
   void FinishMerge(const std::string& languages);
 
   // Callback method for preference changes. Updates the syncable prefs using

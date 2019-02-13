@@ -208,6 +208,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
 #include "components/mirroring/mojom/constants.mojom.h"
@@ -2284,7 +2285,7 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
 std::string ChromeContentBrowserClient::GetAcceptLangs(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  return profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages);
 }
 
 const gfx::ImageSkia* ChromeContentBrowserClient::GetDefaultFavicon() {

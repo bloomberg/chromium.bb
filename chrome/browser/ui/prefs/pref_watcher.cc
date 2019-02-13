@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace {
@@ -56,7 +57,8 @@ PrefWatcher::PrefWatcher(Profile* profile) : profile_(profile) {
 
   base::RepeatingClosure renderer_callback = base::BindRepeating(
       &PrefWatcher::UpdateRendererPreferences, base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
+  pref_change_registrar_.Add(language::prefs::kAcceptLanguages,
+                             renderer_callback);
   pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
   pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);
   pref_change_registrar_.Add(prefs::kEnableEncryptedMedia, renderer_callback);

@@ -33,6 +33,7 @@
 #include "chrome/common/extensions/api/language_settings_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/language_model_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -108,7 +109,7 @@ std::vector<std::string> GetSortedComponentIMEs(
     const std::unordered_set<std::string>& component_ime_set,
     PrefService* prefs) {
   std::vector<std::string> enabled_languages =
-      base::SplitString(prefs->GetString(prefs::kLanguagePreferredLanguages),
+      base::SplitString(prefs->GetString(language::prefs::kPreferredLanguages),
                         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // Duplicate set for membership testing.
@@ -141,7 +142,7 @@ std::vector<std::string> GetSortedThirdPartyIMEs(
     PrefService* prefs) {
   std::vector<std::string> ime_list;
   std::string preferred_languages =
-      prefs->GetString(prefs::kLanguagePreferredLanguages);
+      prefs->GetString(language::prefs::kPreferredLanguages);
   std::vector<std::string> enabled_languages =
       base::SplitString(preferred_languages, ",", base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
