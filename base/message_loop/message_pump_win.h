@@ -14,7 +14,6 @@
 #include "base/base_export.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
@@ -45,6 +44,10 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
   };
 
   virtual void DoRunLoop() = 0;
+  int GetCurrentDelay() const;
+
+  // The time at which delayed work should run.
+  TimeTicks delayed_work_time_;
 
   // True iff:
   //   * MessagePumpForUI: there's a kMsgDoWork message pending in the Windows
@@ -71,8 +74,6 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
 
   // State for the current invocation of Run.
   RunState* state_ = nullptr;
-
-  THREAD_CHECKER(bound_thread_);
 };
 
 //-----------------------------------------------------------------------------
@@ -150,11 +151,10 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool MessageCallback(
       UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result);
   void DoRunLoop() override;
-  void WaitForWork(Delegate::NextWorkInfo next_work_info);
+  void WaitForWork();
   void HandleWorkMessage();
   void HandleTimerMessage();
-  void ScheduleNativeTimer(Delegate::NextWorkInfo next_work_info);
-  void KillNativeTimer();
+  void RescheduleTimer();
   bool ProcessNextWindowsMessage();
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
@@ -164,14 +164,6 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   // Whether MessagePumpForUI responds to WM_QUIT messages or not.
   // TODO(thestig): Remove when the Cloud Print Service goes away.
   bool enable_wm_quit_ = false;
-
-  // True if inside a nested native loop and a native timer was installed.
-  bool installed_native_timer_ = false;
-
-  // This will become true when a native loop takes our kMsgHaveWork out of the
-  // system queue. It will be reset to false whenever DoRunLoop regains control.
-  // Used to decide whether ScheduleDelayedWork() should start a native timer.
-  bool in_native_loop_ = false;
 
   ObserverList<Observer>::Unchecked observers_;
 };
@@ -274,7 +266,7 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   };
 
   void DoRunLoop() override;
-  void WaitForWork(Delegate::NextWorkInfo next_work_info);
+  void WaitForWork();
   bool MatchCompletedIOItem(IOHandler* filter, IOItem* item);
   bool GetIOItem(DWORD timeout, IOItem* item);
   bool ProcessInternalIOItem(const IOItem& item);
