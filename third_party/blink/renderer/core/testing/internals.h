@@ -329,6 +329,11 @@ class Internals final : public ScriptWrappable {
   InternalRuntimeFlags* runtimeFlags() const;
   unsigned workerThreadCount() const;
 
+  String resolveModuleSpecifier(const String& specifier,
+                                const String& base_url_string,
+                                Document*,
+                                ExceptionState&);
+
   void SetDeviceProximity(Document*,
                           const String& event_type,
                           double value,
