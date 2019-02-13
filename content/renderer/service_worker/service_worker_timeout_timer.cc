@@ -63,17 +63,23 @@ ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
     : idle_callback_(std::move(idle_callback)),
       tick_clock_(tick_clock),
       weak_factory_(this) {
-  // |idle_callback_| will be invoked if no event happens in |kIdleDelay|.
-  idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
-  timer_.Start(FROM_HERE, kUpdateInterval,
-               base::BindRepeating(&ServiceWorkerTimeoutTimer::UpdateStatus,
-                                   base::Unretained(this)));
 }
 
 ServiceWorkerTimeoutTimer::~ServiceWorkerTimeoutTimer() {
   // Abort all callbacks.
   for (auto& event : inflight_events_)
     std::move(event.abort_callback).Run();
+}
+
+void ServiceWorkerTimeoutTimer::Start() {
+  DCHECK(!timer_.IsRunning());
+  DCHECK(idle_time_.is_null());
+  // |idle_callback_| will be invoked if no event happens in |kIdleDelay|.
+  if (!HasInflightEvent())
+    idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
+  timer_.Start(FROM_HERE, kUpdateInterval,
+               base::BindRepeating(&ServiceWorkerTimeoutTimer::UpdateStatus,
+                                   base::Unretained(this)));
 }
 
 int ServiceWorkerTimeoutTimer::StartEvent(

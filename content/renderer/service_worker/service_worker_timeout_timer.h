@@ -62,6 +62,9 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
                             const base::TickClock* tick_clock);
   ~ServiceWorkerTimeoutTimer();
 
+  // Starts the timer.
+  void Start();
+
   // StartEvent() should be called at the beginning of an event. It returns an
   // event id, which is unique among threads in the same process.
   // The event id should be passed to EndEvent() when the event has finished.
