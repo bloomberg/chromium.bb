@@ -240,8 +240,8 @@ TEST_P(SignedExchangeEnvelopeTest, CacheControlParseError) {
   ASSERT_FALSE(header.has_value());
 }
 
-INSTANTIATE_TEST_CASE_P(SignedExchangeEnvelopeTests,
-                        SignedExchangeEnvelopeTest,
-                        ::testing::Values(SignedExchangeVersion::kB3));
+INSTANTIATE_TEST_SUITE_P(SignedExchangeEnvelopeTests,
+                         SignedExchangeEnvelopeTest,
+                         ::testing::Values(SignedExchangeVersion::kB3));
 
 }  // namespace content

@@ -2240,13 +2240,13 @@ TEST_P(CacheStorageQuotaClientTestP, QuotaDoesSupport) {
   EXPECT_FALSE(QuotaDoesSupport(StorageType::kUnknown));
 }
 
-INSTANTIATE_TEST_CASE_P(CacheStorageManagerTests,
-                        CacheStorageManagerTestP,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(CacheStorageManagerTests,
+                         CacheStorageManagerTestP,
+                         ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(CacheStorageQuotaClientTests,
-                        CacheStorageQuotaClientTestP,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(CacheStorageQuotaClientTests,
+                         CacheStorageQuotaClientTestP,
+                         ::testing::Values(false, true));
 
 }  // namespace cache_storage_manager_unittest
 }  // namespace content

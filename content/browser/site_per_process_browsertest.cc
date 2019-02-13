@@ -13703,11 +13703,11 @@ IN_PROC_BROWSER_TEST_P(CrossProcessNavigationObjectElementTest, FallbackShown) {
   ASSERT_TRUE(fallback_visible);
 }
 
-INSTANTIATE_TEST_CASE_P(SitePerProcess,
-                        CrossProcessNavigationObjectElementTest,
-                        testing::Values(std::make_tuple("a", "a", "b"),
-                                        std::make_tuple("a", "b", "b"),
-                                        std::make_tuple("a", "b", "c")));
+INSTANTIATE_TEST_SUITE_P(SitePerProcess,
+                         CrossProcessNavigationObjectElementTest,
+                         testing::Values(std::make_tuple("a", "a", "b"),
+                                         std::make_tuple("a", "b", "b"),
+                                         std::make_tuple("a", "b", "c")));
 
 class ScrollingIntegrationTest : public SitePerProcessBrowserTest {
  public:

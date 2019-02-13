@@ -337,19 +337,19 @@ TEST_P(DetachableResourceHandlerTest, Async) {
   MaybeAsyncDetachAt(DetachPhase::ON_RESPONSE_COMPLETED);
 }
 
-INSTANTIATE_TEST_CASE_P(/* No prefix needed*/,
-                        DetachableResourceHandlerTest,
-                        testing::Values(DetachPhase::DETACHED_FROM_CREATION,
-                                        DetachPhase::ON_WILL_START,
-                                        DetachPhase::REQUEST_REDIRECTED,
-                                        DetachPhase::ON_RESPONSE_STARTED,
-                                        DetachPhase::FIRST_ON_WILL_READ,
-                                        DetachPhase::FIRST_ON_READ_COMPLETED,
-                                        DetachPhase::SECOND_ON_WILL_READ,
-                                        DetachPhase::SECOND_ON_READ_COMPLETED,
-                                        DetachPhase::ON_READ_EOF,
-                                        DetachPhase::ON_RESPONSE_COMPLETED,
-                                        DetachPhase::NEVER_DETACH));
+INSTANTIATE_TEST_SUITE_P(/* No prefix needed*/,
+                         DetachableResourceHandlerTest,
+                         testing::Values(DetachPhase::DETACHED_FROM_CREATION,
+                                         DetachPhase::ON_WILL_START,
+                                         DetachPhase::REQUEST_REDIRECTED,
+                                         DetachPhase::ON_RESPONSE_STARTED,
+                                         DetachPhase::FIRST_ON_WILL_READ,
+                                         DetachPhase::FIRST_ON_READ_COMPLETED,
+                                         DetachPhase::SECOND_ON_WILL_READ,
+                                         DetachPhase::SECOND_ON_READ_COMPLETED,
+                                         DetachPhase::ON_READ_EOF,
+                                         DetachPhase::ON_RESPONSE_COMPLETED,
+                                         DetachPhase::NEVER_DETACH));
 
 }  // namespace
 

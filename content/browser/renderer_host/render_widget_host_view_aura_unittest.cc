@@ -5637,9 +5637,9 @@ class TouchpadRenderWidgetHostViewAuraTest
   DISALLOW_COPY_AND_ASSIGN(TouchpadRenderWidgetHostViewAuraTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        TouchpadRenderWidgetHostViewAuraTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         TouchpadRenderWidgetHostViewAuraTest,
+                         testing::Bool());
 
 // Test that we elide touchpad pinch gesture steams consisting of only begin
 // and end events.

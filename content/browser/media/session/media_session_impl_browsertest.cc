@@ -270,7 +270,7 @@ class MediaSessionImplParamBrowserTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(, MediaSessionImplParamBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, MediaSessionImplParamBrowserTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        PlayersFromSameObserverDoNotStopEachOtherInSameSession) {

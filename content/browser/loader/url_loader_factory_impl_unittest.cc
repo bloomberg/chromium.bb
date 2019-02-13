@@ -430,9 +430,9 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   ASSERT_FALSE(rdh_.GetURLRequest(GlobalRequestID(kChildId, kRequestId)));
 }
 
-INSTANTIATE_TEST_CASE_P(URLLoaderFactoryImplTest,
-                        URLLoaderFactoryImplTest,
-                        ::testing::Values(128, 32 * 1024));
+INSTANTIATE_TEST_SUITE_P(URLLoaderFactoryImplTest,
+                         URLLoaderFactoryImplTest,
+                         ::testing::Values(128, 32 * 1024));
 
 }  // namespace
 

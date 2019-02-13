@@ -482,7 +482,7 @@ TEST_P(WebRtcSetDescriptionObserverHandlerTest,
   EXPECT_EQ(0u, observer_->states().transceiver_states.size());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebRtcSetDescriptionObserverHandlerTest,
     ::testing::Values(std::make_tuple(ObserverHandlerType::kLocal,

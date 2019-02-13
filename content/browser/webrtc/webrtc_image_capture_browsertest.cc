@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testManipulateFocusDistance()"));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,  // Use no prefix, so that these get picked up when using
        // --gtest_filter=WebRtc*
     WebRtcImageCaptureSucceedsBrowserTest,
@@ -267,7 +267,7 @@ const TargetVideoCaptureImplementation
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UsingRealWebcam,  // This prefix can be used with --gtest_filter to
                       // distinguish the tests using a real camera from the ones
                       // that don't.
@@ -340,9 +340,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
-                        testing::ValuesIn(kTargetVideoCaptureStacks));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
+                         testing::ValuesIn(kTargetVideoCaptureStacks));
 
 struct SetPhotoOptionsFailsConfigTraits {
   static std::string config() {
@@ -367,9 +367,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
-                        testing::ValuesIn(kTargetVideoCaptureStacks));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
+                         testing::ValuesIn(kTargetVideoCaptureStacks));
 
 struct TakePhotoFailsConfigTraits {
   static std::string config() {
@@ -391,8 +391,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureTakePhotoFailsBrowserTest, GrabFrame) {
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcImageCaptureTakePhotoFailsBrowserTest,
-                        testing::ValuesIn(kTargetVideoCaptureStacks));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcImageCaptureTakePhotoFailsBrowserTest,
+                         testing::ValuesIn(kTargetVideoCaptureStacks));
 
 }  // namespace content

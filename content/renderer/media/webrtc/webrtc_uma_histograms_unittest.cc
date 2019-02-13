@@ -44,7 +44,7 @@ TEST_P(PerSessionWebRTCAPIMetricsTest, CallOngoing) {
   metrics.LogUsageOnlyOnce(api_name);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PerSessionWebRTCAPIMetricsTest,
     PerSessionWebRTCAPIMetricsTest,
     ::testing::ValuesIn({blink::WebRTCAPIName::kGetUserMedia,

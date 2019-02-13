@@ -370,21 +370,21 @@ IN_PROC_BROWSER_TEST_P(CorsFileOriginBrowserTestWithDisableWebSecurity,
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTest,
     ::testing::Values(CorsTestMode::kInBlink,
                       CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
     ::testing::Values(CorsTestMode::kInBlink,
                       CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTestWithDisableWebSecurity,
     ::testing::Values(CorsTestMode::kInBlink,

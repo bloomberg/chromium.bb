@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
                   kCanvasCaptureColorTestHtmlFile);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcCaptureFromElementBrowserTest,
-                        testing::ValuesIn(kFileAndTypeParameters));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcCaptureFromElementBrowserTest,
+                         testing::ValuesIn(kFileAndTypeParameters));
 }  // namespace content

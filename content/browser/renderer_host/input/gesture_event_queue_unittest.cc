@@ -272,10 +272,10 @@ TEST_F(GestureEventQueueTest, SyncAckQueuesEvent) {
   EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
 }
 
-INSTANTIATE_TEST_CASE_P(AllSources,
-                        GestureEventQueueWithSourceTest,
-                        testing::Values(blink::kWebGestureDeviceTouchscreen,
-                                        blink::kWebGestureDeviceTouchpad));
+INSTANTIATE_TEST_SUITE_P(AllSources,
+                         GestureEventQueueWithSourceTest,
+                         testing::Values(blink::kWebGestureDeviceTouchscreen,
+                                         blink::kWebGestureDeviceTouchpad));
 
 // Test that a GestureScrollEnd is deferred during the debounce interval,
 // that Scrolls are not and that the deferred events are sent after that

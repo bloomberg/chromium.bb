@@ -831,14 +831,14 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
-INSTANTIATE_TEST_CASE_P(IndexedDBBrowserTestInstantiation,
-                        IndexedDBBrowserTest,
-                        ::testing::Values("failGetBlobJournal",
-                                          "get",
-                                          "getAll",
-                                          "iterate",
-                                          "failTransactionCommit",
-                                          "clearObjectStore"));
+INSTANTIATE_TEST_SUITE_P(IndexedDBBrowserTestInstantiation,
+                         IndexedDBBrowserTest,
+                         ::testing::Values("failGetBlobJournal",
+                                           "get",
+                                           "getAll",
+                                           "iterate",
+                                           "failTransactionCommit",
+                                           "clearObjectStore"));
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");

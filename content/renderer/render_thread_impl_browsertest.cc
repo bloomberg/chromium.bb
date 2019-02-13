@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(RenderThreadImplGpuMemoryBufferBrowserTest,
   buffer->Unmap();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     RenderThreadImplGpuMemoryBufferBrowserTests,
     RenderThreadImplGpuMemoryBufferBrowserTest,
     ::testing::Combine(::testing::Values(kDisableNativeBuffers,

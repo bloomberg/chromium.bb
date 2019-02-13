@@ -214,8 +214,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplVisibilityBrowserTest, TestEntryPoint) {
   CheckSessionStateAfterHide();
 }
 
-INSTANTIATE_TEST_CASE_P(MediaSessionImplVisibilityBrowserTestInstances,
-                        MediaSessionImplVisibilityBrowserTest,
-                        ::testing::ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(MediaSessionImplVisibilityBrowserTestInstances,
+                         MediaSessionImplVisibilityBrowserTest,
+                         ::testing::ValuesIn(kTestParams));
 
 }  // namespace content

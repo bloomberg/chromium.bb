@@ -112,7 +112,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
   const bool async_events_enabled_;
 };
 
-INSTANTIATE_TEST_CASE_P(, TouchpadPinchEventQueueTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, TouchpadPinchEventQueueTest, ::testing::Bool());
 
 MATCHER_P(EventHasType,
           type,

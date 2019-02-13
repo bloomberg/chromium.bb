@@ -1401,13 +1401,13 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(WithoutOutOfBlinkCors,
-                        CrossSiteDocumentBlockingTest,
-                        ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(WithoutOutOfBlinkCors,
+                         CrossSiteDocumentBlockingTest,
+                         ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
 
-INSTANTIATE_TEST_CASE_P(WithOutOfBlinkCors,
-                        CrossSiteDocumentBlockingTest,
-                        ::testing::Values(TestMode::kWithOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
+                         CrossSiteDocumentBlockingTest,
+                         ::testing::Values(TestMode::kWithOutOfBlinkCors));
 
 // This test class sets up a service worker that can be used to try to respond
 // to same-origin requests with cross-origin responses.

@@ -431,10 +431,10 @@ TEST_P(LevelDBTransactionRangeTest, RemoveRangeIteratorRetainsKey) {
   EXPECT_EQ(Compare(key_after_range_, it->Key()), 0);
 }
 
-INSTANTIATE_TEST_CASE_P(LevelDBTransactionRangeTests,
-                        LevelDBTransactionRangeTest,
-                        ::testing::Values(DataInMemory,
-                                          DataInDatabase,
-                                          DataMixed));
+INSTANTIATE_TEST_SUITE_P(LevelDBTransactionRangeTests,
+                         LevelDBTransactionRangeTest,
+                         ::testing::Values(DataInMemory,
+                                           DataInDatabase,
+                                           DataMixed));
 
 }  // namespace content

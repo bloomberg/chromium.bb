@@ -55,9 +55,9 @@ class OriginPolicyThrottleTest : public RenderViewHostTestHarness,
   base::test::ScopedFeatureList features_;
 };
 
-INSTANTIATE_TEST_CASE_P(OriginPolicyThrottleTests,
-                        OriginPolicyThrottleTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(OriginPolicyThrottleTests,
+                         OriginPolicyThrottleTest,
+                         testing::Bool());
 
 TEST_P(OriginPolicyThrottleTest, ShouldRequestOriginPolicy) {
   struct {

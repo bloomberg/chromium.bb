@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
       PrefetchIsEnabled() ? 2 : 1);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SignedExchangeRequestHandlerBrowserTest,
     SignedExchangeRequestHandlerBrowserTest,
     testing::Values(
@@ -739,7 +739,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_FALSE(result);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
     SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
     testing::Values(
@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
       {enabled_prefetch_target, disabled_prefetch_target});
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SignedExchangeAcceptHeaderBrowserTest,
     SignedExchangeAcceptHeaderBrowserTest,
     testing::Values(

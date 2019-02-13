@@ -2552,12 +2552,12 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeInterceptResponse(
   return nullptr;
 }
 
-INSTANTIATE_TEST_CASE_P(WithoutOutOfBlinkCors,
-                        ResourceDispatcherHostTest,
-                        ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(WithoutOutOfBlinkCors,
+                         ResourceDispatcherHostTest,
+                         ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
 
-INSTANTIATE_TEST_CASE_P(WithOutOfBlinkCors,
-                        ResourceDispatcherHostTest,
-                        ::testing::Values(TestMode::kWithOutOfBlinkCors));
+INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
+                         ResourceDispatcherHostTest,
+                         ::testing::Values(TestMode::kWithOutOfBlinkCors));
 
 }  // namespace content

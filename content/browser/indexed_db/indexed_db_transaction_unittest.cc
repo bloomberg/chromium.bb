@@ -507,9 +507,9 @@ static const blink::mojom::IDBTransactionMode kTestModes[] = {
     blink::mojom::IDBTransactionMode::ReadWrite,
     blink::mojom::IDBTransactionMode::VersionChange};
 
-INSTANTIATE_TEST_CASE_P(IndexedDBTransactions,
-                        IndexedDBTransactionTestMode,
-                        ::testing::ValuesIn(kTestModes));
+INSTANTIATE_TEST_SUITE_P(IndexedDBTransactions,
+                         IndexedDBTransactionTestMode,
+                         ::testing::ValuesIn(kTestModes));
 
 }  // namespace indexed_db_transaction_unittest
 }  // namespace content

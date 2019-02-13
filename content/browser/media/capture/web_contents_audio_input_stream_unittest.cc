@@ -543,6 +543,6 @@ TEST_P(WebContentsAudioInputStreamTest, MirroringMultipleStreamsAndTargets) {
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-INSTANTIATE_TEST_CASE_P(, WebContentsAudioInputStreamTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, WebContentsAudioInputStreamTest, ::testing::Bool());
 
 }  // namespace content

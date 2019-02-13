@@ -241,7 +241,7 @@ class TouchActionFilterTest : public testing::Test,
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(, TouchActionFilterTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, TouchActionFilterTest, ::testing::Bool());
 
 TEST_P(TouchActionFilterTest, SimpleFilter) {
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -755,7 +755,7 @@ class TouchActionFilterPinchTest : public testing::Test,
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(, TouchActionFilterPinchTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, TouchActionFilterPinchTest, ::testing::Bool());
 
 TEST_P(TouchActionFilterPinchTest, Pinch) {
   RunTest(false);

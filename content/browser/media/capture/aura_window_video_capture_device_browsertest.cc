@@ -324,7 +324,7 @@ class AuraWindowVideoCaptureDeviceBrowserTestP
 };
 
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AuraWindowVideoCaptureDeviceBrowserTestP,
     testing::Combine(
@@ -333,7 +333,7 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(false /* variable aspect ratio */,
                         true /* fixed aspect ratio */)));
 #else
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AuraWindowVideoCaptureDeviceBrowserTestP,
     testing::Combine(testing::Values(false /* GPU-accelerated compositing */,

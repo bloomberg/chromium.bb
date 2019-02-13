@@ -169,12 +169,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
 // removed after launch.
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(, WebRtcAudioBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Bool());
 #elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #else
 // Platforms where the out of process audio service isn't supported
-INSTANTIATE_TEST_CASE_P(, WebRtcAudioBrowserTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(, WebRtcAudioBrowserTest, ::testing::Values(false));
 #endif
 
 }  // namespace content

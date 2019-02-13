@@ -1398,9 +1398,9 @@ TEST_P(SyntheticGestureControllerTestWithParam,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Single,
-                        SyntheticGestureControllerTestWithParam,
-                        testing::Values(TOUCH_SCROLL, TOUCH_DRAG));
+INSTANTIATE_TEST_SUITE_P(Single,
+                         SyntheticGestureControllerTestWithParam,
+                         testing::Values(TOUCH_SCROLL, TOUCH_DRAG));
 
 TEST_F(SyntheticGestureControllerTest, SingleDragGestureMouseDiagonal) {
   CreateControllerAndTarget<MockDragMouseTarget>();

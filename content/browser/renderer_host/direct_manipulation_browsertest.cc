@@ -84,9 +84,9 @@ class DirectManipulationBrowserTest : public ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(WithScrollEventPhase,
-                        DirectManipulationBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WithScrollEventPhase,
+                         DirectManipulationBrowserTest,
+                         testing::Bool());
 
 // Ensure the AnimationObserver destroy when hwnd reparent to other hwnd.
 IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, HWNDReparent) {

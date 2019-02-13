@@ -908,9 +908,9 @@ TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {
   EXPECT_FALSE(wrong_subscriptions_opt.has_value());
 }
 
-INSTANTIATE_TEST_CASE_P(CookieStoreManagerTest,
-                        CookieStoreManagerTest,
-                        testing::Bool() /* reset_storage_during_test */);
+INSTANTIATE_TEST_SUITE_P(CookieStoreManagerTest,
+                         CookieStoreManagerTest,
+                         testing::Bool() /* reset_storage_during_test */);
 
 }  // namespace
 

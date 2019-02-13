@@ -375,7 +375,7 @@ class WebContentsVideoCaptureDeviceBrowserTestP
 };
 
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
@@ -386,7 +386,7 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(false /* page has only a main frame */,
                         true /* page contains a cross-site iframe */)));
 #else
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
