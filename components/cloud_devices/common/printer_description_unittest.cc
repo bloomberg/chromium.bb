@@ -406,42 +406,42 @@ TEST(PrinterDescriptionTest, CddSetAll) {
   content_types.AddOption("image/jpeg");
 
   PwgRasterConfig custom_raster;
-  custom_raster.document_sheet_back = MANUAL_TUMBLE;
+  custom_raster.document_sheet_back = DocumentSheetBack::MANUAL_TUMBLE;
   custom_raster.reverse_order_streaming = true;
   custom_raster.rotate_all_pages = false;
   pwg_raster_config.set_value(custom_raster);
 
-  color.AddDefaultOption(Color(STANDARD_COLOR), true);
-  color.AddOption(Color(STANDARD_MONOCHROME));
-  Color custom(CUSTOM_MONOCHROME);
+  color.AddDefaultOption(Color(ColorType::STANDARD_COLOR), true);
+  color.AddOption(Color(ColorType::STANDARD_MONOCHROME));
+  Color custom(ColorType::CUSTOM_MONOCHROME);
   custom.vendor_id = "123";
   custom.custom_display_name = "monochrome";
   color.AddOption(custom);
 
-  duplex.AddDefaultOption(LONG_EDGE, true);
-  duplex.AddOption(SHORT_EDGE);
-  duplex.AddOption(NO_DUPLEX);
+  duplex.AddDefaultOption(DuplexType::LONG_EDGE, true);
+  duplex.AddOption(DuplexType::SHORT_EDGE);
+  duplex.AddOption(DuplexType::NO_DUPLEX);
 
-  orientation.AddOption(PORTRAIT);
-  orientation.AddOption(LANDSCAPE);
-  orientation.AddDefaultOption(AUTO_ORIENTATION, true);
+  orientation.AddOption(OrientationType::PORTRAIT);
+  orientation.AddOption(OrientationType::LANDSCAPE);
+  orientation.AddDefaultOption(OrientationType::AUTO_ORIENTATION, true);
 
-  margins.AddDefaultOption(Margins(NO_MARGINS, 0, 0, 0, 0), true);
-  margins.AddOption(Margins(STANDARD_MARGINS, 100, 200, 300, 400));
-  margins.AddOption(Margins(CUSTOM_MARGINS, 1, 2, 3, 4));
+  margins.AddDefaultOption(Margins(MarginsType::NO_MARGINS, 0, 0, 0, 0), true);
+  margins.AddOption(Margins(MarginsType::STANDARD_MARGINS, 100, 200, 300, 400));
+  margins.AddOption(Margins(MarginsType::CUSTOM_MARGINS, 1, 2, 3, 4));
 
   dpi.AddOption(Dpi(150, 250));
   dpi.AddDefaultOption(Dpi(600, 1600), true);
 
-  fit_to_page.AddDefaultOption(NO_FITTING, true);
-  fit_to_page.AddOption(FIT_TO_PAGE);
-  fit_to_page.AddOption(GROW_TO_PAGE);
-  fit_to_page.AddOption(SHRINK_TO_PAGE);
-  fit_to_page.AddOption(FILL_PAGE);
+  fit_to_page.AddDefaultOption(FitToPageType::NO_FITTING, true);
+  fit_to_page.AddOption(FitToPageType::FIT_TO_PAGE);
+  fit_to_page.AddOption(FitToPageType::GROW_TO_PAGE);
+  fit_to_page.AddOption(FitToPageType::SHRINK_TO_PAGE);
+  fit_to_page.AddOption(FitToPageType::FILL_PAGE);
 
-  media.AddDefaultOption(Media(NA_LETTER, 2222, 3333), true);
-  media.AddOption(Media(ISO_A6, 4444, 5555));
-  media.AddOption(Media(JPN_YOU4, 6666, 7777));
+  media.AddDefaultOption(Media(MediaType::NA_LETTER, 2222, 3333), true);
+  media.AddOption(Media(MediaType::ISO_A6, 4444, 5555));
+  media.AddOption(Media(MediaType::JPN_YOU4, 6666, 7777));
   media.AddOption(Media("Feed", "FEED", 1111, 0));
 
   collate.set_default_value(false);
@@ -473,8 +473,10 @@ TEST(PrinterDescriptionTest, CddGetDocumentTypeSupported) {
     PwgRasterConfigCapability pwg_raster;
     EXPECT_TRUE(pwg_raster.LoadFrom(description));
     ASSERT_EQ(1U, pwg_raster.value().document_types_supported.size());
-    EXPECT_EQ(SRGB_8, pwg_raster.value().document_types_supported[0]);
-    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_EQ(PwgDocumentTypeSupported::SRGB_8,
+              pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(DocumentSheetBack::ROTATED,
+              pwg_raster.value().document_sheet_back);
     EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
   }
   {
@@ -485,8 +487,10 @@ TEST(PrinterDescriptionTest, CddGetDocumentTypeSupported) {
     PwgRasterConfigCapability pwg_raster;
     EXPECT_TRUE(pwg_raster.LoadFrom(description));
     ASSERT_EQ(1U, pwg_raster.value().document_types_supported.size());
-    EXPECT_EQ(SGRAY_8, pwg_raster.value().document_types_supported[0]);
-    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_EQ(PwgDocumentTypeSupported::SGRAY_8,
+              pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(DocumentSheetBack::ROTATED,
+              pwg_raster.value().document_sheet_back);
     EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
   }
   {
@@ -497,9 +501,12 @@ TEST(PrinterDescriptionTest, CddGetDocumentTypeSupported) {
     PwgRasterConfigCapability pwg_raster;
     EXPECT_TRUE(pwg_raster.LoadFrom(description));
     ASSERT_EQ(2U, pwg_raster.value().document_types_supported.size());
-    EXPECT_EQ(SRGB_8, pwg_raster.value().document_types_supported[0]);
-    EXPECT_EQ(SGRAY_8, pwg_raster.value().document_types_supported[1]);
-    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_EQ(PwgDocumentTypeSupported::SRGB_8,
+              pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(PwgDocumentTypeSupported::SGRAY_8,
+              pwg_raster.value().document_types_supported[1]);
+    EXPECT_EQ(DocumentSheetBack::ROTATED,
+              pwg_raster.value().document_sheet_back);
     EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
   }
   {
@@ -510,8 +517,10 @@ TEST(PrinterDescriptionTest, CddGetDocumentTypeSupported) {
     PwgRasterConfigCapability pwg_raster;
     EXPECT_TRUE(pwg_raster.LoadFrom(description));
     ASSERT_EQ(1U, pwg_raster.value().document_types_supported.size());
-    EXPECT_EQ(SRGB_8, pwg_raster.value().document_types_supported[0]);
-    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_EQ(PwgDocumentTypeSupported::SRGB_8,
+              pwg_raster.value().document_types_supported[0]);
+    EXPECT_EQ(DocumentSheetBack::ROTATED,
+              pwg_raster.value().document_sheet_back);
     EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
   }
   {
@@ -522,7 +531,8 @@ TEST(PrinterDescriptionTest, CddGetDocumentTypeSupported) {
     PwgRasterConfigCapability pwg_raster;
     EXPECT_TRUE(pwg_raster.LoadFrom(description));
     EXPECT_EQ(0U, pwg_raster.value().document_types_supported.size());
-    EXPECT_EQ(ROTATED, pwg_raster.value().document_sheet_back);
+    EXPECT_EQ(DocumentSheetBack::ROTATED,
+              pwg_raster.value().document_sheet_back);
     EXPECT_FALSE(pwg_raster.value().reverse_order_streaming);
   }
   {
@@ -548,8 +558,9 @@ TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
     CloudDeviceDescription description;
 
     PwgRasterConfig custom_raster;
-    custom_raster.document_types_supported.push_back(SRGB_8);
-    custom_raster.document_sheet_back = ROTATED;
+    custom_raster.document_types_supported.push_back(
+        PwgDocumentTypeSupported::SRGB_8);
+    custom_raster.document_sheet_back = DocumentSheetBack::ROTATED;
 
     PwgRasterConfigCapability pwg_raster;
     pwg_raster.set_value(custom_raster);
@@ -562,8 +573,9 @@ TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
     CloudDeviceDescription description;
 
     PwgRasterConfig custom_raster;
-    custom_raster.document_types_supported.push_back(SGRAY_8);
-    custom_raster.document_sheet_back = ROTATED;
+    custom_raster.document_types_supported.push_back(
+        PwgDocumentTypeSupported::SGRAY_8);
+    custom_raster.document_sheet_back = DocumentSheetBack::ROTATED;
 
     PwgRasterConfigCapability pwg_raster;
     pwg_raster.set_value(custom_raster);
@@ -576,9 +588,11 @@ TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
     CloudDeviceDescription description;
 
     PwgRasterConfig custom_raster;
-    custom_raster.document_types_supported.push_back(SRGB_8);
-    custom_raster.document_types_supported.push_back(SGRAY_8);
-    custom_raster.document_sheet_back = ROTATED;
+    custom_raster.document_types_supported.push_back(
+        PwgDocumentTypeSupported::SRGB_8);
+    custom_raster.document_types_supported.push_back(
+        PwgDocumentTypeSupported::SGRAY_8);
+    custom_raster.document_sheet_back = DocumentSheetBack::ROTATED;
 
     PwgRasterConfigCapability pwg_raster;
     pwg_raster.set_value(custom_raster);
@@ -591,7 +605,7 @@ TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
     CloudDeviceDescription description;
 
     PwgRasterConfig custom_raster;
-    custom_raster.document_sheet_back = ROTATED;
+    custom_raster.document_sheet_back = DocumentSheetBack::ROTATED;
 
     PwgRasterConfigCapability pwg_raster;
     pwg_raster.set_value(custom_raster);
@@ -639,49 +653,52 @@ TEST(PrinterDescriptionTest, CddGetAll) {
   EXPECT_TRUE(content_types.Contains("image/jpeg"));
 
   EXPECT_EQ(0U, pwg_raster_config.value().document_types_supported.size());
-  EXPECT_EQ(MANUAL_TUMBLE, pwg_raster_config.value().document_sheet_back);
+  EXPECT_EQ(DocumentSheetBack::MANUAL_TUMBLE,
+            pwg_raster_config.value().document_sheet_back);
   EXPECT_TRUE(pwg_raster_config.value().reverse_order_streaming);
   EXPECT_FALSE(pwg_raster_config.value().rotate_all_pages);
 
-  EXPECT_TRUE(color.Contains(Color(STANDARD_COLOR)));
-  EXPECT_TRUE(color.Contains(Color(STANDARD_MONOCHROME)));
-  Color custom(CUSTOM_MONOCHROME);
+  EXPECT_TRUE(color.Contains(Color(ColorType::STANDARD_COLOR)));
+  EXPECT_TRUE(color.Contains(Color(ColorType::STANDARD_MONOCHROME)));
+  Color custom(ColorType::CUSTOM_MONOCHROME);
   custom.vendor_id = "123";
   custom.custom_display_name = "monochrome";
   EXPECT_TRUE(color.Contains(custom));
-  EXPECT_EQ(Color(STANDARD_COLOR), color.GetDefault());
+  EXPECT_EQ(Color(ColorType::STANDARD_COLOR), color.GetDefault());
 
-  EXPECT_TRUE(duplex.Contains(LONG_EDGE));
-  EXPECT_TRUE(duplex.Contains(SHORT_EDGE));
-  EXPECT_TRUE(duplex.Contains(NO_DUPLEX));
-  EXPECT_EQ(LONG_EDGE, duplex.GetDefault());
+  EXPECT_TRUE(duplex.Contains(DuplexType::LONG_EDGE));
+  EXPECT_TRUE(duplex.Contains(DuplexType::SHORT_EDGE));
+  EXPECT_TRUE(duplex.Contains(DuplexType::NO_DUPLEX));
+  EXPECT_EQ(DuplexType::LONG_EDGE, duplex.GetDefault());
 
-  EXPECT_TRUE(orientation.Contains(PORTRAIT));
-  EXPECT_TRUE(orientation.Contains(LANDSCAPE));
-  EXPECT_TRUE(orientation.Contains(AUTO_ORIENTATION));
-  EXPECT_EQ(AUTO_ORIENTATION, orientation.GetDefault());
+  EXPECT_TRUE(orientation.Contains(OrientationType::PORTRAIT));
+  EXPECT_TRUE(orientation.Contains(OrientationType::LANDSCAPE));
+  EXPECT_TRUE(orientation.Contains(OrientationType::AUTO_ORIENTATION));
+  EXPECT_EQ(OrientationType::AUTO_ORIENTATION, orientation.GetDefault());
 
-  EXPECT_TRUE(margins.Contains(Margins(NO_MARGINS, 0, 0, 0, 0)));
-  EXPECT_TRUE(margins.Contains(Margins(STANDARD_MARGINS, 100, 200, 300, 400)));
-  EXPECT_TRUE(margins.Contains(Margins(CUSTOM_MARGINS, 1, 2, 3, 4)));
-  EXPECT_EQ(Margins(NO_MARGINS, 0, 0, 0, 0), margins.GetDefault());
+  EXPECT_TRUE(margins.Contains(Margins(MarginsType::NO_MARGINS, 0, 0, 0, 0)));
+  EXPECT_TRUE(margins.Contains(
+      Margins(MarginsType::STANDARD_MARGINS, 100, 200, 300, 400)));
+  EXPECT_TRUE(
+      margins.Contains(Margins(MarginsType::CUSTOM_MARGINS, 1, 2, 3, 4)));
+  EXPECT_EQ(Margins(MarginsType::NO_MARGINS, 0, 0, 0, 0), margins.GetDefault());
 
   EXPECT_TRUE(dpi.Contains(Dpi(150, 250)));
   EXPECT_TRUE(dpi.Contains(Dpi(600, 1600)));
   EXPECT_EQ(Dpi(600, 1600), dpi.GetDefault());
 
-  EXPECT_TRUE(fit_to_page.Contains(NO_FITTING));
-  EXPECT_TRUE(fit_to_page.Contains(FIT_TO_PAGE));
-  EXPECT_TRUE(fit_to_page.Contains(GROW_TO_PAGE));
-  EXPECT_TRUE(fit_to_page.Contains(SHRINK_TO_PAGE));
-  EXPECT_TRUE(fit_to_page.Contains(FILL_PAGE));
-  EXPECT_EQ(NO_FITTING, fit_to_page.GetDefault());
+  EXPECT_TRUE(fit_to_page.Contains(FitToPageType::NO_FITTING));
+  EXPECT_TRUE(fit_to_page.Contains(FitToPageType::FIT_TO_PAGE));
+  EXPECT_TRUE(fit_to_page.Contains(FitToPageType::GROW_TO_PAGE));
+  EXPECT_TRUE(fit_to_page.Contains(FitToPageType::SHRINK_TO_PAGE));
+  EXPECT_TRUE(fit_to_page.Contains(FitToPageType::FILL_PAGE));
+  EXPECT_EQ(FitToPageType::NO_FITTING, fit_to_page.GetDefault());
 
-  EXPECT_TRUE(media.Contains(Media(NA_LETTER, 2222, 3333)));
-  EXPECT_TRUE(media.Contains(Media(ISO_A6, 4444, 5555)));
-  EXPECT_TRUE(media.Contains(Media(JPN_YOU4, 6666, 7777)));
+  EXPECT_TRUE(media.Contains(Media(MediaType::NA_LETTER, 2222, 3333)));
+  EXPECT_TRUE(media.Contains(Media(MediaType::ISO_A6, 4444, 5555)));
+  EXPECT_TRUE(media.Contains(Media(MediaType::JPN_YOU4, 6666, 7777)));
   EXPECT_TRUE(media.Contains(Media("Feed", "FEED", 1111, 0)));
-  EXPECT_EQ(Media(NA_LETTER, 2222, 3333), media.GetDefault());
+  EXPECT_EQ(Media(MediaType::NA_LETTER, 2222, 3333), media.GetDefault());
 
   EXPECT_FALSE(collate.default_value());
   EXPECT_TRUE(reverse.default_value());
@@ -743,22 +760,22 @@ TEST(PrinterDescriptionTest, CjtSetAll) {
   ReverseTicketItem reverse;
 
   PwgRasterConfig custom_raster;
-  custom_raster.document_sheet_back = MANUAL_TUMBLE;
+  custom_raster.document_sheet_back = DocumentSheetBack::MANUAL_TUMBLE;
   custom_raster.reverse_order_streaming = true;
   custom_raster.rotate_all_pages = false;
   pwg_raster_config.set_value(custom_raster);
-  color.set_value(Color(STANDARD_MONOCHROME));
-  duplex.set_value(NO_DUPLEX);
-  orientation.set_value(LANDSCAPE);
+  color.set_value(Color(ColorType::STANDARD_MONOCHROME));
+  duplex.set_value(DuplexType::NO_DUPLEX);
+  orientation.set_value(OrientationType::LANDSCAPE);
   copies.set_value(123);
-  margins.set_value(Margins(CUSTOM_MARGINS, 7, 6, 3, 1));
+  margins.set_value(Margins(MarginsType::CUSTOM_MARGINS, 7, 6, 3, 1));
   dpi.set_value(Dpi(562, 125));
-  fit_to_page.set_value(SHRINK_TO_PAGE);
+  fit_to_page.set_value(FitToPageType::SHRINK_TO_PAGE);
   PageRange page_ranges;
   page_ranges.push_back(Interval(1, 99));
   page_ranges.push_back(Interval(150));
   page_range.set_value(page_ranges);
-  media.set_value(Media(ISO_C7C6, 4261, 334));
+  media.set_value(Media(MediaType::ISO_C7C6, 4261, 334));
   collate.set_value(false);
   reverse.set_value(true);
 
@@ -809,21 +826,22 @@ TEST(PrinterDescriptionTest, CjtGetAll) {
   EXPECT_TRUE(reverse.LoadFrom(description));
   EXPECT_TRUE(media.LoadFrom(description));
 
-  EXPECT_EQ(MANUAL_TUMBLE, pwg_raster_config.value().document_sheet_back);
+  EXPECT_EQ(DocumentSheetBack::MANUAL_TUMBLE,
+            pwg_raster_config.value().document_sheet_back);
   EXPECT_TRUE(pwg_raster_config.value().reverse_order_streaming);
   EXPECT_FALSE(pwg_raster_config.value().rotate_all_pages);
-  EXPECT_EQ(color.value(), Color(STANDARD_MONOCHROME));
-  EXPECT_EQ(duplex.value(), NO_DUPLEX);
-  EXPECT_EQ(orientation.value(), LANDSCAPE);
+  EXPECT_EQ(color.value(), Color(ColorType::STANDARD_MONOCHROME));
+  EXPECT_EQ(duplex.value(), DuplexType::NO_DUPLEX);
+  EXPECT_EQ(orientation.value(), OrientationType::LANDSCAPE);
   EXPECT_EQ(copies.value(), 123);
-  EXPECT_EQ(margins.value(), Margins(CUSTOM_MARGINS, 7, 6, 3, 1));
+  EXPECT_EQ(margins.value(), Margins(MarginsType::CUSTOM_MARGINS, 7, 6, 3, 1));
   EXPECT_EQ(dpi.value(), Dpi(562, 125));
-  EXPECT_EQ(fit_to_page.value(), SHRINK_TO_PAGE);
+  EXPECT_EQ(fit_to_page.value(), FitToPageType::SHRINK_TO_PAGE);
   PageRange page_ranges;
   page_ranges.push_back(Interval(1, 99));
   page_ranges.push_back(Interval(150));
   EXPECT_EQ(page_range.value(), page_ranges);
-  EXPECT_EQ(media.value(), Media(ISO_C7C6, 4261, 334));
+  EXPECT_EQ(media.value(), Media(MediaType::ISO_C7C6, 4261, 334));
   EXPECT_FALSE(collate.value());
   EXPECT_TRUE(reverse.value());
 

@@ -22,9 +22,14 @@ namespace printer {
 
 typedef std::string ContentType;
 
-enum DocumentSheetBack { NORMAL, ROTATED, MANUAL_TUMBLE, FLIPPED };
+enum class DocumentSheetBack {
+  NORMAL,
+  ROTATED,
+  MANUAL_TUMBLE,
+  FLIPPED,
+};
 
-enum PwgDocumentTypeSupported {
+enum class PwgDocumentTypeSupported {
   SGRAY_8 = 22,
   SRGB_8 = 23,
 };
@@ -39,7 +44,7 @@ struct PwgRasterConfig {
   bool rotate_all_pages;
 };
 
-enum ColorType {
+enum class ColorType {
   STANDARD_COLOR,
   STANDARD_MONOCHROME,
   CUSTOM_COLOR,
@@ -60,19 +65,19 @@ struct Color {
   std::string custom_display_name;
 };
 
-enum DuplexType {
+enum class DuplexType {
   NO_DUPLEX,
   LONG_EDGE,
   SHORT_EDGE,
 };
 
-enum OrientationType {
+enum class OrientationType {
   PORTRAIT,
   LANDSCAPE,
   AUTO_ORIENTATION,
 };
 
-enum MarginsType {
+enum class MarginsType {
   NO_MARGINS,
   STANDARD_MARGINS,
   CUSTOM_MARGINS,
@@ -108,7 +113,7 @@ struct Dpi {
   int32_t vertical;
 };
 
-enum FitToPageType {
+enum class FitToPageType {
   NO_FITTING,
   FIT_TO_PAGE,
   GROW_TO_PAGE,
@@ -116,7 +121,7 @@ enum FitToPageType {
   FILL_PAGE,
 };
 
-enum MediaType {
+enum class MediaType {
   CUSTOM_MEDIA,
 
   // North American standard sheet media names.

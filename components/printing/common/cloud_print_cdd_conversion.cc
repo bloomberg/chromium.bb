@@ -21,15 +21,15 @@ cloud_devices::printer::DuplexType ToCloudDuplexType(
     printing::DuplexMode mode) {
   switch (mode) {
     case printing::SIMPLEX:
-      return cloud_devices::printer::NO_DUPLEX;
+      return cloud_devices::printer::DuplexType::NO_DUPLEX;
     case printing::LONG_EDGE:
-      return cloud_devices::printer::LONG_EDGE;
+      return cloud_devices::printer::DuplexType::LONG_EDGE;
     case printing::SHORT_EDGE:
-      return cloud_devices::printer::SHORT_EDGE;
+      return cloud_devices::printer::DuplexType::SHORT_EDGE;
     default:
       NOTREACHED();
   }
-  return cloud_devices::printer::NO_DUPLEX;
+  return cloud_devices::printer::DuplexType::NO_DUPLEX;
 }
 
 }  // namespace
@@ -65,12 +65,12 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
 
   ColorCapability color;
   if (semantic_info.color_default || semantic_info.color_changeable) {
-    Color standard_color(STANDARD_COLOR);
+    Color standard_color(ColorType::STANDARD_COLOR);
     standard_color.vendor_id = base::NumberToString(semantic_info.color_model);
     color.AddDefaultOption(standard_color, semantic_info.color_default);
   }
   if (!semantic_info.color_default || semantic_info.color_changeable) {
-    Color standard_monochrome(STANDARD_MONOCHROME);
+    Color standard_monochrome(ColorType::STANDARD_MONOCHROME);
     standard_monochrome.vendor_id =
         base::NumberToString(semantic_info.bw_model);
     color.AddDefaultOption(standard_monochrome, !semantic_info.color_default);
@@ -136,9 +136,9 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   }
 
   OrientationCapability orientation;
-  orientation.AddDefaultOption(PORTRAIT, true);
-  orientation.AddOption(LANDSCAPE);
-  orientation.AddOption(AUTO_ORIENTATION);
+  orientation.AddDefaultOption(OrientationType::PORTRAIT, true);
+  orientation.AddOption(OrientationType::LANDSCAPE);
+  orientation.AddOption(OrientationType::AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
   return std::move(description).ToValue();
