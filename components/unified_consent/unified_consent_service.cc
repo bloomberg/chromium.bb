@@ -66,12 +66,13 @@ void UnifiedConsentService::RollbackIfNeeded(
   user_pref_service->ClearPref(prefs::kUnifiedConsentMigrationState);
 }
 
-void UnifiedConsentService::EnableGoogleServices() {
-  DCHECK(identity_manager_->HasPrimaryAccount());
-  DCHECK_EQ(MigrationState::kCompleted, GetMigrationState());
+void UnifiedConsentService::SetUrlKeyedAnonymizedDataCollectionEnabled(
+    bool enabled) {
+  if (GetMigrationState() != MigrationState::kCompleted)
+    SetMigrationState(MigrationState::kCompleted);
 
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            true);
+                            enabled);
 }
 
 void UnifiedConsentService::Shutdown() {
@@ -82,13 +83,7 @@ void UnifiedConsentService::Shutdown() {
 void UnifiedConsentService::OnPrimaryAccountCleared(
     const CoreAccountInfo& account_info) {
   // By design, clearing the primary account disables URL-keyed data collection.
-  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            false);
-
-  if (GetMigrationState() != MigrationState::kCompleted) {
-    // When the user signs out, the migration is complete.
-    SetMigrationState(MigrationState::kCompleted);
-  }
+  SetUrlKeyedAnonymizedDataCollectionEnabled(false);
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
@@ -139,10 +134,7 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
       sync_service_->GetUserSettings()->GetChosenDataTypes().Has(
           syncer::TYPED_URLS) &&
       !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase();
-  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-                            url_keyed_metrics_enabled);
-
-  SetMigrationState(MigrationState::kCompleted);
+  SetUrlKeyedAnonymizedDataCollectionEnabled(url_keyed_metrics_enabled);
 }
 
 }  //  namespace unified_consent

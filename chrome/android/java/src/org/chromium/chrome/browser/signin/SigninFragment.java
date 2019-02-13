@@ -134,7 +134,7 @@ public class SigninFragment extends SigninFragmentBase {
         SigninManager.get().signIn(accountName, getActivity(), new SigninManager.SignInCallback() {
             @Override
             public void onSignInComplete() {
-                UnifiedConsentServiceBridge.enableGoogleServices();
+                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
                 if (settingsClicked) {
                     PreferencesLauncher.launchSettingsPage(getActivity(),
                             SyncAndServicesPreferences.class,

@@ -105,26 +105,14 @@ TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
-TEST_F(UnifiedConsentServiceTest, EnableServices) {
+TEST_F(UnifiedConsentServiceTest, EnableUrlKeyedAnonymizedDataCollection) {
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
   // Enable services and check expectations.
-  consent_service_->EnableGoogleServices();
-  EXPECT_TRUE(pref_service_.GetBoolean(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-}
-
-TEST_F(UnifiedConsentServiceTest, EnableServices_WithUnsupportedService) {
-  CreateConsentService();
-  identity_test_environment_.SetPrimaryAccount("testaccount");
-  EXPECT_FALSE(pref_service_.GetBoolean(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
-
-  // Enable services and check expectations.
-  consent_service_->EnableGoogleServices();
+  consent_service_->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
@@ -154,7 +142,7 @@ TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
 
   // Precondition: Enable unified consent.
-  consent_service_->EnableGoogleServices();
+  consent_service_->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
@@ -180,13 +168,11 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
 
   // Migrate and opt into unified consent.
   CreateConsentService();
-  consent_service_->EnableGoogleServices();
+  consent_service_->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   // Check expectations after opt-in.
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
-  EXPECT_TRUE(pref_service_.GetBoolean(
-      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
   consent_service_->Shutdown();
   consent_service_.reset();
