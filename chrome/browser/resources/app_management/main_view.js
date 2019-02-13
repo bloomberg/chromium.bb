@@ -11,12 +11,10 @@ Polymer({
 
   properties: {
     /**
-     * List of all apps.
-     * @private {Array<App>}
+     * @private {AppMap}
      */
     apps_: {
-      type: Array,
-      value: () => [],
+      type: Object,
       observer: 'onAppsChanged_',
     },
 
@@ -47,28 +45,33 @@ Polymer({
     },
 
     /**
-     * List of apps with the notification permission.
-     * @private {Array<App>}
+     * A set containing the ids of all the apps with notifications enabled.
+     * @private {!Set<string>}
      */
-    notificationApps_: {
-      type: Array,
-      value: () => [],
+    notificationAppIds_: {
+      type: Object,
       observer: 'getNotificationSublabel_',
     },
   },
 
   attached: function() {
-    this.watch('apps_', state => Object.values(state.apps));
+    this.watch('apps_', state => state.apps);
+    this.watch('notificationAppIds_', state => state.notifications.allowedIds);
     this.updateFromStore();
   },
 
   /**
-   * @param {number} numApps
+   * @param {AppMap} apps
    * @param {boolean} listExpanded
-   * @return {string}
+   * @return {?string}
    * @private
    */
-  moreAppsString_: function(numApps, listExpanded) {
+  moreAppsString_: function(apps, listExpanded) {
+    if (apps === undefined || listExpanded === undefined) {
+      return null;
+    }
+
+    const numApps = Object.keys(apps).length;
     return listExpanded ?
         loadTimeData.getString('lessApps') :
         loadTimeData.getStringF(
@@ -87,15 +90,12 @@ Polymer({
    * @private
    */
   onAppsChanged_: function() {
+    const appList = Object.values(this.apps_);
     this.$['expander-row'].hidden =
-        this.apps_.length <= NUMBER_OF_APPS_DISPLAYED_DEFAULT;
-    this.displayedApps_ = this.apps_.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
+        appList.length <= NUMBER_OF_APPS_DISPLAYED_DEFAULT;
+    this.displayedApps_ = appList.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     this.collapsedApps_ =
-        this.apps_.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, this.apps_.length);
-
-    const [notificationsAllowed, notificationsBlocked] =
-        app_management.util.splitByNotificationPermission();
-    this.notificationApps_ = notificationsAllowed;
+        appList.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, appList.length);
   },
 
   /**
@@ -118,20 +118,21 @@ Polymer({
    * @private
    */
   getNotificationSublabelPieces_: async function() {
+    const notificationApps =
+        Array.from(this.notificationAppIds_, id => this.getState().apps[id]);
+
     const /** @type {string} */ label = await cr.sendWithPromise(
-        'getPluralString', 'appListPreview', this.notificationApps_.length);
+        'getPluralString', 'appListPreview', notificationApps.length);
 
     const substitutions = [];
     for (let i = 0;
-         i < APP_LIST_PREVIEW_APP_TITLES && i < this.notificationApps_.length;
-         i++) {
-      substitutions.push(this.notificationApps_[i].title);
+         i < APP_LIST_PREVIEW_APP_TITLES && i < notificationApps.length; i++) {
+      substitutions.push(notificationApps[i].title);
     }
 
     // Add X more apps if the length is more than APP_LIST_PREVIEW_APP_TITLES.
-    if (this.notificationApps_.length >= APP_LIST_PREVIEW_APP_TITLES + 1) {
-      substitutions.push(
-          this.notificationApps_.length - APP_LIST_PREVIEW_APP_TITLES);
+    if (notificationApps.length >= APP_LIST_PREVIEW_APP_TITLES + 1) {
+      substitutions.push(notificationApps.length - APP_LIST_PREVIEW_APP_TITLES);
     }
     // Only APP_LIST_PREVIEW_APP_TITLES of apps' titles get ellipsised
     // if too long. the element after that is "X other apps"

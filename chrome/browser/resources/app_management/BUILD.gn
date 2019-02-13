@@ -188,6 +188,7 @@ if (!is_android) {
   js_library("reducers") {
     deps = [
       ":types",
+      ":util",
       "//ui/webui/resources/js:cr",
     ]
   }
