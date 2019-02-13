@@ -1296,9 +1296,11 @@ interface WebGL2ComputeRenderingContext
     attribute @@toStringTag
     attribute ACTIVE_ATOMIC_COUNTER_BUFFERS
     attribute ACTIVE_ATTRIBUTES
+    attribute ACTIVE_RESOURCES
     attribute ACTIVE_TEXTURE
     attribute ACTIVE_UNIFORMS
     attribute ACTIVE_UNIFORM_BLOCKS
+    attribute ACTIVE_VARIABLES
     attribute ALIASED_LINE_WIDTH_RANGE
     attribute ALIASED_POINT_SIZE_RANGE
     attribute ALPHA
@@ -1309,6 +1311,8 @@ interface WebGL2ComputeRenderingContext
     attribute ANY_SAMPLES_PASSED_CONSERVATIVE
     attribute ARRAY_BUFFER
     attribute ARRAY_BUFFER_BINDING
+    attribute ARRAY_SIZE
+    attribute ARRAY_STRIDE
     attribute ATOMIC_COUNTER_BARRIER_BIT
     attribute ATOMIC_COUNTER_BUFFER
     attribute ATOMIC_COUNTER_BUFFER_BINDING
@@ -1326,12 +1330,15 @@ interface WebGL2ComputeRenderingContext
     attribute BLEND_EQUATION_RGB
     attribute BLEND_SRC_ALPHA
     attribute BLEND_SRC_RGB
+    attribute BLOCK_INDEX
     attribute BLUE_BITS
     attribute BOOL
     attribute BOOL_VEC2
     attribute BOOL_VEC3
     attribute BOOL_VEC4
     attribute BROWSER_DEFAULT_WEBGL
+    attribute BUFFER_BINDING
+    attribute BUFFER_DATA_SIZE
     attribute BUFFER_SIZE
     attribute BUFFER_UPDATE_BARRIER_BIT
     attribute BUFFER_USAGE
@@ -1501,6 +1508,7 @@ interface WebGL2ComputeRenderingContext
     attribute INVALID_OPERATION
     attribute INVALID_VALUE
     attribute INVERT
+    attribute IS_ROW_MAJOR
     attribute KEEP
     attribute LEQUAL
     attribute LESS
@@ -1512,10 +1520,12 @@ interface WebGL2ComputeRenderingContext
     attribute LINE_STRIP
     attribute LINE_WIDTH
     attribute LINK_STATUS
+    attribute LOCATION
     attribute LOW_FLOAT
     attribute LOW_INT
     attribute LUMINANCE
     attribute LUMINANCE_ALPHA
+    attribute MATRIX_STRIDE
     attribute MAX
     attribute MAX_3D_TEXTURE_SIZE
     attribute MAX_ARRAY_TEXTURE_LAYERS
@@ -1553,6 +1563,8 @@ interface WebGL2ComputeRenderingContext
     attribute MAX_FRAGMENT_UNIFORM_BLOCKS
     attribute MAX_FRAGMENT_UNIFORM_COMPONENTS
     attribute MAX_FRAGMENT_UNIFORM_VECTORS
+    attribute MAX_NAME_LENGTH
+    attribute MAX_NUM_ACTIVE_VARIABLES
     attribute MAX_PROGRAM_TEXEL_OFFSET
     attribute MAX_RENDERBUFFER_SIZE
     attribute MAX_SAMPLES
@@ -1584,6 +1596,7 @@ interface WebGL2ComputeRenderingContext
     attribute MIN
     attribute MIN_PROGRAM_TEXEL_OFFSET
     attribute MIRRORED_REPEAT
+    attribute NAME_LENGTH
     attribute NEAREST
     attribute NEAREST_MIPMAP_LINEAR
     attribute NEAREST_MIPMAP_NEAREST
@@ -1592,7 +1605,9 @@ interface WebGL2ComputeRenderingContext
     attribute NONE
     attribute NOTEQUAL
     attribute NO_ERROR
+    attribute NUM_ACTIVE_VARIABLES
     attribute OBJECT_TYPE
+    attribute OFFSET
     attribute ONE
     attribute ONE_MINUS_CONSTANT_ALPHA
     attribute ONE_MINUS_CONSTANT_COLOR
@@ -1614,6 +1629,8 @@ interface WebGL2ComputeRenderingContext
     attribute POLYGON_OFFSET_FACTOR
     attribute POLYGON_OFFSET_FILL
     attribute POLYGON_OFFSET_UNITS
+    attribute PROGRAM_INPUT
+    attribute PROGRAM_OUTPUT
     attribute QUERY_RESULT
     attribute QUERY_RESULT_AVAILABLE
     attribute R11F_G11F_B10F
@@ -1636,6 +1653,9 @@ interface WebGL2ComputeRenderingContext
     attribute RED
     attribute RED_BITS
     attribute RED_INTEGER
+    attribute REFERENCED_BY_COMPUTE_SHADER
+    attribute REFERENCED_BY_FRAGMENT_SHADER
+    attribute REFERENCED_BY_VERTEX_SHADER
     attribute RENDERBUFFER
     attribute RENDERBUFFER_ALPHA_SIZE
     attribute RENDERBUFFER_BINDING
@@ -1827,6 +1847,8 @@ interface WebGL2ComputeRenderingContext
     attribute TEXTURE_WRAP_T
     attribute TIMEOUT_EXPIRED
     attribute TIMEOUT_IGNORED
+    attribute TOP_LEVEL_ARRAY_SIZE
+    attribute TOP_LEVEL_ARRAY_STRIDE
     attribute TRANSFORM_FEEDBACK
     attribute TRANSFORM_FEEDBACK_ACTIVE
     attribute TRANSFORM_FEEDBACK_BARRIER_BIT
@@ -1838,13 +1860,17 @@ interface WebGL2ComputeRenderingContext
     attribute TRANSFORM_FEEDBACK_BUFFER_START
     attribute TRANSFORM_FEEDBACK_PAUSED
     attribute TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN
+    attribute TRANSFORM_FEEDBACK_VARYING
     attribute TRANSFORM_FEEDBACK_VARYINGS
     attribute TRIANGLES
     attribute TRIANGLE_FAN
     attribute TRIANGLE_STRIP
     attribute TRUE
+    attribute TYPE
+    attribute UNIFORM
     attribute UNIFORM_ARRAY_STRIDE
     attribute UNIFORM_BARRIER_BIT
+    attribute UNIFORM_BLOCK
     attribute UNIFORM_BLOCK_ACTIVE_UNIFORMS
     attribute UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES
     attribute UNIFORM_BLOCK_BINDING
@@ -2023,7 +2049,12 @@ interface WebGL2ComputeRenderingContext
     method getInternalformatParameter
     method getParameter
     method getProgramInfoLog
+    method getProgramInterfaceParameter
     method getProgramParameter
+    method getProgramResource
+    method getProgramResourceIndex
+    method getProgramResourceLocation
+    method getProgramResourceName
     method getQuery
     method getQueryParameter
     method getRenderbufferParameter
