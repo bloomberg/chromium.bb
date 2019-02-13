@@ -78,9 +78,12 @@ public final class DownloadNotificationFactory {
                         .createChromeNotificationBuilder(true /* preferCompat */,
                                 ChannelDefinitions.ChannelId.DOWNLOADS,
                                 null /* remoteAppPackageName */,
-                                new NotificationMetadata(
-                                        NotificationUmaTracker.SystemNotificationType
-                                                .DOWNLOAD_FILES,
+                                new NotificationMetadata(LegacyHelpers.isLegacyDownload(
+                                                                 downloadUpdate.getContentId())
+                                                ? NotificationUmaTracker.SystemNotificationType
+                                                          .DOWNLOAD_FILES
+                                                : NotificationUmaTracker.SystemNotificationType
+                                                          .DOWNLOAD_PAGES,
                                         null /* tag */, notificationId))
                         .setLocalOnly(true)
                         .setGroup(NotificationConstants.GROUP_DOWNLOADS)
@@ -88,6 +91,18 @@ public final class DownloadNotificationFactory {
 
         String contentText;
         int iconId;
+        @NotificationUmaTracker.ActionType
+        int cancelActionType,
+                pauseActionType, resumeActionType;
+        if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())) {
+            cancelActionType = NotificationUmaTracker.ActionType.DOWNLOAD_CANCEL;
+            pauseActionType = NotificationUmaTracker.ActionType.DOWNLOAD_PAUSE;
+            resumeActionType = NotificationUmaTracker.ActionType.DOWNLOAD_RESUME;
+        } else {
+            cancelActionType = NotificationUmaTracker.ActionType.DOWNLOAD_PAGE_CANCEL;
+            pauseActionType = NotificationUmaTracker.ActionType.DOWNLOAD_PAGE_PAUSE;
+            resumeActionType = NotificationUmaTracker.ActionType.DOWNLOAD_PAGE_RESUME;
+        }
 
         switch (downloadStatus) {
             case DownloadNotificationService.DownloadStatus.IN_PROGRESS:
@@ -138,13 +153,13 @@ public final class DownloadNotificationFactory {
                                         R.string.download_notification_pause_button),
                                 buildPendingIntentProvider(
                                         context, pauseIntent, downloadUpdate.getNotificationId()),
-                                NotificationUmaTracker.ActionType.DOWNLOAD_PAUSE)
+                                pauseActionType)
                         .addAction(R.drawable.btn_close_white,
                                 context.getResources().getString(
                                         R.string.download_notification_cancel_button),
                                 buildPendingIntentProvider(
                                         context, cancelIntent, downloadUpdate.getNotificationId()),
-                                NotificationUmaTracker.ActionType.DOWNLOAD_CANCEL);
+                                cancelActionType);
 
                 if (!downloadUpdate.getIsOffTheRecord())
                     builder.setLargeIcon(downloadUpdate.getIcon());
@@ -191,13 +206,13 @@ public final class DownloadNotificationFactory {
                                         R.string.download_notification_resume_button),
                                 buildPendingIntentProvider(
                                         context, resumeIntent, downloadUpdate.getNotificationId()),
-                                NotificationUmaTracker.ActionType.DOWNLOAD_RESUME)
+                                resumeActionType)
                         .addAction(R.drawable.btn_close_white,
                                 context.getResources().getString(
                                         R.string.download_notification_cancel_button),
                                 buildPendingIntentProvider(
                                         context, cancelIntent, downloadUpdate.getNotificationId()),
-                                NotificationUmaTracker.ActionType.DOWNLOAD_CANCEL);
+                                cancelActionType);
 
                 if (!downloadUpdate.getIsOffTheRecord())
                     builder.setLargeIcon(downloadUpdate.getIcon());
