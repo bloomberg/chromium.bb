@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -127,6 +128,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/scroll/programmatic_scroll_animator.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -3484,6 +3486,35 @@ void Internals::DisableIntersectionObserverThrottleDelay() const {
 void Internals::addEmbedderCustomElementName(const AtomicString& name,
                                              ExceptionState& exception_state) {
   CustomElement::AddEmbedderCustomElementNameForTesting(name, exception_state);
+}
+
+String Internals::resolveModuleSpecifier(const String& specifier,
+                                         const String& base_url_string,
+                                         Document* document,
+                                         ExceptionState& exception_state) {
+  Modulator* modulator =
+      Modulator::From(ToScriptStateForMainWorld(document->GetFrame()));
+
+  if (!modulator) {
+    V8ThrowException::ThrowTypeError(
+        v8::Isolate::GetCurrent(),
+        "Failed to resolve module specifier " + specifier + ": No modulator");
+    return NullURL();
+  }
+
+  const KURL base_url = document->CompleteURL(base_url_string);
+  String failure_reason = "Failed";
+  const KURL result =
+      modulator->ResolveModuleSpecifier(specifier, base_url, &failure_reason);
+
+  if (!result.IsValid()) {
+    V8ThrowException::ThrowTypeError(v8::Isolate::GetCurrent(),
+                                     "Failed to resolve module specifier " +
+                                         specifier + ": " + failure_reason);
+    return NullURL();
+  }
+
+  return result.GetString();
 }
 
 }  // namespace blink

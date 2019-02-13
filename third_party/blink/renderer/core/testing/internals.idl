@@ -415,4 +415,9 @@
     // Declare that the given |name| is in use by the embedder via the custom
     // element mechanism.
     [RaisesException] void addEmbedderCustomElementName(DOMString name);
+
+    // https://html.spec.whatwg.org/multipage/webappapis.html#resolve-a-module-specifier
+    // Throws TypeError on error.
+    // Used for testing Import Maps https://github.com/domenic/import-maps
+    [RaisesException] DOMString resolveModuleSpecifier(DOMString specifier, DOMString base_url, Document document);
 };
