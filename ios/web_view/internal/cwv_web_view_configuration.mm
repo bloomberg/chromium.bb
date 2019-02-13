@@ -18,7 +18,6 @@
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
@@ -160,9 +159,6 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     identity::IdentityManager* identityManager =
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             self.browserState);
-    ProfileOAuth2TokenService* tokenService =
-        ios_web_view::WebViewOAuth2TokenServiceFactory::GetForBrowserState(
-            self.browserState);
     SigninErrorController* signinErrorController =
         ios_web_view::WebViewSigninErrorControllerFactory::GetForBrowserState(
             self.browserState);
@@ -170,7 +166,6 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     _syncController =
         [[CWVSyncController alloc] initWithSyncService:syncService
                                        identityManager:identityManager
-                                          tokenService:tokenService
                                  signinErrorController:signinErrorController];
 
     // Set the newly created CWVSyncController on IOSWebViewSigninClient to
