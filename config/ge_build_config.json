@@ -1726,6 +1726,12 @@
       "models": [
         {
           "board_name": "fizz",
+          "name": "fizz",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz",
           "name": "jax",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
@@ -2049,6 +2055,12 @@
         {
           "board_name": "nami",
           "name": "ekko",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "nami",
+          "name": "nami",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
