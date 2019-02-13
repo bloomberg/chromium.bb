@@ -36,7 +36,6 @@
 
 namespace content {
 
-// PlzNavigate
 // Struct keeping track of the Javascript SourceLocation that triggered the
 // navigation. This is initialized based on information from Blink at the start
 // of navigation, and passed back to Blink when the navigation commits.
@@ -147,7 +146,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   ~CommonNavigationParams();
 
   // The URL to navigate to.
-  // PlzNavigate: May be modified when the navigation is ready to commit.
+  // May be modified when the navigation is ready to commit.
   GURL url;
 
   // When a frame navigates another frame, this is the origin of the document
@@ -174,7 +173,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Informs the RenderView the pending navigation should replace the current
   // history entry when it commits. This is used for cross-process redirects so
   // the transferred navigation can recover the navigation state.
-  // PlzNavigate: this is used by client-side redirects to indicate that when
+  // This is used by client-side redirects to indicate that when
   // the navigation commits, it should commit in the existing page.
   bool should_replace_current_entry = false;
 
@@ -193,7 +192,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // The navigationStart time exposed through the Navigation Timing API to JS.
   // If this is for a browser-initiated navigation, this can override the
   // navigation_start value in Blink.
-  // PlzNavigate: For renderer initiated navigations, this will be set on the
+  // For renderer initiated navigations, this will be set on the
   // renderer side and sent with FrameHostMsg_BeginNavigation.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
@@ -203,7 +202,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // Body of HTTP POST request.
   scoped_refptr<network::ResourceRequestBody> post_data;
 
-  // PlzNavigate
   // Information about the Javascript source for this navigation. Used for
   // providing information in console error messages triggered by the
   // navigation. If the navigation was not caused by Javascript, this should
@@ -235,7 +233,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
 // Provided by the browser -----------------------------------------------------
 
-// PlzNavigate
 // Timings collected in the browser during navigation for the
 // Navigation Timing API. Sent to Blink in CommitNavigationParams when
 // the navigation is ready to be committed.
@@ -286,15 +283,12 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // The ResourceResponseInfos received during redirects.
   std::vector<network::ResourceResponseHead> redirect_response;
 
-  // PlzNavigate
   // The RedirectInfos received during redirects.
   std::vector<net::RedirectInfo> redirect_infos;
 
-  // PlzNavigate
   // The content type from the request headers for POST requests.
   std::string post_content_type;
 
-  // PlzNavigate
   // The original URL & method for this navigation.
   GURL original_url;
   std::string original_method;
@@ -360,7 +354,6 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // Whether a ServiceWorkerProviderHost should be created for the window.
   bool should_create_service_worker = false;
 
-  // PlzNavigate
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
@@ -368,7 +361,6 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // created by the browser. Set to kInvalidServiceWorkerProviderId otherwise.
   int service_worker_provider_id = kInvalidServiceWorkerProviderId;
 
-  // PlzNavigate
   // The AppCache host id to be used to identify this navigation.
   int appcache_host_id = blink::mojom::kAppCacheNoHostId;
 
