@@ -79,7 +79,7 @@ void BroadcastChannelProvider::ConnectToChannel(
     blink::mojom::BroadcastChannelClientAssociatedRequest connection) {
   RenderProcessHostId process_id = bindings_.dispatch_context();
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessDataForOrigin(process_id, origin.GetURL())) {
+  if (!policy->CanAccessDataForOrigin(process_id, origin)) {
     mojo::ReportBadMessage("BROADCAST_CHANNEL_INVALID_ORIGIN");
     return;
   }

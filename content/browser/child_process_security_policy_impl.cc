@@ -121,6 +121,12 @@ bool IsRunningOnExpectedThread() {
   return false;
 }
 
+base::debug::CrashKeyString* GetRequestedOriginCrashKey() {
+  static auto* requested_origin_key = base::debug::AllocateCrashKeyString(
+      "requested_origin", base::debug::CrashKeySize::Size256);
+  return requested_origin_key;
+}
+
 }  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
@@ -1236,6 +1242,18 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
   return state->second->HasPermissionsForFile(file, permissions);
 }
 
+bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
+    int child_id,
+    const url::Origin& origin) {
+  bool success = CanAccessDataForOrigin(child_id, origin.GetURL());
+  if (success)
+    return true;
+
+  auto* requested_origin_key = GetRequestedOriginCrashKey();
+  base::debug::SetCrashKeyString(requested_origin_key, origin.GetDebugString());
+  return false;
+}
+
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& url) {
   DCHECK(IsRunningOnExpectedThread());
@@ -1277,8 +1295,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
                                    killed_process_origin_lock);
 
-    static auto* requested_origin_key = base::debug::AllocateCrashKeyString(
-        "requested_origin", base::debug::CrashKeySize::Size64);
+    auto* requested_origin_key = GetRequestedOriginCrashKey();
     base::debug::SetCrashKeyString(requested_origin_key,
                                    url.GetOrigin().spec());
   }

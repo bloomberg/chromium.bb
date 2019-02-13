@@ -115,10 +115,10 @@ TEST_F(WebDatabaseHostImplTest, BadMessagesUnauthorized) {
   security_policy->AddIsolatedOrigins({correct_origin, incorrect_origin});
   security_policy->LockToOrigin(IsolationContext(), process_id(),
                                 correct_origin.GetURL());
-  ASSERT_TRUE(security_policy->CanAccessDataForOrigin(process_id(),
-                                                      correct_origin.GetURL()));
-  ASSERT_FALSE(security_policy->CanAccessDataForOrigin(
-      process_id(), incorrect_origin.GetURL()));
+  ASSERT_TRUE(
+      security_policy->CanAccessDataForOrigin(process_id(), correct_origin));
+  ASSERT_FALSE(
+      security_policy->CanAccessDataForOrigin(process_id(), incorrect_origin));
 
   CheckUnauthorizedOrigin([&]() {
     host()->OpenFile(bad_vfs_file_name,

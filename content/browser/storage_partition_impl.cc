@@ -931,8 +931,8 @@ void StoragePartitionImpl::OpenLocalStorage(
     blink::mojom::StorageAreaRequest request,
     OpenLocalStorageCallback callback) {
   int process_id = bindings_.dispatch_context();
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
-          process_id, origin.GetURL())) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
+          process_id, origin)) {
     SYSLOG(WARNING) << "Killing renderer: illegal localStorage request.";
     bindings_.ReportBadMessage("Access denied for localStorage request");
     return;

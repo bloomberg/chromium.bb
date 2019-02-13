@@ -129,6 +129,7 @@ test("url_unittests") {
     ":url",
     "//base",
     "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 

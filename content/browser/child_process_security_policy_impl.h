@@ -100,6 +100,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
 
+  // Identical to the above method, but takes url::Origin as input.
+  bool CanAccessDataForOrigin(int child_id, const url::Origin& origin);
+
   // This function will check whether |origin| requires process isolation
   // within |isolation_context|, and if so, it will return true and put the
   // most specific matching isolated origin into |result|.

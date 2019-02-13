@@ -4139,7 +4139,7 @@ bool RenderFrameHostImpl::CanCommitOrigin(
   GURL origin_url = origin.GetURL();
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessDataForOrigin(GetProcess()->GetID(), origin.GetURL()))
+  if (!policy->CanAccessDataForOrigin(GetProcess()->GetID(), origin))
     return false;
 
   // Verify that the origin is allowed to commit in this process.
@@ -6120,7 +6120,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
           base::debug::AllocateCrashKeyString(
               "initiator_origin", base::debug::CrashKeySize::Size64),
           handle->GetInitiatorOrigin()
-              ? handle->GetInitiatorOrigin()->Serialize()
+              ? handle->GetInitiatorOrigin()->GetDebugString()
               : "none");
 
       base::debug::SetCrashKeyString(

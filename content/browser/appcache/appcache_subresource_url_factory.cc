@@ -369,8 +369,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
   if (request.request_initiator.has_value() &&
       !request.request_initiator.value().opaque() && appcache_host_ &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
-          appcache_host_->process_id(),
-          request.request_initiator.value().GetURL())) {
+          appcache_host_->process_id(), request.request_initiator.value())) {
     const char* scheme_exception =
         GetContentClient()
             ->browser()
