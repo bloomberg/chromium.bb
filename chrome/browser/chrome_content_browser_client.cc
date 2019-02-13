@@ -332,6 +332,7 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/platform/modules/webshare/webshare.mojom.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -1053,6 +1054,20 @@ std::string GetUserAgent() {
     product += " Mobile";
 #endif
   return content::BuildUserAgentFromProduct(product);
+}
+
+blink::UserAgentMetadata GetUserAgentMetadata() {
+  blink::UserAgentMetadata metadata;
+
+  metadata.brand = version_info::GetProductName();
+  metadata.version = version_info::GetVersionNumber();
+  metadata.platform = version_info::GetOSType();
+
+  // TODO(mkwst): Poke at BuildUserAgentFromProduct to split out these pieces.
+  metadata.architecture = "";
+  metadata.model = "";
+
+  return metadata;
 }
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
@@ -5459,6 +5474,11 @@ std::string ChromeContentBrowserClient::GetProduct() const {
 
 std::string ChromeContentBrowserClient::GetUserAgent() const {
   return ::GetUserAgent();
+}
+
+blink::UserAgentMetadata ChromeContentBrowserClient::GetUserAgentMetadata()
+    const {
+  return ::GetUserAgentMetadata();
 }
 
 bool ChromeContentBrowserClient::IsBuiltinComponent(

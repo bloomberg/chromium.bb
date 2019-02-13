@@ -25,6 +25,8 @@ class WaitableEvent;
 }
 
 namespace blink {
+struct UserAgentMetadata;
+
 namespace scheduler {
 enum class WebRendererProcessType;
 }
@@ -108,6 +110,7 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
 
   // Returns the user-agent string.
   virtual blink::WebString GetUserAgent() = 0;
+  virtual const blink::UserAgentMetadata& GetUserAgentMetadata() = 0;
 };
 
 }  // namespace content

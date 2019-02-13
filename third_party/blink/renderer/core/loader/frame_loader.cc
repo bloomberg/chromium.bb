@@ -1365,6 +1365,11 @@ String FrameLoader::UserAgent() const {
   return user_agent;
 }
 
+blink::UserAgentMetadata FrameLoader::UserAgentMetadata() const {
+  // TODO(mkwst): Support overrides.
+  return Client()->UserAgentMetadata();
+}
+
 void FrameLoader::Detach() {
   DetachDocumentLoader(document_loader_);
   DetachDocumentLoader(provisional_document_loader_);

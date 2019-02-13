@@ -111,6 +111,8 @@ blink_core_sources("frame") {
     "navigator_scheduling.h",
     "navigator_user_activation.cc",
     "navigator_user_activation.h",
+    "navigator_user_agent.cc",
+    "navigator_user_agent.h",
     "opened_frame_tracker.cc",
     "opened_frame_tracker.h",
     "page_scale_constraints.cc",

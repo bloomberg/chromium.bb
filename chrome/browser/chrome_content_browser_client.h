@@ -79,6 +79,8 @@ class ChromeSerialDelegate;
 // Returns the user agent of Chrome.
 std::string GetUserAgent();
 
+blink::UserAgentMetadata GetUserAgentMetadata();
+
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ChromeContentBrowserClient(
@@ -547,6 +549,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
+  blink::UserAgentMetadata GetUserAgentMetadata() const override;
 
   bool IsBuiltinComponent(content::BrowserContext* browser_context,
                           const url::Origin& origin) override;

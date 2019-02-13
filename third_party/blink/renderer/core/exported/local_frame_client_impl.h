@@ -173,6 +173,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       DocumentLoader* document_loader,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   WTF::String UserAgent() override;
+  blink::UserAgentMetadata UserAgentMetadata() override;
   WTF::String DoNotTrackValue() override;
   void TransitionToCommittedForNewPage() override;
   LocalFrame* CreateFrame(const WTF::AtomicString& name,
@@ -309,6 +310,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
+  blink::UserAgentMetadata user_agent_metadata_;
 
   mojom::blink::DocumentInterfaceBrokerPtr document_interface_broker_;
 };

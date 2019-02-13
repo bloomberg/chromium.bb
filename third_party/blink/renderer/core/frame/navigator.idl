@@ -39,3 +39,4 @@ Navigator implements NavigatorID;
 Navigator implements NavigatorLanguage;
 Navigator implements NavigatorOnLine;
 Navigator implements NavigatorAutomationInformation;
+Navigator implements NavigatorUserAgent;

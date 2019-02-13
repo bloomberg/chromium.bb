@@ -213,6 +213,7 @@
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_features.h"
@@ -4449,6 +4450,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   // Pass bits of global renderer state to the renderer.
   GetRendererInterface()->SetUserAgent(
       GetContentClient()->browser()->GetUserAgent());
+  GetRendererInterface()->SetUserAgentMetadata(
+      GetContentClient()->browser()->GetUserAgentMetadata());
   NotifyRendererIfLockedToSite();
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
       base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {

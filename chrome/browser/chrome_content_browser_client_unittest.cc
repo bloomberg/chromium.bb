@@ -38,6 +38,7 @@
 #include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
@@ -456,6 +457,17 @@ TEST(ChromeContentBrowserClient, UserAgentStringOrdering) {
 #else
   CheckUserAgentStringOrdering(false);
 #endif
+}
+
+TEST(ChromeContentBrowserClient, UserAgentMetadata) {
+  ChromeContentBrowserClient content_browser_client;
+  auto metadata = content_browser_client.GetUserAgentMetadata();
+
+  EXPECT_EQ(metadata.brand, version_info::GetProductName());
+  EXPECT_EQ(metadata.version, version_info::GetVersionNumber());
+  EXPECT_EQ(metadata.platform, version_info::GetOSType());
+  EXPECT_EQ(metadata.architecture, "");
+  EXPECT_EQ(metadata.model, "");
 }
 
 #if defined(OS_CHROMEOS)

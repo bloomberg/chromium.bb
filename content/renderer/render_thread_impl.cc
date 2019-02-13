@@ -1502,6 +1502,10 @@ blink::WebString RenderThreadImpl::GetUserAgent() {
   return user_agent_;
 }
 
+const blink::UserAgentMetadata& RenderThreadImpl::GetUserAgentMetadata() {
+  return user_agent_metadata_;
+}
+
 void RenderThreadImpl::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
@@ -2221,6 +2225,11 @@ void RenderThreadImpl::SetUserAgent(const std::string& user_agent) {
   DCHECK(user_agent_.IsNull());
   user_agent_ = WebString::FromUTF8(user_agent);
   GetContentClient()->renderer()->DidSetUserAgent(user_agent);
+}
+
+void RenderThreadImpl::SetUserAgentMetadata(
+    const blink::UserAgentMetadata& user_agent_metadata) {
+  user_agent_metadata_ = user_agent_metadata;
 }
 
 void RenderThreadImpl::UpdateScrollbarTheme(

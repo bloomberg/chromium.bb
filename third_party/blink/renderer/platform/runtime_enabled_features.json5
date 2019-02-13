@@ -1381,6 +1381,10 @@
       name: "UserActivationV2",
     },
     {
+      name: "UserAgentClientHint",
+      status: "experimental"
+    },
+    {
       name: "V8IdleTasks",
     },
     {

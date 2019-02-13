@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -916,6 +917,10 @@ std::string ContentBrowserClient::GetProduct() const {
 
 std::string ContentBrowserClient::GetUserAgent() const {
   return std::string();
+}
+
+blink::UserAgentMetadata ContentBrowserClient::GetUserAgentMetadata() const {
+  return blink::UserAgentMetadata();
 }
 
 bool ContentBrowserClient::IsBuiltinComponent(BrowserContext* browser_context,
