@@ -13,6 +13,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/media_session.h"
 #include "jni/MediaSessionImpl_jni.h"
+#include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -119,6 +120,29 @@ void MediaSessionAndroid::MediaSessionActionsChanged(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaSessionImpl_mediaSessionActionsChanged(
       env, j_local_session, base::android::ToJavaIntArray(env, actions_vec));
+}
+
+void MediaSessionAndroid::MediaSessionImagesChanged(
+    const base::flat_map<media_session::mojom::MediaSessionImageType,
+                         std::vector<media_session::MediaImage>>& images) {
+  ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
+  if (j_local_session.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  // Android is only interested in the artwork images.
+  auto it = images.find(media_session::mojom::MediaSessionImageType::kArtwork);
+  if (it == images.end())
+    return;
+
+  // Avoid translating metadata through JNI if there is no Java observer.
+  if (!Java_MediaSessionImpl_hasObservers(env, j_local_session))
+    return;
+
+  Java_MediaSessionImpl_mediaSessionArtworkChanged(
+      env, j_local_session,
+      media_session::MediaImage::ToJavaArray(env, it->second));
 }
 
 void MediaSessionAndroid::Resume(

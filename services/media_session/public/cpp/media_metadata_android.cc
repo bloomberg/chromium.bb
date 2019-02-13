@@ -21,16 +21,7 @@ base::android::ScopedJavaLocalRef<jobject> MediaMetadata::CreateJavaObject(
       base::android::ConvertUTF16ToJavaString(env, artist));
   ScopedJavaLocalRef<jstring> j_album(
       base::android::ConvertUTF16ToJavaString(env, album));
-
-  ScopedJavaLocalRef<jobject> j_metadata =
-      Java_MediaMetadata_create(env, j_title, j_artist, j_album);
-
-  for (const auto& image : artwork) {
-    ScopedJavaLocalRef<jobject> j_image = image.CreateJavaObject(env);
-    Java_MediaMetadata_addImage(env, j_metadata, j_image);
-  }
-
-  return j_metadata;
+  return Java_MediaMetadata_create(env, j_title, j_artist, j_album);
 }
 
 }  // namespace media_session

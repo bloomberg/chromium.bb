@@ -1041,10 +1041,15 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
 }
 
 void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
-  media_session::MediaMetadata metadata =
-      (routed_service_ && routed_service_->metadata())
-          ? *routed_service_->metadata()
-          : media_session::MediaMetadata();
+  std::vector<media_session::MediaImage> artwork;
+  media_session::MediaMetadata metadata;
+
+  if (routed_service_ && routed_service_->metadata()) {
+    metadata.title = routed_service_->metadata()->title;
+    metadata.artist = routed_service_->metadata()->artist;
+    metadata.album = routed_service_->metadata()->album;
+    artwork = routed_service_->metadata()->artwork;
+  }
 
   metadata.source_title = url_formatter::FormatOriginForSecurityDisplay(
       url::Origin::Create(web_contents()->GetLastCommittedURL()));
@@ -1052,9 +1057,9 @@ void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
   // If we have no artwork in |images_| or the arwork has changed then we should
   // update it with the latest artwork from the routed service.
   auto it = images_.find(MediaSessionImageType::kArtwork);
-  bool images_changed = it == images_.end() || it->second != metadata.artwork;
+  bool images_changed = it == images_.end() || it->second != artwork;
   if (images_changed)
-    images_.insert_or_assign(MediaSessionImageType::kArtwork, metadata.artwork);
+    images_.insert_or_assign(MediaSessionImageType::kArtwork, artwork);
 
   bool metadata_changed = metadata_ != metadata;
   if (metadata_changed)

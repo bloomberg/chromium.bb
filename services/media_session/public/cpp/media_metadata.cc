@@ -16,8 +16,7 @@ MediaMetadata::MediaMetadata(const MediaMetadata& other) = default;
 
 bool MediaMetadata::operator==(const MediaMetadata& other) const {
   return title == other.title && artist == other.artist &&
-         album == other.album && artwork == other.artwork &&
-         source_title == other.source_title;
+         album == other.album && source_title == other.source_title;
 }
 
 bool MediaMetadata::operator!=(const MediaMetadata& other) const {
@@ -26,7 +25,7 @@ bool MediaMetadata::operator!=(const MediaMetadata& other) const {
 
 bool MediaMetadata::IsEmpty() const {
   return title.empty() && artist.empty() && album.empty() &&
-         source_title.empty() && artwork.empty();
+         source_title.empty();
 }
 
 }  // namespace media_session

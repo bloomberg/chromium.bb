@@ -56,9 +56,8 @@ bool CheckMediaImageSanity(const media_session::MediaImage& image) {
 
 }  // anonymous namespace
 
-bool MediaMetadataSanitizer::SanitizeAndConvert(
-    const blink::mojom::SpecMediaMetadataPtr& metadata,
-    media_session::MediaMetadata* metadata_out) {
+bool MediaMetadataSanitizer::CheckSanity(
+    const blink::mojom::SpecMediaMetadataPtr& metadata) {
   if (metadata->title.size() > kMaxIPCStringLength)
     return false;
   if (metadata->artist.size() > kMaxIPCStringLength)
@@ -68,15 +67,9 @@ bool MediaMetadataSanitizer::SanitizeAndConvert(
   if (metadata->artwork.size() > kMaxNumberOfMediaImages)
     return false;
 
-  metadata_out->title = metadata->title;
-  metadata_out->artist = metadata->artist;
-  metadata_out->album = metadata->album;
-
   for (const auto& image : metadata->artwork) {
     if (!CheckMediaImageSanity(image))
       return false;
-
-    metadata_out->artwork.push_back(image);
   }
 
   return true;

@@ -33,7 +33,12 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaImage {
   bool operator==(const MediaImage& other) const;
 
 #if defined(OS_ANDROID)
-  // Creates a Java MediaMetadata instance and returns the JNI ref.
+  // Creates a Java array of MediaImage instances and returns the JNI ref.
+  static base::android::ScopedJavaLocalRef<jobjectArray> ToJavaArray(
+      JNIEnv* env,
+      const std::vector<MediaImage>& images);
+
+  // Creates a Java MediaImage instance and returns the JNI ref.
   base::android::ScopedJavaLocalRef<jobject> CreateJavaObject(
       JNIEnv* env) const;
 #endif

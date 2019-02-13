@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::PLAYING,
             GetService()->playback_state());
-  EXPECT_TRUE(GetService()->metadata().has_value());
+  EXPECT_TRUE(GetService()->metadata());
   EXPECT_EQ(1u, GetService()->actions().size());
 
   // Start a non-same-page navigation and check the playback state, metadata,
@@ -176,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::NONE,
             GetService()->playback_state());
-  EXPECT_FALSE(GetService()->metadata().has_value());
+  EXPECT_FALSE(GetService()->metadata());
   EXPECT_EQ(0u, GetService()->actions().size());
 }
 
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
   EXPECT_EQ(blink::mojom::MediaSessionPlaybackState::PLAYING,
             GetService()->playback_state());
-  EXPECT_TRUE(GetService()->metadata().has_value());
+  EXPECT_TRUE(GetService()->metadata());
   EXPECT_EQ(1u, GetService()->actions().size());
 }
 

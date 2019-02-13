@@ -49,11 +49,6 @@ struct StructTraits<media_session::mojom::MediaMetadataDataView,
     return metadata.album;
   }
 
-  static const std::vector<media_session::MediaImage>& artwork(
-      const media_session::MediaMetadata& metadata) {
-    return metadata.artwork;
-  }
-
   static const base::string16& source_title(
       const media_session::MediaMetadata& metadata) {
     return metadata.source_title;
