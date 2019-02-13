@@ -14,6 +14,8 @@
 
 #include <list>
 #include <memory>
+#include <queue>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -33,6 +35,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence_egl.h"
 
 namespace gl {
 
@@ -193,8 +196,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     ~OutputRecord();
     OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
-    std::unique_ptr<gl::GLFenceEGL> egl_fence;  // sync the compositor's use of
-                                                // the EGLImage.
     int32_t picture_id;     // picture buffer id as returned to PictureReady().
     GLuint texture_id;
     bool cleared;           // Whether the texture is cleared and safe to render
@@ -271,6 +272,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // DevicePollTask().  If |event_pending| is true, one or more events
   // on file descriptor are pending.
   void ServiceDeviceTask(bool event_pending);
+
+  // Release buffers awaiting for their fence to be signaled.
+  void CheckGLFences();
   // Handle the various device queues.
   void Enqueue();
   void Dequeue();
@@ -525,6 +529,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
   // Keeps decoded buffers out of the free list until the client returns them.
   std::map<int32_t, V4L2ReadableBufferRef> buffers_at_client_;
+  // Queue of buffers that have been returned by the client, but which fence
+  // hasn't been signaled yet.
+  std::queue<std::pair<std::unique_ptr<gl::GLFenceEGL>, V4L2ReadableBufferRef>>
+      buffers_awaiting_fence_;
 
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;

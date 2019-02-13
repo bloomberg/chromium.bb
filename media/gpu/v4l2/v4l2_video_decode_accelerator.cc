@@ -37,7 +37,6 @@
 #include "media/video/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/scoped_binders.h"
 
 #define NOTIFY_ERROR(x)                      \
@@ -415,7 +414,6 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK_EQ(output_record.state, kFree);
     DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
-    DCHECK(!output_record.egl_fence);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK(!output_record.cleared);
     DCHECK(output_record.processor_input_fds.empty());
@@ -535,7 +533,6 @@ void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
 
   OutputRecord& output_record = output_buffer_map_[buffer_index];
   DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
-  DCHECK(!output_record.egl_fence);
 
   output_record.egl_image = egl_image;
 
@@ -1312,6 +1309,34 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
     StartResolutionChange();
 }
 
+void V4L2VideoDecodeAccelerator::CheckGLFences() {
+  DVLOGF(4);
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+
+  while (!buffers_awaiting_fence_.empty()) {
+    if (buffers_awaiting_fence_.front().first->HasCompleted()) {
+      // Buffer at the front of the queue goes back to V4L2Queue's free list
+      // and can be reused.
+      buffers_awaiting_fence_.pop();
+    } else {
+      // If we have no free buffers available, then preemptively schedule a
+      // call to Enqueue() in a short time, otherwise we may starve out of
+      // buffers. The delay chosen roughly corresponds to the time a frame is
+      // displayed, which should be optimal in most cases.
+      if (output_queue_->FreeBuffersCount() == 0) {
+        constexpr int64_t resched_delay = 17;
+
+        decoder_thread_.task_runner()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&V4L2VideoDecodeAccelerator::Enqueue,
+                       base::Unretained(this)),
+            base::TimeDelta::FromMilliseconds(resched_delay));
+      }
+      break;
+    }
+  }
+}
+
 void V4L2VideoDecodeAccelerator::Enqueue() {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
@@ -1385,6 +1410,8 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
 
   // Enqueue all the outputs we can.
   const int old_outputs_queued = output_queue_->QueuedBuffersCount();
+  // Release output buffers which GL fences have been signaled.
+  CheckGLFences();
   while (output_queue_->FreeBuffersCount() > 0) {
     if (!EnqueueOutputRecord())
       return;
@@ -1551,34 +1578,6 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord() {
   OutputRecord& output_record = output_buffer_map_[buffer.BufferId()];
   DCHECK_EQ(output_record.state, kFree);
   DCHECK_NE(output_record.picture_id, -1);
-  if (output_record.egl_fence) {
-    TRACE_EVENT0(
-        "media,gpu",
-        "V4L2VDA::EnqueueOutputRecord: GLFenceEGL::ClientWaitWithTimeoutNanos");
-    // If we have to wait for completion, wait. Note that free_output_buffers_
-    // is a FIFO queue, so we always wait on the buffer that has been in the
-    // queue the longest. Every 100ms we check whether the decoder is shutting
-    // down, or we might get stuck waiting on a fence that will never come.
-    while (!IsDestroyPending()) {
-      const EGLTimeKHR wait_ns =
-          base::TimeDelta::FromMilliseconds(100).InNanoseconds();
-      EGLint result =
-          output_record.egl_fence->ClientWaitWithTimeoutNanos(wait_ns);
-      if (result == EGL_CONDITION_SATISFIED_KHR) {
-        break;
-      } else if (result == EGL_FALSE) {
-        // This will cause tearing, but is safe otherwise.
-        DVLOGF(1) << "GLFenceEGL::ClientWaitWithTimeoutNanos failed!";
-        break;
-      }
-      DCHECK_EQ(result, EGL_TIMEOUT_EXPIRED_KHR);
-    }
-
-    if (IsDestroyPending())
-      return false;
-
-    output_record.egl_fence.reset();
-  }
 
   bool ret = false;
   switch (buffer.Memory()) {
@@ -1643,11 +1642,12 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     return;
   }
 
-  DCHECK(!output_record.egl_fence);
   output_record.state = kFree;
   decoder_frames_at_client_--;
   // Take ownership of the EGL fence.
-  output_record.egl_fence = std::move(egl_fence);
+  if (egl_fence)
+    buffers_awaiting_fence_.emplace(
+        std::make_pair(std::move(egl_fence), std::move(buffer)));
 
   // We got a buffer back, so enqueue it back.
   Enqueue();
@@ -1994,7 +1994,6 @@ bool V4L2VideoDecodeAccelerator::StopOutputStream() {
     OutputRecord& output_record = output_buffer_map_[i];
     if (output_record.state == kAtDevice) {
       output_record.state = kFree;
-      DCHECK(!output_record.egl_fence);
     }
   }
   return true;
@@ -2621,13 +2620,14 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
                      egl_display_, output_record.egl_image));
     }
 
-    output_record.egl_fence.reset();
-
     DVLOGF(3) << "dismissing PictureBuffer id=" << output_record.picture_id;
     child_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&Client::DismissPictureBuffer, client_,
                                   output_record.picture_id));
   }
+
+  while (!buffers_awaiting_fence_.empty())
+    buffers_awaiting_fence_.pop();
 
   // TODO(acourbot@) the client should properly drop all references to the
   // frames it holds instead!
