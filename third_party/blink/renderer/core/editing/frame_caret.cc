@@ -74,6 +74,7 @@ const PositionWithAffinity FrameCaret::CaretPosition() const {
       selection_editor_->ComputeVisibleSelectionInDOMTree();
   if (!selection.IsCaret())
     return PositionWithAffinity();
+  DCHECK(selection.Start().IsValidFor(*frame_->GetDocument()));
   return PositionWithAffinity(selection.Start(), selection.Affinity());
 }
 

@@ -429,7 +429,9 @@ bool TextControlElement::SetSelectionRange(
     direction = kSelectionHasForwardDirection;
   bool did_change = CacheSelection(start, end, direction);
 
-  if (GetDocument().FocusedElement() != this)
+  // TODO(crbug.com/927646): The focused element should always be connected, but
+  // we fail to ensure so in some cases. Fix it.
+  if (GetDocument().FocusedElement() != this || !isConnected())
     return did_change;
 
   HTMLElement* inner_editor = InnerEditorElement();

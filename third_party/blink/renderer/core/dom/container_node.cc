@@ -688,6 +688,10 @@ Node* ContainerNode::RemoveChild(Node* old_child,
 
   WillRemoveChild(*child);
 
+  // TODO(crbug.com/927646): |WillRemoveChild()| may dispatch events that set
+  // focus to a node that will be detached, leaving behind a detached focused
+  // node. Fix it.
+
   // Mutation events might have moved this child into a different parent.
   if (child->parentNode() != this) {
     exception_state.ThrowDOMException(
