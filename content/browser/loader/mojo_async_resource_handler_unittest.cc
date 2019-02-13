@@ -314,7 +314,7 @@ class MojoAsyncResourceHandlerTestBase {
         kRouteId,                                // render_view_id
         0,                                       // render_frame_id
         true,                                    // is_main_frame
-        false,                                   // allow_download
+        ResourceInterceptPolicy::kAllowNone,     // resource_intercept_policy
         true,                                    // is_async
         PREVIEWS_OFF,                            // previews_state
         nullptr);                                // navigation_ui_data

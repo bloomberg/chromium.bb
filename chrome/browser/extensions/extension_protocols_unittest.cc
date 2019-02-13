@@ -332,12 +332,12 @@ class ExtensionProtocolsTestBase
 
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type,
-        /* resource_context */nullptr,
+        /* resource_context */ nullptr,
         /*render_process_id=*/-1,
         /*render_view_id=*/-1,
         /*render_frame_id=*/-1,
         /*is_main_frame=*/resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
-        /*allow_download=*/true,
+        content::ResourceInterceptPolicy::kAllowAll,
         /*is_async=*/false, content::PREVIEWS_OFF,
         /*navigation_ui_data*/ nullptr);
     request->Start();

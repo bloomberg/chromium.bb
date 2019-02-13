@@ -11,6 +11,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/common/previews_state.h"
+#include "content/public/common/resource_intercept_policy.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/referrer_policy.mojom-forward.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -51,7 +52,7 @@ class ResourceRequestInfo {
       int render_view_id,
       int render_frame_id,
       bool is_main_frame,
-      bool allow_download,
+      ResourceInterceptPolicy resource_intercept_policy,
       bool is_async,
       PreviewsState previews_state,
       std::unique_ptr<NavigationUIData> navigation_ui_data);

@@ -58,7 +58,7 @@ void ResourceRequestInfo::AllocateForTesting(
     int render_view_id,
     int render_frame_id,
     bool is_main_frame,
-    bool allow_download,
+    ResourceInterceptPolicy resource_intercept_policy,
     bool is_async,
     PreviewsState previews_state,
     std::unique_ptr<NavigationUIData> navigation_ui_data) {
@@ -80,7 +80,7 @@ void ResourceRequestInfo::AllocateForTesting(
       ui::PAGE_TRANSITION_LINK,                  // transition_type
       false,                                     // is_download
       false,                                     // is_stream
-      allow_download,                            // allow_download
+      resource_intercept_policy,                 // resource_intercept_policy
       false,                                     // has_user_gesture
       false,                                     // enable load timing
       request->has_upload(),                     // enable upload progress
@@ -149,7 +149,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ui::PageTransition transition_type,
     bool is_download,
     bool is_stream,
-    bool allow_download,
+    ResourceInterceptPolicy resource_intercept_policy,
     bool has_user_gesture,
     bool enable_load_timing,
     bool enable_upload_progress,
@@ -175,7 +175,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       fetch_window_id_(fetch_window_id),
       is_download_(is_download),
       is_stream_(is_stream),
-      allow_download_(allow_download),
+      resource_intercept_policy_(resource_intercept_policy),
       has_user_gesture_(has_user_gesture),
       enable_load_timing_(enable_load_timing),
       enable_upload_progress_(enable_upload_progress),

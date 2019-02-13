@@ -103,8 +103,7 @@ class ResourceRequestDetectorTest : public testing::Test {
         /*render_process_id=*/0,
         /*render_view_id=*/0,
         /*render_frame_id=*/MSG_ROUTING_NONE,
-        /*is_main_frame=*/true,
-        /*allow_download=*/true,
+        /*is_main_frame=*/true, content::ResourceInterceptPolicy::kAllowAll,
         /*is_async=*/false, content::PREVIEWS_OFF,
         /*navigation_ui_data*/ nullptr);
 

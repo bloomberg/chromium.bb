@@ -169,7 +169,8 @@ std::unique_ptr<net::URLRequest> CreateRequestHelper(
       request.get(), content::RESOURCE_TYPE_MAIN_FRAME, /*context*/ nullptr,
       -1 /* render_process_id */, -1 /* render_view_id */,
       -1 /* render_frame_id */, true /* is_main_frame */,
-      false /* allow_download */, false /* is_async */, content::PREVIEWS_OFF,
+      content::ResourceInterceptPolicy::kAllowNone, false /* is_async */,
+      content::PREVIEWS_OFF,
       ChromeNavigationUIData::CreateForMainFrameNavigation(
           nullptr /* web_contents */, WindowOpenDisposition::CURRENT_TAB));
   return request;

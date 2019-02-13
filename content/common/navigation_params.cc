@@ -35,19 +35,25 @@ InitiatorCSPInfo::InitiatorCSPInfo(const InitiatorCSPInfo& other) = default;
 
 InitiatorCSPInfo::~InitiatorCSPInfo() = default;
 
-bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy) {
+ResourceInterceptPolicy GetResourceInterceptPolicy(
+    NavigationDownloadPolicy policy) {
   switch (policy) {
     case NavigationDownloadPolicy::kDisallowViewSource:
     case NavigationDownloadPolicy::kDisallowInterstitial:
     case NavigationDownloadPolicy::kDisallowSandbox:
-      return false;
+      return ResourceInterceptPolicy::kAllowNone;
     case NavigationDownloadPolicy::kAllow:
     case NavigationDownloadPolicy::kAllowOpener:
     case NavigationDownloadPolicy::kAllowOpenerNoGesture:
     case NavigationDownloadPolicy::kAllowOpenerCrossOrigin:
     case NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture:
-      return true;
+      return ResourceInterceptPolicy::kAllowAll;
   }
+}
+
+bool IsNavigationDownloadAllowed(NavigationDownloadPolicy policy) {
+  return GetResourceInterceptPolicy(policy) ==
+         ResourceInterceptPolicy::kAllowAll;
 }
 
 CommonNavigationParams::CommonNavigationParams() = default;

@@ -1146,8 +1146,7 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
       /*render_process_id=*/1,
       /*render_view_id=*/-1,
       /*render_frame_id=*/1,
-      /*is_main_frame=*/true,
-      /*allow_download=*/true,
+      /*is_main_frame=*/true, content::ResourceInterceptPolicy::kAllowAll,
       /*is_async=*/true,
       test_base_->allow_preview() ? content::OFFLINE_PAGE_ON
                                   : content::PREVIEWS_OFF,

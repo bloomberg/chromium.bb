@@ -114,7 +114,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       -1,     // render_view_id
       -1,     // render_frame_id
       false,  // is_main_frame
-      true,   // allow_download
+      content::ResourceInterceptPolicy::kAllowAll,
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
@@ -127,12 +127,12 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_fail.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,   // context
-      -1,     // render_process_id
-      -1,     // render_view_id
-      -1,     // render_frame_id
-      true,   // is_main_frame
-      true,   // allow_download
+      NULL,  // context
+      -1,    // render_process_id
+      -1,    // render_view_id
+      -1,    // render_frame_id
+      true,  // is_main_frame
+      content::ResourceInterceptPolicy::kAllowAll,
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data

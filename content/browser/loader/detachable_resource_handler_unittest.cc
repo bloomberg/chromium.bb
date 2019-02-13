@@ -62,12 +62,12 @@ class DetachableResourceHandlerTest
                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {
     ResourceRequestInfo::AllocateForTesting(request_.get(),
                                             RESOURCE_TYPE_MAIN_FRAME,
-                                            nullptr,       // context
-                                            0,             // render_process_id
-                                            0,             // render_view_id
-                                            0,             // render_frame_id
-                                            true,          // is_main_frame
-                                            true,          // allow_download
+                                            nullptr,  // context
+                                            0,        // render_process_id
+                                            0,        // render_view_id
+                                            0,        // render_frame_id
+                                            true,     // is_main_frame
+                                            ResourceInterceptPolicy::kAllowAll,
                                             true,          // is_async
                                             PREVIEWS_OFF,  // previews_state
                                             nullptr);      // navigation_ui_data
