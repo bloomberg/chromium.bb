@@ -4,10 +4,12 @@
 <link rel="import" href="store_client.html">
 <link rel="import" href="util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 
 <dom-module id="app-management-chrome-app-permission-view">
   <template>
-    <style include="app-management-shared-css">
+    <style include="app-management-shared-css paper-button-style">
       ul {
         list-style: none;
         margin: 0;
@@ -31,6 +33,22 @@
       }
     </style>
     <app-management-permission-view-header>
+      <div slot="extra-right-buttons" class="extra-permission-header-button">
+<!--    TODO(crbug.com/906508): For apps which are hosted apps but not
+        bookmark apps, this button will actually open the site settings page
+        corresponding to the app, since hosted apps are not listed in
+        chrome://extensions.
+        This is not a long-term problem since hosted apps are being replaced,
+        but in the mean time it might be necessary to change the text of the
+        button depending on whether or not it is a hosted app. -->
+        <paper-button class="native-settings-button secondary-text"
+            on-click="onClickExtensionsSettingsButton_">
+          $i18n{openExtensionsSettings}
+          <paper-icon-button-light class="native-settings-icon icon-external">
+            <button></button>
+          </paper-icon-button-light>
+        </paper-button>
+      </div>
     </app-management-permission-view-header>
     <div class="card-container">
       <div id="app-info">

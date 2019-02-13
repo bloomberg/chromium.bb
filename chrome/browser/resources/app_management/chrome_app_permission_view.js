@@ -40,6 +40,11 @@ Polymer({
     this.messages_ = messages;
   },
 
+  onClickExtensionsSettingsButton_: function() {
+    app_management.BrowserProxy.getInstance().handler.openNativeSettings(
+        this.app_.id);
+  },
+
   /**
    * @param {!Array<ExtensionAppPermissionMessage>} messages
    * @return {Array<string>}

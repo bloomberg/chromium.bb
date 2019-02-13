@@ -43,6 +43,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS);
   source->AddLocalizedString("openAndroidSettings",
                              IDS_APP_MANAGEMENT_ANDROID_SETTINGS);
+  source->AddLocalizedString("openExtensionsSettings",
+                             IDS_APP_MANAGEMENT_EXTENSIONS_SETTINGS);
   source->AddLocalizedString("openSiteSettings",
                              IDS_APP_MANAGEMENT_SITE_SETTING);
   source->AddLocalizedString("permissions", IDS_APP_MANAGEMENT_PERMISSIONS);
