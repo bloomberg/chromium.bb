@@ -948,6 +948,27 @@
             ]
         }
     ],
+    "BackgroundTaskSchedulerForBackgroundSync": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BackgroundTaskSchedulerForBackgroundSync"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "BackgroundTaskSchedulerForBackgroundSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "BackgroundVideoOptimizations": [
         {
             "platforms": [
