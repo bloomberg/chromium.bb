@@ -43,7 +43,7 @@ class BlobUrlBrowserTest : public ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(BlobUrlBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(_, BlobUrlBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(_, BlobUrlBrowserTest, ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
   // Use a data URL to obtain a test page in a unique origin. The page

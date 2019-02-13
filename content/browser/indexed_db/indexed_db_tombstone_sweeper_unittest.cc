@@ -597,9 +597,9 @@ TEST_P(IndexedDBTombstoneSweeperTest, LevelDBError) {
       "WebCore.IndexedDB.TombstoneSweeper.IndexScanPercent", 1 * 20 / 3, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(/* No prefix needed */,
-                        IndexedDBTombstoneSweeperTest,
-                        testing::Values(Mode::STATISTICS, Mode::DELETION));
+INSTANTIATE_TEST_SUITE_P(/* No prefix needed */,
+                         IndexedDBTombstoneSweeperTest,
+                         testing::Values(Mode::STATISTICS, Mode::DELETION));
 
 }  // namespace indexed_db_tombstone_sweeper_unittest
 }  // namespace content

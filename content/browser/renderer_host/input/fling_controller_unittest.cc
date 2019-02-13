@@ -149,7 +149,7 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
   DISALLOW_COPY_AND_ASSIGN(FlingControllerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, FlingControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, FlingControllerTest, testing::Bool());
 
 TEST_P(FlingControllerTest,
        ControllerSendsWheelEndOnTouchpadFlingWithZeroVelocity) {

@@ -688,7 +688,7 @@ TEST_P(BlobURLRequestJobTest, BrokenBlob) {
 }
 
 // The parameter's value determines whether BlobURLLoaderFactory is used.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BlobURLRequestJobTest,
     BlobURLRequestJobTest,
     ::testing::Values(RequestTestType::kNetRequest,

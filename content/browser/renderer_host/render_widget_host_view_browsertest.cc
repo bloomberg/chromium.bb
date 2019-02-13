@@ -828,19 +828,19 @@ static const auto kTestCompositingModes =
     testing::Values(GL_COMPOSITING, SOFTWARE_COMPOSITING);
 #endif
 
-INSTANTIATE_TEST_CASE_P(GLAndSoftwareCompositing,
-                        CompositingRenderWidgetHostViewBrowserTest,
-                        kTestCompositingModes);
-INSTANTIATE_TEST_CASE_P(GLAndSoftwareCompositing,
-                        CompositingRenderWidgetHostViewBrowserTestTabCapture,
-                        kTestCompositingModes);
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(GLAndSoftwareCompositing,
+                         CompositingRenderWidgetHostViewBrowserTest,
+                         kTestCompositingModes);
+INSTANTIATE_TEST_SUITE_P(GLAndSoftwareCompositing,
+                         CompositingRenderWidgetHostViewBrowserTestTabCapture,
+                         kTestCompositingModes);
+INSTANTIATE_TEST_SUITE_P(
     GLAndSoftwareCompositing,
     CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI,
     kTestCompositingModes);
-INSTANTIATE_TEST_CASE_P(GLAndSoftwareCompositing,
-                        CompositingRenderWidgetHostViewBrowserTestHiDPI,
-                        kTestCompositingModes);
+INSTANTIATE_TEST_SUITE_P(GLAndSoftwareCompositing,
+                         CompositingRenderWidgetHostViewBrowserTestHiDPI,
+                         kTestCompositingModes);
 
 #endif  // !defined(OS_ANDROID)
 

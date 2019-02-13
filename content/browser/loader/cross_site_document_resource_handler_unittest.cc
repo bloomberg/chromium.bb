@@ -1864,8 +1864,8 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, MimeSnifferInterop) {
   content::RunAllPendingInMessageLoop();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CrossSiteDocumentResourceHandlerTest,
-                        ::testing::ValuesIn(kScenarios));
+INSTANTIATE_TEST_SUITE_P(,
+                         CrossSiteDocumentResourceHandlerTest,
+                         ::testing::ValuesIn(kScenarios));
 
 }  // namespace content

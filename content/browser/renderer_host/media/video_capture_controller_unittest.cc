@@ -494,10 +494,10 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoCaptureControllerTest,
-                        ::testing::Values(media::PIXEL_FORMAT_I420,
-                                          media::PIXEL_FORMAT_Y16));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureControllerTest,
+                         ::testing::Values(media::PIXEL_FORMAT_I420,
+                                           media::PIXEL_FORMAT_Y16));
 
 // Exercises the OnError() codepath of VideoCaptureController, and tests the
 // behavior of various operations after the error state has been signalled.

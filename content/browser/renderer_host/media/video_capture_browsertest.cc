@@ -335,12 +335,12 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoCaptureBrowserTest,
-                        Combine(Values(0, 1, 2),             // DeviceIndex
-                                Values(gfx::Size(640, 480),  // Resolution
-                                       gfx::Size(1280, 720)),
-                                Bool(),    // ExerciseAcceleratedJpegDecoding
-                                Bool()));  // UseMojoService
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureBrowserTest,
+                         Combine(Values(0, 1, 2),             // DeviceIndex
+                                 Values(gfx::Size(640, 480),  // Resolution
+                                        gfx::Size(1280, 720)),
+                                 Bool(),    // ExerciseAcceleratedJpegDecoding
+                                 Bool()));  // UseMojoService
 
 }  // namespace content

@@ -1045,9 +1045,9 @@ TEST_P(SignedExchangeHandlerTest, CTVerifierParams) {
   EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
 }
 
-INSTANTIATE_TEST_CASE_P(SignedExchangeHandlerTests,
-                        SignedExchangeHandlerTest,
-                        ::testing::Values(net::MockSourceStream::SYNC,
-                                          net::MockSourceStream::ASYNC));
+INSTANTIATE_TEST_SUITE_P(SignedExchangeHandlerTests,
+                         SignedExchangeHandlerTest,
+                         ::testing::Values(net::MockSourceStream::SYNC,
+                                           net::MockSourceStream::ASYNC));
 
 }  // namespace content

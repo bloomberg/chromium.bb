@@ -6262,46 +6262,46 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
 static const int kHitTestOption[] = {0, 1, 2};
 static const float kOneScale[] = {1.f};
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessHitTestBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
 // TODO(wjmaclean): Since the next two test fixtures only differ in DSF
 // values, should we combine them into one using kMultiScale? This
 // approach would make it more difficult to disable individual scales on
 // particular platforms.
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessHighDPIHitTestBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessEmulatedTouchBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessHighDPIHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessEmulatedTouchBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessHitTestDataGenerationBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessHitTestDataGenerationBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
 #if defined(USE_AURA)
 static const float kMultiScale[] = {1.f, 1.5f, 2.f};
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessInternalsHitTestBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kMultiScale)));
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessMouseWheelHitTestBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SitePerProcessGestureHitTestBrowserTest,
-                        testing::Combine(testing::ValuesIn(kHitTestOption),
-                                         testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessInternalsHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kMultiScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessMouseWheelHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SitePerProcessGestureHitTestBrowserTest,
+                         testing::Combine(testing::ValuesIn(kHitTestOption),
+                                          testing::ValuesIn(kOneScale)));
 #endif
 
 }  // namespace content

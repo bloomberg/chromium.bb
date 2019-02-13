@@ -115,7 +115,7 @@ class SourceStreamToDataPipeTest
   base::Optional<int> callback_result_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SourceStreamToDataPipeTests,
     SourceStreamToDataPipeTest,
     ::testing::Values(

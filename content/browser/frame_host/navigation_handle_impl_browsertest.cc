@@ -2454,7 +2454,7 @@ IN_PROC_BROWSER_TEST_P(
       url, action, TestNavigationThrottleInstaller::WILL_PROCESS_RESPONSE);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     NavigationHandleImplThrottleResultWithErrorPageBrowserTest,
     testing::Range(NavigationThrottle::ThrottleAction::FIRST,

@@ -78,8 +78,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest,
   ExecuteJavascriptAndWaitForOk(call);
 }
 
-INSTANTIATE_TEST_CASE_P(UserMedia,
-                        WebRtcConstraintsBrowserTest,
-                        testing::ValuesIn(kAllUserMediaSizes));
+INSTANTIATE_TEST_SUITE_P(UserMedia,
+                         WebRtcConstraintsBrowserTest,
+                         testing::ValuesIn(kAllUserMediaSizes));
 
 }  // namespace content

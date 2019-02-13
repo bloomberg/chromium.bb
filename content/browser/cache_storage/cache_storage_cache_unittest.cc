@@ -2305,9 +2305,9 @@ TEST_P(CacheStorageCacheTestP, KeysWithManyCacheEntries) {
   EXPECT_EQ(expected_keys, callback_strings_);
 }
 
-INSTANTIATE_TEST_CASE_P(CacheStorageCacheTest,
-                        CacheStorageCacheTestP,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(CacheStorageCacheTest,
+                         CacheStorageCacheTestP,
+                         ::testing::Values(false, true));
 
 }  // namespace cache_storage_cache_unittest
 }  // namespace content

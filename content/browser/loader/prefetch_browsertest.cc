@@ -387,9 +387,9 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   EXPECT_EQ(1, preload_fetch_count);
 }
 
-INSTANTIATE_TEST_CASE_P(PrefetchBrowserTest,
-                        PrefetchBrowserTest,
-                        testing::Values(PrefetchBrowserTestParam(true),
-                                        PrefetchBrowserTestParam(false)));
+INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
+                         PrefetchBrowserTest,
+                         testing::Values(PrefetchBrowserTestParam(true),
+                                         PrefetchBrowserTestParam(false)));
 
 }  // namespace content

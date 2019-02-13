@@ -523,7 +523,7 @@ class InputRouterImplTest : public InputRouterImplTestBase,
   base::test::ScopedFeatureList touch_action_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(, InputRouterImplTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, InputRouterImplTest, ::testing::Bool());
 
 TEST_P(InputRouterImplTest, HandledInputEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
@@ -1719,7 +1719,7 @@ class TouchpadPinchInputRouterImplTest
   DISALLOW_COPY_AND_ASSIGN(TouchpadPinchInputRouterImplTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, TouchpadPinchInputRouterImplTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, TouchpadPinchInputRouterImplTest, ::testing::Bool());
 
 // Test that GesturePinchUpdate is handled specially for trackpad
 TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {

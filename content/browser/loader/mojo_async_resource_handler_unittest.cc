@@ -1571,8 +1571,8 @@ TEST_F(MojoAsyncResourceHandlerTest,
             url_loader_client_.body_transfer_size());
 }
 
-INSTANTIATE_TEST_CASE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
-                        MojoAsyncResourceHandlerWithAllocationSizeTest,
-                        ::testing::Values(8, 32 * 2014));
+INSTANTIATE_TEST_SUITE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
+                         MojoAsyncResourceHandlerWithAllocationSizeTest,
+                         ::testing::Values(8, 32 * 2014));
 }  // namespace
 }  // namespace content

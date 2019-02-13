@@ -308,8 +308,8 @@ TEST_P(SignedExchangeSignatureVerifierTest, IgnoreErrorsSPKIList) {
   EXPECT_TRUE(ignore_both.ShouldIgnoreError(cert_ecdsap384));
 }
 
-INSTANTIATE_TEST_CASE_P(SignedExchangeSignatureVerifierTests,
-                        SignedExchangeSignatureVerifierTest,
-                        ::testing::Values(SignedExchangeVersion::kB3));
+INSTANTIATE_TEST_SUITE_P(SignedExchangeSignatureVerifierTests,
+                         SignedExchangeSignatureVerifierTest,
+                         ::testing::Values(SignedExchangeVersion::kB3));
 
 }  // namespace content

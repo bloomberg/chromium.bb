@@ -1061,8 +1061,8 @@ TEST_P(AppCacheRequestHandlerTest, MainResource_Blocked) {
   RunTestOnIOThread(&AppCacheRequestHandlerTest::MainResource_Blocked);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        AppCacheRequestHandlerTest,
-                        ::testing::Values(URLREQUEST, URLLOADER));
+INSTANTIATE_TEST_SUITE_P(,
+                         AppCacheRequestHandlerTest,
+                         ::testing::Values(URLREQUEST, URLLOADER));
 
 }  // namespace content

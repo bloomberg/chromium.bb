@@ -233,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MAYBE_WebRtcMediaRecorderTest,
-                        testing::ValuesIn(kEncodingParameters));
+INSTANTIATE_TEST_SUITE_P(,
+                         MAYBE_WebRtcMediaRecorderTest,
+                         testing::ValuesIn(kEncodingParameters));
 
 }  // namespace content

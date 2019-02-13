@@ -222,8 +222,8 @@ TEST_P(MediaSessionControllersManagerTest, OnEndRemovesMediaPlayerId) {
 
 // First bool is to indicate whether InternalMediaSession is enabled.
 // Second bool is to indicate whether AudioFocus is enabled.
-INSTANTIATE_TEST_CASE_P(MediaSessionEnabledTestInstances,
-                        MediaSessionControllersManagerTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(MediaSessionEnabledTestInstances,
+                         MediaSessionControllersManagerTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 }  // namespace content
