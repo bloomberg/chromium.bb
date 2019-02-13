@@ -134,7 +134,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
   LocationProvider* CreateProvider(bool set_permission_granted,
                                    const std::string& api_key = std::string()) {
     LocationProvider* provider = new NetworkLocationProvider(
-        shared_url_loader_factory_, api_key, last_position_cache_.get());
+        test_url_loader_factory_.GetSafeWeakWrapper(), api_key,
+        last_position_cache_.get());
     if (set_permission_granted)
       provider->OnPermissionGranted();
     return provider;
@@ -142,19 +143,12 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
  protected:
   GeolocationNetworkProviderTest()
-      : shared_url_loader_factory_(
-            new network::WeakWrapperSharedURLLoaderFactory(
-                &test_url_loader_factory_)),
-        wifi_data_provider_(MockWifiDataProvider::CreateInstance()),
+      : wifi_data_provider_(MockWifiDataProvider::CreateInstance()),
         last_position_cache_(std::make_unique<TestLastPositionCache>()) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
     WifiDataProviderManager::SetFactoryForTesting(
         MockWifiDataProvider::GetInstance);
-  }
-
-  ~GeolocationNetworkProviderTest() override {
-    shared_url_loader_factory_->Detach();
   }
 
   static int IndexToChannel(int index) { return index + 4; }
@@ -292,8 +286,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
   const base::MessageLoop main_message_loop_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  const scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      shared_url_loader_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
   std::unique_ptr<NetworkLocationProvider::LastPositionCache>
       last_position_cache_;
