@@ -412,10 +412,10 @@ class HomeLauncherModeGestureHandlerTest
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherModeGestureHandlerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        HomeLauncherModeGestureHandlerTest,
-                        testing::Values(Mode::kSlideDownToHide,
-                                        Mode::kSlideUpToShow));
+INSTANTIATE_TEST_SUITE_P(,
+                         HomeLauncherModeGestureHandlerTest,
+                         testing::Values(Mode::kSlideDownToHide,
+                                         Mode::kSlideUpToShow));
 
 // Tests that the window transform and opacity changes as we scroll.
 TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {

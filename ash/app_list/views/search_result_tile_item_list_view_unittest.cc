@@ -251,11 +251,11 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SearchResultTileItemListViewTest,
-                        testing::ValuesIn({std::make_pair(false, false),
-                                           std::make_pair(false, true),
-                                           std::make_pair(true, false),
-                                           std::make_pair(true, true)}));
+INSTANTIATE_TEST_SUITE_P(,
+                         SearchResultTileItemListViewTest,
+                         testing::ValuesIn({std::make_pair(false, false),
+                                            std::make_pair(false, true),
+                                            std::make_pair(true, false),
+                                            std::make_pair(true, true)}));
 
 }  // namespace app_list

@@ -469,13 +469,13 @@ class SearchBoxViewAutocompleteTest
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SearchBoxViewAutocompleteTest,
-                        ::testing::Values(ui::VKEY_LEFT,
-                                          ui::VKEY_RIGHT,
-                                          ui::VKEY_UP,
-                                          ui::VKEY_DOWN,
-                                          ui::VKEY_BACK));
+INSTANTIATE_TEST_SUITE_P(,
+                         SearchBoxViewAutocompleteTest,
+                         ::testing::Values(ui::VKEY_LEFT,
+                                           ui::VKEY_RIGHT,
+                                           ui::VKEY_UP,
+                                           ui::VKEY_DOWN,
+                                           ui::VKEY_BACK));
 
 // Tests that autocomplete suggestions are consistent with top SearchResult list
 // titles.
