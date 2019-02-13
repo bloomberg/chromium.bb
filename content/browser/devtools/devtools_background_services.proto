@@ -1,0 +1,44 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package content.devtools.proto;
+
+// An event for a non-existent background service. Used for tests.
+message TestBackgroundServiceEvent {
+  optional string value = 1;
+}
+
+// The background service we are logging events for.
+// Do not change the tags since these are persisted.
+enum BackgroundService {
+  UNKNOWN = 0;
+  TEST_BACKGROUND_SERVICE = 1;
+}
+
+// A proto for storing the background service event with common metadata for
+// all events.
+//
+// Next Tag: 6
+message BackgroundServiceState {
+  // Microseconds since windows epoch.
+  optional int64 timestamp = 1;
+
+  // The origin's URL spec.
+  optional string origin = 2;
+
+  optional int64 service_worker_registration_id = 3;
+
+  optional BackgroundService background_service = 4;
+
+  // The event information to store.
+  oneof background_service_event {
+    TestBackgroundServiceEvent test_event = 5;
+
+    // Add the per background service event messages to store here.
+  }
+}
