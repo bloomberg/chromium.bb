@@ -118,15 +118,15 @@ class BASE_EXPORT unique_any {
                                   std::is_move_constructible<T>::value;
   };
 
-  // Constructs a base::unique_any containing |value| as long as |T| is move or
-  // copy constructible and it isn't base::unique_any or
-  // base::in_place_type_t<>.
-  // E.g. base::unique_any a(123);
-  template <typename T,
-            typename VT = std::decay_t<T>,
-            std::enable_if_t<is_move_or_copy_constructible<VT>::value &&
-                             !internal::is_unique_any<VT>::value &&
-                             !is_in_place_type_t<VT>::value>* = nullptr>
+  // Constructs a base::unique_any containing |value| as long as |T| isn't
+  // base::unique_any nor base::in_place_type_t<> and |T| is move or copy
+  // constructible. E.g. base::unique_any a(123);
+  template <
+      typename T,
+      typename VT = std::decay_t<T>,
+      std::enable_if_t<!internal::is_unique_any<VT>::value>* = nullptr,
+      std::enable_if_t<!is_in_place_type_t<VT>::value>* = nullptr,
+      std::enable_if_t<is_move_or_copy_constructible<VT>::value>* = nullptr>
   unique_any(T&& value) noexcept : internal_(&TypeOpsHelper<VT>::type_ops) {
     ConstructHelper<VT, InlineStorageHelper<VT>::kUseInlineStorage>::Construct(
         &internal_, std::forward<T>(value));
