@@ -743,10 +743,6 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
                           !content_has_slow_paths_);
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSlowPathsWithNonAAPaint",
                           content_has_slow_paths_ && content_has_non_aa_paint_);
-    // Record how many pages actually get gpu rasterization when enabled.
-    UMA_HISTOGRAM_BOOLEAN(
-        "Renderer4.GpuRasterizationUsed",
-        (has_gpu_rasterization_trigger_ && !content_has_slow_paths_));
   }
 
   gpu_rasterization_histogram_recorded_ = true;
