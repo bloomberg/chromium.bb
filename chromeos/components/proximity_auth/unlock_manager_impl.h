@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
@@ -155,6 +156,13 @@ class UnlockManagerImpl : public UnlockManager,
   // yet authenticated.
   Messenger* GetMessenger();
 
+  // Records UMA performance metrics for the unlockable remote status being
+  // received.
+  void RecordUnlockableRemoteStatusReceived();
+
+  // Clears the timers for beginning a scan and fetching remote status.
+  void ResetPerformanceMetricsTimestamps();
+
   // Whether |this| manager is being used for sign-in or session unlock.
   const ProximityAuthSystem::ScreenlockType screenlock_type_;
 
@@ -196,6 +204,16 @@ class UnlockManagerImpl : public UnlockManager,
 
   // The state of the current screen lock UI.
   ScreenlockState screenlock_state_;
+
+  // The timestamp of when UnlockManager begins to try to establish a secure
+  // connection to the requested remote device of the provided
+  // RemoteDeviceLifeCycle.
+  base::Time attempt_secure_connection_start_time_;
+
+  // The timestamp of when UnlockManager successfully establishes a secure
+  // connection to the requested remote device of the provided
+  // RemoteDeviceLifeCycle, and begins to try to fetch its "remote status".
+  base::Time attempt_get_remote_status_start_time_;
 
   // Used to clear the waking up state after a timeout.
   base::WeakPtrFactory<UnlockManagerImpl>
