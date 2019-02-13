@@ -60,6 +60,10 @@ bool operator==(const ui::DidOverscrollParams& lhs,
 
 }  // namespace ui
 
+namespace cc {
+class AnimationHost;
+}
+
 namespace content {
 
 namespace {
@@ -138,7 +142,8 @@ class MockHandledEventCallback {
 class StubWebPagePopup : public blink::WebPagePopup {
  public:
   // WebWidget implementation.
-  void SetLayerTreeView(blink::WebLayerTreeView*) override {}
+  void SetLayerTreeView(blink::WebLayerTreeView*, cc::AnimationHost*) override {
+  }
   blink::WebURL GetURLForDebugTrace() override { return {}; }
   blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
     return {};

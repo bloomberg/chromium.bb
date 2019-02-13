@@ -2348,7 +2348,7 @@ void PaintLayerScrollableArea::ResetRebuildScrollbarLayerFlags() {
   rebuild_vertical_scrollbar_layer_ = false;
 }
 
-CompositorAnimationHost* PaintLayerScrollableArea::GetCompositorAnimationHost()
+cc::AnimationHost* PaintLayerScrollableArea::GetCompositorAnimationHost()
     const {
   return layer_->GetLayoutObject().GetFrameView()->GetCompositorAnimationHost();
 }

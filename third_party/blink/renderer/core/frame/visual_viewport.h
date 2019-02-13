@@ -46,8 +46,11 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
+namespace blink {
 class EffectPaintPropertyNode;
 class GraphicsContext;
 class GraphicsLayer;
@@ -224,7 +227,7 @@ class CORE_EXPORT VisualViewport final
   GraphicsLayer* LayerForHorizontalScrollbar() const override;
   GraphicsLayer* LayerForVerticalScrollbar() const override;
   bool ScheduleAnimation() override;
-  CompositorAnimationHost* GetCompositorAnimationHost() const override;
+  cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;

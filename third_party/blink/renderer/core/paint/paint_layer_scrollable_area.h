@@ -337,7 +337,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   int PageStep(ScrollbarOrientation) const override;
   ScrollBehavior ScrollBehaviorStyle() const override;
-  CompositorAnimationHost* GetCompositorAnimationHost() const override;
+  cc::AnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   void GetTickmarks(Vector<IntRect>&) const override;
 

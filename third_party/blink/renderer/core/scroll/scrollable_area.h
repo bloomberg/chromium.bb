@@ -42,9 +42,11 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
-class CompositorAnimationHost;
+namespace blink {
 class CompositorAnimationTimeline;
 class GraphicsLayer;
 class LayoutBox;
@@ -151,7 +153,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return programmatic_scroll_animator_;
   }
 
-  virtual CompositorAnimationHost* GetCompositorAnimationHost() const {
+  virtual cc::AnimationHost* GetCompositorAnimationHost() const {
     return nullptr;
   }
   virtual CompositorAnimationTimeline* GetCompositorAnimationTimeline() const {

@@ -36,6 +36,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "cc/animation/animation_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
@@ -58,7 +59,6 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
@@ -1828,7 +1828,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 TEST_F(AnimationCompositorAnimationsTest, TrackRafAnimation) {
   LoadTestData("raf-countdown.html");
 
-  CompositorAnimationHost* host =
+  cc::AnimationHost* host =
       GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
 
   // The test file registers two rAF 'animations'; one which ends after 5
@@ -1836,36 +1836,36 @@ TEST_F(AnimationCompositorAnimationsTest, TrackRafAnimation) {
   for (int i = 0; i < 9; i++) {
     BeginFrame();
     ForceFullCompositingUpdate();
-    EXPECT_TRUE(host->CurrentFrameHadRAFForTesting());
-    EXPECT_TRUE(host->NextFrameHasPendingRAFForTesting());
+    EXPECT_TRUE(host->CurrentFrameHadRAF());
+    EXPECT_TRUE(host->NextFrameHasPendingRAF());
   }
 
   // On the 10th iteration, there should be a current rAF, but no more pending
   // rAFs.
   BeginFrame();
   ForceFullCompositingUpdate();
-  EXPECT_TRUE(host->CurrentFrameHadRAFForTesting());
-  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+  EXPECT_TRUE(host->CurrentFrameHadRAF());
+  EXPECT_FALSE(host->NextFrameHasPendingRAF());
 
   // On the 11th iteration, there should be no more rAFs firing.
   BeginFrame();
   ForceFullCompositingUpdate();
-  EXPECT_FALSE(host->CurrentFrameHadRAFForTesting());
-  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+  EXPECT_FALSE(host->CurrentFrameHadRAF());
+  EXPECT_FALSE(host->NextFrameHasPendingRAF());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, TrackRafAnimationTimeout) {
   LoadTestData("raf-timeout.html");
 
-  CompositorAnimationHost* host =
+  cc::AnimationHost* host =
       GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
 
   // The test file executes a rAF, which fires a setTimeout for the next rAF.
   // Even with setTimeout(func, 0), the next rAF is not considered pending.
   BeginFrame();
   ForceFullCompositingUpdate();
-  EXPECT_TRUE(host->CurrentFrameHadRAFForTesting());
-  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+  EXPECT_TRUE(host->CurrentFrameHadRAF());
+  EXPECT_FALSE(host->NextFrameHasPendingRAF());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, TrackRafAnimationNoneRegistered) {
@@ -1877,16 +1877,16 @@ TEST_F(AnimationCompositorAnimationsTest, TrackRafAnimationNoneRegistered) {
   ForceFullCompositingUpdate();
 
   // The HTML does not have any rAFs.
-  CompositorAnimationHost* host =
+  cc::AnimationHost* host =
       GetFrame()->GetDocument()->View()->GetCompositorAnimationHost();
-  EXPECT_FALSE(host->CurrentFrameHadRAFForTesting());
-  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+  EXPECT_FALSE(host->CurrentFrameHadRAF());
+  EXPECT_FALSE(host->NextFrameHasPendingRAF());
 
   // And still shouldn't after another frame.
   BeginFrame();
   ForceFullCompositingUpdate();
-  EXPECT_FALSE(host->CurrentFrameHadRAFForTesting());
-  EXPECT_FALSE(host->NextFrameHasPendingRAFForTesting());
+  EXPECT_FALSE(host->CurrentFrameHadRAF());
+  EXPECT_FALSE(host->NextFrameHasPendingRAF());
 }
 
 TEST_F(AnimationCompositorAnimationsTest, CanStartElementOnCompositorEffect) {
@@ -1901,10 +1901,9 @@ TEST_F(AnimationCompositorAnimationsTest, CanStartElementOnCompositorEffect) {
       CompositorAnimations::CheckCanStartElementOnCompositor(*target);
   EXPECT_EQ(code, CompositorAnimations::FailureCode::None());
   EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
-  CompositorAnimationHost* host =
-      document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 0u);
-  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 1u);
+  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
+  EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
 }
 
 // Regression test for https://crbug.com/781305. When we have a transform
@@ -1920,10 +1919,9 @@ TEST_F(AnimationCompositorAnimationsTest,
   EXPECT_EQ(code, CompositorAnimations::FailureCode::NonActionable(
                       "Element does not paint into own backing"));
   EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 4u);
-  CompositorAnimationHost* host =
-      document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 4u);
-  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 0u);
+  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->MainThreadAnimationsCount(), 4u);
+  EXPECT_EQ(host->CompositedAnimationsCount(), 0u);
 }
 
 }  // namespace blink

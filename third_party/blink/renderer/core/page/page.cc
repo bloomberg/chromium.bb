@@ -755,10 +755,13 @@ void Page::Trace(blink::Visitor* visitor) {
 }
 
 void Page::LayerTreeViewInitialized(WebLayerTreeView& layer_tree_view,
+                                    cc::AnimationHost& animation_host,
                                     LocalFrameView* view) {
-  if (GetScrollingCoordinator())
-    GetScrollingCoordinator()->LayerTreeViewInitialized(layer_tree_view, view);
-  GetLinkHighlights().LayerTreeViewInitialized(layer_tree_view);
+  if (GetScrollingCoordinator()) {
+    GetScrollingCoordinator()->LayerTreeViewInitialized(layer_tree_view,
+                                                        animation_host, view);
+  }
+  GetLinkHighlights().LayerTreeViewInitialized(layer_tree_view, animation_host);
 }
 
 void Page::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view,

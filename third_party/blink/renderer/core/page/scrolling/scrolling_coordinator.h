@@ -39,14 +39,12 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace cc {
+class AnimationHost;
 class Layer;
 class ScrollbarLayerInterface;
 }  // namespace cc
 
 namespace blink {
-using MainThreadScrollingReasons = uint32_t;
-
-class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class LayoutBox;
 class LocalFrame;
@@ -58,6 +56,7 @@ class Region;
 class ScrollableArea;
 class WebLayerTreeView;
 
+using MainThreadScrollingReasons = uint32_t;
 using ScrollbarId = uint64_t;
 
 // ScrollingCoordinator is a page-level object that mediates interactions
@@ -91,7 +90,9 @@ class CORE_EXPORT ScrollingCoordinator final
   // not null, the host and timeline are attached to the specified
   // LocalFrameView. A LocalFrameView only needs to own them when it is the view
   // for an OOPIF.
-  void LayerTreeViewInitialized(WebLayerTreeView&, LocalFrameView*);
+  void LayerTreeViewInitialized(WebLayerTreeView&,
+                                cc::AnimationHost&,
+                                LocalFrameView*);
   void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
 
   void WillBeDestroyed();
@@ -159,9 +160,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void UpdateUserInputScrollable(ScrollableArea*);
 
-  CompositorAnimationHost* GetCompositorAnimationHost() {
-    return animation_host_.get();
-  }
+  cc::AnimationHost* GetCompositorAnimationHost() { return animation_host_; }
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() {
     return programmatic_scroll_animator_timeline_.get();
   }
@@ -209,7 +208,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   bool FrameScrollerIsDirty(LocalFrameView*) const;
 
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  cc::AnimationHost* animation_host_ = nullptr;
   std::unique_ptr<CompositorAnimationTimeline>
       programmatic_scroll_animator_timeline_;
 

@@ -11,12 +11,14 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
+namespace blink {
 class GraphicsContext;
 class Page;
 class LinkHighlightImpl;
-class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class WebLayerTreeView;
 class LocalFrame;
@@ -49,7 +51,7 @@ class CORE_EXPORT LinkHighlights final
 
   void StartHighlightAnimationIfNeeded();
 
-  void LayerTreeViewInitialized(WebLayerTreeView&);
+  void LayerTreeViewInitialized(WebLayerTreeView&, cc::AnimationHost&);
   void WillCloseLayerTreeView(WebLayerTreeView&);
 
   bool IsEmpty() const { return link_highlights_.IsEmpty(); }
@@ -85,7 +87,7 @@ class CORE_EXPORT LinkHighlights final
 
   Member<Page> page_;
   Vector<std::unique_ptr<LinkHighlightImpl>> link_highlights_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  cc::AnimationHost* animation_host_ = nullptr;
   std::unique_ptr<CompositorAnimationTimeline> timeline_;
 };
 

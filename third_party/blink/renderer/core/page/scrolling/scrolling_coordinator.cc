@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
@@ -57,7 +58,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -77,9 +77,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-
-using blink::WebRect;
-using blink::WebVector;
 
 namespace {
 
@@ -1015,23 +1012,23 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
 
 void ScrollingCoordinator::LayerTreeViewInitialized(
     WebLayerTreeView& layer_tree_view,
+    cc::AnimationHost& animation_host,
     LocalFrameView* view) {
-  if (Platform::Current()->IsThreadedAnimationEnabled()) {
-    std::unique_ptr<CompositorAnimationTimeline> timeline =
-        CompositorAnimationTimeline::Create();
-    auto host = std::make_unique<CompositorAnimationHost>(
-        layer_tree_view.CompositorAnimationHost());
-    if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
-      view->GetScrollingContext()->SetAnimationHost(std::move(host));
-      view->GetScrollingContext()->SetAnimationTimeline(std::move(timeline));
-      view->GetCompositorAnimationHost()->AddTimeline(
-          *view->GetCompositorAnimationTimeline());
-    } else {
-      animation_host_ = std::move(host);
-      programmatic_scroll_animator_timeline_ = std::move(timeline);
-      animation_host_->AddTimeline(
-          *programmatic_scroll_animator_timeline_.get());
-    }
+  if (!Platform::Current()->IsThreadedAnimationEnabled())
+    return;
+
+  std::unique_ptr<CompositorAnimationTimeline> timeline =
+      CompositorAnimationTimeline::Create();
+  if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
+    view->GetScrollingContext()->SetAnimationHost(&animation_host);
+    view->GetScrollingContext()->SetAnimationTimeline(std::move(timeline));
+    view->GetCompositorAnimationHost()->AddAnimationTimeline(
+        view->GetCompositorAnimationTimeline()->GetAnimationTimeline());
+  } else {
+    animation_host_ = &animation_host;
+    programmatic_scroll_animator_timeline_ = std::move(timeline);
+    animation_host_->AddAnimationTimeline(
+        programmatic_scroll_animator_timeline_->GetAnimationTimeline());
   }
 }
 
@@ -1039,13 +1036,13 @@ void ScrollingCoordinator::WillCloseLayerTreeView(
     WebLayerTreeView& layer_tree_view,
     LocalFrameView* view) {
   if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
-    view->GetCompositorAnimationHost()->RemoveTimeline(
-        *view->GetCompositorAnimationTimeline());
+    view->GetCompositorAnimationHost()->RemoveAnimationTimeline(
+        view->GetCompositorAnimationTimeline()->GetAnimationTimeline());
     view->GetScrollingContext()->SetAnimationTimeline(nullptr);
     view->GetScrollingContext()->SetAnimationHost(nullptr);
   } else if (programmatic_scroll_animator_timeline_) {
-    animation_host_->RemoveTimeline(
-        *programmatic_scroll_animator_timeline_.get());
+    animation_host_->RemoveAnimationTimeline(
+        programmatic_scroll_animator_timeline_->GetAnimationTimeline());
     programmatic_scroll_animator_timeline_ = nullptr;
     animation_host_ = nullptr;
   }

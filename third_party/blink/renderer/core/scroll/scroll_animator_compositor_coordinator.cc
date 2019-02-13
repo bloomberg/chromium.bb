@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "cc/animation/animation_host.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -258,17 +258,16 @@ void ScrollAnimatorCompositorCoordinator::UpdateImplOnlyCompositorAnimations() {
   if (!HasImplOnlyAnimationUpdate())
     return;
 
-  CompositorAnimationHost* host =
-      GetScrollableArea()->GetCompositorAnimationHost();
+  cc::AnimationHost* host = GetScrollableArea()->GetCompositorAnimationHost();
   CompositorElementId element_id = GetScrollElementId();
   if (host && element_id) {
     if (!impl_only_animation_adjustment_.IsZero()) {
-      host->AdjustImplOnlyScrollOffsetAnimation(
+      host->scroll_offset_animations().AddAdjustmentUpdate(
           element_id, gfx::Vector2dF(impl_only_animation_adjustment_.Width(),
                                      impl_only_animation_adjustment_.Height()));
     }
     if (impl_only_animation_takeover_)
-      host->TakeOverImplOnlyScrollOffsetAnimation(element_id);
+      host->scroll_offset_animations().AddTakeoverUpdate(element_id);
   }
   impl_only_animation_adjustment_ = IntSize();
   impl_only_animation_takeover_ = false;

@@ -45,7 +45,6 @@
 class SkBitmap;
 
 namespace cc {
-class AnimationHost;
 class PaintImage;
 }
 
@@ -75,11 +74,6 @@ class WebLayerTreeView {
       base::OnceCallback<void(SwapResult, base::TimeTicks)>;
 
   virtual ~WebLayerTreeView() = default;
-
-  // Initialization and lifecycle --------------------------------------
-
-  // TODO(loyso): This should use CompositorAnimationHost. crbug.com/584551
-  virtual cc::AnimationHost* CompositorAnimationHost() { return nullptr; }
 
   // View properties ---------------------------------------------------
 

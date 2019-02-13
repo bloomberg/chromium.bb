@@ -55,9 +55,7 @@ class Layer;
 }
 
 namespace blink {
-
 class AnimationWorkletMutatorDispatcherImpl;
-class CompositorAnimationHost;
 class Frame;
 class Element;
 class HTMLPlugInElement;
@@ -132,7 +130,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                         mutator_task_runner) override;
 
   // WebFrameWidgetBase overrides:
-  void SetLayerTreeView(WebLayerTreeView*) override;
+  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   bool ForSubframe() const override { return true; }
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
@@ -140,7 +138,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
-  CompositorAnimationHost* AnimationHost() const override;
+  cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
@@ -203,21 +201,21 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
-  WebLayerTreeView* layer_tree_view_;
+  WebLayerTreeView* layer_tree_view_ = nullptr;
+  cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
-  GraphicsLayer* root_graphics_layer_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  GraphicsLayer* root_graphics_layer_ = nullptr;
   base::TimeTicks raf_aligned_input_start_time_;
-  bool is_accelerated_compositing_active_;
+  bool is_accelerated_compositing_active_ = false;
 
-  bool suppress_next_keypress_event_;
+  bool suppress_next_keypress_event_ = false;
 
   bool did_suspend_parsing_ = false;
 
   // TODO(ekaramad): Can we remove this and make sure IME events are not called
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
-  bool ime_accept_events_;
+  bool ime_accept_events_ = true;
 
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };

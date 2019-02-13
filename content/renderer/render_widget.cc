@@ -506,7 +506,8 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   LayerTreeView* layer_tree_view = InitializeLayerTreeView();
-  web_widget->SetLayerTreeView(layer_tree_view);
+  web_widget->SetLayerTreeView(layer_tree_view,
+                               layer_tree_view->animation_host());
 
   blink::scheduler::WebThreadScheduler* main_thread_scheduler = nullptr;
   if (render_thread_impl)

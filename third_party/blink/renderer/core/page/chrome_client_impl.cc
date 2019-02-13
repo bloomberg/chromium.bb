@@ -36,6 +36,7 @@
 
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -90,7 +91,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -729,25 +730,27 @@ void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
 void ChromeClientImpl::AttachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
+  if (!Platform::Current()->IsThreadedAnimationEnabled())
+    return;
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-  if (auto* widget = web_frame->LocalRootFrameWidget()) {
-    if (auto* animation_host = widget->AnimationHost())
-      animation_host->AddTimeline(*compositor_timeline);
+  if (WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget()) {
+    widget->AnimationHost()->AddAnimationTimeline(
+        compositor_timeline->GetAnimationTimeline());
   }
 }
 
 void ChromeClientImpl::DetachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
+  if (!Platform::Current()->IsThreadedAnimationEnabled())
+    return;
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-
   // This method can be called when the frame is being detached, after the
   // widget is destroyed.
   // TODO(dcheng): This should be called before the widget is gone...
-  if (web_frame->LocalRootFrameWidget()) {
-    if (CompositorAnimationHost* animation_host =
-            web_frame->LocalRootFrameWidget()->AnimationHost())
-      animation_host->RemoveTimeline(*compositor_timeline);
+  if (WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget()) {
+    widget->AnimationHost()->RemoveAnimationTimeline(
+        compositor_timeline->GetAnimationTimeline());
   }
 }
 
