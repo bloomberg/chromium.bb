@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_P(CredentialProviderSigninDialogWinDialogExitCodeTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     CredentialProviderSigninDialogWinDialogExitCodeTest,
     ::testing::Range(0, static_cast<int>(credential_provider::kUiecCount)));

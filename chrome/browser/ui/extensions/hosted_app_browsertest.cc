@@ -2918,44 +2918,44 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppOnlyTest, ShouldShowToolbarForExtensionPage) {
   NavigateAndCheckForToolbar(app_browser_, popup_url, false);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HostedAppTest,
-                        ::testing::Combine(kAppTypeValues,
-                                           ::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HostedAppTest,
+                         ::testing::Combine(kAppTypeValues,
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HostedAppCustomTabBarOnlyTest,
-                        ::testing::Combine(kAppTypeValues,
-                                           ::testing::Bool(),
-                                           ::testing::Values(true)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HostedAppCustomTabBarOnlyTest,
+                         ::testing::Combine(kAppTypeValues,
+                                            ::testing::Bool(),
+                                            ::testing::Values(true)));
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppPWAOnlyTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
                        ::testing::Values(true),
                        ::testing::Bool()));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppOnlyTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),
                        ::testing::Bool(),
                        ::testing::Bool()));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppProcessModelTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
                        ::testing::Bool(),
                        ::testing::Bool()));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppIsolatedOriginTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
                        ::testing::Bool(),
                        ::testing::Bool()));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppSitePerProcessTest,
     ::testing::Combine(::testing::Values(AppType::HOSTED_APP),
@@ -2963,7 +2963,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::Bool()));
 
 #if !defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppBadgingTest,
     ::testing::Combine(::testing::Values(AppType::BOOKMARK_APP),

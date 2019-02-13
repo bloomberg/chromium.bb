@@ -398,10 +398,10 @@ TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
   ExpectWindowTitle();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        OpaqueBrowserFrameViewLayoutTest,
-                        ::testing::Values(false, true),
-                        [](const testing::TestParamInfo<bool>& param_info) {
-                          return std::string(param_info.param ? "Maximized"
-                                                              : "Restored");
-                        });
+INSTANTIATE_TEST_SUITE_P(,
+                         OpaqueBrowserFrameViewLayoutTest,
+                         ::testing::Values(false, true),
+                         [](const testing::TestParamInfo<bool>& param_info) {
+                           return std::string(param_info.param ? "Maximized"
+                                                               : "Restored");
+                         });

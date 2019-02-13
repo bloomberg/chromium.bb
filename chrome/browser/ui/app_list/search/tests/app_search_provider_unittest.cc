@@ -825,7 +825,7 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInernallyRanking) {
             RunQuery(kRankingAppQuery));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AppSearchProviderWithExtensionInstallType,
     ::testing::ValuesIn({TestExtensionInstallType::CONTROLLED_BY_POLICY,
@@ -916,7 +916,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
             RunQuery(kRankingAppQuery));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AppSearchProviderWithArcAppInstallType,
     ::testing::ValuesIn({TestArcAppInstallType::CONTROLLED_BY_POLICY,

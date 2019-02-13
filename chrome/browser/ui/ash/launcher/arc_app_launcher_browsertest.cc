@@ -444,9 +444,9 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherWithParamsBrowserTestInstance,
-                        ArcAppDeferredLauncherWithParamsBrowserTest,
-                        ::testing::ValuesIn(build_test_parameter));
+INSTANTIATE_TEST_SUITE_P(ArcAppDeferredLauncherWithParamsBrowserTestInstance,
+                         ArcAppDeferredLauncherWithParamsBrowserTest,
+                         ::testing::ValuesIn(build_test_parameter));
 
 // This tests validates pin state on package update and remove.
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {

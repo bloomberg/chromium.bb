@@ -1215,9 +1215,9 @@ class SSLPolicyTestCommittedInterstitials
   DISALLOW_COPY_AND_ASSIGN(SSLPolicyTestCommittedInterstitials);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLPolicyTestCommittedInterstitials,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLPolicyTestCommittedInterstitials,
+                         ::testing::Values(false, true));
 
 #if defined(OS_WIN)
 // This policy only exists on Windows.
@@ -4149,12 +4149,13 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, MAYBE_RunTest) {
 }
 #undef MAYBE_RunTest
 
-INSTANTIATE_TEST_CASE_P(RestoreOnStartupPolicyTestInstance,
-                        RestoreOnStartupPolicyTest,
-                        testing::Values(&RestoreOnStartupPolicyTest::ListOfURLs,
-                                        &RestoreOnStartupPolicyTest::NTP,
-                                        &RestoreOnStartupPolicyTest::Last,
-                                        &RestoreOnStartupPolicyTest::Blocked));
+INSTANTIATE_TEST_SUITE_P(
+    RestoreOnStartupPolicyTestInstance,
+    RestoreOnStartupPolicyTest,
+    testing::Values(&RestoreOnStartupPolicyTest::ListOfURLs,
+                    &RestoreOnStartupPolicyTest::NTP,
+                    &RestoreOnStartupPolicyTest::Last,
+                    &RestoreOnStartupPolicyTest::Blocked));
 
 // Similar to PolicyTest but sets a couple of policies before the browser is
 // started.
@@ -4543,9 +4544,9 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(MediaStreamDevicesControllerBrowserTestInstance,
-                        MediaStreamDevicesControllerBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(MediaStreamDevicesControllerBrowserTestInstance,
+                         MediaStreamDevicesControllerBrowserTest,
+                         testing::Bool());
 
 class WebBluetoothPolicyTest : public PolicyTest {
   void SetUpCommandLine(base::CommandLine* command_line)override {
@@ -5253,9 +5254,9 @@ IN_PROC_BROWSER_TEST_P(MediaRouterCastAllowAllIPsPolicyTest, RunTest) {
   EXPECT_EQ(is_enabled(), media_router::GetCastAllowAllIPsPref(pref));
 }
 
-INSTANTIATE_TEST_CASE_P(MediaRouterCastAllowAllIPsPolicyTestInstance,
-                        MediaRouterCastAllowAllIPsPolicyTest,
-                        testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(MediaRouterCastAllowAllIPsPolicyTestInstance,
+                         MediaRouterCastAllowAllIPsPolicyTest,
+                         testing::Values(true, false));
 #endif  // !defined(OS_ANDROID)
 
 // Sets the proper policy before the browser is started.
@@ -6011,9 +6012,9 @@ IN_PROC_BROWSER_TEST_P(NetworkTimePolicyTest, NetworkTimeQueriesDisabled) {
   EXPECT_EQ(1u, num_requests());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        NetworkTimePolicyTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         NetworkTimePolicyTest,
+                         ::testing::Values(false, true));
 
 #if defined(OS_CHROMEOS)
 
@@ -6675,11 +6676,11 @@ IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
 }
 #undef MAYBE_RunTest
 
-INSTANTIATE_TEST_CASE_P(,
-                        PromotionalTabsEnabledPolicyTest,
-                        ::testing::Values(BooleanPolicy::kNotConfigured,
-                                          BooleanPolicy::kFalse,
-                                          BooleanPolicy::kTrue));
+INSTANTIATE_TEST_SUITE_P(,
+                         PromotionalTabsEnabledPolicyTest,
+                         ::testing::Values(BooleanPolicy::kNotConfigured,
+                                           BooleanPolicy::kFalse,
+                                           BooleanPolicy::kTrue));
 
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
@@ -6778,11 +6779,11 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcEventLogCollectionAllowedPolicyTest,
-                        ::testing::Values(BooleanPolicy::kNotConfigured,
-                                          BooleanPolicy::kFalse,
-                                          BooleanPolicy::kTrue));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcEventLogCollectionAllowedPolicyTest,
+                         ::testing::Values(BooleanPolicy::kNotConfigured,
+                                           BooleanPolicy::kFalse,
+                                           BooleanPolicy::kTrue));
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace policy

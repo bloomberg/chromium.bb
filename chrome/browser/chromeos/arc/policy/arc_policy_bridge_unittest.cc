@@ -563,8 +563,8 @@ TEST_P(ArcPolicyBridgeAffiliatedTest, ApkCacheEnabledTest) {
 
 // Boolean parameter means if user is affiliated on the device. Affiliated
 // users belong to the domain that owns the device.
-INSTANTIATE_TEST_CASE_P(ArcPolicyBridgeAffiliatedTestInstance,
-                        ArcPolicyBridgeAffiliatedTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(ArcPolicyBridgeAffiliatedTestInstance,
+                         ArcPolicyBridgeAffiliatedTest,
+                         testing::Bool());
 
 }  // namespace arc

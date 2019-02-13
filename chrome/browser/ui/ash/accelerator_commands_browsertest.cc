@@ -211,12 +211,12 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   EXPECT_FALSE(widget->IsFullscreen());
 }
 
-INSTANTIATE_TEST_CASE_P(InitiallyRestored,
-                        AcceleratorCommandsFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_NORMAL));
-INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
-                        AcceleratorCommandsFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_MAXIMIZED));
+INSTANTIATE_TEST_SUITE_P(InitiallyRestored,
+                         AcceleratorCommandsFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_NORMAL));
+INSTANTIATE_TEST_SUITE_P(InitiallyMaximized,
+                         AcceleratorCommandsFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_MAXIMIZED));
 
 class AcceleratorCommandsPlatformAppFullscreenBrowserTest
     : public WithParamInterface<ui::WindowShowState>,
@@ -310,9 +310,9 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(InitiallyRestored,
-                        AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_NORMAL));
-INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
-                        AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Values(ui::SHOW_STATE_MAXIMIZED));
+INSTANTIATE_TEST_SUITE_P(InitiallyRestored,
+                         AcceleratorCommandsPlatformAppFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_NORMAL));
+INSTANTIATE_TEST_SUITE_P(InitiallyMaximized,
+                         AcceleratorCommandsPlatformAppFullscreenBrowserTest,
+                         Values(ui::SHOW_STATE_MAXIMIZED));

@@ -1504,10 +1504,9 @@ HeaderModificationTest kTests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(
-    ExtensionWebRequest,
-    ExtensionWebRequestHeaderModificationTest,
-    ::testing::ValuesIn(kTests));
+INSTANTIATE_TEST_SUITE_P(ExtensionWebRequest,
+                         ExtensionWebRequestHeaderModificationTest,
+                         ::testing::ValuesIn(kTests));
 
 }  // namespace
 

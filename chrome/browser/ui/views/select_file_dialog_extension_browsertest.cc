@@ -601,6 +601,6 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest, MultipleOpenFile) {
   browser()->OpenFile();
 }
 
-INSTANTIATE_TEST_CASE_P(SelectFileDialogExtensionBrowserTest,
-                        SelectFileDialogExtensionBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(SelectFileDialogExtensionBrowserTest,
+                         SelectFileDialogExtensionBrowserTest,
+                         testing::Bool());

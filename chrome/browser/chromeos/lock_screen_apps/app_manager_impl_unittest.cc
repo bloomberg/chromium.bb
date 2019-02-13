@@ -463,12 +463,12 @@ class LockScreenAppManagerImplTest
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(Unpacked,
-                        LockScreenAppManagerImplTest,
-                        ::testing::Values(TestAppLocation::kUnpacked));
-INSTANTIATE_TEST_CASE_P(Internal,
-                        LockScreenAppManagerImplTest,
-                        ::testing::Values(TestAppLocation::kInternal));
+INSTANTIATE_TEST_SUITE_P(Unpacked,
+                         LockScreenAppManagerImplTest,
+                         ::testing::Values(TestAppLocation::kUnpacked));
+INSTANTIATE_TEST_SUITE_P(Internal,
+                         LockScreenAppManagerImplTest,
+                         ::testing::Values(TestAppLocation::kInternal));
 
 TEST_P(LockScreenAppManagerImplTest, StartAddsAppToTarget) {
   scoped_refptr<const extensions::Extension> note_taking_app =

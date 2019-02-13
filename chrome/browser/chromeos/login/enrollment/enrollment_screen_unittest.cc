@@ -375,7 +375,7 @@ TEST_F(MultiLicenseEnrollmentScreenUnitTest, TestLicenseSelection) {
   enrollment_screen_->OnLicenseTypeSelected("annual");
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     P,
     AutomaticEnrollmentScreenUnitTest,
     ::testing::Values(

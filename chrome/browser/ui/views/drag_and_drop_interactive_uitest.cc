@@ -543,7 +543,7 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   }
 
   bool use_cross_site_subframe() {
-    // This is controlled by gtest's test param from INSTANTIATE_TEST_CASE_P.
+    // This is controlled by gtest's test param from INSTANTIATE_TEST_SUITE_P.
     return GetParam();
   }
 
@@ -1284,10 +1284,12 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step3(
 // of a drag operation, and cross-site drags should be allowed across a
 // navigation.
 
-INSTANTIATE_TEST_CASE_P(
-    SameSiteSubframe, DragAndDropBrowserTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SameSiteSubframe,
+                         DragAndDropBrowserTest,
+                         ::testing::Values(false));
 
-INSTANTIATE_TEST_CASE_P(
-    CrossSiteSubframe, DragAndDropBrowserTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(CrossSiteSubframe,
+                         DragAndDropBrowserTest,
+                         ::testing::Values(true));
 
 }  // namespace chrome

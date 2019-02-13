@@ -413,6 +413,6 @@ IN_PROC_BROWSER_TEST_F(AutofillAutocompleteRetentionDisabledTest,
   ValidateSingleValue(prefix, test_value);
 }
 
-INSTANTIATE_TEST_CASE_P(, AutofillAutocompleteTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, AutofillAutocompleteTest, testing::Bool());
 
 }  // namespace autofill

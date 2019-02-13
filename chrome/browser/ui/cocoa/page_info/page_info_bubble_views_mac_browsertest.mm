@@ -113,6 +113,6 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
   EXPECT_FALSE(PageInfoBubbleView::GetPageInfoBubble());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        PageInfoBubbleViewsMacTest,
-                        testing::ValuesIn(kGurlBubbleTypePairs));
+INSTANTIATE_TEST_SUITE_P(,
+                         PageInfoBubbleViewsMacTest,
+                         testing::ValuesIn(kGurlBubbleTypePairs));

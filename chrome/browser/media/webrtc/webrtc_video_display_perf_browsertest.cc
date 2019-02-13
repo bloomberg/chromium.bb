@@ -339,12 +339,13 @@ class WebRtcVideoDisplayPerfBrowserTest
   std::vector<double> total_durations_;
 };
 
-INSTANTIATE_TEST_CASE_P(WebRtcVideoDisplayPerfBrowserTests,
-                        WebRtcVideoDisplayPerfBrowserTest,
-                        testing::Combine(testing::Values(gfx::Size(1280, 720),
-                                                         gfx::Size(1920, 1080)),
-                                         testing::Values(30, 60),
-                                         testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(WebRtcVideoDisplayPerfBrowserTests,
+                         WebRtcVideoDisplayPerfBrowserTest,
+                         testing::Combine(testing::Values(gfx::Size(1280, 720),
+                                                          gfx::Size(1920,
+                                                                    1080)),
+                                          testing::Values(30, 60),
+                                          testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoDisplayPerfBrowserTest,
                        MANUAL_TestVideoDisplayPerfVP9) {

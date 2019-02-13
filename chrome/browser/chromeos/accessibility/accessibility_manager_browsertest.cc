@@ -716,7 +716,7 @@ class AccessibilityManagerUserTypeTest : public AccessibilityManagerTest,
 };
 
 // TODO(yoshiki): Enable a test for retail mode (i.e. RetailAccountId).
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UserTypeInstantiation,
     AccessibilityManagerUserTypeTest,
     ::testing::Values(AccountId::FromUserEmailGaiaId(kTestUserName,

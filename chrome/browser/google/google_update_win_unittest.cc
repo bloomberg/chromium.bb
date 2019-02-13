@@ -1022,6 +1022,6 @@ TEST_P(GoogleUpdateWinTest, UpdateInstalledMultipleDelegates) {
   task_runner_->RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(UserLevel, GoogleUpdateWinTest, Values(false));
+INSTANTIATE_TEST_SUITE_P(UserLevel, GoogleUpdateWinTest, Values(false));
 
-INSTANTIATE_TEST_CASE_P(SystemLevel, GoogleUpdateWinTest, Values(true));
+INSTANTIATE_TEST_SUITE_P(SystemLevel, GoogleUpdateWinTest, Values(true));

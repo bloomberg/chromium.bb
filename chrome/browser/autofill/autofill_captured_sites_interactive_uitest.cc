@@ -305,8 +305,8 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
       recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        AutofillCapturedSitesInteractiveTest,
-                        testing::ValuesIn(GetCapturedSites()),
-                        GetParamAsString());
+INSTANTIATE_TEST_SUITE_P(,
+                         AutofillCapturedSitesInteractiveTest,
+                         testing::ValuesIn(GetCapturedSites()),
+                         GetParamAsString());
 }  // namespace autofill

@@ -488,7 +488,7 @@ TEST_P(ChromePasswordManagerClientSchemeTest,
             GetClient()->IsFillingFallbackEnabled(url));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ChromePasswordManagerClientSchemeTest,
     ::testing::ValuesIn(ChromePasswordManagerClientSchemeTest::GetSchemes()));

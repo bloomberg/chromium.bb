@@ -133,9 +133,9 @@ const std::vector<ElisionTestcase> elision_test_cases = {
      kNoOffset, false, true},
 };
 
-INSTANTIATE_TEST_CASE_P(ElisionTestCases,
-                        ElisionTest,
-                        ::testing::ValuesIn(elision_test_cases));
+INSTANTIATE_TEST_SUITE_P(ElisionTestCases,
+                         ElisionTest,
+                         ::testing::ValuesIn(elision_test_cases));
 
 TextFormatting CreateTextUrlFormatting(const std::string& url_string,
                                        const std::string& expected_string) {

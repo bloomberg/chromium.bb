@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   run_loop.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DeviceManagementServiceIntegrationTestInstance,
     DeviceManagementServiceIntegrationTest,
     testing::Values(&DeviceManagementServiceIntegrationTest::InitCannedResponse,

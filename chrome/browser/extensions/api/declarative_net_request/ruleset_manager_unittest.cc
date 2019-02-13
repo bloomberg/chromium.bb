@@ -673,10 +673,10 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        RulesetManagerTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         RulesetManagerTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
 
 }  // namespace
 }  // namespace declarative_net_request

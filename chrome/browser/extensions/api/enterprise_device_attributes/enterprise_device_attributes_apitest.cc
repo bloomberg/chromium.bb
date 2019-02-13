@@ -320,9 +320,9 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Both cases of affiliated and non-affiliated on the device user are tested.
-INSTANTIATE_TEST_CASE_P(AffiliationCheck,
-                        EnterpriseDeviceAttributesTest,
-                        ::testing::Values(Params(true /* affiliated */),
-                                          Params(false /* affiliated */)),
-                        PrintParam);
+INSTANTIATE_TEST_SUITE_P(AffiliationCheck,
+                         EnterpriseDeviceAttributesTest,
+                         ::testing::Values(Params(true /* affiliated */),
+                                           Params(false /* affiliated */)),
+                         PrintParam);
 }  //  namespace extensions

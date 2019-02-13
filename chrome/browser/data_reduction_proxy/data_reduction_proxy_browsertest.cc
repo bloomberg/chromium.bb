@@ -739,7 +739,7 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWarmupURLBrowsertest,
 // First parameter indicate proxy scheme for proxies that are being tested.
 // Second parameter is true if the test proxy server should set via header
 // correctly on the response headers.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     DataReductionProxyWarmupURLBrowsertest,
     ::testing::Combine(testing::Values(ProxyServer_ProxyScheme_HTTP,

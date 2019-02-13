@@ -296,9 +296,9 @@ IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DeviceIsLocked) {
   EXPECT_EQ(expected_brand, google_brand::chromeos::GetBrand());
 }
 
-INSTANTIATE_TEST_CASE_P(GuestSessionRlzTest,
-                        GuestSessionRlzTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(GuestSessionRlzTest,
+                         GuestSessionRlzTest,
+                         ::testing::Values(false, true));
 
 #endif  // BUILDFLAG(ENABLE_RLZ)
 

@@ -125,9 +125,9 @@ class TCPSocketUnitTest : public TCPSocketUnitTestBase,
   net::MockClientSocketFactory mock_client_socket_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        TCPSocketUnitTest,
-                        testing::Values(net::SYNCHRONOUS, net::ASYNC));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TCPSocketUnitTest,
+                         testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
 TEST_F(TCPSocketUnitTest, SocketConnectError) {
   net::IPEndPoint ip_end_point(net::IPAddress::IPv4Localhost(), 1234);
@@ -582,9 +582,9 @@ class TCPSocketSettingsTest : public TCPSocketUnitTestBase,
   TestSocketFactory client_socket_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        TCPSocketSettingsTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TCPSocketSettingsTest,
+                         testing::Bool());
 
 TEST_P(TCPSocketSettingsTest, SetNoDelay) {
   std::unique_ptr<TCPSocket> socket = CreateAndConnectSocket();

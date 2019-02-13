@@ -697,7 +697,7 @@ const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
      "MailToEscapedUnicodeCharacters"},
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FormatUrlForClipboardTest,
     testing::ValuesIn(kFormatUrlForClipboardTestData),

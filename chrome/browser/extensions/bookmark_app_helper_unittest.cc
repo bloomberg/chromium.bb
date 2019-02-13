@@ -386,10 +386,10 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        BookmarkAppHelperExtensionServiceInstallableSiteTest,
-                        ::testing::Values(ForInstallableSite::kNo,
-                                          ForInstallableSite::kYes));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         BookmarkAppHelperExtensionServiceInstallableSiteTest,
+                         ::testing::Values(ForInstallableSite::kNo,
+                                           ForInstallableSite::kYes));
 
 TEST_F(BookmarkAppHelperExtensionServiceTest,
        CreateBookmarkAppDefaultLauncherContainers) {

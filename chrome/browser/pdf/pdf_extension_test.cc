@@ -620,13 +620,13 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest,
 }
 
 // We break PDFExtensionLoadTest up into kNumberLoadTestParts.
-INSTANTIATE_TEST_CASE_P(PDFTestFiles,
-                        PDFExtensionLoadTest,
-                        testing::Range(0, kNumberLoadTestParts));
+INSTANTIATE_TEST_SUITE_P(PDFTestFiles,
+                         PDFExtensionLoadTest,
+                         testing::Range(0, kNumberLoadTestParts));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        PDFExtensionHitTestTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         PDFExtensionHitTestTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
   RunTestsInFile("basic_test.js", "test.pdf");

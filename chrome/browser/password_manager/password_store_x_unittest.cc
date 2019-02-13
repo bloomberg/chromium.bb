@@ -422,13 +422,13 @@ std::vector<std::unique_ptr<PasswordForm>> ReadLoginDB(
 
 namespace password_manager {
 
-INSTANTIATE_TYPED_TEST_CASE_P(XNoBackend,
-                              PasswordStoreOriginTest,
-                              PasswordStoreXNoBackendTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(XNoBackend,
+                               PasswordStoreOriginTest,
+                               PasswordStoreXNoBackendTestDelegate);
 
-INSTANTIATE_TYPED_TEST_CASE_P(XWorkingBackend,
-                              PasswordStoreOriginTest,
-                              PasswordStoreXWorkingBackendTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(XWorkingBackend,
+                               PasswordStoreOriginTest,
+                               PasswordStoreXWorkingBackendTestDelegate);
 }
 
 class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
@@ -898,12 +898,12 @@ TEST_P(PasswordStoreXTest, MigrationToEncryption_DropIllegalEntries) {
       LinuxBackendMigrationStatus::kLoginDBReplaced, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(NoBackend,
-                        PasswordStoreXTest,
-                        testing::Values(NO_BACKEND));
-INSTANTIATE_TEST_CASE_P(FailingBackend,
-                        PasswordStoreXTest,
-                        testing::Values(FAILING_BACKEND));
-INSTANTIATE_TEST_CASE_P(WorkingBackend,
-                        PasswordStoreXTest,
-                        testing::Values(WORKING_BACKEND));
+INSTANTIATE_TEST_SUITE_P(NoBackend,
+                         PasswordStoreXTest,
+                         testing::Values(NO_BACKEND));
+INSTANTIATE_TEST_SUITE_P(FailingBackend,
+                         PasswordStoreXTest,
+                         testing::Values(FAILING_BACKEND));
+INSTANTIATE_TEST_SUITE_P(WorkingBackend,
+                         PasswordStoreXTest,
+                         testing::Values(WORKING_BACKEND));

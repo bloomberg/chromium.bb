@@ -227,9 +227,9 @@ TEST_F(TLSSocketTest, UpgradeToTLSWithCustomOptions) {
   EXPECT_TRUE(ssl_socket.ConnectDataConsumed());
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        TLSSocketTest,
-                        testing::Values(net::SYNCHRONOUS, net::ASYNC));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TLSSocketTest,
+                         testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
 TEST_P(TLSSocketTest, ReadWrite) {
   net::IoMode io_mode = GetParam();

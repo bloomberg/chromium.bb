@@ -250,9 +250,9 @@ IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams, SyncConsentTestWithLocale) {
 }
 
 // "es" tests language switching, "en-GB" checks switching to language varants.
-INSTANTIATE_TEST_CASE_P(SyncConsentTestWithParamsImpl,
-                        SyncConsentTestWithParams,
-                        testing::Values("es", "en-GB"));
+INSTANTIATE_TEST_SUITE_P(SyncConsentTestWithParamsImpl,
+                         SyncConsentTestWithParams,
+                         testing::Values("es", "en-GB"));
 
 // Check that policy-disabled sync does not trigger SyncConsent screen.
 //
@@ -282,8 +282,8 @@ IN_PROC_BROWSER_TEST_P(SyncConsenPolicyDisabledTest,
   WaitForJsCondition("Oobe.getInstance().currentScreen.id != 'sync-consent'");
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SyncConsenPolicyDisabledTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SyncConsenPolicyDisabledTest,
+                         testing::Bool());
 
 }  // namespace chromeos

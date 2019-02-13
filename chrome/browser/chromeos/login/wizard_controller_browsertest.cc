@@ -1108,7 +1108,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerErrorUpdateAfterCompletedOobeTest,
   EXPECT_NE(nullptr, ExistingUserController::current_controller());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WizardControllerErrorUpdateAfterCompletedOobe,
     WizardControllerErrorUpdateAfterCompletedOobeTest,
     testing::Values(ScreenExitCode::UPDATE_ERROR_UPDATING,
@@ -1552,9 +1552,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(WizardControllerDeviceStateExplicitRequirement,
-                        WizardControllerDeviceStateExplicitRequirementTest,
-                        testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(WizardControllerDeviceStateExplicitRequirement,
+                         WizardControllerDeviceStateExplicitRequirementTest,
+                         testing::Values(false, true));
 
 class WizardControllerDeviceStateWithInitialEnrollmentTest
     : public WizardControllerDeviceStateTest {

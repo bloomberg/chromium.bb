@@ -355,9 +355,9 @@ static_assert(base::size(kSignoutSources) ==
                   signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS,
               "kSignoutSources should enumerate all ProfileSignout values");
 
-INSTANTIATE_TEST_CASE_P(AllSignoutSources,
-                        ChromeSigninClientSignoutSourceTest,
-                        testing::ValuesIn(kSignoutSources));
+INSTANTIATE_TEST_SUITE_P(AllSignoutSources,
+                         ChromeSigninClientSignoutSourceTest,
+                         testing::ValuesIn(kSignoutSources));
 
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_CHROMEOS)

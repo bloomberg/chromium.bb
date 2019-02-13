@@ -172,7 +172,7 @@ TEST_P(PreferenceValidationDelegateValues, Value) {
             incident->tracked_preference().atomic_value());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Values,
     PreferenceValidationDelegateValues,
     // On Android, make_tuple(..., "null") doesn't compile due to the error:
@@ -220,7 +220,7 @@ TEST_P(PreferenceValidationDelegateNoIncident, Split) {
   EXPECT_EQ(0U, incidents_.size());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NoIncident,
     PreferenceValidationDelegateNoIncident,
     testing::Combine(testing::Values(ValueState::UNCHANGED,
@@ -303,7 +303,7 @@ TEST_P(PreferenceValidationDelegateWithIncident, Split) {
                           tp_incident.value_state());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WithIncident,
     PreferenceValidationDelegateWithIncident,
     testing::Combine(testing::Values(ValueState::CLEARED,
@@ -314,7 +314,7 @@ INSTANTIATE_TEST_CASE_P(
                                      ValueState::UNTRUSTED_UNKNOWN_VALUE),
                      testing::Bool()));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WithBypassIncident,
     PreferenceValidationDelegateWithIncident,
     testing::Combine(testing::Values(ValueState::UNCHANGED,
@@ -323,7 +323,7 @@ INSTANTIATE_TEST_CASE_P(
                      testing::Values(ValueState::CHANGED, ValueState::CLEARED),
                      testing::Bool()));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WithIncidentIgnoreBypass,
     PreferenceValidationDelegateWithIncident,
     testing::Combine(testing::Values(ValueState::CLEARED,

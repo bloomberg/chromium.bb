@@ -128,7 +128,7 @@ TEST_P(PasswordAccessAuthenticatorTest, TimeZero) {
   EXPECT_TRUE(reauth_called);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        PasswordAccessAuthenticatorTest,
-                        Values(password_manager::ReauthPurpose::VIEW_PASSWORD,
-                               password_manager::ReauthPurpose::EXPORT));
+INSTANTIATE_TEST_SUITE_P(,
+                         PasswordAccessAuthenticatorTest,
+                         Values(password_manager::ReauthPurpose::VIEW_PASSWORD,
+                                password_manager::ReauthPurpose::EXPORT));

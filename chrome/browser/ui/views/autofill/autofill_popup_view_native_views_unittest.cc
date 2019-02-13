@@ -242,7 +242,7 @@ TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   view()->RemoveAllChildViews(true /* delete_children */);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     AutofillPopupViewNativeViewsForEveryTypeTest,
     ::testing::ValuesIn(kClickTestCase));

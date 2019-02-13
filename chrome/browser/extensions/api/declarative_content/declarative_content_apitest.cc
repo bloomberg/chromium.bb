@@ -582,12 +582,12 @@ IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
-INSTANTIATE_TEST_CASE_P(LegacyShowActionKey,
-                        ParameterizedShowActionDeclarativeContentApiTest,
-                        ::testing::Values("ShowPageAction"));
-INSTANTIATE_TEST_CASE_P(ModernShowActionKey,
-                        ParameterizedShowActionDeclarativeContentApiTest,
-                        ::testing::Values("ShowAction"));
+INSTANTIATE_TEST_SUITE_P(LegacyShowActionKey,
+                         ParameterizedShowActionDeclarativeContentApiTest,
+                         ::testing::Values("ShowPageAction"));
+INSTANTIATE_TEST_SUITE_P(ModernShowActionKey,
+                         ParameterizedShowActionDeclarativeContentApiTest,
+                         ::testing::Values("ShowAction"));
 
 // Tests that rules are not evaluated in incognito browser windows when the
 // extension specifies spanning incognito mode but is not enabled for incognito.

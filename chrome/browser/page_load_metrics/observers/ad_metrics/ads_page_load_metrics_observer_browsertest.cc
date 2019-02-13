@@ -1201,7 +1201,7 @@ IN_PROC_BROWSER_TEST_P(MainFrameDownloadFlagsBrowserTest, Download) {
       has_gesture);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     MainFrameDownloadFlagsBrowserTest,
     ::testing::Combine(
@@ -1406,7 +1406,7 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadFlagsBrowserTest, Download) {
       has_gesture);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     SubframeDownloadFlagsBrowserTest,
     ::testing::Combine(

@@ -278,12 +278,12 @@ IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OutOfBlinkCorsWithServicification,
     CorsOriginAccessListBrowserTest,
     ::testing::Values(TestMode::kOutOfBlinkCorsWithServicification));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OutOfBlinkCorsWithoutServicification,
     CorsOriginAccessListBrowserTest,
     ::testing::Values(TestMode::kOutOfBlinkCorsWithoutServicification));
