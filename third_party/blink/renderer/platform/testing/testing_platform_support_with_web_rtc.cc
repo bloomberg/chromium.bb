@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
-#include <memory>
-#include <vector>
+#include <utility>
 
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -29,7 +28,7 @@ class DummyRtpSenderInternal
   static uintptr_t last_id_;
 
  public:
-  DummyRtpSenderInternal(WebMediaStreamTrack track)
+  explicit DummyRtpSenderInternal(WebMediaStreamTrack track)
       : id_(++last_id_), track_(std::move(track)) {}
 
   uintptr_t id() const { return id_; }
@@ -45,7 +44,7 @@ uintptr_t DummyRtpSenderInternal::last_id_ = 0;
 
 class DummyWebRTCRtpSender : public WebRTCRtpSender {
  public:
-  DummyWebRTCRtpSender(WebMediaStreamTrack track)
+  explicit DummyWebRTCRtpSender(WebMediaStreamTrack track)
       : internal_(new DummyRtpSenderInternal(std::move(track))) {}
   DummyWebRTCRtpSender(const DummyWebRTCRtpSender& other)
       : internal_(other.internal_) {}
@@ -83,7 +82,7 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
   static uintptr_t last_id_;
 
  public:
-  DummyWebRTCRtpReceiver(WebMediaStreamSource::Type type)
+  explicit DummyWebRTCRtpReceiver(WebMediaStreamSource::Type type)
       : id_(++last_id_), track_() {
     if (type == WebMediaStreamSource::Type::kTypeAudio) {
       WebMediaStreamSource web_source;
@@ -369,6 +368,14 @@ MockWebRTCPeerConnectionHandler::NativePeerConnection() {
   return nullptr;
 }
 
+void MockWebRTCPeerConnectionHandler::
+    RunSynchronousOnceClosureOnSignalingThread(base::OnceClosure closure,
+                                               const char* trace_event_name) {}
+
+void MockWebRTCPeerConnectionHandler::
+    RunSynchronousRepeatingClosureOnSignalingThread(
+        const base::RepeatingClosure& closure,
+        const char* trace_event_name) {}
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,

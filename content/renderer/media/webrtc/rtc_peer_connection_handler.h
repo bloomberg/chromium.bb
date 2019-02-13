@@ -172,6 +172,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void Stop() override;
   blink::WebString Id() const override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
+  void RunSynchronousOnceClosureOnSignalingThread(
+      base::OnceClosure closure,
+      const char* trace_event_name) override;
+  void RunSynchronousRepeatingClosureOnSignalingThread(
+      const base::RepeatingClosure& closure,
+      const char* trace_event_name) override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.
@@ -234,7 +240,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.
   struct FirstSessionDescription {
-    FirstSessionDescription(const webrtc::SessionDescriptionInterface* desc);
+    explicit FirstSessionDescription(
+        const webrtc::SessionDescriptionInterface* desc);
 
     bool audio = false;
     bool video = false;
@@ -315,11 +322,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       RtpTransceiverState transceiver_state);
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
-
-  void RunSynchronousClosureOnSignalingThread(const base::Closure& closure,
-                                              const char* trace_event_name);
-  void RunSynchronousOnceClosureOnSignalingThread(base::OnceClosure closure,
-                                                  const char* trace_event_name);
 
   // Corresponds to the experimental RTCPeerConnection.id read-only attribute.
   const std::string id_;
