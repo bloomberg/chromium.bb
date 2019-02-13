@@ -731,6 +731,8 @@ void QuicDispatcher::OnWriteBlocked(
 
 void QuicDispatcher::OnRstStreamReceived(const QuicRstStreamFrame& frame) {}
 
+void QuicDispatcher::OnStopSendingReceived(const QuicStopSendingFrame& frame) {}
+
 void QuicDispatcher::OnConnectionAddedToTimeWaitList(
     QuicConnectionId connection_id) {
   QUIC_DLOG(INFO) << "Connection " << connection_id

@@ -367,7 +367,11 @@ void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   }
 
   stream_error_ = frame.error_code;
-  CloseWriteSide();
+  // Google QUIC closes both sides of the stream in response to a
+  // RESET_STREAM, IETF QUIC closes only the read side.
+  if (transport_version() != QUIC_VERSION_99) {
+    CloseWriteSide();
+  }
   CloseReadSide();
 }
 

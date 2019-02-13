@@ -4622,7 +4622,8 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnAysncWriteError) {
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
                        5, false, GetNthClientInitiatedBidirectionalStreamId(1),
-                       quic::QUIC_STREAM_CANCELLED, 0));
+                       quic::QUIC_STREAM_CANCELLED, 0,
+                       /*include_stop_sending_if_v99=*/true));
 
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
@@ -4835,7 +4836,8 @@ TEST_P(QuicStreamFactoryTest, MigrateBackToDefaultPostMigrationOnWriteError) {
   quic_data3.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
                        5, false, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED, 0));
+                       quic::QUIC_STREAM_CANCELLED, 0,
+                       /*include_stop_sending_if_v99=*/true));
   quic_data3.AddSocketDataToFactory(socket_factory_.get());
 
   // Fast forward to fire the migrate back timer and verify the session
@@ -5578,7 +5580,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithMultipleRequests(
   socket_data1.AddWrite(
       SYNCHRONOUS, client_maker_.MakeRstPacket(
                        4, false, GetNthClientInitiatedBidirectionalStreamId(1),
-                       quic::QUIC_STREAM_CANCELLED, 0));
+                       quic::QUIC_STREAM_CANCELLED, 0,
+                       /*include_stop_sending_if_v99=*/true));
 
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
@@ -5704,7 +5707,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams(
       SYNCHRONOUS,
       client_maker_.MakeRstPacket(packet_number++, true,
                                   GetNthClientInitiatedBidirectionalStreamId(1),
-                                  quic::QUIC_STREAM_CANCELLED, 0));
+                                  quic::QUIC_STREAM_CANCELLED, 0,
+                                  /*include_stop_sending_if_v99=*/true));
   socket_data1.AddRead(
       ASYNC,
       ConstructOkResponsePacket(
@@ -5845,7 +5849,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMixedStreams2(
       SYNCHRONOUS,
       client_maker_.MakeRstPacket(packet_number++, true,
                                   GetNthClientInitiatedBidirectionalStreamId(1),
-                                  quic::QUIC_STREAM_CANCELLED, 0));
+                                  quic::QUIC_STREAM_CANCELLED, 0,
+                                  /*include_stop_sending_if_v99=*/true));
   socket_data1.AddWrite(
       SYNCHRONOUS,
       ConstructGetRequestPacket(packet_number++,

@@ -373,13 +373,36 @@ TEST_P(QuicChromiumClientStreamTest, HandleAfterStreamReset) {
       quic::kInvalidControlFrameId,
       quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
       quic::QUIC_STREAM_CANCELLED, 0);
-  EXPECT_CALL(
-      session_,
-      SendRstStream(
-          quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
-          quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
-  stream_->OnStreamReset(rst);
+  if (GetParam() != quic::QUIC_VERSION_99) {
+    EXPECT_CALL(
+        session_,
+        SendRstStream(quic::test::GetNthClientInitiatedBidirectionalStreamId(
+                          GetParam(), 0),
+                      quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
+  } else {
+    // Intercept & check that the call to the QuicConnection's OnStreamReast
+    // has correct stream ID and error code -- for V99/IETF Quic, it should
+    // have the STREAM_CANCELLED error code, not RST_ACK... Capture
+    // OnStreamReset (rather than SendRstStream) because the V99 path bypasses
+    // SendRstStream, calling SendRstStreamInner directly. Mocking
+    // SendRstStreamInner is problematic since the test relies on it to perform
+    // the closing operations and getting the stream in the correct state.
+    EXPECT_CALL(
+        *(static_cast<quic::test::MockQuicConnection*>(session_.connection())),
+        OnStreamReset(stream_->id(), quic::QUIC_STREAM_CANCELLED));
+  }
 
+  stream_->OnStreamReset(rst);
+  if (GetParam() == quic::QUIC_VERSION_99) {
+    // Make a STOP_SENDING frame and pass it to QUIC. For V99/IETF QUIC,
+    // we need both a REST_STREAM and a STOP_SENDING to effect a closed
+    // stream.
+    quic::QuicStopSendingFrame stop_sending_frame(
+        quic::kInvalidControlFrameId,
+        quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+        quic::QUIC_STREAM_CANCELLED);
+    session_.OnStopSendingFrame(stop_sending_frame);
+  }
   EXPECT_FALSE(handle_->IsOpen());
   EXPECT_EQ(quic::QUIC_STREAM_CANCELLED, handle_->stream_error());
 }

@@ -1192,7 +1192,22 @@ bool QuicConnection::OnApplicationCloseFrame(
 }
 
 bool QuicConnection::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
-  return visitor_->OnStopSendingFrame(frame);
+  DCHECK(connected_);
+
+  // Since a reset stream frame was received, this is not a connectivity probe.
+  // A probe only contains a PING and full padding.
+  UpdatePacketContent(NOT_PADDED_PING);
+
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnStopSendingFrame(frame);
+  }
+
+  QUIC_DLOG(INFO) << ENDPOINT << "STOP_SENDING frame received for stream: "
+                  << frame.stream_id
+                  << " with error: " << frame.application_error_code;
+
+  visitor_->OnStopSendingFrame(frame);
+  return connected_;
 }
 
 bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
@@ -1696,6 +1711,8 @@ void QuicConnection::OnStreamReset(QuicStreamId id,
       ++packet_iterator;
       continue;
     }
+    // NOTE THAT RemoveFramesForStream removes only STREAM frames
+    // for the specified stream.
     RemoveFramesForStream(retransmittable_frames, id);
     if (!retransmittable_frames->empty()) {
       ++packet_iterator;

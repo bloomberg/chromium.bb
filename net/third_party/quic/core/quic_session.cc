@@ -185,6 +185,10 @@ bool QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
     return false;
   }
 
+  if (visitor_) {
+    visitor_->OnStopSendingReceived(frame);
+  }
+
   // If stream is closed, ignore the frame
   if (IsClosedStream(stream_id)) {
     QUIC_DVLOG(1)
@@ -219,9 +223,14 @@ bool QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
     return true;
   }
   stream->OnStopSending(frame.application_error_code);
-  // TODO(fkastenholz): Add in code to start rst-stream in the opposite
-  // direction once we add IETF-QUIC semantics for rst-stream.
 
+  stream->set_stream_error(
+      static_cast<QuicRstStreamErrorCode>(frame.application_error_code));
+  SendRstStreamInner(
+      stream->id(),
+      static_cast<quic::QuicRstStreamErrorCode>(frame.application_error_code),
+      stream->stream_bytes_written(),
+      /*close_write_side_only=*/true);
   return true;
 }
 
@@ -557,26 +566,34 @@ bool QuicSession::WriteControlFrame(const QuicFrame& frame) {
 void QuicSession::SendRstStream(QuicStreamId id,
                                 QuicRstStreamErrorCode error,
                                 QuicStreamOffset bytes_written) {
-  if (QuicContainsKey(static_stream_map_, id)) {
-    QUIC_BUG << "Cannot send RST for a static stream with ID " << id;
-    return;
-  }
+  SendRstStreamInner(id, error, bytes_written, /*close_write_side_only=*/false);
+}
 
+void QuicSession::SendRstStreamInner(QuicStreamId id,
+                                     QuicRstStreamErrorCode error,
+                                     QuicStreamOffset bytes_written,
+                                     bool close_write_side_only) {
   if (connection()->connected()) {
-    // Only send a RST_STREAM frame if still connected.
-    // Send a RST_STREAM frame. If version 99, will include
-    // an IETF-QUIC STOP_SENDING frame in the packet so that
-    // the peer also shuts down and sends a RST_STREAM back.
-    QuicConnection::ScopedPacketFlusher* flusher =
-        (connection_->transport_version() == QUIC_VERSION_99)
-            ? new QuicConnection::ScopedPacketFlusher(
-                  connection(), QuicConnection::SEND_ACK_IF_QUEUED)
-            : nullptr;
-    control_frame_manager_.WriteOrBufferRstStreamStopSending(id, error,
-                                                             bytes_written);
-    if (flusher) {
-      delete flusher;
-      flusher = nullptr;
+    // Only send if still connected.
+    if (close_write_side_only) {
+      DCHECK_EQ(QUIC_VERSION_99, connection_->transport_version());
+      // Send a RST_STREAM frame.
+      control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
+    } else {
+      // Send a RST_STREAM frame plus, if version 99, an IETF
+      // QUIC STOP_SENDING frame. Both sre sent to emulate
+      // the two-way close that Google QUIC's RST_STREAM does.
+      QuicConnection::ScopedPacketFlusher* flusher =
+          (connection_->transport_version() == QUIC_VERSION_99)
+              ? new QuicConnection::ScopedPacketFlusher(
+                    connection(), QuicConnection::SEND_ACK_IF_QUEUED)
+              : nullptr;
+      control_frame_manager_.WriteOrBufferRstStreamStopSending(id, error,
+                                                               bytes_written);
+      if (flusher) {
+        delete flusher;
+        flusher = nullptr;
+      }
     }
     connection_->OnStreamReset(id, error);
   }
@@ -584,7 +601,21 @@ void QuicSession::SendRstStream(QuicStreamId id,
     OnStreamDoneWaitingForAcks(id);
     return;
   }
-  CloseStreamInner(id, true);
+
+  if (!close_write_side_only) {
+    CloseStreamInner(id, true);
+    return;
+  }
+  DCHECK_EQ(QUIC_VERSION_99, connection_->transport_version());
+
+  DynamicStreamMap::iterator it = dynamic_stream_map_.find(id);
+  if (it != dynamic_stream_map_.end()) {
+    QuicStream* stream = it->second.get();
+    if (stream) {
+      stream->set_rst_sent(true);
+      stream->CloseWriteSide();
+    }
+  }
 }
 
 void QuicSession::SendGoAway(QuicErrorCode error_code,
@@ -631,7 +662,6 @@ void QuicSession::InsertLocallyClosedStreamsHighestOffset(
 
 void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   QUIC_DVLOG(1) << ENDPOINT << "Closing stream " << stream_id;
-
   DynamicStreamMap::iterator it = dynamic_stream_map_.find(stream_id);
   if (it == dynamic_stream_map_.end()) {
     // When CloseStreamInner has been called recursively (via
@@ -667,7 +697,6 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
     InsertLocallyClosedStreamsHighestOffset(
         stream_id, stream->flow_controller()->highest_received_byte_offset());
   }
-
   dynamic_stream_map_.erase(it);
   if (IsIncomingStream(stream_id)) {
     --num_dynamic_incoming_streams_;

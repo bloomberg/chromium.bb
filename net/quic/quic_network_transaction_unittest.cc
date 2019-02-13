@@ -369,7 +369,8 @@ class QuicNetworkTransactionTest
       quic::QuicRstStreamErrorCode error_code,
       size_t bytes_written) {
     return client_maker_.MakeRstPacket(num, false, stream_id, error_code,
-                                       bytes_written);
+                                       bytes_written,
+                                       /*include_stop_sending_if_v99=*/true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
@@ -8480,7 +8481,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
         SYNCHRONOUS,
         client_maker->MakeRstPacket(
             4, false, GetNthClientInitiatedBidirectionalStreamId(0),
-            quic::QUIC_STREAM_CANCELLED, client_data_offset));
+            quic::QUIC_STREAM_CANCELLED, client_data_offset,
+            /*include_stop_sending_if_v99=*/true));
 
     headers = client_maker->ConnectRequestHeaders("mail.example.org:443");
     headers["proxy-authorization"] = "Basic Zm9vOmJheg==";

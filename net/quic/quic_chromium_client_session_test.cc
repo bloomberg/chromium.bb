@@ -528,7 +528,8 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_RST_ACKNOWLEDGEMENT));
+                         quic::QUIC_STREAM_CANCELLED, 0,
+                         /*include_stop_sending_if_v99=*/false));
     // After the STREAM_ID_BLOCKED is sent, receive a MAX_STREAM_ID to increase
     // the limit.
     quic_data.AddRead(
@@ -568,6 +569,15 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
                                GetNthClientInitiatedBidirectionalStreamId(0),
                                quic::QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
+  if (version_ == quic::QUIC_VERSION_99) {
+    // For version99, to close the stream completely, we also must receive a
+    // STOP_SENDING frame:
+    quic::QuicStopSendingFrame stop_sending(
+        quic::kInvalidControlFrameId,
+        GetNthClientInitiatedBidirectionalStreamId(0),
+        quic::QUIC_STREAM_CANCELLED);
+    session_->OnStopSendingFrame(stop_sending);
+  }
   // Pump the message loop to read the max stream id packet.
   base::RunLoop().RunUntilIdle();
 
@@ -656,10 +666,13 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
         SYNCHRONOUS,
         client_maker_.MakeStreamIdBlockedPacket(
             2, true, GetNthClientInitiatedBidirectionalStreamId(49)));
+    // This node receives the RST_STREAM+STOP_SENDING, it responds
+    // with only a RST_STREAM.
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
                          3, true, GetNthClientInitiatedBidirectionalStreamId(0),
-                         quic::QUIC_RST_ACKNOWLEDGEMENT));
+                         quic::QUIC_STREAM_CANCELLED, 0,
+                         /*include_stop_sending_if_v99=*/false));
   } else {
     quic_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(
@@ -698,6 +711,15 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
                                GetNthClientInitiatedBidirectionalStreamId(0),
                                quic::QUIC_STREAM_CANCELLED, 0);
   session_->OnRstStream(rst);
+  if (version_ == quic::QUIC_VERSION_99) {
+    // For version99, we require a STOP_SENDING as well as a RESET_STREAM to
+    // fully close the stream.
+    quic::QuicStopSendingFrame stop_sending(
+        quic::kInvalidControlFrameId,
+        GetNthClientInitiatedBidirectionalStreamId(0),
+        quic::QUIC_STREAM_CANCELLED);
+    session_->OnStopSendingFrame(stop_sending);
+  }
   EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
 
   quic_data.Resume();

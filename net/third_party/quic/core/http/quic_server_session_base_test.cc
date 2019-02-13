@@ -170,6 +170,29 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
     return connection_->transport_version();
   }
 
+  // Create and inject a STOP_SENDING frame. In GOOGLE QUIC, receiving a
+  // RST_STREAM frame causes a two-way close. For IETF QUIC, RST_STREAM causes a
+  // one-way close. This method can be used to inject a STOP_SENDING, which
+  // would cause a close in the opposite direction. This allows tests to do the
+  // extra work to get a two-way (full) close where desired. Also sets up
+  // expects needed to ensure that the STOP_SENDING worked as expected.
+  void InjectStopSendingFrame(QuicStreamId stream_id,
+                              QuicRstStreamErrorCode rst_stream_code) {
+    if (transport_version() != QUIC_VERSION_99) {
+      // Only needed for version 99/IETF QUIC. Noop otherwise.
+      return;
+    }
+    QuicStopSendingFrame stop_sending(
+        kInvalidControlFrameId, stream_id,
+        static_cast<QuicApplicationErrorCode>(rst_stream_code));
+    EXPECT_CALL(owner_, OnStopSendingReceived(_)).Times(1);
+    // Expect the RESET_STREAM that is generated in response to receiving a
+    // STOP_SENDING.
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(stream_id, rst_stream_code));
+    session_->OnStopSendingFrame(stop_sending);
+  }
+
   StrictMock<MockQuicSessionVisitor> owner_;
   StrictMock<MockQuicCryptoServerStreamHelper> stream_helper_;
   MockQuicConnectionHelper helper_;
@@ -216,11 +239,21 @@ TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
                           GetNthClientInitiatedBidirectionalId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendControlFrame(_));
-  EXPECT_CALL(*connection_,
-              OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
-                            QUIC_RST_ACKNOWLEDGEMENT));
+  if (transport_version() != QUIC_VERSION_99) {
+    // For non-version 99, the RESET_STREAM will do the full close.
+    // Set up expects accordingly.
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_,
+                OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
+                              QUIC_RST_ACKNOWLEDGEMENT));
+  }
   visitor_->OnRstStream(rst1);
+
+  // For version-99 will create and receive a stop-sending, completing
+  // the full-close expected by this test.
+  InjectStopSendingFrame(GetNthClientInitiatedBidirectionalId(0),
+                         QUIC_ERROR_PROCESSING_STREAM);
+
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
   // Send the same two bytes of payload in a new packet.
@@ -237,11 +270,21 @@ TEST_P(QuicServerSessionBaseTest, NeverOpenStreamDueToReset) {
                           GetNthClientInitiatedBidirectionalId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendControlFrame(_));
-  EXPECT_CALL(*connection_,
-              OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
-                            QUIC_RST_ACKNOWLEDGEMENT));
+  if (transport_version() != QUIC_VERSION_99) {
+    // For non-version 99, the RESET_STREAM will do the full close.
+    // Set up expects accordingly.
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_,
+                OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
+                              QUIC_RST_ACKNOWLEDGEMENT));
+  }
   visitor_->OnRstStream(rst1);
+
+  // For version-99 will create and receive a stop-sending, completing
+  // the full-close expected by this test.
+  InjectStopSendingFrame(GetNthClientInitiatedBidirectionalId(0),
+                         QUIC_ERROR_PROCESSING_STREAM);
+
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
   // Send two bytes of payload.
@@ -269,11 +312,20 @@ TEST_P(QuicServerSessionBaseTest, AcceptClosedStream) {
                          GetNthClientInitiatedBidirectionalId(0),
                          QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
-  EXPECT_CALL(*connection_, SendControlFrame(_));
-  EXPECT_CALL(*connection_,
-              OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
-                            QUIC_RST_ACKNOWLEDGEMENT));
+  if (transport_version() != QUIC_VERSION_99) {
+    // For non-version 99, the RESET_STREAM will do the full close.
+    // Set up expects accordingly.
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_,
+                OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
+                              QUIC_RST_ACKNOWLEDGEMENT));
+  }
   visitor_->OnRstStream(rst);
+
+  // For version-99 will create and receive a stop-sending, completing
+  // the full-close expected by this test.
+  InjectStopSendingFrame(GetNthClientInitiatedBidirectionalId(0),
+                         QUIC_ERROR_PROCESSING_STREAM);
 
   // If we were tracking, we'd probably want to reject this because it's data
   // past the reset point of stream 3.  As it's a closed stream we just drop the
