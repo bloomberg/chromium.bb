@@ -619,6 +619,7 @@ source_set("common") {
     "browser/compositor_id.cc",
     "browser/compositor_id.h",
     "browser/cookie_manager.cc",
+    "browser/cookie_manager.h",
     "browser/deferred_gpu_command_service.cc",
     "browser/deferred_gpu_command_service.h",
     "browser/find_helper.cc",
