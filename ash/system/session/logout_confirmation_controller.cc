@@ -29,7 +29,8 @@ const int kLogoutConfirmationDelayInSeconds = 20;
 
 // Shell window containers monitored for when the last window closes.
 const int kLastWindowClosedContainerIds[] = {
-    kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer};
+    kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer,
+    kShellWindowId_PipContainer};
 
 void SignOut(LogoutConfirmationController::Source source) {
   if (Shell::Get()->session_controller()->IsDemoSession() &&
