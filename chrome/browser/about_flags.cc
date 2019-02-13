@@ -2740,12 +2740,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExpensiveBackgroundTimerThrottlingName,
      flag_descriptions::kExpensiveBackgroundTimerThrottlingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
-#if defined(OS_CHROMEOS)
-    {"enumerate-audio-devices",
-     flag_descriptions::kEnableEnumeratingAudioDevicesName,
-     flag_descriptions::kEnableEnumeratingAudioDevicesDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kEnumerateAudioDevices)},
-#endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"modal-permission-prompts", flag_descriptions::kModalPermissionPromptsName,
      flag_descriptions::kModalPermissionPromptsDescription, kOsAndroid,
