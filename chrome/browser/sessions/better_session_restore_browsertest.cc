@@ -528,8 +528,14 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
+// Flaky on Windows and Linux: https://crbug.com/931778.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_CookiesClearedOnBrowserClose DISABLED_CookiesClearedOnBrowserClose
+#else
+#define MAYBE_CookiesClearedOnBrowserClose CookiesClearedOnBrowserClose
+#endif
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       CookiesClearedOnBrowserClose) {
+                       MAYBE_CookiesClearedOnBrowserClose) {
   StoreDataWithPage("cookies.html");
   // Normally cookies are restored.
   Browser* new_browser = QuitBrowserAndRestore(browser(), false);
