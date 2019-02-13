@@ -83,8 +83,8 @@ std::unique_ptr<InterpolableValue> ConvertCSSCoordinate(
     return Unwrap(
         CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
             *coordinate));
-  return Unwrap(LengthInterpolationFunctions::MaybeConvertLength(
-      Length(50, kPercent), 1));
+  return Unwrap(
+      LengthInterpolationFunctions::MaybeConvertLength(Length::Percent(50), 1));
 }
 
 std::unique_ptr<InterpolableValue> ConvertCoordinate(

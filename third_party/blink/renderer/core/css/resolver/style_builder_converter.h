@@ -328,11 +328,11 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
   if (value.IsIdentifierValue()) {
     switch (ToCSSIdentifierValue(value).GetValueID()) {
       case cssValueFor0:
-        return Length(0, kPercent);
+        return Length::Percent(0);
       case cssValueFor100:
-        return Length(100, kPercent);
+        return Length::Percent(100);
       case CSSValueCenter:
-        return Length(50, kPercent);
+        return Length::Percent(50);
       default:
         NOTREACHED();
     }

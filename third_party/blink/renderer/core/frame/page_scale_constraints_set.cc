@@ -201,9 +201,9 @@ void PageScaleConstraintsSet::AdjustForAndroidWebViewQuirks(
     bool reset_initial_scale = false;
     if (description.zoom == -1) {
       if (description.max_width.IsAuto() ||
-          description.max_width.GetType() == kExtendToZoom)
+          description.max_width.IsExtendToZoom())
         reset_initial_scale = true;
-      if (use_wide_viewport || description.max_width.GetType() == kDeviceWidth)
+      if (use_wide_viewport || description.max_width.IsDeviceWidth())
         reset_initial_scale = true;
     }
     if (reset_initial_scale)
@@ -226,8 +226,7 @@ void PageScaleConstraintsSet::AdjustForAndroidWebViewQuirks(
     if (page_defined_constraints_.maximum_scale != -1)
       page_defined_constraints_.maximum_scale *= target_density_dpi_factor;
     if (wide_viewport_quirk_enabled &&
-        (!use_wide_viewport ||
-         description.max_width.GetType() == kDeviceWidth)) {
+        (!use_wide_viewport || description.max_width.IsDeviceWidth())) {
       adjusted_layout_size_width /= target_density_dpi_factor;
       adjusted_layout_size_height /= target_density_dpi_factor;
     }
@@ -236,7 +235,7 @@ void PageScaleConstraintsSet::AdjustForAndroidWebViewQuirks(
   if (wide_viewport_quirk_enabled) {
     if (use_wide_viewport &&
         (description.max_width.IsAuto() ||
-         description.max_width.GetType() == kExtendToZoom) &&
+         description.max_width.IsExtendToZoom()) &&
         description.zoom != 1.0f) {
       if (layout_fallback_width)
         adjusted_layout_size_width = layout_fallback_width;
@@ -244,9 +243,8 @@ void PageScaleConstraintsSet::AdjustForAndroidWebViewQuirks(
           adjusted_layout_size_width, FloatSize(icb_size_));
     } else if (!use_wide_viewport) {
       const float non_wide_scale =
-          description.zoom < 1 &&
-                  description.max_width.GetType() != kDeviceWidth &&
-                  description.max_width.GetType() != kDeviceHeight
+          description.zoom < 1 && !description.max_width.IsDeviceWidth() &&
+                  !description.max_width.IsDeviceHeight()
               ? -1
               : old_initial_scale;
       adjusted_layout_size_width = GetLayoutWidthForNonWideViewport(
@@ -254,9 +252,9 @@ void PageScaleConstraintsSet::AdjustForAndroidWebViewQuirks(
                                    target_density_dpi_factor;
       float new_initial_scale = target_density_dpi_factor;
       if (user_agent_constraints_.initial_scale != -1 &&
-          (description.max_width.GetType() == kDeviceWidth ||
+          (description.max_width.IsDeviceWidth() ||
            ((description.max_width.IsAuto() ||
-             description.max_width.GetType() == kExtendToZoom) &&
+             description.max_width.IsExtendToZoom()) &&
             description.zoom == -1))) {
         adjusted_layout_size_width /= user_agent_constraints_.initial_scale;
         new_initial_scale = user_agent_constraints_.initial_scale;
@@ -284,8 +282,8 @@ void PageScaleConstraintsSet::AdjustForAndroidWebViewQuirks(
     page_defined_constraints_.maximum_scale =
         page_defined_constraints_.initial_scale;
     if (description.max_width.IsAuto() ||
-        description.max_width.GetType() == kExtendToZoom ||
-        description.max_width.GetType() == kDeviceWidth) {
+        description.max_width.IsExtendToZoom() ||
+        description.max_width.IsDeviceWidth()) {
       adjusted_layout_size_width =
           icb_size_.Width() / target_density_dpi_factor;
       adjusted_layout_size_height = ComputeHeightByAspectRatio(

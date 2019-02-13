@@ -171,11 +171,11 @@ Length LayoutTableCell::LogicalWidthFromColumns(
   // Column widths specified on <col> apply to the border box of the cell, see
   // bug 8126.
   // FIXME: Why is border/padding ignored in the negative width case?
-  if (col_width_sum > 0)
-    return Length(
-        std::max(0, col_width_sum - BorderAndPaddingLogicalWidth().Ceil()),
-        kFixed);
-  return Length(col_width_sum, kFixed);
+  if (col_width_sum > 0) {
+    return Length::Fixed(
+        std::max(0, col_width_sum - BorderAndPaddingLogicalWidth().Ceil()));
+  }
+  return Length::Fixed(col_width_sum);
 }
 
 void LayoutTableCell::ComputePreferredLogicalWidths() {

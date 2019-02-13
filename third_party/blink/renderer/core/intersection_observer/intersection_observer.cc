@@ -85,16 +85,16 @@ void ParseRootMargin(String root_margin_parameter,
     const CSSParserToken& token = token_range.ConsumeIncludingWhitespace();
     switch (token.GetType()) {
       case kPercentageToken:
-        root_margin.push_back(Length(token.NumericValue(), kPercent));
+        root_margin.push_back(Length::Percent(token.NumericValue()));
         break;
       case kDimensionToken:
         switch (token.GetUnitType()) {
           case CSSPrimitiveValue::UnitType::kPixels:
             root_margin.push_back(
-                Length(static_cast<int>(floor(token.NumericValue())), kFixed));
+                Length::Fixed(static_cast<int>(floor(token.NumericValue()))));
             break;
           case CSSPrimitiveValue::UnitType::kPercentage:
-            root_margin.push_back(Length(token.NumericValue(), kPercent));
+            root_margin.push_back(Length::Percent(token.NumericValue()));
             break;
           default:
             exception_state.ThrowDOMException(

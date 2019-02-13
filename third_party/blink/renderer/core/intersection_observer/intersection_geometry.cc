@@ -55,7 +55,7 @@ LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
     return LayoutUnit(static_cast<int>(reference_length.ToFloat() *
                                        length.Percent() / 100.0));
   }
-  DCHECK_EQ(length.GetType(), kFixed);
+  DCHECK(length.IsFixed());
   return LayoutUnit(length.IntValue());
 }
 

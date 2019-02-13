@@ -54,20 +54,18 @@ class NGAbsoluteUtilsTest : public testing::Test {
       LayoutUnit margin_right,
       LayoutUnit right,
       WritingMode writing_mode = WritingMode::kHorizontalTb) {
-    style_->SetLeft(left == NGAuto ? Length(LengthType::kAuto)
-                                   : Length(left.ToInt(), LengthType::kFixed));
-    style_->SetMarginLeft(margin_left == NGAuto ? Length(LengthType::kAuto)
-                                                : Length(margin_left.ToInt(),
-                                                         LengthType::kFixed));
-    style_->SetWidth(width == NGAuto
-                         ? Length(LengthType::kAuto)
-                         : Length(width.ToInt(), LengthType::kFixed));
-    style_->SetMarginRight(margin_right == NGAuto ? Length(LengthType::kAuto)
-                                                  : Length(margin_right.ToInt(),
-                                                           LengthType::kFixed));
-    style_->SetRight(right == NGAuto
-                         ? Length(LengthType::kAuto)
-                         : Length(right.ToInt(), LengthType::kFixed));
+    style_->SetLeft(left == NGAuto ? Length::Auto()
+                                   : Length::Fixed(left.ToInt()));
+    style_->SetMarginLeft(margin_left == NGAuto
+                              ? Length::Auto()
+                              : Length::Fixed(margin_left.ToInt()));
+    style_->SetWidth(width == NGAuto ? Length::Auto()
+                                     : Length::Fixed(width.ToInt()));
+    style_->SetMarginRight(margin_right == NGAuto
+                               ? Length::Auto()
+                               : Length::Fixed(margin_right.ToInt()));
+    style_->SetRight(right == NGAuto ? Length::Auto()
+                                     : Length::Fixed(right.ToInt()));
     style_->SetWritingMode(writing_mode);
   }
 
@@ -77,21 +75,17 @@ class NGAbsoluteUtilsTest : public testing::Test {
                         LayoutUnit margin_bottom,
                         LayoutUnit bottom,
                         WritingMode writing_mode = WritingMode::kHorizontalTb) {
-    style_->SetTop(top == NGAuto ? Length(LengthType::kAuto)
-                                 : Length(top.ToInt(), LengthType::kFixed));
+    style_->SetTop(top == NGAuto ? Length::Auto() : Length::Fixed(top.ToInt()));
     style_->SetMarginTop(margin_top == NGAuto
-                             ? Length(LengthType::kAuto)
-                             : Length(margin_top.ToInt(), LengthType::kFixed));
-    style_->SetHeight(height == NGAuto
-                          ? Length(LengthType::kAuto)
-                          : Length(height.ToInt(), LengthType::kFixed));
-    style_->SetMarginBottom(
-        margin_bottom == NGAuto
-            ? Length(LengthType::kAuto)
-            : Length(margin_bottom.ToInt(), LengthType::kFixed));
-    style_->SetBottom(bottom == NGAuto
-                          ? Length(LengthType::kAuto)
-                          : Length(bottom.ToInt(), LengthType::kFixed));
+                             ? Length::Auto()
+                             : Length::Fixed(margin_top.ToInt()));
+    style_->SetHeight(height == NGAuto ? Length::Auto()
+                                       : Length::Fixed(height.ToInt()));
+    style_->SetMarginBottom(margin_bottom == NGAuto
+                                ? Length::Auto()
+                                : Length::Fixed(margin_bottom.ToInt()));
+    style_->SetBottom(bottom == NGAuto ? Length::Auto()
+                                       : Length::Fixed(bottom.ToInt()));
     style_->SetWritingMode(writing_mode);
   }
 
@@ -131,8 +125,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
 
   style_->SetBorderLeftWidth(border_left.ToInt());
   style_->SetBorderRightWidth(border_right.ToInt());
-  style_->SetPaddingLeft(Length(padding_left.ToInt(), LengthType::kFixed));
-  style_->SetPaddingRight(Length(padding_right.ToInt(), LengthType::kFixed));
+  style_->SetPaddingLeft(Length::Fixed(padding_left.ToInt()));
+  style_->SetPaddingRight(Length::Fixed(padding_right.ToInt()));
 
   // These default to 3 which is not what we want.
   style_->SetBorderBottomWidth(0);
@@ -357,8 +351,8 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
 
   style_->SetBorderTopWidth(border_top.ToInt());
   style_->SetBorderBottomWidth(border_bottom.ToInt());
-  style_->SetPaddingTop(Length(padding_top.ToInt(), LengthType::kFixed));
-  style_->SetPaddingBottom(Length(padding_bottom.ToInt(), LengthType::kFixed));
+  style_->SetPaddingTop(Length::Fixed(padding_top.ToInt()));
+  style_->SetPaddingBottom(Length::Fixed(padding_bottom.ToInt()));
   // These default to 3 which is not what we want.
   style_->SetBorderLeftWidth(0);
   style_->SetBorderRightWidth(0);
@@ -513,10 +507,10 @@ TEST_F(NGAbsoluteUtilsTest, MinMax) {
   LayoutUnit min{50};
   LayoutUnit max{150};
 
-  style_->SetMinWidth(Length(min.ToInt(), LengthType::kFixed));
-  style_->SetMaxWidth(Length(max.ToInt(), LengthType::kFixed));
-  style_->SetMinHeight(Length(min.ToInt(), LengthType::kFixed));
-  style_->SetMaxHeight(Length(max.ToInt(), LengthType::kFixed));
+  style_->SetMinWidth(Length::Fixed(min.ToInt()));
+  style_->SetMaxWidth(Length::Fixed(max.ToInt()));
+  style_->SetMinHeight(Length::Fixed(min.ToInt()));
+  style_->SetMaxHeight(Length::Fixed(max.ToInt()));
 
   NGBoxStrut ltr_border_padding =
       ComputeBorders(ltr_space_, *style_) + ComputePadding(ltr_space_, *style_);

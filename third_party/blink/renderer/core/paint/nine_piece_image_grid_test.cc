@@ -159,7 +159,7 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting_ScaleDownBorder) {
   // where the resulting width in the non-overlapping dimension will round to a
   // larger width.
   BorderImageLength top_bottom(10);
-  BorderImageLength left_right(Length(11, kFixed));
+  BorderImageLength left_right(Length::Fixed(11));
   nine_piece.SetBorderSlices(
       BorderImageLengthBox(top_bottom, left_right, top_bottom, left_right));
   grid = NinePieceImageGrid(nine_piece, image_size, border_image_area,
@@ -202,8 +202,8 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        IntRect(0, 0, 100, 100),
        IntRectOutsets(0, 0, 0, 0),
        true,
-       LengthBox(Length(0, kFixed), Length(0, kFixed), Length(0, kFixed),
-                 Length(0, kFixed)),
+       LengthBox(Length::Fixed(0), Length::Fixed(0), Length::Fixed(0),
+                 Length::Fixed(0)),
        kStretchImageRule,
        kStretchImageRule,
        {
@@ -231,8 +231,8 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        IntRect(0, 0, 100, 100),
        IntRectOutsets(0, 0, 10, 0),
        true,
-       LengthBox(Length(20, kPercent), Length(20, kPercent),
-                 Length(20, kPercent), Length(20, kPercent)),
+       LengthBox(Length::Percent(20), Length::Percent(20), Length::Percent(20),
+                 Length::Percent(20)),
        kStretchImageRule,
        kStretchImageRule,
        {
@@ -260,8 +260,8 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        IntRect(0, 0, 100, 100),
        IntRectOutsets(10, 10, 10, 10),
        false,
-       LengthBox(Length(20, kPercent), Length(20, kPercent),
-                 Length(20, kPercent), Length(20, kPercent)),
+       LengthBox(Length::Percent(20), Length::Percent(20), Length::Percent(20),
+                 Length::Percent(20)),
        kStretchImageRule,
        kStretchImageRule,
        {
@@ -289,8 +289,8 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        IntRect(0, 0, 100, 100),
        IntRectOutsets(0, 0, 0, 10),
        false,
-       LengthBox(Length(20, kPercent), Length(20, kPercent),
-                 Length(20, kPercent), Length(20, kPercent)),
+       LengthBox(Length::Percent(20), Length::Percent(20), Length::Percent(20),
+                 Length::Percent(20)),
        kStretchImageRule,
        kRoundImageRule,
        {
@@ -319,8 +319,8 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
        IntRect(0, 0, 100, 100),
        IntRectOutsets(10, 10, 10, 10),
        true,
-       LengthBox(Length(0, kFixed), Length(0, kFixed), Length(0, kFixed),
-                 Length(0, kFixed)),
+       LengthBox(Length::Fixed(0), Length::Fixed(0), Length::Fixed(0),
+                 Length::Fixed(0)),
        kStretchImageRule,
        kSpaceImageRule,
        {

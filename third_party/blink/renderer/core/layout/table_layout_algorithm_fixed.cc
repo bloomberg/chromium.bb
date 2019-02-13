@@ -82,7 +82,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
   // iterate over all <col> elements
   unsigned n_eff_cols = table_->NumEffectiveColumns();
   width_.resize(n_eff_cols);
-  width_.Fill(Length(kAuto));
+  width_.Fill(Length::Auto());
 
   unsigned current_effective_column = 0;
   for (LayoutTableCol* col = table_->FirstColumn(); col;

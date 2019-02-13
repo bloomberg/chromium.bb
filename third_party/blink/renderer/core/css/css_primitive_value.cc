@@ -282,8 +282,8 @@ unsigned CSSPrimitiveValue::ComputeLength(
 template <>
 Length CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData& conversion_data) const {
-  return Length(ClampToCSSLengthRange(ComputeLengthDouble(conversion_data)),
-                kFixed);
+  return Length::Fixed(
+      ClampToCSSLengthRange(ComputeLengthDouble(conversion_data)));
 }
 
 template <>
@@ -406,7 +406,7 @@ Length CSSPrimitiveValue::ConvertToLength(
   if (IsLength())
     return ComputeLength<Length>(conversion_data);
   if (IsPercentage())
-    return Length(GetDoubleValue(), kPercent);
+    return Length::Percent(GetDoubleValue());
   DCHECK(IsCalculated());
   return Length(CssCalcValue()->ToCalcValue(conversion_data));
 }

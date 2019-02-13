@@ -132,6 +132,25 @@ class PLATFORM_EXPORT Length {
     return *this;
   }
 
+  template <typename NUMBER_TYPE>
+  static Length Fixed(NUMBER_TYPE number) {
+    return Length(number, kFixed);
+  }
+  static Length Fixed() { return Length(kFixed); }
+  static Length Auto() { return Length(kAuto); }
+  static Length FillAvailable() { return Length(kFillAvailable); }
+  static Length MinContent() { return Length(kMinContent); }
+  static Length MaxContent() { return Length(kMaxContent); }
+  static Length ExtendToZoom() { return Length(kExtendToZoom); }
+  static Length DeviceWidth() { return Length(kDeviceWidth); }
+  static Length DeviceHeight() { return Length(kDeviceHeight); }
+  static Length MaxSizeNone() { return Length(kMaxSizeNone); }
+  static Length FitContent() { return Length(kFitContent); }
+  template <typename NUMBER_TYPE>
+  static Length Percent(NUMBER_TYPE number) {
+    return Length(number, kPercent);
+  }
+
   // FIXME: Make this private (if possible) or at least rename it
   // (http://crbug.com/432707).
   inline float Value() const {
@@ -192,7 +211,7 @@ class PLATFORM_EXPORT Length {
     is_float_ = true;
   }
 
-  void SetValue(float value) { *this = Length(value, kFixed); }
+  void SetValue(float value) { *this = Length::Fixed(value); }
 
   bool IsMaxSizeNone() const { return GetType() == kMaxSizeNone; }
 
@@ -244,6 +263,9 @@ class PLATFORM_EXPORT Length {
   bool IsPercentOrCalc() const {
     return GetType() == kPercent || GetType() == kCalculated;
   }
+  bool IsExtendToZoom() const { return GetType() == kExtendToZoom; }
+  bool IsDeviceWidth() const { return GetType() == kDeviceWidth; }
+  bool IsDeviceHeight() const { return GetType() == kDeviceHeight; }
 
   Length Blend(const Length& from, double progress, ValueRange range) const {
     DCHECK(IsSpecified());

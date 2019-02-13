@@ -850,14 +850,14 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // Collapse empty auto repeat tracks if auto-fit.
   if (grid_.HasAutoRepeatEmptyTracks(direction) &&
       grid_.IsEmptyAutoRepeatTrack(direction, translated_index))
-    return {Length(kFixed), kLengthTrackSizing};
+    return {Length::Fixed(), kLengthTrackSizing};
 
   const GridTrackSize& track_size =
       RawGridTrackSize(direction, translated_index);
   if (track_size.IsFitContent()) {
     return IsRelativeGridLengthAsAuto(track_size.FitContentTrackBreadth(),
                                       direction)
-               ? GridTrackSize(Length(kAuto), Length(kMaxContent))
+               ? GridTrackSize(Length::Auto(), Length::MaxContent())
                : track_size;
   }
 
@@ -872,9 +872,9 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
           WebFeature::kGridRowTrackPercentIndefiniteHeight);
     }
     if (min_track_breadth.HasPercentage())
-      min_track_breadth = Length(kAuto);
+      min_track_breadth = Length::Auto();
     if (max_track_breadth.HasPercentage())
-      max_track_breadth = Length(kAuto);
+      max_track_breadth = Length::Auto();
   }
 
   // Flex sizes are invalid as a min sizing function. However we still can have
@@ -883,7 +883,7 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/2611
   // TODO(jfernandez): We may have to change IsIntrinsicSizedGridArea too.
   if (min_track_breadth.IsFlex())
-    min_track_breadth = Length(kAuto);
+    min_track_breadth = Length::Auto();
 
   return GridTrackSize(min_track_breadth, max_track_breadth);
 }

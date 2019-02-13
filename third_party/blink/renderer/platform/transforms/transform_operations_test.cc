@@ -77,10 +77,10 @@ TEST(TransformOperationsTest, AbsoluteAnimatedTranslatedBoundsTest) {
   TransformOperations from_ops;
   TransformOperations to_ops;
   from_ops.Operations().push_back(TranslateTransformOperation::Create(
-      Length(-30, blink::kFixed), Length(20, blink::kFixed), 15,
+      Length::Fixed(-30), Length::Fixed(20), 15,
       TransformOperation::kTranslate3D));
   to_ops.Operations().push_back(TranslateTransformOperation::Create(
-      Length(10, blink::kFixed), Length(10, blink::kFixed), 200,
+      Length::Fixed(10), Length::Fixed(10), 200,
       TransformOperation::kTranslate3D));
   FloatBox box(0, 0, 0, 10, 10, 10);
   FloatBox bounds;
@@ -124,13 +124,13 @@ TEST(TransformOperationsTest, EmpiricalAnimatedTranslatedBoundsTest) {
       TransformOperations from_ops;
       TransformOperations to_ops;
       from_ops.Operations().push_back(TranslateTransformOperation::Create(
-          Length(test_transforms[i][0][0], blink::kFixed),
-          Length(test_transforms[i][0][1], blink::kFixed),
-          test_transforms[i][0][2], TransformOperation::kTranslate3D));
+          Length::Fixed(test_transforms[i][0][0]),
+          Length::Fixed(test_transforms[i][0][1]), test_transforms[i][0][2],
+          TransformOperation::kTranslate3D));
       to_ops.Operations().push_back(TranslateTransformOperation::Create(
-          Length(test_transforms[i][1][0], blink::kFixed),
-          Length(test_transforms[i][1][1], blink::kFixed),
-          test_transforms[i][1][2], TransformOperation::kTranslate3D));
+          Length::Fixed(test_transforms[i][1][0]),
+          Length::Fixed(test_transforms[i][1][1]), test_transforms[i][1][2],
+          TransformOperation::kTranslate3D));
       EmpiricallyTestBounds(from_ops, to_ops, progress[j][0], progress[j][1]);
     }
   }
@@ -187,13 +187,13 @@ TEST(TransformOperationsTest, EmpiricalAnimatedScaleBoundsTest) {
       TransformOperations from_ops;
       TransformOperations to_ops;
       from_ops.Operations().push_back(TranslateTransformOperation::Create(
-          Length(test_transforms[i][0][0], blink::kFixed),
-          Length(test_transforms[i][0][1], blink::kFixed),
-          test_transforms[i][0][2], TransformOperation::kTranslate3D));
+          Length::Fixed(test_transforms[i][0][0]),
+          Length::Fixed(test_transforms[i][0][1]), test_transforms[i][0][2],
+          TransformOperation::kTranslate3D));
       to_ops.Operations().push_back(TranslateTransformOperation::Create(
-          Length(test_transforms[i][1][0], blink::kFixed),
-          Length(test_transforms[i][1][1], blink::kFixed),
-          test_transforms[i][1][2], TransformOperation::kTranslate3D));
+          Length::Fixed(test_transforms[i][1][0]),
+          Length::Fixed(test_transforms[i][1][1]), test_transforms[i][1][2],
+          TransformOperation::kTranslate3D));
       EmpiricallyTestBounds(from_ops, to_ops, progress[j][0], progress[j][1]);
     }
   }
@@ -475,21 +475,21 @@ TEST(TransformOperationsTest, AbsoluteSequenceBoundsTest) {
   TransformOperations to_ops;
 
   from_ops.Operations().push_back(
-      TranslateTransformOperation::Create(Length(1, kFixed), Length(-5, kFixed),
+      TranslateTransformOperation::Create(Length::Fixed(1), Length::Fixed(-5),
                                           1, TransformOperation::kTranslate3D));
   from_ops.Operations().push_back(
       ScaleTransformOperation::Create(-1, 2, 3, TransformOperation::kScale3D));
   from_ops.Operations().push_back(TranslateTransformOperation::Create(
-      Length(2, kFixed), Length(4, kFixed), -1,
+      Length::Fixed(2), Length::Fixed(4), -1,
       TransformOperation::kTranslate3D));
 
-  to_ops.Operations().push_back(TranslateTransformOperation::Create(
-      Length(13, kFixed), Length(-1, kFixed), 5,
-      TransformOperation::kTranslate3D));
+  to_ops.Operations().push_back(
+      TranslateTransformOperation::Create(Length::Fixed(13), Length::Fixed(-1),
+                                          5, TransformOperation::kTranslate3D));
   to_ops.Operations().push_back(
       ScaleTransformOperation::Create(-3, -2, 5, TransformOperation::kScale3D));
   to_ops.Operations().push_back(
-      TranslateTransformOperation::Create(Length(6, kFixed), Length(-2, kFixed),
+      TranslateTransformOperation::Create(Length::Fixed(6), Length::Fixed(-2),
                                           3, TransformOperation::kTranslate3D));
 
   FloatBox box(1, 2, 3, 4, 4, 4);
@@ -520,9 +520,8 @@ TEST(TransformOperationsTest, ZoomTest) {
   FloatPoint3D original_point(2, 3, 4);
 
   TransformOperations ops;
-  ops.Operations().push_back(
-      TranslateTransformOperation::Create(Length(1, kFixed), Length(2, kFixed),
-                                          3, TransformOperation::kTranslate3D));
+  ops.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(1), Length::Fixed(2), 3, TransformOperation::kTranslate3D));
   ops.Operations().push_back(PerspectiveTransformOperation::Create(1234));
   ops.Operations().push_back(
       Matrix3DTransformOperation::Create(TransformationMatrix(

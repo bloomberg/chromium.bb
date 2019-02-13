@@ -64,7 +64,7 @@ void BaselineShift::ApplyValue(StyleResolverState& state,
   switch (ToCSSIdentifierValue(value).GetValueID()) {
     case CSSValueBaseline:
       svg_style.SetBaselineShift(BS_LENGTH);
-      svg_style.SetBaselineShiftValue(Length(kFixed));
+      svg_style.SetBaselineShiftValue(Length::Fixed());
       return;
     case CSSValueSub:
       svg_style.SetBaselineShift(BS_SUB);

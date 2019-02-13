@@ -32,7 +32,7 @@ scoped_refptr<TransformOperation> TranslateTransformOperation::Blend(
   if (from && !from->CanBlendWith(*this))
     return this;
 
-  const Length zero_length(0, kFixed);
+  const Length zero_length = Length::Fixed(0);
   if (blend_to_identity) {
     return TranslateTransformOperation::Create(
         zero_length.Blend(x_, progress, kValueRangeAll),

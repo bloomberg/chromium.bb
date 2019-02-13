@@ -116,9 +116,8 @@ void LazyLoadFrameObserver::DeferLoadUntilNearViewport(
   was_recorded_as_deferred_ = false;
 
   lazy_load_intersection_observer_ = IntersectionObserver::Create(
-      {Length(GetLazyFrameLoadingViewportDistanceThresholdPx(
-                  element_->GetDocument()),
-              kFixed)},
+      {Length::Fixed(GetLazyFrameLoadingViewportDistanceThresholdPx(
+          element_->GetDocument()))},
       {std::numeric_limits<float>::min()}, &element_->GetDocument(),
       WTF::BindRepeating(&LazyLoadFrameObserver::LoadIfHiddenOrNearViewport,
                          WrapWeakPersistent(this)));

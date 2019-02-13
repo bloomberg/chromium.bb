@@ -58,8 +58,8 @@ void LayoutThemeMobile::AdjustInnerSpinButtonStyle(ComputedStyle& style) const {
     IntSize size = Platform::Current()->ThemeEngine()->GetSize(
         WebThemeEngine::kPartInnerSpinButton);
 
-    style.SetWidth(Length(size.Width(), kFixed));
-    style.SetMinWidth(Length(size.Width(), kFixed));
+    style.SetWidth(Length::Fixed(size.Width()));
+    style.SetMinWidth(Length::Fixed(size.Width()));
   }
 }
 

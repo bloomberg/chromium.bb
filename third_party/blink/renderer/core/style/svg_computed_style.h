@@ -64,7 +64,7 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static EAlignmentBaseline InitialAlignmentBaseline() { return AB_AUTO; }
   static EDominantBaseline InitialDominantBaseline() { return DB_AUTO; }
   static EBaselineShift InitialBaselineShift() { return BS_LENGTH; }
-  static Length InitialBaselineShiftValue() { return Length(kFixed); }
+  static Length InitialBaselineShiftValue() { return Length::Fixed(); }
   static EVectorEffect InitialVectorEffect() { return VE_NONE; }
   static EBufferedRendering InitialBufferedRendering() { return BR_AUTO; }
   static LineCap InitialCapStyle() { return kButtCap; }
@@ -83,10 +83,10 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static float InitialStrokeOpacity() { return 1; }
   static SVGPaint InitialStrokePaint() { return SVGPaint(); }
   static scoped_refptr<SVGDashArray> InitialStrokeDashArray();
-  static Length InitialStrokeDashOffset() { return Length(kFixed); }
+  static Length InitialStrokeDashOffset() { return Length::Fixed(); }
   static float InitialStrokeMiterLimit() { return 4; }
   static UnzoomedLength InitialStrokeWidth() {
-    return UnzoomedLength(Length(1, kFixed));
+    return UnzoomedLength(Length::Fixed(1));
   }
   static float InitialStopOpacity() { return 1; }
   static Color InitialStopColor() { return Color(0, 0, 0); }
@@ -100,13 +100,13 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static EMaskType InitialMaskType() { return MT_LUMINANCE; }
   static EPaintOrder InitialPaintOrder() { return kPaintOrderNormal; }
   static StylePath* InitialD() { return nullptr; }
-  static Length InitialCx() { return Length(kFixed); }
-  static Length InitialCy() { return Length(kFixed); }
-  static Length InitialX() { return Length(kFixed); }
-  static Length InitialY() { return Length(kFixed); }
-  static Length InitialR() { return Length(kFixed); }
-  static Length InitialRx() { return Length(kAuto); }
-  static Length InitialRy() { return Length(kAuto); }
+  static Length InitialCx() { return Length::Fixed(); }
+  static Length InitialCy() { return Length::Fixed(); }
+  static Length InitialX() { return Length::Fixed(); }
+  static Length InitialY() { return Length::Fixed(); }
+  static Length InitialR() { return Length::Fixed(); }
+  static Length InitialRx() { return Length::Auto(); }
+  static Length InitialRy() { return Length::Auto(); }
 
   // SVG CSS Property setters
   void SetAlignmentBaseline(EAlignmentBaseline val) {

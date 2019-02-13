@@ -3153,10 +3153,10 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
       if (containing_block_style.IsLeftToRightDirection() !=
           StyleRef().IsLeftToRightDirection()) {
         if (!margin_start_length.IsAuto())
-          margin_end_length = Length(kAuto);
+          margin_end_length = Length::Auto();
       } else {
         if (!margin_end_length.IsAuto())
-          margin_start_length = Length(kAuto);
+          margin_start_length = Length::Auto();
       }
     }
 
@@ -3272,11 +3272,10 @@ void LayoutBox::ComputeLogicalHeight(
     // The parent box is flexing us, so it has increased or decreased our
     // height. We have to grab our cached flexible height.
     if (HasOverrideLogicalHeight()) {
-      h = Length(OverrideLogicalHeight(), kFixed);
+      h = Length::Fixed(OverrideLogicalHeight());
     } else if (treat_as_replaced) {
-      h = Length(
-          ComputeReplacedLogicalHeight() + BorderAndPaddingLogicalHeight(),
-          kFixed);
+      h = Length::Fixed(ComputeReplacedLogicalHeight() +
+                        BorderAndPaddingLogicalHeight());
     } else {
       h = StyleRef().LogicalHeight();
       check_min_max_height = true;
@@ -3287,9 +3286,8 @@ void LayoutBox::ComputeLogicalHeight(
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     if (h.IsAuto() && in_horizontal_box &&
         ToLayoutDeprecatedFlexibleBox(Parent())->IsStretchingChildren()) {
-      h = Length(
-          ParentBox()->ContentLogicalHeight() - MarginBefore() - MarginAfter(),
-          kFixed);
+      h = Length::Fixed(ParentBox()->ContentLogicalHeight() - MarginBefore() -
+                        MarginAfter());
       check_min_max_height = false;
     }
 
@@ -4751,7 +4749,7 @@ void LayoutBox::ComputePositionedLogicalHeightUsing(
          height_size_type == kMainOrPreferredSize ||
          !logical_height_length.IsAuto());
   if (height_size_type == kMinSize && logical_height_length.IsAuto())
-    logical_height_length = Length(0, kFixed);
+    logical_height_length = Length::Fixed(0);
 
   // 'top' and 'bottom' cannot both be 'auto' because 'top would of been
   // converted to the static position in computePositionedLogicalHeight()
@@ -5429,7 +5427,7 @@ void LayoutBox::ClearVisualOverflow() {
 }
 
 bool LayoutBox::PercentageLogicalHeightIsResolvable() const {
-  Length fake_length(100, kPercent);
+  Length fake_length = Length::Percent(100);
   return ComputePercentageLogicalHeight(fake_length) != -1;
 }
 

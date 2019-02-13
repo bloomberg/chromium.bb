@@ -1820,9 +1820,8 @@ Length ComputedStyle::LineHeight() const {
   // too, though this involves messily poking into CalcExpressionLength.
   if (lh.IsFixed()) {
     float multiplier = TextAutosizingMultiplier();
-    return Length(TextAutosizer::ComputeAutosizedFontSize(
-                      lh.Value(), multiplier, EffectiveZoom()),
-                  kFixed);
+    return Length::Fixed(TextAutosizer::ComputeAutosizedFontSize(
+        lh.Value(), multiplier, EffectiveZoom()));
   }
 
   return lh;

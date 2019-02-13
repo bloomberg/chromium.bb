@@ -106,15 +106,14 @@ bool LengthPropertyFunctions::GetInitialLength(const CSSProperty& property,
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
     case CSSPropertyBorderTopWidth:
-      result = Length(ComputedStyleInitialValues::InitialBorderWidth(), kFixed);
+      result = Length::Fixed(ComputedStyleInitialValues::InitialBorderWidth());
       return true;
     case CSSPropertyOutlineWidth:
-      result =
-          Length(ComputedStyleInitialValues::InitialOutlineWidth(), kFixed);
+      result = Length::Fixed(ComputedStyleInitialValues::InitialOutlineWidth());
       return true;
     case CSSPropertyColumnRuleWidth:
       result =
-          Length(ComputedStyleInitialValues::InitialColumnRuleWidth(), kFixed);
+          Length::Fixed(ComputedStyleInitialValues::InitialColumnRuleWidth());
       return true;
 
     default:
@@ -230,31 +229,31 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
       return true;
 
     case CSSPropertyBorderBottomWidth:
-      result = Length(style.BorderBottomWidth(), kFixed);
+      result = Length::Fixed(style.BorderBottomWidth());
       return true;
     case CSSPropertyBorderLeftWidth:
-      result = Length(style.BorderLeftWidth(), kFixed);
+      result = Length::Fixed(style.BorderLeftWidth());
       return true;
     case CSSPropertyBorderRightWidth:
-      result = Length(style.BorderRightWidth(), kFixed);
+      result = Length::Fixed(style.BorderRightWidth());
       return true;
     case CSSPropertyBorderTopWidth:
-      result = Length(style.BorderTopWidth(), kFixed);
+      result = Length::Fixed(style.BorderTopWidth());
       return true;
     case CSSPropertyLetterSpacing:
-      result = Length(style.LetterSpacing(), kFixed);
+      result = Length::Fixed(style.LetterSpacing());
       return true;
     case CSSPropertyOutlineOffset:
-      result = Length(style.OutlineOffset(), kFixed);
+      result = Length::Fixed(style.OutlineOffset());
       return true;
     case CSSPropertyOutlineWidth:
-      result = Length(style.OutlineWidth(), kFixed);
+      result = Length::Fixed(style.OutlineWidth());
       return true;
     case CSSPropertyWebkitBorderHorizontalSpacing:
-      result = Length(style.HorizontalBorderSpacing(), kFixed);
+      result = Length::Fixed(style.HorizontalBorderSpacing());
       return true;
     case CSSPropertyWebkitBorderVerticalSpacing:
-      result = Length(style.VerticalBorderSpacing(), kFixed);
+      result = Length::Fixed(style.VerticalBorderSpacing());
       return true;
     case CSSPropertyRowGap:
       if (style.RowGap().IsNormal())
@@ -267,13 +266,13 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
       result = style.ColumnGap().GetLength();
       return true;
     case CSSPropertyColumnRuleWidth:
-      result = Length(style.ColumnRuleWidth(), kFixed);
+      result = Length::Fixed(style.ColumnRuleWidth());
       return true;
     case CSSPropertyWebkitTransformOriginZ:
-      result = Length(style.TransformOriginZ(), kFixed);
+      result = Length::Fixed(style.TransformOriginZ());
       return true;
     case CSSPropertyWordSpacing:
-      result = Length(style.WordSpacing(), kFixed);
+      result = Length::Fixed(style.WordSpacing());
       return true;
 
     case CSSPropertyBaselineShift:
@@ -290,7 +289,7 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
     case CSSPropertyPerspective:
       if (!style.HasPerspective())
         return false;
-      result = Length(style.Perspective(), kFixed);
+      result = Length::Fixed(style.Perspective());
       return true;
     case CSSPropertyStrokeWidth:
       DCHECK(!IsZoomedLength(CSSProperty::Get(CSSPropertyStrokeWidth)));
@@ -304,7 +303,7 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
     case CSSPropertyColumnWidth:
       if (style.HasAutoColumnWidth())
         return false;
-      result = Length(style.ColumnWidth(), kFixed);
+      result = Length::Fixed(style.ColumnWidth());
       return true;
     default:
       return false;

@@ -133,8 +133,8 @@ void LayoutNGListItem::UpdateMarker() {
         style, EDisplay::kInline);
     auto margins =
         LayoutListMarker::InlineMarginsForInside(style, IsMarkerImage());
-    marker_style->SetMarginStart(Length(margins.first, kFixed));
-    marker_style->SetMarginEnd(Length(margins.second, kFixed));
+    marker_style->SetMarginStart(Length::Fixed(margins.first));
+    marker_style->SetMarginEnd(Length::Fixed(margins.second));
   } else {
     if (marker_ && !marker_->IsLayoutBlockFlow())
       DestroyMarker();

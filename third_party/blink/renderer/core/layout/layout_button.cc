@@ -59,7 +59,7 @@ void LayoutButton::UpdateAnonymousChildStyle(const LayoutObject* child,
   DCHECK_EQ(inner_, child);
   child_style.SetFlexGrow(1.0f);
   // min-width: 0; is needed for correct shrinking.
-  child_style.SetMinWidth(Length(0, kFixed));
+  child_style.SetMinWidth(Length::Fixed(0));
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
   child_style.SetMarginTop(Length());

@@ -162,7 +162,7 @@ ToLonghand(resolved_property).{{apply_call}};
   {# Check for equality in case we can bail out before creating a new NinePieceImage. #}
       {% if modifier_type == 'Outset' %}
   if (style_building_utils::BorderImageLengthMatchesAllSides(current_image.Outset(),
-                                       BorderImageLength(Length(0, kFixed))))
+                                       BorderImageLength(Length::Fixed(0))))
     return;
       {% elif modifier_type == 'Repeat' %}
   if (current_image.HorizontalRule() == kStretchImageRule &&
@@ -172,17 +172,17 @@ ToLonghand(resolved_property).{{apply_call}};
   // Masks have a different initial value for slices. Preserve the value of 0
   // for backwards compatibility.
   if (current_image.Fill() == true &&
-      style_building_utils::LengthMatchesAllSides(current_image.ImageSlices(), Length(0, kFixed)))
+      style_building_utils::LengthMatchesAllSides(current_image.ImageSlices(), Length::Fixed(0)))
     return;
       {% elif modifier_type == 'Slice' and not is_mask_box %}
   if (current_image.Fill() == false &&
-      style_building_utils::LengthMatchesAllSides(current_image.ImageSlices(), Length(100, kPercent)))
+      style_building_utils::LengthMatchesAllSides(current_image.ImageSlices(), Length::Percent(100)))
     return;
       {% elif modifier_type == 'Width' and is_mask_box %}
   // Masks have a different initial value for widths. Preserve the value of
   // 'auto' for backwards compatibility.
   if (style_building_utils::BorderImageLengthMatchesAllSides(current_image.BorderSlices(),
-                                       BorderImageLength(Length(kAuto))))
+                                       BorderImageLength(Length::Auto())))
     return;
       {% elif modifier_type == 'Width' and not is_mask_box %}
   if (style_building_utils::BorderImageLengthMatchesAllSides(current_image.BorderSlices(),
@@ -191,18 +191,18 @@ ToLonghand(resolved_property).{{apply_call}};
       {% endif %}
   NinePieceImage image(current_image);
       {% if modifier_type == 'Outset' %}
-  image.SetOutset(Length(0, kFixed));
+  image.SetOutset(Length::Fixed(0));
       {% elif modifier_type == 'Repeat' %}
   image.SetHorizontalRule(kStretchImageRule);
   image.SetVerticalRule(kStretchImageRule);
       {% elif modifier_type == 'Slice' and is_mask_box %}
-  image.SetImageSlices(LengthBox({{ (['Length(0, kFixed)']*4) | join(', ') }}));
+  image.SetImageSlices(LengthBox({{ (['Length::Fixed(0)']*4) | join(', ') }}));
   image.SetFill(true);
       {% elif modifier_type == 'Slice' and not is_mask_box %}
-  image.SetImageSlices(LengthBox({{ (['Length(100, kPercent)']*4) | join(', ') }}));
+  image.SetImageSlices(LengthBox({{ (['Length::Percent(100)']*4) | join(', ') }}));
   image.SetFill(false);
       {% elif modifier_type == 'Width' %}
-  image.SetBorderSlices({{ 'Length(kAuto)' if is_mask_box else '1.0' }});
+  image.SetBorderSlices({{ 'Length::Auto()' if is_mask_box else '1.0' }});
       {% endif %}
   state.Style()->{{setter}}(image);
     {% endcall %}

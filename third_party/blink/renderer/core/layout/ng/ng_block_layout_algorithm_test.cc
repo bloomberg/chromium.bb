@@ -415,13 +415,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   };
 
   // height == auto
-  run_test(Length(kAuto));
+  run_test(Length::Auto());
   // Margins are collapsed with the result 200 = std::max(20, 200)
   // The fragment size 258 == body's margin 8 + child's height 50 + 200
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(800), LayoutUnit(258)), fragment->Size());
 
   // height == fixed
-  run_test(Length(50, kFixed));
+  run_test(Length::Fixed(50));
   // Margins are not collapsed, so fragment still has margins == 20.
   // The fragment size 78 == body's margin 8 + child's height 50 + 20
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(800), LayoutUnit(78)), fragment->Size());
@@ -469,7 +469,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   };
 
   // with padding
-  run_test(Length(20, kFixed));
+  run_test(Length::Fixed(20));
   // 500 = child's height 50 + 2xmargin 400 + paddint-top 20 +
   // container's margin 30
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(800), LayoutUnit(500)), fragment->Size());
@@ -479,7 +479,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   EXPECT_EQ(LayoutUnit(220), child_offset.top);
 
   // without padding
-  run_test(Length(0, kFixed));
+  run_test(Length::Fixed(0));
   // 450 = 2xmax(body's margin 8, container's margin 30, child's margin 200) +
   //       child's height 50
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(800), LayoutUnit(450)), fragment->Size());
@@ -777,11 +777,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
 
   // Base case of no margins.
   run_test(
-      /* #zero-top margin-bottom */ Length(0, kFixed),
-      /* #zero-inner margin-top */ Length(0, kFixed),
-      /* #zero-inner margin-bottom */ Length(0, kFixed),
-      /* #zero margin-bottom */ Length(0, kFixed),
-      /* #inflow margin-top */ Length(0, kFixed));
+      /* #zero-top margin-bottom */ Length::Fixed(0),
+      /* #zero-inner margin-top */ Length::Fixed(0),
+      /* #zero-inner margin-bottom */ Length::Fixed(0),
+      /* #zero margin-bottom */ Length::Fixed(0),
+      /* #inflow margin-top */ Length::Fixed(0));
 
   // #zero, #abs, #inflow should all be positioned at the float.
   EXPECT_EQ(LayoutUnit(50), zero->Location().Y());
@@ -791,11 +791,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
   // A margin strut which resolves to -50 (-70 + 20) adjusts the position of
   // #zero to the float clearance.
   run_test(
-      /* #zero-top margin-bottom */ Length(0, kFixed),
-      /* #zero-inner margin-top */ Length(-60, kFixed),
-      /* #zero-inner margin-bottom */ Length(20, kFixed),
-      /* #zero margin-bottom */ Length(-70, kFixed),
-      /* #inflow margin-top */ Length(50, kFixed));
+      /* #zero-top margin-bottom */ Length::Fixed(0),
+      /* #zero-inner margin-top */ Length::Fixed(-60),
+      /* #zero-inner margin-bottom */ Length::Fixed(20),
+      /* #zero margin-bottom */ Length::Fixed(-70),
+      /* #inflow margin-top */ Length::Fixed(50));
 
   // #zero is placed at the float, the margin strut is at:
   // 90 = (50 - (-60 + 20)).
@@ -815,11 +815,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
   // NOTE: This case below has wildly different results on different browsers,
   // we may have to change the behaviour here in the future for web compat.
   run_test(
-      /* #zero-top margin-bottom */ Length(0, kFixed),
-      /* #zero-inner margin-top */ Length(70, kFixed),
-      /* #zero-inner margin-bottom */ Length(-10, kFixed),
-      /* #zero margin-bottom */ Length(-20, kFixed),
-      /* #inflow margin-top */ Length(80, kFixed));
+      /* #zero-top margin-bottom */ Length::Fixed(0),
+      /* #zero-inner margin-top */ Length::Fixed(70),
+      /* #zero-inner margin-bottom */ Length::Fixed(-10),
+      /* #zero margin-bottom */ Length::Fixed(-20),
+      /* #inflow margin-top */ Length::Fixed(80));
 
   // #zero is placed at 60 (-10 + 70).
   EXPECT_EQ(LayoutUnit(60), zero->Location().Y());
@@ -836,11 +836,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
   // affected by clearance, it needs to have layout performed again, starting
   // with an empty margin strut.
   run_test(
-      /* #zero-top margin-bottom */ Length(30, kFixed),
-      /* #zero-inner margin-top */ Length(20, kFixed),
-      /* #zero-inner margin-bottom */ Length(-10, kFixed),
-      /* #zero margin-bottom */ Length(0, kFixed),
-      /* #inflow margin-top */ Length(25, kFixed));
+      /* #zero-top margin-bottom */ Length::Fixed(30),
+      /* #zero-inner margin-top */ Length::Fixed(20),
+      /* #zero-inner margin-bottom */ Length::Fixed(-10),
+      /* #zero margin-bottom */ Length::Fixed(0),
+      /* #inflow margin-top */ Length::Fixed(25));
 
   // #zero is placed at the float, the margin strut is at:
   // 40 = (50 - (-10 + 20)).
@@ -2163,7 +2163,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   };
 
   // #new-fc is small enough to fit on the same line with #float.
-  run_test(Length(80, kFixed));
+  run_test(Length::Fixed(80));
   // 100 = float's width, 0 = no margin collapsing
   EXPECT_THAT(new_fc_offset, NGPhysicalOffset(LayoutUnit(100), LayoutUnit(0)));
   // 8 = body's margins, 20 = new-fc's margin top(20) collapses with
@@ -2171,7 +2171,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   EXPECT_THAT(body_offset, NGPhysicalOffset(LayoutUnit(8), LayoutUnit(20)));
 
   // #new-fc is too wide to be positioned on the same line with #float
-  run_test(Length(120, kFixed));
+  run_test(Length::Fixed(120));
   // 30 = #float's height
   EXPECT_THAT(new_fc_offset, NGPhysicalOffset(LayoutUnit(0), LayoutUnit(30)));
   // 8 = body's margins, no margin collapsing

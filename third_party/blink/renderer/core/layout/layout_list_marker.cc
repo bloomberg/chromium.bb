@@ -282,8 +282,8 @@ void LayoutListMarker::UpdateMargins() {
         InlineMarginsForOutside(style, IsImage(), MinPreferredLogicalWidth());
   }
 
-  Length start_length(margin_start, kFixed);
-  Length end_length(margin_end, kFixed);
+  Length start_length = Length::Fixed(margin_start);
+  Length end_length = Length::Fixed(margin_end);
 
   if (start_length != style.MarginStart() || end_length != style.MarginEnd()) {
     scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(style);

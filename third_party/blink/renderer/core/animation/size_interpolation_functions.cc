@@ -180,7 +180,7 @@ static Length CreateLength(
     const CSSToLengthConversionData& conversion_data) {
   if (non_interpolable_value.IsKeyword()) {
     DCHECK_EQ(non_interpolable_value.Keyword(), CSSValueAuto);
-    return Length(kAuto);
+    return Length::Auto();
   }
   return LengthInterpolationFunctions::CreateLength(
       interpolable_value, non_interpolable_value.LengthNonInterpolableValue(),

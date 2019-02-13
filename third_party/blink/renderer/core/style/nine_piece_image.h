@@ -87,7 +87,7 @@ class CORE_EXPORT NinePieceImage {
     NinePieceImage image;
     image.data_.Access()->image_slices = LengthBox(0);
     image.data_.Access()->fill = true;
-    image.data_.Access()->border_slices = BorderImageLengthBox(Length(kAuto));
+    image.data_.Access()->border_slices = BorderImageLengthBox(Length::Auto());
     return image;
   }
 

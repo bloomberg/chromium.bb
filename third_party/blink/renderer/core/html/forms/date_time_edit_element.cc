@@ -586,7 +586,7 @@ scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
           *style, child_element->textContent());
     }
   }
-  style->SetWidth(Length(ceilf(width), kFixed));
+  style->SetWidth(Length::Fixed(ceilf(width)));
   return style;
 }
 

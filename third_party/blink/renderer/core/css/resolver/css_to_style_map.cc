@@ -568,8 +568,8 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
 
 static Length ConvertBorderImageSliceSide(const CSSPrimitiveValue& value) {
   if (value.IsPercentage())
-    return Length(value.GetDoubleValue(), kPercent);
-  return Length(round(value.GetDoubleValue()), kFixed);
+    return Length::Percent(value.GetDoubleValue());
+  return Length::Fixed(round(value.GetDoubleValue()));
 }
 
 void CSSToStyleMap::MapNinePieceImageSlice(StyleResolverState&,
@@ -611,7 +611,7 @@ BorderImageLengthBox CSSToStyleMap::MapNinePieceImageQuad(
     StyleResolverState& state,
     const CSSValue& value) {
   if (!value.IsQuadValue())
-    return BorderImageLengthBox(Length(kAuto));
+    return BorderImageLengthBox(Length::Auto());
 
   const CSSQuadValue& slices = ToCSSQuadValue(value);
   // Set up a border image length box to represent our image slices.

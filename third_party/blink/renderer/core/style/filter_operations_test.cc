@@ -38,7 +38,7 @@ TEST(FilterOperationsTest, mapRectNoFilter) {
 
 TEST(FilterOperationsTest, mapRectBlur) {
   FilterOperations ops;
-  ops.Operations().push_back(BlurFilterOperation::Create(Length(20.0, kFixed)));
+  ops.Operations().push_back(BlurFilterOperation::Create(Length::Fixed(20.0)));
   EXPECT_TRUE(ops.HasFilterThatMovesPixels());
   EXPECT_EQ(IntRect(-57, -57, 124, 124),
             EnclosingIntRect(ops.MapRect(FloatRect(0, 0, 10, 10))));

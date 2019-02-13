@@ -171,11 +171,11 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
   // FIXME: Mock theme doesn't handle zoomed sliders.
   float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
   if (style.Appearance() == kSliderThumbHorizontalPart) {
-    style.SetWidth(Length(size.Width() * zoom_level, kFixed));
-    style.SetHeight(Length(size.Height() * zoom_level, kFixed));
+    style.SetWidth(Length::Fixed(size.Width() * zoom_level));
+    style.SetHeight(Length::Fixed(size.Height() * zoom_level));
   } else if (style.Appearance() == kSliderThumbVerticalPart) {
-    style.SetWidth(Length(size.Height() * zoom_level, kFixed));
-    style.SetHeight(Length(size.Width() * zoom_level, kFixed));
+    style.SetWidth(Length::Fixed(size.Height() * zoom_level));
+    style.SetHeight(Length::Fixed(size.Width() * zoom_level));
   }
 }
 
@@ -224,8 +224,8 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
       WebThemeEngine::kPartInnerSpinButton);
 
   float zoom_level = style.EffectiveZoom();
-  style.SetWidth(Length(size.Width() * zoom_level, kFixed));
-  style.SetMinWidth(Length(size.Width() * zoom_level, kFixed));
+  style.SetWidth(Length::Fixed(size.Width() * zoom_level));
+  style.SetMinWidth(Length::Fixed(size.Width() * zoom_level));
 }
 
 bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {
@@ -296,8 +296,8 @@ void LayoutThemeDefault::AdjustSearchFieldCancelButtonStyle(
   int cancel_button_size = static_cast<int>(lroundf(std::min(
       std::max(kMinCancelButtonSize, kDefaultCancelButtonSize * font_scale),
       kMaxCancelButtonSize)));
-  style.SetWidth(Length(cancel_button_size, kFixed));
-  style.SetHeight(Length(cancel_button_size, kFixed));
+  style.SetWidth(Length::Fixed(cancel_button_size));
+  style.SetHeight(Length::Fixed(cancel_button_size));
 }
 
 void LayoutThemeDefault::AdjustMenuListStyle(ComputedStyle& style,

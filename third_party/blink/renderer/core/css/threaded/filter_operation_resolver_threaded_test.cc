@@ -60,8 +60,7 @@ TSAN_TEST(FilterOperationResolverThreadedTest, SimpleBlurFilter) {
     FilterOperations fo =
         FilterOperationResolver::CreateOffscreenFilterOperations(*value, font);
     ASSERT_EQ(fo.size(), 1ul);
-    EXPECT_EQ(*fo.at(0),
-              *BlurFilterOperation::Create(Length(10, LengthType::kFixed)));
+    EXPECT_EQ(*fo.at(0), *BlurFilterOperation::Create(Length::Fixed(10)));
   });
 }
 

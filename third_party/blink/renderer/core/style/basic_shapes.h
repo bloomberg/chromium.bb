@@ -84,7 +84,7 @@ class BasicShapeCenterCoordinate {
   enum Direction { kTopLeft, kBottomRight };
 
   BasicShapeCenterCoordinate(Direction direction = kTopLeft,
-                             const Length& length = Length(0, kFixed))
+                             const Length& length = Length::Fixed(0))
       : direction_(direction),
         length_(length),
         computed_length_(direction == kTopLeft

@@ -185,9 +185,9 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
   // 4) Other keywords and unknown values translate to auto.
 
   if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
-    return Length(kDeviceWidth);
+    return Length::DeviceWidth();
   if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
-    return Length(kDeviceHeight);
+    return Length::DeviceHeight();
 
   bool ok;
 
@@ -204,7 +204,7 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
     value =
         document->GetPage()->GetChromeClient().WindowToViewportScalar(value);
   }
-  return Length(ClampLengthValue(value), kFixed);
+  return Length::Fixed(ClampLengthValue(value));
 }
 
 float HTMLMetaElement::ParseViewportValueAsZoom(
@@ -330,14 +330,14 @@ void HTMLMetaElement::ProcessViewportKeyValuePair(
     const Length& width = ParseViewportValueAsLength(document, report_warnings,
                                                      key_string, value_string);
     if (!width.IsAuto()) {
-      description.min_width = Length(kExtendToZoom);
+      description.min_width = Length::ExtendToZoom();
       description.max_width = width;
     }
   } else if (key_string == "height") {
     const Length& height = ParseViewportValueAsLength(document, report_warnings,
                                                       key_string, value_string);
     if (!height.IsAuto()) {
-      description.min_height = Length(kExtendToZoom);
+      description.min_height = Length::ExtendToZoom();
       description.max_height = height;
     }
   } else if (key_string == "initial-scale") {

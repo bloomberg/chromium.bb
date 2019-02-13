@@ -65,7 +65,7 @@ float ViewportDescription::ResolveViewportLength(
   if (length.IsFixed())
     return length.GetFloatValue();
 
-  if (length.GetType() == kExtendToZoom)
+  if (length.IsExtendToZoom())
     return ViewportDescription::kValueExtendToZoom;
 
   if (length.IsPercent() && direction == kHorizontal)
@@ -74,10 +74,10 @@ float ViewportDescription::ResolveViewportLength(
   if (length.IsPercent() && direction == kVertical)
     return initial_viewport_size.Height() * length.GetFloatValue() / 100.0f;
 
-  if (length.GetType() == kDeviceWidth)
+  if (length.IsDeviceWidth())
     return initial_viewport_size.Width();
 
-  if (length.GetType() == kDeviceHeight)
+  if (length.IsDeviceHeight())
     return initial_viewport_size.Height();
 
   NOTREACHED();
@@ -97,11 +97,11 @@ PageScaleConstraints ViewportDescription::Resolve(
     // setting the 'min' value to 'extend-to-zoom' and the 'max' value to the
     // intended length.  In case the UA-defines a min-width, use that as length.
     if (zoom == ViewportDescription::kValueAuto) {
-      copy_min_width = Length(kExtendToZoom);
+      copy_min_width = Length::ExtendToZoom();
       copy_max_width = legacy_fallback_width;
     } else if (max_height.IsAuto()) {
-      copy_min_width = Length(kExtendToZoom);
-      copy_max_width = Length(kExtendToZoom);
+      copy_min_width = Length::ExtendToZoom();
+      copy_max_width = Length::ExtendToZoom();
     }
   }
 
@@ -283,8 +283,7 @@ void ViewportDescription::ReportMobilePageStats(
         overview_zoom_histogram.Sample(overview_zoom_percent);
       }
 
-    } else if (max_width.GetType() == blink::kDeviceWidth ||
-               max_width.GetType() == blink::kExtendToZoom) {
+    } else if (max_width.IsDeviceWidth() || max_width.IsExtendToZoom()) {
       meta_tag_type_histogram.Count(
           static_cast<int>(ViewportUMAType::kDeviceWidth));
     } else {

@@ -120,7 +120,7 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
   inner_style.SetFlexGrow(1);
   inner_style.SetFlexShrink(1);
   // min-width: 0; is needed for correct shrinking.
-  inner_style.SetMinWidth(Length(0, kFixed));
+  inner_style.SetMinWidth(Length::Fixed(0));
 
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
@@ -132,22 +132,21 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
     inner_style.SetAlignSelfPosition(ItemPosition::kFlexStart);
   }
 
-  Length padding_start = Length(
-      LayoutTheme::GetTheme().PopupInternalPaddingStart(StyleRef()), kFixed);
+  Length padding_start = Length::Fixed(
+      LayoutTheme::GetTheme().PopupInternalPaddingStart(StyleRef()));
   Length padding_end =
-      Length(LayoutTheme::GetTheme().PopupInternalPaddingEnd(
-                 GetFrameView()->GetChromeClient(), StyleRef()),
-             kFixed);
+      Length::Fixed(LayoutTheme::GetTheme().PopupInternalPaddingEnd(
+          GetFrameView()->GetChromeClient(), StyleRef()));
   inner_style.SetPaddingLeft(StyleRef().Direction() == TextDirection::kLtr
                                  ? padding_start
                                  : padding_end);
   inner_style.SetPaddingRight(StyleRef().Direction() == TextDirection::kLtr
                                   ? padding_end
                                   : padding_start);
-  inner_style.SetPaddingTop(Length(
-      LayoutTheme::GetTheme().PopupInternalPaddingTop(StyleRef()), kFixed));
-  inner_style.SetPaddingBottom(Length(
-      LayoutTheme::GetTheme().PopupInternalPaddingBottom(StyleRef()), kFixed));
+  inner_style.SetPaddingTop(Length::Fixed(
+      LayoutTheme::GetTheme().PopupInternalPaddingTop(StyleRef())));
+  inner_style.SetPaddingBottom(Length::Fixed(
+      LayoutTheme::GetTheme().PopupInternalPaddingBottom(StyleRef())));
   inner_style.SetTextAlign(StyleRef().IsLeftToRightDirection()
                                ? ETextAlign::kLeft
                                : ETextAlign::kRight);
