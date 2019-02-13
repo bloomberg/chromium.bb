@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_KIT_CONSTANTS_H_
-#define IOS_WEB_PUBLIC_WEB_KIT_CONSTANTS_H_
+#ifndef IOS_WEB_WEB_STATE_UI_WEB_KIT_CONSTANTS_H_
+#define IOS_WEB_WEB_STATE_UI_WEB_KIT_CONSTANTS_H_
 
 // This header defines missing symbols from WebKit.
 // See WebKitErrors.h on Mac SDK.
@@ -22,10 +22,9 @@ const long kWebKitErrorCannotShowUrl = 101;
 const long kWebKitErrorFrameLoadInterruptedByPolicyChange = 102;
 
 // Undocumented iOS-specific WebKit error.
-const long kWebKitErrorUnsafePort = 103;
 const long kWebKitErrorUrlBlockedByContentFilter = 105;
 const long kWebKitErrorPlugInLoadFailed = 204;
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_KIT_CONSTANTS_H_
+#endif  // IOS_WEB_WEB_STATE_UI_WEB_KIT_CONSTANTS_H_

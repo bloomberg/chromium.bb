@@ -71,7 +71,6 @@ source_set("web") {
     "web_browser_manifest.h",
     "web_browser_manifest.mm",
     "web_client.mm",
-    "web_kit_constants.cc",
     "web_packaged_services_manifest.h",
     "web_packaged_services_manifest.mm",
     "web_sub_thread.cc",

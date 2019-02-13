@@ -53,6 +53,8 @@ source_set("ui") {
     "crw_web_view_scroll_view_proxy.mm",
     "crw_wk_navigation_states.h",
     "crw_wk_navigation_states.mm",
+    "web_kit_constants.cc",
+    "web_kit_constants.h",
     "wk_back_forward_list_item_holder.h",
     "wk_back_forward_list_item_holder.mm",
     "wk_navigation_action_util.h",
