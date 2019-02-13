@@ -158,6 +158,11 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   root_is_inline_ = false;
 #endif
 
+  // https://github.com/WICG/import-maps/blob/master/spec.md#when-import-maps-can-be-encountered
+  // The internal module script graph fetching procedure flips the boolean to
+  // false. [spec text]
+  modulator_->ClearIsAcquiringImportMaps();
+
   AdvanceState(State::kFetchingSelf);
 
   KURL url = original_url;
@@ -206,6 +211,11 @@ void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
   url_ = original_url_;
   root_is_inline_ = true;
 #endif
+
+  // https://github.com/WICG/import-maps/blob/master/spec.md#when-import-maps-can-be-encountered
+  // The internal module script graph fetching procedure flips the boolean to
+  // false. [spec text]
+  modulator_->ClearIsAcquiringImportMaps();
 
   AdvanceState(State::kFetchingSelf);
 

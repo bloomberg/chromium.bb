@@ -69,6 +69,8 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     return KURL(base_url, module_request);
   }
 
+  void ClearIsAcquiringImportMaps() final {}
+
   void FetchTree(const KURL& url,
                  ResourceFetcher*,
                  mojom::RequestContextType,
