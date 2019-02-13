@@ -51,22 +51,23 @@ NudgeTracker::NudgeTracker()
           base::TimeDelta::FromMilliseconds(kSyncRefreshDelayMilliseconds)),
       remote_invalidation_nudge_delay_(
           base::TimeDelta::FromMilliseconds(kSyncSchedulerDelayMilliseconds)) {
-  ModelTypeSet protocol_types = ProtocolTypes();
   // Default initialize all the type trackers.
-  for (ModelType type : protocol_types) {
+  for (ModelType type : ProtocolTypes()) {
     type_trackers_.emplace(type, std::make_unique<DataTypeTracker>());
   }
 }
 
 NudgeTracker::~NudgeTracker() {}
 
-bool NudgeTracker::IsSyncRequired() const {
+bool NudgeTracker::IsSyncRequired(ModelTypeSet types) const {
   if (IsRetryRequired()) {
     return true;
   }
 
-  for (const auto& type_and_tracker : type_trackers_) {
-    if (type_and_tracker.second->IsSyncRequired()) {
+  for (ModelType type : types) {
+    TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
+    DCHECK(tracker_it != type_trackers_.end()) << ModelTypeToString(type);
+    if (tracker_it->second->IsSyncRequired()) {
       return true;
     }
   }
@@ -74,7 +75,7 @@ bool NudgeTracker::IsSyncRequired() const {
   return false;
 }
 
-bool NudgeTracker::IsGetUpdatesRequired() const {
+bool NudgeTracker::IsGetUpdatesRequired(ModelTypeSet types) const {
   if (invalidations_out_of_sync_) {
     return true;
   }
@@ -83,8 +84,10 @@ bool NudgeTracker::IsGetUpdatesRequired() const {
     return true;
   }
 
-  for (const auto& type_and_tracker : type_trackers_) {
-    if (type_and_tracker.second->IsGetUpdatesRequired()) {
+  for (ModelType type : types) {
+    TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
+    DCHECK(tracker_it != type_trackers_.end()) << ModelTypeToString(type);
+    if (tracker_it->second->IsGetUpdatesRequired()) {
       return true;
     }
   }
@@ -103,7 +106,7 @@ bool NudgeTracker::IsRetryRequired() const {
   return current_retry_time_ <= sync_cycle_start_time_;
 }
 
-void NudgeTracker::RecordSuccessfulSyncCycle() {
+void NudgeTracker::RecordSuccessfulSyncCycle(ModelTypeSet types) {
   // If a retry was required, we've just serviced it.  Unset the flag.
   if (IsRetryRequired()) {
     current_retry_time_ = base::TimeTicks();
@@ -112,8 +115,10 @@ void NudgeTracker::RecordSuccessfulSyncCycle() {
   // A successful cycle while invalidations are enabled puts us back into sync.
   invalidations_out_of_sync_ = !invalidations_enabled_;
 
-  for (const auto& type_and_tracker : type_trackers_) {
-    type_and_tracker.second->RecordSuccessfulSyncCycle();
+  for (ModelType type : types) {
+    TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
+    DCHECK(tracker_it != type_trackers_.end()) << ModelTypeToString(type);
+    tracker_it->second->RecordSuccessfulSyncCycle();
   }
 }
 

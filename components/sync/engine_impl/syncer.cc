@@ -46,7 +46,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                              SyncCycle* cycle) {
   base::AutoReset<bool> is_syncing(&is_syncing_, true);
   HandleCycleBegin(cycle);
-  if (nudge_tracker->IsGetUpdatesRequired() ||
+  if (nudge_tracker->IsGetUpdatesRequired(request_types) ||
       cycle->context()->ShouldFetchUpdatesBeforeCommit()) {
     VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
     if (!DownloadAndApplyUpdates(&request_types, cycle,

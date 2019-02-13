@@ -35,7 +35,7 @@ struct ModelNeutralState;
 class SyncSchedulerImpl : public SyncScheduler {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
-  // |ownership of |syncer| and |delay_provider|.
+  // ownership of |syncer| and |delay_provider|.
   SyncSchedulerImpl(const std::string& name,
                     BackoffDelayProvider* delay_provider,
                     SyncCycleContext* context,
@@ -106,7 +106,6 @@ class SyncSchedulerImpl : public SyncScheduler {
   };
 
   friend class SyncSchedulerImplTest;
-  friend class SyncSchedulerWhiteboxTest;
   friend class SyncerTest;
 
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, TransientPollFailure);
