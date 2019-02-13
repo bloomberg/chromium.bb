@@ -124,7 +124,7 @@ void PendingScript::MarkParserBlockingLoadStartTime() {
   parser_blocking_load_start_time_ = CurrentTimeTicks();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#execute-the-script-block">
+// <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   TRACE_EVENT0("blink", "PendingScript::ExecuteScriptBlock");
   Document* context_document = element_->GetDocument().ContextDocument();
@@ -188,7 +188,7 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
       parser_blocking_load_start_time, is_controlled_by_script_runner);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#execute-the-script-block">
+// <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 void PendingScript::ExecuteScriptBlockInternal(
     Script* script,
     ScriptElementBase* element,

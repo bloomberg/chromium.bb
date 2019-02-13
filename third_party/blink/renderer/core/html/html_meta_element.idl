@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-meta-element
+// https://html.spec.whatwg.org/C/#the-meta-element
 [HTMLConstructor]
 interface HTMLMetaElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
@@ -25,6 +25,6 @@ interface HTMLMetaElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString content;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLMetaElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLMetaElement-partial
     [CEReactions, Reflect] attribute DOMString scheme;
 };

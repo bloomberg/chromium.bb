@@ -85,7 +85,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone;
 
     // HTML
-    // https://html.spec.whatwg.org/#the-document-object
+    // https://html.spec.whatwg.org/C/#the-document-object
 
     // resource metadata management
 
@@ -141,7 +141,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [LenientThis] attribute EventHandler onreadystatechange;
 
     // HTML obsolete features
-    // https://html.spec.whatwg.org/#Document-partial
+    // https://html.spec.whatwg.org/C/#Document-partial
 
     [Measure] readonly attribute HTMLCollection anchors;
     [Measure] readonly attribute HTMLCollection applets;

@@ -107,7 +107,7 @@ ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {
   return map_->GetFetchedModuleScript(url);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#resolve-a-module-specifier">
+// <specdef href="https://html.spec.whatwg.org/C/#resolve-a-module-specifier">
 KURL ModulatorImplBase::ResolveModuleSpecifier(const String& module_request,
                                                const KURL& base_url,
                                                String* failure_reason) {
@@ -174,7 +174,7 @@ void ModulatorImplBase::ResolveDynamically(
                                                referrer_info, resolver);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#hostgetimportmetaproperties">
+// <specdef href="https://html.spec.whatwg.org/C/#hostgetimportmetaproperties">
 ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
     ScriptModule record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
@@ -213,7 +213,7 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
   return requests;
 }
 
-// <specdef href="https://html.spec.whatwg.org/#run-a-module-script">
+// <specdef href="https://html.spec.whatwg.org/C/#run-a-module-script">
 ScriptValue ModulatorImplBase::ExecuteModule(
     const ModuleScript* module_script,
     CaptureEvalErrorFlag capture_error) {

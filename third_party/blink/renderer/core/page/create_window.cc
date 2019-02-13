@@ -71,7 +71,7 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
   WebWindowFeatures window_features;
 
   // This code follows the HTML spec, specifically
-  // https://html.spec.whatwg.org/#concept-window-open-features-tokenize
+  // https://html.spec.whatwg.org/C/#concept-window-open-features-tokenize
   if (feature_string.IsEmpty())
     return window_features;
 

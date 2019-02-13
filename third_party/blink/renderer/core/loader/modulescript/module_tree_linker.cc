@@ -470,7 +470,7 @@ void ModuleTreeLinker::Instantiate() {
   AdvanceState(State::kFinished);
 }
 
-// [FFPE] https://html.spec.whatwg.org/#finding-the-first-parse-error
+// [FFPE] https://html.spec.whatwg.org/C/#finding-the-first-parse-error
 //
 // This returns non-empty ScriptValue iff a parse error is found.
 ScriptValue ModuleTreeLinker::FindFirstParseError(

@@ -106,7 +106,7 @@ inline HTMLDialogElement::HTMLDialogElement(Document& document)
 DEFINE_NODE_FACTORY(HTMLDialogElement)
 
 void HTMLDialogElement::close(const String& return_value) {
-  // https://html.spec.whatwg.org/#close-the-dialog
+  // https://html.spec.whatwg.org/C/#close-the-dialog
 
   if (!FastHasAttribute(kOpenAttr))
     return;

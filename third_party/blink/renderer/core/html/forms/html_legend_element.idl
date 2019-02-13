@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-legend-element
+// https://html.spec.whatwg.org/C/#the-legend-element
 [HTMLConstructor]
 interface HTMLLegendElement : HTMLElement {
     readonly attribute HTMLFormElement? form;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLLegendElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLLegendElement-partial
     [CEReactions, Reflect] attribute DOMString align;
 };

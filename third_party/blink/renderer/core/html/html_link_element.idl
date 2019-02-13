@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-link-element
+// https://html.spec.whatwg.org/C/#the-link-element
 [HTMLConstructor]
 interface HTMLLinkElement : HTMLElement {
     // FIXME: The disabled attribute has been removed from the spec:
@@ -40,7 +40,7 @@ interface HTMLLinkElement : HTMLElement {
     [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSizes;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLLinkElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLLinkElement-partial
     [CEReactions, Reflect] attribute DOMString charset;
     [CEReactions, Reflect] attribute DOMString rev;
     [CEReactions, Reflect] attribute DOMString target;

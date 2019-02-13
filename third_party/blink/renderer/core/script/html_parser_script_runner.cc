@@ -180,7 +180,7 @@ bool HTMLParserScriptRunner::IsParserBlockingScriptReady() {
 
 // Corresponds to some steps of the "Otherwise" Clause of 'An end tag whose
 // tag name is "script"'
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 void HTMLParserScriptRunner::
     ExecutePendingParserBlockingScriptAndDispatchEvent() {
   // Stop watching loads before executeScript to prevent recursion if the script
@@ -258,7 +258,7 @@ void HTMLParserScriptRunner::ExecutePendingDeferredScriptAndDispatchEvent(
   {
     // The following code corresponds to:
     //
-    // <spec href="https://html.spec.whatwg.org/#scriptEndTag"
+    // <spec href="https://html.spec.whatwg.org/C/#scriptEndTag"
     // step="B.7">Increment the parser's script nesting level by one (it should
     // be zero before this step, so this sets it to one).</spec>
     //
@@ -302,7 +302,7 @@ void HTMLParserScriptRunner::PendingScriptFinished(
   host_->NotifyScriptLoaded(pending_script);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 //
 // Script handling lives outside the tree builder to keep each class simple.
 void HTMLParserScriptRunner::ProcessScriptElement(
@@ -357,7 +357,7 @@ bool HTMLParserScriptRunner::HasParserBlockingScript() const {
   return ParserBlockingScript();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 //
 // <spec>An end tag whose tag name is "script" ...</spec>
 void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
@@ -412,7 +412,7 @@ void HTMLParserScriptRunner::ExecuteScriptsWaitingForResources() {
   ExecuteParsingBlockingScripts();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#stop-parsing">
+// <specdef href="https://html.spec.whatwg.org/C/#stop-parsing">
 //
 // <spec step="3">If the list of scripts that will execute when the document has
 // finished parsing is not empty, run these substeps:</spec>
@@ -462,10 +462,10 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
 
 void HTMLParserScriptRunner::RequestParsingBlockingScript(
     ScriptLoader* script_loader) {
-  // <spec href="https://html.spec.whatwg.org/#prepare-a-script" step="26.B">...
-  // The element is the pending parsing-blocking script of the Document of the
-  // parser that created the element. (There can only be one such script per
-  // Document at a time.) ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#prepare-a-script"
+  // step="26.B">... The element is the pending parsing-blocking script of the
+  // Document of the parser that created the element. (There can only be one
+  // such script per Document at a time.) ...</spec>
   CHECK(!ParserBlockingScript());
   parser_blocking_script_ =
       script_loader->TakePendingScript(ScriptSchedulingType::kParserBlocking);
@@ -496,15 +496,15 @@ void HTMLParserScriptRunner::RequestDeferredScript(
 
   DCHECK(pending_script->IsExternalOrModule());
 
-  // <spec href="https://html.spec.whatwg.org/#prepare-a-script" step="26.A">...
-  // Add the element to the end of the list of scripts that will execute when
-  // the document has finished parsing associated with the Document of the
-  // parser that created the element. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#prepare-a-script"
+  // step="26.A">... Add the element to the end of the list of scripts that will
+  // execute when the document has finished parsing associated with the Document
+  // of the parser that created the element. ...</spec>
   scripts_to_execute_after_parsing_.push_back(pending_script);
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'
-// <specdef href="https://html.spec.whatwg.org/#scriptEndTag">
+// <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 // <specdef label="prepare-a-script"
 // href="https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script">
 void HTMLParserScriptRunner::ProcessScriptElementInternal(

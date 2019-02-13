@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#texttrackcuelist
+// https://html.spec.whatwg.org/C/#texttrackcuelist
 
 interface TextTrackCueList {
     readonly attribute unsigned long length;

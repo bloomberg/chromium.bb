@@ -70,9 +70,9 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
     : element_(element),
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false) {
-  // <spec href="https://html.spec.whatwg.org/#already-started">... The cloning
-  // steps for script elements must set the "already started" flag on the copy
-  // if it is set on the element being cloned.</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#already-started">... The
+  // cloning steps for script elements must set the "already started" flag on
+  // the copy if it is set on the element being cloned.</spec>
   //
   // TODO(hiroshige): Cloning is implemented together with
   // {HTML,SVG}ScriptElement::cloneElementWithoutAttributesAndChildren().
@@ -81,12 +81,12 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
     already_started_ = true;
 
   if (parser_inserted) {
-    // <spec href="https://html.spec.whatwg.org/#parser-inserted">... It is set
-    // by the HTML parser and the XML parser on script elements they insert
+    // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... It is
+    // set by the HTML parser and the XML parser on script elements they insert
     // ...</spec>
     parser_inserted_ = true;
 
-    // <spec href="https://html.spec.whatwg.org/#non-blocking">... It is unset
+    // <spec href="https://html.spec.whatwg.org/C/#non-blocking">... It is unset
     // by the HTML parser and the XML parser on script elements they insert.
     // ...</spec>
     non_blocking_ = false;
@@ -120,7 +120,7 @@ void ScriptLoader::HandleSourceAttribute(const String& source_url) {
   PrepareScript();  // FIXME: Provide a real starting line number here.
 }
 
-// <specdef href="https://html.spec.whatwg.org/#non-blocking">
+// <specdef href="https://html.spec.whatwg.org/C/#non-blocking">
 void ScriptLoader::HandleAsyncAttribute() {
   // <spec>... In addition, whenever a script element whose "non-blocking" flag
   // is set has an async content attribute added, the element's "non-blocking"
@@ -166,7 +166,7 @@ bool IsValidClassicScriptTypeAndLanguage(
 
 }  // namespace
 
-// <specdef href="https://html.spec.whatwg.org/#prepare-a-script">
+// <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
 bool ScriptLoader::IsValidScriptTypeAndLanguage(
     const String& type,
     const String& language,
@@ -239,7 +239,7 @@ bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
   return !element->DeferAttributeValue() && !element->AsyncAttributeValue();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#prepare-a-script">
+// <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
 bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                                  LegacyTypeSupport support_legacy_types) {
   // <spec step="1">If the script element is marked as having "already started",
@@ -308,9 +308,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="11">If scripting is disabled for the script element, then
   // return. The script is not executed.</spec>
   //
-  // <spec href="https://html.spec.whatwg.org/#concept-n-noscript">Scripting is
-  // disabled for a node if there is no such browsing context, or if scripting
-  // is disabled in that browsing context.</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#concept-n-noscript">Scripting
+  // is disabled for a node if there is no such browsing context, or if
+  // scripting is disabled in that browsing context.</spec>
   Document& element_document = element_->GetDocument();
   // TODO(timothygu): Investigate if we could switch from ExecutingFrame() to
   // ExecutingWindow().
@@ -766,7 +766,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
   resource_keep_alive_ = pending_script->GetResource();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#prepare-a-script">
+// <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
 void ScriptLoader::FetchModuleScriptTree(
     const KURL& url,
     ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -837,7 +837,7 @@ bool ScriptLoader::IgnoresLoadRequest() const {
          !element_->IsConnected();
 }
 
-// <specdef href="https://html.spec.whatwg.org/#prepare-a-script">
+// <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
 bool ScriptLoader::IsScriptForEventSupported() const {
   // <spec step="14.1">Let for be the value of the for attribute.</spec>
   String event_attribute = element_->EventAttributeValue();

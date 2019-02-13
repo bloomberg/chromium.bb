@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-tr-element
+// https://html.spec.whatwg.org/C/#the-tr-element
 [HTMLConstructor]
 interface HTMLTableRowElement : HTMLElement {
     readonly attribute long rowIndex;
@@ -28,7 +28,7 @@ interface HTMLTableRowElement : HTMLElement {
     [CEReactions, RaisesException] void deleteCell(long index);
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLTableRowElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLTableRowElement-partial
     [CEReactions, Reflect] attribute DOMString align;
     [CEReactions, Reflect=char] attribute DOMString ch;
     [CEReactions, Reflect=charoff] attribute DOMString chOff;

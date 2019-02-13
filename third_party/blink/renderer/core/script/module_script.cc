@@ -11,7 +11,7 @@
 
 namespace blink {
 
-// <specdef href="https://html.spec.whatwg.org/#creating-a-module-script">
+// <specdef href="https://html.spec.whatwg.org/C/#creating-a-module-script">
 ModuleScript* ModuleScript::Create(const ParkableString& original_source_text,
                                    Modulator* modulator,
                                    const KURL& source_url,
@@ -106,7 +106,7 @@ ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
                         base_url, options, TextPosition::MinimumPosition());
 }
 
-// <specdef href="https://html.spec.whatwg.org/#creating-a-module-script">
+// <specdef href="https://html.spec.whatwg.org/C/#creating-a-module-script">
 ModuleScript* ModuleScript::CreateInternal(const ParkableString& source_text,
                                            Modulator* modulator,
                                            ScriptModule result,

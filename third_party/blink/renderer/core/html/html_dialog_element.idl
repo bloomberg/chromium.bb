@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-dialog-element
+// https://html.spec.whatwg.org/C/#the-dialog-element
 [HTMLConstructor]
 interface HTMLDialogElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean open;

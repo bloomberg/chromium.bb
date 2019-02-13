@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-object-element
+// https://html.spec.whatwg.org/C/#the-object-element
 
 // TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
 [
@@ -47,7 +47,7 @@
     void setCustomValidity(DOMString error);
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLObjectElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLObjectElement-partial
     [CEReactions, Reflect] attribute DOMString align;
     [CEReactions, Reflect] attribute DOMString archive;
     [CEReactions, Reflect] attribute DOMString code;

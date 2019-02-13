@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlmarqueeelement
+// https://html.spec.whatwg.org/C/#htmlmarqueeelement
 [HTMLConstructor]
 interface HTMLMarqueeElement : HTMLElement {
     [Reflect] attribute DOMString behavior;

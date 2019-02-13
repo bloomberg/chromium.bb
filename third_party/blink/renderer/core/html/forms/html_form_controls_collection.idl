@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-htmlformcontrolscollection-interface
+// https://html.spec.whatwg.org/C/#the-htmlformcontrolscollection-interface
 
 interface HTMLFormControlsCollection : HTMLCollection {
     // inherits length and item()

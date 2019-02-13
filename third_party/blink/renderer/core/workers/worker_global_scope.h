@@ -168,7 +168,7 @@ class CORE_EXPORT WorkerGlobalScope
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
 
-  // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+  // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
   void queueMicrotask(V8VoidFunction*);
 
   int requestAnimationFrame(V8FrameRequestCallback* callback, ExceptionState&);

@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-meter-element
+// https://html.spec.whatwg.org/C/#the-meter-element
 [HTMLConstructor]
 interface HTMLMeterElement : HTMLElement {
     [CEReactions] attribute double value;

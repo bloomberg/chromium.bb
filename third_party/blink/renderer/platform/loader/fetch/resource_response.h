@@ -312,11 +312,11 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetType(network::mojom::FetchResponseType value) {
     response_type_ = value;
   }
-  // https://html.spec.whatwg.org/#cors-same-origin
+  // https://html.spec.whatwg.org/C/#cors-same-origin
   bool IsCorsSameOrigin() const {
     return network::cors::IsCorsSameOriginResponseType(response_type_);
   }
-  // https://html.spec.whatwg.org/#cors-cross-origin
+  // https://html.spec.whatwg.org/C/#cors-cross-origin
   bool IsCorsCrossOrigin() const {
     return network::cors::IsCorsCrossOriginResponseType(response_type_);
   }

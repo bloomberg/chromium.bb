@@ -350,7 +350,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   }
 
   // Preload only if media matches.
-  // https://html.spec.whatwg.org/#processing-the-media-attribute
+  // https://html.spec.whatwg.org/C/#processing-the-media-attribute
   if (!params.media.IsEmpty()) {
     MediaValues* media_values =
         CreateMediaValues(document, viewport_description);

@@ -51,7 +51,7 @@ ModuleScript* ScriptModuleResolverImpl::GetHostDefined(
 }
 
 // <specdef
-// href="https://html.spec.whatwg.org/#hostresolveimportedmodule(referencingscriptormodule,-specifier)">
+// href="https://html.spec.whatwg.org/C/#hostresolveimportedmodule(referencingscriptormodule,-specifier)">
 ScriptModule ScriptModuleResolverImpl::Resolve(
     const String& specifier,
     const ScriptModule& referrer,

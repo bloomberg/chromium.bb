@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#texttrackcue
+// https://html.spec.whatwg.org/C/#texttrackcue
 
 interface TextTrackCue : EventTarget {
     readonly attribute TextTrack? track;

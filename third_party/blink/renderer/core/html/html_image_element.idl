@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-img-element
+// https://html.spec.whatwg.org/C/#the-img-element
 
 [
     ActiveScriptWrappable,
@@ -47,7 +47,7 @@
     [RuntimeEnabled=LazyImageLoading, CEReactions, Reflect, ReflectOnly=("on", "off", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString lazyLoad;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLImageElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLImageElement-partial
     [CEReactions, Reflect] attribute DOMString name;
     [CEReactions, Reflect, URL] attribute DOMString lowsrc;
     [CEReactions, Reflect] attribute DOMString align;

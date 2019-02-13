@@ -27,7 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#globaleventhandlers
+// https://html.spec.whatwg.org/C/#globaleventhandlers
 
 [
     LegacyTreatAsPartialInterface,

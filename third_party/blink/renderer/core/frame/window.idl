@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-window-object
+// https://html.spec.whatwg.org/C/#the-window-object
 
 // FIXME: explain all uses of [CrossOrigin]
 [
@@ -88,7 +88,7 @@
     [CrossOrigin, CallWith=Isolate, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options);
 
     // WindowOrWorkerGlobalScope mixin
-    // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+    // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
     [Replaceable] readonly attribute DOMString origin;
     void queueMicrotask(VoidFunction callback);
 
@@ -98,7 +98,7 @@
     void cancelAnimationFrame(long handle);
 
     // HTML obsolete features
-    // https://html.spec.whatwg.org/#Window-partial
+    // https://html.spec.whatwg.org/C/#Window-partial
     [MeasureAs=WindowCaptureEvents] void captureEvents();
     [MeasureAs=WindowReleaseEvents] void releaseEvents();
 

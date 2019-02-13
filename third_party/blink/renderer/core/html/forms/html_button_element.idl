@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-button-element
+// https://html.spec.whatwg.org/C/#the-button-element
 [HTMLConstructor]
 interface HTMLButtonElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean autofocus;

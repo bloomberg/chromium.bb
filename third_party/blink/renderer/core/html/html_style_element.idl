@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-style-element
+// https://html.spec.whatwg.org/C/#the-style-element
 [HTMLConstructor]
 interface HTMLStyleElement : HTMLElement {
     // TODO(foolip): The disabled attribute has been removed from the spec:

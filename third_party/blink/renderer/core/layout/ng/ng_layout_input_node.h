@@ -124,7 +124,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsAnonymousBlock() const { return box_->IsAnonymousBlock(); }
 
   // If the node is a quirky container for margin collapsing, see:
-  // https://html.spec.whatwg.org/#margin-collapsing-quirks
+  // https://html.spec.whatwg.org/C/#margin-collapsing-quirks
   // NOTE: The spec appears to only somewhat match reality.
   bool IsQuirkyContainer() const {
     return box_->GetDocument().InQuirksMode() &&

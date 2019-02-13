@@ -610,7 +610,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void close();
 
   // Corresponds to "9. Abort the active document of browsingContext."
-  // https://html.spec.whatwg.org/#navigate
+  // https://html.spec.whatwg.org/C/#navigate
   void Abort();
 
   void CheckCompleted();

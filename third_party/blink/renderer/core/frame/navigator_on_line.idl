@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#navigator.online
+// https://html.spec.whatwg.org/C/#navigator.online
 
 [
     NoInterfaceObject, // Always used on target of 'implements'

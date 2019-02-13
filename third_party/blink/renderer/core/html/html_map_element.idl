@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-map-element
+// https://html.spec.whatwg.org/C/#the-map-element
 [HTMLConstructor]
 interface HTMLMapElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
