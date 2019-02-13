@@ -8414,8 +8414,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last entry should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -8470,8 +8470,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last entry should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -8523,8 +8523,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last entry should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -8581,8 +8581,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last 2 entries should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
@@ -8638,8 +8638,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last 2 entries should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
@@ -8687,8 +8687,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
   // Last entry should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
@@ -8742,8 +8742,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
   // Last entry should not have been marked as skippable.
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
@@ -8789,8 +8789,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
   // Last entry should not have been marked as skippable.
   EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
@@ -8835,8 +8835,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last entry should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -8885,8 +8885,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
-  EXPECT_EQ(controller.GetCurrentEntryIndex(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
   // Last entry should have been marked as skippable.
   EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
@@ -8909,6 +8909,110 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   histograms.ExpectTotalCount("Navigation.BackForward.ForwardTargetSkipped", 0);
   EXPECT_EQ(skippable_url, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+}
+
+// Tests that the oldest navigation entry that is marked as skippable is the one
+// that is pruned if max entry count is reached.
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+                       PruneOldestSkippableEntry) {
+  base::HistogramTester histograms;
+
+  // Set the max entry count as 3.
+  NavigationControllerImpl::set_max_entry_count_for_testing(3);
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
+
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer without a user
+  // gesture.
+  GURL redirected_url(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(non_skippable_url, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(skippable_url, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(redirected_url, controller.GetEntryAtIndex(2)->GetURL());
+
+  // |skippable_url| entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+  histograms.ExpectBucketCount(
+      "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
+
+  // A new navigation should lead to |skippable_url| to be pruned.
+  GURL new_navigation_url(embedded_test_server()->GetURL("/title3.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), new_navigation_url));
+  // Should still have 3 entries.
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(non_skippable_url, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(redirected_url, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(new_navigation_url, controller.GetEntryAtIndex(2)->GetURL());
+}
+
+// Tests that we fallback to pruning the oldest entry if the last committed
+// entry is the oldest skippable navigation entry.
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+                       PruneOldestWhenLastCommittedIsSkippable) {
+  base::HistogramTester histograms;
+
+  // Set the max entry count as 2.
+  NavigationControllerImpl::set_max_entry_count_for_testing(2);
+
+  GURL non_skippable_url(
+      embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
+
+  GURL skippable_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer without a user
+  // gesture. This will mark |skippable_url| as skippable but since that is also
+  // the last committed entry, it will not be pruned. Instead the oldest entry
+  // will be removed.
+  GURL redirected_url(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(skippable_url, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(redirected_url, controller.GetEntryAtIndex(1)->GetURL());
+
+  // |skippable_url| entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+  histograms.ExpectBucketCount(
+      "Navigation.BackForward.SetShouldSkipOnBackForwardUI", true, 1);
 }
 
 // Tests that a same document navigation followed by a client redirect
