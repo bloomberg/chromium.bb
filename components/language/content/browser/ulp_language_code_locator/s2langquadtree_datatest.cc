@@ -57,19 +57,19 @@ void ExpectTreeContainsData(const S2LangQuadTreeNode& root,
   }
 }
 
-TEST(UlpLanguageCodeLocatorDataTest, TreeContainsDataRank0) {
+TEST(S2LangQuadTreeDataTest, TreeContainsDataRank0) {
   ExpectTreeContainsData(S2LangQuadTreeNode::Deserialize(
                              GetLanguagesRank0(), GetTreeSerializedRank0()),
                          GetData(0));
 }
 
-TEST(UlpLanguageCodeLocatorDataTest, TreeContainsDataRank1) {
+TEST(S2LangQuadTreeDataTest, TreeContainsDataRank1) {
   ExpectTreeContainsData(S2LangQuadTreeNode::Deserialize(
                              GetLanguagesRank1(), GetTreeSerializedRank1()),
                          GetData(1));
 }
 
-TEST(UlpLanguageCodeLocatorDataTest, TreeContainsDataRank2) {
+TEST(S2LangQuadTreeDataTest, TreeContainsDataRank2) {
   ExpectTreeContainsData(S2LangQuadTreeNode::Deserialize(
                              GetLanguagesRank2(), GetTreeSerializedRank2()),
                          GetData(2));
