@@ -86,6 +86,10 @@ class PluginVmImageManager : public KeyedService {
   void OnDownloadCancelled();
   void OnDownloadFailed();
 
+  // Finishes the processing of PluginVm image. Deletes downloaded PluginVm
+  // image archive. In case |success| is false also deletes PluginVm image.
+  void OnUnzipped(bool success);
+
   void SetDownloadServiceForTesting(
       download::DownloadService* download_service);
   void SetDownloadedPluginVmImageArchiveForTesting(
@@ -142,17 +146,15 @@ class PluginVmImageManager : public KeyedService {
   bool CreateDirectory(const base::FilePath& entry_path);
   bool FilterFilesInPluginVmImageArchive(const base::FilePath& file);
 
-  // Finishes the processing of PluginVm image. Deletes downloaded PluginVm
-  // image archive. In case success is false also deletes PluginVm image.
-  void OnUnzipped(bool success);
-
   bool EnsureDownloadedPluginVmImageArchiveIsPresent();
   // Creates directory for PluginVm image if one doesn't exists.
   // Returns true in case directory has already existed or was successfully
   // created and false otherwise.
   bool EnsureDirectoryForPluginVmImageIsPresent();
   void RemoveTemporaryPluginVmImageArchiveIfExists();
+  void OnTemporaryPluginVmImageArchiveRemoved(bool success);
   void RemovePluginVmImageDirectoryIfExists();
+  void OnPluginVmImageDirectoryRemoved(bool success);
 
   base::WeakPtrFactory<PluginVmImageManager> weak_ptr_factory_;
 
