@@ -18,28 +18,24 @@
   await TestRunner.loadModule('audits2_test_runner');
   await TestRunner.showPanel('audits2');
 
-  TestRunner.addResult('**Prevents audit with no categories**');
+  TestRunner.addResult('\n\n**Prevents audit with no categories**');
   Audits2TestRunner.openStartAudit();
   var containerElement = Audits2TestRunner.getContainerElement();
   var checkboxes = containerElement.querySelectorAll('.checkbox');
   checkboxes.forEach(checkbox => checkbox.checkboxElement.click());
   Audits2TestRunner.dumpStartAuditState();
 
-  TestRunner.addResult('**Allows audit with a single category**');
+  TestRunner.addResult('\n\n**Allows audit with a single category**');
   checkboxes[0].checkboxElement.click();
   Audits2TestRunner.dumpStartAuditState();
 
-  TestRunner.addResult('**Prevents audit on undockable page**');
-  // The content shell of the test runner is an undockable page that would normally always show the error
-  // Temporarily fool the audits panel into thinking we're not under test so the validation logic will be triggered.
-  Host.isUnderTest = () => false;
+  TestRunner.addResult('\n\n**Allows audit on undockable page**');
+  // Extension page and remote debugging previously caused crashes (crbug.com/734532)
+  // However, the crashes have been resolved, so these should now pass.
   Audits2TestRunner.forcePageAuditabilityCheck();
   Audits2TestRunner.dumpStartAuditState();
-  // Reset our test state
-  Host.isUnderTest = () => true;
-  Audits2TestRunner.forcePageAuditabilityCheck();
 
-  TestRunner.addResult('**Prevents audit on internal page**');
+  TestRunner.addResult('\n\n**Prevents audit on internal page**');
   await navigateToAboutBlankAndWait();
   TestRunner.addResult(`URL: ${TestRunner.mainTarget.inspectedURL()}`);
   Audits2TestRunner.dumpStartAuditState();
