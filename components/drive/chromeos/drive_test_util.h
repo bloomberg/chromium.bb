@@ -67,20 +67,6 @@ int ReadAllData(Reader* reader, std::string* content) {
 // unregistered preference is referenced.
 void RegisterDrivePrefs(PrefRegistrySimple* pref_registry);
 
-// Fake NetworkChangeNotifier implementation.
-class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  FakeNetworkChangeNotifier();
-
-  void SetConnectionType(ConnectionType type);
-
-  // NetworkChangeNotifier override.
-  ConnectionType GetCurrentConnectionType() const override;
-
- private:
-  net::NetworkChangeNotifier::ConnectionType type_;
-};
-
 }  // namespace test_util
 }  // namespace drive
 
