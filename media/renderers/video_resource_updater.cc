@@ -73,11 +73,10 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
             return VideoFrameResourceType::STREAM_TEXTURE;
           FALLTHROUGH;
         case GL_TEXTURE_2D:
+        case GL_TEXTURE_RECTANGLE_ARB:
           return (format == PIXEL_FORMAT_XRGB)
                      ? VideoFrameResourceType::RGB
                      : VideoFrameResourceType::RGBA_PREMULTIPLIED;
-        case GL_TEXTURE_RECTANGLE_ARB:
-          return VideoFrameResourceType::RGB;
         default:
           NOTREACHED();
           break;
