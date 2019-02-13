@@ -1,0 +1,34 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="../shared_style.html">
+
+<dom-module id="activity-log-stream">
+  <template>
+    <style include="shared-style paper-button-style">
+      #activity-log-stream-header {
+        justify-content: flex-end;
+      }
+    </style>
+    <div id="activity-log-stream-header" class="page-header">
+      <paper-button id="toggle-stream-button" on-click="onToggleButtonTap_">
+        <span hidden$="[[isStreamOn_]]">
+          $i18n{startActivityStream}
+        </span>
+        <span hidden$="[[!isStreamOn_]]">
+          $i18n{stopActivityStream}
+        </span>
+      </paper-button>
+    </div>
+    <div id="empty-stream-message" class="activity-message">
+      <span hidden$="[[isStreamOn_]]">
+        $i18n{emptyStreamStopped}
+      </span>
+      <span hidden$="[[!isStreamOn_]]">
+        $i18n{emptyStreamStarted}
+      </span>
+    </div>
+  </template>
+  <script src="activity_log_stream.js"></script>
+</dom-module>

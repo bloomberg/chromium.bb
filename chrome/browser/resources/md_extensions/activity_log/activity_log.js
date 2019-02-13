@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Subpages/views for the activity log. HISTORY shows extension activities
+ * fetched from the activity log database with some fields such as args
+ * omitted. STREAM displays extension activities in a more verbose format in
+ * real time. NONE is used when user is away from the page.
+ * @enum {number}
+ */
+const ActivityLogSubpage = {
+  NONE: -1,
+  HISTORY: 0,
+  STREAM: 1
+};
+
 cr.define('extensions', function() {
   'use strict';
 
@@ -25,10 +38,10 @@ cr.define('extensions', function() {
         value: '',
       },
 
-      /** @private */
-      showHistory_: {
-        type: Boolean,
-        value: true,
+      /** @private {!ActivityLogSubpage} */
+      selectedSubpage_: {
+        type: Number,
+        value: ActivityLogSubpage.NONE,
       },
     },
 
@@ -38,27 +51,46 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Focuses the back button when page is loaded.
+     * Focuses the back button when page is loaded and set the activie view to
+     * be HISTORY when we navigate to the page.
      * @private
      */
     onViewEnterStart_: function() {
-      this.showHistory_ = true;
+      this.selectedSubpage_ = ActivityLogSubpage.HISTORY;
       Polymer.RenderStatus.afterNextRender(
           this, () => cr.ui.focusWithoutInk(this.$.closeButton));
     },
 
     /**
-     * Set |showHistory_| to false to remove activity-log-history from the DOM.
+     * Set |selectedSubpage_| to NONE to remove the active view from the DOM.
      * @private
      */
     onViewExitFinish_: function() {
-      this.showHistory_ = false;
+      this.selectedSubpage_ = ActivityLogSubpage.NONE;
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    isHistoryTabSelected_: function() {
+      return this.selectedSubpage_ === ActivityLogSubpage.HISTORY;
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    isStreamTabSelected_: function() {
+      return this.selectedSubpage_ === ActivityLogSubpage.STREAM;
     },
 
     /** @private */
     onClearButtonTap_: function() {
-      const activityLogHistory = this.$$('activity-log-history');
-      activityLogHistory.clearActivities();
+      if (this.selectedSubpage_ === ActivityLogSubpage.HISTORY) {
+        const activityLogHistory = this.$$('activity-log-history');
+        activityLogHistory.clearActivities();
+      }
     },
 
     /** @private */

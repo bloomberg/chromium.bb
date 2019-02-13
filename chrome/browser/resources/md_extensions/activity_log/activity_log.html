@@ -3,17 +3,21 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="activity_log_history.html">
+<link rel="import" href="activity_log_stream.html">
 <link rel="import" href="../navigation_helper.html">
 <link rel="import" href="../shared_style.html">
 
 <dom-module id="extensions-activity-log">
   <template>
-    <style include="iron-flex cr-shared-style shared-style paper-button-style">
+    <style include="shared-style paper-button-style paper-tabs-style">
       #activity-log-heading {
         flex-grow: 1;
         margin-inline-start: 16px;
@@ -25,6 +29,11 @@
 
       cr-search-field  {
         padding-inline-end: 8px;
+      }
+
+      paper-tabs {
+        font-size: inherit;
+        height: 40px;
       }
     </style>
     <div class="page-container" id="container">
@@ -43,11 +52,31 @@
             $i18n{clearActivities}
           </paper-button>
         </div>
-        <template is="dom-if" if="[[showHistory_]]" restamp>
-          <activity-log-history extension-id="[[extensionId]]"
-              delegate="[[delegate]]" last-search="[[lastSearch_]]">
-          </activity-log-history>
-        </template>
+        <paper-tabs noink selected="{{selectedSubpage_}}">
+          <paper-tab id="history-tab">
+            $i18n{activityLogHistoryTabHeading}
+          </paper-tab>
+          <paper-tab id="real-time-tab">
+            $i18n{activityLogStreamTabHeading}
+          </paper-tab>
+        </paper-tabs>
+        <iron-pages selected="[[selectedSubpage_]]">
+          <div>
+            <template is="dom-if"
+                if="[[isHistoryTabSelected_(selectedSubpage_)]]" restamp>
+              <activity-log-history extension-id="[[extensionId]]"
+                  delegate="[[delegate]]" last-search="[[lastSearch_]]">
+              </activity-log-history>
+            </template>
+          </div>
+          <div>
+            <template is="dom-if"
+                if="[[isStreamTabSelected_(selectedSubpage_)]]" restamp>
+              <activity-log-stream>
+              </activity-log-stream>
+            </template>
+          </div>
+        </iron-pages>
       </div>
     </div>
   </template>
