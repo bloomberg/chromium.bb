@@ -1294,8 +1294,8 @@
   },
   {
     "name": "enable-homepage-tile",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "dimich", "twellington" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-horizontal-tab-switcher",
