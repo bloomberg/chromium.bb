@@ -323,12 +323,12 @@ TEST_P(TaskSchedulerWorkerPoolImplTestParam, NoEnvironment) {
 }
 #endif  // defined(OS_WIN)
 
-INSTANTIATE_TEST_CASE_P(Parallel,
-                        TaskSchedulerWorkerPoolImplTestParam,
-                        ::testing::Values(test::ExecutionMode::PARALLEL));
-INSTANTIATE_TEST_CASE_P(Sequenced,
-                        TaskSchedulerWorkerPoolImplTestParam,
-                        ::testing::Values(test::ExecutionMode::SEQUENCED));
+INSTANTIATE_TEST_SUITE_P(Parallel,
+                         TaskSchedulerWorkerPoolImplTestParam,
+                         ::testing::Values(test::ExecutionMode::PARALLEL));
+INSTANTIATE_TEST_SUITE_P(Sequenced,
+                         TaskSchedulerWorkerPoolImplTestParam,
+                         ::testing::Values(test::ExecutionMode::SEQUENCED));
 
 #if defined(OS_WIN)
 
@@ -377,12 +377,12 @@ TEST_P(TaskSchedulerWorkerPoolImplTestCOMMTAParam, COMMTAInitialized) {
   worker_pool_->WaitForAllWorkersIdleForTesting();
 }
 
-INSTANTIATE_TEST_CASE_P(Parallel,
-                        TaskSchedulerWorkerPoolImplTestCOMMTAParam,
-                        ::testing::Values(test::ExecutionMode::PARALLEL));
-INSTANTIATE_TEST_CASE_P(Sequenced,
-                        TaskSchedulerWorkerPoolImplTestCOMMTAParam,
-                        ::testing::Values(test::ExecutionMode::SEQUENCED));
+INSTANTIATE_TEST_SUITE_P(Parallel,
+                         TaskSchedulerWorkerPoolImplTestCOMMTAParam,
+                         ::testing::Values(test::ExecutionMode::PARALLEL));
+INSTANTIATE_TEST_SUITE_P(Sequenced,
+                         TaskSchedulerWorkerPoolImplTestCOMMTAParam,
+                         ::testing::Values(test::ExecutionMode::SEQUENCED));
 
 #endif  // defined(OS_WIN)
 
@@ -1243,7 +1243,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingTest, WorkersIdleWhenOverCapacity) {
   task_tracker_.FlushForTesting();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     TaskSchedulerWorkerPoolBlockingTest,
     ::testing::Values(NestedBlockingType(BlockingType::MAY_BLOCK,
@@ -1791,11 +1791,11 @@ TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
   task_tracker_.FlushForTesting();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MayBlock,
     TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
     ::testing::Values(BlockingType::MAY_BLOCK));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WillBlock,
     TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
     ::testing::Values(BlockingType::WILL_BLOCK));

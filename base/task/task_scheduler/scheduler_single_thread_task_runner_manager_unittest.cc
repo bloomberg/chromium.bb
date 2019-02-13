@@ -393,7 +393,7 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AllModes,
     TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
     ::testing::Values(SingleThreadTaskRunnerThreadMode::SHARED,
