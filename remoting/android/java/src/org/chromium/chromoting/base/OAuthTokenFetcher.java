@@ -15,6 +15,10 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskPriority;
+import org.chromium.base.task.TaskRunner;
+import org.chromium.base.task.TaskTraits;
 
 import java.io.IOException;
 
@@ -56,6 +60,9 @@ public class OAuthTokenFetcher {
 
     /** Request code used for starting the OAuth recovery activity. */
     public static final int REQUEST_CODE_RECOVER_FROM_OAUTH_ERROR = 100;
+
+    public static final TaskRunner TASK_RUNNER = PostTask.createSequencedTaskRunner(
+            new TaskTraits().taskPriority(TaskPriority.BEST_EFFORT));
 
     /**
      * Reference to the context to fetch token. It will be used for starting other activities to
@@ -115,8 +122,7 @@ public class OAuthTokenFetcher {
                 }
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnTaskRunner(TASK_RUNNER);
     }
 
     private void handleTokenReceived(final String token) {
