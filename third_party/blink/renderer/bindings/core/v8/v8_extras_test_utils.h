@@ -7,6 +7,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EXTRAS_TEST_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EXTRAS_TEST_UTILS_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -17,6 +18,8 @@ class V8TestingScope;
 // If any exceptions are thrown while TryCatchScope is in scope, the test will
 // fail.
 class TryCatchScope {
+  STACK_ALLOCATED();
+
  public:
   explicit TryCatchScope(v8::Isolate*);
   ~TryCatchScope();

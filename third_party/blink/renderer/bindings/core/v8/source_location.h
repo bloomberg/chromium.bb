@@ -8,6 +8,7 @@
 #include <v8-inspector-protocol.h>
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -17,6 +18,8 @@ class ExecutionContext;
 class TracedValue;
 
 class CORE_EXPORT SourceLocation {
+  USING_FAST_MALLOC(SourceLocation);
+
  public:
   // Zero lineNumber and columnNumber mean unknown. Captures current stack
   // trace.
