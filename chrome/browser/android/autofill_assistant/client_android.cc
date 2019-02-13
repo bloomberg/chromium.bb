@@ -123,7 +123,7 @@ void ClientAndroid::Start(JNIEnv* env,
 base::android::ScopedJavaLocalRef<jstring> ClientAndroid::GetPrimaryAccountName(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  AccountInfo account_info =
+  CoreAccountInfo account_info =
       IdentityManagerFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
           ->GetPrimaryAccountInfo();
