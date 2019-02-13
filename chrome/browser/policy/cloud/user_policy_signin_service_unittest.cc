@@ -60,9 +60,9 @@
 
 namespace em = enterprise_management;
 
+using testing::_;
 using testing::AnyNumber;
 using testing::Mock;
-using testing::_;
 
 namespace policy {
 
@@ -104,10 +104,7 @@ class UserPolicySigninServiceTest : public testing::Test {
         test_account_id_(AccountId::FromUserEmailGaiaId(
             kTestUser,
             identity::GetTestGaiaIdForEmail(kTestUser))),
-        register_completed_(false),
-        test_system_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+        register_completed_(false) {}
 
   MOCK_METHOD1(OnPolicyRefresh, void(bool));
 
@@ -146,10 +143,10 @@ class UserPolicySigninServiceTest : public testing::Test {
     RegisterLocalState(local_state_->registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
     TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
-        test_system_shared_loader_factory_);
+        test_url_loader_factory_.GetSafeWeakWrapper());
 
     g_browser_process->browser_policy_connector()->Init(
-        local_state_.get(), test_system_shared_loader_factory_);
+        local_state_.get(), test_url_loader_factory_.GetSafeWeakWrapper());
 
     // Create a testing profile with cloud-policy-on-signin enabled, and bring
     // up a UserCloudPolicyManager with a MockUserCloudPolicyStore.
@@ -180,11 +177,11 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     // Tests are responsible for freeing the UserCloudPolicyManager instances
     // they inject.
-    manager_.reset(UserCloudPolicyManagerFactory::GetForBrowserContext(
-        profile_.get()));
+    manager_.reset(
+        UserCloudPolicyManagerFactory::GetForBrowserContext(profile_.get()));
     manager_->Init(&schema_registry_);
-    mock_store_ = static_cast<MockUserCloudPolicyStore*>(
-        manager_->core()->store());
+    mock_store_ =
+        static_cast<MockUserCloudPolicyStore*>(manager_->core()->store());
     DCHECK(mock_store_);
     AddProfile();
 
@@ -202,7 +199,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     testing_browser_process->SetLocalState(NULL);
     local_state_.reset();
     testing_browser_process->ShutdownBrowserPolicyConnector();
-    test_system_shared_loader_factory_->Detach();
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
@@ -281,8 +277,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     MockDeviceManagementJob* register_request = NULL;
     EXPECT_CALL(device_management_service_,
                 CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
-        .WillOnce(device_management_service_.CreateAsyncJob(
-            &register_request));
+        .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(1);
 
@@ -320,7 +315,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     signin_service->FetchPolicyForSignedInUser(
         test_account_id_, dm_token_, client_id_,
-        test_system_shared_loader_factory_,
+        test_url_loader_factory_.GetSafeWeakWrapper(),
         base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                    base::Unretained(this)));
 
@@ -342,8 +337,8 @@ class UserPolicySigninServiceTest : public testing::Test {
     policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
     em::PolicyFetchResponse* policy_response =
         policy_blob.mutable_policy_response()->add_response();
-    ASSERT_TRUE(policy_data.SerializeToString(
-        policy_response->mutable_policy_data()));
+    ASSERT_TRUE(
+        policy_data.SerializeToString(policy_response->mutable_policy_data()));
     fetch_request->SendResponse(DM_STATUS_SUCCESS, policy_blob);
 
     // Complete the store which should cause the policy fetch callback to be
@@ -385,8 +380,6 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_system_shared_loader_factory_;
 };
 
 class UserPolicySigninServiceSignedInTest : public UserPolicySigninServiceTest {
@@ -753,7 +746,7 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
   signin_service->FetchPolicyForSignedInUser(
       test_account_id_, "mock_dm_token", "mock_client_id",
-      test_system_shared_loader_factory_,
+      test_url_loader_factory_.GetSafeWeakWrapper(),
       base::Bind(&UserPolicySigninServiceTest::OnPolicyRefresh,
                  base::Unretained(this)));
   ASSERT_TRUE(fetch_request);
