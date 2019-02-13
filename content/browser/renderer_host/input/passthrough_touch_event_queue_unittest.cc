@@ -118,6 +118,15 @@ class PassthroughTouchEventQueueTest : public testing::Test,
                            DefaultTouchTimeoutDelay());
   }
 
+  void SetUpForSkipFilterTesting(const std::string& events_to_always_forward) {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        features::kSkipBrowserTouchFilter,
+        {{features::kSkipBrowserTouchFilterTypeParamName,
+          events_to_always_forward}});
+    ResetQueueWithConfig(PassthroughTouchEventQueue::Config());
+  }
+
   void SendTouchEvent(WebTouchEvent event) {
     if (slop_length_dips_) {
       event.moved_beyond_slop_region = false;
@@ -1829,7 +1838,7 @@ TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithoutPageHandlersFiltered) {
 
   SyntheticWebTouchEvent event;
   int id = event.PressPoint(1, 1);
-  event.ReleasePoint(id);
+  event.MovePoint(id, 2, 2);
 
   EXPECT_EQ(
       PassthroughTouchEventQueue::PreFilterResult::kFilteredNoPageHandlers,
@@ -1922,10 +1931,21 @@ TEST_F(PassthroughTouchEventQueueTest,
 }
 
 TEST_F(PassthroughTouchEventQueueTest,
-       TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kSkipPassthroughTouchEventQueueFilter);
+       TouchStartUnfilteredWithForwardDiscrete) {
+  SetUpForSkipFilterTesting(
+      features::kSkipBrowserTouchFilterTypeParamValueDiscrete);
+
+  OnHasTouchEventHandlers(false);
+  SyntheticWebTouchEvent event;
+  event.PressPoint(1, 1);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredWithForwardDiscrete) {
+  SetUpForSkipFilterTesting(
+      features::kSkipBrowserTouchFilterTypeParamValueDiscrete);
 
   OnHasTouchEventHandlers(false);
   // Start the touch sequence.
@@ -1933,7 +1953,34 @@ TEST_F(PassthroughTouchEventQueueTest,
 
   SyntheticWebTouchEvent event;
   int id = event.PressPoint(1, 1);
-  event.ReleasePoint(id);
+  event.MovePoint(id, 2, 2);
+
+  EXPECT_EQ(
+      PassthroughTouchEventQueue::PreFilterResult::kFilteredNoPageHandlers,
+      FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchStartUnfilteredWithForwardAll) {
+  SetUpForSkipFilterTesting(features::kSkipBrowserTouchFilterTypeParamValueAll);
+
+  OnHasTouchEventHandlers(false);
+  SyntheticWebTouchEvent event;
+  event.PressPoint(1, 1);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchMoveUnfilteredWithForwardAll) {
+  SetUpForSkipFilterTesting(features::kSkipBrowserTouchFilterTypeParamValueAll);
+
+  OnHasTouchEventHandlers(false);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.MovePoint(id, 2, 2);
 
   EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
             FilterBeforeForwarding(event));

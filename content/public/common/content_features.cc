@@ -473,11 +473,17 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Skips the passthrough touch event queue filter, ensuring that all touch
-// events that reach the queue will be passed onto the renderer compositor
-// process as long as the page hasn't timed out.
-const base::Feature kSkipPassthroughTouchEventQueueFilter{
-    "SkipPassthroughTouchEventQueueFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+// Skips the browser touch event filter, ensuring that events that reach the
+// queue and would otherwise be filtered out will instead be passed onto the
+// renderer compositor process as long as the page hasn't timed out. Which event
+// types will be always forwarded is controlled by the "type" FeatureParam,
+// which can be either "discrete" (default) or "all".
+const base::Feature kSkipBrowserTouchFilter{"SkipBrowserTouchFilter",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const char kSkipBrowserTouchFilterTypeParamName[] = "type";
+const char kSkipBrowserTouchFilterTypeParamValueDiscrete[] = "discrete";
+const char kSkipBrowserTouchFilterTypeParamValueAll[] = "all";
 
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we
@@ -546,10 +552,8 @@ const base::Feature kWebContentsOcclusion {
 
 // Controls whether the WebAuthentication API is enabled:
 // https://w3c.github.io/webauthn
-const base::Feature kWebAuth {
-  "WebAuthentication",
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
+const base::Feature kWebAuth{"WebAuthentication",
+                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether BLE authenticators can be used via the WebAuthentication
 // API. https://w3c.github.io/webauthn
@@ -656,12 +660,12 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the orientation sensor based device is enabled.
-const base::Feature kWebXrOrientationSensorDevice{
-    "WebXROrientationSensorDevice",
+const base::Feature kWebXrOrientationSensorDevice {
+  "WebXROrientationSensorDevice",
 #if defined(OS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT
+      base::FEATURE_ENABLED_BY_DEFAULT
 #else
-    base::FEATURE_DISABLED_BY_DEFAULT
+      base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
 
