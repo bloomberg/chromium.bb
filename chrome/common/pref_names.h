@@ -638,6 +638,7 @@ extern const char kCustomizationDefaultWallpaperURL[];
 extern const char kLogoutStartedLast[];
 extern const char kConsumerManagementStage[];
 extern const char kReportArcStatusEnabled[];
+extern const char kSchedulerConfiguration[];
 extern const char kNetworkThrottlingEnabled[];
 extern const char kPowerMetricsDailySample[];
 extern const char kPowerMetricsIdleScreenDimCount[];

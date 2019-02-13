@@ -95,6 +95,7 @@
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
+#include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
@@ -672,6 +673,11 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory());
 
+  scheduler_configuration_manager_ =
+      std::make_unique<SchedulerConfigurationManager>(
+          DBusThreadManager::Get()->GetDebugDaemonClient(),
+          g_browser_process->local_state());
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -1088,6 +1094,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
   diagnosticsd_bridge_.reset();
+  scheduler_configuration_manager_.reset();
   auto_screen_brightness_controller_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
