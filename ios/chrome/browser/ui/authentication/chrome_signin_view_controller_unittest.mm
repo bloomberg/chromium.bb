@@ -376,9 +376,9 @@ class ChromeSigninViewControllerTest
   FakeChromeSigninViewControllerDelegate* vc_delegate_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeSigninViewControllerTest,
-                        ::testing::ValuesIn(kUnifiedConsentParam));
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeSigninViewControllerTest,
+                         ::testing::ValuesIn(kUnifiedConsentParam));
 
 // Tests that all strings on the screen are either part of the consent string
 // list defined in FakeConsentAuditor::ExpectedConsentStringIds()), or are part

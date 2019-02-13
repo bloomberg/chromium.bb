@@ -135,8 +135,8 @@ class ProgrammaticWebTestWithWebController : public WebTestWithWebController,
 };
 
 // Macro to simplify instantiation of parameterized tests.
-#define INSTANTIATE_TEST_CASES(cls)                      \
-  INSTANTIATE_TEST_CASE_P(                               \
+#define INSTANTIATE_TEST_SUITES(cls)                     \
+  INSTANTIATE_TEST_SUITE_P(                              \
       Programmatic##cls, cls,                            \
       ::testing::Values(NavigationManagerChoice::LEGACY, \
                         NavigationManagerChoice::WK_BASED));
@@ -329,7 +329,7 @@ TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
   }
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerTest);
 
 // Test fixture to test JavaScriptDialogPresenter.
 class JavaScriptDialogPresenterTest : public ProgrammaticWebTestWithWebState {
@@ -421,7 +421,7 @@ TEST_P(JavaScriptDialogPresenterTest, Prompt) {
   EXPECT_NSEQ(@"No", dialog.default_prompt_text);
 }
 
-INSTANTIATE_TEST_CASES(JavaScriptDialogPresenterTest);
+INSTANTIATE_TEST_SUITES(JavaScriptDialogPresenterTest);
 
 // Test fixture for testing visible security state.
 typedef ProgrammaticWebTestWithWebState CRWWebStateSecurityStateTest;
@@ -439,7 +439,7 @@ TEST_P(CRWWebStateSecurityStateTest, LoadHttpPage) {
             observer.did_change_visible_security_state_info()->web_state);
 }
 
-INSTANTIATE_TEST_CASES(CRWWebStateSecurityStateTest);
+INSTANTIATE_TEST_SUITES(CRWWebStateSecurityStateTest);
 
 // Real WKWebView is required for CRWWebControllerInvalidUrlTest.
 typedef ProgrammaticWebTestWithWebState CRWWebControllerInvalidUrlTest;
@@ -455,7 +455,7 @@ TEST_P(CRWWebControllerInvalidUrlTest, IFrameWithInvalidURL) {
   EXPECT_EQ(url, web_state()->GetLastCommittedURL());
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerInvalidUrlTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerInvalidUrlTest);
 
 // Real WKWebView is required for CRWWebControllerMessageFromIFrame.
 typedef ProgrammaticWebTestWithWebState CRWWebControllerMessageFromIFrame;
@@ -473,7 +473,7 @@ TEST_P(CRWWebControllerMessageFromIFrame, InvalidMessage) {
        "frames['f'].__gCrWeb.message.invokeOnHost(bad_message);");
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerMessageFromIFrame);
+INSTANTIATE_TEST_SUITES(CRWWebControllerMessageFromIFrame);
 
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.
 typedef ProgrammaticWebTestWithWebController CRWWebControllerJSExecutionTest;
@@ -500,7 +500,7 @@ TEST_P(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
   EXPECT_FALSE(ExecuteJavaScript(@"window.test2"));
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerJSExecutionTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerJSExecutionTest);
 
 // Test fixture to test decidePolicyForNavigationResponse:decisionHandler:
 // delegate method.
@@ -748,7 +748,7 @@ TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   EXPECT_EQ(kAbsolute, trust_level);
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerResponseTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerResponseTest);
 
 // Test fixture to test decidePolicyForNavigationAction:decisionHandler:
 // decisionHandler's callback result.
@@ -819,7 +819,7 @@ TEST_P(CRWWebControllerPolicyDeciderTest, BlobUrl) {
       blob_url_request, WKNavigationActionPolicyAllow));
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerPolicyDeciderTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerPolicyDeciderTest);
 
 // Test fixture for testing CRWWebController presenting native content.
 class CRWWebControllerNativeContentTest
@@ -899,7 +899,7 @@ TEST_P(CRWWebControllerNativeContentTest, NativeContentVirtualURL) {
             virtual_url);
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerNativeContentTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerNativeContentTest);
 
 // Test fixture for window.open tests.
 class WindowOpenByDomTest : public ProgrammaticWebTestWithWebController {
@@ -989,7 +989,7 @@ TEST_P(WindowOpenByDomTest, CloseWindow) {
   EXPECT_TRUE(delegate_.popups().empty());
 }
 
-INSTANTIATE_TEST_CASES(WindowOpenByDomTest);
+INSTANTIATE_TEST_SUITES(WindowOpenByDomTest);
 
 // Tests page title changes.
 typedef ProgrammaticWebTestWithWebState CRWWebControllerTitleTest;
@@ -1040,7 +1040,7 @@ TEST_P(CRWWebControllerTitleTest, FragmentChangeNavigationsUsePreviousTitle) {
   EXPECT_EQ("Title1", base::UTF16ToUTF8(web_state()->GetTitle()));
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerTitleTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerTitleTest);
 
 // Test fixture for JavaScript execution.
 class ScriptExecutionTest : public ProgrammaticWebTestWithWebController {
@@ -1104,7 +1104,7 @@ TEST_P(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   EXPECT_FALSE(ExecuteJavaScript(@"window.w"));
 };
 
-INSTANTIATE_TEST_CASES(ScriptExecutionTest);
+INSTANTIATE_TEST_SUITES(ScriptExecutionTest);
 
 // Fixture class to test WKWebView crashes.
 class CRWWebControllerWebProcessTest
@@ -1160,8 +1160,8 @@ TEST_P(CRWWebControllerWebProcessTest, Eviction) {
   EXPECT_TRUE(web_state()->IsEvicted());
 };
 
-INSTANTIATE_TEST_CASES(CRWWebControllerWebProcessTest);
+INSTANTIATE_TEST_SUITES(CRWWebControllerWebProcessTest);
 
-#undef INSTANTIATE_TEST_CASES
+#undef INSTANTIATE_TEST_SUITES
 
 }  // namespace web

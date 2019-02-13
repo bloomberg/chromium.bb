@@ -300,7 +300,7 @@ TEST_P(ToolbarContainerViewControllerTest, VerifyStackLayoutForProgresses) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ToolbarContainerViewControllerTest,
-                        ::testing::Range(kEmptyConfig,
-                                         kToolbarContainerConfigMax));
+INSTANTIATE_TEST_SUITE_P(,
+                         ToolbarContainerViewControllerTest,
+                         ::testing::Range(kEmptyConfig,
+                                          kToolbarContainerConfigMax));
