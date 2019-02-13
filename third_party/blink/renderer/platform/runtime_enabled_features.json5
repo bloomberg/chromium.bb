@@ -1319,6 +1319,10 @@
       name: "StreamsNative",
     },
     {
+      name: "TextFragmentIdentifiers",
+      status: "experimental",
+    },
+    {
       name: "TextUnderlinePositionLeftRight",
       status: "stable",
     },
