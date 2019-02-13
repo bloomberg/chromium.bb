@@ -20,7 +20,6 @@ js_library("closure_compile_externs") {
     "$externs_path/chrome_extensions.js",
     "$externs_path/media_player_private.js",
     "$externs_path/mediasession.js",
-    "../../../externs/app_window_common.js",
     "../../../externs/background/volume_manager_factory.js",
     "../../../externs/chrome_cast.js",
     "../../../externs/platform.js",

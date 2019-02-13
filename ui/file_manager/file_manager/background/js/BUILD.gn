@@ -103,7 +103,7 @@ js_library("app_window_wrapper") {
   deps = [
     ":app_windows",
     "../../common/js:async_util",
-    "../../common/js:util",
+    "//ui/file_manager/base/js:app_util",
   ]
 }
 

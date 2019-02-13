@@ -81,6 +81,7 @@
 // <include src="../../common/js/file_type.js">
 // <include src="../../common/js/files_app_entry_types.js">
 // <include src="../../../base/js/volume_manager_types.js">
+// <include src="../../../base/js/app_util.js">
 // <include src="../../common/js/util.js">
 // <include src="../../common/js/progress_center_common.js">
 // <include src="../../common/js/importer_common.js">

@@ -915,7 +915,7 @@ MediaControls.prototype.encodeState = function() {
 
   if (window.appState) {
     window.appState.time = this.media_.currentTime;
-    util.saveAppState();
+    appUtil.saveAppState();
   }
   return;
 };
@@ -946,7 +946,7 @@ MediaControls.prototype.clearState = function() {
   if ('time' in window.appState) {
     delete window.appState.time;
   }
-  util.saveAppState();
+  appUtil.saveAppState();
   return;
 };
 
@@ -1176,7 +1176,7 @@ VideoControls.prototype.savePosition = function(opt_sync) {
     }
     window.saveOnExit.push({ key: this.media_.src, value: position });
   } else {
-    util.AppCache.update(this.media_.src, position);
+    appUtil.AppCache.update(this.media_.src, position);
   }
 };
 
@@ -1185,7 +1185,7 @@ VideoControls.prototype.savePosition = function(opt_sync) {
  */
 VideoControls.prototype.restorePlayState = function() {
   if (this.media_ && this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
-    util.AppCache.getValue(this.media_.src, function(position) {
+    appUtil.AppCache.getValue(this.media_.src, function(position) {
       if (position) {
         this.media_.currentTime = position;
       }

@@ -19,7 +19,6 @@ group("closure_compile") {
 js_type_check("closure_compile_module") {
   deps = [
     ":byte_reader",
-    ":closure_compile_externs",
     ":content_metadata_provider",
     ":exif_constants",
     ":exif_parser",
@@ -41,14 +40,6 @@ js_type_check("closure_compile_module") {
     ":mpeg_parser",
     ":multi_metadata_provider",
     ":thumbnail_model",
-  ]
-}
-
-js_library("closure_compile_externs") {
-  sources = []
-  externs_list = [
-    "../../../../externs/app_window_common.js",
-    "../../../../externs/platform.js",
   ]
 }
 
@@ -191,6 +182,7 @@ js_library("metadata_dispatcher") {
   deps = [
     ":metadata_parser",
   ]
+  externs_list = [ "../../../../externs/platform.js" ]
 }
 
 js_library("metadata_item") {

@@ -62,7 +62,6 @@ js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
     ":mock_entry",
-    ":util",
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/base/js:volume_manager_types",
   ]
@@ -171,6 +170,10 @@ js_library("util") {
   deps = [
     ":files_app_entry_types",
     "../../../externs:file_manager_private",
+
+    # TODO(tapted): Remove these base util dependencies, which exist temporarily
+    # to allow targets to depend only on util, if they depend on one of these.
+    "//ui/file_manager/base/js:app_util",
     "//ui/file_manager/base/js:volume_manager_types",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
@@ -179,7 +182,6 @@ js_library("util") {
   ]
   externs_list = [
     "$externs_path/command_line_private.js",
-    "../../../externs/app_window_common.js",
     "../../../externs/entry_location.js",
     "../../../externs/platform.js",
     "../../../externs/volume_info.js",
