@@ -202,7 +202,6 @@ class NET_EXPORT_PRIVATE PacFileDecider {
   std::unique_ptr<HostResolver::ResolveHostRequest> resolve_request_;
 
   base::OneShotTimer quick_check_timer_;
-  base::Time quick_check_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PacFileDecider);
 };
