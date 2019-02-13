@@ -46,7 +46,7 @@ struct ServiceWorkerProviderContextDeleter;
 
 // ServiceWorkerProviderContext stores common state for "providers" for service
 // worker clients (currently WebServiceWorkerProviderImpl and
-// WebServiceWorkerNetworkProviderImplFor{Frame,Worker}). Providers for the same
+// ServiceWorkerNetworkProviderFor{Frame,Worker}). Providers for the same
 // underlying entity hold strong references to a shared instance of this class.
 //
 // ServiceWorkerProviderContext is also a

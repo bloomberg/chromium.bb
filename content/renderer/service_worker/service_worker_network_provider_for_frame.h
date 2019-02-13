@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_FRAME_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_FRAME_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_FRAME_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_FRAME_H_
 
 #include <memory>
 
@@ -19,7 +19,7 @@ struct CommitNavigationParams;
 class RenderFrameImpl;
 
 // The WebServiceWorkerNetworkProvider implementation used for frames.
-class CONTENT_EXPORT WebServiceWorkerNetworkProviderImplForFrame final
+class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
     : public blink::WebServiceWorkerNetworkProvider {
  public:
   // Creates a network provider for |frame|.
@@ -41,7 +41,7 @@ class CONTENT_EXPORT WebServiceWorkerNetworkProviderImplForFrame final
   // requests, and is used when we create a subresource loader for controllees.
   // This is non-null only if the provider is created for controllees, and if
   // the loading context, e.g. a frame, provides it.
-  static std::unique_ptr<WebServiceWorkerNetworkProviderImplForFrame> Create(
+  static std::unique_ptr<ServiceWorkerNetworkProviderForFrame> Create(
       RenderFrameImpl* frame,
       const CommitNavigationParams* commit_params,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -49,10 +49,10 @@ class CONTENT_EXPORT WebServiceWorkerNetworkProviderImplForFrame final
 
   // Creates an invalid instance. It has a null |context()|.
   // TODO(falken): Just use null instead of this.
-  static std::unique_ptr<WebServiceWorkerNetworkProviderImplForFrame>
+  static std::unique_ptr<ServiceWorkerNetworkProviderForFrame>
   CreateInvalidInstance();
 
-  ~WebServiceWorkerNetworkProviderImplForFrame() override;
+  ~ServiceWorkerNetworkProviderForFrame() override;
 
   // Implements WebServiceWorkerNetworkProvider.
   void WillSendRequest(blink::WebURLRequest& request) override;
@@ -71,7 +71,7 @@ class CONTENT_EXPORT WebServiceWorkerNetworkProviderImplForFrame final
  private:
   class NewDocumentObserver;
 
-  explicit WebServiceWorkerNetworkProviderImplForFrame(RenderFrameImpl* frame);
+  explicit ServiceWorkerNetworkProviderForFrame(RenderFrameImpl* frame);
 
   void NotifyExecutionReady();
 
@@ -86,4 +86,4 @@ class CONTENT_EXPORT WebServiceWorkerNetworkProviderImplForFrame final
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SERVICE_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_FRAME_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_FRAME_H_

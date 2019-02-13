@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
-#define CONTENT_RENDERER_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
+#ifndef CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_WORKER_H_
+#define CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_WORKER_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@ struct NavigationResponseOverrideParameters;
 //
 // This class is only used for the main script request from the shadow page.
 // Remove it when the shadow page is removed (https://crbug.com/538751).
-class WebServiceWorkerNetworkProviderImplForWorker final
+class ServiceWorkerNetworkProviderForWorker final
     : public blink::WebServiceWorkerNetworkProvider {
  public:
   // Creates a new instance. Some params might only be used in S13nServiceWorker
@@ -37,7 +37,7 @@ class WebServiceWorkerNetworkProviderImplForWorker final
   //   AppCache)
   // - |is_secure_context|: whether this context is secure
   // - |response_override|: the main script response
-  static std::unique_ptr<WebServiceWorkerNetworkProviderImplForWorker> Create(
+  static std::unique_ptr<ServiceWorkerNetworkProviderForWorker> Create(
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
           script_loader_factory_info,
@@ -46,10 +46,10 @@ class WebServiceWorkerNetworkProviderImplForWorker final
       bool is_secure_context,
       std::unique_ptr<NavigationResponseOverrideParameters> response_override);
 
-  WebServiceWorkerNetworkProviderImplForWorker(
+  ServiceWorkerNetworkProviderForWorker(
       bool is_secure_context,
       std::unique_ptr<NavigationResponseOverrideParameters> response_override);
-  ~WebServiceWorkerNetworkProviderImplForWorker() override;
+  ~ServiceWorkerNetworkProviderForWorker() override;
 
   // Implements WebServiceWorkerNetworkProvider.
   void WillSendRequest(blink::WebURLRequest& request) override;
@@ -81,4 +81,4 @@ class WebServiceWorkerNetworkProviderImplForWorker final
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
+#endif  // CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_WORKER_H_
