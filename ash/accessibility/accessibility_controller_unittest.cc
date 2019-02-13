@@ -495,11 +495,11 @@ class AccessibilityControllerSigninTest
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(,
-                        AccessibilityControllerSigninTest,
-                        ::testing::Values(TestUserLoginType::kNewUser,
-                                          TestUserLoginType::kGuest,
-                                          TestUserLoginType::kExistingUser));
+INSTANTIATE_TEST_SUITE_P(,
+                         AccessibilityControllerSigninTest,
+                         ::testing::Values(TestUserLoginType::kNewUser,
+                                           TestUserLoginType::kGuest,
+                                           TestUserLoginType::kExistingUser));
 
 TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   constexpr float kMagnifierScale = 4.3f;

@@ -212,7 +212,7 @@ class PopulatedAppListTest : public AshTestBase,
 
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
-INSTANTIATE_TEST_CASE_P(, AppListPresenterDelegateTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, AppListPresenterDelegateTest, testing::Bool());
 
 TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {
   InitializeAppsGrid();
@@ -1805,9 +1805,9 @@ class AppListPresenterDelegateVirtualKeyboardTest
 
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
-INSTANTIATE_TEST_CASE_P(,
-                        AppListPresenterDelegateVirtualKeyboardTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         AppListPresenterDelegateVirtualKeyboardTest,
+                         testing::Bool());
 
 // Tests that tapping or clicking the body of the applist with an active virtual
 // keyboard results in the virtual keyboard closing with no side effects.

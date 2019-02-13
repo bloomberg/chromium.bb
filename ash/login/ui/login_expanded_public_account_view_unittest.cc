@@ -293,8 +293,8 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        LoginExpandedPublicAccountViewTest,
-                        ::testing::Values("mouse", "touch"));
+INSTANTIATE_TEST_SUITE_P(,
+                         LoginExpandedPublicAccountViewTest,
+                         ::testing::Values("mouse", "touch"));
 
 }  // namespace ash

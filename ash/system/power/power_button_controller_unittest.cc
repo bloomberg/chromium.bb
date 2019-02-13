@@ -1363,11 +1363,11 @@ TEST_P(PowerButtonControllerWithPositionTest, AdjustMenuShownForDisplaySize) {
       power_button_test_api_->GetMenuBoundsInScreen()));
 }
 
-INSTANTIATE_TEST_CASE_P(AshPowerButtonPosition,
-                        PowerButtonControllerWithPositionTest,
-                        testing::Values(PowerButtonPosition::LEFT,
-                                        PowerButtonPosition::RIGHT,
-                                        PowerButtonPosition::TOP,
-                                        PowerButtonPosition::BOTTOM));
+INSTANTIATE_TEST_SUITE_P(AshPowerButtonPosition,
+                         PowerButtonControllerWithPositionTest,
+                         testing::Values(PowerButtonPosition::LEFT,
+                                         PowerButtonPosition::RIGHT,
+                                         PowerButtonPosition::TOP,
+                                         PowerButtonPosition::BOTTOM));
 
 }  // namespace ash

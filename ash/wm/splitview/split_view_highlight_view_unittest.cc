@@ -163,9 +163,9 @@ TEST_P(SplitViewHighlightViewPortraitTest, Bounds) {
                   .ApproximatelyEqual(expected_end_transform));
 }
 
-INSTANTIATE_TEST_CASE_P(Bounds,
-                        SplitViewHighlightViewPortraitTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Bounds,
+                         SplitViewHighlightViewPortraitTest,
+                         testing::Bool());
 
 TEST_F(SplitViewHighlightViewTest, RightBounds) {
   const gfx::Rect bounds(100, 0, 100, 100);
