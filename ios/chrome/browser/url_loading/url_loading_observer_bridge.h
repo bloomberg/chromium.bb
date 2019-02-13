@@ -48,9 +48,20 @@
 // Invoked by UrlLoadingObserverBridge::NewTabWillOpenUrl.
 - (void)newTabWillOpenURL:(GURL)URL inIncognito:(BOOL)inIncognito;
 
-// The loader initiated the |url| loading in a new tab successfully.
+// The loader initiated the |URL| loading in a new tab successfully.
 // Invoked by UrlLoadingObserverBridge::NewTabDidOpenUrl.
 - (void)newTabDidOpenURL:(GURL)URL inIncognito:(BOOL)inIncognito;
+
+// The loader will switch to an existing tab with |URL| instead of loading it.
+// Next state will be: didSwitchToTabWithURL. Invoked by
+// UrlLoadingObserverBridge::NewTabWillOpenUrl.
+- (void)willSwitchToTabWithURL:(GURL)URL
+              newWebStateIndex:(NSInteger)newWebStateIndex;
+
+// The loader switched to an existing tab with |URL|.
+// Invoked by UrlLoadingObserverBridge::NewTabDidOpenUrl.
+- (void)didSwitchToTabWithURL:(GURL)URL
+             newWebStateIndex:(NSInteger)newWebStateIndex;
 
 @end
 
@@ -67,6 +78,9 @@ class UrlLoadingObserverBridge {
 
   void NewTabWillOpenUrl(const GURL& url, bool in_incognito);
   void NewTabDidOpenUrl(const GURL& url, bool in_incognito);
+
+  void WillSwitchToTabWithUrl(const GURL& url, int new_web_state_index);
+  void DidSwitchToTabWithUrl(const GURL& url, int new_web_state_index);
 
  private:
   __weak id<URLLoadingObserver> owner_;

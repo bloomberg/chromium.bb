@@ -66,3 +66,19 @@ void UrlLoadingObserverBridge::NewTabDidOpenUrl(const GURL& url,
     [owner_ newTabDidOpenURL:url inIncognito:in_incognito];
   }
 }
+
+void UrlLoadingObserverBridge::WillSwitchToTabWithUrl(const GURL& url,
+                                                      int new_web_state_index) {
+  if ([owner_ respondsToSelector:@selector(willSwitchToTabWithURL:
+                                                 newWebStateIndex:)]) {
+    [owner_ willSwitchToTabWithURL:url newWebStateIndex:new_web_state_index];
+  }
+}
+
+void UrlLoadingObserverBridge::DidSwitchToTabWithUrl(const GURL& url,
+                                                     int new_web_state_index) {
+  if ([owner_ respondsToSelector:@selector(didSwitchToTabWithURL:
+                                                newWebStateIndex:)]) {
+    [owner_ didSwitchToTabWithURL:url newWebStateIndex:new_web_state_index];
+  }
+}
