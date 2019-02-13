@@ -13,20 +13,6 @@
 
 using base::android::JavaParamRef;
 
-static jboolean JNI_UnifiedConsentServiceBridge_IsUnifiedConsentGiven(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& profileAndroid) {
-  // TODO(crbug.com/907856): Remove.
-  return false;
-}
-
-static void JNI_UnifiedConsentServiceBridge_SetUnifiedConsentGiven(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& profileAndroid,
-    jboolean unifiedConsentGiven) {
-  // TODO(crbug.com/907856): Remove.
-}
-
 static jboolean
 JNI_UnifiedConsentServiceBridge_IsUrlKeyedAnonymizedDataCollectionEnabled(
     JNIEnv* env,
