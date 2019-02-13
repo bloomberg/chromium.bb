@@ -189,7 +189,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   void ResetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
   void SetOverrideMainAxisContentSizeForChild(FlexItem&);
-  bool ChildLogicalHeightStretchesToFlexboxSize(FlexItem&) const;
   void PrepareChildForPositionedLayout(LayoutBox& child);
   void LayoutLineItems(FlexLine*, bool relayout_children, SubtreeLayoutScope&);
   void ApplyLineItemsPosition(FlexLine*);
