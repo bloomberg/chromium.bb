@@ -29,10 +29,10 @@ namespace blink {
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     const String& developer_id,
     const String& unique_id,
-    unsigned long long upload_total,
-    unsigned long long uploaded,
-    unsigned long long download_total,
-    unsigned long long downloaded,
+    uint64_t upload_total,
+    uint64_t uploaded,
+    uint64_t download_total,
+    uint64_t downloaded,
     mojom::BackgroundFetchResult result,
     mojom::BackgroundFetchFailureReason failure_reason)
     : developer_id_(developer_id),
@@ -124,19 +124,19 @@ String BackgroundFetchRegistration::id() const {
   return developer_id_;
 }
 
-unsigned long long BackgroundFetchRegistration::uploadTotal() const {
+uint64_t BackgroundFetchRegistration::uploadTotal() const {
   return upload_total_;
 }
 
-unsigned long long BackgroundFetchRegistration::uploaded() const {
+uint64_t BackgroundFetchRegistration::uploaded() const {
   return uploaded_;
 }
 
-unsigned long long BackgroundFetchRegistration::downloadTotal() const {
+uint64_t BackgroundFetchRegistration::downloadTotal() const {
   return download_total_;
 }
 
-unsigned long long BackgroundFetchRegistration::downloaded() const {
+uint64_t BackgroundFetchRegistration::downloaded() const {
   return downloaded_;
 }
 

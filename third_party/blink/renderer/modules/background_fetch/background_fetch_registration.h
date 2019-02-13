@@ -39,10 +39,10 @@ class BackgroundFetchRegistration final
   BackgroundFetchRegistration(
       const String& developer_id,
       const String& unique_id,
-      unsigned long long upload_total,
-      unsigned long long uploaded,
-      unsigned long long download_total,
-      unsigned long long downloaded,
+      uint64_t upload_total,
+      uint64_t uploaded,
+      uint64_t download_total,
+      uint64_t downloaded,
       mojom::BackgroundFetchResult result,
       mojom::BackgroundFetchFailureReason failure_reason);
 
@@ -85,10 +85,10 @@ class BackgroundFetchRegistration final
                          const CacheQueryOptions* options,
                          ExceptionState& exception_state);
 
-  unsigned long long uploadTotal() const;
-  unsigned long long uploaded() const;
-  unsigned long long downloadTotal() const;
-  unsigned long long downloaded() const;
+  uint64_t uploadTotal() const;
+  uint64_t uploaded() const;
+  uint64_t downloadTotal() const;
+  uint64_t downloaded() const;
   bool recordsAvailable() const;
   const String result() const;
   const String failureReason() const;
@@ -142,10 +142,10 @@ class BackgroundFetchRegistration final
   // exposed to JavaScript.
   String unique_id_;
 
-  unsigned long long upload_total_;
-  unsigned long long uploaded_;
-  unsigned long long download_total_;
-  unsigned long long downloaded_;
+  uint64_t upload_total_;
+  uint64_t uploaded_;
+  uint64_t download_total_;
+  uint64_t downloaded_;
   bool records_available_ = true;
   mojom::BackgroundFetchResult result_;
   mojom::BackgroundFetchFailureReason failure_reason_;
