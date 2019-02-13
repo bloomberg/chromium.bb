@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "extensions/common/extension_id.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 
 class GURL;
 class Profile;
@@ -23,28 +22,26 @@ class CrxInstaller;
 class CrxInstallError;
 
 // Class used to actually install the Bookmark App in the system.
-class BookmarkAppInstallFinalizer {
+class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
  public:
-  using ResultCallback = base::OnceCallback<void(const ExtensionId&)>;
-
   // Constructs a BookmarkAppInstallFinalizer that will install the Bookmark App
   // in |profile|.
   explicit BookmarkAppInstallFinalizer(Profile* profile);
-  virtual ~BookmarkAppInstallFinalizer();
+  ~BookmarkAppInstallFinalizer() override;
 
-  // TODO(crbug.com/864904): This should take more options e.g. what container
-  // to launch the app in, should the app sync, etc.
-  virtual void Install(const WebApplicationInfo& web_app_info,
-                       ResultCallback callback);
+  // InstallFinalizer:
+  void FinalizeInstall(std::unique_ptr<WebApplicationInfo> web_app_info,
+                       InstallFinalizedCallback callback) override;
 
   void SetCrxInstallerForTesting(scoped_refptr<CrxInstaller> crx_installer);
 
  private:
-  void OnInstall(ResultCallback callback,
+  void OnInstall(InstallFinalizedCallback callback,
                  const GURL& app_url,
                  const base::Optional<CrxInstallError>& error);
 
   scoped_refptr<CrxInstaller> crx_installer_;
+  Profile* profile_;
 
   // We need a WeakPtr because CrxInstaller is refcounted and it can run its
   // callback after this class has been destroyed.

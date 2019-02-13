@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -83,8 +84,9 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void InstallCallback(base::OnceClosure quit_closure,
-                       const ExtensionId& extension_id) {
-    app_installed_ = !extension_id.empty();
+                       const web_app::AppId& app_id,
+                       web_app::InstallResultCode code) {
+    app_installed_ = !app_id.empty();
     std::move(quit_closure).Run();
   }
 
@@ -100,20 +102,22 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
 TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
   BookmarkAppInstallFinalizer installer(profile());
 
-  WebApplicationInfo info;
-  info.app_url = GURL(kWebAppUrl);
-  info.title = base::ASCIIToUTF16(kWebAppTitle);
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = GURL(kWebAppUrl);
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   base::RunLoop run_loop;
-  installer.Install(
-      info, base::BindOnce(&BookmarkAppInstallFinalizerTest::InstallCallback,
-                           base::Unretained(this), run_loop.QuitClosure()));
+  installer.FinalizeInstall(
+      std::move(info),
+      base::BindOnce(&BookmarkAppInstallFinalizerTest::InstallCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(app_installed());
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
   BookmarkAppInstallFinalizer installer(profile());
+
   auto fake_crx_installer =
       base::MakeRefCounted<BookmarkAppInstallFinalizerTest::FakeCrxInstaller>(
           profile());
@@ -121,12 +125,13 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
 
   base::RunLoop run_loop;
 
-  WebApplicationInfo info;
-  info.app_url = GURL(kWebAppUrl);
-  info.title = base::ASCIIToUTF16(kWebAppTitle);
-  installer.Install(
-      info, base::BindOnce(&BookmarkAppInstallFinalizerTest::InstallCallback,
-                           base::Unretained(this), run_loop.QuitClosure()));
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = GURL(kWebAppUrl);
+  info->title = base::ASCIIToUTF16(kWebAppTitle);
+  installer.FinalizeInstall(
+      std::move(info),
+      base::BindOnce(&BookmarkAppInstallFinalizerTest::InstallCallback,
+                     base::Unretained(this), run_loop.QuitClosure()));
 
   fake_crx_installer->WaitForInstallToTrigger();
   fake_crx_installer->SimulateInstallFailed();
