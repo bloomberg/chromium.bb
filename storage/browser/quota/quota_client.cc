@@ -11,5 +11,5 @@ namespace storage {
 void QuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
                                         base::OnceClosure callback) {
   std::move(callback).Run();
-};
+}
 }  // namespace storage
