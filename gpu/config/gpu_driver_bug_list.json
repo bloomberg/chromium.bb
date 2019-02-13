@@ -3111,6 +3111,18 @@
       "features": [
         "disable_es3_gl_context_for_testing"
       ]
+    },
+    {
+      "id": 290,
+      "description": "Round down glBindBufferRange size to a multiple of 4 on Qualcomm Adreno GPUs for uniform buffers",
+      "cr_bugs": [906743],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) .*",
+      "features": [
+        "round_down_uniform_bind_buffer_range_size"
+      ]
     }
   ]
 }

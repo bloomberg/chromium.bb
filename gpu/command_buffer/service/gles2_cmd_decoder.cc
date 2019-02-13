@@ -3623,7 +3623,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   state_.indexed_uniform_buffer_bindings =
       base::MakeRefCounted<gles2::IndexedBufferBindingHost>(
           group_->max_uniform_buffer_bindings(), GL_UNIFORM_BUFFER,
-          needs_emulation);
+          needs_emulation,
+          workarounds().round_down_uniform_bind_buffer_range_size);
   state_.indexed_uniform_buffer_bindings->SetIsBound(true);
 
   state_.InitGenericAttribs(group_->max_vertex_attribs());
