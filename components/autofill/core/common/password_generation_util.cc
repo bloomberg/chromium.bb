@@ -13,15 +13,6 @@
 namespace autofill {
 namespace password_generation {
 
-PasswordGenerationActions::PasswordGenerationActions()
-    : learn_more_visited(false),
-      password_accepted(false),
-      password_edited(false),
-      password_regenerated(false) {
-}
-
-PasswordGenerationActions::~PasswordGenerationActions() {
-}
 
 PasswordGenerationUIData::PasswordGenerationUIData(
     const gfx::RectF& bounds,
@@ -38,20 +29,6 @@ PasswordGenerationUIData::PasswordGenerationUIData(
 PasswordGenerationUIData::PasswordGenerationUIData() = default;
 
 PasswordGenerationUIData::~PasswordGenerationUIData() = default;
-
-void LogUserActions(PasswordGenerationActions actions) {
-  UserAction action = IGNORE_FEATURE;
-  if (actions.password_accepted) {
-    if (actions.password_edited)
-      action = ACCEPT_AFTER_EDITING;
-    else
-      action = ACCEPT_ORIGINAL_PASSWORD;
-  } else if (actions.learn_more_visited) {
-    action = LEARN_MORE;
-  }
-  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.UserActions",
-                            action, ACTION_ENUM_COUNT);
-}
 
 void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
   UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.Event",
