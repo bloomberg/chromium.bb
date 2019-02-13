@@ -614,9 +614,9 @@ TEST_P(FileRemoverQuarantineTest, DoNotQuarantineNonDefaultFileStream) {
                 stream_path));
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        FileRemoverQuarantineTest,
-                        testing::Bool(),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(All,
+                         FileRemoverQuarantineTest,
+                         testing::Bool(),
+                         GetParamNameForTest());
 
 }  // namespace chrome_cleaner

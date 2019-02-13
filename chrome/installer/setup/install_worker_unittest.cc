@@ -440,7 +440,7 @@ struct AddUpdateBrandCodeWorkItemTestParamToString {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(AddUpdateBrandCodeWorkItemTest,
-                        AddUpdateBrandCodeWorkItemTest,
-                        Combine(Bool(), Bool(), Bool()),
-                        AddUpdateBrandCodeWorkItemTestParamToString());
+INSTANTIATE_TEST_SUITE_P(AddUpdateBrandCodeWorkItemTest,
+                         AddUpdateBrandCodeWorkItemTest,
+                         Combine(Bool(), Bool(), Bool()),
+                         AddUpdateBrandCodeWorkItemTestParamToString());

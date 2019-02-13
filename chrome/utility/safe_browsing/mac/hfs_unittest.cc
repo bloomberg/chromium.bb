@@ -221,11 +221,10 @@ TEST_P(HFSFileReadTest, DecmpfsFile) {
   EXPECT_EQ(0u, buffer.size());
 }
 
-INSTANTIATE_TEST_CASE_P(HFSIteratorTest,
-                        HFSFileReadTest,
-                        testing::Values(
-                            "hfs_plus.img",
-                            "hfsx_case_sensitive.img"));
+INSTANTIATE_TEST_SUITE_P(HFSIteratorTest,
+                         HFSFileReadTest,
+                         testing::Values("hfs_plus.img",
+                                         "hfsx_case_sensitive.img"));
 
 }  // namespace
 }  // namespace dmg

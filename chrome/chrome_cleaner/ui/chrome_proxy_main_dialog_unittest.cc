@@ -139,11 +139,12 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
   run_loop.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ConfirmCleanupChromeProxyMainDialogTest,
-                        testing::Values(PromptAcceptance::ACCEPTED_WITH_LOGS,
-                                        PromptAcceptance::ACCEPTED_WITHOUT_LOGS,
-                                        PromptAcceptance::DENIED));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ConfirmCleanupChromeProxyMainDialogTest,
+    testing::Values(PromptAcceptance::ACCEPTED_WITH_LOGS,
+                    PromptAcceptance::ACCEPTED_WITHOUT_LOGS,
+                    PromptAcceptance::DENIED));
 
 }  // namespace
 }  // namespace chrome_cleaner

@@ -181,11 +181,11 @@ TEST_P(UserExperimentTest, IsUpdateRenamePendingYes) {
   EXPECT_TRUE(IsUpdateRenamePending());
 }
 
-INSTANTIATE_TEST_CASE_P(UserLevel,
-                        UserExperimentTest,
-                        ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SystemLevel,
-                        UserExperimentTest,
-                        ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(UserLevel,
+                         UserExperimentTest,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SystemLevel,
+                         UserExperimentTest,
+                         ::testing::Values(true));
 
 }  // namespace installer

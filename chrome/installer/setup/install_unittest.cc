@@ -175,28 +175,28 @@ constexpr char kExpectedCanaryManifest[] =
     "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GoogleChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::STABLE_INDEX),
                      testing::Values(kExpectedPrimaryManifest)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BetaChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::BETA_INDEX),
                      testing::Values(kExpectedBetaManifest)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DevChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::DEV_INDEX),
                      testing::Values(kExpectedDevManifest)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CanaryChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::CANARY_INDEX),
                      testing::Values(kExpectedCanaryManifest)));
 #else
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Chromium,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
@@ -505,16 +505,15 @@ TEST_P(MigrateShortcutTest, MigrateAwayFromDeprecatedStartMenuTest) {
 
 // Verify that any installer operation for any installation level triggers
 // the migration from sub-folder to root of start-menu.
-INSTANTIATE_TEST_CASE_P(
-    MigrateShortcutTests, MigrateShortcutTest,
+INSTANTIATE_TEST_SUITE_P(
+    MigrateShortcutTests,
+    MigrateShortcutTest,
     testing::Combine(
         testing::Values(
             installer::INSTALL_SHORTCUT_REPLACE_EXISTING,
             installer::INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL,
             installer::INSTALL_SHORTCUT_CREATE_ALL),
-        testing::Values(
-            installer::CURRENT_USER,
-            installer::ALL_USERS)));
+        testing::Values(installer::CURRENT_USER, installer::ALL_USERS)));
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
   base::win::ShortcutProperties dummy_properties;

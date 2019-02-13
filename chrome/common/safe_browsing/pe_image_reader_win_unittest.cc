@@ -163,12 +163,12 @@ const TestData kTestData[] = {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(WordSize32,
-                        PeImageReaderTest,
-                        testing::Values(&kTestData[0]));
-INSTANTIATE_TEST_CASE_P(WordSize64,
-                        PeImageReaderTest,
-                        testing::Values(&kTestData[1]));
+INSTANTIATE_TEST_SUITE_P(WordSize32,
+                         PeImageReaderTest,
+                         testing::Values(&kTestData[0]));
+INSTANTIATE_TEST_SUITE_P(WordSize64,
+                         PeImageReaderTest,
+                         testing::Values(&kTestData[1]));
 
 // An object exposing a PeImageReader::EnumCertificatesCallback that invokes a
 // virtual OnCertificate() method. This method is suitable for mocking in tests.
@@ -280,15 +280,15 @@ const CertificateTestData kCertificateTestData[] = {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(SignedExe,
-                        PeImageReaderCertificateTest,
-                        testing::Values(&kCertificateTestData[0]));
-INSTANTIATE_TEST_CASE_P(UnsignedExe,
-                        PeImageReaderCertificateTest,
-                        testing::Values(&kCertificateTestData[1]));
-INSTANTIATE_TEST_CASE_P(DisableOutdatedBuildDetectorExe,
-                        PeImageReaderCertificateTest,
-                        testing::Values(&kCertificateTestData[2]));
-INSTANTIATE_TEST_CASE_P(SignedTwiceExe,
-                        PeImageReaderCertificateTest,
-                        testing::Values(&kCertificateTestData[3]));
+INSTANTIATE_TEST_SUITE_P(SignedExe,
+                         PeImageReaderCertificateTest,
+                         testing::Values(&kCertificateTestData[0]));
+INSTANTIATE_TEST_SUITE_P(UnsignedExe,
+                         PeImageReaderCertificateTest,
+                         testing::Values(&kCertificateTestData[1]));
+INSTANTIATE_TEST_SUITE_P(DisableOutdatedBuildDetectorExe,
+                         PeImageReaderCertificateTest,
+                         testing::Values(&kCertificateTestData[2]));
+INSTANTIATE_TEST_SUITE_P(SignedTwiceExe,
+                         PeImageReaderCertificateTest,
+                         testing::Values(&kCertificateTestData[3]));

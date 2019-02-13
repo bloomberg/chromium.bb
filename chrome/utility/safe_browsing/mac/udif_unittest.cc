@@ -251,9 +251,10 @@ const UDIFTestCase cases[] = {
   {"dmg_UFBI_SPUD.dmg", kAPMExpectedPartitions, UDIFTestCase::ALL_PASS},
 };
 
-INSTANTIATE_TEST_CASE_P(UDIFParserTest, UDIFParserTest,
-                        testing::ValuesIn(cases),
-                        UDIFTestCase::GetTestName);
+INSTANTIATE_TEST_SUITE_P(UDIFParserTest,
+                         UDIFParserTest,
+                         testing::ValuesIn(cases),
+                         UDIFTestCase::GetTestName);
 
 }  // namespace
 }  // namespace dmg

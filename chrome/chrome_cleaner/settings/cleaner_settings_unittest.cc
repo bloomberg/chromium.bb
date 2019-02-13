@@ -69,7 +69,7 @@ TEST_P(CleanerSettingsTest, CleanerLogsPermissions) {
   EXPECT_EQ(logs_upload_allowed, settings->logs_upload_allowed());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     CleanerSettingsTest,
     ::testing::Combine(

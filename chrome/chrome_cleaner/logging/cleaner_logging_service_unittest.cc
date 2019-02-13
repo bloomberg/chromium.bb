@@ -1537,10 +1537,10 @@ TEST_P(CleanerLoggingServiceTest, AddShortcutData) {
 
 // TODO(csharp) add multi-thread tests.
 
-INSTANTIATE_TEST_CASE_P(All,
-                        CleanerLoggingServiceTest,
-                        testing::Values(ExecutionMode::kScanning,
-                                        ExecutionMode::kCleanup),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(All,
+                         CleanerLoggingServiceTest,
+                         testing::Values(ExecutionMode::kScanning,
+                                         ExecutionMode::kCleanup),
+                         GetParamNameForTest());
 
 }  // namespace chrome_cleaner

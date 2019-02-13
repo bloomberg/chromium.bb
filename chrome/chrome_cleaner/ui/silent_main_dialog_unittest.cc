@@ -108,11 +108,11 @@ TEST_P(ConfirmCleanupSilentMainDialogTest, ConfirmCleanup) {
   dialog_->ConfirmCleanupIfNeeded(found_pups);
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ConfirmCleanupSilentMainDialogTest,
-                        ::testing::Values(FileTypeToTest::kActive,
-                                          FileTypeToTest::kInactive),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ConfirmCleanupSilentMainDialogTest,
+                         ::testing::Values(FileTypeToTest::kActive,
+                                           FileTypeToTest::kInactive),
+                         GetParamNameForTest());
 
 }  // namespace
 }  // namespace chrome_cleaner

@@ -855,12 +855,12 @@ TEST_P(SetProgressTest, SetProgress) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(SetProgressUserLevel,
-                        SetProgressTest,
-                        testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SetProgressSystemLevel,
-                        SetProgressTest,
-                        testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(SetProgressUserLevel,
+                         SetProgressTest,
+                         testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SetProgressSystemLevel,
+                         SetProgressTest,
+                         testing::Values(true));
 
 // Test GoogleUpdateSettings::GetUninstallCommandLine at system- or user-level,
 // according to the param.
@@ -918,8 +918,9 @@ TEST_P(GetUninstallCommandLine, TestRealValue) {
             GoogleUpdateSettings::GetUninstallCommandLine(!system_install_));
 }
 
-INSTANTIATE_TEST_CASE_P(GetUninstallCommandLineAtLevel, GetUninstallCommandLine,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(GetUninstallCommandLineAtLevel,
+                         GetUninstallCommandLine,
+                         testing::Bool());
 
 // Test GoogleUpdateSettings::GetGoogleUpdateVersion at system- or user-level,
 // according to the param.
@@ -978,8 +979,9 @@ TEST_P(GetGoogleUpdateVersion, TestRealValue) {
           .IsValid());
 }
 
-INSTANTIATE_TEST_CASE_P(GetGoogleUpdateVersionAtLevel, GetGoogleUpdateVersion,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(GetGoogleUpdateVersionAtLevel,
+                         GetGoogleUpdateVersion,
+                         testing::Bool());
 
 // Test values for use by the CollectStatsConsent test fixture.
 class StatsState {
@@ -1124,14 +1126,14 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsent) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UserLevel,
     CollectStatsConsent,
     ::testing::Values(
         StatsState(StatsState::kUserLevel, StatsState::NO_SETTING),
         StatsState(StatsState::kUserLevel, StatsState::FALSE_SETTING),
         StatsState(StatsState::kUserLevel, StatsState::TRUE_SETTING)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SystemLevel,
     CollectStatsConsent,
     ::testing::Values(StatsState(StatsState::kSystemLevel,

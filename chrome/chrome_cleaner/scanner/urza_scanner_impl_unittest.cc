@@ -264,10 +264,10 @@ class ScannerTest : public testing::Test {
 class ScannerTestWithBitness : public ScannerTest,
                                public ::testing::WithParamInterface<int> {};
 
-INSTANTIATE_TEST_CASE_P(ScannerBitnessTest,
-                        ScannerTestWithBitness,
-                        testing::Values(32, 64),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(ScannerBitnessTest,
+                         ScannerTestWithBitness,
+                         testing::Values(32, 64),
+                         GetParamNameForTest());
 
 // A custom matcher finding an active disk footprint.
 bool TestCustomMatcher1(const MatchingOptions& options,
