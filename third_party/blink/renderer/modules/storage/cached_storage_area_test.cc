@@ -113,9 +113,9 @@ class CachedStorageAreaTestWithParam
   bool IsSessionStorage() override { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(CachedStorageAreaTest,
-                        CachedStorageAreaTestWithParam,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(CachedStorageAreaTest,
+                         CachedStorageAreaTestWithParam,
+                         ::testing::Bool());
 
 TEST_P(CachedStorageAreaTestWithParam, Basics) {
   EXPECT_FALSE(IsCacheLoaded());
@@ -475,7 +475,7 @@ namespace {
 class StringEncoding : public CachedStorageAreaTest,
                        public testing::WithParamInterface<FormatOption> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CachedStorageAreaTest,
     StringEncoding,
     ::testing::Values(FormatOption::kLocalStorageDetectFormat,

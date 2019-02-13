@@ -178,5 +178,5 @@ const TestParams kTestCases[] = {{false /* alpha */, false /* low_latency */},
                                  {true, false},
                                  {true, true}};
 
-INSTANTIATE_TEST_CASE_P(, OffscreenCanvasTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(, OffscreenCanvasTest, ValuesIn(kTestCases));
 }  // namespace blink
