@@ -4,11 +4,15 @@
 
 #include "chrome/browser/badging/badge_manager_delegate_win.h"
 
+#include "base/i18n/number_formatting.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/taskbar/taskbar_decorator_win.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace badging {
 
@@ -17,13 +21,20 @@ BadgeManagerDelegateWin::BadgeManagerDelegateWin(Profile* profile)
 
 void BadgeManagerDelegateWin::OnBadgeSet(const std::string& app_id,
                                          base::Optional<uint64_t> contents) {
+  auto badge_string = badging::GetBadgeString(contents);
+  auto badge_alt_string =
+      contents ? l10n_util::GetPluralStringFUTF8(IDS_BADGE_UNREAD_NOTIFICATIONS,
+                                                 contents.value())
+               : l10n_util::GetStringUTF8(
+                     IDS_BADGE_UNREAD_NOTIFICATIONS_UNSPECIFIED);
+
   for (Browser* browser : *BrowserList::GetInstance()) {
     if (!IsAppBrowser(browser, app_id))
       continue;
 
     auto* window = browser->window()->GetNativeWindow();
-    taskbar::DrawTaskbarDecorationString(window,
-                                         badging::GetBadgeString(contents));
+    taskbar::DrawTaskbarDecorationString(window, badge_string,
+                                         badge_alt_string);
   }
 }
 

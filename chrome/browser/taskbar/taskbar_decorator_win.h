@@ -17,9 +17,11 @@ class Image;
 
 namespace taskbar {
 
-// Add a numeric badge to the taskbar.
+// Add a badge with the text |content| to the taskbar.
+// |alt_text| will be read by screen readers.
 void DrawTaskbarDecorationString(gfx::NativeWindow window,
-                                 const std::string& content);
+                                 const std::string& content,
+                                 const std::string& alt_text);
 
 // Draws a scaled version of the avatar in |image| on the taskbar button
 // associated with top level, visible |window|. Currently only implemented
