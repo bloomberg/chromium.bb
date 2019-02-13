@@ -107,13 +107,10 @@ class MarkupAccumulator {
   template <typename Strategy>
   void SerializeNodesWithNamespaces(const Node& target_node,
                                     EChildrenOnly children_only);
-  using PrefixToNamespaceMap = HashMap<AtomicString, AtomicString>;
-  using NamespaceToPrefixesMap = HashMap<AtomicString, Vector<AtomicString>>;
-  // TODO(tkent): Make a class consists of these two maps.
-  Vector<PrefixToNamespaceMap> namespace_stack_;
-  // Map a namespace URI to a list of prefixes.
-  // https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map
-  Vector<NamespaceToPrefixesMap> ns_prefixes_map_stack_;
+
+  class NamespaceContext;
+  Vector<NamespaceContext> namespace_stack_;
+
   // https://w3c.github.io/DOM-Parsing/#dfn-generated-namespace-prefix-index
   uint32_t prefix_index_;
 
