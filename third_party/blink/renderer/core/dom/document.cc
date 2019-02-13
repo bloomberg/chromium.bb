@@ -2783,8 +2783,14 @@ void Document::Initialize() {
   // wouldn't be fired.
   network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    AttachCompositorAnimationTimeline();
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    CompositorAnimationTimeline* animation_timeline =
+        Timeline().CompositorTimeline();
+    if (animation_timeline) {
+      GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(
+          animation_timeline, frame_.Get());
+    }
+  }
 }
 
 void Document::Shutdown() {
@@ -7285,14 +7291,6 @@ Locale& Document::GetCachedLocale(const AtomicString& locale) {
   if (result.is_new_entry)
     result.stored_value->value = Locale::Create(locale_key);
   return *(result.stored_value->value);
-}
-
-void Document::AttachCompositorAnimationTimeline() {
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (auto* compositor_timeline = Timeline().CompositorTimeline()) {
-    GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(
-        compositor_timeline, frame_.Get());
-  }
 }
 
 AnimationClock& Document::GetAnimationClock() {

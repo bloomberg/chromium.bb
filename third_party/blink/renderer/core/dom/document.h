@@ -1252,11 +1252,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Return a Locale for the default locale if the argument is null or empty.
   Locale& GetCachedLocale(const AtomicString& locale = g_null_atom);
 
-  // For CompositeAfterPaint. This is called internally from Initialize(), but
-  // for the local frame root, the frame widget may be not set at the time,
-  // so this is also called from WebLocalFrameImpl::SetFrameWidget().
-  void AttachCompositorAnimationTimeline();
-
   AnimationClock& GetAnimationClock();
   DocumentTimeline& Timeline() const { return *timeline_; }
   PendingAnimations& GetPendingAnimations() { return *pending_animations_; }

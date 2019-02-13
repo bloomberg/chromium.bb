@@ -2306,14 +2306,6 @@ void WebLocalFrameImpl::WillDetachParent() {
 
 void WebLocalFrameImpl::SetFrameWidget(WebFrameWidgetBase* frame_widget) {
   frame_widget_ = frame_widget;
-
-  // This is needed because the local frame root's widget may not be set when
-  // Document::Initialize() called AttachmentCompositorAnimationTimeline()
-  // (which requires frame widget to be effective).
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && frame_widget) {
-    if (auto* document = GetFrame()->GetDocument())
-      document->AttachCompositorAnimationTimeline();
-  }
 }
 
 WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
