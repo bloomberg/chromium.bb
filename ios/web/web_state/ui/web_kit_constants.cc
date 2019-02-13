@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/web_kit_constants.h"
+#include "ios/web/web_state/ui/web_kit_constants.h"
 
 namespace web {
 

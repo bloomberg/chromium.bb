@@ -60,7 +60,6 @@ source_set("public") {
     "url_schemes.mm",
     "url_util.h",
     "web_client.h",
-    "web_kit_constants.h",
     "web_state/context_menu_params.h",
     "web_state/global_web_state_observer.h",
     "web_state/js/crw_js_injection_evaluator.h",
