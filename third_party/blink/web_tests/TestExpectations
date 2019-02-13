@@ -6087,3 +6087,7 @@ crbug.com/930934 [ Android ] virtual/gpu-rasterization/images/drag-image-descend
 
 # Sheriff 2019-02-13
 crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
+
+# Temporarily disabling tests for RtpReceiver::GetParameters until new version is rolled into chromium.
+crbug.com/webrtc/10299 external/wpt/webrtc/RTCRtpReceiver-getParameters.html [ Pass Failure ]
+crbug.com/webrtc/10299 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpReceiver-getParameters.html [ Pass Failure ]
