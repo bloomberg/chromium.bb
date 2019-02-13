@@ -1,55 +1,23 @@
 <!DOCTYPE html>
-<html>
-<body>
-<p>Test setTimeOut,fired in increasing order in Web Workers.</p>
-<div id="result"></div>
-<script type="text/javascript">
-function log(message)
-{
-    document.getElementById("result").innerHTML += message + "</br>";
-}
+<title>Test setTimeOut,fired in increasing order in Web Workers.</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+promise_test (t => {
+  let worker;
 
-if (window.testRunner) {
-   testRunner.dumpAsText();
-   testRunner.waitUntilDone();
-}
-
-var worker = new Worker('resources/worker-timeout-increasing-order.js');
-var lastTestResult = 0;
-var testCounterLimit = 3;
-var timerLimit = 3;
-var testStarted = false;
-var testAlreadyFailed = false;
-
-worker.postMessage("TS");
-
-worker.onmessage = function(evt) {
-    if(testStarted) {
-        var currentNum = evt.data;
-        if(lastTestResult == currentNum - 1 && !testAlreadyFailed) {
-            lastTestResult = currentNum;
-            --timerLimit;
-            // we got all the results in order
-            if(lastTestResult == testCounterLimit && timerLimit == 0)
-                log("PASS: Timeouts executed in order.");
-        }
-        else {
-            testAlreadyFailed = true;
-            --timerLimit;
-            if(timerLimit == 0)
-                log("FAIL: PASS: Timeouts executed out of order.");
-        }
-    }
-    if(evt.data == "Test started.") {
-        log(evt.data);
-        testStarted = true;
-    }
-    if (evt.data == "DONE") {
-        log("DONE.");
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }
-}
+  return new Promise(resolve => {
+    worker = new Worker('resources/worker-timeout-increasing-order.js');
+    worker.postMessage('start');
+    worker.onmessage = resolve;
+  }).then(evt => {
+    assert_equals(evt.data, 1);
+    return (new Promise(resolve => worker.onmessage = resolve));
+  }).then(evt => {
+    assert_equals(evt.data, 2);
+    return (new Promise(resolve => worker.onmessage = resolve));
+  }).then(evt => {
+    assert_equals(evt.data, 3);
+  });
+}, 'Tests timeouts on the worker are fired in increasing order.');
 </script>
-</body>
-</html>
