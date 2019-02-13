@@ -6,53 +6,36 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
-#include "base/task/task_scheduler/task_scheduler_impl.h"
-#include "base/test/scoped_task_environment.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/web_thread_impl.h"
-#include "net/disk_cache/simple/simple_backend_impl.h"
 
 namespace web {
 
-TestWebThreadBundle::TestWebThreadBundle() {
-  Init(TestWebThreadBundle::DEFAULT);
-}
-
-TestWebThreadBundle::TestWebThreadBundle(int options) {
+TestWebThreadBundle::TestWebThreadBundle(int options)
+    : base::test::ScopedTaskEnvironment(
+          options == IO_MAINLOOP ? MainThreadType::IO : MainThreadType::UI) {
   Init(options);
 }
 
 TestWebThreadBundle::~TestWebThreadBundle() {
-  // To avoid memory leaks, ensure that any tasks posted to the cache pool via
-  // PostTaskAndReply are able to reply back to the originating thread, by
-  // flushing the cache pool while the browser threads still exist.
-  base::RunLoop().RunUntilIdle();
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-
   // To ensure a clean teardown, each thread's message loop must be flushed
-  // just before the thread is destroyed. But destroying a fake thread does not
+  // just before the thread is destroyed. But stopping a fake thread does not
   // automatically flush the message loop, so do it manually.
   // See http://crbug.com/247525 for discussion.
   base::RunLoop().RunUntilIdle();
-  io_thread_.reset();
+  io_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  // This is the point at which the cache pool is normally shut down. So flush
-  // it again in case any shutdown tasks have been posted to the pool from the
-  // threads above.
-  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::RunLoop().RunUntilIdle();
-  ui_thread_.reset();
+  ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
-  message_loop_.reset();
-
-  base::TaskScheduler::GetInstance()->FlushForTesting();
-  base::TaskScheduler::GetInstance()->Shutdown();
-  base::TaskScheduler::GetInstance()->JoinForTesting();
-  base::TaskScheduler::SetInstance(nullptr);
+  // This is required to ensure that all remaining MessageLoop and TaskScheduler
+  // tasks run in an atomic step. This is a bit different than production where
+  // the main thread is not flushed after it's done running but this approach is
+  // preferred in unit tests as running more tasks can merely uncover more
+  // issues (e.g. if a bad tasks is posted but never blocked upon it could make
+  // a test flaky whereas by flushing, the test will always fail).
+  RunUntilIdle();
 
   WebThreadImpl::ResetTaskExecutorForTesting();
 }
@@ -60,34 +43,16 @@ TestWebThreadBundle::~TestWebThreadBundle() {
 void TestWebThreadBundle::Init(int options) {
   WebThreadImpl::CreateTaskExecutor();
 
-  // TODO(crbug.com/903803): Use ScopedTaskEnviroment here instead.
-  message_loop_ = std::make_unique<base::MessageLoop>(
-      options & TestWebThreadBundle::IO_MAINLOOP ? base::MessageLoop::TYPE_IO
-                                                 : base::MessageLoop::TYPE_UI);
-
-  // TODO(crbug.com/826465): TestWebThread won't need MessageLoop*
-  // once modernized to match its //content equivalent.
-  ui_thread_.reset(new TestWebThread(WebThread::UI, message_loop_.get()));
+  ui_thread_ =
+      std::make_unique<TestWebThread>(WebThread::UI, GetMainThreadTaskRunner());
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {
-    io_thread_.reset(new TestWebThread(WebThread::IO));
+    io_thread_ = std::make_unique<TestWebThread>(WebThread::IO);
     io_thread_->StartIOThread();
   } else {
-    io_thread_.reset(new TestWebThread(WebThread::IO, message_loop_.get()));
+    io_thread_ = std::make_unique<TestWebThread>(WebThread::IO,
+                                                 GetMainThreadTaskRunner());
   }
-
-  // Copied from ScopedTaskEnvironment::ScopedTaskEnvironment.
-  // TODO(crbug.com/821034): Bring ScopedTaskEnvironment back in
-  // TestWebThreadBundle.
-  constexpr int kMaxThreads = 2;
-  const base::TimeDelta kSuggestedReclaimTime = base::TimeDelta::Max();
-  const base::SchedulerWorkerPoolParams worker_pool_params(
-      kMaxThreads, kSuggestedReclaimTime);
-  base::TaskScheduler::SetInstance(
-      std::make_unique<base::internal::TaskSchedulerImpl>(
-          "ScopedTaskEnvironment"));
-  base::TaskScheduler::GetInstance()->Start(
-      {worker_pool_params, worker_pool_params});
 }
 
 }  // namespace web

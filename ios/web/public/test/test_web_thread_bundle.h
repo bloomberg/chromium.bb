@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_BUNDLE_H_
 #define IOS_WEB_PUBLIC_TEST_TEST_WEB_THREAD_BUNDLE_H_
 
+#include "base/test/scoped_task_environment.h"
+
 // TestWebThreadBundle is a convenience class for creating a set of
 // TestWebThreads and a task scheduler in unit tests. For most tests, it is
 // sufficient to just instantiate the TestWebThreadBundle as a member variable.
@@ -39,7 +41,7 @@ namespace web {
 
 class TestWebThread;
 
-class TestWebThreadBundle {
+class TestWebThreadBundle : public base::test::ScopedTaskEnvironment {
  public:
   // Used to specify the type of MessageLoop that backs the UI thread, and
   // which of the named WebThreads should be backed by a real
@@ -50,15 +52,13 @@ class TestWebThreadBundle {
     REAL_IO_THREAD = 1 << 1,
   };
 
-  TestWebThreadBundle();
-  explicit TestWebThreadBundle(int options);
+  explicit TestWebThreadBundle(int options = Options::DEFAULT);
 
-  ~TestWebThreadBundle();
+  ~TestWebThreadBundle() override;
 
  private:
   void Init(int options);
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<TestWebThread> ui_thread_;
   std::unique_ptr<TestWebThread> io_thread_;
 
