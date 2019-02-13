@@ -3084,6 +3084,7 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
       (None, 'factory-nocturne-11066.B', ['nocturne']),
       (None, 'factory-grunt-11164.B', ['grunt']),
       (None, 'factory-rammus-11289.B', ['rammus']),
+      (None, 'factory-octopus-11512.B', ['octopus']),
   ]
 
   # Requires that you set boards, and workspace_branch.

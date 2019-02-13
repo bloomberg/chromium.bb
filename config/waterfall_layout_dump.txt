@@ -1575,6 +1575,8 @@
   factory-oak-8182.B-buildspec-tryjob
     elm-factory-oak-8182.B-factorybranch
     hana-factory-oak-8182.B-factorybranch
+  factory-octopus-11512.B-buildspec-tryjob
+    octopus-factory-octopus-11512.B-factorybranch
   factory-poppy-10504.B-buildspec-tryjob
     nautilus-factory-poppy-10504.B-factorybranch
   factory-rambi-5517.B-buildspec-tryjob
@@ -3176,6 +3178,7 @@
   octopus-chrome-pfq-tryjob
   octopus-chromium-pfq-tryjob
   octopus-compile-only-pre-cq
+  octopus-factory-octopus-11512.B-factorybranch-tryjob
   octopus-factory-tryjob
   octopus-full-tryjob
   octopus-llvm-next-toolchain-tryjob
