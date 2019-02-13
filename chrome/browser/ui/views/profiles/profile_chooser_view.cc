@@ -1421,11 +1421,10 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   // crbug.com/311124.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   DCHECK(identity_manager->HasPrimaryAccount());
-  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+  std::string primary_account_id = identity_manager->GetPrimaryAccountId();
 
-  CreateAccountButton(layout, primary_account.account_id, true,
-                      error_account_id == primary_account.account_id,
-                      menu_width_);
+  CreateAccountButton(layout, primary_account_id, true,
+                      error_account_id == primary_account_id, menu_width_);
   for (const AccountInfo& account :
        profiles::GetSecondaryAccountsForSignedInProfile(profile))
     CreateAccountButton(layout, account.account_id, false,
