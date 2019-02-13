@@ -92,6 +92,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+    Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
     NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = true;
     top_level_ = CreateTestWindow(gfx::Rect(100, 100, 100, 100));
     ASSERT_TRUE(top_level_);
