@@ -53,13 +53,6 @@ import java.util.concurrent.TimeoutException;
 public class ChromeTabUtils {
     private static final String TAG = "cr_ChromeTabUtils";
     public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
-
-    /**
-     * The required page load percentage for the page to be considered ready assuming the
-     * TextureView is also ready.
-     */
-    private static final int CONSIDERED_READY_LOAD_PERCENTAGE = 100;
-
     /**
      * An observer that waits for a Tab to load a page.
      *
@@ -765,12 +758,5 @@ public class ChromeTabUtils {
             Assert.fail(String.format(Locale.ENGLISH,
                     "Tab title didn't update to %s in time.", newTitle));
         }
-    }
-
-    /**
-     * @return Whether or not the loading and rendering of the page is done.
-     */
-    public static boolean isLoadingAndRenderingDone(Tab tab) {
-        return tab.isReady() && tab.getProgress() >= CONSIDERED_READY_LOAD_PERCENTAGE;
     }
 }

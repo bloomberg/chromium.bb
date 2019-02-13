@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -646,7 +645,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         boolean isNtp = tab.getNativePage() instanceof NewTabPage;
         boolean isLocationBarShownInNtp =
                 isNtp ? ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP() : false;
-        boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), shouldStall(tab),
+        boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(),
                 canUseLiveTexture, themeColor,
                 ColorUtils.getTextBoxColorForToolbarBackground(
                         mContext.getResources(), isLocationBarShownInNtp, themeColor),
@@ -654,12 +653,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         if (needsUpdate) requestUpdate();
 
         mHost.requestRender();
-    }
-
-    // Whether the tab is ready to display or it should be faded in as it loads.
-    private static boolean shouldStall(Tab tab) {
-        return (tab.isFrozen() || tab.needsReload())
-                && !NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito());
     }
 
     @Override
