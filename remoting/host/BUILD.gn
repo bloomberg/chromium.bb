@@ -324,6 +324,7 @@ static_library("common") {
 
   public_deps = [
     "//ipc",
+    "//remoting/proto",
   ]
 
   if (is_posix) {
