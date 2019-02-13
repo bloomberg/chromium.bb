@@ -61,6 +61,8 @@ import java.util.regex.Pattern;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class CronetUrlRequestTest {
+    private static final String TAG = CronetUrlRequestTest.class.getSimpleName();
+
     // URL used for base tests.
     private static final String TEST_URL = "http://127.0.0.1:8000";
 
@@ -2327,6 +2329,10 @@ public class CronetUrlRequestTest {
     @Feature({"Cronet"})
     @RequiresMinApi(9) // Tagging support added in API level 9: crrev.com/c/chromium/src/+/930086
     public void testTagging() throws Exception {
+        if (!CronetTestUtil.nativeCanGetTaggedBytes()) {
+            Log.i(TAG, "Skipping test - GetTaggedBytes unsupported.");
+            return;
+        }
         String url = NativeTestServer.getEchoMethodURL();
 
         // Test untagged requests are given tag 0.
