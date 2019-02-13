@@ -31,6 +31,15 @@ import java.util.ArrayList;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
+    /**
+     * An interface to get the thumbnails to be shown inside the tab grid cards.
+     */
+    public interface ThumbnailProvider {
+        /**
+         * @return The thumbnail for the given key synchronously.
+         */
+        Bitmap provideCachedThumbnailForKey(String key);
+    }
     private final int mFaviconSize;
     private final FaviconHelper mFaviconHelper = new FaviconHelper();
     private final TabListModel mModel;
@@ -151,6 +160,9 @@ class TabListMediator {
                         .with(TabProperties.TITLE, tab.getTitle())
                         .with(TabProperties.FAVICON, tab.getFavicon())
                         .with(TabProperties.IS_SELECTED, isSelected)
+                        .with(TabProperties.THUMBNAIL_PROVIDER,
+                                mTabContentManager::provideCachedThumbnailForKey)
+                        .with(TabProperties.THUMBNAIL_KEY, "")
                         .with(TabProperties.TAB_SELECTED_LISTENER, mTabSelectedListener)
                         .with(TabProperties.TAB_CLOSED_LISTENER, mTabClosedListener)
                         .build();
@@ -160,6 +172,10 @@ class TabListMediator {
                 (image, iconUrl)
                         -> mModel.get(mModel.indexFromId(tab.getId()))
                                    .set(TabProperties.FAVICON, image));
+        mTabContentManager.getTabThumbnailWithCallback(tab,
+                result
+                -> mModel.get(mModel.indexFromId(tab.getId()))
+                           .set(TabProperties.THUMBNAIL_KEY, result));
         tab.addObserver(mTabObserver);
     }
 }
