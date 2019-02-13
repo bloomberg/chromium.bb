@@ -218,7 +218,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
     PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
         gl, video_frame, GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA,
-        GL_UNSIGNED_BYTE, 0, true, false);
+        GL_UNSIGNED_BYTE, 0, false, false);
   } else {
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
     source_texture =
