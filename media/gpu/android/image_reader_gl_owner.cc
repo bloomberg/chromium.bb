@@ -89,7 +89,7 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   // Set the width, height and format to some default value. This parameters
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
-  int32_t width = 1, height = 1, max_images = 3;
+  int32_t width = 1, height = 1, max_images = 4;
   AIMAGE_FORMATS format = secure_mode == SecureMode::kSecure
                               ? AIMAGE_FORMAT_PRIVATE
                               : AIMAGE_FORMAT_YUV_420_888;
