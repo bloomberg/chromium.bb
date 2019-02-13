@@ -75,16 +75,17 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
 
   // Get 10ms audio and copy result to temporary byte buffer.
   render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
-  const int bytes_per_sample = sizeof(render_buffer_[0]);
-  static const int kBitsPerByte = 8;
+  constexpr int kBytesPerSample = 2;
+  static_assert(sizeof(render_buffer_[0]) == kBytesPerSample,
+                "kBytesPerSample and FromInterleaved expect 2 bytes.");
   int64_t elapsed_time_ms = -1;
   int64_t ntp_time_ms = -1;
   int16_t* audio_data = render_buffer_.data();
 
   TRACE_EVENT_BEGIN0("audio", "VoE::PullRenderData");
   audio_transport_callback_->PullRenderData(
-      bytes_per_sample * kBitsPerByte, sample_rate, audio_bus->channels(),
-      frames_per_10_ms, audio_data, &elapsed_time_ms, &ntp_time_ms);
+      kBytesPerSample * 8, sample_rate, audio_bus->channels(), frames_per_10_ms,
+      audio_data, &elapsed_time_ms, &ntp_time_ms);
   TRACE_EVENT_END2("audio", "VoE::PullRenderData", "elapsed_time_ms",
                    elapsed_time_ms, "ntp_time_ms", ntp_time_ms);
   if (elapsed_time_ms >= 0)
@@ -92,7 +93,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
 
   // De-interleave each channel and convert to 32-bit floating-point
   // with nominal range -1.0 -> +1.0 to match the callback format.
-  audio_bus->FromInterleaved(audio_data, audio_bus->frames(), bytes_per_sample);
+  audio_bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
+      audio_data, audio_bus->frames());
 
   // Pass the render data to the playout sinks.
   base::AutoLock auto_lock(lock_);
