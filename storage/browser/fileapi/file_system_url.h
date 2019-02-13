@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemURL {
   FileSystemURL(const FileSystemURL& other);
   // Constructs FileSystemURL with the contents of |other|, which is left in
   // valid but unspecified state.
-  FileSystemURL(FileSystemURL&& other) noexcept;
+  FileSystemURL(FileSystemURL&& other);
   ~FileSystemURL();
 
   // Replaces the contents with those of |rhs|, which is left in valid but
