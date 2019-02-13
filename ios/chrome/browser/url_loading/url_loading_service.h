@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_SERVICE_H_
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include "components/keyed_service/core/keyed_service.h"
 #import "ios/chrome/browser/ui/chrome_load_params.h"
@@ -31,6 +32,11 @@ class UrlLoadingNotifier;
 
 // Implementing delegate must open the url in |command| in a new tab.
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command;
+
+// Implementing delegate can do an animation using information in |command| when
+// opening a background tab, then call |completion|.
+- (void)animateOpenBackgroundTabFromCommand:(OpenNewTabCommand*)command
+                                 completion:(void (^)())completion;
 
 @end
 

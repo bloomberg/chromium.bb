@@ -52,3 +52,17 @@ void UrlLoadingObserverBridge::TabDidOpenUrl(
     [owner_ tabDidOpenURL:url transitionType:transition_type];
   }
 }
+
+void UrlLoadingObserverBridge::NewTabWillOpenUrl(const GURL& url,
+                                                 bool in_incognito) {
+  if ([owner_ respondsToSelector:@selector(newTabWillOpenURL:inIncognito:)]) {
+    [owner_ newTabWillOpenURL:url inIncognito:in_incognito];
+  }
+}
+
+void UrlLoadingObserverBridge::NewTabDidOpenUrl(const GURL& url,
+                                                bool in_incognito) {
+  if ([owner_ respondsToSelector:@selector(newTabDidOpenURL:inIncognito:)]) {
+    [owner_ newTabDidOpenURL:url inIncognito:in_incognito];
+  }
+}

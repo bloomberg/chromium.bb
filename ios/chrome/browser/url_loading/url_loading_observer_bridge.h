@@ -43,6 +43,15 @@
 - (void)tabDidOpenURL:(GURL)URL
        transitionType:(ui::PageTransition)transitionType;
 
+// The loader will open |URL| in a new tab. Next state will be:
+// newTabDidOpenURL.
+// Invoked by UrlLoadingObserverBridge::NewTabWillOpenUrl.
+- (void)newTabWillOpenURL:(GURL)URL inIncognito:(BOOL)inIncognito;
+
+// The loader initiated the |url| loading in a new tab successfully.
+// Invoked by UrlLoadingObserverBridge::NewTabDidOpenUrl.
+- (void)newTabDidOpenURL:(GURL)URL inIncognito:(BOOL)inIncognito;
+
 @end
 
 // Observer used to update listeners of change of state in url loading.
@@ -55,6 +64,9 @@ class UrlLoadingObserverBridge {
   void TabDidPrerenderUrl(const GURL& url, ui::PageTransition transition_type);
   void TabDidReloadUrl(const GURL& url, ui::PageTransition transition_type);
   void TabDidOpenUrl(const GURL& url, ui::PageTransition transition_type);
+
+  void NewTabWillOpenUrl(const GURL& url, bool in_incognito);
+  void NewTabDidOpenUrl(const GURL& url, bool in_incognito);
 
  private:
   __weak id<URLLoadingObserver> owner_;
