@@ -168,6 +168,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnRenderFrameMetadataChangedAfterActivation() override;
   void UpdateIntrinsicSizingInfo(
       const blink::WebIntrinsicSizingInfo& sizing_info) override;
+  std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
+      override;
 
   bool IsRenderWidgetHostViewChildFrame() override;
 

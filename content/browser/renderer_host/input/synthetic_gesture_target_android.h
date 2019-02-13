@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/public/browser/android/motion_event_action.h"
 
 namespace ui {
@@ -32,6 +33,9 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   void DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo& latency_info) override;
+  void DispatchWebGestureEventToPlatform(
+      const blink::WebGestureEvent& web_gesture,
+      const ui::LatencyInfo& latency_info) override;
   void DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) override;
@@ -48,6 +52,8 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   void TouchInject(MotionEventAction action,
                    int pointer_count,
                    base::TimeTicks time);
+
+  RenderWidgetHostViewAndroid* GetView() const;
 
   ui::ViewAndroid* const view_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;

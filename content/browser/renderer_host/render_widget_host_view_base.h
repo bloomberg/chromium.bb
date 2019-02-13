@@ -252,7 +252,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Create a platform specific SyntheticGestureTarget implementation that will
   // be used to inject synthetic input events.
   virtual std::unique_ptr<SyntheticGestureTarget>
-  CreateSyntheticGestureTarget();
+  CreateSyntheticGestureTarget() = 0;
 
   // Create a BrowserAccessibilityManager for a frame in this view.
   // If |for_root_frame| is true, creates a BrowserAccessibilityManager
@@ -339,9 +339,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       const gfx::PointF& point,
       gfx::PointF* transformed_point,
       bool* out_query_renderer);
-
-  virtual void InjectTouchEvent(const blink::WebTouchEvent& event,
-                                const ui::LatencyInfo& latency) {}
 
   virtual void PreProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void PreProcessTouchEvent(const blink::WebTouchEvent& event) {}

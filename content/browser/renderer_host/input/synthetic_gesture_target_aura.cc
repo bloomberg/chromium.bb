@@ -87,14 +87,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
   if (web_wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
-    DCHECK(
-        !render_widget_host()->GetView()->IsRenderWidgetHostViewChildFrame() &&
-        !render_widget_host()->GetView()->IsRenderWidgetHostViewGuest());
     // Send the pending wheel end event immediately.
-    static_cast<RenderWidgetHostViewAura*>(render_widget_host()->GetView())
-        ->event_handler()
-        ->mouse_wheel_phase_handler()
-        .DispatchPendingWheelEndEvent();
+    GetView()->GetMouseWheelPhaseHandler()->DispatchPendingWheelEndEvent();
     return;
   }
   base::TimeTicks timestamp = web_wheel.TimeStamp();
@@ -213,8 +207,15 @@ float SyntheticGestureTargetAura::GetMinScalingSpanInDips() const {
   return ui::GestureConfiguration::GetInstance()->min_scaling_span_in_pixels();
 }
 
+RenderWidgetHostViewAura* SyntheticGestureTargetAura::GetView() const {
+  auto* view =
+      static_cast<RenderWidgetHostViewAura*>(render_widget_host()->GetView());
+  DCHECK(view);
+  return view;
+}
+
 aura::Window* SyntheticGestureTargetAura::GetWindow() const {
-  aura::Window* window = render_widget_host()->GetView()->GetNativeView();
+  aura::Window* window = GetView()->GetNativeView();
   DCHECK(window);
   return window;
 }

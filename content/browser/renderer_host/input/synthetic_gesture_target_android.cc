@@ -6,6 +6,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "jni/SyntheticGestureTarget_jni.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -17,6 +18,7 @@
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
@@ -113,6 +115,15 @@ void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
   TouchInject(MOTION_EVENT_ACTION_SCROLL, 1, web_wheel.TimeStamp());
 }
 
+void SyntheticGestureTargetAndroid::DispatchWebGestureEventToPlatform(
+    const WebGestureEvent& web_gesture,
+    const ui::LatencyInfo& latency_info) {
+  DCHECK_EQ(blink::kWebGestureDeviceTouchpad, web_gesture.SourceDevice());
+  DCHECK(blink::WebInputEvent::IsPinchGestureEventType(web_gesture.GetType()) ||
+         blink::WebInputEvent::IsFlingGestureEventType(web_gesture.GetType()));
+  GetView()->SendGestureEvent(web_gesture);
+}
+
 void SyntheticGestureTargetAndroid::DispatchWebMouseEventToPlatform(
     const WebMouseEvent& web_mouse,
     const ui::LatencyInfo&) {
@@ -134,6 +145,13 @@ float SyntheticGestureTargetAndroid::GetMinScalingSpanInDips() const {
   // TODO(jdduke): Have all targets use the same ui::GestureConfiguration
   // codepath.
   return gfx::ViewConfiguration::GetMinScalingSpanInDips();
+}
+
+RenderWidgetHostViewAndroid* SyntheticGestureTargetAndroid::GetView() const {
+  auto* view = static_cast<RenderWidgetHostViewAndroid*>(
+      render_widget_host()->GetView());
+  DCHECK(view);
+  return view;
 }
 
 }  // namespace content
