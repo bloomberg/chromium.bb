@@ -365,14 +365,18 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
       }
 
       if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-        const auto* paint_invalidation_layer =
-            paint_invalidator_context.paint_invalidation_container->Layer();
-        if (!paint_invalidation_layer->NeedsRepaint()) {
-          auto* mapping = paint_invalidation_layer->GetCompositedLayerMapping();
-          if (!mapping)
-            mapping = paint_invalidation_layer->GroupedMapping();
-          if (mapping)
-            mapping->SetNeedsCheckRasterInvalidation();
+        if (property_changed >
+            PaintPropertyChangedState::kChangedOnlyDueToAnimations) {
+          const auto* paint_invalidation_layer =
+              paint_invalidator_context.paint_invalidation_container->Layer();
+          if (!paint_invalidation_layer->NeedsRepaint()) {
+            auto* mapping =
+                paint_invalidation_layer->GetCompositedLayerMapping();
+            if (!mapping)
+              mapping = paint_invalidation_layer->GroupedMapping();
+            if (mapping)
+              mapping->SetNeedsCheckRasterInvalidation();
+          }
         }
       } else if (!context.tree_builder_context
                       ->supports_composited_raster_invalidation) {
