@@ -686,7 +686,7 @@
       name: "JankTracking",
       implied_by: ["LayoutJankAPI", "JankTrackingSweepLine"],
       origin_trial_feature_name: "LayoutJankAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Modifies JankTracking to use O(n log n) sweep line algorithm for
