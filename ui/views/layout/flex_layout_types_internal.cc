@@ -49,13 +49,25 @@ void Span::Inset(const Inset1D& insets) {
 }
 
 void Span::Center(const Span& container, const Inset1D& margins) {
-  const int margin_total = margins.size();
-  const int remaining = container.length() - (length() + margin_total);
-  if (remaining >= 0 || margin_total <= 0)
-    set_start(container.start() + margins.leading() + remaining / 2);
-  else
-    set_start(((container.length() - length()) * margins.leading()) /
-              margin_total);
+  int remaining = container.length() - length();
+
+  // Case 1: no room for any margins. Just center the span in the container,
+  // with equal overflow on each side.
+  if (remaining <= 0) {
+    set_start(std::ceilf(remaining * 0.5f));
+    return;
+  }
+
+  // Case 2: room for only part of the margins.
+  if (margins.size() > remaining) {
+    float scale = float{remaining} / float{margins.size()};
+    set_start(std::roundf(scale * margins.leading()));
+    return;
+  }
+
+  // Case 3: room for both span and margins. Center the whole unit.
+  remaining -= margins.size();
+  set_start(remaining / 2 + margins.leading());
 }
 
 void Span::Align(const Span& container,
