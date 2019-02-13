@@ -119,7 +119,7 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
   TaskRunnerTestDelegate delegate_;
 };
 
-TYPED_TEST_CASE_P(TaskGraphRunnerTest);
+TYPED_TEST_SUITE_P(TaskGraphRunnerTest);
 
 TYPED_TEST_P(TaskGraphRunnerTest, Basic) {
   const int kNamespaceCount = TaskGraphRunnerTestBase::kNamespaceCount;
@@ -257,13 +257,16 @@ TYPED_TEST_P(TaskGraphRunnerTest, Categorys) {
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(TaskGraphRunnerTest, Basic, Dependencies, Categorys);
+REGISTER_TYPED_TEST_SUITE_P(TaskGraphRunnerTest,
+                            Basic,
+                            Dependencies,
+                            Categorys);
 
 template <typename TaskRunnerTestDelegate>
 using SingleThreadTaskGraphRunnerTest =
     TaskGraphRunnerTest<TaskRunnerTestDelegate>;
 
-TYPED_TEST_CASE_P(SingleThreadTaskGraphRunnerTest);
+TYPED_TEST_SUITE_P(SingleThreadTaskGraphRunnerTest);
 
 TYPED_TEST_P(SingleThreadTaskGraphRunnerTest, Priority) {
   const int kNamespaceCount = TaskGraphRunnerTestBase::kNamespaceCount;
@@ -293,7 +296,7 @@ TYPED_TEST_P(SingleThreadTaskGraphRunnerTest, Priority) {
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(SingleThreadTaskGraphRunnerTest, Priority);
+REGISTER_TYPED_TEST_SUITE_P(SingleThreadTaskGraphRunnerTest, Priority);
 
 }  // namespace cc
 

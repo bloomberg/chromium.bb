@@ -43,8 +43,8 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   void InitializeFromTestCase(PixelResourceTestCase test_case);
 };
 
-#define INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(framework_name)         \
-  INSTANTIATE_TEST_CASE_P(                                             \
+#define INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(framework_name)        \
+  INSTANTIATE_TEST_SUITE_P(                                            \
       PixelResourceTest, framework_name,                               \
       ::testing::Combine(                                              \
           ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),       \

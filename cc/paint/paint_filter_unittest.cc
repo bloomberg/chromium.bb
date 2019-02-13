@@ -149,7 +149,7 @@ class PaintFilterTest : public ::testing::TestWithParam<uint8_t> {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     P,
     PaintFilterTest,
     ::testing::Range(static_cast<uint8_t>(PaintFilter::Type::kColorFilter),

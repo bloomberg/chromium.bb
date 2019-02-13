@@ -33,12 +33,12 @@ class SingleThreadTaskGraphRunnerTestDelegate {
   SingleThreadTaskGraphRunner single_thread_task_graph_runner_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(SingleThreadTaskGraphRunner,
-                              TaskGraphRunnerTest,
-                              SingleThreadTaskGraphRunnerTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(SingleThreadTaskGraphRunner,
-                              SingleThreadTaskGraphRunnerTest,
-                              SingleThreadTaskGraphRunnerTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(SingleThreadTaskGraphRunner,
+                               TaskGraphRunnerTest,
+                               SingleThreadTaskGraphRunnerTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(SingleThreadTaskGraphRunner,
+                               SingleThreadTaskGraphRunnerTest,
+                               SingleThreadTaskGraphRunnerTestDelegate);
 
 }  // namespace
 }  // namespace cc

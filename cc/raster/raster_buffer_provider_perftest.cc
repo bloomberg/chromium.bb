@@ -561,12 +561,13 @@ TEST_P(RasterBufferProviderPerfTest, ScheduleAndExecuteTasks) {
   RunScheduleAndExecuteTasksTest("32_4", 32, 4);
 }
 
-INSTANTIATE_TEST_CASE_P(RasterBufferProviderPerfTests,
-                        RasterBufferProviderPerfTest,
-                        ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
-                                          RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
-                                          RASTER_BUFFER_PROVIDER_TYPE_GPU,
-                                          RASTER_BUFFER_PROVIDER_TYPE_BITMAP));
+INSTANTIATE_TEST_SUITE_P(
+    RasterBufferProviderPerfTests,
+    RasterBufferProviderPerfTest,
+    ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY,
+                      RASTER_BUFFER_PROVIDER_TYPE_GPU,
+                      RASTER_BUFFER_PROVIDER_TYPE_BITMAP));
 
 class RasterBufferProviderCommonPerfTest
     : public RasterBufferProviderPerfTestBase,

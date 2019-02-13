@@ -2839,14 +2839,14 @@ SkColorType test_color_types[] = {kN32_SkColorType, kARGB_4444_SkColorType,
 bool false_array[] = {false};
 bool true_array[] = {true};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GpuImageDecodeCacheTestsInProcessRaster,
     GpuImageDecodeCacheTest,
     testing::Combine(testing::ValuesIn(test_color_types),
                      testing::ValuesIn(false_array) /* use_transfer_cache */,
                      testing::Bool() /* do_yuv_decode */));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GpuImageDecodeCacheTestsOOPR,
     GpuImageDecodeCacheTest,
     testing::Combine(testing::ValuesIn(test_color_types),

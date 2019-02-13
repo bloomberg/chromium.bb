@@ -1082,8 +1082,8 @@ gfx::ColorSpace test_color_spaces[] = {
     gfx::ColorSpace::CreateDisplayP3D65(),
 };
 
-INSTANTIATE_TEST_CASE_P(ColorSpace,
-                        DiscardableImageMapColorSpaceTest,
-                        testing::ValuesIn(test_color_spaces));
+INSTANTIATE_TEST_SUITE_P(ColorSpace,
+                         DiscardableImageMapColorSpaceTest,
+                         testing::ValuesIn(test_color_spaces));
 
 }  // namespace cc

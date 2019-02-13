@@ -92,11 +92,11 @@ class GpuImageDecodeCachePerfTest
   std::unique_ptr<GpuImageDecodeCache> cache_;
 };
 
-INSTANTIATE_TEST_CASE_P(P,
-                        GpuImageDecodeCachePerfTest,
-                        testing::Values(TestMode::kGpu,
-                                        TestMode::kTransferCache,
-                                        TestMode::kSw));
+INSTANTIATE_TEST_SUITE_P(P,
+                         GpuImageDecodeCachePerfTest,
+                         testing::Values(TestMode::kGpu,
+                                         TestMode::kTransferCache,
+                                         TestMode::kSw));
 
 TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
   CreateCache(gfx::ColorSpace::CreateXYZD50().ToSkColorSpace());
@@ -121,10 +121,10 @@ TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
 }
 
 using GpuImageDecodeCachePerfTestNoSw = GpuImageDecodeCachePerfTest;
-INSTANTIATE_TEST_CASE_P(P,
-                        GpuImageDecodeCachePerfTestNoSw,
-                        testing::Values(TestMode::kGpu,
-                                        TestMode::kTransferCache));
+INSTANTIATE_TEST_SUITE_P(P,
+                         GpuImageDecodeCachePerfTestNoSw,
+                         testing::Values(TestMode::kGpu,
+                                         TestMode::kTransferCache));
 
 TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
   // Surface to render into.
