@@ -69,7 +69,10 @@ LocalPolicyTestServer::LocalPolicyTestServer()
 
 LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()),
-      config_file_(config_file) {}
+      config_file_(config_file) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  CHECK(server_data_dir_.CreateUniqueTempDir());
+}
 
 LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
@@ -137,6 +140,8 @@ void LocalPolicyTestServer::RegisterClient(const std::string& dm_token,
   types->AppendString(dm_protocol::kChromePublicAccountPolicyType);
   types->AppendString(dm_protocol::kChromeExtensionPolicyType);
   types->AppendString(dm_protocol::kChromeSigninExtensionPolicyType);
+  types->AppendString(dm_protocol::kChromeMachineLevelUserCloudPolicyType);
+  types->AppendString(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
 
   client_dict->Set(kClientStateKeyAllowedPolicyTypes, std::move(types));
   clients_.Set(dm_token, std::move(client_dict));

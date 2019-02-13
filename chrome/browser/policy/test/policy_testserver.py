@@ -601,12 +601,14 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
               'google/chromeos/device',
               'google/chromeos/publicaccount',
               'google/chromeos/user',
-              'google/chrome/user')):
+              'google/chrome/user',
+              'google/chrome/machine-level-user')):
         fetch_response = response.policy_response.response.add()
         self.ProcessCloudPolicy(request, token_info, fetch_response, username)
       elif (request.policy_type in
              ('google/chrome/extension',
-              'google/chromeos/signinextension')):
+              'google/chromeos/signinextension',
+              'google/chrome/machine-level-extension')):
         self.ProcessCloudPolicyForExtensions(
             request, response.policy_response, token_info, username)
       else:
@@ -806,9 +808,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if enrollment_token == INVALID_ENROLLMENT_TOKEN:
       return (401, 'Invalid enrollment token')
 
+    dm_token = 'fake_device_management_token'
     response = dm.DeviceManagementResponse()
     response.register_response.device_management_token = (
-        'fake_device_management_token')
+        dm_token)
+    self.server.RegisterBrowser(dm_token, device_id, msg.machine_name)
+
     return (200, response)
 
   def ProcessChromeDesktopReportUploadRequest(self, chrome_desktop_report):
@@ -1028,7 +1033,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       if msg.policy_type in ('google/android/user',
                              'google/chromeos/publicaccount',
                              'google/chromeos/user',
-                             'google/chrome/user'):
+                             'google/chrome/user',
+                             'google/chrome/machine-level-user'):
         settings = cp.CloudPolicySettings()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
@@ -1041,7 +1047,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
       elif msg.policy_type in ('google/chrome/extension',
-                               'google/chromeos/signinextension'):
+                               'google/chromeos/signinextension',
+                               'google/chrome/machine-level-extension'):
         settings = ep.ExternalPolicyData()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
@@ -1414,6 +1421,16 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     }
     self.WriteClientState()
     return self._registered_tokens[dmtoken]
+
+  def RegisterBrowser(self, dm_token, device_id, machine_name):
+    self._registered_tokens[dm_token] = {
+      'device_id': device_id,
+      'device_token': dm_token,
+      'allowed_policy_types': ['google/chrome/machine-level-user',
+                               'google/chrome/machine-level-extension'],
+      'machine_name': machine_name
+    }
+    self.WriteClientState()
 
   def UpdateStateKeys(self, dmtoken, state_keys):
     """Updates the state keys for a given client.
