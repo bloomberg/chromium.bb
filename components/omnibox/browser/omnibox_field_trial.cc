@@ -239,6 +239,12 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 const base::Feature kUIExperimentVerticalMargin{
     "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to show a " - Google Search", " - Bing Search", etc. suffix on
+// all search suggestions instead of just the first one in each cluster.
+const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{
+    "OmniboxUIExperimentShowSuffixOnAllSearchSuggestions",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a
 // query.
