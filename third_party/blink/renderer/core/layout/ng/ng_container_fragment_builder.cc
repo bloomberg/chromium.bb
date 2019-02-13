@@ -70,10 +70,12 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
     scoped_refptr<const NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
   NGBreakToken* child_break_token = child->BreakToken();
-  if (child_break_token) {
+  if (child_break_token && has_block_fragmentation_) {
     switch (child->Type()) {
       case NGPhysicalFragment::kFragmentBox:
       case NGPhysicalFragment::kFragmentRenderedLegend:
+        if (ToNGBlockBreakToken(child_break_token)->HasLastResortBreak())
+          has_last_resort_break_ = true;
         child_break_tokens_.push_back(child_break_token);
         break;
       case NGPhysicalFragment::kFragmentLineBox:
@@ -97,13 +99,6 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   if (child->IsOldLayoutRoot())
     has_depends_on_percentage_block_size_child_ = true;
 
-  if (!has_last_resort_break_) {
-    if (const auto* token = child->BreakToken()) {
-      if (token->IsBlockType() &&
-          ToNGBlockBreakToken(token)->HasLastResortBreak())
-        has_last_resort_break_ = true;
-    }
-  }
   children_.emplace_back(std::move(child));
   offsets_.push_back(child_offset);
   return *this;
