@@ -422,18 +422,18 @@ class ProtocolPerfTest
   DISALLOW_COPY_AND_ASSIGN(ProtocolPerfTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NoDelay,
     ProtocolPerfTest,
     ::testing::Values(NetworkPerformanceParams(0, 0, 0, 0, 0.0, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HighLatency,
     ProtocolPerfTest,
     ::testing::Values(NetworkPerformanceParams(0, 0, 300, 30, 0.0, 0),
                       NetworkPerformanceParams(0, 0, 30, 10, 0.0, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OutOfOrder,
     ProtocolPerfTest,
     ::testing::Values(NetworkPerformanceParams(0, 0, 2, 0, 0.01, 0),
@@ -442,7 +442,7 @@ INSTANTIATE_TEST_CASE_P(
                       NetworkPerformanceParams(0, 0, 300, 20, 0.01, 0),
                       NetworkPerformanceParams(0, 0, 300, 20, 0.1, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LimitedBandwidth,
     ProtocolPerfTest,
     ::testing::Values(
@@ -459,7 +459,7 @@ INSTANTIATE_TEST_CASE_P(
         NetworkPerformanceParams(800, 0.25, 130, 5, 0.00, 0),
         NetworkPerformanceParams(800, 1.0, 130, 5, 0.00, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SlowSignaling,
     ProtocolPerfTest,
     ::testing::Values(NetworkPerformanceParams(8000, 0.25, 30, 0, 0.0, 50),

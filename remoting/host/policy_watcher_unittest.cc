@@ -520,7 +520,7 @@ TEST_P(MisspelledPolicyTest, WarningLogged) {
   mock_log.StopCapturingLogs();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PolicyWatcherTest,
     MisspelledPolicyTest,
     ::testing::Values("RemoteAccessHostDomainX",
