@@ -105,6 +105,7 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::ukm::debug::UkmDebugDataExtractor;
   friend ::ukm::UkmRecorderImplTest;
   friend ::ukm::UkmUtilsForTest;
+  FRIEND_TEST_ALL_PREFIXES(UkmRecorderImplTest, PageSamplingCondition);
 
   struct MetricAggregate {
     uint64_t total_count = 0;

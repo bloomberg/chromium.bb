@@ -669,7 +669,7 @@ bool UkmRecorderImpl::IsSampledIn(int sampling_rate) {
   // A sampling rate of 0 is "never"; everything else is 1-in-N but skip
   // the RandInt() call if N==1.
   return sampling_rate > 0 &&
-         (sampling_rate == 1 || base::RandInt(1, sampling_rate) != 1);
+         (sampling_rate == 1 || base::RandInt(1, sampling_rate) == 1);
 }
 
 void UkmRecorderImpl::StoreWhitelistedEntries() {
