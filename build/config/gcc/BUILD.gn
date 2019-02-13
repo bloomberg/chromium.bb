@@ -68,7 +68,7 @@ config("rpath_for_built_shared_libraries") {
     if (current_toolchain != default_toolchain || gcc_target_rpath == "") {
       ldflags = [
         # Want to pass "\$". GN will re-escape as required for ninja.
-        "-Wl,-rpath=\$ORIGIN/.",
+        "-Wl,-rpath=\$ORIGIN",
       ]
     } else {
       ldflags = [ "-Wl,-rpath=${gcc_target_rpath}" ]
