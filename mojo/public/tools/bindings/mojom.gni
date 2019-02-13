@@ -675,19 +675,16 @@ template("mojom") {
       testonly = invoker.testonly
     }
     deps = []
+    public_deps = []
     if (defined(invoker.sources)) {
       sources =
           process_file_template(invoker.sources, generator_shared_cpp_outputs)
-      deps += [ ":$generator_shared_target_name" ]
+      public_deps += [ ":$generator_shared_target_name" ]
     }
     if (require_full_cpp_deps) {
-      public_deps = [
-        "//mojo/public/cpp/bindings",
-      ]
+      public_deps += [ "//mojo/public/cpp/bindings" ]
     } else {
-      public_deps = [
-        "//mojo/public/cpp/bindings:bindings_base",
-      ]
+      public_deps += [ "//mojo/public/cpp/bindings:bindings_base" ]
     }
     foreach(d, all_deps) {
       # Resolve the name, so that a target //mojo/something becomes
