@@ -85,9 +85,7 @@ fuzzer_test("pffft_real_fuzzer") {
 # This target must be used only for testing and benchmark purposes.
 static_library("fftpack") {
   testonly = true
-  configs += [
-    ":common_config",
-  ]
+  configs += [ ":common_config" ]
   sources = [
     "src/fftpack.c",
     "src/fftpack.h",
