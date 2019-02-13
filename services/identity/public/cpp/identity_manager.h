@@ -182,6 +182,12 @@ class IdentityManager : public SigninManagerBase::Observer,
         const std::string& account_id,
         bool is_refresh_token_valid,
         const std::string& source) {}
+
+    // Called when a refreh token is removed. Contains diagnostic information
+    // about the source that initiated the revokation operation.
+    virtual void OnRefreshTokenRemovedForAccountFromSource(
+        const std::string& account_id,
+        const std::string& source) {}
   };
 
   // Possible values for the account ID migration state, needs to be kept in
@@ -524,6 +530,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnRefreshTokenAvailableFromSource(const std::string& account_id,
                                          bool is_refresh_token_valid,
                                          const std::string& source) override;
+  void OnRefreshTokenRevokedFromSource(const std::string& account_id,
+                                       const std::string& source) override;
 
   // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;
