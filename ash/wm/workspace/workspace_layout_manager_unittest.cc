@@ -863,6 +863,35 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
   EXPECT_EQ(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
 }
 
+TEST_F(WorkspaceLayoutManagerSoloTest,
+       FullscreenDoesNotSuspendAlwaysOnTopForPip) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  std::unique_ptr<aura::Window> fullscreen_window(
+      CreateTestWindowInShellWithBounds(bounds));
+  std::unique_ptr<aura::Window> pip_window(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  pip_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  EXPECT_TRUE(window_state->IsPip());
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+
+  // Making a window fullscreen temporarily suspends always on top state, but
+  // should not do so for PIP.
+  fullscreen_window->SetProperty(aura::client::kShowStateKey,
+                                 ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_NE(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
+
+  // Making fullscreen window normal does not affect PIP.
+  fullscreen_window->SetProperty(aura::client::kShowStateKey,
+                                 ui::SHOW_STATE_NORMAL);
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_EQ(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
+}
+
 // Similary, pinned window causes always_on_top_ windows to stack below.
 TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
   gfx::Rect bounds(100, 100, 200, 200);
@@ -898,6 +927,45 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_TRUE(
       always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
+}
+
+TEST_F(WorkspaceLayoutManagerSoloTest, PinnedDoesNotSuspendAlwaysOnTopForPip) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  std::unique_ptr<aura::Window> pinned_window(
+      CreateTestWindowInShellWithBounds(bounds));
+  std::unique_ptr<aura::Window> pip_window(
+      CreateTestWindowInShellWithBounds(bounds));
+  {
+    wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
+    const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+    window_state->OnWMEvent(&enter_pip);
+    pip_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+    EXPECT_TRUE(window_state->IsPip());
+    EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  }
+
+  // Making a window pinned temporarily suspends always on top state, except
+  // for PIP.
+  const bool trusted = false;
+  wm::PinWindow(pinned_window.get(), trusted);
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+
+  // Adding a new PIP window should still end up always on top.
+  std::unique_ptr<aura::Window> pip_window2(
+      CreateTestWindowInShellWithBounds(bounds));
+  {
+    wm::WindowState* window_state = wm::GetWindowState(pip_window2.get());
+    const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+    window_state->OnWMEvent(&enter_pip);
+    pip_window2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+    EXPECT_TRUE(window_state->IsPip());
+    EXPECT_TRUE(pip_window2->GetProperty(aura::client::kAlwaysOnTopKey));
+  }
+
+  // Making pinned window normal should not affect existing PIP windows.
+  wm::GetWindowState(pinned_window.get())->Restore();
+  EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(pip_window2->GetProperty(aura::client::kAlwaysOnTopKey));
 }
 
 // Tests fullscreen window size during root window resize.
