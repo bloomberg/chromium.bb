@@ -320,8 +320,8 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
   if (!EventRouter::Get(profile_))
     return;
 
-  std::unique_ptr<base::Value> result =
-      base::JSONReader::Read(message, base::JSON_REPLACE_INVALID_CHARACTERS);
+  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
+      message, base::JSON_REPLACE_INVALID_CHARACTERS);
   if (!result || !result->is_dict()) {
     LOG(ERROR) << "Tried to send invalid message to extension: " << message;
     return;

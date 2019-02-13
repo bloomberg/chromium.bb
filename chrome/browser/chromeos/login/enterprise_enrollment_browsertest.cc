@@ -387,7 +387,7 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   // which does not set any fields.
   void CheckPossibleConfiguration(const std::string& configuration) {
     std::unique_ptr<base::ListValue> options =
-        base::ListValue::From(base::JSONReader::Read(
+        base::ListValue::From(base::JSONReader::ReadDeprecated(
             configuration,
             base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
     base::DictionaryValue custom_option;

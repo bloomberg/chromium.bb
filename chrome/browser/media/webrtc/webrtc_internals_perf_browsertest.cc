@@ -74,7 +74,7 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
         webrtc_internals_tab);
 
     std::unique_ptr<base::Value> parsed_json =
-        base::JSONReader::Read(all_stats_json);
+        base::JSONReader::ReadDeprecated(all_stats_json);
     base::DictionaryValue* result;
     if (parsed_json.get() && parsed_json->GetAsDictionary(&result)) {
       ignore_result(parsed_json.release());

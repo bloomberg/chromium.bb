@@ -85,9 +85,10 @@ class WebRtcGetMediaDevicesBrowserTest
 
     int error_code;
     std::string error_message;
-    std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-        devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
-        &error_message);
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
+            &error_message);
 
     ASSERT_TRUE(value.get() != NULL) << error_message;
     EXPECT_EQ(value->type(), base::Value::Type::LIST);

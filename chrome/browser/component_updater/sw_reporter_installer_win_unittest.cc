@@ -284,9 +284,9 @@ TEST_F(SwReporterInstallerTest, SingleInvocation) {
       "    \"prompt\": false"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should be launched once with the given arguments.
   EXPECT_EQ(default_version_, extracted_invocations_.version());
@@ -340,9 +340,9 @@ TEST_F(SwReporterInstallerTest, MultipleInvocations) {
       "  }"
 
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should be launched four times with the given arguments.
   EXPECT_EQ(default_version_, extracted_invocations_.version());
@@ -380,9 +380,9 @@ TEST_F(SwReporterInstallerTest, MissingSuffix) {
       "    \"arguments\": [\"random argument\"]"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectLaunchError();
 }
@@ -397,9 +397,9 @@ TEST_F(SwReporterInstallerTest, EmptySuffix) {
       "    \"arguments\": [\"random argument\"]"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectInvocationFromManifest("", L"random argument");
 }
@@ -412,9 +412,9 @@ TEST_F(SwReporterInstallerTest, MissingSuffixAndArgs) {
       "  {"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectLaunchError();
 }
@@ -429,9 +429,9 @@ TEST_F(SwReporterInstallerTest, EmptySuffixAndArgs) {
       "    \"arguments\": []"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectInvocationFromManifest("", L"");
 }
@@ -446,9 +446,9 @@ TEST_F(SwReporterInstallerTest, EmptySuffixAndArgsWithEmptyString) {
       "    \"arguments\": [\"\"]"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectInvocationFromManifest("", L"");
 }
@@ -462,9 +462,9 @@ TEST_F(SwReporterInstallerTest, MissingArguments) {
       "    \"suffix\": \"TestSuffix\""
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectLaunchError();
 }
@@ -479,9 +479,9 @@ TEST_F(SwReporterInstallerTest, EmptyArguments) {
       "    \"arguments\": []"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectInvocationFromManifest("TestSuffix", L"");
 }
@@ -496,9 +496,9 @@ TEST_F(SwReporterInstallerTest, EmptyArgumentsWithEmptyString) {
       "    \"arguments\": [\"\"]"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   ExpectInvocationFromManifest("TestSuffix", L"");
 }
@@ -507,9 +507,9 @@ TEST_F(SwReporterInstallerTest, EmptyManifest) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = "{}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
   ExpectDefaultInvocation();
 }
 
@@ -517,9 +517,9 @@ TEST_F(SwReporterInstallerTest, EmptyLaunchParams) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = "{\"launch_params\": []}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
   ExpectDefaultInvocation();
 }
 
@@ -533,9 +533,9 @@ TEST_F(SwReporterInstallerTest, BadSuffix) {
       "    \"suffix\": \"invalid whitespace characters\""
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -558,7 +558,7 @@ TEST_F(SwReporterInstallerTest, SuffixTooLong) {
       base::StringPrintf(kTestManifest, suffix_too_long.c_str());
   policy.ComponentReady(
       default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(manifest)));
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(manifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -577,9 +577,9 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_ArgumentsIsNotAList) {
       "    \"suffix\": \"TestSuffix\""
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -599,9 +599,9 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_InvocationParamsIsNotAList) {
       "    \"suffix\": \"TestSuffix\""
       "  }"
       "}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -620,9 +620,9 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_SuffixIsAList) {
       "    \"suffix\": [\"TestSuffix\"]"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -642,9 +642,9 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_PromptIsNotABoolean) {
       "    \"prompt\": 1"
       "  }"
       "]}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -656,9 +656,9 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsScalar) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = "{\"launch_params\": 0}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());
@@ -670,9 +670,9 @@ TEST_F(SwReporterInstallerTest, BadTypesInManifest_LaunchParamsIsDict) {
   SwReporterInstallerPolicy policy(on_component_ready_callback_);
 
   static constexpr char kTestManifest[] = "{\"launch_params\": {}}";
-  policy.ComponentReady(
-      default_version_, default_path_,
-      base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
+  policy.ComponentReady(default_version_, default_path_,
+                        base::DictionaryValue::From(
+                            base::JSONReader::ReadDeprecated(kTestManifest)));
 
   // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(extracted_invocations_.container().empty());

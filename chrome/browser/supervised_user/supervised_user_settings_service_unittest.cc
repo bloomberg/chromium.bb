@@ -109,7 +109,7 @@ class SupervisedUserSettingsServiceTest : public ::testing::Test {
     }
 
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(supervised_user_setting.value());
+        base::JSONReader::ReadDeprecated(supervised_user_setting.value());
     EXPECT_TRUE(expected_value->Equals(value.get()));
   }
 

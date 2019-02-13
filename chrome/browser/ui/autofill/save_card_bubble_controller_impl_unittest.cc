@@ -100,7 +100,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
                        bool should_request_name_from_user = false,
                        bool should_request_expiration_date_from_user = false,
                        bool show_bubble = true) {
-    std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
+    std::unique_ptr<base::Value> value(
+        base::JSONReader::ReadDeprecated(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));

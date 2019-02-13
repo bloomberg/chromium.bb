@@ -55,6 +55,11 @@ std::unique_ptr<Value> JSONReader::Read(StringPiece json,
   return root ? std::make_unique<Value>(std::move(*root)) : nullptr;
 }
 
+std::unique_ptr<Value> JSONReader::ReadDeprecated(StringPiece json,
+                                                  int options,
+                                                  int max_depth) {
+  return Read(json, options, max_depth);
+}
 
 // static
 std::unique_ptr<Value> JSONReader::ReadAndReturnError(
@@ -78,6 +83,18 @@ std::unique_ptr<Value> JSONReader::ReadAndReturnError(
   }
 
   return root ? std::make_unique<Value>(std::move(*root)) : nullptr;
+}
+
+// static
+std::unique_ptr<Value> JSONReader::ReadAndReturnErrorDeprecated(
+    StringPiece json,
+    int options,
+    int* error_code_out,
+    std::string* error_msg_out,
+    int* error_line_out,
+    int* error_column_out) {
+  return ReadAndReturnError(json, options, error_code_out, error_msg_out,
+                            error_line_out, error_column_out);
 }
 
 // static

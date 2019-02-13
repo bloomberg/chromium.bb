@@ -299,7 +299,8 @@ void PolicyUITest::VerifyPolicies(
   std::string json;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript,
                                                      &json));
-  std::unique_ptr<base::Value> value_ptr = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value_ptr =
+      base::JSONReader::ReadDeprecated(json);
   const base::ListValue* actual_policies = NULL;
   ASSERT_TRUE(value_ptr.get());
   ASSERT_TRUE(value_ptr->GetAsList(&actual_policies));
@@ -343,7 +344,7 @@ void PolicyUITest::VerifyExportingPolicies(
       base::ReadFileToString(export_policies_test_file_path, &file_contents));
 
   std::unique_ptr<base::Value> value_ptr =
-      base::JSONReader::Read(file_contents);
+      base::JSONReader::ReadDeprecated(file_contents);
 
   // Check that the file contains a valid dictionary.
   EXPECT_TRUE(value_ptr.get());

@@ -247,8 +247,9 @@ class PolicyTestCases {
     int error_code = -1;
     std::string error_string;
     base::DictionaryValue* dict = NULL;
-    std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-        json, base::JSON_PARSE_RFC, &error_code, &error_string);
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            json, base::JSON_PARSE_RFC, &error_code, &error_string);
     if (!value.get() || !value->GetAsDictionary(&dict)) {
       ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
       return;

@@ -174,8 +174,8 @@ std::string SigninEmailConfirmationDialog::GetDialogArgs() const {
 void SigninEmailConfirmationDialog::OnDialogClosed(
     const std::string& json_retval) {
   Action action = CLOSE;
-  std::unique_ptr<base::DictionaryValue> ret_value(
-      base::DictionaryValue::From(base::JSONReader::Read(json_retval)));
+  std::unique_ptr<base::DictionaryValue> ret_value(base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(json_retval)));
   if (ret_value) {
     std::string action_string;
     if (ret_value->GetString(kSigninEmailConfirmationActionKey,

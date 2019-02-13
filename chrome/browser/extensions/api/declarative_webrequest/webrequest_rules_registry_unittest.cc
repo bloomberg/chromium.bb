@@ -542,9 +542,11 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
       "  \"priority\": 300                                               \n"
       "}                                                                 ";
 
-  std::unique_ptr<base::Value> value1 = base::JSONReader::Read(kRule1);
+  std::unique_ptr<base::Value> value1 =
+      base::JSONReader::ReadDeprecated(kRule1);
   ASSERT_TRUE(value1.get());
-  std::unique_ptr<base::Value> value2 = base::JSONReader::Read(kRule2);
+  std::unique_ptr<base::Value> value2 =
+      base::JSONReader::ReadDeprecated(kRule2);
   ASSERT_TRUE(value2.get());
 
   std::vector<const api::events::Rule*> rules;
@@ -712,7 +714,7 @@ TEST(WebRequestRulesRegistrySimpleTest, StageChecker) {
       "  \"priority\": 200                                                \n"
       "}                                                                  ";
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(kRule);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(kRule);
   ASSERT_TRUE(value);
 
   api::events::Rule rule;
@@ -745,7 +747,8 @@ TEST(WebRequestRulesRegistrySimpleTest, HostPermissionsChecker) {
       "  \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
       "  \"redirectUrl\": \"http://bar.com\"                         \n"
       "}                                                             ";
-  std::unique_ptr<base::Value> action_value = base::JSONReader::Read(kAction);
+  std::unique_ptr<base::Value> action_value =
+      base::JSONReader::ReadDeprecated(kAction);
   ASSERT_TRUE(action_value);
 
   WebRequestActionSet::Values actions;
@@ -801,7 +804,7 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
       "  \"priority\": 200                                               \n"
       "}                                                                 ";
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(kRule);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(kRule);
   ASSERT_TRUE(value.get());
 
   std::vector<const api::events::Rule*> rules;

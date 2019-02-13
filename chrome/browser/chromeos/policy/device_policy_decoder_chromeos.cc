@@ -1188,8 +1188,9 @@ std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
     const std::string& policy_name,
     std::string* error) {
   std::string json_error;
-  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
-      json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &json_error);
+  std::unique_ptr<base::Value> root =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &json_error);
   if (!root) {
     *error = "Invalid JSON string: " + json_error;
     return nullptr;

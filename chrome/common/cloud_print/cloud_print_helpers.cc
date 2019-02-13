@@ -188,7 +188,7 @@ std::unique_ptr<base::DictionaryValue> ParseResponseJSON(
     const std::string& response_data,
     bool* succeeded) {
   std::unique_ptr<base::Value> message_value(
-      base::JSONReader::Read(response_data));
+      base::JSONReader::ReadDeprecated(response_data));
   if (!message_value.get())
     return std::unique_ptr<base::DictionaryValue>();
 

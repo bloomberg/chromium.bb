@@ -264,8 +264,8 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     // Parse the JSON sent to the service, and verify its parameters.
     std::unique_ptr<base::DictionaryValue> value(
         static_cast<base::DictionaryValue*>(
-            base::JSONReader::Read(intercepted_body,
-                                   base::JSON_ALLOW_TRAILING_COMMAS)
+            base::JSONReader::ReadDeprecated(intercepted_body,
+                                             base::JSON_ALLOW_TRAILING_COMMAS)
                 .release()));
     ASSERT_TRUE(value.get());
     std::string method;

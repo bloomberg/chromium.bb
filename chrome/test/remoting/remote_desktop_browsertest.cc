@@ -890,8 +890,8 @@ void RemoteDesktopBrowserTest::SetUserNameAndPassword(
   ASSERT_TRUE(base::ReadFileToString(absolute_path, &accounts_info));
 
   // Get the root dictionary from the input json file contents.
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::Read(accounts_info, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> root = base::JSONReader::ReadDeprecated(
+      accounts_info, base::JSON_ALLOW_TRAILING_COMMAS);
 
   const base::DictionaryValue* root_dict = NULL;
   ASSERT_TRUE(root.get() && root->GetAsDictionary(&root_dict));

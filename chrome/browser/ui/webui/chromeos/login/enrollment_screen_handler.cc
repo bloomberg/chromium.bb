@@ -640,7 +640,7 @@ void EnrollmentScreenHandler::OnAdConfigurationUnlocked(
     return;
   }
   std::unique_ptr<base::ListValue> options =
-      base::ListValue::From(base::JSONReader::Read(
+      base::ListValue::From(base::JSONReader::ReadDeprecated(
           unlocked_data, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
   if (!options) {
     ShowError(IDS_AD_JOIN_CONFIG_NOT_PARSED, true);

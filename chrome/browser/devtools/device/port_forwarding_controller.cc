@@ -69,7 +69,7 @@ const char kConnectionIdParam[] = "connectionId";
 static bool ParseNotification(const std::string& json,
                               std::string* method,
                               std::unique_ptr<base::DictionaryValue>* params) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value || !value->is_dict())
     return false;
 
@@ -90,7 +90,7 @@ static bool ParseNotification(const std::string& json,
 static bool ParseResponse(const std::string& json,
                           int* command_id,
                           int* error_code) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value || !value->is_dict())
     return false;
 

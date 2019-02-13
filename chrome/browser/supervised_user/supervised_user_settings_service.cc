@@ -242,7 +242,7 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
     const ::sync_pb::ManagedUserSettingSpecifics& supervised_user_setting =
         sync_data.GetSpecifics().managed_user_setting();
     std::unique_ptr<base::Value> value =
-        JSONReader::Read(supervised_user_setting.value());
+        JSONReader::ReadDeprecated(supervised_user_setting.value());
     // Wrongly formatted input will cause null values.
     // SetWithoutPathExpansion below requires non-null values.
     if (!value) {
@@ -366,7 +366,7 @@ SyncError SupervisedUserSettingsService::ProcessSyncChanges(
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
         std::unique_ptr<base::Value> value =
-            JSONReader::Read(supervised_user_setting.value());
+            JSONReader::ReadDeprecated(supervised_user_setting.value());
         if (dict->HasKey(key)) {
           DLOG_IF(WARNING, change_type == SyncChange::ACTION_ADD)
               << "Value for key " << key << " already exists";

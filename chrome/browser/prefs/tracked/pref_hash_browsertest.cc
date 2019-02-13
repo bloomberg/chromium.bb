@@ -1236,9 +1236,9 @@ class PrefHashBrowserTestDefaultSearch : public PrefHashBrowserTestBase {
 
     // Try to override default search in all three of available preferences.
     auto attack1 = base::DictionaryValue::From(
-        base::JSONReader::Read(default_search_provider_data));
+        base::JSONReader::ReadDeprecated(default_search_provider_data));
     auto attack2 = base::DictionaryValue::From(
-        base::JSONReader::Read(search_provider_overrides));
+        base::JSONReader::ReadDeprecated(search_provider_overrides));
     unprotected_preferences->MergeDictionary(attack1.get());
     unprotected_preferences->MergeDictionary(attack2.get());
     if (protected_preferences) {

@@ -275,7 +275,8 @@ base::string16 FormatURLForDisplay(const GURL& url, bool is_rtl) {
 std::unique_ptr<NavigationCorrectionResponse> ParseNavigationCorrectionResponse(
     const std::string raw_response) {
   // TODO(mmenke):  Open source related protocol buffers and use them directly.
-  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(raw_response);
+  std::unique_ptr<base::Value> parsed =
+      base::JSONReader::ReadDeprecated(raw_response);
   std::unique_ptr<NavigationCorrectionResponse> response(
       new NavigationCorrectionResponse());
   base::JSONValueConverter<NavigationCorrectionResponse> converter;

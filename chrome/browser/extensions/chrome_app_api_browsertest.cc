@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
           &result));
   std::unique_ptr<base::DictionaryValue> app_details(
       static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(result).release()));
+          base::JSONReader::ReadDeprecated(result).release()));
   // extension->manifest() does not contain the id.
   app_details->Remove("id", NULL);
   EXPECT_TRUE(app_details.get());

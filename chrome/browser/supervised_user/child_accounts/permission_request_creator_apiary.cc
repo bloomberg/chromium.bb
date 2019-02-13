@@ -294,7 +294,7 @@ void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
   if (response_body)
     body = std::move(*response_body);
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(body);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(body);
   base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict)) {
     LOG(WARNING) << "Invalid top-level dictionary";

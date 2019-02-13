@@ -183,7 +183,7 @@ BootTimesRecorder::Stats BootTimesRecorder::Stats::DeserializeFromString(
   if (source.empty())
     return Stats();
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(source);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(source);
   base::DictionaryValue* dictionary;
   if (!value || !value->GetAsDictionary(&dictionary)) {
     LOG(ERROR) << "BootTimesRecorder::Stats::DeserializeFromString(): not a "

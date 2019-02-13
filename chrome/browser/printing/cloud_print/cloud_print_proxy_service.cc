@@ -244,7 +244,7 @@ void CloudPrintProxyService::OnReadCloudPrintSetupProxyList(
     PrintersCallback callback,
     const std::string& printers_json) {
   std::unique_ptr<base::Value> list_value =
-      base::ListValue::From(base::JSONReader::Read(printers_json));
+      base::ListValue::From(base::JSONReader::ReadDeprecated(printers_json));
   std::vector<std::string> printers;
   if (list_value) {
     for (const auto& element : list_value->GetList()) {

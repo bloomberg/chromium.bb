@@ -591,7 +591,7 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
       ConvertJavaStringToUTF8(env, jembedder.is_null() ? jorigin : jembedder));
   DCHECK(embedder.is_valid());
   std::unique_ptr<base::DictionaryValue> object = base::DictionaryValue::From(
-      base::JSONReader::Read(ConvertJavaStringToUTF8(env, jobject)));
+      base::JSONReader::ReadDeprecated(ConvertJavaStringToUTF8(env, jobject)));
   DCHECK(object);
   ChooserContextBase* context = GetChooserContext(
       static_cast<ContentSettingsType>(content_settings_type));

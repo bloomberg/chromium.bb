@@ -48,7 +48,7 @@ class TestStatsDictionaryTest : public testing::Test {
  public:
   TestStatsDictionaryTest() {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(kTestStatsReportJson);
+        base::JSONReader::ReadDeprecated(kTestStatsReportJson);
     CHECK(value);
     base::DictionaryValue* dictionary;
     CHECK(value->GetAsDictionary(&dictionary));

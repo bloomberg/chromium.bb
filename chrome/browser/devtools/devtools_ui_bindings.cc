@@ -571,7 +571,8 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
   base::ListValue* params = &empty_params;
 
   base::DictionaryValue* dict = NULL;
-  std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> parsed_message =
+      base::JSONReader::ReadDeprecated(message);
   if (!parsed_message ||
       !parsed_message->GetAsDictionary(&dict) ||
       !dict->GetString(kFrontendHostMethod, &method) ||
@@ -806,7 +807,7 @@ void DevToolsUIBindings::IndexPath(
     return;
   std::vector<std::string> excluded_folders;
   std::unique_ptr<base::Value> parsed_excluded_folders =
-      base::JSONReader::Read(excluded_folders_message);
+      base::JSONReader::ReadDeprecated(excluded_folders_message);
   if (parsed_excluded_folders && parsed_excluded_folders->is_list()) {
     const std::vector<base::Value>& folder_paths =
         parsed_excluded_folders->GetList();
@@ -891,7 +892,7 @@ void DevToolsUIBindings::SetDevicesDiscoveryConfig(
     const std::string& network_discovery_config) {
   base::DictionaryValue* port_forwarding_dict = nullptr;
   std::unique_ptr<base::Value> parsed_port_forwarding =
-      base::JSONReader::Read(port_forwarding_config);
+      base::JSONReader::ReadDeprecated(port_forwarding_config);
   if (!parsed_port_forwarding ||
       !parsed_port_forwarding->GetAsDictionary(&port_forwarding_dict)) {
     return;
@@ -899,7 +900,7 @@ void DevToolsUIBindings::SetDevicesDiscoveryConfig(
 
   base::ListValue* network_list = nullptr;
   std::unique_ptr<base::Value> parsed_network =
-      base::JSONReader::Read(network_discovery_config);
+      base::JSONReader::ReadDeprecated(network_discovery_config);
   if (!parsed_network || !parsed_network->GetAsList(&network_list))
     return;
 

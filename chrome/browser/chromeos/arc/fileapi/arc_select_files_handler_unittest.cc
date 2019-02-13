@@ -256,10 +256,10 @@ TEST_F(ArcSelectFilesHandlerTest, GetFileSelectorElements) {
   EXPECT_CALL(*mock_script_executor_, ExecuteJavaScript(kScriptGetElements, _))
       .WillOnce(testing::Invoke(
           [](const std::string&, const JavaScriptResultCallback& callback) {
-            callback.Run(
-                base::JSONReader::Read("{\"dirNames\" :[\"dir1\", \"dir2\"],"
-                                       " \"fileNames\":[\"file1\",\"file2\"]}")
-                    .get());
+            callback.Run(base::JSONReader::ReadDeprecated(
+                             "{\"dirNames\" :[\"dir1\", \"dir2\"],"
+                             " \"fileNames\":[\"file1\",\"file2\"]}")
+                             .get());
           }));
 
   mojom::FileSelectorElementsPtr expectedElements =

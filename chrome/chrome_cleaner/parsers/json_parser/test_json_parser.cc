@@ -14,10 +14,12 @@ void TestJsonParser::Parse(const std::string& json,
                            ParseDoneCallback callback) {
   int error_code;
   std::string error;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json,
-      base::JSON_ALLOW_TRAILING_COMMAS | base::JSON_REPLACE_INVALID_CHARACTERS,
-      &error_code, &error);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json,
+          base::JSON_ALLOW_TRAILING_COMMAS |
+              base::JSON_REPLACE_INVALID_CHARACTERS,
+          &error_code, &error);
   if (value) {
     std::move(callback).Run(base::make_optional(std::move(*value)),
                             base::nullopt);

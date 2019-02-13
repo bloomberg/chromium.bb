@@ -127,8 +127,9 @@ void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) const {
   std::string error;
-  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
-      onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+  std::unique_ptr<base::Value> root =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
 
   base::DictionaryValue* toplevel_onc = nullptr;
   if (!root || !root->GetAsDictionary(&toplevel_onc)) {

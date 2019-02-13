@@ -530,7 +530,8 @@ bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
   std::unique_ptr<base::DictionaryValue> ticket_value(
-      base::DictionaryValue::From(base::JSONReader::Read(print_ticket_data)));
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(print_ticket_data)));
   return !!ticket_value;
 }
 
@@ -540,7 +541,8 @@ bool PrintSystemCUPS::ParsePrintTicket(
     std::map<std::string, std::string>* options) {
   DCHECK(options);
   std::unique_ptr<base::DictionaryValue> ticket_value(
-      base::DictionaryValue::From(base::JSONReader::Read(print_ticket)));
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(print_ticket)));
   if (!ticket_value)
     return false;
 

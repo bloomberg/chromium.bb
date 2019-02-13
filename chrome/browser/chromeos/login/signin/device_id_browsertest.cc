@@ -153,7 +153,8 @@ class DeviceIDTest : public OobeBaseTest,
     if (!base::ReadFileToString(GetRefreshTokenToDeviceIdMapFilePath(),
                                 &file_contents))
       return;
-    std::unique_ptr<base::Value> value(base::JSONReader::Read(file_contents));
+    std::unique_ptr<base::Value> value(
+        base::JSONReader::ReadDeprecated(file_contents));
     base::DictionaryValue* dictionary;
     EXPECT_TRUE(value->GetAsDictionary(&dictionary));
     FakeGaia::RefreshTokenToDeviceIdMap map;

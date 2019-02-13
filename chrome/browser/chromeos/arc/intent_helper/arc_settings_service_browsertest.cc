@@ -191,7 +191,8 @@ int CountProxyBroadcasts(
   int count = 0;
   for (const FakeIntentHelperInstance::Broadcast& broadcast : broadcasts) {
     if (broadcast.action == kSetProxyBroadcastAction) {
-      EXPECT_TRUE(base::JSONReader::Read(broadcast.extras)->Equals(extras));
+      EXPECT_TRUE(
+          base::JSONReader::ReadDeprecated(broadcast.extras)->Equals(extras));
       count++;
     }
   }

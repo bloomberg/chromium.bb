@@ -892,7 +892,7 @@ bool ArcTracingGraphicsModel::LoadFromJson(const std::string& json_data) {
   Reset();
 
   const std::unique_ptr<base::DictionaryValue> root =
-      base::DictionaryValue::From(base::JSONReader::Read(json_data));
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(json_data));
   if (!root)
     return false;
 

@@ -73,7 +73,7 @@ void ArcSupportMessageHost::OnMessage(const std::string& message_string) {
     return;
 
   std::unique_ptr<base::Value> message_value =
-      base::JSONReader::Read(message_string);
+      base::JSONReader::ReadDeprecated(message_string);
   base::DictionaryValue* message;
   if (!message_value || !message_value->GetAsDictionary(&message)) {
     NOTREACHED();

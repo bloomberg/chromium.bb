@@ -1464,7 +1464,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
 
     // If the message in JSON format has no command, ignore it
     // but note a reply is required: use std::string().
-    const auto json = base::JSONReader::Read(message.message);
+    const auto json = base::JSONReader::ReadDeprecated(message.message);
     const base::DictionaryValue* dictionary = nullptr;
     std::string command;
     if (!json || !json->GetAsDictionary(&dictionary) ||
@@ -1516,7 +1516,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       auto event = std::make_unique<extensions::Event>(
           extensions::events::FOR_TEST,
           extensions::api::test::OnMessage::kEventName,
-          base::ListValue::From(base::JSONReader::Read(
+          base::ListValue::From(base::JSONReader::ReadDeprecated(
               R"([{"data": "preloadZip", "lastMessage": false}])")),
           profile());
       extensions::EventRouter::Get(profile())->DispatchEventToExtension(
