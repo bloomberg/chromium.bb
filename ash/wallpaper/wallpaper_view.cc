@@ -12,8 +12,6 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_utils.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -95,58 +93,18 @@ SkColor GetWallpaperDarkenColorForTabletMode() {
 
 }  // namespace
 
-// This event handler receives events in the pre-target phase and takes care of
-// the following:
-//   - Disabling overview mode on touch release.
-//   - Disabling overview mode on mouse release.
-class PreEventDispatchHandler : public ui::EventHandler {
- public:
-  PreEventDispatchHandler() = default;
-  ~PreEventDispatchHandler() override = default;
-
- private:
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override {
-    if (event->type() == ui::ET_MOUSE_RELEASED)
-      HandleClickOrTap(event);
-  }
-
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    if (event->type() == ui::ET_GESTURE_TAP)
-      HandleClickOrTap(event);
-  }
-
-  void HandleClickOrTap(ui::Event* event) {
-    CHECK_EQ(ui::EP_PRETARGET, event->phase());
-    OverviewController* controller = Shell::Get()->overview_controller();
-    if (!controller->IsSelecting())
-      return;
-    // Events that happen while app list is sliding out during overview should
-    // be ignored to prevent overview from disappearing out from under the user.
-    if (!IsSlidingOutOverviewFromShelf())
-      controller->ToggleOverview();
-    event->StopPropagation();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(PreEventDispatchHandler);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // WallpaperView, public:
 
-WallpaperView::WallpaperView()
-    : pre_dispatch_handler_(new PreEventDispatchHandler()) {
+WallpaperView::WallpaperView() {
   set_context_menu_controller(this);
-  AddPreTargetHandler(pre_dispatch_handler_.get());
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
   is_tablet_mode_ = Shell::Get()
                         ->tablet_mode_controller()
                         ->IsTabletModeWindowManagerEnabled();
 }
 
-WallpaperView::~WallpaperView() {
-  RemovePreTargetHandler(pre_dispatch_handler_.get());
-}
+WallpaperView::~WallpaperView() = default;
 
 void WallpaperView::OnTabletModeStarted() {
   is_tablet_mode_ = true;

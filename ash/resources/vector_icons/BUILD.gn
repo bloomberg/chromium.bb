@@ -54,6 +54,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "network_ethernet.icon",
     "network_mobile_not_connected_x.icon",
     "network_vpn.icon",
+    "new_desk_button.icon",
     "notification_accessibility.icon",
     "notification_accessibility_braille.icon",
     "notification_battery_critical.icon",

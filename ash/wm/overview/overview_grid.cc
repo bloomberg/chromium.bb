@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
@@ -22,6 +23,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -187,6 +189,9 @@ gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
 
 // ShieldView contains the background for overview mode. It also contains text
 // which is shown if there are no windows to be displayed.
+// This view also takes care of disabling overview mode on:
+//   - Gesture tap.
+//   - Mouse release.
 class OverviewGrid::ShieldView : public views::View {
  public:
   ShieldView() {
@@ -223,6 +228,11 @@ class OverviewGrid::ShieldView : public views::View {
 
     AddChildView(background_view_);
     AddChildView(label_container_);
+
+    if (features::IsVirtualDesksEnabled()) {
+      desks_bar_view_ = new DesksBarView;
+      AddChildView(desks_bar_view_);
+    }
   }
 
   ~ShieldView() override = default;
@@ -249,19 +259,70 @@ class OverviewGrid::ShieldView : public views::View {
     label_container_bounds.ClampToCenteredSize(
         gfx::Size(label_width, kNoItemsIndicatorHeightDp));
     label_container_->SetBoundsRect(label_container_bounds);
+
+    UpdateDesksBarBounds();
   }
 
   bool IsLabelVisible() const { return label_container_->visible(); }
 
  protected:
   // views::View:
-  void Layout() override { background_view_->SetBoundsRect(GetLocalBounds()); }
+  void Layout() override {
+    background_view_->SetBoundsRect(GetLocalBounds());
+    UpdateDesksBarBounds();
+  }
 
  private:
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_PRESSED) {
+      // In order to receive subsequent mouse release events in this view, we
+      // must mark the event as handled in this view.
+      event->SetHandled();
+      return;
+    }
+
+    HandleClickReleaseOrTap(event);
+  }
+
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    HandleClickReleaseOrTap(event);
+  }
+
+  void HandleClickReleaseOrTap(ui::Event* event) {
+    if (event->type() != ui::ET_MOUSE_RELEASED &&
+        event->type() != ui::ET_GESTURE_TAP) {
+      return;
+    }
+
+    OverviewController* controller = Shell::Get()->overview_controller();
+    if (!controller->IsSelecting())
+      return;
+
+    // Events that happen while app list is sliding out during overview should
+    // be ignored to prevent overview from disappearing out from under the user.
+    if (!IsSlidingOutOverviewFromShelf())
+      controller->ToggleOverview();
+
+    event->StopPropagation();
+  }
+
+  void UpdateDesksBarBounds() {
+    if (!desks_bar_view_)
+      return;
+
+    // TODO: Make the ShieldView's bounds match the overview grid bounds rather
+    // than the entire screen?
+    const auto bar_bounds =
+        gfx::Rect{bounds().width(), DesksBarView::GetBarHeight()};
+    desks_bar_view_->SetBoundsRect(bar_bounds);
+  }
+
   // Owned by views heirarchy.
   views::View* background_view_ = nullptr;
   RoundedRectView* label_container_ = nullptr;
   views::Label* label_ = nullptr;
+  DesksBarView* desks_bar_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShieldView);
 };
@@ -1211,7 +1272,7 @@ void OverviewGrid::InitShieldWidget(bool animate) {
   shield_widget_ = CreateBackgroundWidget(
       root_window_, ui::LAYER_NOT_DRAWN, SK_ColorTRANSPARENT, 0, 0,
       SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
-      /*stack_on_top=*/true);
+      /*stack_on_top=*/true, /*accept_events=*/true);
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
   aura::Window* parent_window = widget_window->parent();
   const gfx::Rect bounds = ash::screen_util::SnapBoundsToDisplayEdge(
@@ -1221,9 +1282,9 @@ void OverviewGrid::InitShieldWidget(bool animate) {
 
   // Create |shield_view_| and animate its background and label if needed.
   shield_view_ = new ShieldView();
+  shield_widget_->SetContentsView(shield_view_);
   shield_view_->SetBackgroundColor(GetShieldColor());
   shield_view_->SetGridBounds(bounds_);
-  shield_widget_->SetContentsView(shield_view_);
 
   if (animate) {
     shield_widget_->SetOpacity(initial_opacity);
@@ -1239,7 +1300,7 @@ void OverviewGrid::InitSelectionWidget(OverviewSession::Direction direction) {
   selection_widget_ = CreateBackgroundWidget(
       root_window_, ui::LAYER_TEXTURED, kWindowSelectionColor, 0,
       kWindowSelectionRadius, SK_ColorTRANSPARENT, 0.f, /*parent=*/nullptr,
-      /*stack_on_top=*/true);
+      /*stack_on_top=*/true, /*accept_events=*/false);
   aura::Window* widget_window = selection_widget_->GetNativeWindow();
   gfx::Rect target_bounds = SelectedWindow()->target_bounds();
   ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
@@ -1330,6 +1391,10 @@ void OverviewGrid::MoveSelectionWidgetToTarget(bool animate) {
 std::vector<gfx::Rect> OverviewGrid::GetWindowRects(
     OverviewItem* ignored_item) {
   gfx::Rect total_bounds = bounds_;
+
+  if (features::IsVirtualDesksEnabled())
+    total_bounds.Inset(0, DesksBarView::GetBarHeight(), 0, 0);
+
   // Windows occupy vertically centered area with additional vertical insets.
   int horizontal_inset =
       gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),

@@ -689,6 +689,11 @@ This file contains the strings for ash.
         No recent items
       </message>
 
+      <!-- Virtual Desks -->
+      <message name="IDS_ASH_DESKS_NEW_DESK_BUTTON" desc="The label of the new virtual desk (a.k.a. workspaces) button.">
+        New Desk
+      </message>
+
       <!-- Status tray charging strings. -->
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
         Low-power charger connected

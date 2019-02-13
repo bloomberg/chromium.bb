@@ -131,6 +131,7 @@
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/cursor_manager_chromeos.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/event_client_impl.h"
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
@@ -790,6 +791,8 @@ Shell::~Shell() {
   // |overview_controller_|.
   split_view_controller_.reset();
 
+  desks_controller_.reset();
+
   // Stop dispatching events (e.g. synthesized mouse exits from window close).
   // https://crbug.com/874156
   for (RootWindowController* rwc : GetAllRootWindowControllers())
@@ -1225,6 +1228,9 @@ void Shell::Init(
   sms_observer_.reset(new SmsObserver());
 
   split_view_controller_.reset(new SplitViewController());
+
+  if (features::IsVirtualDesksEnabled())
+    desks_controller_ = std::make_unique<DesksController>();
 
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 

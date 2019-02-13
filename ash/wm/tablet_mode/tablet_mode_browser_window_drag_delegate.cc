@@ -158,7 +158,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     shield_widget_ = CreateBackgroundWidget(
         root_window, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
         SK_ColorTRANSPARENT, /*initial_opacity*/ 1.f, /*parent=*/nullptr,
-        /*stack_on_top=*/true);
+        /*stack_on_top=*/true, /*accept_events=*/false);
     aura::Window* widget_window = shield_widget_->GetNativeWindow();
     const gfx::Rect bounds = widget_window->parent()->bounds();
     widget_window->SetBounds(bounds);

@@ -69,7 +69,7 @@ std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
       /*root_window=*/nullptr, ui::LAYER_TEXTURED, kBackdropColor,
       /*border_thickness=*/0, kBackdropRoundingDp, kBackdropColor,
       /*initial_opacity=*/1.f, parent,
-      /*stack_on_top=*/false);
+      /*stack_on_top=*/false, /*accept_events=*/false);
   widget->GetNativeWindow()->SetName("OverviewBackdrop");
   return widget;
 }
