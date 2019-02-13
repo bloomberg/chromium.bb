@@ -210,12 +210,15 @@ noinst_PROGRAMS =				\
 	exec-fd-leak-checker			\
 	fixed-benchmark
 
-noinst_LTLIBRARIES += libtest-runner.la
+noinst_LTLIBRARIES +=				\
+	libtest-runner.la			\
+	libtest-helpers.la
+
+libtest_helpers_la_SOURCES = tests/test-helpers.c
 
 libtest_runner_la_SOURCES =			\
 	tests/test-runner.c			\
 	tests/test-runner.h			\
-	tests/test-helpers.c			\
 	tests/test-compositor.h			\
 	tests/test-compositor.c
 libtest_runner_la_LIBADD =			\
@@ -223,8 +226,8 @@ libtest_runner_la_LIBADD =			\
 	libwayland-util.la			\
 	libwayland-client.la			\
 	libwayland-server.la			\
+	libtest-helpers.la			\
 	-lrt -ldl $(FFI_LIBS)
-
 
 array_test_SOURCES = tests/array-test.c
 array_test_LDADD = libtest-runner.la
@@ -270,7 +273,6 @@ protocol_logger_test_LDADD = libtest-runner.la
 headers_test_SOURCES = tests/headers-test.c \
 		       tests/headers-protocol-test.c \
 		       tests/headers-protocol-core-test.c
-headers_test_LDADD = libtest-runner.la
 nodist_headers_test_SOURCES =			\
 	protocol/wayland-server-protocol-core.h	\
 	protocol/wayland-client-protocol-core.h
@@ -280,13 +282,12 @@ cpp_compile_test_SOURCES = tests/cpp-compile-test.cpp
 endif
 
 fixed_benchmark_SOURCES = tests/fixed-benchmark.c
-fixed_benchmark_LDADD = libtest-runner.la
 
 os_wrappers_test_SOURCES = tests/os-wrappers-test.c
 os_wrappers_test_LDADD = libtest-runner.la
 
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
-exec_fd_leak_checker_LDADD = libtest-runner.la
+exec_fd_leak_checker_LDADD = libtest-helpers.la
 
 EXTRA_DIST += tests/scanner-test.sh			\
 	protocol/tests.xml				\
