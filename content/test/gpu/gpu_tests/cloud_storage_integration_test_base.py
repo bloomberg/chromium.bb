@@ -134,7 +134,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       default='')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
-                                device_pixel_ratio, test_machine_name):
+                                tolerance, device_pixel_ratio,
+                                test_machine_name):
     # First scan through the expected_colors and see if there are any scale
     # factor overrides that would preempt the device pixel ratio. This
     # is mainly a workaround for complex tests like the Maps test.
@@ -187,7 +188,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
               expectation["color"][0],
               expectation["color"][1],
               expectation["color"][2])
-          if not actual_color.IsEqual(expected_color, expectation["tolerance"]):
+          if not actual_color.IsEqual(expected_color, tolerance):
             self.fail('Expected pixel at ' + str(location) +
                 ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
                 ' to be ' +
@@ -384,8 +385,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
 
-  def _ValidateScreenshotSamples(self, tab, url,
-                                 screenshot, expectations, device_pixel_ratio):
+  def _ValidateScreenshotSamples(self, tab, url, screenshot, expectations,
+                                 tolerance, device_pixel_ratio):
     """Samples the given screenshot and verifies pixel color values.
        The sample locations and expected color values are given in expectations.
        In case any of the samples do not match the expected color, it raises
@@ -393,8 +394,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
        what machine the test is being run."""
     try:
       self._CompareScreenshotSamples(
-        tab, screenshot, expectations,
-        device_pixel_ratio,
+        tab, screenshot, expectations, tolerance, device_pixel_ratio,
         self.GetParsedCommandLineOptions().test_machine_name)
     except Exception:
       # An exception raised from self.fail() indicates a failure.
@@ -456,8 +456,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       logging.error('goldctl failed with output: %s', e.output)
       raise Exception('goldctl command failed: ' + contents)
 
-  def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page,
-                                             screenshot, expectations,
+  def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
+                                             expectations, tolerance,
                                              device_pixel_ratio,
                                              build_id_args):
     """Samples the given screenshot and verifies pixel color values.
@@ -468,8 +468,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     url = page.name
     try:
       self._CompareScreenshotSamples(
-        tab, screenshot, expectations,
-        device_pixel_ratio,
+        tab, screenshot, expectations, tolerance, device_pixel_ratio,
         self.GetParsedCommandLineOptions().test_machine_name)
     except Exception:
       # An exception raised from self.fail() indicates a failure.

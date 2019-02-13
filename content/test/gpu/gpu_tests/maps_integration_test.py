@@ -14,11 +14,13 @@ from gpu_tests import color_profile_manager
 
 from py_utils import cloud_storage
 
-maps_perf_test_path = os.path.join(
+_MAPS_PERF_TEST_PATH = os.path.join(
   path_util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets', 'maps_perf_test')
 
-data_path = os.path.join(path_util.GetChromiumSrcDir(),
+_DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(),
                          'content', 'test', 'gpu', 'gpu_tests')
+
+_TOLERANCE = 3
 
 class MapsIntegrationTest(
     cloud_storage_integration_test_base.CloudStorageIntegrationTestBase):
@@ -48,9 +50,9 @@ class MapsIntegrationTest(
         '--ensure-forced-color-profile']
     cls.CustomizeBrowserArgs(browser_args)
     cloud_storage.GetIfChanged(
-      os.path.join(maps_perf_test_path, 'load_dataset'),
+      os.path.join(_MAPS_PERF_TEST_PATH, 'load_dataset'),
       cloud_storage.PUBLIC_BUCKET)
-    cls.SetStaticServerDirs([maps_perf_test_path])
+    cls.SetStaticServerDirs([_MAPS_PERF_TEST_PATH])
     cls.StartBrowser()
 
   @classmethod
@@ -66,7 +68,7 @@ class MapsIntegrationTest(
           ('maps_pixel_expectations.json'))
 
   def _ReadPixelExpectations(self, expectations_file):
-    expectations_path = os.path.join(data_path, expectations_file)
+    expectations_path = os.path.join(_DATA_PATH, expectations_file)
     with open(expectations_path, 'r') as f:
       json_contents = json.load(f)
     return json_contents
@@ -105,7 +107,8 @@ class MapsIntegrationTest(
     # the test-machine-name argument being specified on the command
     # line.
     expected = self._ReadPixelExpectations(pixel_expectations_file)
-    self._ValidateScreenshotSamples(tab, url, screenshot, expected, dpr)
+    self._ValidateScreenshotSamples(
+      tab, url, screenshot, expected, _TOLERANCE, dpr)
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
