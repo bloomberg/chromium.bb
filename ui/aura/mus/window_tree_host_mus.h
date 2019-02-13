@@ -34,17 +34,19 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
                                       public InputMethodMusDelegate {
  public:
   explicit WindowTreeHostMus(WindowTreeHostMusInitParams init_params);
-
   ~WindowTreeHostMus() override;
 
   // Returns the WindowTreeHostMus for |window|. This returns null if |window|
   // is null, or not in a WindowTreeHostMus.
   static WindowTreeHostMus* ForWindow(aura::Window* window);
 
-  // Sets the bounds in pixels.
-  void SetBoundsFromServerInPixels(
-      const gfx::Rect& bounds_in_pixels,
+  virtual void SetBounds(
+      const gfx::Rect& bounds,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+  void SetBoundsFromServer(
+      const gfx::Rect& bounds,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+  const gfx::Rect& bounds_in_dip() const { return bounds_in_dip_; }
 
   ui::EventDispatchDetails SendEventToSink(ui::Event* event) {
     return aura::WindowTreeHostPlatform::SendEventToSink(event);
@@ -103,21 +105,27 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
 
   // aura::WindowTreeHostPlatform:
   void HideImpl() override;
-  void SetBoundsInPixels(
-      const gfx::Rect& bounds,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-          viz::LocalSurfaceIdAllocation()) override;
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
   int64_t GetDisplayId() override;
   bool ShouldAllocateLocalSurfaceIdOnResize() override;
+  gfx::Rect GetTransformedRootWindowBoundsInPixels(
+      const gfx::Size& size_in_pixels) const override;
 
   // InputMethodMusDelegate:
   void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(bool visible,
                         ui::mojom::TextInputStatePtr state) override;
+
+ protected:
+  // This is in the protected section as SetBounds() is preferred.
+  // aura::WindowTreeHostPlatform:
+  void SetBoundsInPixels(
+      const gfx::Rect& bounds,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation()) override;
 
  private:
   int64_t display_id_;
@@ -130,6 +138,8 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
 
   base::Optional<viz::LocalSurfaceIdAllocation>
       pending_local_surface_id_from_server_;
+
+  gfx::Rect bounds_in_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };

@@ -267,7 +267,7 @@ TEST_P(ClientSideWindowMoveHandlerTest, MouseExitDoesNotCancelResize) {
   host2->InitHost();
   gfx::Rect host2_bounds = host()->GetBoundsInPixels();
   host2_bounds.Offset(30, 30);
-  host2->SetBoundsInPixels(host2_bounds);
+  static_cast<WindowTreeHost*>(host2.get())->SetBoundsInPixels(host2_bounds);
   host2->window()->Show();
 
   test::TestWindowDelegate test_delegate;

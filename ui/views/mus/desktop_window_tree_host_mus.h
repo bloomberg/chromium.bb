@@ -91,6 +91,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   std::unique_ptr<corewm::Tooltip> CreateTooltip() override;
   std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) override;
+  std::unique_ptr<aura::client::ScreenPositionClient>
+  CreateScreenPositionClient() override;
   void Close() override;
   void CloseNow() override;
   aura::WindowTreeHost* AsWindowTreeHost() override;
@@ -166,6 +168,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // aura::WindowTreeHostMus:
   void ShowImpl() override;
   void HideImpl() override;
+  void SetBounds(const gfx::Rect& bounds_in_pixels,
+                 const viz::LocalSurfaceIdAllocation&
+                     local_surface_id_allocation) override;
   void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels,
                          const viz::LocalSurfaceIdAllocation&
                              local_surface_id_allocation) override;

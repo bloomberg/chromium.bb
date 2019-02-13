@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/mus/cursor_manager_owner.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/screen_position_client_mus.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 
 namespace views {
@@ -136,8 +137,8 @@ void RemoteViewProvider::OnEmbedTokenAvailable(
 void RemoteViewProvider::OnEmbed(aura::Window* window) {
   DCHECK(embedded_);
 
-  screen_position_client_ =
-      std::make_unique<DesktopScreenPositionClient>(window);
+  screen_position_client_ = std::make_unique<ScreenPositionClientMus>(
+      embed_root_->window_tree_host());
   embedding_window_observer_ = std::make_unique<EmbeddingWindowObserver>(
       window, base::BindRepeating(&RemoteViewProvider::OnEmbeddingWindowResized,
                                   base::Unretained(this)));

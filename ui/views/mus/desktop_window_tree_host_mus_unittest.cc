@@ -1136,4 +1136,32 @@ TEST_F(DesktopWindowTreeHostMusTestFractionalDPI,
             widget->GetNativeWindow()->GetHost()->GetBoundsInPixels().height());
 }
 
+// DesktopWindowTreeHostMusTest with --force-device-scale-factor=1.6.
+class DesktopWindowTreeHostMusTestFractionalDPI2
+    : public DesktopWindowTreeHostMusTest {
+ public:
+  DesktopWindowTreeHostMusTestFractionalDPI2() = default;
+  ~DesktopWindowTreeHostMusTestFractionalDPI2() override = default;
+
+  // DesktopWindowTreeHostMusTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, "1.6");
+    DesktopWindowTreeHostMusTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostMusTestFractionalDPI2);
+};
+
+TEST_F(DesktopWindowTreeHostMusTestFractionalDPI2,
+       SetBoundsInDipWithFractionalScale) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  // These values have proven problematic at this scale.
+  const gfx::Rect bounds(64, 34, 600, 372);
+  widget->SetBounds(bounds);
+  EXPECT_EQ(bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(bounds, widget->GetNativeWindow()->GetBoundsInScreen());
+}
+
 }  // namespace views

@@ -30,8 +30,10 @@
 #include "ui/views/mus/cursor_manager_owner.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_property_mirror.h"
+#include "ui/views/mus/screen_position_client_mus.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
@@ -453,6 +455,11 @@ DesktopWindowTreeHostMus::CreateDragDropClient(
   return nullptr;
 }
 
+std::unique_ptr<aura::client::ScreenPositionClient>
+DesktopWindowTreeHostMus::CreateScreenPositionClient() {
+  return std::make_unique<ScreenPositionClientMus>(this);
+}
+
 void DesktopWindowTreeHostMus::Close() {
   if (close_widget_factory_.HasWeakPtrs())
     return;
@@ -575,9 +582,8 @@ bool DesktopWindowTreeHostMus::IsVisible() const {
 }
 
 void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
-  // Use GetBoundsInPixels(), as the origin of window() is always at (0, 0).
-  gfx::Rect screen_bounds =
-      gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
+  // Use bounds_in_dip(), as the origin of window() is always at (0, 0).
+  gfx::Rect screen_bounds = bounds_in_dip();
   screen_bounds.set_size(size);
   SetBoundsInDIP(screen_bounds);
 }
@@ -630,7 +636,7 @@ void DesktopWindowTreeHostMus::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
-  return gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
+  return bounds_in_dip();
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetClientAreaBoundsInScreen() const {
@@ -928,10 +934,7 @@ bool DesktopWindowTreeHostMus::ShouldCreateVisibilityController() const {
 
 void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
   // Do not use ConvertRectToPixel, enclosing rects cause problems.
-  const gfx::Rect rect(
-      gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), GetScaleFactor()),
-      gfx::ScaleToCeiledSize(bounds_in_dip.size(), GetScaleFactor()));
-  SetBoundsInPixels(rect, viz::LocalSurfaceIdAllocation());
+  SetBounds(bounds_in_dip, viz::LocalSurfaceIdAllocation());
 }
 
 void DesktopWindowTreeHostMus::OnCanActivateChanged() {
@@ -1013,9 +1016,27 @@ void DesktopWindowTreeHostMus::HideImpl() {
   }
 }
 
+void DesktopWindowTreeHostMus::SetBounds(
+    const gfx::Rect& bounds,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  gfx::Rect final_bounds = bounds;
+  if (bounds_in_dip().size() != bounds.size()) {
+    gfx::Size size = bounds.size();
+    size.SetToMax(native_widget_delegate_->GetMinimumSize());
+    const gfx::Size max_size = native_widget_delegate_->GetMaximumSize();
+    if (!max_size.IsEmpty())
+      size.SetToMin(max_size);
+    final_bounds.set_size(size);
+    UpdateMinAndMaxSize();
+  }
+  WindowTreeHostMus::SetBounds(final_bounds, local_surface_id_allocation);
+}
+
 void DesktopWindowTreeHostMus::SetBoundsInPixels(
     const gfx::Rect& bounds_in_pixels,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
+  // NOTE: in typical usage SetBounds() is called and not this, but as
+  // WindowTreeHost exposes SetBoundsInPixels() this function may be called too.
   gfx::Rect final_bounds_in_pixels = bounds_in_pixels;
   if (GetBoundsInPixels().size() != bounds_in_pixels.size()) {
     gfx::Size size = bounds_in_pixels.size();

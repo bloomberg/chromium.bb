@@ -7,6 +7,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 
 namespace views {
 
@@ -15,6 +16,12 @@ void DesktopWindowTreeHost::SetBoundsInDIP(const gfx::Rect& bounds) {
   const gfx::Rect bounds_in_pixels =
       display::Screen::GetScreen()->DIPToScreenRectInWindow(root, bounds);
   AsWindowTreeHost()->SetBoundsInPixels(bounds_in_pixels);
+}
+
+std::unique_ptr<aura::client::ScreenPositionClient>
+DesktopWindowTreeHost::CreateScreenPositionClient() {
+  return std::make_unique<DesktopScreenPositionClient>(
+      AsWindowTreeHost()->window());
 }
 
 }  // namespace views

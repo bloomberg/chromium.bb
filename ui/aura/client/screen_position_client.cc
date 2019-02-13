@@ -13,8 +13,8 @@ namespace aura {
 namespace client {
 
 DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(ScreenPositionClient*,
-                                kScreenPositionClientKey,
-                                NULL);
+                                   kScreenPositionClientKey,
+                                   nullptr);
 
 void ScreenPositionClient::ConvertPointToScreen(const Window* window,
                                                 gfx::Point* point) {

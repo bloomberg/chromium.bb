@@ -29,7 +29,7 @@ DesktopScreenPositionClient::DesktopScreenPositionClient(
 }
 
 DesktopScreenPositionClient::~DesktopScreenPositionClient() {
-  aura::client::SetScreenPositionClient(root_window_, NULL);
+  aura::client::SetScreenPositionClient(root_window_, nullptr);
 }
 
 void DesktopScreenPositionClient::SetBounds(aura::Window* window,

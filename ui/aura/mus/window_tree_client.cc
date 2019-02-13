@@ -60,7 +60,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_port_for_shutdown.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
@@ -70,7 +69,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/mojo/event_struct_traits.h"
-#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -644,18 +642,8 @@ void WindowTreeClient::SetWindowBoundsFromServer(
 
   window->UpdateLocalSurfaceIdFromParent(*local_surface_id_allocation);
 
-  // This uses GetScaleFactorForNativeView() as it's called at a time when the
-  // scale factor may not have been applied to the Compositor yet. In
-  // particular, when the scale-factor changes this is called in terms of the
-  // scale factor set on the display. It's the call to
-  // SetBoundsFromServerInPixels() that is responsible for updating the scale
-  // factor in the Compositor.
-  // Do not use ConvertRectToPixel, enclosing rects cause problems.
-  const float dsf = ui::GetScaleFactorForNativeView(window->GetWindow());
-  const gfx::Rect rect(gfx::ScaleToFlooredPoint(revert_bounds.origin(), dsf),
-                       gfx::ScaleToCeiledSize(revert_bounds.size(), dsf));
-  GetWindowTreeHostMus(window)->SetBoundsFromServerInPixels(
-      rect, window->GetLocalSurfaceIdAllocation());
+  GetWindowTreeHostMus(window)->SetBoundsFromServer(
+      revert_bounds, window->GetLocalSurfaceIdAllocation());
 
   window->DidSetWindowTreeHostBoundsFromServer();
 }
@@ -673,15 +661,15 @@ void WindowTreeClient::ApplyPendingSurfaceIdFromServer(WindowMus* window) {
     window->GetWindow()->AllocateLocalSurfaceId();
     const viz::LocalSurfaceIdAllocation lsia =
         window->GetWindow()->GetLocalSurfaceIdAllocation();
-    window_tree_host->SetBoundsFromServerInPixels(
-        window_tree_host->GetBoundsInPixels(), lsia);
+    window_tree_host->SetBoundsFromServer(window_tree_host->bounds_in_dip(),
+                                          lsia);
     // This does *not* use SetWindowBoundsFromServer() as it leads to race
     // conditions. In particular, it might incorrectly lead to the client
     // changing the bounds when the server is also trying to change the bounds.
     tree_->UpdateLocalSurfaceIdFromChild(window->server_id(), lsia);
   } else {
-    window_tree_host->SetBoundsFromServerInPixels(
-        window_tree_host->GetBoundsInPixels(),
+    window_tree_host->SetBoundsFromServer(
+        window_tree_host->bounds_in_dip(),
         window->GetLocalSurfaceIdAllocation());
   }
   DCHECK(!window_tree_host->has_pending_local_surface_id_from_server());
@@ -1656,19 +1644,14 @@ void WindowTreeClient::RequestClose(ws::Id window_id) {
 
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
-    const gfx::Rect& bounds_in_pixels) {
+    const gfx::Rect& bounds) {
   // The only other type of window that may hit this code path is EMBED. Clients
   // are not allowed to change the bounds of EMBED windows (only the server).
   // LOCAL and OTHER types don't have a WindowTreeHost.
   DCHECK_EQ(WindowMusType::TOP_LEVEL,
             WindowMus::Get(window_tree_host->window())->window_mus_type());
-  gfx::Rect old_bounds = window_tree_host->GetBoundsInPixels();
-  gfx::Rect new_bounds = bounds_in_pixels;
-  const float device_scale_factor = window_tree_host->device_scale_factor();
-  old_bounds = gfx::ConvertRectToDIP(device_scale_factor, old_bounds);
-  new_bounds = gfx::ConvertRectToDIP(device_scale_factor, new_bounds);
   ScheduleInFlightBoundsChange(WindowMus::Get(window_tree_host->window()),
-                               old_bounds, new_bounds);
+                               window_tree_host->bounds_in_dip(), bounds);
 }
 
 void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(
