@@ -6,13 +6,13 @@ See LevelDB Scopes general design doc [here](https://docs.google.com/document/d/
 
 # Status / Current State
 
-The only thing implemented so far is the lock manager interface & descrete implementation.
+The only thing implemented so far is the lock manager interface & discrete implementation.
 
 # Vocabulary
 
 **Scope**
 
-A scope encompases a group of changes that can be reverted. It is basically synonymous with a transaction, and would be used for readwrite and versionchange transactions in LevelDB. The scope has a defined list of key ranges where the changes can occur. It operates by keeping an undo log, which is either discarded on commit, or replayed on revert.
+A scope encompasses a group of changes that can be reverted. It is basically synonymous with a transaction, and would be used for readwrite and versionchange transactions in LevelDB. The scope has a defined list of key ranges where the changes can occur. It operates by keeping an undo log, which is either discarded on commit, or replayed on revert.
 
 **Undo Log**
 
@@ -69,7 +69,7 @@ IndexedDB Sequence
     * Use the next available scope # (and increment the next scope #)
     * Signal the locks service that the key ranges for this scope are now locked
     * Write undo-scopes-scope# -> key_ranges to LevelDB
-* Enable operations on the scope (probably eventually by binding it using mojo)
+* Enable operations on the scope (probably eventually by binding it using Mojo)
 * For every operation, the scope must read the database to generate the undo log
     * See the [Undo Operation Generation](#undo-operations) section below
 * Output - a Scope
@@ -78,7 +78,7 @@ IndexedDB Sequence
 **IndexedDB Sequence**
 
 * Input - a Scope
-* The scope is marked as 'committed', the commit point is written to the undo log (undo-scope#-0), and the metadatais updated to remove the key ranges (undo-scopes-scope# -> <empty>). This change is flushed to disk.
+* The scope is marked as 'committed', the commit point is written to the undo log (undo-scope#-0), and the metadata is updated to remove the key ranges (undo-scopes-scope# -> <empty>). This change is flushed to disk.
 * The Cleanup & Revert Sequence is signalled for cleaning up the committed scope #.
 * Output - Scope is committed, and lock is released.
 
@@ -181,4 +181,4 @@ Examples of this are creating new databases or indexes in a versionchange transa
 
 #### Deletion - key range will never be used again.
 
-This is done by having commit ranges in the value of the commit point. A new scope is created, and commited, with the key ranges never-to-be-used-again will be the value of the commit point record.
+This is done by having commit ranges in the value of the commit point. A new scope is created, and committed, with the key ranges never-to-be-used-again will be the value of the commit point record.
