@@ -24,6 +24,17 @@ Polymer({
 
   /** @override */
   attached: function() {
+    const proxy = browser_switcher.BrowserSwitcherProxyImpl.getInstance();
+
+    // If '?done=...' is specified in the URL, this tab was-reopened, or the
+    // entire browser was closed by LBS and re-opened. In that case, go to NTP
+    // instead.
+    const done = (new URLSearchParams(window.location.search)).has('done');
+    if (done) {
+      proxy.gotoNewTabPage();
+      return;
+    }
+
     // Sanity check the URL to make sure nothing really funky is going on.
     const anchor = document.createElement('a');
     anchor.href = this.url_;
@@ -31,7 +42,10 @@ Polymer({
       return;
     }
 
-    const proxy = browser_switcher.BrowserSwitcherProxyImpl.getInstance();
+    // Mark this page with '?done=...' so that restoring the tab doesn't
+    // immediately re-trigger LBS.
+    history.pushState({}, '', '/?done=true');
+
     proxy.launchAlternativeBrowserAndCloseTab(this.url_);
   },
 });

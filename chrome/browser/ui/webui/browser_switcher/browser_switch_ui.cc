@@ -24,12 +24,23 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
 
 namespace {
+
+void GotoNewTabPage(content::WebContents* web_contents) {
+  GURL url(chrome::kChromeUINewTabURL);
+  content::OpenURLParams params(url, content::Referrer(),
+                                WindowOpenDisposition::CURRENT_TAB,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
+  web_contents->OpenURL(params);
+}
 
 // Returns true if there's only 1 tab left open in this profile. Incognito
 // window tabs count as the same profile.
@@ -94,6 +105,9 @@ class BrowserSwitchHandler : public content::WebUIMessageHandler {
   // JavaScript promise is not resolved, because we close the tab anyways.
   void HandleLaunchAlternativeBrowserAndCloseTab(const base::ListValue* args);
 
+  // Navigates to the New Tab Page.
+  void HandleGotoNewTabPage(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitchHandler);
 };
 
@@ -106,6 +120,10 @@ void BrowserSwitchHandler::RegisterMessages() {
       base::BindRepeating(
           &BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "gotoNewTabPage",
+      base::BindRepeating(&BrowserSwitchHandler::HandleGotoNewTabPage,
+                          base::Unretained(this)));
 }
 
 void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
@@ -139,13 +157,10 @@ void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
     return;
   }
 
-  // TODO(nicolaso): Find a fix: when the last tab closes, restarting Chrome
-  // causes it to immediately open the alternative browser, and then close
-  // Chrome again.
   auto* profile = Profile::FromWebUI(web_ui());
 
   if (service->prefs().KeepLastTab() && IsLastTab(profile)) {
-    // TODO(nicolaso): Show the NTP after cancelling the navigation.
+    GotoNewTabPage(web_ui()->GetWebContents());
   } else {
     // We don't need to resolve the promise, because the tab will close anyways.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -153,6 +168,10 @@ void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
         base::BindOnce(&content::WebContents::ClosePage,
                        base::Unretained(web_ui()->GetWebContents())));
   }
+}
+
+void BrowserSwitchHandler::HandleGotoNewTabPage(const base::ListValue* args) {
+  GotoNewTabPage(web_ui()->GetWebContents());
 }
 
 }  // namespace
