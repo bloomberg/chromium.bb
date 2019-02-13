@@ -177,6 +177,9 @@ class MockHostResolverBase
     return num_resolve_from_cache_;
   }
 
+  // The number of times resolve was attempted non-locally.
+  size_t num_non_local_resolves() const { return num_non_local_resolves_; }
+
   // Returns the RequestPriority of the last call to Resolve() (or
   // DEFAULT_PRIORITY if Resolve() hasn't been called yet).
   RequestPriority last_request_priority() const {
@@ -250,6 +253,7 @@ class MockHostResolverBase
 
   size_t num_resolve_;
   size_t num_resolve_from_cache_;
+  size_t num_non_local_resolves_;
 
   const base::TickClock* tick_clock_;
 

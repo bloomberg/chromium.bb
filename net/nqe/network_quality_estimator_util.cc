@@ -4,12 +4,16 @@
 
 #include "net/nqe/network_quality_estimator_util.h"
 
-#include "net/base/address_list.h"
+#include <memory>
+
+#include "base/bind.h"
+#include "base/logging.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_source.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -21,18 +25,20 @@ namespace internal {
 bool IsPrivateHost(HostResolver* host_resolver,
                    const HostPortPair& host_port_pair) {
   // Try resolving |host_port_pair.host()| synchronously.
-  HostResolver::RequestInfo resolve_info(host_port_pair);
-  resolve_info.set_allow_cached_response(true);
-  AddressList addresses;
-  // Resolve synchronously using the resolver's cache.
-  int rv = host_resolver->ResolveFromCache(resolve_info, &addresses,
-                                           NetLogWithSource());
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<HostResolver::ResolveHostRequest> request =
+      host_resolver->CreateRequest(host_port_pair, NetLogWithSource(),
+                                   parameters);
 
+  int rv = request->Start(base::BindOnce([](int error) { NOTREACHED(); }));
   DCHECK_NE(rv, ERR_IO_PENDING);
-  if (rv == OK && !addresses.empty()) {
+
+  if (rv == OK && request->GetAddressResults() &&
+      !request->GetAddressResults().value().empty()) {
     // Checking only the first address should be sufficient.
-    IPEndPoint ip_end_point = addresses.front();
-    net::IPAddress ip_address = ip_end_point.address();
+    IPEndPoint ip_endpoint = request->GetAddressResults().value().front();
+    IPAddress ip_address = ip_endpoint.address();
     if (!ip_address.IsPubliclyRoutable())
       return true;
   }
