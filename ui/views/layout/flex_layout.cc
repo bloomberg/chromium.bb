@@ -354,6 +354,13 @@ class FlexLayoutInternal {
                                 ChildViewSpacing* child_spacing,
                                 const NormalizedSizeBounds& bounds) const;
 
+  // Calculates the cross-layout space available to a view based on the
+  // available space and margins.
+  base::Optional<int> GetAvailableCrossAxisSize(
+      const Layout& layout,
+      int child_index,
+      const NormalizedSizeBounds& bounds) const;
+
   // Calculates a margin between two child views based on each's margin and any
   // internal padding present in one or both elements. Uses properties of the
   // layout, like whether adjacent margins should be collapsed.
@@ -390,8 +397,8 @@ void FlexLayoutInternal::InvalidateLayout(bool force) {
 const Layout& FlexLayoutInternal::CalculateLayout(const SizeBounds& bounds) {
   // If bounds are smaller than the minimum cross axis size, expand them.
   NormalizedSizeBounds normalized_bounds = Normalize(orientation(), bounds);
-  if (normalized_bounds.cross().has_value() &&
-      normalized_bounds.cross().value() < layout_.minimum_cross_axis_size()) {
+  if (normalized_bounds.cross() &&
+      *normalized_bounds.cross() < layout_.minimum_cross_axis_size()) {
     normalized_bounds = NormalizedSizeBounds{normalized_bounds.main(),
                                              layout_.minimum_cross_axis_size()};
   }
@@ -441,6 +448,25 @@ void FlexLayoutInternal::DoLayout(const Layout& layout,
   }
 }
 
+base::Optional<int> FlexLayoutInternal::GetAvailableCrossAxisSize(
+    const Layout& layout,
+    int child_index,
+    const NormalizedSizeBounds& bounds) const {
+  if (!bounds.cross())
+    return base::Optional<int>();
+
+  const ChildLayout& child_layout = layout.child_layouts[child_index];
+  const int leading_margin =
+      CalculateMargin(layout.interior_margin.cross_leading(),
+                      child_layout.margins.cross_leading(),
+                      child_layout.internal_padding.cross_leading());
+  const int trailing_margin =
+      CalculateMargin(layout.interior_margin.cross_trailing(),
+                      child_layout.margins.cross_trailing(),
+                      child_layout.internal_padding.cross_trailing());
+  return std::max(0, *bounds.cross() - (leading_margin + trailing_margin));
+}
+
 int FlexLayoutInternal::CalculateMargin(int margin1,
                                         int margin2,
                                         int internal_padding) const {
@@ -482,13 +508,19 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
     ChildViewSpacing* child_spacing,
     const NormalizedSizeBounds& bounds) const {
   // Calculate starting minimum for cross-axis size.
-  const int min_cross_size =
+  int min_cross_size =
       std::max(layout_.minimum_cross_axis_size(),
                CalculateMargin(layout->interior_margin.cross_leading(),
                                layout->interior_margin.cross_trailing(), 0));
   layout->total_size = NormalizedSize(0, min_cross_size);
-  if (bounds.cross().has_value())
-    layout->total_size.SetToMax(0, bounds.cross().value());
+
+  // For cases with a non-zero cross-axis bound, the objective is to fit the
+  // layout into that precise size, not to determine what size we need.
+  bool force_cross_size = false;
+  if (bounds.cross() && *bounds.cross() > 0) {
+    layout->total_size.SetToMax(0, *bounds.cross());
+    force_cross_size = true;
+  }
 
   std::vector<Inset1D> cross_spacings(layout->child_layouts.size());
   for (size_t i = 0; i < layout->child_layouts.size(); ++i) {
@@ -498,7 +530,7 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
     if (child_layout.excluded || !child_layout.visible)
       continue;
 
-    // Update the cross-axis size.
+    // Update the cross-axis margins and if necessary, the size.
     Inset1D& cross_spacing = cross_spacings[i];
     cross_spacing.set_leading(
         CalculateMargin(layout->interior_margin.cross_leading(),
@@ -509,9 +541,11 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
                         child_layout.margins.cross_trailing(),
                         child_layout.internal_padding.cross_trailing()));
 
-    const int cross_size = std::min(child_layout.current_size.cross(),
-                                    child_layout.preferred_size.cross());
-    layout->total_size.SetToMax(0, cross_spacing.size() + cross_size);
+    if (!force_cross_size) {
+      const int cross_size = std::min(child_layout.current_size.cross(),
+                                      child_layout.preferred_size.cross());
+      layout->total_size.SetToMax(0, cross_spacing.size() + cross_size);
+    }
 
     // Calculate main-axis size and upper-left main axis coordinate.
     int leading_space;
@@ -530,8 +564,8 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
   // Add the end margin.
   layout->total_size.Enlarge(child_spacing->GetTrailingInset(), 0);
 
-  // Calculate vertical positioning given the cross-axis size we've already
-  // calculated above.
+  // Calculate cross-axis positioning based on the cross margins and size that
+  // were calculated above.
   const Span cross_span(0, layout->total_size.cross());
   for (size_t i = 0; i < layout->child_layouts.size(); ++i) {
     ChildLayout& child_layout = layout->child_layouts[i];
@@ -540,12 +574,13 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
     if (child_layout.excluded || !child_layout.visible)
       continue;
 
-    // Because we have an explicit kStretch option, regardless of what the
-    // control *says* we won't allow the cross-axis size to exceed the preferred
-    // size. kStretch may cause it to become larger.
-    const int cross_size = std::min(child_layout.current_size.cross(),
-                                    child_layout.preferred_size.cross());
-    child_layout.actual_bounds.set_size_cross(cross_size);
+    // Start with a size appropriate for the child view. For child views which
+    // can become larger than the preferred size, start with the preferred size
+    // and let the alignment operation (specifically, if the alignment is set to
+    // kStretch) grow the child view.
+    const int starting_cross_size = std::min(
+        child_layout.current_size.cross(), child_layout.preferred_size.cross());
+    child_layout.actual_bounds.set_size_cross(starting_cross_size);
     child_layout.actual_bounds.AlignCross(
         cross_span, layout_.cross_axis_alignment(), cross_spacings[i]);
   }
@@ -553,19 +588,12 @@ void FlexLayoutInternal::UpdateLayoutFromChildren(
 
 const Layout& FlexLayoutInternal::CalculateNewLayout(
     const NormalizedSizeBounds& bounds) {
-  DCHECK(!bounds.cross().has_value() ||
-         bounds.cross().value() >= layout_.minimum_cross_axis_size());
+  DCHECK(!bounds.cross() ||
+         *bounds.cross() >= layout_.minimum_cross_axis_size());
   std::unique_ptr<Layout> layout = std::make_unique<Layout>(layout_counter_);
   layout->interior_margin = Normalize(orientation(), layout_.interior_margin());
   std::map<int, std::vector<int>> order_to_view_index;
   const bool main_axis_bounded = bounds.main().has_value();
-
-  // Start with the smallest size the child view can occupy.
-  NormalizedSizeBounds effective_bounds{0, bounds.cross()};
-  if (effective_bounds.cross()) {
-    effective_bounds.set_cross(std::max(
-        0, *effective_bounds.cross() - layout->interior_margin.cross_size()));
-  }
 
   // Step through the children, creating placeholder layout view elements
   // and setting up initial minimal visibility.
@@ -592,10 +620,12 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
 
     // gfx::Size calculation depends on whether flex is allowed.
     if (main_axis_bounded) {
-      child_layout.current_size =
-          Normalize(orientation(),
-                    child_layout.flex.rule().Run(
-                        child, Denormalize(orientation(), effective_bounds)));
+      child_layout.available_size = {
+          0, GetAvailableCrossAxisSize(*layout, i, bounds)};
+      child_layout.current_size = Normalize(
+          orientation(),
+          child_layout.flex.rule().Run(
+              child, Denormalize(orientation(), child_layout.available_size)));
 
       // We should revisit whether this is a valid assumption for text views
       // in vertical layouts.
@@ -605,7 +635,7 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
       // Keep track of non-hidden flex controls.
       const bool can_flex =
           (child_layout.flex.weight() > 0 &&
-           !child_layout.preferred_size.is_empty()) ||
+           child_layout.preferred_size.main() > 0) ||
           child_layout.current_size.main() < child_layout.preferred_size.main();
       if (can_flex)
         order_to_view_index[child_layout.flex.order()].push_back(i);
@@ -615,7 +645,7 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
       child_layout.current_size = child_layout.preferred_size;
     }
 
-    child_layout.visible = !child_layout.current_size.is_empty();
+    child_layout.visible = child_layout.current_size.main() > 0;
 
     // Actual size and positioning will be set during the final layout
     // calculation.
@@ -720,12 +750,13 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
         // Offer the modified flex space to the child view and see how large it
         // wants to be (or if it wants to be visible at that size at all).
         const NormalizedSizeBounds available(
-            flex_amount + old_size - margin_delta, effective_bounds.cross());
+            flex_amount + old_size - margin_delta,
+            child_layout.available_size.cross());
         const NormalizedSize new_size = Normalize(
             orientation(),
             child_layout.flex.rule().Run(
                 child_layout.view, Denormalize(orientation(), available)));
-        if (new_size.is_empty())
+        if (new_size.main() <= 0)
           continue;
 
         // If the amount of space claimed increases (but is still within
