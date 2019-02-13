@@ -48,7 +48,6 @@ NetworkStateTestHelper::NetworkStateTestHelper(
   profile_test_->AddProfile("user_profile_path", kUserHash);
   base::RunLoop().RunUntilIdle();
 
-  NetworkHandler::Initialize();
   network_state_handler_ = NetworkStateHandler::InitializeForTest();
 
   if (!use_default_devices_and_services)
@@ -57,7 +56,6 @@ NetworkStateTestHelper::NetworkStateTestHelper(
 
 NetworkStateTestHelper::~NetworkStateTestHelper() {
   ShutdownNetworkState();
-  NetworkHandler::Shutdown();
   if (dbus_thread_manager_initialized_)
     DBusThreadManager::Shutdown();
 }
@@ -139,6 +137,21 @@ void NetworkStateTestHelper::SetServiceProperty(const std::string& service_path,
                                                 const base::Value& value) {
   service_test_->SetServiceProperty(service_path, key, value);
   base::RunLoop().RunUntilIdle();
+}
+
+std::unique_ptr<NetworkState>
+NetworkStateTestHelper::CreateStandaloneNetworkState(
+    const std::string& id,
+    const std::string& type,
+    const std::string& connection_state,
+    int signal_strength) {
+  auto network = std::make_unique<NetworkState>(id);
+  network->SetGuid(id);
+  network->set_type(type);
+  network->set_visible(true);
+  network->SetConnectionState(connection_state);
+  network->set_signal_strength(signal_strength);
+  return network;
 }
 
 const char* NetworkStateTestHelper::UserHash() {

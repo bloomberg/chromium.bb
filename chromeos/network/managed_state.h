@@ -14,12 +14,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 
-namespace ash {
-namespace network_icon {
-class NetworkIconTest;
-}  // namespace network_icon
-}  // namesapce ash
-
 namespace base {
 class Value;
 }
@@ -124,7 +118,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedState {
 
  private:
   friend class NetworkStateHandler;
-  friend class ash::network_icon::NetworkIconTest;
+  friend class NetworkStateTestHelper;
   friend class chromeos::tether::NetworkListSorterTest;
 
   ManagedType managed_type_;

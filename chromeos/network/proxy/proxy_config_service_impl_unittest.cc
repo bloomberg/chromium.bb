@@ -9,7 +9,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chromeos/network/network_state_test_helper.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -47,17 +48,18 @@ class TestProxyConfigService : public net::ProxyConfigService {
 
 class ProxyConfigServiceImplTest : public testing::Test {
   void SetUp() override {
-    helper_ = std::make_unique<NetworkStateTestHelper>(
-        true /* use_default_devices_and_services */);
-    // Ensure NetworkStateHandler::InitializeForTest() has completed.
+    DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { helper_.reset(); }
+  void TearDown() override {
+    chromeos::NetworkHandler::Shutdown();
+    DBusThreadManager::Shutdown();
+  }
 
  protected:
   base::test::ScopedTaskEnvironment environment_;
-  std::unique_ptr<NetworkStateTestHelper> helper_;
 };
 
 // By default, ProxyConfigServiceImpl should ignore the state of the nested

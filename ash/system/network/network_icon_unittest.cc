@@ -29,13 +29,6 @@ namespace ash {
 
 namespace network_icon {
 
-namespace {
-
-const char kShillManagerClientStubCellularDevice[] =
-    "/device/stub_cellular_device1";
-
-}  // namespace
-
 class NetworkIconTest : public testing::Test {
  public:
   NetworkIconTest() = default;
@@ -44,6 +37,7 @@ class NetworkIconTest : public testing::Test {
   void SetUp() override {
     SetUpDefaultNetworkState();
     active_network_icon_ = std::make_unique<ActiveNetworkIcon>();
+    active_network_icon_->InitForTesting(helper().network_state_handler());
   }
 
   void TearDown() override {
@@ -64,9 +58,9 @@ class NetworkIconTest : public testing::Test {
   void SetUpDefaultNetworkState() {
     // NetworkStateTestHelper default has a wifi device only and no services.
 
-    helper_.device_test()->AddDevice(kShillManagerClientStubCellularDevice,
+    helper_.device_test()->AddDevice("/device/stub_cellular_device",
                                      shill::kTypeCellular,
-                                     "stub_cellular_device1");
+                                     "stub_cellular_device");
     base::RunLoop().RunUntilIdle();
 
     wifi1_path_ = ConfigureService(
@@ -86,12 +80,8 @@ class NetworkIconTest : public testing::Test {
       const std::string& type,
       const std::string& connection_state,
       int signal_strength) {
-    auto network = std::make_unique<chromeos::NetworkState>(id);
-    network->set_type(type);
-    network->set_visible(true);
-    network->set_connection_state_for_testing(connection_state);
-    network->set_signal_strength(signal_strength);
-    return network;
+    return helper_.CreateStandaloneNetworkState(id, type, connection_state,
+                                                signal_strength);
   }
 
   std::unique_ptr<chromeos::NetworkState>
@@ -118,10 +108,6 @@ class NetworkIconTest : public testing::Test {
                                       bool* animating) {
     *image = active_network_icon_->GetSingleImage(icon_type, animating);
     *label = active_network_icon_->GetDefaultLabel(icon_type);
-  }
-
-  int GetCellularUninitializedMsg() {
-    return active_network_icon_->cellular_uninitialized_msg_for_test();
   }
 
   // The icon for a Tether network should be the same as one for a cellular
@@ -163,20 +149,6 @@ class NetworkIconTest : public testing::Test {
         chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
         helper_.network_state_handler()->GetTechnologyState(
             chromeos::NetworkTypePattern::Cellular()));
-  }
-
-  void SetCellularUninitialized() {
-    helper_.manager_test()->RemoveTechnology(shill::kTypeCellular);
-    helper_.manager_test()->AddTechnology(shill::kTypeCellular, false);
-    helper_.manager_test()->SetTechnologyInitializing(shill::kTypeCellular,
-                                                      true);
-
-    base::RunLoop().RunUntilIdle();
-
-    ASSERT_EQ(chromeos::NetworkStateHandler::TechnologyState::
-                  TECHNOLOGY_UNINITIALIZED,
-              helper_.network_state_handler()->GetTechnologyState(
-                  chromeos::NetworkTypePattern::Cellular()));
   }
 
   chromeos::NetworkStateTestHelper& helper() { return helper_; }
@@ -280,49 +252,6 @@ TEST_F(NetworkIconTest, CompareImagesByNetworkType_Connected) {
   GetAndCompareImagesByNetworkType(wifi_network.get(), cellular_network.get(),
                                    tether_network.get(),
                                    wifi_tether_network.get());
-}
-
-TEST_F(NetworkIconTest,
-       GetCellularUninitializedMsg_NoUninitializedMessageExpected) {
-  EXPECT_EQ(0, GetCellularUninitializedMsg());
-}
-
-TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularUninitialized) {
-  SetCellularUninitialized();
-
-  EXPECT_EQ(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR,
-            GetCellularUninitializedMsg());
-
-  gfx::ImageSkia default_image;
-  base::string16 label;
-  bool animating = false;
-  GetDefaultNetworkImageAndLabel(icon_type_, &default_image, &label,
-                                 &animating);
-  ASSERT_FALSE(default_image.isNull());
-  EXPECT_TRUE(animating);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR),
-      label);
-  std::unique_ptr<chromeos::NetworkState> reference_network =
-      CreateStandaloneNetworkState("reference", shill::kTypeCellular,
-                                   shill::kStateAssociation, 45);
-  EXPECT_TRUE(gfx::test::AreImagesEqual(
-      gfx::Image(default_image), ImageForNetwork(reference_network.get())));
-}
-
-TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularScanning) {
-  SetCellularUninitialized();
-
-  helper().manager_test()->AddTechnology(shill::kTypeCellular, true);
-  helper().device_test()->SetDeviceProperty(
-      kShillManagerClientStubCellularDevice, shill::kScanningProperty,
-      base::Value(true),
-      /*notify_changed=*/true);
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(helper().network_state_handler()->GetScanningByType(
-      chromeos::NetworkTypePattern::Cellular()));
-
-  EXPECT_EQ(IDS_ASH_STATUS_TRAY_MOBILE_SCANNING, GetCellularUninitializedMsg());
 }
 
 TEST_F(NetworkIconTest, NetworkSignalStrength) {

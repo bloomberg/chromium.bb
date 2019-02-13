@@ -98,12 +98,14 @@ class NetworkStateHandler::ActiveNetworkState {
   explicit ActiveNetworkState(const NetworkState* network)
       : guid_(network->guid()),
         connection_state_(network->connection_state()),
-        activation_state_(network->activation_state()) {}
+        activation_state_(network->activation_state()),
+        connect_requested_(network->connect_requested()) {}
 
   bool MatchesNetworkState(const NetworkState* network) {
     return guid_ == network->guid() &&
            connection_state_ == network->connection_state() &&
-           activation_state_ == network->activation_state();
+           activation_state_ == network->activation_state() &&
+           connect_requested_ == network->connect_requested();
   }
 
  private:
@@ -115,6 +117,8 @@ class NetworkStateHandler::ActiveNetworkState {
   // Activating Cellular networks are frequently treated like connecting
   // networks in the UI, so we also track changes to Cellular activation state.
   const std::string activation_state_;
+  // The connect_requested state affects 'connecting' in the UI.
+  const bool connect_requested_;
 };
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -1881,11 +1885,12 @@ bool NetworkStateHandler::ActiveNetworksChanged(
 
 void NetworkStateHandler::NotifyIfActiveNetworksChanged() {
   SCOPED_NET_LOG_IF_SLOW();
-  NET_LOG(EVENT) << "NOTIFY:ActiveNetworksChanged";
   NetworkStateList active_networks;
   GetActiveNetworkListByType(NetworkTypePattern::Default(), &active_networks);
   if (!ActiveNetworksChanged(active_networks))
     return;
+
+  NET_LOG(EVENT) << "NOTIFY:ActiveNetworksChanged";
 
   active_network_list_.clear();
   active_network_list_.reserve(active_networks.size());
