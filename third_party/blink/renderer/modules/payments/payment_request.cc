@@ -806,17 +806,17 @@ PaymentRequest* PaymentRequest::Create(
 PaymentRequest::~PaymentRequest() = default;
 
 ScriptPromise PaymentRequest::show(ScriptState* script_state) {
+  if (!script_state->ContextIsValid() || !LocalDOMWindow::From(script_state) ||
+      !LocalDOMWindow::From(script_state)->GetFrame()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kAbortError,
+                                           "Cannot show the payment request"));
+  }
+
   if (!payment_provider_.is_bound() || accept_resolver_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                            "Already called show() once"));
-  }
-
-  if (!script_state->ContextIsValid() || !LocalDOMWindow::From(script_state) ||
-      !LocalDOMWindow::From(script_state)->GetFrame()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                           "Cannot show the payment request"));
   }
 
   // TODO(crbug.com/825270): Reject with SecurityError DOMException if triggered
