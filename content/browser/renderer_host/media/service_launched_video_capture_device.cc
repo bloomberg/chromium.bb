@@ -63,8 +63,7 @@ void ServiceLaunchedVideoCaptureDevice::ResumeDevice() {
 }
 
 void ServiceLaunchedVideoCaptureDevice::RequestRefreshFrame() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->RequestRefreshFrame();
+  // Ignore this call.
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
@@ -79,8 +78,7 @@ void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
 void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
     int frame_feedback_id,
     double utilization) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->OnReceiverReportingUtilization(frame_feedback_id, utilization);
+  // Ignore this call.
 }
 
 void ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice() {

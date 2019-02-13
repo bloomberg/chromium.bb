@@ -85,16 +85,6 @@ void TextureVirtualDeviceMojoAdapter::Start(
   }
 }
 
-void TextureVirtualDeviceMojoAdapter::OnReceiverReportingUtilization(
-    int32_t frame_feedback_id,
-    double utilization) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void TextureVirtualDeviceMojoAdapter::RequestRefreshFrame() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
 void TextureVirtualDeviceMojoAdapter::MaybeSuspend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }

@@ -32,9 +32,6 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
              mojom::ReceiverPtr receiver) override;
-  void OnReceiverReportingUtilization(int32_t frame_feedback_id,
-                                      double utilization) override;
-  void RequestRefreshFrame() override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;

@@ -103,19 +103,6 @@ void DeviceMediaToMojoAdapter::Start(
   device_started_ = true;
 }
 
-void DeviceMediaToMojoAdapter::OnReceiverReportingUtilization(
-    int32_t frame_feedback_id,
-    double utilization) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  device_->OnUtilizationReport(frame_feedback_id, utilization);
-}
-
-void DeviceMediaToMojoAdapter::RequestRefreshFrame() {
-  if (!device_started_)
-    return;
-  device_->RequestRefreshFrame();
-}
-
 void DeviceMediaToMojoAdapter::MaybeSuspend() {
   if (!device_started_)
     return;
