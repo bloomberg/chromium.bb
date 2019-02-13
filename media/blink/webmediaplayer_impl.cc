@@ -902,18 +902,12 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::EnterPictureInPicture() {
+void WebMediaPlayerImpl::OnRequestPictureInPicture() {
   if (!surface_layer_for_video_enabled_)
     ActivateSurfaceLayerForVideo();
 
   DCHECK(bridge_);
   DCHECK(bridge_->GetSurfaceId().is_valid());
-}
-
-void WebMediaPlayerImpl::ExitPictureInPicture() {
-  // Internal cleanups.
-  // TODO(mlamouri): remove the need for this.
-  OnPictureInPictureModeEnded();
 }
 
 void WebMediaPlayerImpl::SetPictureInPictureCustomControls(

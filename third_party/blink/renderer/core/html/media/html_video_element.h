@@ -175,7 +175,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   bool SupportsPictureInPicture() const final;
-  void enterPictureInPicture();
   void SendCustomControlsToPipWindow();
   void PictureInPictureStopped() final;
   void PictureInPictureControlClicked(const WebString& control_id) final;

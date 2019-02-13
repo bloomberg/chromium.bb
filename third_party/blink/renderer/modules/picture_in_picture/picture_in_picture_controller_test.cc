@@ -120,7 +120,6 @@ class PictureInPictureControllerFrameClient
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerFrameClient);
 };
 
-// TODO: can probably be removed.
 class PictureInPictureControllerPlayer : public EmptyWebMediaPlayer {
  public:
   PictureInPictureControllerPlayer() = default;
@@ -131,6 +130,9 @@ class PictureInPictureControllerPlayer : public EmptyWebMediaPlayer {
       return std::numeric_limits<double>::infinity();
     return EmptyWebMediaPlayer::Duration();
   }
+
+  ReadyState GetReadyState() const final { return kReadyStateHaveMetadata; }
+  bool HasVideo() const final { return true; }
 
   void set_infinity_duration(bool value) { infinity_duration_ = value; }
 
@@ -155,6 +157,7 @@ class PictureInPictureControllerTest : public PageTestBase {
                            WTF::Unretained(&mock_service_)));
 
     video_ = HTMLVideoElement::Create(GetDocument());
+    video_->SetReadyState(HTMLMediaElement::ReadyState::kHaveMetadata);
     layer_ = cc::Layer::Create();
     video_->SetCcLayerForTesting(layer_.get());
 

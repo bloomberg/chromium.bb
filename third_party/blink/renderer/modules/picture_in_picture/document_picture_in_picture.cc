@@ -45,14 +45,8 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
   ScriptPromise promise = resolver->Promise();
 
   DCHECK(IsHTMLVideoElement(picture_in_picture_element));
-  document.GetTaskRunner(TaskType::kMediaElementEvent)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(
-              &PictureInPictureControllerImpl::ExitPictureInPicture,
-              WrapPersistent(&controller),
-              WrapPersistent(ToHTMLVideoElement(picture_in_picture_element)),
-              WrapPersistent(resolver)));
+  controller.ExitPictureInPicture(
+      ToHTMLVideoElement(picture_in_picture_element), resolver);
   return promise;
 }
 

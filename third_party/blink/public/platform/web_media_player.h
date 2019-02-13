@@ -150,12 +150,10 @@ class WebMediaPlayer {
   virtual void SetRate(double) = 0;
   virtual void SetVolume(double) = 0;
 
-  // Enter Picture-in-Picture and notifies Blink with window size
-  // when video successfully enters Picture-in-Picture.
-  // TODO(mlamouri): rename to "OnRequestPictureInPicture".
-  virtual void EnterPictureInPicture() = 0;
-  // Exit Picture-in-Picture and notifies Blink when it's done.
-  virtual void ExitPictureInPicture() = 0;
+  // The associated media element is going to enter Picture-in-Picture. This
+  // method should make sure the player is set up for this and has a SurfaceId
+  // as it will be needed.
+  virtual void OnRequestPictureInPicture() = 0;
   // Assign custom controls to the Picture-in-Picture window.
   virtual void SetPictureInPictureCustomControls(
       const std::vector<PictureInPictureControlInfo>&) = 0;
