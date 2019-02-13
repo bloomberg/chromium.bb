@@ -2282,6 +2282,8 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   panes->push_back(toolbar_button_provider_->GetAsAccessiblePaneView());
   if (tabstrip_)
     panes->push_back(tabstrip_);
+  if (toolbar_ && toolbar_->custom_tab_bar())
+    panes->push_back(toolbar_->custom_tab_bar());
   if (bookmark_bar_view_.get())
     panes->push_back(bookmark_bar_view_.get());
   if (infobar_container_)
