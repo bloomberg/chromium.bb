@@ -54,7 +54,7 @@ message DeviceRegisterRequest {
   enum Type {
     reserved 5;
 
-    TT   = 0;             // Register for TT release.
+    TT = 0;               // Register for TT release.
     USER = 1;             // Register for Chrome OS user polices.
     DEVICE = 2;           // Register for Chrome OS device policies.
     BROWSER = 3;          // Register for desktop Chrome browser user policies.
@@ -133,7 +133,7 @@ message DeviceRegisterRequest {
     // is mandatory, but it failed and we are doing a fallback to manual
     // enrollment.
     FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK = 15;
-  };
+  }
 
   // Indicates the registration flavor. This is passed to the server FYI when
   // registering for policy so the server can distinguish registration triggers.
@@ -208,12 +208,10 @@ message DeviceRegisterResponse {
 
 // Request from device to server to unregister device.
 // GoogleDMToken MUST be in HTTP Authorization header.
-message DeviceUnregisterRequest {
-}
+message DeviceUnregisterRequest {}
 
 // Response from server to device for unregister request.
-message DeviceUnregisterResponse {
-}
+message DeviceUnregisterResponse {}
 
 // Request from device to server to upload a device certificate or an enrollment
 // identifier.
@@ -237,8 +235,7 @@ message DeviceCertUploadRequest {
 }
 
 // Response from server to device for cert upload request.
-message DeviceCertUploadResponse {
-}
+message DeviceCertUploadResponse {}
 
 // Request to access a Google service with the given scope.
 message DeviceServiceApiAccessRequest {
@@ -260,7 +257,7 @@ message DeviceServiceApiAccessRequest {
     // to access Google Docs.
     // Please see go/cros-demo-mode and go/demo-mode-account-brainstorm.
     CHROME_OS_DEMO_MODE = 2;
-  };
+  }
 
   // Device type indicates the intended use of the auth code.
   optional DeviceType device_type = 3;
@@ -1281,7 +1278,7 @@ message DeviceAutoEnrollmentRequest {
     // Forced Enrollment check with SHA-256 hashes of (brand code + “_” + serial
     // number), truncated to first 8 bytes each.
     ENROLLMENT_CHECK_TYPE_FORCED_ENROLLMENT = 2;
-  };
+  }
 
   // Specifies the type of auto enrollment check that is being made.
   // This also defines the format of the device identifier hash used in this
@@ -1353,7 +1350,7 @@ message DeviceStateRetrievalResponse {
     RESTORE_MODE_DISABLED = 3;
     // Enterprise enrollment is enforced using Zero-Touch and cannot be skipped.
     RESTORE_MODE_REENROLLMENT_ZERO_TOUCH = 4;
-  };
+  }
   // The server-indicated restore mode.
   optional RestoreMode restore_mode = 1 [default = RESTORE_MODE_NONE];
 
@@ -1389,7 +1386,7 @@ message DeviceInitialEnrollmentStateResponse {
     // Zero-Touch (attestation-based) enrollment is enforced and cannot be
     // skipped.
     INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED = 2;
-  };
+  }
   // The server-indicated initial enrollment mode.
   optional InitialEnrollmentMode initial_enrollment_mode = 1
       [default = INITIAL_ENROLLMENT_MODE_NONE];
@@ -1402,7 +1399,6 @@ message DeviceInitialEnrollmentStateResponse {
 // device. The HTTP request contains an end-user OAuth token and only succeeds
 // if both Host and Controller devices belong to the end-user domain.
 message DevicePairingRequest {
-
   // The device ID of the Host device.
   optional string host_device_id = 1;
 
@@ -1412,7 +1408,6 @@ message DevicePairingRequest {
 
 // Response from the server to the device pairing request.
 message DevicePairingResponse {
-
   // The client should check HTTP status code first. If HTTP status code is not
   // 200 (e.g. 500 internal error), then it means the pairing fails. If HTTP
   // status code is 200, then the client should check the status code within the
@@ -1427,7 +1422,7 @@ message DevicePairingResponse {
     HOST_DEVICE_NOT_FOUND = 2;
 
     // The Controller device cannot be found in the user's domain.
-    CONTROLLER_DEVICE_NOT_FOUND  = 3;
+    CONTROLLER_DEVICE_NOT_FOUND = 3;
 
     // The Host device is deprovisioned.
     HOST_DEVICE_DEPROVISIONED = 4;
@@ -1443,7 +1438,6 @@ message DevicePairingResponse {
 // request contains controller service account OAuth token as well as the
 // DMToken from the Host device.
 message CheckDevicePairingRequest {
-
   // The device ID of the Host device.
   optional string host_device_id = 1;
 
@@ -1453,7 +1447,6 @@ message CheckDevicePairingRequest {
 
 // Response from the server to the check device pairing request.
 message CheckDevicePairingResponse {
-
   // The client should check HTTP status code first. If HTTP status code is not
   // 200 (e.g. 500 internal error), then it means the pairing status is unknown.
   // If HTTP status code is 200, then the client should check the status code
@@ -1468,7 +1461,7 @@ message CheckDevicePairingResponse {
     HOST_DEVICE_NOT_FOUND = 2;
 
     // The Controller device cannot be found in the Host device domain.
-    CONTROLLER_DEVICE_NOT_FOUND  = 3;
+    CONTROLLER_DEVICE_NOT_FOUND = 3;
 
     // The Host device is deprovisioned.
     HOST_DEVICE_DEPROVISIONED = 4;
@@ -1514,6 +1507,9 @@ message RemoteCommand {
 
     // Wipe the device (perform a powerwash).
     DEVICE_REMOTE_POWERWASH = 7;
+
+    // Refresh the device machine certificate and re-upload it.
+    DEVICE_REFRESH_ENTERPRISE_MACHINE_CERTIFICATE = 8;
   }
 
   // The command type.
@@ -1581,8 +1577,7 @@ message DeviceRemoteCommandResponse {
 // Sent by the client to the server to check if the current user is allowed
 // to update attributes (asset id and location).  The HTTP request contains an
 // end-user OAuth token.
-message DeviceAttributeUpdatePermissionRequest {
-}
+message DeviceAttributeUpdatePermissionRequest {}
 
 // Response from the server specifying whether the current user is allowed to
 // update attributes (asset id and location).
@@ -1664,6 +1659,8 @@ message CertificateBasedDeviceRegistrationData {
   optional bytes device_certificate = 2;
   // regular device registration request
   optional DeviceRegisterRequest device_register_request = 3;
+  // The device owner's email address.
+  optional string device_owner = 4;
 }
 
 // Request to enroll a Chrome browser. Fields match identically named fields
@@ -2194,8 +2191,8 @@ message DeviceManagementResponse {
   optional GcmIdUpdateResponse gcm_id_update_response = 17;
 
   // Response to check Android management request.
-  optional CheckAndroidManagementResponse
-      check_android_management_response = 18;
+  optional CheckAndroidManagementResponse check_android_management_response =
+      18;
 
   // Response to an Active Directory Play user enrollment request.
   optional ActiveDirectoryEnrollPlayUserResponse
