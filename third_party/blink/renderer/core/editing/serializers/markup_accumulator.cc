@@ -149,6 +149,11 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
   // 3.4. Let candidate prefix be null.
   AtomicString candidate_prefix;
 
+  if (attribute_namespace.IsNull()) {
+    MarkupFormatter::AppendAttribute(markup_, candidate_prefix,
+                                     attribute.LocalName(), value, false);
+    return;
+  }
   // 3.5. If attribute namespace is not null, then run these sub-steps:
 
   // 3.5.1. Let candidate prefix be the result of retrieving a preferred
@@ -202,10 +207,8 @@ bool MarkupAccumulator::ShouldAddNamespaceAttribute(
   // xmlns and xmlns:prefix attributes should be handled by another branch in
   // AppendAttributeAsXMLWithNamespace().
   DCHECK_NE(attribute.NamespaceURI(), xmlns_names::kNamespaceURI);
-
-  // Attributes are in the null namespace by default.
-  if (!attribute.NamespaceURI())
-    return false;
+  // Null namespace is checked earlier in AppendAttributeAsXMLWithNamespace().
+  DCHECK(attribute.NamespaceURI());
 
   // Attributes without a prefix will need one generated for them, and an xmlns
   // attribute for that prefix.
