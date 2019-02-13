@@ -246,6 +246,12 @@ import org.chromium.content_public.common.ResourceRequestBody;
         nativeSetEntryExtraData(mNativeNavigationControllerAndroid, index, key, value);
     }
 
+    @Override
+    public boolean isEntryMarkedToBeSkipped(int index) {
+        if (mNativeNavigationControllerAndroid == 0) return false;
+        return nativeIsEntryMarkedToBeSkipped(mNativeNavigationControllerAndroid, index);
+    }
+
     @CalledByNative
     private static void addToNavigationHistory(Object history, Object navigationEntry) {
         ((NavigationHistory) history).addEntry((NavigationEntry) navigationEntry);
@@ -302,4 +308,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
             long nativeNavigationControllerAndroid, int index, String key);
     private native void nativeSetEntryExtraData(
             long nativeNavigationControllerAndroid, int index, String key, String value);
+    private native boolean nativeIsEntryMarkedToBeSkipped(
+            long nativeNavigationControllerAndroid, int index);
 }

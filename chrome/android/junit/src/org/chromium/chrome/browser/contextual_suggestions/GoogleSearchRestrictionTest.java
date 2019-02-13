@@ -374,5 +374,10 @@ public class GoogleSearchRestrictionTest {
 
         @Override
         public void setEntryExtraData(int index, String key, String value) {}
+
+        @Override
+        public boolean isEntryMarkedToBeSkipped(int index) {
+            return false;
+        }
     }
 }

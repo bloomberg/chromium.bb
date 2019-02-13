@@ -407,4 +407,11 @@ void NavigationControllerAndroid::SetEntryExtraData(
   navigation_controller_->GetEntryAtIndex(index)->SetExtraData(key, value);
 }
 
+jboolean NavigationControllerAndroid::IsEntryMarkedToBeSkipped(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint index) {
+  return navigation_controller_->IsEntryMarkedToBeSkipped(index);
+}
+
 }  // namespace content

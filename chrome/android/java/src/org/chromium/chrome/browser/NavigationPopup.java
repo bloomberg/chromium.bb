@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -243,7 +244,11 @@ public class NavigationPopup implements AdapterView.OnItemClickListener {
         } else {
             // 1-based index to keep in line with Desktop implementation.
             RecordUserAction.record(buildComputedAction("HistoryClick" + (position + 1)));
-            mNavigationController.goToNavigationIndex(entry.getIndex());
+            int index = entry.getIndex();
+            RecordHistogram.recordBooleanHistogram(
+                    "Navigation.BackForward.NavigatingToEntryMarkedToBeSkipped",
+                    mNavigationController.isEntryMarkedToBeSkipped(index));
+            mNavigationController.goToNavigationIndex(index);
         }
 
         mPopup.dismiss();
