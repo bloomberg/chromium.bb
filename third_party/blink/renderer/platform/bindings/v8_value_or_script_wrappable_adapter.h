@@ -25,9 +25,13 @@ class PLATFORM_EXPORT V8ValueOrScriptWrappableAdapter {
   STACK_ALLOCATED();
 
  public:
+  // Supports implicit conversions from v8::Value and ScriptWrappable type
+  // family so that the call sites do not need to recognize this helper class.
   V8ValueOrScriptWrappableAdapter(std::nullptr_t) {}
   V8ValueOrScriptWrappableAdapter(v8::Local<v8::Value> v8_value)
-      : v8_value_(v8_value) {}
+      : v8_value_(v8_value) {
+    DCHECK(!v8_value_.IsEmpty());
+  }
   V8ValueOrScriptWrappableAdapter(ScriptWrappable* script_wrappable)
       : script_wrappable_(script_wrappable) {}
   template <typename T>
@@ -37,13 +41,17 @@ class PLATFORM_EXPORT V8ValueOrScriptWrappableAdapter {
                   "script_wrappable must be a ScriptWrappable");
   }
 
+  // Returns the specified v8::Value or the V8 wrapper object of the specified
+  // ScriptWrappable.  In the latter case, the wrapper may be created in
+  // |creation_context|.
   v8::Local<v8::Value> V8Value(ScriptState* creation_context) const;
 
+  // Returns true when none of v8::Value nor ScriptWrappable is specified.
   bool IsEmpty() const { return v8_value_.IsEmpty() && !script_wrappable_; }
 
  private:
   v8::Local<v8::Value> v8_value_;
-  Member<ScriptWrappable> script_wrappable_ = nullptr;
+  Member<ScriptWrappable> script_wrappable_;
 };
 
 }  // namespace bindings
