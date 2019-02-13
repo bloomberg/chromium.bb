@@ -450,7 +450,7 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
       background.get(), base::FilePath(FILE_PATH_LITERAL("green.png")));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LayerTreeHostReadbackPixelTests,
     LayerTreeHostReadbackPixelTest,
     ::testing::Values(
@@ -547,7 +547,7 @@ TEST_P(LayerTreeHostReadbackDeviceScalePixelTest, ReadbackNonRootLayerSubrect) {
       base::FilePath(FILE_PATH_LITERAL("green_small_with_blue_corner.png")));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LayerTreeHostReadbackDeviceScalePixelTests,
     LayerTreeHostReadbackDeviceScalePixelTest,
     ::testing::Values(
@@ -602,11 +602,11 @@ TEST_P(LayerTreeHostReadbackColorSpacePixelTest, Readback) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(LayerTreeHostReadbackColorSpacePixelTests,
-                        LayerTreeHostReadbackColorSpacePixelTest,
-                        ::testing::Values(ReadbackTestConfig(
-                            LayerTreeHostReadbackPixelTest::PIXEL_TEST_GL,
-                            READBACK_BITMAP)));
+INSTANTIATE_TEST_SUITE_P(LayerTreeHostReadbackColorSpacePixelTests,
+                         LayerTreeHostReadbackColorSpacePixelTest,
+                         ::testing::Values(ReadbackTestConfig(
+                             LayerTreeHostReadbackPixelTest::PIXEL_TEST_GL,
+                             READBACK_BITMAP)));
 
 }  // namespace
 }  // namespace cc

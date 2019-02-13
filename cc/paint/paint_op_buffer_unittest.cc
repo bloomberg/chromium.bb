@@ -1705,7 +1705,7 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
   PaintOpBuffer buffer_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     P,
     PaintOpSerializationTest,
     ::testing::Range(static_cast<uint8_t>(0),
@@ -2945,9 +2945,9 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
 
 class PaintFilterSerializationTest : public ::testing::TestWithParam<bool> {};
 
-INSTANTIATE_TEST_CASE_P(PaintFilterSerializationTests,
-                        PaintFilterSerializationTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(PaintFilterSerializationTests,
+                         PaintFilterSerializationTest,
+                         ::testing::Values(true, false));
 
 TEST_P(PaintFilterSerializationTest, Basic) {
   SkScalar scalars[9] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f};

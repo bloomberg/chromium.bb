@@ -1650,11 +1650,11 @@ TEST_P(OopPathPixelTest, Basic) {
   RunTest();
 }
 
-INSTANTIATE_TEST_CASE_P(P, OopImagePixelTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(P, OopClearPixelTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(P, OopRecordShaderPixelTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(P, OopRecordFilterPixelTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(P, OopPathPixelTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P, OopImagePixelTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P, OopClearPixelTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P, OopRecordShaderPixelTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P, OopRecordFilterPixelTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(P, OopPathPixelTest, ::testing::Bool());
 
 }  // namespace
 }  // namespace cc

@@ -262,11 +262,11 @@ class LayerTreeHostBlendingPixelTest
   SkColor misc_opaque_color_ = 0xffc86464;
 };
 
-INSTANTIATE_TEST_CASE_P(B,
-                        LayerTreeHostBlendingPixelTest,
-                        ::testing::Combine(::testing::Values(SOFTWARE,
-                                                             ZERO_COPY),
-                                           ::testing::ValuesIn(kBlendModes)));
+INSTANTIATE_TEST_SUITE_P(B,
+                         LayerTreeHostBlendingPixelTest,
+                         ::testing::Combine(::testing::Values(SOFTWARE,
+                                                              ZERO_COPY),
+                                            ::testing::ValuesIn(kBlendModes)));
 
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   const int kRootWidth = 2;

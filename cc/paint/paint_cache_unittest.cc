@@ -121,7 +121,7 @@ TEST_P(PaintCacheTest, ServiceBasic) {
   EXPECT_TRUE(service_cache.empty());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     P,
     PaintCacheTest,
     ::testing::Range(static_cast<uint32_t>(0),

@@ -4703,11 +4703,11 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {
   EXPECT_EQ(expect_lcd_text, grand_child_->CanUseLCDText());
 }
 
-INSTANTIATE_TEST_CASE_P(LayerTreeHostCommonTest,
-                        LCDTextTest,
-                        testing::Combine(testing::Bool(),
-                                         testing::Bool(),
-                                         testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(LayerTreeHostCommonTest,
+                         LCDTextTest,
+                         testing::Combine(testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Bool()));
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   FakeImplTaskRunnerProvider task_runner_provider;

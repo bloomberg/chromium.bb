@@ -516,7 +516,7 @@ TEST_P(RasterBufferProviderTest, MeasureGpuRasterDuration) {
   histogram_tester.ExpectTotalCount(histogram, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     RasterBufferProviderTests,
     RasterBufferProviderTest,
     ::testing::Values(RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY,

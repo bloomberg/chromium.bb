@@ -28,7 +28,7 @@ namespace {
 
 using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(LayerTreeHostMasksPixelTest);
+INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostMasksPixelTest);
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -99,7 +99,7 @@ class LayerTreeHostLayerListPixelTest : public ParameterizedPixelResourceTest {
   }
 };
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(LayerTreeHostLayerListPixelTest);
+INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostLayerListPixelTest);
 
 TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   PropertyTrees property_trees;
@@ -470,7 +470,7 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackdropFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
     LayerTreeHostMasksForBackdropFiltersPixelTest,
     ::testing::Combine(
@@ -732,9 +732,9 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        LayerTreeHostMaskAsBlendingPixelTest,
-                        ::testing::Range(0, 5));
+INSTANTIATE_TEST_SUITE_P(All,
+                         LayerTreeHostMaskAsBlendingPixelTest,
+                         ::testing::Range(0, 5));
 // Instantiate 5 test modes of the following:
 // 0: SOFTWARE (golden sample)
 // 1: GL
