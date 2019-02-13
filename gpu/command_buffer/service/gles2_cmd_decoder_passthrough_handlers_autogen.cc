@@ -3995,6 +3995,40 @@ error::Error GLES2DecoderPassthroughImpl::HandleDispatchCompute(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleGetProgramInterfaceiv(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2ComputeContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::GetProgramInterfaceiv& c =
+      *static_cast<const volatile gles2::cmds::GetProgramInterfaceiv*>(
+          cmd_data);
+  GLuint program = c.program;
+  GLenum program_interface = static_cast<GLenum>(c.program_interface);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  unsigned int buffer_size = 0;
+  typedef cmds::GetProgramInterfaceiv::Result Result;
+  Result* result = GetSharedMemoryAndSizeAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
+    return error::kOutOfBounds;
+  }
+  GLsizei bufsize = Result::ComputeMaxResults(buffer_size);
+  GLsizei written_values = 0;
+  GLsizei* length = &written_values;
+  error::Error error = DoGetProgramInterfaceiv(program, program_interface,
+                                               pname, bufsize, length, params);
+  if (error != error::kNoError) {
+    return error;
+  }
+  if (written_values > bufsize) {
+    return error::kOutOfBounds;
+  }
+  result->SetNumResults(written_values);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleMemoryBarrierEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

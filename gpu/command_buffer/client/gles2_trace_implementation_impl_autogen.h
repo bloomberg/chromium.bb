@@ -1830,6 +1830,55 @@ void GLES2TraceImplementation::DispatchCompute(GLuint num_groups_x,
   gl_->DispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 }
 
+void GLES2TraceImplementation::GetProgramInterfaceiv(GLuint program,
+                                                     GLenum program_interface,
+                                                     GLenum pname,
+                                                     GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetProgramInterfaceiv");
+  gl_->GetProgramInterfaceiv(program, program_interface, pname, params);
+}
+
+GLuint GLES2TraceImplementation::GetProgramResourceIndex(
+    GLuint program,
+    GLenum program_interface,
+    const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetProgramResourceIndex");
+  return gl_->GetProgramResourceIndex(program, program_interface, name);
+}
+
+void GLES2TraceImplementation::GetProgramResourceName(GLuint program,
+                                                      GLenum program_interface,
+                                                      GLuint index,
+                                                      GLsizei bufsize,
+                                                      GLsizei* length,
+                                                      char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetProgramResourceName");
+  gl_->GetProgramResourceName(program, program_interface, index, bufsize,
+                              length, name);
+}
+
+void GLES2TraceImplementation::GetProgramResourceiv(GLuint program,
+                                                    GLenum program_interface,
+                                                    GLuint index,
+                                                    GLsizei prop_count,
+                                                    const GLenum* props,
+                                                    GLsizei bufsize,
+                                                    GLsizei* length,
+                                                    GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetProgramResourceiv");
+  gl_->GetProgramResourceiv(program, program_interface, index, prop_count,
+                            props, bufsize, length, params);
+}
+
+GLint GLES2TraceImplementation::GetProgramResourceLocation(
+    GLuint program,
+    GLenum program_interface,
+    const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::GetProgramResourceLocation");
+  return gl_->GetProgramResourceLocation(program, program_interface, name);
+}
+
 void GLES2TraceImplementation::MemoryBarrierEXT(GLbitfield barriers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MemoryBarrierEXT");
   gl_->MemoryBarrierEXT(barriers);

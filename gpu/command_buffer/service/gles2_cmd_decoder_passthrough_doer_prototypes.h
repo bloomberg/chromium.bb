@@ -305,6 +305,32 @@ error::Error DoGetProgramiv(GLuint program,
                             GLsizei* length,
                             GLint* params);
 error::Error DoGetProgramInfoLog(GLuint program, std::string* infolog);
+error::Error DoGetProgramInterfaceiv(GLuint program,
+                                     GLenum program_interface,
+                                     GLenum pname,
+                                     GLsizei bufsize,
+                                     GLsizei* length,
+                                     GLint* params);
+error::Error DoGetProgramResourceiv(GLuint program,
+                                    GLenum program_interface,
+                                    GLuint index,
+                                    GLsizei prop_count,
+                                    const GLenum* props,
+                                    GLsizei bufsize,
+                                    GLsizei* length,
+                                    GLint* params);
+error::Error DoGetProgramResourceIndex(GLuint program,
+                                       GLenum program_interface,
+                                       const char* name,
+                                       GLuint* index);
+error::Error DoGetProgramResourceLocation(GLuint program,
+                                          GLenum program_interface,
+                                          const char* name,
+                                          GLint* location);
+error::Error DoGetProgramResourceName(GLuint program,
+                                      GLenum program_interface,
+                                      GLuint index,
+                                      std::string* name);
 error::Error DoGetRenderbufferParameteriv(GLenum target,
                                           GLenum pname,
                                           GLsizei bufsize,

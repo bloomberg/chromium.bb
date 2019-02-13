@@ -186,6 +186,19 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
       GLint* values);
   bool GetQueryObjectValueHelper(
       const char* function_name, GLuint id, GLenum pname, GLuint64* params);
+  bool GetProgramInterfaceivHelper(
+      GLuint program, GLenum program_interface, GLenum pname, GLint* params);
+  GLuint GetProgramResourceIndexHelper(
+      GLuint program, GLenum program_interface, const char* name);
+  bool GetProgramResourceNameHelper(
+      GLuint program, GLenum program_interface, GLuint index, GLsizei bufsize,
+      GLsizei* length, char* name);
+  bool GetProgramResourceivHelper(
+      GLuint program, GLenum program_interface, GLuint index,
+      GLsizei prop_count, const GLenum* props, GLsizei bufsize, GLsizei* length,
+      GLint* params);
+  GLint GetProgramResourceLocationHelper(
+      GLuint program, GLenum program_interface, const char* name);
 
   const scoped_refptr<ShareGroup>& share_group() const { return share_group_; }
 
