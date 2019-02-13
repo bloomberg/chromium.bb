@@ -180,15 +180,14 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
 
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 
-  base::string16 current_time;
-  // Add a subtle indicator for SingleProcessMash that shows up in screenshots.
-  // TODO(crbug.com/918537): Remove before M-74 branch.
-  if (::features::IsSingleProcessMash()) {
-    current_time = base::ASCIIToUTF16("- ");
-  }
-  current_time += base::TimeFormatTimeOfDayWithHourClockType(
+  base::string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
       now, model_->hour_clock_type(), base::kDropAmPm);
-  horizontal_label_->SetText(current_time);
+  base::string16 time_text = current_time;
+  // Add an indicator for SingleProcessMash that shows up in screenshots.
+  // TODO(crbug.com/918537): Remove before M-74 branch.
+  if (::features::IsSingleProcessMash())
+    time_text += base::UTF8ToUTF16(" SPM");
+  horizontal_label_->SetText(time_text);
   horizontal_label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
   horizontal_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                               true);
