@@ -90,6 +90,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void StartConcierge(ConciergeCallback callback) override;
   void StopConcierge(ConciergeCallback callback) override;
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
+  void SetSchedulerConfiguration(const std::string& config_name,
+                                 VoidDBusMethodCallback callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int features_mask);
@@ -98,6 +100,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   // pending callbacks if is_available is true.
   void SetServiceIsAvailable(bool is_available);
 
+  const std::string& scheduler_configuration_name() const {
+    return scheduler_configuration_name_;
+  }
+
  private:
   int features_mask_;
 
@@ -105,6 +111,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   std::vector<WaitForServiceToBeAvailableCallback>
       pending_wait_for_service_to_be_available_callbacks_;
   std::set<std::string> printers_;
+  std::string scheduler_configuration_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
 };
