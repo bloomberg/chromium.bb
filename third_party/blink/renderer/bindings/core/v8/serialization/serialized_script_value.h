@@ -69,6 +69,8 @@ typedef HeapVector<Member<DOMSharedArrayBuffer>> SharedArrayBufferArray;
 
 class CORE_EXPORT SerializedScriptValue
     : public ThreadSafeRefCounted<SerializedScriptValue> {
+  USING_FAST_MALLOC(SerializedScriptValue);
+
  public:
   using ArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
   using SharedArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;

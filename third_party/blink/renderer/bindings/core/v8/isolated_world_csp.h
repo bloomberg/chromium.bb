@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -18,6 +19,8 @@ class Document;
 
 // A singleton storing content security policy for each isolated world.
 class CORE_EXPORT IsolatedWorldCSP {
+  USING_FAST_MALLOC(IsolatedWorldCSP);
+
  public:
   static IsolatedWorldCSP& Get();
 
