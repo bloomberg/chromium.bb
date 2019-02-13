@@ -545,6 +545,7 @@ extern const char kNtpShownPage[];
 
 extern const char kDevToolsAdbKey[];
 extern const char kDevToolsAvailability[];
+extern const char kDevToolsBackgroundServicesExpirationDict[];
 extern const char kDevToolsDiscoverUsbDevicesEnabled[];
 extern const char kDevToolsEditedFiles[];
 extern const char kDevToolsFileSystemPaths[];

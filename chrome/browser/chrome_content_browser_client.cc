@@ -1126,6 +1126,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   // used for mapping the command-line flags).
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
+  registry->RegisterDictionaryPref(
+      prefs::kDevToolsBackgroundServicesExpirationDict);
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
   registry->RegisterListPref(prefs::kAutoplayWhitelist);
@@ -4314,6 +4316,58 @@ ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
 #else
   return new ChromeDevToolsManagerDelegate();
 #endif
+}
+
+void ChromeContentBrowserClient::UpdateDevToolsBackgroundServiceExpiration(
+    content::BrowserContext* browser_context,
+    int service,
+    base::Time expiration_time) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+
+  auto* pref_service = profile->GetPrefs();
+  DCHECK(pref_service);
+
+  DictionaryPrefUpdate pref_update(
+      pref_service, prefs::kDevToolsBackgroundServicesExpirationDict);
+  base::DictionaryValue* exp_dict = pref_update.Get();
+
+  // Convert |expiration_time| to minutes since that is the most granular
+  // option that returns an int. base::Value does not accept int64.
+  int expiration_time_minutes =
+      expiration_time.ToDeltaSinceWindowsEpoch().InMinutes();
+  exp_dict->SetInteger(base::NumberToString(service), expiration_time_minutes);
+}
+
+base::flat_map<int, base::Time>
+ChromeContentBrowserClient::GetDevToolsBackgroundServiceExpirations(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
+
+  auto* pref_service = profile->GetPrefs();
+  DCHECK(pref_service);
+
+  auto* expiration_dict = pref_service->GetDictionary(
+      prefs::kDevToolsBackgroundServicesExpirationDict);
+  DCHECK(expiration_dict);
+
+  base::flat_map<int, base::Time> expiration_times;
+  for (const auto& it : *expiration_dict) {
+    // key.
+    int service = 0;
+    bool did_convert = base::StringToInt(it.first, &service);
+    DCHECK(did_convert);
+
+    // value.
+    DCHECK(it.second->is_int());
+    base::TimeDelta delta = base::TimeDelta::FromMinutes(it.second->GetInt());
+    base::Time expiration_time = base::Time::FromDeltaSinceWindowsEpoch(delta);
+
+    expiration_times[service] = expiration_time;
+  }
+
+  return expiration_times;
 }
 
 content::TracingDelegate* ChromeContentBrowserClient::GetTracingDelegate() {

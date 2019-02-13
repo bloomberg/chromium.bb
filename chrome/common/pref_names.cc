@@ -1562,6 +1562,10 @@ const char kDevToolsAdbKey[] = "devtools.adb_key";
 // Defines administrator-set availability of developer tools.
 const char kDevToolsAvailability[] = "devtools.availability";
 
+// Dictionary from background service to recording expiration time.
+const char kDevToolsBackgroundServicesExpirationDict[] =
+    "devtools.backgroundserviceexpiration";
+
 // Determines whether devtools should be discovering usb devices for
 // remote debugging at chrome://inspect.
 const char kDevToolsDiscoverUsbDevicesEnabled[] =

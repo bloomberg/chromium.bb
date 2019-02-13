@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -349,6 +350,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       std::vector<std::unique_ptr<storage::FileSystemBackend>>*
           additional_backends) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  void UpdateDevToolsBackgroundServiceExpiration(
+      content::BrowserContext* browser_context,
+      int service,
+      base::Time expiration_time) override;
+  base::flat_map<int, base::Time> GetDevToolsBackgroundServiceExpirations(
+      content::BrowserContext* browser_context) override;
   content::TracingDelegate* GetTracingDelegate() override;
   bool IsPluginAllowedToCallRequestOSFileHandle(
       content::BrowserContext* browser_context,
