@@ -3449,6 +3449,56 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
+- (void)willSwitchToTabWithURL:(GURL)URL
+              newWebStateIndex:(NSInteger)newWebStateIndex {
+  if ([self canShowTabStrip])
+    return;
+
+  WebStateList* webStateList = self.tabModel.webStateList;
+  web::WebState* webStateBeingActivated =
+      webStateList->GetWebStateAt(newWebStateIndex);
+
+  // Add animations only if the tab strip isn't shown.
+  UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
+
+  // TODO(crbug.com/904992): Do not repurpose SnapshotGeneratorDelegate.
+  SwipeView* swipeView = [[SwipeView alloc]
+      initWithFrame:self.contentArea.frame
+          topMargin:[self snapshotGenerator:nil
+                        snapshotEdgeInsetsForWebState:webStateBeingActivated]
+                        .top];
+
+  [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
+                                    toolbarSideSwipeSnapshotForWebState:
+                                        webStateBeingActivated]];
+  [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
+                                       toolbarSideSwipeSnapshotForWebState:
+                                           webStateBeingActivated]];
+
+  SnapshotTabHelper::FromWebState(webStateBeingActivated)
+      ->RetrieveColorSnapshot(^(UIImage* image) {
+        if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
+                ->will_add_placeholder_for_next_navigation()) {
+          [swipeView setImage:nil];
+        } else {
+          [swipeView setImage:image];
+        }
+      });
+
+  SwitchToTabAnimationView* animationView =
+      [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
+
+  [self.view addSubview:animationView];
+
+  SwitchToTabAnimationPosition position =
+      newWebStateIndex > webStateList->active_index()
+          ? SwitchToTabAnimationPositionAfter
+          : SwitchToTabAnimationPositionBefore;
+  [animationView animateFromCurrentView:snapshotView
+                              toNewView:swipeView
+                             inPosition:position];
+}
+
 #pragma mark - CRWWebStateObserver methods.
 
 // TODO(crbug.com/918934): This call to closeFindInPage incorrectly triggers for
@@ -3992,92 +4042,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   urlLoadingService->OpenUrlInNewTab(command);
 }
 
-#pragma mark - UrlLoader helpers
-
-// Switch to the tab corresponding to |params|.
-- (void)switchToTabWithParams:
-    (const web::NavigationManager::WebLoadParams&)params {
-  const GURL& URL = params.url;
-
-  WebStateList* webStateList = self.tabModel.webStateList;
-  NSInteger newWebStateIndex =
-      webStateList->GetIndexOfInactiveWebStateWithURL(URL);
-  bool oldTabIsNTPWithoutHistory =
-      IsNTPWithoutHistory(webStateList->GetActiveWebState());
-
-  if (newWebStateIndex == WebStateList::kInvalidIndex) {
-    // If the tab containing the URL has been closed.
-    if (oldTabIsNTPWithoutHistory) {
-      // It is NTP, just load the URL.
-      ChromeLoadParams currentPageParams(params);
-      [self loadURLWithParams:currentPageParams];
-    } else {
-      // Open the URL in foreground.
-      OpenNewTabCommand* newTabCommand =
-          [[OpenNewTabCommand alloc] initWithURL:URL
-                                        referrer:web::Referrer()
-                                     inIncognito:self.isOffTheRecord
-                                    inBackground:NO
-                                        appendTo:kCurrentTab];
-      [self.dispatcher openURLInNewTab:newTabCommand];
-    }
-    return;
-  }
-
-  web::WebState* webStateBeingActivated =
-      webStateList->GetWebStateAt(newWebStateIndex);
-
-  if (![self canShowTabStrip]) {
-    // Add animations only if the tab strip isn't shown.
-    UIView* snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
-
-    // TODO(crbug.com/904992): Do not repurpose SnapshotGeneratorDelegate.
-    SwipeView* swipeView = [[SwipeView alloc]
-        initWithFrame:self.contentArea.frame
-            topMargin:[self snapshotGenerator:nil
-                          snapshotEdgeInsetsForWebState:webStateBeingActivated]
-                          .top];
-
-    [swipeView setTopToolbarImage:[self.primaryToolbarCoordinator
-                                      toolbarSideSwipeSnapshotForWebState:
-                                          webStateBeingActivated]];
-    [swipeView setBottomToolbarImage:[self.secondaryToolbarCoordinator
-                                         toolbarSideSwipeSnapshotForWebState:
-                                             webStateBeingActivated]];
-
-    SnapshotTabHelper::FromWebState(webStateBeingActivated)
-        ->RetrieveColorSnapshot(^(UIImage* image) {
-          if (PagePlaceholderTabHelper::FromWebState(webStateBeingActivated)
-                  ->will_add_placeholder_for_next_navigation()) {
-            [swipeView setImage:nil];
-          } else {
-            [swipeView setImage:image];
-          }
-        });
-
-    SwitchToTabAnimationView* animationView =
-        [[SwitchToTabAnimationView alloc] initWithFrame:self.view.bounds];
-
-    [self.view addSubview:animationView];
-
-    SwitchToTabAnimationPosition position =
-        newWebStateIndex > webStateList->active_index()
-            ? SwitchToTabAnimationPositionAfter
-            : SwitchToTabAnimationPositionBefore;
-    [animationView animateFromCurrentView:snapshotView
-                                toNewView:swipeView
-                               inPosition:position];
-  }
-  NSInteger oldWebStateIndex = webStateList->active_index();
-  webStateList->ActivateWebStateAt(newWebStateIndex);
-
-  // Close the tab if it is NTP with no back/forward history to avoid having
-  // empty tabs.
-  if (oldTabIsNTPWithoutHistory) {
-    webStateList->CloseWebStateAt(oldWebStateIndex,
-                                  WebStateList::CLOSE_USER_ACTION);
-  }
-}
 
 #pragma mark - ToolbarCoordinatorDelegate (Public)
 

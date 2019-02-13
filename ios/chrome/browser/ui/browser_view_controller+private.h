@@ -24,10 +24,6 @@
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
 
-// Switches to the tab best represented by the given |params|.
-- (void)switchToTabWithParams:
-    (const web::NavigationManager::WebLoadParams&)params;
-
 // Does an animation from |originPoint| when opening a background tab, then
 // calls |completion|.
 - (void)animateOpenBackgroundTabFromOriginPoint:(CGPoint)originPoint

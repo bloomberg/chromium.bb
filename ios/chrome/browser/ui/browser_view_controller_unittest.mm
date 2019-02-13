@@ -168,11 +168,6 @@ using web::WebStateImpl;
 
 #pragma mark - URLLoadingServiceDelegate
 
-- (void)switchToTabWithParams:
-    (const web::NavigationManager::WebLoadParams&)params {
-  [self.bvc switchToTabWithParams:params];
-}
-
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
   [self.bvc webPageOrderedOpen:command];
 }

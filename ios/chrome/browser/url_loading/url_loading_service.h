@@ -25,11 +25,6 @@ class UrlLoadingNotifier;
 // Objective-C delegate for UrlLoadingService.
 @protocol URLLoadingServiceDelegate
 
-// Implementing delegate must switch to a tab that matches |params| or open in a
-// new tab.
-- (void)switchToTabWithParams:
-    (const web::NavigationManager::WebLoadParams&)params;
-
 // Implementing delegate must open the url in |command| in a new tab.
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command;
 

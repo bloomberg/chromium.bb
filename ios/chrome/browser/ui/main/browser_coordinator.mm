@@ -427,11 +427,6 @@
 
 #pragma mark - URLLoadingServiceDelegate
 
-- (void)switchToTabWithParams:
-    (const web::NavigationManager::WebLoadParams&)params {
-  [self.viewController switchToTabWithParams:params];
-}
-
 - (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
   [self.viewController.dispatcher openURLInNewTab:command];
 }

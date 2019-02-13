@@ -9,8 +9,10 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,11 +59,53 @@ void UrlLoadingService::LoadUrlInCurrentTab(
 void UrlLoadingService::SwitchToTab(
     const web::NavigationManager::WebLoadParams& web_params) {
   DCHECK(delegate_);
-  // TODO(crbug.com/907527): chip at BVC::switchToTabWithParams by moving some
-  // of it here.
-  [delegate_ switchToTabWithParams:web_params];
+
+  const GURL& url = web_params.url;
+
+  WebStateList* web_state_list = browser_->GetWebStateList();
+  NSInteger new_web_state_index =
+      web_state_list->GetIndexOfInactiveWebStateWithURL(url);
+  bool old_tab_is_ntp_without_history =
+      IsNTPWithoutHistory(web_state_list->GetActiveWebState());
+
+  if (new_web_state_index == WebStateList::kInvalidIndex) {
+    // If the tab containing the URL has been closed.
+    if (old_tab_is_ntp_without_history) {
+      // It is NTP, just load the URL.
+      ChromeLoadParams currentPageParams(web_params);
+      LoadUrlInCurrentTab(currentPageParams);
+    } else {
+      // Open the URL in foreground.
+      ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
+      OpenNewTabCommand* new_tab_command =
+          [[OpenNewTabCommand alloc] initWithURL:url
+                                        referrer:web::Referrer()
+                                     inIncognito:browser_state->IsOffTheRecord()
+                                    inBackground:NO
+                                        appendTo:kCurrentTab];
+      [delegate_ openURLInNewTabWithCommand:new_tab_command];
+    }
+    return;
+  }
+
+  notifier_->WillSwitchToTabWithUrl(url, new_web_state_index);
+
+  NSInteger old_web_state_index = web_state_list->active_index();
+  web_state_list->ActivateWebStateAt(new_web_state_index);
+
+  // Close the tab if it is NTP with no back/forward history to avoid having
+  // empty tabs.
+  if (old_tab_is_ntp_without_history) {
+    web_state_list->CloseWebStateAt(old_web_state_index,
+                                    WebStateList::CLOSE_USER_ACTION);
+  }
+
+  notifier_->DidSwitchToTabWithUrl(url, new_web_state_index);
 }
 
+// TODO(crbug.com/907527): migrate the extra work done in main_controller when
+// [delegate_ openURLInNewTabWithCommand:] is called, and remove
+// openURLInNewTabWithCommand from delegate.
 void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
   DCHECK(delegate_);
   DCHECK(browser_);

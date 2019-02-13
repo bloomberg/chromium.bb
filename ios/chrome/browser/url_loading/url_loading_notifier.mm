@@ -62,3 +62,15 @@ void UrlLoadingNotifier::NewTabDidOpenUrl(const GURL& url, bool in_incognito) {
   for (auto& observer : observers_)
     observer.NewTabDidOpenUrl(url, in_incognito);
 }
+
+void UrlLoadingNotifier::WillSwitchToTabWithUrl(const GURL& url,
+                                                int new_web_state_index) {
+  for (auto& observer : observers_)
+    observer.WillSwitchToTabWithUrl(url, new_web_state_index);
+}
+
+void UrlLoadingNotifier::DidSwitchToTabWithUrl(const GURL& url,
+                                               int new_web_state_index) {
+  for (auto& observer : observers_)
+    observer.DidSwitchToTabWithUrl(url, new_web_state_index);
+}
