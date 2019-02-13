@@ -30,6 +30,7 @@ class AssistantBottomBarCoordinator {
     private static final int CHILDREN_HORIZONTAL_MARGIN_DP = 24;
     private static final int CHILDREN_VERTICAL_MARGIN_DP = 20;
     private static final int DETAILS_ONLY_VERTICAL_MARGIN_DP = 48;
+    private static final int PAYMENT_REQUEST_MARGIN_BOTTOM_DP = 16;
 
     // The top padding that should be applied to the bottom bar when the swiping indicator is
     // hidden.
@@ -44,6 +45,7 @@ class AssistantBottomBarCoordinator {
     private final int mDetailsOnlyVerticalMargin;
     private final int mChildrenVerticalSpacing;
     private final int mBottomBarWithoutIndicatorPaddingTop;
+    private final int mPaymentRequestMarginBottom;
 
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
@@ -69,6 +71,8 @@ class AssistantBottomBarCoordinator {
         mBottomBarWithoutIndicatorPaddingTop =
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                         BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP, displayMetrics);
+        mPaymentRequestMarginBottom = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, PAYMENT_REQUEST_MARGIN_BOTTOM_DP, displayMetrics);
 
         // Instantiate child components.
         mHeaderCoordinator =
@@ -167,7 +171,7 @@ class AssistantBottomBarCoordinator {
             LinearLayout.LayoutParams paymentRequestLayoutParams =
                     (LinearLayout.LayoutParams) paymentRequestView.getLayoutParams();
             paymentRequestLayoutParams.setMargins(mChildrenHorizontalMargin, topMargin,
-                    mChildrenVerticalSpacing, mChildrenHorizontalMargin);
+                    mChildrenHorizontalMargin, mPaymentRequestMarginBottom);
             paymentRequestView.setLayoutParams(paymentRequestLayoutParams);
 
             topMargin = 0;
