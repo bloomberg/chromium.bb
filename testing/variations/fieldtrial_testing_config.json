@@ -4533,8 +4533,7 @@
                     "name": "PrefetchTrailerHint2",
                     "params": {
                         "FullPrefetchBytes": "0",
-                        "TrailerPrefetchHint": "true",
-                        "TrailerPrefetchSpeculativeBytes": "0"
+                        "TrailerPrefetchHint": "true"
                     },
                     "enable_features": [
                         "SimpleCachePrefetchExperiment2"
@@ -4554,11 +4553,13 @@
                     "name": "ExperimentNoTrailerPrefetchHint4",
                     "params": {
                         "FullPrefetchBytes": "0",
-                        "TrailerPrefetchInt": "true",
-                        "TrailerPrefetchSpeculativeBytes": "0"
+                        "TrailerPrefetchHint": "true"
                     },
                     "enable_features": [
                         "SimpleCachePrefetchExperiment2"
+                    ],
+                    "disable_features": [
+                        "HttpCacheForceBackend"
                     ]
                 }
             ]
