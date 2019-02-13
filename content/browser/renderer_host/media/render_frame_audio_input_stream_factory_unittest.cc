@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -43,10 +44,19 @@
 
 namespace content {
 
-class RenderFrameAudioInputStreamFactoryTest
+// RenderViewHostTestHarness works poorly on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_RenderFrameAudioInputStreamFactoryTest \
+  DISABLED_RenderFrameAudioInputStreamFactoryTest
+#else
+#define MAYBE_RenderFrameAudioInputStreamFactoryTest \
+  RenderFrameAudioInputStreamFactoryTest
+#endif
+
+class MAYBE_RenderFrameAudioInputStreamFactoryTest
     : public RenderViewHostTestHarness {
  public:
-  RenderFrameAudioInputStreamFactoryTest()
+  MAYBE_RenderFrameAudioInputStreamFactoryTest()
       : RenderViewHostTestHarness(),
         test_service_manager_context_(
             std::make_unique<TestServiceManagerContext>()),
@@ -58,7 +68,7 @@ class RenderFrameAudioInputStreamFactoryTest
             base::CreateSingleThreadTaskRunnerWithTraits(
                 {BrowserThread::UI}))) {}
 
-  ~RenderFrameAudioInputStreamFactoryTest() override {}
+  ~MAYBE_RenderFrameAudioInputStreamFactoryTest() override {}
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
@@ -73,7 +83,7 @@ class RenderFrameAudioInputStreamFactoryTest
         service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
         audio::mojom::StreamFactory::Name_,
         base::BindRepeating(
-            &RenderFrameAudioInputStreamFactoryTest::BindFactory,
+            &MAYBE_RenderFrameAudioInputStreamFactoryTest::BindFactory,
             base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
@@ -185,13 +195,13 @@ class RenderFrameAudioInputStreamFactoryTest
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
 };
 
-TEST_F(RenderFrameAudioInputStreamFactoryTest, ConstructDestruct) {
+TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest, ConstructDestruct) {
   mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
   RenderFrameAudioInputStreamFactory factory(
       mojo::MakeRequest(&factory_ptr), media_stream_manager_.get(), main_rfh());
 }
 
-TEST_F(RenderFrameAudioInputStreamFactoryTest,
+TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
        CreateOpenedStream_ForwardsCall) {
   mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
   RenderFrameAudioInputStreamFactory factory(
@@ -211,7 +221,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   EXPECT_TRUE(!!audio_service_stream_factory_.last_created_callback);
 }
 
-TEST_F(RenderFrameAudioInputStreamFactoryTest,
+TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
        CreateWebContentsCapture_ForwardsCall) {
   std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
   mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
@@ -235,7 +245,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   EXPECT_TRUE(!!audio_service_stream_factory_.last_created_loopback_callback);
 }
 
-TEST_F(RenderFrameAudioInputStreamFactoryTest,
+TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
        CreateWebContentsCaptureAfterCaptureSourceDestructed_Fails) {
   std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
   mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
@@ -260,7 +270,7 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   EXPECT_FALSE(!!audio_service_stream_factory_.last_created_loopback_callback);
 }
 
-TEST_F(RenderFrameAudioInputStreamFactoryTest,
+TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
        CreateStreamWithoutValidSessionId_Fails) {
   mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
   RenderFrameAudioInputStreamFactory factory(
