@@ -315,9 +315,10 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
   void SendMessageToAgentHost(const std::string& message) {
     if (throttle_) {
+      auto* client = handler_->root_session_->client();
       std::unique_ptr<protocol::DictionaryValue> value =
-          protocol::DictionaryValue::cast(
-              protocol::StringUtil::parseJSON(message));
+          protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
+              message, client->UsesBinaryProtocol()));
       std::string method;
       if (value->getString(kMethod, &method) && method == kResumeMethod)
         ResumeIfThrottled();

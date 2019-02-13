@@ -48,7 +48,8 @@ void ChromeDevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
   pending_commands_.erase(call_id);
-  client_->DispatchProtocolMessage(agent_host_, message->serialize());
+  bool binary = client_->UsesBinaryProtocol();
+  client_->DispatchProtocolMessage(agent_host_, message->serialize(binary));
 }
 
 void ChromeDevToolsSession::HandleCommand(
@@ -63,7 +64,8 @@ void ChromeDevToolsSession::HandleCommand(
   int call_id;
   std::string unused;
   std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(protocol::StringUtil::parseJSON(message));
+      protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
+          message, client_->UsesBinaryProtocol()));
   if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);
@@ -80,7 +82,8 @@ void ChromeDevToolsSession::fallThrough(int call_id,
 
 void ChromeDevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  client_->DispatchProtocolMessage(agent_host_, message->serialize());
+  bool binary = client_->UsesBinaryProtocol();
+  client_->DispatchProtocolMessage(agent_host_, message->serialize(binary));
 }
 
 void ChromeDevToolsSession::flushProtocolNotifications() {}

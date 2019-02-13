@@ -135,7 +135,8 @@ void DevToolsSession::MojoConnectionDestroyed() {
 
 bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(protocol::StringUtil::parseJSON(message));
+      protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
+          message, client_->UsesBinaryProtocol()));
 
   std::string session_id;
   if (!value || !value->getString(kSessionId, &session_id))
@@ -242,13 +243,15 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  client_->DispatchProtocolMessage(agent_host_, message->serialize());
+  bool binary = client_->UsesBinaryProtocol();
+  client_->DispatchProtocolMessage(agent_host_, message->serialize(binary));
   // |this| may be deleted at this point.
 }
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  client_->DispatchProtocolMessage(agent_host_, message->serialize());
+  bool binary = client_->UsesBinaryProtocol();
+  client_->DispatchProtocolMessage(agent_host_, message->serialize(binary));
   // |this| may be deleted at this point.
 }
 

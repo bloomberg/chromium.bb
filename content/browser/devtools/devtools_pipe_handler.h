@@ -29,6 +29,7 @@ class DevToolsPipeHandler : public DevToolsAgentHostClient {
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
+  bool UsesBinaryProtocol() override;
 
   void Shutdown();
 
