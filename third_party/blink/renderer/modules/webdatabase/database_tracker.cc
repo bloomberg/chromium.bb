@@ -167,10 +167,9 @@ void DatabaseTracker::FailedToOpenDatabase(Database* database) {
   DatabaseClosed(database);
 }
 
-unsigned long long DatabaseTracker::GetMaxSizeForDatabase(
-    const Database* database) {
-  unsigned long long space_available = 0;
-  unsigned long long database_size = 0;
+uint64_t DatabaseTracker::GetMaxSizeForDatabase(const Database* database) {
+  uint64_t space_available = 0;
+  uint64_t database_size = 0;
   QuotaTracker::Instance().GetDatabaseSizeAndSpaceAvailableToOrigin(
       database->GetSecurityOrigin(), database->StringIdentifier(),
       &database_size, &space_available);

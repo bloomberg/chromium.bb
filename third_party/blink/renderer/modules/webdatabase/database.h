@@ -105,7 +105,7 @@ class Database final : public ScriptWrappable {
   String FileName() const;
   SQLiteDatabase& SqliteDatabase() { return sqlite_database_; }
 
-  unsigned long long MaximumSize() const;
+  uint64_t MaximumSize() const;
   void IncrementalVacuumIfNeeded();
 
   void DisableAuthorizer();

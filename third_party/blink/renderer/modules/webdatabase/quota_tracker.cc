@@ -46,8 +46,8 @@ QuotaTracker& QuotaTracker::Instance() {
 void QuotaTracker::GetDatabaseSizeAndSpaceAvailableToOrigin(
     const SecurityOrigin* origin,
     const String& database_name,
-    unsigned long long* database_size,
-    unsigned long long* space_available) {
+    uint64_t* database_size,
+    uint64_t* space_available) {
   // Extra scope to unlock prior to potentially calling Platform.
   {
     MutexLocker lock_data(data_guard_);
@@ -65,7 +65,7 @@ void QuotaTracker::GetDatabaseSizeAndSpaceAvailableToOrigin(
 
 void QuotaTracker::UpdateDatabaseSize(const SecurityOrigin* origin,
                                       const String& database_name,
-                                      unsigned long long database_size) {
+                                      uint64_t database_size) {
   MutexLocker lock_data(data_guard_);
   HashMap<String, SizeMap>::ValueType* it =
       database_sizes_.insert(origin->ToRawString(), SizeMap()).stored_value;
