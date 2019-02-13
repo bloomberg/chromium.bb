@@ -266,7 +266,6 @@ int PacFileDecider::DoQuickCheck() {
     return OK;
   }
 
-  quick_check_start_time_ = base::Time::Now();
   std::string host = current_pac_source().url.host();
 
   HostResolver::ResolveHostParameters parameters;
@@ -295,11 +294,6 @@ int PacFileDecider::DoQuickCheck() {
 
 int PacFileDecider::DoQuickCheckComplete(int result) {
   DCHECK(quick_check_enabled_);
-  base::TimeDelta delta = base::Time::Now() - quick_check_start_time_;
-  if (result == OK)
-    UMA_HISTOGRAM_TIMES("Net.WpadQuickCheckSuccess", delta);
-  else
-    UMA_HISTOGRAM_TIMES("Net.WpadQuickCheckFailure", delta);
   resolve_request_.reset();
   quick_check_timer_.Stop();
   if (result != OK)
