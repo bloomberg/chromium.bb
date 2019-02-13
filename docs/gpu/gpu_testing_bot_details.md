@@ -390,9 +390,9 @@ Builder].
 
 [bots.cfg]:            https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/bots.cfg
 [infradata/config]:    https://chrome-internal.googlesource.com/infradata/config/
-[cr-buildbucket.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/global/cr-buildbucket.cfg
-[luci-milo.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/global/luci-milo.cfg
-[luci-scheduler.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/global/luci-scheduler.cfg
+[cr-buildbucket.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/cr-buildbucket.cfg
+[luci-milo.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/luci-milo.cfg
+[luci-scheduler.cfg]:  https://chromium.googlesource.com/chromium/src/+/master/infra/config/luci-scheduler.cfg
 [GPU FYI Win Builder]: https://ci.chromium.org/p/chromium/builders/luci.chromium.ci/GPU%20FYI%20Win%20Builder
 
 ### How to start running tests on a new GPU type on an existing try bot

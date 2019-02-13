@@ -18,7 +18,7 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
     super(FakeBBGen, self).__init__()
     infra_config_dir = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..', '..',
-                    'infra', 'config', 'global'))
+                    'infra', 'config'))
     luci_milo_cfg_path = os.path.join(infra_config_dir, 'luci-milo.cfg')
     luci_milo_dev_cfg_path = os.path.join(infra_config_dir, 'luci-milo-dev.cfg')
     self.files = {
