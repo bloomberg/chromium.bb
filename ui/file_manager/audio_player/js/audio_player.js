@@ -181,7 +181,7 @@ AudioPlayer.prototype.load = function(playlist) {
   // playlist member is not changed after entries are resolved.
   window.appState = /** @type {Playlist} */ (
       JSON.parse(JSON.stringify(playlist)));  // cloning
-  util.saveAppState();
+  appUtil.saveAppState();
 
   this.isPlaylistExpanded_ = this.player_.playlistExpanded;
   this.isTrackInfoExpanded_ = this.player_.trackInfoExpanded;
@@ -307,7 +307,7 @@ AudioPlayer.prototype.select_ = function(newTrack) {
 
     window.appState.position = this.currentTrackIndex_;
     window.appState.time = 0;
-    util.saveAppState();
+    appUtil.saveAppState();
 
     var entry = this.entries_[this.currentTrackIndex_];
 
@@ -550,7 +550,7 @@ AudioPlayer.prototype.onPlaylistExpandedChanged_ = function(newValue) {
 
     // Saves new state.
     window.appState.playlistExpanded = newValue;
-    util.saveAppState();
+    appUtil.saveAppState();
   }
 };
 
@@ -584,7 +584,7 @@ AudioPlayer.prototype.onTrackInfoExpandedChanged_ = function(newValue) {
 
     // Saves new state.
     window.appState.isTrackInfoExpanded_ = newValue;
-    util.saveAppState();
+    appUtil.saveAppState();
   }
 };
 

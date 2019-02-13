@@ -873,12 +873,12 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     this.shareButton_.disabled = true;
   }
 
-  util.updateAppState(
-      null,  // Keep the current directory.
+  appUtil.updateAppState(
+      null,              // Keep the current directory.
       selectedEntryURL,  // Update the selection.
       {
-        gallery: (this.currentMode_ === this.thumbnailMode_ ?
-                  'thumbnail' : 'slide')
+        gallery:
+            (this.currentMode_ === this.thumbnailMode_ ? 'thumbnail' : 'slide')
       });
 };
 

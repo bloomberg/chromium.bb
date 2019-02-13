@@ -163,7 +163,7 @@ AppStateController.prototype.saveViewOptions = function() {
   // Save the window-specific preference.
   if (window.appState) {
     window.appState.viewOptions = prefs;
-    util.saveAppState();
+    appUtil.saveAppState();
   }
 };
 
@@ -226,9 +226,9 @@ AppStateController.prototype.onDirectoryChanged_ = function(event) {
   }
 
   // TODO(mtomasz): Consider remembering the selection.
-  util.updateAppState(
+  appUtil.updateAppState(
       this.directoryModel_.getCurrentDirEntry() ?
-          this.directoryModel_.getCurrentDirEntry().toURL() : '',
-      '' /* selectionURL */,
-      '' /* opt_param */);
+          this.directoryModel_.getCurrentDirEntry().toURL() :
+          '',
+      '' /* selectionURL */, '' /* opt_param */);
 };

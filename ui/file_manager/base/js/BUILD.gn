@@ -17,6 +17,7 @@ group("closure_compile") {
 
 js_type_check("closure_compile_module") {
   deps = [
+    ":app_util",
     ":error_counter",
     ":filtered_volume_manager",
   ]
@@ -28,6 +29,10 @@ js_type_check("test_support_type_check") {
     ":mock_chrome",
     ":test_error_reporting",
   ]
+}
+
+js_library("app_util") {
+  externs_list = [ "//ui/file_manager/externs/app_window_common.js" ]
 }
 
 js_library("error_counter") {
