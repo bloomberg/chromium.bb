@@ -81,6 +81,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     bool AddContentLayer(CARendererLayerTree* tree,
                          const CARendererLayerParams& params);
 
+    // Workaround for https://crbug.com/923427. Only allow any
+    // AVSampleBufferDisplayLayer if there is exactly one video quad.
+    void EnforceOnlyOneAVLayer();
+
     // Allocate CALayers for this layer and its children, and set their
     // properties appropriately. Re-use the CALayers from |old_layer| if
     // possible. If re-using a CALayer from |old_layer|, reset its |ca_layer|
@@ -92,7 +96,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
 
     // Return true if the CALayer tree is just a video layer on a black or
     // transparent background, false otherwise.
-    bool WantsFullcreenLowPowerBackdrop();
+    bool WantsFullcreenLowPowerBackdrop() const;
 
     std::vector<ClipAndSortingLayer> clip_and_sorting_layers;
     base::scoped_nsobject<CALayer> ca_layer;

@@ -238,7 +238,7 @@ void CARendererLayerTree::CommitScheduledCALayers(
   scale_factor_ = scale_factor;
 }
 
-bool CARendererLayerTree::RootLayer::WantsFullcreenLowPowerBackdrop() {
+bool CARendererLayerTree::RootLayer::WantsFullcreenLowPowerBackdrop() const {
   bool found_video_layer = false;
   for (auto& clip_layer : clip_and_sorting_layers) {
     for (auto& transform_layer : clip_layer.transform_layers) {
@@ -269,6 +269,28 @@ bool CARendererLayerTree::RootLayer::WantsFullcreenLowPowerBackdrop() {
     }
   }
   return found_video_layer;
+}
+
+void CARendererLayerTree::RootLayer::EnforceOnlyOneAVLayer() {
+  size_t video_layer_count = 0;
+  for (auto& clip_layer : clip_and_sorting_layers) {
+    for (auto& transform_layer : clip_layer.transform_layers) {
+      for (auto& content_layer : transform_layer.content_layers) {
+        if (content_layer.use_av_layer)
+          video_layer_count += 1;
+      }
+    }
+  }
+  if (video_layer_count <= 1)
+    return;
+  for (auto& clip_layer : clip_and_sorting_layers) {
+    for (auto& transform_layer : clip_layer.transform_layers) {
+      for (auto& content_layer : transform_layer.content_layers) {
+        if (content_layer.use_av_layer)
+          content_layer.use_av_layer = false;
+      }
+    }
+  }
 }
 
 id CARendererLayerTree::ContentsForSolidColorForTesting(SkColor color) {
@@ -565,6 +587,8 @@ void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
   if ([ca_layer superlayer] != superlayer) {
     DLOG(ERROR) << "CARendererLayerTree root layer not attached to tree.";
   }
+
+  EnforceOnlyOneAVLayer();
 
   if (WantsFullcreenLowPowerBackdrop()) {
     const gfx::RectF bg_rect(
