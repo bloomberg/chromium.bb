@@ -10,8 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "services/catalog/public/cpp/resource_loader.h"
-#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -54,46 +52,10 @@ bool AuraInit::Init(const InitParams& params) {
   mus_params.use_accessibility_host = params.use_accessibility_host;
   mus_client_ = std::make_unique<MusClient>(mus_params);
   ui::MaterialDesignController::Initialize();
-  if (!InitializeResources(params))
-    return false;
+
+  DCHECK(ui::ResourceBundle::HasSharedInstance());
 
   ui::InitializeInputMethodForTesting();
-  return true;
-}
-
-bool AuraInit::InitializeResources(const InitParams& params) {
-  // Resources may have already been initialized (e.g. when chrome with mash is
-  // used to launch the current app).
-  if (ui::ResourceBundle::HasSharedInstance())
-    return true;
-
-  std::set<std::string> resource_paths({params.resource_file});
-  if (!params.resource_file_200.empty())
-    resource_paths.insert(params.resource_file_200);
-
-  catalog::ResourceLoader loader;
-  filesystem::mojom::DirectoryPtr directory;
-  params.connector->BindInterface(catalog::mojom::kServiceName, &directory);
-  // TODO(jonross): if this proves useful in resolving the crash of
-  // mash_unittests then switch AuraInit to have an Init method, returning a
-  // bool for success. Then update all callsites to use this to determine the
-  // shutdown of their ServiceContext.
-  // One cause of failure is that the peer has closed, but we have not been
-  // notified yet. It is not possible to complete initialization, so exit now.
-  // Calling services will shutdown ServiceContext as appropriate.
-  if (!loader.OpenFiles(std::move(directory), resource_paths))
-    return false;
-  if (params.register_path_provider)
-    ui::RegisterPathProvider();
-  base::File pak_file = loader.TakeFile(params.resource_file);
-  base::File pak_file_2 = pak_file.Duplicate();
-  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(
-      std::move(pak_file), base::MemoryMappedFile::Region::kWholeFile);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-      std::move(pak_file_2), ui::SCALE_FACTOR_100P);
-  if (!params.resource_file_200.empty())
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-        loader.TakeFile(params.resource_file_200), ui::SCALE_FACTOR_200P);
   return true;
 }
 

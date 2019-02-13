@@ -32,7 +32,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -88,15 +87,6 @@ base::ProcessId GetCurrentPid() {
 #else
   return base::Process::Current().Pid();
 #endif
-}
-
-bool RequiresCapability(const Manifest& manifest,
-                        const Manifest::ServiceName& from_service_name,
-                        const Manifest::CapabilityName& capability) {
-  auto it = manifest.required_capabilities.find(from_service_name);
-  if (it == manifest.required_capabilities.end())
-    return false;
-  return it->second.find(capability) != it->second.end();
 }
 
 void ReportBlockedInterface(const Manifest::ServiceName& source_service_name,
@@ -170,7 +160,6 @@ const Identity& GetServiceManagerInstanceIdentity() {
 class ServiceManager::Instance
     : public mojom::Connector,
       public mojom::PIDReceiver,
-      public Service,
       public mojom::ServiceManager,
       public mojom::ServiceControl {
  public:
@@ -186,10 +175,8 @@ class ServiceManager::Instance
         control_binding_(this),
         state_(mojom::InstanceState::kCreated),
         weak_factory_(this) {
-    if (identity_.name() == service_manager::mojom::kServiceName ||
-        identity_.name() == catalog::mojom::kServiceName) {
+    if (identity_.name() == service_manager::mojom::kServiceName)
       pid_ = GetCurrentPid();
-    }
     DCHECK(identity_.IsValid());
   }
 
@@ -327,20 +314,8 @@ class ServiceManager::Instance
     identity_ = identity;
   }
 
-  // Service:
-  void OnBindInterface(const BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    Instance* source =
-        service_manager_->GetExistingInstance(source_info.identity);
-    DCHECK(source);
-    if (interface_name == mojom::ServiceManager::Name_ &&
-        RequiresCapability(source->manifest(), mojom::kServiceName,
-                           kCapability_ServiceManager)) {
-      mojom::ServiceManagerRequest request =
-          mojom::ServiceManagerRequest(std::move(interface_pipe));
-      service_manager_bindings_.AddBinding(this, std::move(request));
-    }
+  void BindServiceManager(mojom::ServiceManagerRequest request) {
+    service_manager_bindings_.AddBinding(this, std::move(request));
   }
 
  private:
@@ -973,21 +948,6 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
   mojom::ServicePtr service;
   service_binding_.Bind(mojo::MakeRequest(&service));
   service_manager_instance_->StartWithService(std::move(service));
-
-  Manifest catalog_manifest =
-      ManifestBuilder()
-          .ExposeCapability("directory", {"filesystem.mojom.Directory"})
-          .ExposeCapability("catalog:catalog", {"catalog.mojom.Catalog"})
-          .Build();
-
-  Identity id{catalog::mojom::kServiceName, kSystemInstanceGroup, base::Token{},
-              base::Token::CreateRandom()};
-  Instance* instance =
-      CreateInstance(id, InstanceType::kSingleton, catalog_manifest);
-
-  mojom::ServicePtr catalog_service;
-  catalog_.BindServiceRequest(mojo::MakeRequest(&catalog_service));
-  instance->StartWithService(std::move(catalog_service));
 }
 
 ServiceManager::~ServiceManager() {
@@ -1365,14 +1325,12 @@ void ServiceManager::OnBindInterface(
     const BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  // The only interface ServiceManager exposes is mojom::ServiceManager, and
-  // access to this interface is brokered by a policy specific to each caller,
-  // managed by the caller's instance. Here we look to see who's calling,
-  // and forward to the caller's instance to continue.
   Instance* instance = GetExistingInstance(source_info.identity);
   DCHECK(instance);
-  instance->OnBindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+  if (interface_name == mojom::ServiceManager::Name_) {
+    instance->BindServiceManager(
+        mojom::ServiceManagerRequest(std::move(interface_pipe)));
+  }
 }
 
 }  // namespace service_manager

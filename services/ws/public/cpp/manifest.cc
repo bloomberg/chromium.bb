@@ -93,10 +93,9 @@ const service_manager::Manifest& GetManifest() {
                           service_manager::Manifest::InterfaceList<
                               mojom::InputDeviceController>())
 #endif
-        .RequireCapability("viz", "viz_host")
-        .RequireCapability("catalog", "directory")
         .RequireCapability("*", "app")
         .RequireCapability("ui", "ozone")
+        .RequireCapability("viz", "viz_host")
 
         .Build()
   };
