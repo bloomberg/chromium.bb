@@ -117,52 +117,53 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     g_client = new NetworkServiceClient(mojo::MakeRequest(&client_ptr));
     (*g_network_service_ptr)->SetClient(std::move(client_ptr));
 
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    if (is_network_service_enabled) {
-      if (command_line->HasSwitch(network::switches::kLogNetLog)) {
-        base::FilePath log_path =
-            command_line->GetSwitchValuePath(network::switches::kLogNetLog);
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
+      if (is_network_service_enabled) {
+        if (command_line->HasSwitch(network::switches::kLogNetLog)) {
+          base::FilePath log_path =
+              command_line->GetSwitchValuePath(network::switches::kLogNetLog);
 
-        base::DictionaryValue client_constants =
-            GetContentClient()->GetNetLogConstants();
+          base::DictionaryValue client_constants =
+              GetContentClient()->GetNetLogConstants();
 
-        base::File file(
-            log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-        LOG_IF(ERROR, !file.IsValid())
-            << "Failed opening: " << log_path.value();
+          base::File file(log_path, base::File::FLAG_CREATE_ALWAYS |
+                                        base::File::FLAG_WRITE);
+          LOG_IF(ERROR, !file.IsValid())
+              << "Failed opening: " << log_path.value();
 
-        // TODO(mmenke): Get capture mode from the command line.
-        (*g_network_service_ptr)
-            ->StartNetLog(std::move(file),
-                          network::mojom::NetLogCaptureMode::DEFAULT,
-                          std::move(client_constants));
+          // TODO(mmenke): Get capture mode from the command line.
+          (*g_network_service_ptr)
+              ->StartNetLog(std::move(file),
+                            network::mojom::NetLogCaptureMode::DEFAULT,
+                            std::move(client_constants));
+        }
       }
-    }
 
-    if (command_line->HasSwitch(network::switches::kSSLKeyLogFile)) {
-      base::FilePath log_path =
-          command_line->GetSwitchValuePath(network::switches::kSSLKeyLogFile);
-      LOG_IF(WARNING, log_path.empty()) << "ssl-key-log-file argument missing";
-      if (!log_path.empty())
-        (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
-    }
+      if (command_line->HasSwitch(network::switches::kSSLKeyLogFile)) {
+        base::FilePath log_path =
+            command_line->GetSwitchValuePath(network::switches::kSSLKeyLogFile);
+        LOG_IF(WARNING, log_path.empty())
+            << "ssl-key-log-file argument missing";
+        if (!log_path.empty())
+          (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
+      }
 
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
-    std::string env_str;
-    if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
+      std::unique_ptr<base::Environment> env(base::Environment::Create());
+      std::string env_str;
+      if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
 #if defined(OS_WIN)
-      // base::Environment returns environment variables in UTF-8 on Windows.
-      base::FilePath log_path(base::UTF8ToUTF16(env_str));
+        // base::Environment returns environment variables in UTF-8 on Windows.
+        base::FilePath log_path(base::UTF8ToUTF16(env_str));
 #else
-      base::FilePath log_path(env_str);
+        base::FilePath log_path(env_str);
 #endif
-      if (!log_path.empty())
-        (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
-    }
+        if (!log_path.empty())
+          (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
+      }
 
-    GetContentClient()->browser()->OnNetworkServiceCreated(
-        g_network_service_ptr->get());
+      GetContentClient()->browser()->OnNetworkServiceCreated(
+          g_network_service_ptr->get());
   }
   return g_network_service_ptr->get();
 }
