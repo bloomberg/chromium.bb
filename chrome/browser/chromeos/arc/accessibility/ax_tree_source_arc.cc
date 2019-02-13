@@ -329,14 +329,15 @@ void AXTreeSourceArc::SerializeNode(ArcAccessibilityInfoData* info_data,
   int32_t id = info_data->GetId();
   out_data->id = id;
   // If the node is the root, or if the node's parent is the root window,
-  // the role should be rootWebArea.
-  if (info_data->IsNode() && id == root_id_)
+  // set a role of generic container.
+  if (info_data->IsNode() && id == root_id_) {
     out_data->role = ax::mojom::Role::kRootWebArea;
-  else if (info_data->IsNode() && parent_map_.at(id) == root_id_)
-    out_data->role = ax::mojom::Role::kRootWebArea;
-  else
+  } else if (info_data->IsNode() && parent_map_.at(id) == root_id_) {
+    out_data->role = ax::mojom::Role::kGenericContainer;
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+  } else {
     info_data->PopulateAXRole(out_data);
-
+  }
   info_data->Serialize(out_data);
 }
 

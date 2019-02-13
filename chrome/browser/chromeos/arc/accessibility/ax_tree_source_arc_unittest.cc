@@ -448,7 +448,8 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("node text", name);
-  EXPECT_EQ(ax::mojom::Role::kRootWebArea, data->role);
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, data->role);
+  EXPECT_TRUE(data->GetBoolAttribute(ax::mojom::BoolAttribute::kModal));
 
   CallSerializeNode(child_node, &data);
   ASSERT_TRUE(
