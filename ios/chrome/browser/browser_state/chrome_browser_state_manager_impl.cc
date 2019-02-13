@@ -226,7 +226,7 @@ void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
 
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   size_t browser_state_index =
