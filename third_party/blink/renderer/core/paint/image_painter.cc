@@ -214,7 +214,7 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
-        ToHTMLImageElement(node), &layout_image_, painting_layer);
+        &layout_image_, layout_image_.CachedImage(), painting_layer);
   }
 }
 
