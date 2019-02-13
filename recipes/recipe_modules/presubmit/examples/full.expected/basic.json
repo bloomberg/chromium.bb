@@ -5,8 +5,10 @@
       "-u",
       "RECIPE_PACKAGE_REPO[depot_tools]/presubmit_support.py"
     ],
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_prefixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "name": "presubmit"
   },
