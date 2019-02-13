@@ -119,6 +119,10 @@ extern NSString* const kCrAppModeProfileNameKey;
 // system using this key.
 extern NSString* const kLastRunAppBundlePathPrefsKey;
 
+// The key for the major and minor version of an app.
+extern NSString* const kCrAppModeMajorVersionKey;
+extern NSString* const kCrAppModeMinorVersionKey;
+
 // Placeholders used in the app mode loader bundle' Info.plist:
 extern NSString* const kShortcutIdPlaceholder; // Extension shortcut ID.
 extern NSString* const kShortcutNamePlaceholder; // Extension name.
