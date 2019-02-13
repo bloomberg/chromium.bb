@@ -130,7 +130,6 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   struct ChooserUIInfo {
     ContentSettingsType content_settings_type;
     ChooserContextBase* (*get_context)(Profile*);
-    int name_string_id;
     int description_string_id;
     int allowed_by_policy_description_string_id;
     int delete_tooltip_string_id;

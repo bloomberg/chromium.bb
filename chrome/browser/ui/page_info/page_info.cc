@@ -81,6 +81,8 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/serial/serial_chooser_context.h"
+#include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -295,14 +297,26 @@ ChooserContextBase* GetUsbChooserContext(Profile* profile) {
   return UsbChooserContextFactory::GetForProfile(profile);
 }
 
+#if !defined(OS_ANDROID)
+ChooserContextBase* GetSerialChooserContext(Profile* profile) {
+  return SerialChooserContextFactory::GetForProfile(profile);
+}
+#endif
+
 // The list of chooser types that need to display entries in the Website
 // Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
 // email security-dev@chromium.org.
 const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
-     IDS_PAGE_INFO_USB_DEVICE_LABEL, IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
+     IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
      IDS_PAGE_INFO_DELETE_USB_DEVICE, "name"},
+#if !defined(OS_ANDROID)
+    {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
+     IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
+     /*allowed_by_policy_description_string_id=*/-1,
+     IDS_PAGE_INFO_DELETE_SERIAL_PORT, "name"},
+#endif
 };
 
 // Time open histogram prefixes.
