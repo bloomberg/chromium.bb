@@ -45,6 +45,9 @@ class MediaController : public mojom::MediaController,
       const base::Optional<MediaMetadata>&) override;
   void MediaSessionActionsChanged(
       const std::vector<mojom::MediaSessionAction>& action) override;
+  void MediaSessionImagesChanged(
+      const base::flat_map<mojom::MediaSessionImageType,
+                           std::vector<MediaImage>>& images) override;
 
   // Sets the media session that the controller should be bound to. If the
   // session is already bound to the same session then we will return false.

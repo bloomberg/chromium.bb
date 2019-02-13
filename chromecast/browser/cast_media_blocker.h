@@ -38,6 +38,10 @@ class CastMediaBlocker : public media_session::mojom::MediaSessionObserver {
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& action)
       override {}
+  void MediaSessionImagesChanged(
+      const base::flat_map<media_session::mojom::MediaSessionImageType,
+                           std::vector<media_session::MediaImage>>& images)
+      override {}
 
  protected:
   bool media_loading_blocked() const { return blocked_; }

@@ -92,6 +92,12 @@ void MediaController::MediaSessionActionsChanged(
   session_actions_ = actions;
 }
 
+void MediaController::MediaSessionImagesChanged(
+    const base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>>&
+        images) {
+  // TODO(beccahughes): Implement this
+}
+
 void MediaController::PreviousTrack() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
