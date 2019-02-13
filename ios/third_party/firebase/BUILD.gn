@@ -29,5 +29,6 @@ config("firebase_config") {
     "GoogleAppMeasurement.framework",
     "GoogleUtilities.framework",
     "nanopb.framework",
+    "StoreKit.framework",
   ]
 }
