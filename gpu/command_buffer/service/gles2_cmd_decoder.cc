@@ -11234,6 +11234,14 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawElements(
     return error::kNoError;
   }
 
+  if (state_.bound_transform_feedback.get() &&
+      state_.bound_transform_feedback->active() &&
+      !state_.bound_transform_feedback->paused()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "transformfeedback is active and not paused");
+    return error::kNoError;
+  }
+
   GLuint total_max_vertex_accessed = 0;
   GLsizei total_max_primcount = 0;
   if (!CheckMultiDrawElementsVertices(
@@ -11244,14 +11252,6 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawElements(
   }
 
   if (total_max_primcount == 0) {
-    return error::kNoError;
-  }
-
-  if (state_.bound_transform_feedback.get() &&
-      state_.bound_transform_feedback->active() &&
-      !state_.bound_transform_feedback->paused()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                       "transformfeedback is active and not paused");
     return error::kNoError;
   }
 
@@ -11354,9 +11354,9 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
       *static_cast<const volatile gles2::cmds::DrawElements*>(cmd_data);
   GLsizei count = static_cast<GLsizei>(c.count);
   int32_t offset = static_cast<int32_t>(c.index_offset);
-  return DoMultiDrawElements("glDrawArrays", false, static_cast<GLenum>(c.mode),
-                             &count, static_cast<GLenum>(c.type), &offset,
-                             nullptr, 1);
+  return DoMultiDrawElements("glDrawElements", false,
+                             static_cast<GLenum>(c.mode), &count,
+                             static_cast<GLenum>(c.type), &offset, nullptr, 1);
 }
 
 error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
