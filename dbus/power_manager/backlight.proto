@@ -71,7 +71,9 @@ message BacklightBrightnessChange {
     OTHER = 8;
     // Automated request based on a prediction of the desired brightness.
     MODEL = 9;
-    // Next value to use: 10
+    // A notification that is allowed to wake the device was created or updated.
+    WAKE_NOTIFICATION = 10;
+    // Next value to use: 11
   }
   optional Cause cause = 2;
 

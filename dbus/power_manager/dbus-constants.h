@@ -28,6 +28,7 @@ const char kGetPowerSupplyPropertiesMethod[] = "GetPowerSupplyProperties";
 const char kGetSwitchStatesMethod[] = "GetSwitchStates";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
+const char kHandleWakeNotificationMethod[] = "HandleWakeNotification";
 const char kSetIsProjectingMethod[] = "SetIsProjecting";
 const char kSetPolicyMethod[] = "SetPolicy";
 const char kSetPowerSourceMethod[] = "SetPowerSource";
