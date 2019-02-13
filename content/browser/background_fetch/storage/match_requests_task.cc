@@ -154,7 +154,7 @@ void MatchRequestsTask::FinishWithError(
 
 std::string MatchRequestsTask::HistogramName() const {
   return "MatchRequestsTask";
-};
+}
 
 }  // namespace background_fetch
 
