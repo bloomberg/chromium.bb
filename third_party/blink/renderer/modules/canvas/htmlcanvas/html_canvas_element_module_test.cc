@@ -137,5 +137,5 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   platform->RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(, HTMLCanvasElementModuleTest, Values(true, false));
+INSTANTIATE_TEST_SUITE_P(, HTMLCanvasElementModuleTest, Values(true, false));
 }  // namespace blink

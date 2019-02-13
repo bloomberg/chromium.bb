@@ -687,7 +687,7 @@ TEST_P(AudioContextAutoplayTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioContextAutoplayTest,
     AudioContextAutoplayTest,
     testing::Values(AutoplayPolicy::Type::kNoUserGestureRequired,
