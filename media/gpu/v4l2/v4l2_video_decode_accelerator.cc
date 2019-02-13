@@ -2599,14 +2599,17 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
 }
 
 void V4L2VideoDecodeAccelerator::SendBufferToClient(
-    size_t buffer_index,
+    size_t output_buffer_index,
     int32_t bitstream_buffer_id,
     V4L2ReadableBufferRef vda_buffer) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_GE(bitstream_buffer_id, 0);
-  OutputRecord& output_record = output_buffer_map_[buffer_index];
+  OutputRecord& output_record = output_buffer_map_[output_buffer_index];
 
   DCHECK_EQ(buffers_at_client_.count(output_record.picture_id), 0u);
+  // We need to keep the VDA buffer for now, as the IP still needs to be told
+  // which buffer to use so we cannot use this buffer index before the client
+  // has returned the corresponding IP buffer.
   buffers_at_client_.emplace(output_record.picture_id, std::move(vda_buffer));
   // TODO(hubbe): Insert correct color space. http://crbug.com/647725
   const Picture picture(output_record.picture_id, bitstream_buffer_id,
@@ -2670,9 +2673,9 @@ void V4L2VideoDecodeAccelerator::PictureCleared() {
 
 void V4L2VideoDecodeAccelerator::FrameProcessed(
     int32_t bitstream_buffer_id,
-    int output_buffer_index,
+    int ip_buffer_index,
     scoped_refptr<VideoFrame> frame) {
-  DVLOGF(4) << "output_buffer_index=" << output_buffer_index
+  DVLOGF(4) << "ip_buffer_index=" << ip_buffer_index
             << ", bitstream_buffer_id=" << bitstream_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   // TODO(crbug.com/921825): Remove this workaround once reset callback is
@@ -2696,12 +2699,14 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
               << bitstream_buffer_id;
     return;
   }
-  DCHECK_GE(output_buffer_index, 0);
-  DCHECK_LT(output_buffer_index, static_cast<int>(output_buffer_map_.size()));
+  DCHECK_GE(ip_buffer_index, 0);
+  DCHECK_LT(ip_buffer_index, static_cast<int>(output_buffer_map_.size()));
 
-  OutputRecord& output_record = output_buffer_map_[output_buffer_index];
-  DVLOGF(4) << "picture_id=" << output_record.picture_id;
-  DCHECK_NE(output_record.picture_id, -1);
+  // This is the output record for the buffer received from the IP, which index
+  // may differ from the buffer used by the VDA.
+  OutputRecord& ip_output_record = output_buffer_map_[ip_buffer_index];
+  DVLOGF(4) << "picture_id=" << ip_output_record.picture_id;
+  DCHECK_NE(ip_output_record.picture_id, -1);
 
   // If the picture has not been cleared yet, this means it is the first time
   // we are seeing this buffer from the image processor. Schedule a call to
@@ -2709,23 +2714,27 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   // guaranteed that CreateEGLImageFor will complete before the picture is sent
   // to the client as both events happen on the child thread due to the picture
   // uncleared status.
-  if (output_record.texture_id != 0 && !output_record.cleared) {
+  if (ip_output_record.texture_id != 0 && !ip_output_record.cleared) {
     DCHECK(frame->HasDmaBufs());
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &V4L2VideoDecodeAccelerator::CreateEGLImageFor, weak_this_,
-            output_buffer_index, output_record.picture_id,
-            media::DuplicateFDs(frame->DmabufFds()), output_record.texture_id,
-            egl_image_size_, egl_image_format_fourcc_));
+        base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
+                       weak_this_, ip_buffer_index,
+                       ip_output_record.picture_id,
+                       media::DuplicateFDs(frame->DmabufFds()),
+                       ip_output_record.texture_id, egl_image_size_,
+                       egl_image_format_fourcc_));
   }
 
   // Remove our job from the IP jobs queue
   DCHECK_GT(buffers_at_ip_.size(), 0u);
   DCHECK(buffers_at_ip_.front().first == bitstream_buffer_id);
-  SendBufferToClient(output_buffer_index, bitstream_buffer_id,
-                     std::move(buffers_at_ip_.front().second));
+  // This is the VDA buffer used as input of the IP.
+  V4L2ReadableBufferRef vda_buffer = std::move(buffers_at_ip_.front().second);
   buffers_at_ip_.pop();
+
+  SendBufferToClient(ip_buffer_index, bitstream_buffer_id,
+                     std::move(vda_buffer));
   // Flush or resolution change may be waiting image processor to finish.
   if (buffers_at_ip_.empty()) {
     NotifyFlushDoneIfNeeded();
