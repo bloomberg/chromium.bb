@@ -249,6 +249,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // the RenderWidgetHost to ask the delegate if it can be shown in the event of
   // something other than the WebContents attempting to enable visibility of
   // this RenderWidgetHost.
+  // TODO(nasko): Move this to RenderViewHostDelegate.
   virtual bool IsHidden();
 
   // Returns the associated RenderViewHostDelegateView*, if possible.
