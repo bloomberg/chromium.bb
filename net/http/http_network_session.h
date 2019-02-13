@@ -215,8 +215,6 @@ class NET_EXPORT HttpNetworkSession {
     bool quic_go_away_on_path_degrading;
     // If true, bidirectional streams over QUIC will be disabled.
     bool quic_disable_bidirectional_streams;
-    // If true, enable force HOL blocking.  For measurement purposes.
-    bool quic_force_hol_blocking;
     // If true, race cert verification with host resolution.
     bool quic_race_cert_verification;
     // If true, estimate the initial RTT for QUIC connections based on network.

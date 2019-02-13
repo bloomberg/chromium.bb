@@ -138,7 +138,6 @@ HttpNetworkSession::Params::Params()
       quic_race_stale_dns_on_connection(false),
       quic_go_away_on_path_degrading(false),
       quic_disable_bidirectional_streams(false),
-      quic_force_hol_blocking(false),
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
@@ -402,7 +401,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("go_away_on_path_degrading",
                    params_.quic_go_away_on_path_degrading);
   dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
-  dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
   dict->SetBoolean("server_push_cancellation",
                    params_.enable_server_push_cancellation);
 
