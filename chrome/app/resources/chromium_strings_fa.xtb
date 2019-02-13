@@ -81,10 +81,10 @@
 <translation id="3639635944603682591">‏داده‌های محصول مرور این کاربر از این دستگاه حذف می‌شود. برای بازیابی داده‌ها، با نام <ph name="USER_EMAIL" /> به سیستم Chromium وارد شوید.</translation>
 <translation id="3713809861844741608">‏باز کردن پیوند در &amp;برگه جدید Chromium</translation>
 <translation id="3728336900324680424">‏Chromium برای ارائه پیشنهاد در نوار نشانی، به Drive شما دسترسی خواهد داشت</translation>
-<translation id="3762167353400286894">‏سیستم عامل Chromium به این زبان نشان داده می‌شود</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">‏Chromium به نوار وظیفه شما پین شود</translation>
+<translation id="388648406173476553">‏Chromium را سفارشی و کنترل کنید. چیزی نیاز به رسیدگی دارد، برای اطلاعات بیشتر کلیک کنید.</translation>
 <translation id="3889543394854987837">‏برای باز کردن Chromium و شروع به مرور، روی نامتان کلیک کنید.</translation>
 <translation id="3898493977366060150">‏مرور وب با هوشمندی‌های Google</translation>
 <translation id="3965668104013180445">{0,plural, =1{‏سیستم‌عامل Chromium یک ساعت دیگر بازراه‌اندازی می‌شود}one{‏سیستم‌عامل Chromium ‏# ساعت دیگر بازراه‌اندازی می‌شود}other{‏سیستم‌عامل Chromium ‏# ساعت دیگر بازراه‌اندازی می‌شود}}</translation>
@@ -136,7 +136,6 @@
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
 <translation id="5712253116097046984">‏سرپرست از شما می‌خواهد برای اعمال این به‌روزرسانی، سیستم‌عامل Chromium را بازراه‌اندازی کنید</translation>
-<translation id="5726838626470692954">‏مدیر شما باید شما را از Chromium حذف و دوباره به آن اضافه کند.</translation>
 <translation id="5768914737813585044">‏نمایش سیستم عامل Chromium به این زبان</translation>
 <translation id="5796460469508169315">‏Chromium تقریباً آماده است.</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
@@ -230,7 +229,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7979877361127045932">‏پنهان در منوی Chromium</translation>
 <translation id="8013436988911883588">‏وقتی Chromium دسترسی داشته باشد، وب‌سایت‌ها می‌توانند مجوز دسترسی درخواست کنند.</translation>
 <translation id="8030318113982266900">درحال به روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">‏Chromium به این زبان نشان داده می‌شود</translation>
 <translation id="81770708095080097">‏این فایل خطرناک است، بنابراین Chromium آن را مسدود کرده است.</translation>
 <translation id="8222496066431494154">‏Chromium را در تلفنتان نصب کنید. پیامکی به شماره تلفن بازیابی حساب شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">‏به بهبود Chromium کمک کنید</translation>

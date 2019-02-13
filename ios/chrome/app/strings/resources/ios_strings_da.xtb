@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Brug en anden adgangskode...</translation>
+<translation id="1066060668811609597">Administrer synkronisering</translation>
 <translation id="1076421457278169141">Koden er scannet</translation>
 <translation id="1084365883616172403">Indlæg delt på Facebook.</translation>
 <translation id="1104948393051856124">Acceptér og fortsæt</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Skjul indtil videre</translation>
 <translation id="1219674500290482172">Der kunne ikke oprettes forbindelse til internettet.</translation>
 <translation id="122699739164161391">Luk alle faner</translation>
+<translation id="1231733316453485619">Vil du aktivere synkronisering?</translation>
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1265739287306757398">Se, hvordan du gør</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="213900355088104901">Hvis du vil bruge nettet privat, skal du åbne en inkognitofane</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
+<translation id="2198757192731523470">Google kan bruge din historik til at tilpasse Søgning, annoncer og andre Google-tjenester.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ulæste artikler på læselisten.</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
 <translation id="2239626343334228536">Browserdata ryddes...</translation>
@@ -255,6 +258,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5062321486222145940">Installer Google Drev</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelse.</translation>
 <translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
+<translation id="5132942445612118989">Synkroniser dine adgangskoder, din historik og meget mere på alle enheder</translation>
 <translation id="5181140330217080051">Downloader</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Bogmærkelinje</translation>

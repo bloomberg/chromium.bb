@@ -86,7 +86,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
-<translation id="3180085900771989961">Twój menedżer musi Cię usunąć i ponownie dodać w Chrome.</translation>
 <translation id="3251381707915721925">Aby określić, które witryny może wyświetlać <ph name="NEW_PROFILE_NAME" />, skonfiguruj ograniczenia i ustawienia na stronie <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jeśli nie zmienisz ustawień domyślnych, użytkownik <ph name="NEW_PROFILE_NAME" /> będzie mógł przeglądać wszystkie strony w internecie.
 
 Aby uniemożliwić użytkownikowi <ph name="NEW_PROFILE_NAME" /> korzystanie z Twojego konta, blokuj swój profil, gdy nie używasz Chrome. Kliknij w tym celu nazwę profilu w prawym górnym rogu przeglądarki i wybierz „Wyjdź i aktywuj blokadę dostępu dla dzieci”.
@@ -157,7 +156,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="5062123544085870375">Uruchom ponownie Chrome OS</translation>
 <translation id="5090044601776247154">Profile nadzorowanych użytkowników nie będą dostępne począwszy od Google Chrome 70.</translation>
 <translation id="5132929315877954718">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do przeglądarki Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome działa obecnie w tym języku</translation>
 <translation id="5170938038195470297">Nie można użyć Twojego profilu, ponieważ został utworzony w nowszej wersji Google Chrome. Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chrome.</translation>
 <translation id="5193136243808726294">System operacyjny Google Chrome nie może otworzyć tej strony.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Warunki korzystania z usługi<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
@@ -170,9 +168,9 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
+<translation id="5686916850681061684">Dostosuj i kontroluj Google Chrome. Pewna kwestia wymaga Twojej uwagi – kliknij, by przejść do szczegółów.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome uruchomi się ponownie za sekundę}few{Google Chrome uruchomi się ponownie za # sekundy}many{Google Chrome uruchomi się ponownie za # sekund}other{Google Chrome uruchomi się ponownie za # sekundy}}</translation>
 <translation id="573759479754913123">System operacyjny Chrome – informacje</translation>
-<translation id="5774845247549698882">System operacyjny Chrome działa obecnie w tym języku</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Nie udało się uruchomić Chrome. Spróbuj ponownie.</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>

@@ -84,10 +84,10 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3639635944603682591">Dáta prehliadania tejto osoby sa odstránia z tohto zariadenia. Ak ich chcete obnoviť, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Otvoriť odkaz na novej &amp;karte prehliadača Chromium</translation>
 <translation id="3728336900324680424">Chromium bude mať prístup na váš Disk, aby mohol v paneli s adresou zobrazovať návrhy</translation>
-<translation id="3762167353400286894">Chromium OS sa zobrazuje v tomto jazyku</translation>
 <translation id="378917192836375108">Prehliadač Chromium vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Pripnutie prehliadača Chromium na panel úloh</translation>
+<translation id="388648406173476553">Prispôsobte a ovládajte Chromium. Vyžaduje sa vaša pozornosť. Podrobnosti získate kliknutím.</translation>
 <translation id="3889543394854987837">Ak chcete otvoriť prehliadač Chromium a začať prehliadať, kliknite na svoje meno.</translation>
 <translation id="3898493977366060150">Prehliadanie webu pomocou inteligentných doplnkov Googlu</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS sa reštartuje o 1 hodinu}few{Chromium OS sa reštartuje o # hodiny}many{Chromium OS sa reštartuje o # hodiny}other{Chromium OS sa reštartuje o # hodín}}</translation>
@@ -139,7 +139,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5680901439334282664">prihláste sa do prehliadača Chromium</translation>
 <translation id="5698481217667032250">Zobraziť Chromium v tomto jazyku</translation>
 <translation id="5712253116097046984">Správca vás žiada o reštartovanie systému Chromium OS na použitie tejto aktualizácie</translation>
-<translation id="5726838626470692954">Správca vás musí odstrániť a znova pridať do prehliadača Chromium.</translation>
 <translation id="5768914737813585044">Zobraziť Chromium OS v tomto jazyku</translation>
 <translation id="5796460469508169315">Prehliadač Chromium je takmer pripravený</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -234,7 +233,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="7979877361127045932">Skryť v Ponuke Chromium</translation>
 <translation id="8013436988911883588">Keď Chromium získa prístup, weby vás budú môcť žiadať o prístup.</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium sa zobrazuje v tomto jazyku</translation>
 <translation id="81770708095080097">Tento súbor je nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
 <translation id="8222496066431494154">Nainštalujte si Chromium do telefónu. Pošleme vám správu SMS na telefónne číslo na obnovenie účtu: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Pomôže zlepšiť Chromium</translation>

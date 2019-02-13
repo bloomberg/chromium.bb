@@ -84,10 +84,10 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3639635944603682591">Los datos de navegación de este usuario se eliminarán del dispositivo. Para recuperar tus datos, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Abrir enlace en una pes&amp;taña nueva de Chromium</translation>
 <translation id="3728336900324680424">Chromium accederá a tu Drive para mostrarte sugerencias en la barra de direcciones</translation>
-<translation id="3762167353400286894">Chromium OS se muestra en este idioma</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Ancla Chromium a la barra de tareas</translation>
+<translation id="388648406173476553">Personaliza y controla Chromium. Se requiere tu intervención. Haz clic aquí para obtener más información.</translation>
 <translation id="3889543394854987837">Haz clic en tu nombre para abrir Chromium y empezar a navegar.</translation>
 <translation id="3898493977366060150">Navegación web con soluciones inteligentes de Google</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS se volverá a iniciar en una hora}other{Chromium OS se volverá a iniciar en #  horas}}</translation>
@@ -139,7 +139,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5680901439334282664">iniciar sesión en Chromium</translation>
 <translation id="5698481217667032250">Mostrar Chromium en este idioma</translation>
 <translation id="5712253116097046984">Tu administrador pide que reinicies Chromium OS para aplicar esta actualización</translation>
-<translation id="5726838626470692954">Tu administrador debe quitarte de Chromium y volver a añadirte.</translation>
 <translation id="5768914737813585044">Mostrar Chromium OS en este idioma</translation>
 <translation id="5796460469508169315">Chromium está casi listo.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -234,7 +233,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7979877361127045932">Ocultar en el menú de Chromium</translation>
 <translation id="8013436988911883588">Una vez que Chromium tenga acceso, los sitios web podrán solicitarlo también.</translation>
 <translation id="8030318113982266900">Actualizando el canal del dispositivo a <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium se muestra en este idioma</translation>
 <translation id="81770708095080097">Este archivo es peligroso, por lo que Chromium lo ha bloqueado.</translation>
 <translation id="8222496066431494154">Instala Chromium en tu teléfono. Te enviaremos un SMS al número de recuperación de la cuenta: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Ayuda a mejorar Chromium</translation>

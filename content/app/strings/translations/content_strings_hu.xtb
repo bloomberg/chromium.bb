@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Az érték legyen kisebb vagy egyenlő, mint <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definíció</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />. címsor</translation>
-<translation id="3639613635497528239">a filmből hátralévő másodpercek</translation>
 <translation id="3706100364254443312">váltás</translation>
 <translation id="3732799496749320381">hh</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">filmidővezérlő</translation>
 <translation id="3808586225841795776">kifejezés</translation>
 <translation id="3822383571486410024">Kérjük, <ph name="MIN_CHARACTERS" /> karakter hosszú vagy annál hosszabb szöveget adjon meg (jelenleg <ph name="CURRENT_LENGTH" /> karaktert használ).</translation>
 <translation id="383465348367842624">A „<ph name="ATSIGN" />” előtti rész nem tartalmazhat „<ph name="INVALIDCHARACTER" />” karaktert.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">menügomb</translation>
 <translation id="4446524499724042288">szószedet-hivatkozás</translation>
 <translation id="4522570452068850558">Részletek</translation>
+<translation id="4542388879936266156">hátralévő idő: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">űrlap</translation>
 <translation id="4661075872484491155">fa</translation>
 <translation id="4664250907885839816">A „<ph name="ATSIGN" />” utáni rész nem tartalmazhat „<ph name="INVALIDCHARACTER" />” karaktert.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">éééé</translation>
 <translation id="8284326494547611709">Feliratok</translation>
 <translation id="835897206747267392">Érvénytelen érték.</translation>
+<translation id="8403857369060869934">eltelt idő: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">rész</translation>
 <translation id="8433900881053900389">eszköztár</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fájl</translation>

@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Anderes Passwort verwenden…</translation>
+<translation id="1066060668811609597">Synchronisierung verwalten</translation>
 <translation id="1076421457278169141">Code gescannt</translation>
 <translation id="1084365883616172403">Facebook-Beitrag gepostet</translation>
 <translation id="1104948393051856124">Akzeptieren &amp; weiter</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
 <translation id="1219674500290482172">Internetverbindung kann nicht hergestellt werden.</translation>
 <translation id="122699739164161391">Alle Tabs schließen</translation>
+<translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1265739287306757398">Weitere Informationen</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
 <translation id="213900355088104901">Wenn Sie privat surfen möchten, öffnen Sie einen Inkognito-Tab</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
+<translation id="2198757192731523470">Mithilfe Ihres Verlaufs kann Google die Google-Suche, Werbung und andere Google-Dienste personalisieren.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ungelesene Artikel in Leseliste.</translation>
 <translation id="2230173723195178503">Webseite geladen</translation>
 <translation id="2239626343334228536">Browserdaten werden gelöscht…</translation>
@@ -255,6 +258,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5062321486222145940">Google Drive installieren</translation>
 <translation id="5083464117946352670">Fehler bei Bestimmung der Dateigröße</translation>
 <translation id="5094827893301452931">Tweet gepostet</translation>
+<translation id="5132942445612118989">Passwörter, Verlauf und mehr auf allen Geräten synchronisieren</translation>
 <translation id="5181140330217080051">Download wird ausgeführt...</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>

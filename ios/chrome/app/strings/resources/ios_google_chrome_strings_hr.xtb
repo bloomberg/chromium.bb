@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
-<translation id="114721135501989771">Googleove značajke za Chrome</translation>
 <translation id="1326317727527857210">Da bi se prikazale kartice s vaših ostalih uređaja, prijavite se na Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Obavijest o privatnosti za Google Chrome</translation>
 <translation id="1863312987075920112">Upotrebom ove aplikacije prihvaćate Chromeove <ph name="BEGIN_LINK_TOS" />uvjete pružanja usluge<ph name="END_LINK_TOS" /> i <ph name="BEGIN_LINK_PRIVACY" />obavijest o privatnosti<ph name="END_LINK_PRIVACY" />.</translation>
+<translation id="1984705450038014246">Sinkroniziraj podatke iz Chromea</translation>
 <translation id="2147651015520127414">Chrome je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
 <translation id="2334084861041072223">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2342981853652716282">Prijavite se na Chrome kako biste mogli pristupati svojim oznakama, zaporkama i ostalom na svim svojim uređajima.</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">Da biste spremili slike, dodirnite Postavke i omogućite Chromeu upotrebu fotografija</translation>
 <translation id="2576431527583832481">Chrome je postao još bolji! Dostupna je nova verzija.</translation>
 <translation id="257708665678654955">Želite li da Google Chrome sljedeći put ponudi prijevod stranica s te web-lokacije za <ph name="LANGUAGE_NAME" />?</translation>
-<translation id="2943166482989655199">Poboljšajte Chrome i njegovu sigurnost slanjem podataka o sustavu i upotrebi Googleu</translation>
 <translation id="3030414234702425231">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromea izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="3148434565183091099">Da biste imali svoje oznake na svim svojim uređajima, prijavite se na Chrome.</translation>
 <translation id="3148688391461398285">Chrome će vam pružiti više ako mu omogućite pristup lokaciji.</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
 <translation id="4615174829807303908">Odjavljujete se s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />. Vaši podaci na Chromeu izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
 <translation id="5389212809648216794">Google Chrome ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
-<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" /> se mogu prilagoditi u bilo kojem trenutku. Google može upotrebljavati sadržaj na web-lokacijama koje posjećujete, vaše interakcije u pregledniku i aktivnost pregledavanja kako bi prilagodio Chrome i Googleove usluge kao što su Prevoditelj, Pretraživanje i oglasi.</translation>
 <translation id="5639704535586432836">Otvorite Postavke &gt; Privatnost &gt; Fotoaparat &gt; Google Chrome i uključite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne može upotrebljavati vaš fotoaparat u načinu podijeljenog prikaza</translation>
 <translation id="5854621639439811139">Savjet za Chrome. Neki se gumbi sada nalaze pri dnu zaslona, primjerice za natrag, naprijed i pretraživanje.</translation>

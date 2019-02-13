@@ -90,7 +90,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng mga app sa background kapag nakasara ang Google Chrome</translation>
 <translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
-<translation id="3180085900771989961">Maaaring inalis at idinagdag kang muli ng iyong manager sa Chrome.</translation>
 <translation id="3251381707915721925">Upang itakda kung aling mga website ang matitingnan ni <ph name="NEW_PROFILE_NAME" />, maaari mong i-configure ang mga paghihigpit at setting sa pamamagitan ng pagbisita sa <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Kung hindi mo babaguhin ang mga default na setting, maba-browse ni <ph name="NEW_PROFILE_NAME" /> ang lahat ng nasa web.
 
 Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account, tiyaking ila-lock mo ang iyong profile kapag hindi ka gumagamit ng Chrome. Upang gawin ito, i-click ang pangalan ng iyong profile sa kanang sulok sa itaas ng browser, at piliin ang "Lumabas at i-childlock."
@@ -160,7 +159,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="5062123544085870375">I-restart ang Chrome OS</translation>
 <translation id="5090044601776247154">Mawawala na ang mga profile ng pinangangasiwaang user simula sa Google Chrome 70.</translation>
 <translation id="5132929315877954718">Tumuklas ng mahuhusay na app, laro, extension at tema para sa Google Chrome.</translation>
-<translation id="5166975452760862670">Ipinapakita ang Google Chrome sa wikang ito</translation>
 <translation id="5170938038195470297">Hindi magagamit ang iyong profile dahil mula ito sa isang mas bagong bersyon ng Google Chrome.
 
 Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktoryo ng profile o gumamit ng mas bagong bersyon ng Chrome.</translation>
@@ -177,9 +175,9 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="556024056938947818">Sinusubukan ng Google Chrome na magpakita ng mga password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Maaaring mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>
+<translation id="5686916850681061684">I-customize at kontrolin ang Google Chrome. May kailangan kang pagtuunan ng pansin - mag-click para sa mga detalye.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Magre-restart ang Google Chrome pagkalipas ng 1 segundo}one{Magre-restart ang Google Chrome pagkalipas ng # segundo}other{Magre-restart ang Google Chrome pagkalipas ng # na segundo}}</translation>
 <translation id="573759479754913123">Tungkol sa Chrome OS</translation>
-<translation id="5774845247549698882">Ipinapakita ang Chrome OS sa wikang ito</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Hindi mailunsad ang Chrome. Subukang muli.</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>

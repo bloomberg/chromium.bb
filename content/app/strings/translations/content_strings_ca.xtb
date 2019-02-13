@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">El valor ha de ser més petit o igual que <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definició</translation>
 <translation id="3557673793733683882">capçalera <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">nombre de segons restants de la pel·lícula</translation>
 <translation id="3706100364254443312">commutador</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">barra de moment de la pel·lícula</translation>
 <translation id="3808586225841795776">terme</translation>
 <translation id="3822383571486410024">Allargueu aquest text fins a un mínim de <ph name="MIN_CHARACTERS" /> caràcters (ara n'utilitzeu <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Un nom d'usuari seguit de "<ph name="ATSIGN" />" no pot contenir el símbol "<ph name="INVALIDCHARACTER" />".</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">botó de menú</translation>
 <translation id="4446524499724042288">referència del glossari</translation>
 <translation id="4522570452068850558">Detalls</translation>
+<translation id="4542388879936266156">temps restant: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">formulari</translation>
 <translation id="4661075872484491155">arbre</translation>
 <translation id="4664250907885839816">Un domini precedit per "<ph name="ATSIGN" />" no pot contenir el símbol "<ph name="INVALIDCHARACTER" />".</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">aaaa</translation>
 <translation id="8284326494547611709">Subtítols</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>
+<translation id="8403857369060869934">temps transcorregut: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">part</translation>
 <translation id="8433900881053900389">barra d'eines</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fitxers</translation>

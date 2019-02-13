@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Ajouter cette page aux favoris</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
 <translation id="1063454504051558093">Utiliser un autre mot de passe…</translation>
+<translation id="1066060668811609597">Gérer la synchronisation</translation>
 <translation id="1076421457278169141">Code scanné</translation>
 <translation id="1084365883616172403">Post Facebook publié.</translation>
 <translation id="1104948393051856124">Accepter et continuer</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Masquer pour le moment</translation>
 <translation id="1219674500290482172">Impossible de se connecter à Internet.</translation>
 <translation id="122699739164161391">Fermer tous les onglets</translation>
+<translation id="1231733316453485619">Activer la synchronisation ?</translation>
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1265739287306757398">En savoir plus</translation>
 <translation id="1272079795634619415">Arrêter</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> éléments déplacés.</translation>
 <translation id="213900355088104901">Pour parcourir le Web en mode privé, ouvrez un onglet de navigation privée</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
+<translation id="2198757192731523470">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articles non lus dans la liste de lecture.</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
 <translation id="2239626343334228536">Effacement des données de navigation…</translation>
@@ -255,6 +258,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5062321486222145940">Installer Google Drive</translation>
 <translation id="5083464117946352670">Impos. déterm. taille fichier.</translation>
 <translation id="5094827893301452931">Tweet publié.</translation>
+<translation id="5132942445612118989">Synchroniser vos mots de passe, votre historique et plus encore sur tous les appareils</translation>
 <translation id="5181140330217080051">Téléchargement</translation>
 <translation id="5186185447130319458">Privé</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>

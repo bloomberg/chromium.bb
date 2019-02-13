@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Podaci o pregledavanju za tu osobu izbrisat će se s ovog uređaja. Da biste vratili te podatke, prijavite se na Chromium kao <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Otvori vezu na novoj &amp;kartici Chromiuma</translation>
 <translation id="3728336900324680424">Chromium će pristupati vašem Disku radi prikazivanja prijedloga u adresnoj traci</translation>
-<translation id="3762167353400286894">OS Chromium prikazuje se na tom jeziku</translation>
 <translation id="378917192836375108">Chromium omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Prikvačite Chromium na programsku traku</translation>
+<translation id="388648406173476553">Prilagodite Chromium i upravljajte njime. Trebate obratiti pozornost na nešto – kliknite za pojedinosti.</translation>
 <translation id="3889543394854987837">Kliknite svoje ime da biste otvorili Chromium i počeli s pregledavanjem.</translation>
 <translation id="3898493977366060150">Pregledavanje weba uz pametne Googleove značajke</translation>
 <translation id="3965668104013180445">{0,plural, =1{OS Chromium ponovo će se pokrenuti za sat vremena}one{OS Chromium ponovo će se pokrenuti za # sat}few{OS Chromium ponovo će se pokrenuti za # sata}other{OS Chromium ponovo će se pokrenuti za # sati}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">prijavite se na Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium na tom jeziku</translation>
 <translation id="5712253116097046984">Vaš administrator traži da ponovo pokrenete OS Chromium radi primjene tog ažuriranja</translation>
-<translation id="5726838626470692954">Upravitelj vas mora ukloniti i vratiti u Chromium.</translation>
 <translation id="5768914737813585044">Prikaži OS Chromium na tom jeziku</translation>
 <translation id="5796460469508169315">Chromium će uskoro biti spreman.</translation>
 <translation id="5820394555380036790">OS Chromium</translation>
@@ -232,7 +231,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7979877361127045932">Sakrij u izborniku Chromiuma</translation>
 <translation id="8013436988911883588">Kada Chromium dobije pristup, web-lokacije će vas moći tražiti pristup.</translation>
 <translation id="8030318113982266900">Ažuriranje vašeg uređaja na kanal <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium se prikazuje na tom jeziku</translation>
 <translation id="81770708095080097">Datoteka je opasna i Chromium ju je blokirao.</translation>
 <translation id="8222496066431494154">Instalirajte Chromium na telefon. Poslat ćemo vam SMS na telefonski broj za oporavak računa: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Pomognite poboljšati Chromium.</translation>

@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Монофонічне аудіо</translation>
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="3019353588588144572">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Профіль контрольованого користувача незабаром буде видалено. Увійдіть, щоб дізнатися більше.</translation>
 <translation id="3055162170959710888">Сьогодні цей пристрій працював <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Розгорнути меню</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Максимальна кількість паралельних входів в обліковий запис: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Адміністратор пристрою може відстежувати дані веб-перегляду.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Під’єднано до пристрою}one{Під’єднано до # пристрою}few{Під’єднано до # пристроїв}many{Під’єднано до # пристроїв}other{Під’єднано до # пристрою}}</translation>
-<translation id="32244657276328332">Не під’єднано до мережі</translation>
 <translation id="3236488194889173876">Немає мобільних мереж</translation>
 <translation id="3255483164551725916">Що ти можеш?</translation>
 <translation id="3294437725009624529">Гість</translation>

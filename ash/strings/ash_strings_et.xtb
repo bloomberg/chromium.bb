@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Monoheli</translation>
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="3019353588588144572">Aku täitumiseni on aega <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Teie jälgitava kasutaja profiil eemaldatakse peagi. Lisateabe saamiseks logige sisse.</translation>
 <translation id="3055162170959710888">Kasutasite seda seadet täna <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
 <translation id="3081696990447829002">Laienda menüü</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Saate korraga sisse logida kuni <ph name="MULTI_PROFILE_USER_LIMIT" /> kontole.</translation>
 <translation id="3154351730702813399">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ühendatud ühe seadmega}other{Ühendatud # seadmega}}</translation>
-<translation id="32244657276328332">Võrguga ühendamata</translation>
 <translation id="3236488194889173876">Ühtegi mobiilsidevõrku pole saadaval</translation>
 <translation id="3255483164551725916">Mida sa teha oskad?</translation>
 <translation id="3294437725009624529">Külaline</translation>

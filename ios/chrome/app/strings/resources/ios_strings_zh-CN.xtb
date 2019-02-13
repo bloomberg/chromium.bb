@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1049743911850919806">隐身</translation>
 <translation id="1063454504051558093">使用其他密码…</translation>
+<translation id="1066060668811609597">管理同步功能</translation>
 <translation id="1076421457278169141">已扫描代码</translation>
 <translation id="1084365883616172403">Facebook 信息发布已完成。</translation>
 <translation id="1104948393051856124">接受并继续</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1219674500290482172">无法连接到互联网。</translation>
 <translation id="122699739164161391">关闭所有标签页</translation>
+<translation id="1231733316453485619">开启同步功能？</translation>
 <translation id="1254117744268754948">选择文件夹</translation>
 <translation id="1265739287306757398">了解如何操作</translation>
 <translation id="1272079795634619415">停止</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
 <translation id="2149973817440762519">修改书签</translation>
+<translation id="2198757192731523470">Google 可能会利用您的历史记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
 <translation id="2207590065820824892">阅读清单中有 <ph name="UNREAD_COUNT" /> 篇未读文章。</translation>
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2239626343334228536">正在清除浏览数据…</translation>
@@ -255,6 +258,7 @@
 <translation id="5062321486222145940">安装Google云端硬盘</translation>
 <translation id="5083464117946352670">无法确定文件大小。</translation>
 <translation id="5094827893301452931">Tweet 信息发布已完成。</translation>
+<translation id="5132942445612118989">将您的密码、历史记录等信息同步到所有设备上</translation>
 <translation id="5181140330217080051">正在下载</translation>
 <translation id="5186185447130319458">不公开</translation>
 <translation id="5190835502935405962">书签栏</translation>

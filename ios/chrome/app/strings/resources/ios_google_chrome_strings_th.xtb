@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="114721135501989771">ใช้ฟีเจอร์เจ๋งๆ จาก Google ใน Chrome</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Google Chrome</translation>
 <translation id="1863312987075920112">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK_TOS" />ข้อกำหนดในการให้บริการ<ph name="END_LINK_TOS" />และ<ph name="BEGIN_LINK_PRIVACY" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK_PRIVACY" />ของ Chrome</translation>
+<translation id="1984705450038014246">ซิงค์ข้อมูล Chrome</translation>
 <translation id="2147651015520127414">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้</translation>
 <translation id="2334084861041072223">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2342981853652716282">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">ในการบันทึกรูปภาพ ให้แตะการตั้งค่าเพื่ออนุญาตให้ Chrome ใช้รูปภาพ</translation>
 <translation id="2576431527583832481">Chrome พัฒนาใหม่! มีรุ่นใหม่ให้ใช้งานแล้ว</translation>
 <translation id="257708665678654955">คุณต้องการให้ Google Chrome เสนอการแปลหน้าภาษา<ph name="LANGUAGE_NAME" />จากเว็บไซต์นี้ในครั้งถัดไปไหม</translation>
-<translation id="2943166482989655199">ปรับปรุง Chrome และความปลอดภัยด้วยการส่งข้อมูลระบบและการใช้งานไปยัง Google</translation>
 <translation id="3030414234702425231">เนื่องจากคุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> ข้อมูล Chrome ของคุณจะถูกลบออกจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="3148434565183091099">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3148688391461398285">รับประสบการณ์ที่ดีขึ้นใน Chrome ตามสถานที่ที่คุณอยู่</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดถอนการติดตั้ง</translation>
 <translation id="4615174829807303908">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chrome ของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="5389212809648216794">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปเนื่องจากแอปพลิเคชันอื่นใช้งานอยู่</translation>
-<translation id="5489543008378040943">คุณปรับแต่ง<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />ได้ทุกเมื่อ Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชม รวมถึงการโต้ตอบและกิจกรรมในเบราว์เซอร์เพื่อปรับ Chrome และบริการของ Google อย่างเช่น แปลภาษา, Search และโฆษณาให้เหมาะกับคุณ</translation>
 <translation id="5639704535586432836">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Google Chrome เพื่อเปิดกล้องถ่ายรูป</translation>
 <translation id="5642200033778930880">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปในโหมด Split View</translation>
 <translation id="5854621639439811139">เคล็ดลับสำหรับ Chrome ตอนนี้บางปุ่มแสดงอยู่ที่ด้านล่างของหน้าจอแล้ว เช่น ปุ่มกลับ ไปข้างหน้า และค้นหา</translation>

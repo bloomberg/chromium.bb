@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="1049743911850919806">In incognito</translation>
 <translation id="1063454504051558093">Utilizza un'altra password…</translation>
+<translation id="1066060668811609597">Gestisci la sincronizzazione</translation>
 <translation id="1076421457278169141">Scansione del codice eseguita</translation>
 <translation id="1084365883616172403">Pubblicazione su Facebook completata.</translation>
 <translation id="1104948393051856124">Accetta e continua</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Nascondi per ora</translation>
 <translation id="1219674500290482172">Impossibile connettersi a Internet.</translation>
 <translation id="122699739164161391">Chiudi tutte le schede</translation>
+<translation id="1231733316453485619">Attivare la sincronizzazione?</translation>
 <translation id="1254117744268754948">Scegli cartella</translation>
 <translation id="1265739287306757398">Scopri come</translation>
 <translation id="1272079795634619415">Interrompi</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi spostati</translation>
 <translation id="213900355088104901">Per navigare in privato, apri una scheda di navigazione in incognito</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
+<translation id="2198757192731523470">Google può utilizzare la tua cronologia per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articoli dell'elenco di lettura da leggere.</translation>
 <translation id="2230173723195178503">Pagina web caricata</translation>
 <translation id="2239626343334228536">Cancellazione dati di navigazione…</translation>
@@ -255,6 +258,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5062321486222145940">Installa Google Drive</translation>
 <translation id="5083464117946352670">Impossibile stabilire le dimensioni del file.</translation>
 <translation id="5094827893301452931">Tweet completato.</translation>
+<translation id="5132942445612118989">Sincronizza le tue password, la tua cronologia e altro su tutti i tuoi dispositivi</translation>
 <translation id="5181140330217080051">Download in corso</translation>
 <translation id="5186185447130319458">Privata</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
@@ -305,7 +309,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6021332621416007159">Apri in...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Chiudi</translation>
-<translation id="6042308850641462728">Più</translation>
+<translation id="6042308850641462728">Altro</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Tocca per annullare.</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>

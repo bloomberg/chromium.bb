@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Adicionar esta página aos favoritos...</translation>
 <translation id="1049743911850919806">Modo anônimo</translation>
 <translation id="1063454504051558093">Usar outra senha...</translation>
+<translation id="1066060668811609597">Gerenciar sincronização</translation>
 <translation id="1076421457278169141">Código lido</translation>
 <translation id="1084365883616172403">A postagem no Facebook foi concluída.</translation>
 <translation id="1104948393051856124">Aceitar e continuar</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Ocultar por enquanto</translation>
 <translation id="1219674500290482172">Não foi possível se conectar à Internet.</translation>
 <translation id="122699739164161391">Fechar todas as guias</translation>
+<translation id="1231733316453485619">Ativar sincronização?</translation>
 <translation id="1254117744268754948">Escolher pasta</translation>
 <translation id="1265739287306757398">Saiba como</translation>
 <translation id="1272079795634619415">Parar</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
 <translation id="213900355088104901">Para navegar com privacidade, abra uma guia anônima.</translation>
 <translation id="2149973817440762519">Editar favoritos</translation>
+<translation id="2198757192731523470">O Google pode usar seu histórico para personalizar a Pesquisa, os anúncios e outros serviços que ele oferece.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na lista de leitura.</translation>
 <translation id="2230173723195178503">Página da Web carregada</translation>
 <translation id="2239626343334228536">Limpando dados de navegação…</translation>
@@ -255,6 +258,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5062321486222145940">Instalar o Google Drive</translation>
 <translation id="5083464117946352670">Não é possível saber o tamanho do arquivo.</translation>
 <translation id="5094827893301452931">Tweet concluído.</translation>
+<translation id="5132942445612118989">Sincronize suas senhas, seu histórico e muito mais em todos os dispositivos</translation>
 <translation id="5181140330217080051">Fazendo download</translation>
 <translation id="5186185447130319458">Particular</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>

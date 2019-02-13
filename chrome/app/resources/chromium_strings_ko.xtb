@@ -84,10 +84,10 @@
 <translation id="3639635944603682591">선택한 사용자의 인터넷 사용 기록이 이 기기에서 삭제됩니다. 데이터를 복구하려면 <ph name="USER_EMAIL" />(으)로 Chromium에 로그인하세요.</translation>
 <translation id="3713809861844741608">새 Chromium 탭에서 링크 열기(&amp;T)</translation>
 <translation id="3728336900324680424">Chromium에서 내 드라이브에 액세스하여 주소 표시줄에 추천 검색어를 표시합니다.</translation>
-<translation id="3762167353400286894">현재 Chromium OS에서 사용 중인 언어</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Chromium을 작업 표시줄에 고정</translation>
+<translation id="388648406173476553">Chromium을 맞춤설정 및 제어합니다. 확인이 필요한 항목이 있습니다. 클릭하여 세부정보를 보세요.</translation>
 <translation id="3889543394854987837">Chromium을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
 <translation id="3898493977366060150">Google과 스마트하게 웹을 탐색하세요</translation>
 <translation id="3965668104013180445">{0,plural, =1{1시간 후에 Chromium OS 다시 시작}other{#시간 후에 Chromium OS 다시 시작}}</translation>
@@ -139,7 +139,6 @@
 <translation id="5680901439334282664">Chromium에 로그인</translation>
 <translation id="5698481217667032250">이 언어로 Chromium 표시</translation>
 <translation id="5712253116097046984">관리자가 이 업데이트를 적용하려면 사용자가 Chromium OS를 다시 시작하도록 설정했습니다.</translation>
-<translation id="5726838626470692954">관리자가 나를 삭제한 후 다시 Chromium에 추가해야 합니다.</translation>
 <translation id="5768914737813585044">이 언어로 Chromium OS 표시</translation>
 <translation id="5796460469508169315">Chromium 준비가 거의 완료되었습니다.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -234,7 +233,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7979877361127045932">Chromium 메뉴에서 숨기기</translation>
 <translation id="8013436988911883588">Chromium에 액세스 권한을 부여하면 웹사이트에서 액세스 권한을 요청할 수 있게 됩니다.</translation>
 <translation id="8030318113982266900">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트하는 중...</translation>
-<translation id="8157153840442649507">현재 Chromium에서 사용 중인 언어</translation>
 <translation id="81770708095080097">이 파일은 위험하므로 Chromium에서 차단했습니다.</translation>
 <translation id="8222496066431494154">휴대전화에 Chromium을 설치하세요. 다음의 계정 복구 전화번호로 SMS를 보내 드리겠습니다. <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium 개선에 참여</translation>

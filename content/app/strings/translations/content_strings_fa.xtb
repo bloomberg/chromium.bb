@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM" /> باشد.</translation>
 <translation id="3486220673238053218">معنی</translation>
 <translation id="3557673793733683882">عنوان <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">تعداد ثانیه‌های باقیمانده فیلم</translation>
 <translation id="3706100364254443312">تعویض</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> گیگابایت</translation>
-<translation id="3785482301506746191">حذف‌کننده زمان فیلم</translation>
 <translation id="3808586225841795776">اصطلاح</translation>
 <translation id="3822383571486410024">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال حاضر از <ph name="CURRENT_LENGTH" /> نویسه استفاده می‌کنید).</translation>
 <translation id="383465348367842624">قسمت قبل از «<ph name="ATSIGN" />» نباید حاوی نماد «<ph name="INVALIDCHARACTER" />» باشد.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">دکمه منو</translation>
 <translation id="4446524499724042288">مرجع واژه‌نامه</translation>
 <translation id="4522570452068850558">جزئیات</translation>
+<translation id="4542388879936266156">زمان باقی‌مانده: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">فرم</translation>
 <translation id="4661075872484491155">درخت</translation>
 <translation id="4664250907885839816">قسمت بعد از «<ph name="ATSIGN" />» نباید حاوی نماد «<ph name="INVALIDCHARACTER" />» باشد.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="835897206747267392">مقدار نامعتبر.</translation>
+<translation id="8403857369060869934">زمان سپری‌شده: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">بخش</translation>
 <translation id="8433900881053900389">نوار ابزار</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> فایل</translation>

@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Data browsing pengguna ini akan dihapus dari perangkat ini. Untuk memulihkan data, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Buka link di &amp;tab Chromium baru</translation>
 <translation id="3728336900324680424">Chromium akan mengakses Drive Anda untuk membuat saran di kolom URL</translation>
-<translation id="3762167353400286894">Chromium OS ditampilkan dalam bahasa ini</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Sematkan Chromium di bilah tugas</translation>
+<translation id="388648406173476553">Sesuaikan dan kontrol Chromium. Ada sesuatu yang memerlukan perhatian Anda - klik untuk melihat detailnya.</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="3898493977366060150">Browsing web dengan fitur smart dari Google</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS akan dimulai ulang dalam 1 jam}other{Chromium OS akan dimulai ulang dalam # jam}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
 <translation id="5712253116097046984">Administrator meminta Anda memulai ulang Chromium OS untuk menerapkan update ini</translation>
-<translation id="5726838626470692954">Pengelola harus menghapus dan menambahkan Anda kembali ke Chromium.</translation>
 <translation id="5768914737813585044">Tampilkan Chromium OS dalam bahasa ini</translation>
 <translation id="5796460469508169315">Chromium hampir siap.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -232,7 +231,6 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7979877361127045932">Sembunyikan di menu Chromium</translation>
 <translation id="8013436988911883588">Setelah Chromium memiliki akses, situs dapat meminta akses dari Anda.</translation>
 <translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium ditampilkan dalam bahasa ini</translation>
 <translation id="81770708095080097">File ini berbahaya, jadi Chromium telah memblokirnya.</translation>
 <translation id="8222496066431494154">Instal Chromium di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Bantu kami membuat Chromium menjadi lebih baik</translation>

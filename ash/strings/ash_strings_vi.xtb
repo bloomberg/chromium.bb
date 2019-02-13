@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Đơn âm</translation>
 <translation id="3009178788565917040">Thiết bị ra</translation>
 <translation id="3019353588588144572">Thời gian còn lại cho đến khi pin được sạc đầy, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Hồ sơ người dùng được giám sát của bạn sẽ sớm bị xóa. Đăng nhập để tìm hiểu thêm.</translation>
 <translation id="3055162170959710888">Bạn đã dùng thiết bị này trong <ph name="USED_TIME" /> hôm nay</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Mở rộng menu</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Bạn chỉ có thể có tối đa <ph name="MULTI_PROFILE_USER_LIMIT" /> tài khoản khi sử dụng tính năng đăng nhập nhiều tài khoản.</translation>
 <translation id="3154351730702813399">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Đã kết nối với một thiết bị}other{Đã kết nối với # thiết bị}}</translation>
-<translation id="32244657276328332">Không kết nối được với mạng</translation>
 <translation id="3236488194889173876">Không có mạng di động nào</translation>
 <translation id="3255483164551725916">Bạn có thể làm gì?</translation>
 <translation id="3294437725009624529">Khách</translation>

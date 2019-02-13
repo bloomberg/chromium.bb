@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1430915738399379752">Print</translation>
 <translation id="1455413310270022028">Eraser</translation>
+<translation id="1463543813647160932">5 x 7</translation>
 <translation id="1484290072879560759">Choose delivery address</translation>
 <translation id="1501859676467574491">Show cards from your Google account</translation>
 <translation id="1506687042165942984">Show a saved (i.e. known to be out of date) copy of this page.</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936">Pages in <ph name="LANGUAGE" /> will not be translated.</translation>
 <translation id="2053553514270667976">ZIP code</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggestion}other{# suggestions}}</translation>
+<translation id="2068124040035837596">Your account is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your account.</translation>
 <translation id="2068663545051464999">Uploaded Crash Report ID <ph name="CRASH_ID" /> (Local Context: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="20817612488360358">System proxy settings are set to be used but an explicit proxy configuration is also specified.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">This delivery method isn’t available. Try a different method.</translation>
 <translation id="2396249848217231973">&amp;Undo delete</translation>
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
+<translation id="244665789865330679">Your device and account is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your device and account.</translation>
 <translation id="2463193859425327265">Change home page</translation>
 <translation id="2463739503403862330">Fill in</translation>
 <translation id="2465655957518002998">Choose delivery method</translation>
@@ -375,7 +378,6 @@
 <translation id="3287510313208355388">Download when online</translation>
 <translation id="3293642807462928945">Learn more about <ph name="POLICY_NAME" /> policy</translation>
 <translation id="3303855915957856445">No search results found</translation>
-<translation id="3305707030755673451">Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="3320021301628644560">Add billing address</translation>
 <translation id="3324983252691184275">Crimson</translation>
 <translation id="3338095232262050444">Secure</translation>
@@ -561,6 +563,7 @@
 <translation id="4377125064752653719">You attempted to reach <ph name="DOMAIN" />, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials the server presented absolutely should not be trusted. You may be communicating with an attacker.</translation>
 <translation id="4378154925671717803">Phone</translation>
 <translation id="4406896451731180161">search results</translation>
+<translation id="4406972042435603828">Your administrators have installed extensions with powerful capabilities.</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Pickup Address</translation>
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -632,10 +635,12 @@
 <translation id="4943872375798546930">No results</translation>
 <translation id="4950898438188848926">Tab switch button, press Enter to switch to the open tab, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Actions</translation>
+<translation id="495832697253704892">Extension reporting</translation>
 <translation id="4958444002117714549">Expand list</translation>
 <translation id="4974590756084640048">Re-enable warnings</translation>
 <translation id="4989163558385430922">See all</translation>
 <translation id="4989809363548539747">This plug-in is not supported</translation>
+<translation id="4996230189582812866">Reporting</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
 <translation id="5014174725590676422">Google Assistant in Chrome first run screen is shown</translation>
 <translation id="5015510746216210676">Machine Name:</translation>
@@ -656,6 +661,7 @@
 <translation id="5089810972385038852">State</translation>
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="5095208057601539847">Province</translation>
+<translation id="5098222253617183465">Your device is managed by <ph name="ENROLLMENT_DOMAIN" /> and your account is managed by <ph name="ACCOUNT_DOMAIN" />. This means that your administrators may remotely configure your device and account.</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5128122789703661928">The session with this name is not valid for deletion.</translation>
 <translation id="5135404736266831032">Manage addresses...</translation>
@@ -668,6 +674,7 @@
 <translation id="5172758083709347301">Machine</translation>
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE" />? Report this error</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
+<translation id="5200263511887412697">report list of device users that have recently logged in</translation>
 <translation id="5201306358585911203">An embedded page on this page says</translation>
 <translation id="5205222826937269299">Name required</translation>
 <translation id="5215116848420601511">Payment methods and addresses using Google Pay</translation>
@@ -738,6 +745,7 @@
 <translation id="563324245173044180">Deceptive content blocked.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5675650730144413517">This page isn’t working</translation>
+<translation id="5684874026226664614">Oops. This page could not be translated.</translation>
 <translation id="5685654322157854305">Add delivery address</translation>
 <translation id="5689199277474810259">Export to JSON</translation>
 <translation id="5689516760719285838">Location</translation>
@@ -769,10 +777,10 @@
 <translation id="5869405914158311789">This site can’t be reached</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5887400589839399685">Card saved</translation>
+<translation id="5893718151540690985">report list of network interfaces with their types and hardware addresses</translation>
 <translation id="5893752035575986141">Credit cards are accepted.</translation>
 <translation id="5901630391730855834">Yellow</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in use}other{# in use}}</translation>
 <translation id="5921639886840618607">Save card to Google account?</translation>
 <translation id="5922853866070715753">Almost finished</translation>
 <translation id="5932224571077948991">Site shows intrusive or misleading ads</translation>
@@ -782,6 +790,7 @@
 <translation id="5967592137238574583">Edit Contact Info</translation>
 <translation id="5967867314010545767">Remove from history</translation>
 <translation id="5975083100439434680">Zoom out</translation>
+<translation id="5977489021191000276">Your device is not managed by an administrator.</translation>
 <translation id="5977976211062815271">On this device</translation>
 <translation id="598637245381783098">Can’t open payment app</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
@@ -793,6 +802,7 @@
 <translation id="6017850046339264347">Attackers on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> could install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synced)</translation>
 <translation id="6027201098523975773">Enter a name</translation>
+<translation id="6033927989869462158">report hardware statistics such as CPU/RAM usage</translation>
 <translation id="6034000775414344507">Light grey</translation>
 <translation id="6039846035001940113">If the problem continues, contact the site owner.</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -905,6 +915,8 @@
 <translation id="6897140037006041989">User Agent</translation>
 <translation id="6903319715792422884">Help improve Safe Browsing by sending some <ph name="BEGIN_WHITEPAPER_LINK" />system information and page content<ph name="END_WHITEPAPER_LINK" /> to Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">User:</translation>
+<translation id="6934672428414710184">This name is from your Google account</translation>
+<translation id="6939583532829045966">Your device is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your device.</translation>
 <translation id="6944692733090228304">You entered your password on a site that’s not managed by <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. To protect your account, don’t reuse your password on other apps and sites.</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6948701128805548767">To see pickup methods and requirements, select an address</translation>
@@ -992,6 +1004,7 @@ Additional details:
       &lt;li&gt;Click &lt;strong&gt;Apply&lt;/strong&gt;, then click &lt;strong&gt;OK&lt;/strong&gt;
       &lt;li&gt;Visit the &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome help centre&lt;/a&gt; to find out how to permanently remove the software from your computer
       &lt;/ol&gt;</translation>
+<translation id="7413422570546054399"><ph name="PRODUCT_NAME" /> management</translation>
 <translation id="7416351320495623771">Manage passwords...</translation>
 <translation id="7419106976560586862">Profile Path</translation>
 <translation id="7437289804838430631">Add contact info</translation>
@@ -1000,10 +1013,12 @@ Additional details:
 <translation id="7442725080345379071">Light orange</translation>
 <translation id="7444046173054089907">This site is blocked</translation>
 <translation id="7445762425076701745">The identity of the server to which you are connected cannot be fully validated. You are connected to a server using a name valid only within your network, and an external certificate authority has no way to validate ownership. As some certificate authorities will issue certificates for these names regardless, there is no way to ensure that you are connected to the intended website and not to an attacker.</translation>
+<translation id="7449109375006139765">send system logs to the management server</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about this problem.</translation>
 <translation id="7455133967321480974">Use global default (Block)</translation>
 <translation id="7460618730930299168">The screening is different from what you selected. Continue?</translation>
 <translation id="7473891865547856676">No Thanks</translation>
+<translation id="7475525192983021547">report time periods when a user is active on the device</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7485870689360869515">No data found.</translation>
 <translation id="7508255263130623398">Returned policy device ID is empty or doesn't match current device ID</translation>
@@ -1096,6 +1111,7 @@ Additional details:
 <translation id="7995512525968007366">Not Specified</translation>
 <translation id="800218591365569300">Try closing other tabs or programmes to free up memory.</translation>
 <translation id="8009225694047762179">Manage Passwords</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{This card and its billing address will be saved. You'll be able to use it when signed in to <ph name="USER_EMAIL" />.}other{These cards and their billing addresses will be saved. You'll be able to use them when signed in to <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8012647001091218357">We could not reach your parents at the moment. Please try again.</translation>
 <translation id="8025119109950072390">Attackers on this site may trick you into doing something dangerous like installing software or revealing your personal information (for example passwords, phone numbers or credit cards).</translation>
 <translation id="8034522405403831421">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1106,6 +1122,7 @@ Additional details:
 <translation id="8041940743680923270">Use global default (Ask)</translation>
 <translation id="8042918947222776840">Choose pickup method</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />' isn’t configured correctly. Uninstalling '<ph name="SOFTWARE_NAME" />' usually fixes the problem. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">Your device has been configured to:</translation>
 <translation id="8078141288243656252">Cannot annotate when rotated</translation>
 <translation id="8079031581361219619">Reload site?</translation>
 <translation id="8088680233425245692">Failed to view article.</translation>
@@ -1156,6 +1173,7 @@ Additional details:
 <translation id="8363502534493474904">Turning off aeroplane mode</translation>
 <translation id="8364627913115013041">Not set.</translation>
 <translation id="8368476060205742148">Google Play services</translation>
+<translation id="8371889962595521444">Custom root certificates</translation>
 <translation id="8380941800586852976">Dangerous</translation>
 <translation id="8381674639488873545">These charges could be one-time or recurring and may not be obvious. <ph name="BEGIN_LINK" />Show anyway<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Your recently visited bookmarks appear here</translation>
@@ -1165,6 +1183,7 @@ Additional details:
 <translation id="8416694386774425977">The network configuration is invalid and couldn't be imported.
 Additional details:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533">Device managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8428213095426709021">Settings</translation>
@@ -1225,6 +1244,7 @@ Additional details:
 <translation id="8932102934695377596">Your clock is behind</translation>
 <translation id="893332455753468063">Add Name</translation>
 <translation id="8938939909778640821">Accepted credit and prepaid cards</translation>
+<translation id="894185898663964645">Your administrator has configured custom root certificates, which may allow the administrator to see the contents of websites that you visit.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8968766641738584599">Save card</translation>

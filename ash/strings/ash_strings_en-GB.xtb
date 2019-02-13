@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Time remaining until battery is fully charged, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Your supervised user profile will be removed soon. Sign in to find out more.</translation>
 <translation id="3055162170959710888">You used this device for <ph name="USED_TIME" /> today</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expand menu</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">You can only have up to <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts in multiple sign-in.</translation>
 <translation id="3154351730702813399">The device admin may monitor your browsing activity.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connected to a device}other{Connected to # devices}}</translation>
-<translation id="32244657276328332">Not connected to network</translation>
 <translation id="3236488194889173876">No mobile network available</translation>
 <translation id="3255483164551725916">What can you do?</translation>
 <translation id="3294437725009624529">Guest</translation>

@@ -20,12 +20,11 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 ಡೌನ್‌ಲೋಡ್ ಬಾಕಿ ಇದೆ.}one{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ಬಾಕಿ ಇವೆ.}other{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ಬಾಕಿ ಇವೆ.}}</translation>
 <translation id="1145536944570833626">ಪ್ರಸ್ತುತ ಡೇಟಾ ಅಳಿಸಿ.</translation>
 <translation id="1146678959555564648">VR ನಮೂದಿಸಿ</translation>
-<translation id="114721135501989771">Chrome ನಲ್ಲಿ Google ಸ್ಮಾರ್ಟ್‌ಗಳನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="116280672541001035">ಬಳಕೆಯಾಗಿದ್ದು</translation>
 <translation id="1172593791219290334">ಆರಂಭಿಕ ಪುಟ</translation>
 <translation id="1175310183703641346">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡುವುದಿಲ್ಲ</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
-<translation id="1181037720776840403">ತೆಗೆದುಹಾಕಿ</translation>
+<translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1197267115302279827">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಚಲಿಸಿ</translation>
 <translation id="119944043368869598">ಎಲ್ಲವನ್ನೂ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
@@ -33,6 +32,7 @@
 <translation id="1206892813135768548">ಲಿಂಕ್ ಪಠ್ಯವನ್ನು ನಕಲಿಸಿ</translation>
 <translation id="1208340532756947324">ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಲು ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಲು, ಸಿಂಕ್ ಆನ್ ಮಾಡಿ</translation>
 <translation id="1209206284964581585">ಸದ್ಯಕ್ಕೆ ಮರೆಮಾಡಿ</translation>
+<translation id="1231733316453485619">ಸಿಂಕ್ ಆನ್ ಮಾಡುವುದೇ?</translation>
 <translation id="123724288017357924">ಸಂಗ್ರಹ ಮಾಡಿದ ವಿಷಯವನ್ನು ನಿರ್ಲಕ್ಷಿಸಿ, ಪ್ರಸ್ತುತ ಪುಟ ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="124116460088058876">ಹೆಚ್ಚಿನ ಭಾಷೆಗಳು</translation>
 <translation id="124678866338384709">ಪ್ರಸ್ತುತ ಟ್ಯಾಬ್ ಮುಚ್ಚಿ</translation>
@@ -70,6 +70,7 @@
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
 <translation id="1445680696957526815">Chrome ನ ಅಂಶಗಳು ಒಂದಕ್ಕೊಂದು ಹೊಂದಾಣಿಕೆ ಹೊಂದಿಲ್ಲ. Chrome ಅಪ್‌ಗ್ರೇಡ್‌ ಮಾಡುತ್ತಿರಬಹುದು, ದಯವಿಟ್ಟು ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ. ಸಮಸ್ಯೆ ಮುಂದುವರಿದರೆ, Chrome ಅಸ್ಥಾಪಿಸಲು ಮತ್ತು ಮರುಸ್ಥಾಪಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1446450296470737166">MIDI ಸಾಧನಗಳ ಪೂರ್ಣ ನಿಯಂತ್ರಣ ಅನುಮತಿಸಿ</translation>
+<translation id="1449080968331948513">ಡೇಟಾ ಸೇವರ್ ಈಗ ಲೈಟ್ ಮೋಡ್‌ನಲ್ಲಿದೆ</translation>
 <translation id="145097072038377568">Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1477626028522505441">ಸರ್ವರ್ ಸಮಸ್ಯೆಗಳ ಕಾರಣದಿಂದಾಗಿ <ph name="FILE_NAME" /> ಡೌನ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 ಹೆಚ್ಚು)}one{ (+ # ಹೆಚ್ಚು)}other{ (+ # ಹೆಚ್ಚು)}}</translation>
@@ -99,7 +100,6 @@
 <translation id="1672586136351118594">ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ</translation>
 <translation id="1709438864123551175">ಡೇಟಾ ಉಳಿಸುವಿಕೆ</translation>
 <translation id="1718835860248848330">ಕೊನೆಯ ಗಂಟೆ</translation>
-<translation id="1729516292547892356">ವರ್ಚುವಲ್ ರಿಯಾಲಿಟಿ ವಿಷಯವನ್ನು ವೀಕ್ಷಿಸಲು, Google VR ಸೇವೆಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> ಸಮಯದ ಹಿಂದೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1736419249208073774">ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಿ</translation>
 <translation id="1743802530341753419">ಸಾಧನಕ್ಕೆ ಸಂಪರ್ಕಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
@@ -124,7 +124,6 @@
 <translation id="1919950603503897840">ಸಂಪರ್ಕಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="1923695749281512248"><ph name="FILE_SIZE_WITH_UNITS" /> ರಲ್ಲಿ <ph name="BYTES_DOWNLOADED_WITH_UNITS" /> ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ</translation>
 <translation id="1933845786846280168">ಟ್ಯಾಬ್ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
-<translation id="1938981467853765413">ಪ್ರತಿಕ್ರಿಯೆ ನೀಡಿ</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> Chrome ಗೆ ಅನುಮತಿಯನ್ನು ಆನ್ ಮಾಡಿ.</translation>
 <translation id="1943432128510653496">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="1946005195648379376">ಹುಡುಕಾಟ ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು Google ಹೇಗೆ ಬಳಸುತ್ತದೆ ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸಿ.</translation>
@@ -132,6 +131,7 @@
 <translation id="1960290143419248813">Android ನ ಈ ಆವೃತ್ತಿಯಲ್ಲಿ ಇನ್ನು ಮುಂದೆ Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಬೆಂಬಲಿಸಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="1966710179511230534">ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸೈನ್-ಇನ್ ವಿವರಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ.</translation>
 <translation id="1974060860693918893">ಸುಧಾರಿತ</translation>
+<translation id="1984705450038014246">ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="1984937141057606926">ಮೂರನೇ ವ್ಯಕ್ತಿಯನ್ನು ಹೊರತುಪಡಿಸಿ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" /> ಬಟನ್</translation>
 <translation id="1989112275319619282">ಬ್ರೌಸ್ ಮಾಡಿ</translation>
@@ -182,11 +182,11 @@
 <translation id="2321086116217818302">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ…</translation>
 <translation id="2321958826496381788">ನೀವು ಇದನ್ನು ಆರಾಮವಾಗಿ ಓದಲು ಸಾಧ್ಯವಾಗುವವರೆಗೆ ಸ್ಲೈಡರ್ ಎಳೆಯಿರಿ. ಪ್ಯಾರಾಗ್ರಾಫ್‌ನಲ್ಲಿ ಡಬಲ್ ಟ್ಯಾಪಿಂಗ್ ಮಾಡಿದ ನಂತರ ಪಠ್ಯವು ಕನಿಷ್ಠ ಇಷ್ಟು ದೊಡ್ಡದಾಗಿ ಕಾಣಿಸಬೇಕು.</translation>
 <translation id="2323763861024343754">ಸೈಟ್ ಸಂಗ್ರಹಣೆ</translation>
-<translation id="2325181368089033281"><ph name="BEGIN_LINK1" />ಸೆಟ್ಟಿಂಗ್‍ಗಳನ್ನು<ph name="END_LINK1" /> ಯಾವ ಸಮಯದಲ್ಲಾದರೂ ನೀವು ಅಥವಾ ನಿಮ್ಮ ಪೋಷಕರು ಕಸ್ಟಮೈಸ್‌ ಮಾಡಬಹುದು. ಅನುವಾದ, ಹುಡುಕಾಟ ಮತ್ತು ಜಾಹೀರಾತುಗಳಂತಹ Google ಸೇವೆಗಳನ್ನು ಮತ್ತು Chrome ಅನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನೀವು ಭೇಟಿ ನೀಡುವ ಸೈಟ್‌ಗಳಲ್ಲಿನ ವಿಷಯ, ಬ್ರೌಸರ್‌ನೊಂದಿಗಿನ ಸಂವಾದಗಳು ಹಾಗೂ ಚಟುವಟಿಕೆಗಳನ್ನು Google ಬಳಸಬಹುದು.</translation>
 <translation id="2328985652426384049">ಸೈನ್ ಇನ್ ಆಗಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="2342981853652716282">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇನ್ನಷ್ಟನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಪಡೆದುಕೊಳ್ಳಲು Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2349710944427398404">ಖಾತೆಗಳು, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ಉಳಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಒಳಗೊಂಡಂತೆ Chrome ಬಳಸಿದ ಒಟ್ಟು ಡೇಟಾ</translation>
 <translation id="2351097562818989364">ನಿಮ್ಮ ಅನುವಾದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
+<translation id="2353636109065292463">ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
 <translation id="2369533728426058518">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="2387895666653383613">ಪಠ್ಯ ಸ್ಕೇಲಿಂಗ್</translation>
@@ -260,7 +260,6 @@
 <translation id="2900528713135656174">ಈವೆಂಟ್ ರಚಿಸು</translation>
 <translation id="2902702728133930130">ಅನಿರೀಕ್ಷಿತ ದೋಷದೊಂದಿಗೆ Chrome ಆರಂಭಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟ ಇಲ್ಲವೇ?</translation>
-<translation id="290908127926267163">ನಿಮಗೆ ಫಲಿತಾಂಶಗಳನ್ನು ಒದಗಿಸುವ ಸಲುವಾಗಿ Google, ನೀವು ಟ್ಯಾಪ್ ಮಾಡುವ ಪದಗಳು ಮತ್ತು ಸುತ್ತಮುತ್ತಲಿನ ಪಠ್ಯವನ್ನು ಬಳಸಬಹುದು</translation>
 <translation id="2910701580606108292">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ</translation>
 <translation id="2913331724188855103">ಕುಕೀ ಡೇಟಾವನ್ನು ಉಳಿಸಲು ಮತ್ತು ರೀಡ್ ಮಾಡಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ಸಂಗ್ರಹಣೆ</translation>
@@ -279,9 +278,10 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ಸಹಾಯ ಪಡೆಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="3045654778214005718">Google ನಿಂದ ಈತರಹದ್ದನ್ನು ಇನ್ನಷ್ಟು ನೋಡಿ</translation>
 <translation id="305593374596241526">ಸ್ಥಳ ಆಫ್ ಆಗಿದೆ; <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಇದನ್ನು ಆನ್‌ ಮಾಡಿ.</translation>
+<translation id="3058498974290601450">ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸಿಂಕ್ ಆನ್ ಮಾಡಬಹುದು</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> ಬುಕ್‌ಮಾರ್ಕ್‌}one{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}other{<ph name="BOOKMARKS_COUNT_MANY" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು}}</translation>
 <translation id="307908932405420782">ಶೀಘ್ರವೇ ಇನ್ನಷ್ಟು ಲೇಖನಗಳು ಕಂಡುಬರುತ್ತವೆ. ನಿಮ್ಮ ಬೆಳಿಗ್ಗೆ ಸಮಯವನ್ನು ಆನಂದಿಸಿ!</translation>
-<translation id="3089395242580810162">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
+<translation id="3089395242580810162">ಅಜ್ಞಾತ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="311456632243022227">Chrome ನಲ್ಲಿ ಹಲವು ಲಿಂಕ್‌ಗಳು ತೆರೆದುಕೊಂಡಿವೆ</translation>
 <translation id="3115898365077584848">ಮಾಹಿತಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3123473560110926937">ಕೆಲವು ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
@@ -345,7 +345,6 @@
 <translation id="3590487821116122040">ಪ್ರಮುಖವಲ್ಲವೆಂದು Chrome ಭಾವಿಸುವ ಸೈಟ್ ಸಂಗ್ರಹಣೆ (ಉದಾ. ಯಾವುದೇ ಉಳಿಸದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೊಂದಿರುವ ಅಥವಾ ನೀವು ಆಗಾಗ್ಗೆ ಭೇಟಿ ನೀಡದ ಸೈಟ್‌ಗಳು)</translation>
 <translation id="3599863153486145794">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಎಲ್ಲ ಸಾಧನಗಳಿಂದ ಇತಿಹಾಸವನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ. ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
 <translation id="3600792891314830896">ಕೆಲವು ಸೈಟ್‌ಗಳಲ್ಲಿ ಧ್ವನಿ ಪ್ಲೇ ಆಗುವುದನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
-<translation id="360207483134687714">Chrome ನಲ್ಲಿನ VR ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="3604604794717279723">ನಾನು ಒಪ್ಪುತ್ತೇನೆ</translation>
 <translation id="3616113530831147358">ಆಡಿಯೋ</translation>
 <translation id="3620176948598597475">ಮರುಹೊಂದಿಸುವಿಕೆಯು ಭೇಟಿ ನೀಡಿದ ಸೈಟ್‌ಗಳ ಪಟ್ಟಿ ಸೇರಿದಂತೆ ಡೇಟಾ ಉಳಿಸುವಿಕೆಯ ಇತಿಹಾಸವನ್ನು ಅಳಿಸುತ್ತದೆ.</translation>
@@ -359,12 +358,10 @@
 <translation id="3712575778697986964">ಡೇಟಾ ಉಳಿಸುವಿಕೆಯನ್ನು ಮರುಹೊಂದಿಸಬೇಕೇ?</translation>
 <translation id="3714981814255182093">ಹುಡುಕು ಪಟ್ಟಿಯನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3716182511346448902">ಈ ಪುಟವು ಅತಿ ಹೆಚ್ಚು ಮೆಮೊರಿಯನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತದೆ, ಆದ್ದರಿಂದ Chrome ಇದನ್ನು ವಿರಾಮಗೊಳಿಸಿದೆ.</translation>
-<translation id="3724958268700778519">ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿ ನೀವು ಚೆಕ್ಔಟ್ ಮಾಡುವುದನ್ನು ತ್ವರಿತಗೊಳಿಸುವ ಮೂಲಕ Google ಅಸಿಸ್ಟೆಂಟ್ ನಿಮ್ಮ ಸಮಯವನ್ನು ಉಳಿಸುತ್ತದೆ.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3745176700485982507">ಈ ಪುಟದಲ್ಲಿ ನಿಮ್ಮ ಮೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಲಿಂಕ್‌ಗಳನ್ನು ಕಾಣಬಹುದು.</translation>
-<translation id="3751110998481776724">ಇಣುಕು ನೋಟ <ph name="BEGIN_NEW" />ಹೊಸತು<ph name="END_NEW" /></translation>
 <translation id="3773755127849930740">ಜೋಡಿಸುವಿಕೆ ಅನುಮತಿಸಲು <ph name="BEGIN_LINK" />ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
 <translation id="3778956594442850293">ಮುಖಪುಟದ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="3781011235031427080">ಇಂತಹ ಇನ್ನಷ್ಟು ಶೀಟ್ ಅನ್ನು ಅರ್ಧದಷ್ಟು ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ</translation>
@@ -382,7 +379,6 @@
 <translation id="3912508018559818924">ವೆಬ್‌ನಿಂದ ಅತ್ಯುತ್ತಮ ವಿಷಯಗಳನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">ನನ್ನ ಡೇಟಾ ಒಂದುಗೂಡಿಸಿ</translation>
-<translation id="3934752326445182741">ಇಣುಕು ನೋಟದ ಚಿತ್ರ <ph name="BEGIN_NEW" />ಹೊಸತು<ph name="END_NEW" /></translation>
 <translation id="393697183122708255">ಯಾವುದೇ ಸಕ್ರಿಯಗೊಳಿಸಿದ ಧ್ವನಿ ಹುಡುಕಾಟ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="3950820424414687140">ಸೈನ್ ಇನ್</translation>
 <translation id="395206256282351086">ಹುಡುಕಾಟ ಹಾಗೂ ಸೈಟ್ ಕುರಿತಾದ ಸಲಹೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -510,6 +506,7 @@
 <translation id="4807098396393229769">ಕಾರ್ಡ್‌ನಲ್ಲಿರುವ ಹೆಸರು</translation>
 <translation id="4807963036345170158">ಡೇಟಾ ಸೇವರ್ ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="4816465935029283692">ಡೇಟಾ ಪ್ರಕಾರಗಳು</translation>
+<translation id="4824958205181053313">ಸಿಂಕ್ ರದ್ದುಗೊಳಿಸುವುದೇ?</translation>
 <translation id="4837753911714442426">ಪುಟವನ್ನು ಮುದ್ರಿಸಲು ಆಯ್ಕೆಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4842092870884894799">ಪಾಸ್‌ವರ್ಡ್ ರಚನೆ ಪಾಪ್‌ಅಪ್ ತೋರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
@@ -626,7 +623,6 @@
 <translation id="5659593005791499971">ಇಮೇಲ್</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ನಲ್ಲಿ ಈವೆಂಟ್ ಅನ್ನು ರಚಿಸಿ</translation>
 <translation id="5668404140385795438">ಝೂಮ್‌ ಇನ್‌ ಮಾಡುವುದನ್ನು ತಡೆಗಟ್ಟಲು ವೆಬ್‌ಸೈಟ್‌ನ ವಿನಂತಿಯನ್ನು ಅತಿಕ್ರಮಿಸು</translation>
-<translation id="5676636989614905379"><ph name="SCREEN_NAME" /> ನಲ್ಲಿ ವೀಡಿಯೋ ಪ್ಲೇ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5684874026226664614">ಓಹ್. ಈ ಪುಟವನ್ನು ಅನುವಾದಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5686790454216892815">ಫೈಲ್‌ನ ಹೆಸರು ತುಂಬಾ ಉದ್ದವಾಗಿದೆ</translation>
@@ -637,6 +633,7 @@
 ಆದಾಗ್ಯೂ, ನೀವು ಕಾಣಿಸಿಕೊಳ್ಳದೇ ಇರಲು ಸಾಧ್ಯವಿಲ್ಲ. ಅದೃಶ್ಯವಾಗಿ ಹೋಗುವುದರಿಂದ ನಿಮ್ಮ ಉದ್ಯೋಗದಾತರು, ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಪೂರೈಕೆದಾರರು ಇಲ್ಲವೇ ನೀವು ಭೇಟಿ ನೀಡುವ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಂದ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ಮರೆಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="572328651809341494">ಇತ್ತೀಚಿನ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="5726692708398506830">ಪುಟದಲ್ಲಿರುವ ಪ್ರತಿಯೊಂದನ್ನೂ ದೊಡ್ಡದಾಗಿಸಿ</translation>
+<translation id="5734520971562437809">ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಡೇಟಾವನ್ನು ಬಳಸಿ ಮತ್ತು ವೆಬ್‌ನ ವೇಗವನ್ನು ಹೆಚ್ಚಿಸಿ.</translation>
 <translation id="5748802427693696783">ಪ್ರಮಾಣಿತ ಟ್ಯಾಬ್‌ಗಳಿಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="5749068826913805084">ಫೈಲ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು Chrome ಗೆ ಸಂಗ್ರಹಣೆ ಪ್ರವೇಶ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="5763382633136178763">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳು</translation>
@@ -810,12 +807,12 @@
 <translation id="6979737339423435258">ಎಲ್ಲ ಸಮಯ</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
 <translation id="6985347914332179298">ಇಲ್ಲಿ ಯಾವುದೇ ಡೌನ್‌ಲೋಡ್‌ಗಳು ಇಲ್ಲ</translation>
+<translation id="6989267951144302301">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗಲಿಲ್ಲ</translation>
 <translation id="6990079615885386641">Google Play Store ನಿಂದ ಅಪ್ಲಿಕೇಶನ್ ಪಡೆದುಕೊಳ್ಳಿ: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್‍ ಬಳಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="7016516562562142042">ಪ್ರಸ್ತುತ ಹುಡುಕಾಟ ಎಂಜಿನ್‌ಗೆ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7022756207310403729">ಬ್ರೌಸರ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="702384510542929236">ಸಿಸ್ಟಂ ಕುರಿತಾದ ಕೆಲವು ಮಾಹಿತಿ ಮತ್ತು ಪುಟದ ವಿಷಯವನ್ನು ಅನಾಮಧೇಯವಾಗಿ Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="702463548815491781">TalkBack ಅಥವಾ ಪ್ರವೇಶ ಬದಲಾಯಿಸಿ ಆನ್ ಆಗಿದ್ದಾಗ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7029809446516969842">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು</translation>
 <translation id="7031882061095297553">ಇದಕ್ಕೆ ಸಿಂಕ್ ಮಾಡಿ</translation>
@@ -837,7 +834,7 @@
 <translation id="7149893636342594995">ಕಳೆದ 24 ಗಂಟೆಗಳು</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">ನೀವು ಇದನ್ನು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಂತರ ಬದಲಾಯಿಸಬಹುದು</translation>
-<translation id="7180611975245234373">ರಿಫ್ರೆಶ್</translation>
+<translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="7189372733857464326">Google Play ಸೇವೆಗಳು ಅಪ್‌ಡೇಟ್ ಮಾಡುವಿಕೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7189598951263744875">ಹಂಚಿ...</translation>
 <translation id="7191430249889272776">ಟ್ಯಾಬ್ ಅನ್ನು ಹಿನ್ನೆಲೆಯಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ.</translation>
@@ -966,10 +963,10 @@
 <translation id="8103578431304235997">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">ಸಂಬಂಧಿತ ಪುಟಗಳನ್ನು ಸೂಚಿಸಿ</translation>
-<translation id="8106605975779102845">ಪುಟದ ಮೇಲಿರುವ ಪದವನ್ನು ಟ್ಯಾಪ್‌ ಮಾಡುವ ಮೂಲಕ ಹುಡುಕಿ (ಹುಡುಕಲು ಟ್ಯಾಪ್ ಮಾಡಿ)</translation>
 <translation id="8109613176066109935">ನಿಮ್ಮ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ</translation>
 <translation id="8116925261070264013">ಮ್ಯೂಟ್‌ ಆಗಿರುವುದು</translation>
 <translation id="813082847718468539">ಸೈಟ್ ಮಾಹಿತಿಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
+<translation id="8131740175452115882">ದೃಢೀಕರಿಸು</translation>
 <translation id="8156139159503939589">ನಿಮಗೆ ಯಾವ ಭಾಷೆಗಳನ್ನು ಓದಲು ಬರುತ್ತದೆ?</translation>
 <translation id="8168435359814927499">ವಿಷಯ</translation>
 <translation id="8181544731424475207">ನೀವು ಕೆಳಗೆ ಆಯ್ಕೆ ಮಾಡುವ ಸಂಪರ್ಕಗಳನ್ನು <ph name="SITE" /> ವೆಬ್‌ಸೈಟ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
@@ -1030,7 +1027,6 @@
 <translation id="857943718398505171">ಅನುಮತಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="8583805026567836021">ಖಾತೆಯ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="860043288473659153">ಕಾರ್ಡ್‌ಹೋಲ್ಡರ್ ಹೆಸರು</translation>
-<translation id="8604763363205185560">Chrome ಮತ್ತು ಅದರ ಭದ್ರತೆಯನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="8609465669617005112">ಮೇಲೆ ಸರಿಸು</translation>
 <translation id="8611192991944347781">ಡೇಟಾವನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="8616006591992756292">ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
@@ -1068,7 +1064,7 @@
 <translation id="8920114477895755567">ಪೋಷಕರ ವಿವರಗಳಿಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8922289737868596582">ಪುಟಗಳನ್ನು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಬಳಸಲು ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳ ಬಟನ್ ಮೂಲಕ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿ</translation>
 <translation id="8941729603749328384">www.example.com</translation>
-<translation id="8942627711005830162">ಬೇರೆ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
+<translation id="8942627711005830162">ಇತರ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="8951232171465285730">ನಿಮ್ಮ <ph name="MEGABYTES" /> MB ಅನ್ನು Chrome ಉಳಿಸಿದೆ</translation>
 <translation id="8958424370300090006">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ ಒಂದಕ್ಕೆ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ.</translation>
 <translation id="8959122750345127698">ನ್ಯಾವಿಗೇಶನ್‌ ತಲುಪಲಾಗುವುದಿಲ್ಲ: <ph name="URL" /></translation>
@@ -1088,7 +1084,6 @@
 <translation id="9063523880881406963">ಡೆಸ್ಕ್‌ಟಾಪ್ ಸೈಟ್ ವಿನಂತಿಯನ್ನು ಆಫ್ ಮಾಡಿ</translation>
 <translation id="9065203028668620118">ಎಡಿಟ್</translation>
 <translation id="9070377983101773829">ಧ್ವನಿ ಹುಡುಕಾಟವನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
-<translation id="9071742570345586758">ವರ್ಚ್ಯುಯಲ್ ವಾಸ್ತವತೆ ವಿಷಯವನ್ನು ವೀಕ್ಷಿಸಲು, Google VR ಸೇವೆಗಳನ್ನು ಸ್ಥಾಪಿಸಿ</translation>
 <translation id="9074336505530349563">Google ಸಲಹೆ ನೀಡಿದ ವೈಯಕ್ತೀಕರಿಸಲಾದ ವಿಷಯವನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ ಮತ್ತು ಸಿಂಕ್ ಆನ್ ಮಾಡಿ</translation>
 <translation id="9080642952018487277">ಖಾಸಗಿ ಮೋಡ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="9086455579313502267">ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ಪ್ರವೇಶಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
@@ -1103,6 +1098,7 @@
 <translation id="9188680907066685419">ನಿರ್ವಹಿಸಲಾದ ಖಾತೆಯಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="9204836675896933765">1 ಫೈಲ್ ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9215534869786664672">ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಡೇಟಾವನ್ನು ಬಳಸಿ ಮತ್ತು ವೆಬ್‌ನ ವೇಗವನ್ನು ಹೆಚ್ಚಿಸಿ. ನೀವು ಭೇಟಿ ಮಾಡುವ ಪುಟಗಳನ್ನು Google ಸರ್ವರ್‌ಗಳು ಆಪ್ಟಿಮೈಸ್ ಮಾಡುತ್ತವೆ.</translation>
 <translation id="9219103736887031265">ಚಿತ್ರಗಳು</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932599481871055447">ಡೇಟಾವನ್ನು ಉಳಿಸಿ ಮತ್ತು ವೇಗವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ</translation>

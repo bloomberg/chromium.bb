@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Käyttäjän selaustiedot poistetaan tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Avaa linkki uudella Chromiumin välilehdellä</translation>
 <translation id="3728336900324680424">Chromium käyttää Drivea antaakseen ehdotuksia osoitepalkissa</translation>
-<translation id="3762167353400286894">Chromium-käyttöjärjestelmä näytetään tällä kielellä.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Chromiumin kiinnittäminen tehtäväpalkkiin</translation>
+<translation id="388648406173476553">Yksilöi ja ylläpidä Chromiumia. Toimenpiteitä vaaditaan. Katso lisätiedot klikkaamalla.</translation>
 <translation id="3889543394854987837">Avaa Chromium klikkaamalla nimeäsi ja aloita selaaminen.</translation>
 <translation id="3898493977366060150">Verkkoselaaminen Googlen älykkäillä ratkaisuilla</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS käynnistetään uudelleen tunnin kuluttua}other{Chromium OS käynnistetään uudelleen # tunnin kuluttua}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
 <translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
 <translation id="5712253116097046984">Järjestelmänvalvoja pyytää Chromium OS:n uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön.</translation>
-<translation id="5726838626470692954">Ylläpitäjän täytyy poistaa sinut Chromiumista ja lisätä sinut sen jälkeen uudelleen.</translation>
 <translation id="5768914737813585044">Näytä Chromium-käyttöjärjestelmä tällä kielellä</translation>
 <translation id="5796460469508169315">Chromium on lähes valmis.</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
@@ -232,7 +231,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7979877361127045932">Piilota Chromium-valikossa</translation>
 <translation id="8013436988911883588">Kun Chromiumilla on käyttöoikeus, sivustot voivat pyytää sitä sinulta.</translation>
 <translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>
-<translation id="8157153840442649507">Chromium näytetään tällä kielellä.</translation>
 <translation id="81770708095080097">Tämä tiedosto on vaarallinen, joten Chromium on estänyt sen.</translation>
 <translation id="8222496066431494154">Asenna Chromium puhelimellesi. Lähetämme tekstiviestin palauttamisen puhelinnumeroosi: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8269379391216269538">Auta parantamaan Chromiumia</translation>

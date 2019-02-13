@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
 <translation id="1063454504051558093">Másik jelszó használata…</translation>
+<translation id="1066060668811609597">Szinkronizálás kezelése</translation>
 <translation id="1076421457278169141">Kód beolvasva</translation>
 <translation id="1084365883616172403">A Facebook-bejegyzés kész.</translation>
 <translation id="1104948393051856124">Elfogadás és folytatás</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Elrejtés most</translation>
 <translation id="1219674500290482172">Nem lehet kapcsolódni az internethez.</translation>
 <translation id="122699739164161391">Összes lap bezárása</translation>
+<translation id="1231733316453485619">Bekapcsolja a szinkronizálást?</translation>
 <translation id="1254117744268754948">Mappa kiválasztása</translation>
 <translation id="1265739287306757398">További információ</translation>
 <translation id="1272079795634619415">Leállítás</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
 <translation id="213900355088104901">Privát böngészéshez nyisson inkognitólapot</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
+<translation id="2198757192731523470">A Google felhasználhatja az Ön előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> olvasatlan cikk az olvasási listán.</translation>
 <translation id="2230173723195178503">A weboldal betöltött</translation>
 <translation id="2239626343334228536">Böngészési adatok törlése…</translation>
@@ -255,6 +258,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5062321486222145940">Google Drive telepítése</translation>
 <translation id="5083464117946352670">A fájlméret ismeretlen.</translation>
 <translation id="5094827893301452931">A Tweet kész.</translation>
+<translation id="5132942445612118989">Jelszavak, előzmények és egyebek szinkronizálása valamennyi eszközén</translation>
 <translation id="5181140330217080051">Letöltés</translation>
 <translation id="5186185447130319458">Privát</translation>
 <translation id="5190835502935405962">Könyvjelzősáv</translation>

@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Pridať stránku medzi záložky…</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Použiť iné heslo…</translation>
+<translation id="1066060668811609597">Správa synchronizácie</translation>
 <translation id="1076421457278169141">Kód bol naskenovaný</translation>
 <translation id="1084365883616172403">Príspevok bol uverejnený na Facebook.</translation>
 <translation id="1104948393051856124">Prijať a pokračovať</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Skryť</translation>
 <translation id="1219674500290482172">Nepodarilo sa pripojiť k internetu.</translation>
 <translation id="122699739164161391">Zavrieť všetky karty</translation>
+<translation id="1231733316453485619">Chcete zapnúť synchronizáciu?</translation>
 <translation id="1254117744268754948">Vybrať priečinok</translation>
 <translation id="1265739287306757398">Ako na to</translation>
 <translation id="1272079795634619415">Zastaviť</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">Počet presunutých položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Ak chcete prehliadať v súkromí, otvorte kartu inkognito</translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
+<translation id="2198757192731523470">Google môže pomocou vašej histórie prispôsobiť Vyhľadávanie, reklamy a ďalšie služby Googlu.</translation>
 <translation id="2207590065820824892">Počet neprečítaných článkov v čitateľskom zozname: <ph name="UNREAD_COUNT" /></translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
 <translation id="2239626343334228536">Vymazávajú sa dáta prehliadania…</translation>
@@ -255,6 +258,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5062321486222145940">Nainštalovať Disk Google</translation>
 <translation id="5083464117946352670">Nedá sa zistiť veľkosť súboru.</translation>
 <translation id="5094827893301452931">Tweet bol uverejnený.</translation>
+<translation id="5132942445612118989">Synchronizujte svoje heslá, históriu a ďalší obsah vo všetkých zariadeniach</translation>
 <translation id="5181140330217080051">Sťahovanie</translation>
 <translation id="5186185447130319458">Súkromné</translation>
 <translation id="5190835502935405962">Panel so záložkami</translation>

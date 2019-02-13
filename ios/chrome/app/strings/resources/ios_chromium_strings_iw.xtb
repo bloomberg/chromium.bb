@@ -4,7 +4,6 @@
 <translation id="102360288709523007">‏עזור לשפר את Chromium על-ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
 <translation id="1185134272377778587">‏על Chromium</translation>
 <translation id="1289966288285062467">‏הודעת פרטיות של Chromium</translation>
-<translation id="1341317949260424055">‏שליחה של פרטי המערכת ונתוני שימוש אל Google תשפר את Chromium ואת האבטחה שלו</translation>
 <translation id="1472013873724362412">‏החשבון שלך לא פועל ב-Chromium. פנה אל מנהל הדומיין או השתמש בחשבון Google רגיל כדי להיכנס לחשבון.</translation>
 <translation id="1736662517232558588">‏נתוני Chromium נמחקו</translation>
 <translation id="1838412507805038478">‏Chromium אימת ש-<ph name="ISSUER" /> הנפיק את האישור של האתר הזה.</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">‏תוספים מסוימים גורמים ל-Chromium לקרוס. הסר אותם:</translation>
 <translation id="2178608107313874732">‏Chromium לא יכול להשתמש עכשיו במצלמה</translation>
 <translation id="2195025571279539885">‏האם ברצונך ש-Chromium יציע בפעם הבאה לתרגם דפים ב-<ph name="LANGUAGE_NAME" /> מאתר זה?</translation>
+<translation id="2517624234762908348">‏סנכרון הנתונים מ-Chromium</translation>
 <translation id="2647554856022461007">‏Chromium עשוי להשתמש בשירותי אינטרנט לשיפור חוויית הגלישה. ניתן להשבית את השירותים האלה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">‏קבלת גישה אל תכונות חכמות של Google ב-Chromium</translation>
 <translation id="2730884209570016437">‏Chromium לא יכול להשתמש במצלמה כי אפליקציה אחרת משתמשת בה</translation>
 <translation id="2915596697727466327">‏Chromium משתמש ב-Face ID כדי להבטיח גישה מאושרת לסיסמאות שלך.</translation>
 <translation id="3256316712990552818">‏הועתק אל Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">‏למחוק את נתוני Chromium שלך מהמכשיר הזה?</translation>
 <translation id="8175055321229419309">‏טיפ: <ph name="BEGIN_LINK" />העבר את Chromium לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏לחוויית Google משופרת ב-Chromium בהתבסס על המיקום שלך.</translation>
-<translation id="8508544542427105412">‏אפשר תמיד להתאים אישית את <ph name="BEGIN_LINK" />ההגדרות<ph name="END_LINK" />. Google עשויה להשתמש בתוכן מאתרים שאליהם נכנסת, באינטראקציות בדפדפן ובפעילות גלישה כדי להתאים אישית את Chromium ואת שירותי Google, כמו Translate, החיפוש ומודעות.</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8809780021347235332">‏כדי לשמור תמונות, הקש על 'הגדרות' ואפשר ל-Chromium להשתמש בתמונות שלך</translation>
 <translation id="9022552996538154597">‏היכנס אל Chromium</translation>

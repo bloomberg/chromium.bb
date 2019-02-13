@@ -84,10 +84,10 @@
 <translation id="3639635944603682591">ይህ ሰው የአሰሳ ውሂብ ከዚህ መሣሪያ ይሰረዛል። ውሂቡን መልሶ ለማግኘት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chromium ይግቡ።</translation>
 <translation id="3713809861844741608">አገናኙን በChromium አዲስ &amp;ትር ውስጥ ክፈት</translation>
 <translation id="3728336900324680424">Chromium የእርስዎን Drive በአድራሻ አሞሌ ውስጥ ጥቆማ ሐሳቦችን ይደርሳል።</translation>
-<translation id="3762167353400286894">Chromium OS በዚህ ቋንቋ እየታየ ነው</translation>
 <translation id="378917192836375108">Chromium ድር ላይ ያለ ስልክ ቁጥር ጠቅ እንዲያደርጉትና በSkype እንዲደውሉበት ያስችልዎታል!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Chromiumን ወደ የእርስዎ የተግባር አሞሌ ያያይዙ</translation>
+<translation id="388648406173476553">Chromiumን ያብጁ እና ይቆጣጠሩ። የሆነ ነገር ትኩረትዎ ያስፈልገዋል - ለዝርዝሮች ጠቅ ያድርጉ።</translation>
 <translation id="3889543394854987837">Chromiumን ለመክፈት እና ማሰስ ለመጀመር ስምዎን ጠቅ ያድርጉት።</translation>
 <translation id="3898493977366060150">የድር አሰሳ በGoogle ዘመናዊ ይሆናል</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS በ1 ሰዓት ውስጥ ዳግም ይጀምራል}one{Chromium OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}other{Chromium OS በ# ሰዓቶች ውስጥ ዳግም ይጀምራል}}</translation>
@@ -139,7 +139,6 @@
 <translation id="5680901439334282664">ወደ Chromium ይግቡ</translation>
 <translation id="5698481217667032250">Chromiumን በዚህ ቋንቋ አሳይ</translation>
 <translation id="5712253116097046984">ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromium OSን ዳግም እንዲያስጀምሩ ይጠይቀዎታል</translation>
-<translation id="5726838626470692954">የእርስዎ አስተዳዳሪ እርስዎን አስወግደውና መልሰው ወደ Chromium ማከል አለባቸው።</translation>
 <translation id="5768914737813585044">Chromium OS በዚህ ቋንቋ አሳይ</translation>
 <translation id="5796460469508169315">Chromium ዝግጁ ሊሆን ትንሽ ቀርቶታል።</translation>
 <translation id="5820394555380036790">Chromium ስርዓተ ክወና</translation>
@@ -234,7 +233,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="7979877361127045932">በChromium ምናሌ ውስጥ ደብቅ</translation>
 <translation id="8013436988911883588">አንዴ Chromium መዳረሻ ከኖረው በኋላ ድር ጣቢያዎች እርስዎን መዳረሻ መጠየቅ ይችላሉ።</translation>
 <translation id="8030318113982266900">መሳሪያዎን ወደ <ph name="CHANNEL_NAME" /> ሰርጥ በማዘመን ላይ...</translation>
-<translation id="8157153840442649507">Chromium በዚህ ቋንቋ እየታየ ነው</translation>
 <translation id="81770708095080097">ይህ ፋይል አደገኛ ስለሆነ Chromium አግዶታል።</translation>
 <translation id="8222496066431494154">Chromiumን በእርስዎ ስልክ ላይ ይጫኑ። አንድ ኤስኤምኤስ ወደዚህ የመለያ መልሶ ማግኛ ስልክዎ እንልካለን፦ <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium ይበልጥ የተሻለ እንዲሆን ያግዙ</translation>

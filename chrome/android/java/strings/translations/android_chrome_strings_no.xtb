@@ -20,7 +20,6 @@
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{1 nedlasting venter.}other{# nedlastinger venter.}}</translation>
 <translation id="1145536944570833626">Slett eksisterende data.</translation>
 <translation id="1146678959555564648">Slå på VR-modus</translation>
-<translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="116280672541001035">Brukt</translation>
 <translation id="1172593791219290334">Oppstartsside</translation>
 <translation id="1175310183703641346">Bokmerkene, loggen, passord med mer synkroniseres ikke lenger med Google-kontoen din</translation>
@@ -33,6 +32,7 @@
 <translation id="1206892813135768548">Kopiér linkteksten</translation>
 <translation id="1208340532756947324">For å synkronisere og gi et personlig preg på alle enhetene, slå på synkronisering</translation>
 <translation id="1209206284964581585">Skjul for øyeblikket</translation>
+<translation id="1231733316453485619">Vil du slå på synkronisering?</translation>
 <translation id="123724288017357924">Last inn siden på nytt, men ignorer bufret innhold</translation>
 <translation id="124116460088058876">Flere språk</translation>
 <translation id="124678866338384709">Lukk den aktive fanen</translation>
@@ -70,6 +70,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1445680696957526815">Komponentene i Chrome er ikke kompatible med hverandre. Det kan hende at Chrome er i ferd med å oppdateres. Prøv igjen om noen minutter. Hvis problemet vedvarer, kan du prøve å avinstallere Chrome og så installere den på nytt.</translation>
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
+<translation id="1449080968331948513">Datasparing heter nå «forenklet modus»</translation>
 <translation id="145097072038377568">Slått av i Android-innstillingene</translation>
 <translation id="1477626028522505441">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av tjenerproblemer.</translation>
 <translation id="1497775360237967938">{DETAIL_COUNT,plural, =1{ (+ 1 til)}other{ (+ # til)}}</translation>
@@ -98,7 +99,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1672586136351118594">Ikke vis igjen</translation>
 <translation id="1709438864123551175">Datasparing</translation>
 <translation id="1718835860248848330">Siste time</translation>
-<translation id="1729516292547892356">Du må oppdatere Google VR Services for å kunne se innhold for virtuell virkelighet.</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – oppdatert <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1736419249208073774">Utforsk</translation>
 <translation id="1743802530341753419">Spør før nettsteder kan koble til en enhet (anbefales)</translation>
@@ -123,7 +123,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1919950603503897840">Velg kontakter</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">Valgt fane</translation>
-<translation id="1938981467853765413">Gi tilbakemelding</translation>
 <translation id="194341124344773587">Slå på tillatelsen for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
 <translation id="1946005195648379376">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg.</translation>
@@ -131,6 +130,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1960290143419248813">Denne Android-versjonen støtter ikke lenger Chrome-oppdateringer</translation>
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1974060860693918893">Avansert</translation>
+<translation id="1984705450038014246">Synkroniser Chrome-dataene dine</translation>
 <translation id="1984937141057606926">Tillatt – unntatt fra tredjeparter.</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />-knapp</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
@@ -181,11 +181,11 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2321086116217818302">Klargjør passordene …</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
-<translation id="2325181368089033281">Du kan tilpasse <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" /> når som helst. Google kan bruke innhold på nettsteder du besøker, nettleserinteraksjoner og annen aktivitet for å gi Chrome og Google-tjenester (som Oversetter, Søk og annonser) et personlig preg.</translation>
 <translation id="2328985652426384049">Kan ikke logge på</translation>
 <translation id="2342981853652716282">Logg på Chrome for å hente blant annet bokmerkene og passordene dine på alle enhetene du bruker.</translation>
 <translation id="2349710944427398404">Total datamengde som brukes av Chrome, deriblant kontoer, bokmerker og lagrede innstillinger</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
+<translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2369533728426058518">åpne faner</translation>
 <translation id="2387895666653383613">Tekstskalering</translation>
@@ -259,7 +259,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2900528713135656174">Opprett hendelse</translation>
 <translation id="2902702728133930130">Kunne ikke starte Chrome på grunn av en uventet feil.</translation>
 <translation id="290376772003165898">Er ikke siden på <ph name="LANGUAGE" />?</translation>
-<translation id="290908127926267163">Google kan finne resultater basert på ord du trykker på, og teksten rundt dem.</translation>
 <translation id="2910701580606108292">Spør før nettsteder kan spille av beskyttet innhold</translation>
 <translation id="2913331724188855103">Tillat at nettsteder lagrer og leser data i informasjonskapsler (anbefales).</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagring</translation>
@@ -278,6 +277,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="3045654778214005718">Se mer som dette fra Google</translation>
 <translation id="305593374596241526">Posisjon er slått av. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
+<translation id="3058498974290601450">Du kan når som helst slå på synkronisering i innstillingene</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bokmerke}other{<ph name="BOOKMARKS_COUNT_MANY" /> bokmerker}}</translation>
 <translation id="307908932405420782">Flere artikler kommer snart. Ha en fin dag.</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
@@ -344,7 +344,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3590487821116122040">Nettstedslagring Chrome ikke tror er viktig (for eksempel områder uten lagrede innstillinger eller som du ikke besøker ofte)</translation>
 <translation id="3599863153486145794">Tømmer loggen på alle påloggede enheter. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Kutt lyden for nettsteder som spiller av lyd</translation>
-<translation id="360207483134687714">Hjelp til med å forbedre VR-opplevelsen i Chrome</translation>
 <translation id="3604604794717279723">Godta</translation>
 <translation id="3616113530831147358">Lyd</translation>
 <translation id="3620176948598597475">Tilbakestilling gjør at datasparingsloggen tømmes, inkludert listen over besøkte nettsteder.</translation>
@@ -358,12 +357,10 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3712575778697986964">Vil du tilbakestille Datasparing?</translation>
 <translation id="3714981814255182093">Åpne søkeraden</translation>
 <translation id="3716182511346448902">Denne siden bruker for mye minne, så Chrome har satt den på pause.</translation>
-<translation id="3724958268700778519">Google-assistenten sparer tid ved å få deg raskt gjennom kassen på nettstedet.</translation>
 <translation id="3739899004075612870">Satt som bokmerke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB andre apper</translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3745176700485982507">Linker til favorittnettstedene dine finner du på denne siden</translation>
-<translation id="3751110998481776724">Sniktitt <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå på Bluetooth<ph name="END_LINK" /> for å tillate tilkobling</translation>
 <translation id="3778956594442850293">Lagt til på startskjermen</translation>
 <translation id="3781011235031427080">Mer av dette ble åpnet i halv høyde</translation>
@@ -381,7 +378,6 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="3912508018559818924">Vi finner det beste fra nettet …</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
-<translation id="3934752326445182741">Sniktittbilde <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="393697183122708255">Ingen aktiverte talesøk er tilgjengelige</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="395206256282351086">Nettsteds- og søkeforslag er slått av</translation>
@@ -510,6 +506,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="4807963036345170158">Datasparing er av</translation>
 <translation id="4816465935029283692">Datatyper</translation>
+<translation id="4824958205181053313">Vil du avbryte synkroniseringen?</translation>
 <translation id="4837753911714442426">Åpne alternativene for å skrive ut siden</translation>
 <translation id="4842092870884894799">Viser forgrunnsvinduet for passordgenerering</translation>
 <translation id="4850886885716139402">Visning</translation>
@@ -626,7 +623,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Opprett en aktivitet i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
-<translation id="5676636989614905379">Kunne ikke spille av videoen på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
@@ -637,6 +633,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
 <translation id="572328651809341494">Nylige faner</translation>
 <translation id="5726692708398506830">Gjør alt på siden større</translation>
+<translation id="5734520971562437809">Bruk opptil 60 prosent mindre data, og surf raskere.</translation>
 <translation id="5748802427693696783">Byttet til standardfaner</translation>
 <translation id="5749068826913805084">Chrome må ha lagringstilgang for å laste ned filer.</translation>
 <translation id="5763382633136178763">Inkognitofaner</translation>
@@ -809,12 +806,12 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6979737339423435258">Alle datoer</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="6985347914332179298">Det finnes ingen nedlastinger her</translation>
+<translation id="6989267951144302301">Kunne ikke laste ned</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
 <translation id="7016516562562142042">Tillatt for den aktive søkemotoren</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> er lastet ned</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>
-<translation id="702384510542929236">Sender noe systeminformasjon og sideinnhold til Google anonymt</translation>
 <translation id="702463548815491781">Anbefalt når TalkBack eller brytertilgang er på</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7031882061095297553">Synkroniser med</translation>
@@ -965,10 +962,10 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8105951947646329362">Foreslå relaterte sider</translation>
-<translation id="8106605975779102845">Søk ved å trykke på et ord på en side (trykk for å søke)</translation>
 <translation id="8109613176066109935">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering</translation>
 <translation id="8116925261070264013">Kuttet lyd</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
+<translation id="8131740175452115882">Bekreft</translation>
 <translation id="8156139159503939589">Hvilke språk kan du lese?</translation>
 <translation id="8168435359814927499">Innhold</translation>
 <translation id="8181544731424475207">Kontaktene du velger nedenfor, deles med nettstedet <ph name="SITE" />.</translation>
@@ -1029,7 +1026,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8583805026567836021">Fjerner kontodata …</translation>
 <translation id="860043288473659153">Kortinnehavers navn</translation>
-<translation id="8604763363205185560">Hjelp til med å gjøre Chrome bedre og sikrere</translation>
 <translation id="8609465669617005112">Flytt opp</translation>
 <translation id="8611192991944347781">Administrer data</translation>
 <translation id="8616006591992756292">Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1087,7 +1083,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9063523880881406963">Slå av Bruk skrivebordsversjon</translation>
 <translation id="9065203028668620118">Endre</translation>
 <translation id="9070377983101773829">Start talesøk</translation>
-<translation id="9071742570345586758">Du må installere Google VR Services for å kunne se innhold for virtuell virkelighet.</translation>
 <translation id="9074336505530349563">For å få forslag om personlig tilpasset innhold fra Google, slå på synkronisering</translation>
 <translation id="9080642952018487277">Start privatmodus</translation>
 <translation id="9086455579313502267">Fikk ikke tilgang til nettverket</translation>
@@ -1102,6 +1097,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9188680907066685419">Logg av administrert konto</translation>
 <translation id="9204836675896933765">1 fil gjenstår</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9215534869786664672">Bruk opptil 60 prosent mindre data, og surf raskere. Google-tjenere optimaliserer sidene du besøker.</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="932599481871055447">Spar data og surf raskere</translation>

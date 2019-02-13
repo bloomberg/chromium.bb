@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
-<translation id="114721135501989771">Google-funkciók a Chrome-ban</translation>
 <translation id="1326317727527857210">Ha hozzá szeretne férni lapjaihoz a többi eszközéről, jelentkezzen be a Chrome-ba.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome – Adatvédelmi közlemény</translation>
 <translation id="1863312987075920112">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK_TOS" />Általános Szerződési Feltételeit<ph name="END_LINK_TOS" /> és <ph name="BEGIN_LINK_PRIVACY" />Adatvédelmi közleményét<ph name="END_LINK_PRIVACY" />.</translation>
+<translation id="1984705450038014246">Chrome-adatok szinkronizálása</translation>
 <translation id="2147651015520127414">A Chrome ellenőrizte, hogy a(z) <ph name="ISSUER" /> adta ki ezt a webhelytanúsítványt.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2342981853652716282">Jelentkezzen be a Chrome-ba, hogy az összes eszközén hozzáférhessen könyvjelzőihez, jelszavaihoz és más beállításaihoz.</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">A képek mentéséhez koppintson a Beállítások lehetőségre, hogy a Chrome felhasználhassa a fotóit</translation>
 <translation id="2576431527583832481">A Chrome most még jobb lett! Új verzió áll rendelkezésre.</translation>
 <translation id="257708665678654955">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE_NAME" /> nyelvű oldalainak fordítását?</translation>
-<translation id="2943166482989655199">Ha elküldi a rendszer- és használati adatokat a Google-nak, hozzájárulhat a Chrome fejlesztéséhez és a szolgáltatás biztonságának javításához</translation>
 <translation id="3030414234702425231">Mivel kijelentkezik a(z) <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból, törli az eszközön található Chrome-adatokat. Ezek az adatok Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="3148434565183091099">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chrome-ba.</translation>
 <translation id="3148688391461398285">A helyadatokkal jobb felhasználói élményben lehet része a Chrome használatakor.</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">Bizonyos bővítmények a Chrome összeomlását eredményezik. Távolítsa el a következő(ke)t:</translation>
 <translation id="4615174829807303908">Kijelentkezik egy <ph name="SIGNOUT_MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chrome-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
 <translation id="5389212809648216794">A Google Chrome nem tudja használni a kamerát, mivel egy másik alkalmazás használja</translation>
-<translation id="5489543008378040943">A <ph name="BEGIN_LINK" />Beállításokat<ph name="END_LINK" /> bármikor személyre szabhatja. A Google felhasználhatja az Ön által felkeresett webhelyeken lévő tartalmakat, a böngészési interakciókat és tevékenységeket a Chrome és az egyéb Google-szolgáltatások (például a Fordító, a Keresés és a megjelenő hirdetések) személyre szabásához.</translation>
 <translation id="5639704535586432836">Nyissa meg a Beállítások &gt; Adatvédelem &gt; Kamera &gt; Google Chrome elemet, és kapcsolja be a kamerát.</translation>
 <translation id="5642200033778930880">A Google Chrome Osztott nézet módban nem tudja használni a kamerát</translation>
 <translation id="5854621639439811139">Tipp a Chrome használatához. Egyes gombok (például a Vissza, az Előre vagy a Keresés) mostantól a képernyő alján jelennek meg.</translation>

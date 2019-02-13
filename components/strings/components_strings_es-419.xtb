@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455413310270022028">Borrador</translation>
+<translation id="1463543813647160932">5 x 7</translation>
 <translation id="1484290072879560759">Elegir dirección de envío</translation>
 <translation id="1501859676467574491">Mostrar tarjetas de tu Cuenta de Google</translation>
 <translation id="1506687042165942984">Se muestra una copia guardada (es decir, desactualizada) de la página.</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936">No se traducirán las páginas en <ph name="LANGUAGE" />.</translation>
 <translation id="2053553514270667976">Código Postal</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugerencia}other{# sugerencias}}</translation>
+<translation id="2068124040035837596">Tu cuenta se administra mediante el dominio <ph name="ENROLLMENT_DOMAIN" />. Esto significa que tu administrador puede configurarla de forma remota.</translation>
 <translation id="2068663545051464999">ID del informe de fallos subido <ph name="CRASH_ID" /> (Contexto local: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="20817612488360358">Se ha establecido la configuración de proxy del sistema, pero también se ha especificado una configuración explícita de proxy.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">El método de envío no está disponible. Prueba otro método.</translation>
 <translation id="2396249848217231973">&amp;Deshacer Eliminar</translation>
 <translation id="2413528052993050574">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" /> y se podría revocar el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
+<translation id="244665789865330679">Tu dispositivo y cuenta se administran mediante el dominio <ph name="ENROLLMENT_DOMAIN" />. Esto significa que tu administrador puede configurarlos de forma remota.</translation>
 <translation id="2463193859425327265">Cambiar página principal</translation>
 <translation id="2463739503403862330">Llenar</translation>
 <translation id="2465655957518002998">Elegir método de entrega</translation>
@@ -376,7 +379,6 @@
 <translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3293642807462928945">Más información sobre la política <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">No se encontraron resultados en la búsqueda</translation>
-<translation id="3305707030755673451">Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph name="TIME" />. Debes ingresarla para iniciar la sincronización.</translation>
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338095232262050444">Seguro</translation>
@@ -562,6 +564,7 @@
 <translation id="4377125064752653719">Intentaste acceder a <ph name="DOMAIN" />, pero el emisor anuló el certificado que presentó el servidor. Esto significa que no se debe confiar en absoluto en las credenciales de seguridad que presentó el servidor. Te puedes estar comunicando con un atacante.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4406896451731180161">resultados de búsqueda</translation>
+<translation id="4406972042435603828">Tus administradores instalaron extensiones con potentes capacidades.</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Dirección de retiro</translation>
 <translation id="4424024547088906515">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chrome no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
@@ -633,10 +636,12 @@
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="4950898438188848926">Botón para cambiar de pestaña; presiona Intro para cambiar a la pestaña abierta <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acciones</translation>
+<translation id="495832697253704892">Informe de las extensiones</translation>
 <translation id="4958444002117714549">Mostrar lista</translation>
 <translation id="4974590756084640048">Volver a habilitar las advertencias</translation>
 <translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
+<translation id="4996230189582812866">Informes</translation>
 <translation id="5002932099480077015">Si se habilita esta opción, Chrome almacenará una copia de la tarjeta en el dispositivo para llenar más rápidamente los formularios.</translation>
 <translation id="5014174725590676422">Se muestra la pantalla de primera ejecución del Asistente de Google en Chrome</translation>
 <translation id="5015510746216210676">Nombre de la máquina:</translation>
@@ -657,6 +662,7 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; Chromium no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="5095208057601539847">Provincia</translation>
+<translation id="5098222253617183465">Tu dispositivo y tu cuenta se administran mediante el dominio <ph name="ENROLLMENT_DOMAIN" /> y el <ph name="ACCOUNT_DOMAIN" /> respectivamente. Esto significa que tus administradores pueden configurarlos de forma remota.</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5128122789703661928">La sesión con este nombre no se puede borrar.</translation>
 <translation id="5135404736266831032">Administrar direcciones…</translation>
@@ -669,6 +675,7 @@
 <translation id="5172758083709347301">Equipo</translation>
 <translation id="5179510805599951267">¿No está en <ph name="ORIGINAL_LANGUAGE" />? Informa este error</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>
+<translation id="5200263511887412697">enviar una lista con los usuarios de dispositivos que accedieron recientemente</translation>
 <translation id="5201306358585911203">Una página incorporada en esta página dice</translation>
 <translation id="5205222826937269299">Nombre (obligatorio)</translation>
 <translation id="5215116848420601511">Formas de pago y direcciones con Google Pay</translation>
@@ -739,6 +746,7 @@
 <translation id="563324245173044180">Se bloqueó contenido engañoso.</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5675650730144413517">Esta página no funciona</translation>
+<translation id="5684874026226664614">No se puede traducir esta página.</translation>
 <translation id="5685654322157854305">Agregar dirección de envío</translation>
 <translation id="5689199277474810259">Exportar a JSON</translation>
 <translation id="5689516760719285838">Ubicación</translation>
@@ -770,10 +778,10 @@
 <translation id="5869405914158311789">No se puede acceder a este sitio</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
 <translation id="5887400589839399685">Tarjeta guardada</translation>
+<translation id="5893718151540690985">informar una lista de las interfaces de red con sus tipos y direcciones de hardware</translation>
 <translation id="5893752035575986141">Se aceptan tarjetas de crédito.</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en uso}other{# en uso}}</translation>
 <translation id="5921639886840618607">¿Quieres guardar la tarjeta en la Cuenta de Google?</translation>
 <translation id="5922853866070715753">Ya casi</translation>
 <translation id="5932224571077948991">El sitio muestra anuncios intrusivos o engañosos</translation>
@@ -783,6 +791,7 @@
 <translation id="5967592137238574583">Editar la información de contacto</translation>
 <translation id="5967867314010545767">Eliminar del historial</translation>
 <translation id="5975083100439434680">Alejar</translation>
+<translation id="5977489021191000276">Tu dispositivo no está administrado.</translation>
 <translation id="5977976211062815271">En este dispositivo</translation>
 <translation id="598637245381783098">No se puede abrir la app de pago</translation>
 <translation id="5989320800837274978">No se especifican servidores proxy fijos ni URL de secuencias de comandos .pac.</translation>
@@ -794,6 +803,7 @@
 <translation id="6017850046339264347">Es posible que los atacantes que se encuentran en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> instalen apps engañosas que se hagan pasar por otro tipo de contenido o que recopilen datos que se usen para rastrearte. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sincronizados)</translation>
 <translation id="6027201098523975773">Ingresa un nombre</translation>
+<translation id="6033927989869462158">informar las estadísticas sobre hardware, como el uso de CPU y RAM</translation>
 <translation id="6034000775414344507">Gris claro</translation>
 <translation id="6039846035001940113">Si el problema persiste, comunícate con el propietario del sitio.</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -906,6 +916,8 @@
 <translation id="6897140037006041989">User agent</translation>
 <translation id="6903319715792422884">Para mejorar la Navegación segura, envía <ph name="BEGIN_WHITEPAPER_LINK" />información del sistema y contenido de la página<ph name="END_WHITEPAPER_LINK" /> a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuario:</translation>
+<translation id="6934672428414710184">Este nombre es de tu Cuenta de Google</translation>
+<translation id="6939583532829045966">Tu dispositivo se administra mediante el dominio <ph name="ENROLLMENT_DOMAIN" />. Esto significa que tu administrador puede configurarlo de forma remota.</translation>
 <translation id="6944692733090228304">Ingresaste tu contraseña en un sitio que no está administrado por <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Para proteger tu cuenta, no vuelvas a usar la contraseña en otras apps y sitios.</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6948701128805548767">Para ver los requisitos y métodos de retiro, selecciona una dirección</translation>
@@ -993,6 +1005,7 @@ Detalles adicionales:
       &lt;li&gt;Haz clic en &lt;strong&gt;Aplicar&lt;/strong&gt; y, luego, en &lt;strong&gt;Aceptar&lt;/strong&gt;.
       &lt;li&gt;Visita el &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centro de ayuda de Chrome&lt;/a&gt; para obtener información sobre cómo quitar el software de forma permanente de tu computadora.
       &lt;/ol&gt;</translation>
+<translation id="7413422570546054399">Administración de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7416351320495623771">Administrar contraseñas…</translation>
 <translation id="7419106976560586862">Ruta del perfil</translation>
 <translation id="7437289804838430631">Agregar información de contacto</translation>
@@ -1001,10 +1014,12 @@ Detalles adicionales:
 <translation id="7442725080345379071">Naranja claro</translation>
 <translation id="7444046173054089907">Este sitio está bloqueado</translation>
 <translation id="7445762425076701745">La identidad del servidor al que estás conectado no se puede validar en su totalidad. Estás conectado a un servidor utilizando un nombre que sólo es válido dentro de tu red y cuya propiedad no puede validar una entidad externa de certificación. Debido a que algunas entidades emiten certificados aún para estos nombres, no hay manera de asegurar que estás conectado al sitio web que pretendías o a un atacante.</translation>
+<translation id="7449109375006139765">enviar registros del sistema al servidor de administración</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> acerca de este problema</translation>
 <translation id="7455133967321480974">Usar configuración global predeterminada (Bloquear)</translation>
 <translation id="7460618730930299168">La proyección es diferente a tu selección. ¿Quieres continuar?</translation>
 <translation id="7473891865547856676">No, gracias</translation>
+<translation id="7475525192983021547">informar los períodos en el que un usuario utiliza el dispositivo</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="7485870689360869515">No se encontró ningún dato.</translation>
 <translation id="7508255263130623398">El ID de dispositivo de la política que se muestra está vacío o no coincide con el ID de dispositivo actual</translation>
@@ -1097,6 +1112,7 @@ Detalles adicionales:
 <translation id="7995512525968007366">Sin especificar</translation>
 <translation id="800218591365569300">Prueba cerrar las demás pestañas o programas para liberar memoria.</translation>
 <translation id="8009225694047762179">Administrar contraseñas</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{Se guardará esta tarjeta y su dirección de facturación. Podrás usarla cuando accedas a <ph name="USER_EMAIL" />.}other{Se guardarán estas tarjetas y sus direcciones de facturación. Podrás usarlas cuando accedas a <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8012647001091218357">No pudimos comunicarnos con tus padres. Vuelve a intentarlo.</translation>
 <translation id="8025119109950072390">Es posible que los atacantes de este sitio te engañen para que hagas algo peligroso, como instalar software o divulgar información personal (p. ej., contraseñas, números de teléfono o tarjetas de crédito).</translation>
 <translation id="8034522405403831421">Esta página está en <ph name="SOURCE_LANGUAGE" />. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1107,6 +1123,7 @@ Detalles adicionales:
 <translation id="8041940743680923270">Usar configuración global predeterminada (Preguntar)</translation>
 <translation id="8042918947222776840">Elegir método de retiro</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" no se configuró correctamente. Prueba desinstalar "<ph name="SOFTWARE_NAME" />" para corregir el problema. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">Tu dispositivo se configuró para:</translation>
 <translation id="8078141288243656252">No se pueden realizar anotaciones cuando el documento está rotado</translation>
 <translation id="8079031581361219619">¿Deseas volver a cargar el sitio?</translation>
 <translation id="8088680233425245692">Error al visualizar artículo</translation>
@@ -1157,6 +1174,7 @@ Detalles adicionales:
 <translation id="8363502534493474904">Desactivar el modo de avión.</translation>
 <translation id="8364627913115013041">Sin establecer</translation>
 <translation id="8368476060205742148">Servicios de Google Play</translation>
+<translation id="8371889962595521444">Certificados raíz personalizados</translation>
 <translation id="8380941800586852976">Peligrosa</translation>
 <translation id="8381674639488873545">Estos cargos pueden ser únicos o recurrentes, y es posible que no sean evidentes. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Los favoritos que visitaste recientemente aparecen aquí</translation>
@@ -1166,6 +1184,7 @@ Detalles adicionales:
 <translation id="8416694386774425977">La configuración de red no es válida y no se pudo importar.
 Detalles adicionales:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533">Dispositivo administrado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
@@ -1227,6 +1246,7 @@ Detalles adicionales:
 <translation id="8932102934695377596">El reloj está atrasado</translation>
 <translation id="893332455753468063">Agregar nombre</translation>
 <translation id="8938939909778640821">Tarjetas de crédito y prepago aceptadas</translation>
+<translation id="894185898663964645">Tu administrador configuró certificados raíz personalizados, lo que le permite ver el contenido de los sitios web que visites.</translation>
 <translation id="8943282376843390568">Verde lima</translation>
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8968766641738584599">Guardar la tarjeta</translation>

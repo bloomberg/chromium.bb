@@ -86,7 +86,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="3149510190863420837">Aplicații Chrome</translation>
-<translation id="3180085900771989961">Administratorul trebuie să te elimine și să te adauge din nou în Chrome.</translation>
 <translation id="3251381707915721925">Pentru a stabili ce site-uri poate accesa utilizatorul <ph name="NEW_PROFILE_NAME" />, poți configura restricții și setări accesând <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Dacă nu modifici setările prestabilite, utilizatorul <ph name="NEW_PROFILE_NAME" /> poate naviga oriunde pe web.
 
 Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți acceseze contul, asigură-te că îți blochezi profilul când nu folosești Chrome. Pentru a face acest lucru, dă clic pe numele de profil din colțul din dreapta sus al browserului și selectează „Ieși și blochează”.
@@ -156,7 +155,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="5062123544085870375">Repornește sistemul de operare Chrome</translation>
 <translation id="5090044601776247154">Profilurile de utilizator monitorizat nu vor mai fi disponibile începând cu versiunea Google Chrome 70.</translation>
 <translation id="5132929315877954718">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome este afișat în această limbă</translation>
 <translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
 <translation id="5193136243808726294">Sistemul de operare Google Chrome nu poate deschide pagina.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termeni și condiții<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
@@ -169,9 +167,9 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Este posibil ca <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat.</translation>
+<translation id="5686916850681061684">Personalizează și controlează Google Chrome. Ceva are nevoie de atenția ta – dă clic pentru detalii.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome va reporni într-o secundă}few{Google Chrome va reporni în # secunde}other{Google Chrome va reporni în # de secunde}}</translation>
 <translation id="573759479754913123">Despre sistemul de operare Chrome</translation>
-<translation id="5774845247549698882">Sistemul de operare Chrome este afișat în această limbă</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome nu a putut fi lansat. Încearcă din nou.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>

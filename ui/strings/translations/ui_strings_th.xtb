@@ -64,7 +64,6 @@
 <translation id="3234408098842461169">ลูกศรลง</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 วัน}other{# วัน}}</translation>
 <translation id="335581015389089642">คำพูด</translation>
-<translation id="3462241349431650993">การซ่อนคำแนะนำนี้จะทำให้คำแนะนำไม่แสดงจากบัญชีของคุณในอุปกรณ์ทุกเครื่องอีก</translation>
 <translation id="3479552764303398839">ไม่ใช่ตอนนี้</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{เหลือ 1 วัน}other{เหลือ # วัน}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>

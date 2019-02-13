@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Zaznamek za to stran ...</translation>
 <translation id="1049743911850919806">Način brez beleženja zgodovine</translation>
 <translation id="1063454504051558093">Uporaba drugega gesla …</translation>
+<translation id="1066060668811609597">Upravljanje sinhronizacije</translation>
 <translation id="1076421457278169141">Koda je bila optično prebrana</translation>
 <translation id="1084365883616172403">Objava v Facebooku je dokončana.</translation>
 <translation id="1104948393051856124">Sprejmi in nadaljuj</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Zaenkrat skrij</translation>
 <translation id="1219674500290482172">Internetne povezave ni mogoče vzpostaviti.</translation>
 <translation id="122699739164161391">Zapri vse zavihke</translation>
+<translation id="1231733316453485619">Želite vklopiti sinhronizacijo?</translation>
 <translation id="1254117744268754948">Izbira mape</translation>
 <translation id="1265739287306757398">Več o tem</translation>
 <translation id="1272079795634619415">Ustavi</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">Št. premaknjenih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Če želite zasebno brskati, odprite zavihek brez beleženja zgodovine</translation>
 <translation id="2149973817440762519">Uredi zaznamek</translation>
+<translation id="2198757192731523470">Google lahko vašo zgodovino uporabi za prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev.</translation>
 <translation id="2207590065820824892">Št. neprebranih člankov s seznama za branje: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Spletna stran je naložena</translation>
 <translation id="2239626343334228536">Brisanje podatkov brskanja …</translation>
@@ -253,6 +256,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5062321486222145940">Namesti Google Drive</translation>
 <translation id="5083464117946352670">Velikost datoteke ni mogoče določiti.</translation>
 <translation id="5094827893301452931">Tvit je dokončan.</translation>
+<translation id="5132942445612118989">Sinhronizirajte gesla, zgodovino in drugo v vseh napravah</translation>
 <translation id="5181140330217080051">Prenos</translation>
 <translation id="5186185447130319458">Zasebno</translation>
 <translation id="5190835502935405962">Vrstica z zaznamki</translation>

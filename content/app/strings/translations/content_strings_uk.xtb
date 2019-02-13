@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Значення має бути меншим або дорівнювати <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">визначення</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">кількість секунд до кінця фільму</translation>
 <translation id="3706100364254443312">перемикач</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
-<translation id="3785482301506746191">повзунок перебігу фільму</translation>
 <translation id="3808586225841795776">термін</translation>
 <translation id="3822383571486410024">У тексті має бути на менше <ph name="MIN_CHARACTERS" /> символів (ви ввели <ph name="CURRENT_LENGTH" /> символів).</translation>
 <translation id="383465348367842624">Частина перед знаком "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">кнопка меню</translation>
 <translation id="4446524499724042288">посилання на глосарій</translation>
 <translation id="4522570452068850558">Деталі</translation>
+<translation id="4542388879936266156">залишилося часу: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4661075872484491155">дерево</translation>
 <translation id="4664250907885839816">Частина після знака "<ph name="ATSIGN" />" не може містити символ "<ph name="INVALIDCHARACTER" />".</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">рррр</translation>
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
+<translation id="8403857369060869934">минуло часу: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">частина</translation>
 <translation id="8433900881053900389">панель інструментів</translation>
 <translation id="8444882422881193423">файлів: <ph name="NUMBER_OF_FILES" /></translation>

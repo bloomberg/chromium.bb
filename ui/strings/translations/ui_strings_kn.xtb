@@ -5,7 +5,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ದಿನದ ಹಿಂದೆ}one{# ದಿನಗಳ ಹಿಂದೆ}other{# ದಿನಗಳ ಹಿಂದೆ}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 ನಿಮಿಷದ ಹಿಂದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ಮೀ}one{#ಮೀ}other{#ಮೀ}}</translation>
-<translation id="1181037720776840403">ತೆಗೆದುಹಾಕಿ</translation>
+<translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1243314992276662751">ಅಪ್‌ಲೋಡ್</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -64,7 +64,6 @@
 <translation id="3234408098842461169">ಕೆಳಗಿನ ಬಾಣದ ಗುರುತು</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ದಿನ}one{# ದಿನಗಳು}other{# ದಿನಗಳು}}</translation>
 <translation id="335581015389089642">ಧ್ವನಿ</translation>
-<translation id="3462241349431650993">ಈ ಸಲಹೆಯನ್ನು ಮರೆಮಾಡುವುದರಿಂದ, ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಇದನ್ನು ಮತ್ತೆ ತೋರಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ದಿನ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ದಿನಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>

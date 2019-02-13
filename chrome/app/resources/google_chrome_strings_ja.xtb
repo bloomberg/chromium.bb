@@ -86,7 +86,6 @@
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
-<translation id="3180085900771989961">Chrome へのユーザーの削除と追加は管理者が行う必要があります。</translation>
 <translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> が閲覧できるウェブサイトを設定するには、<ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> で制限と設定を指定します。デフォルト設定のままにすると、<ph name="NEW_PROFILE_NAME" /> はウェブ上のあらゆるコンテンツを閲覧できます。
 
 ご使用のアカウントに <ph name="NEW_PROFILE_NAME" /> がアクセスできないようにするには、Chrome の使用時以外はご自分のプロフィールをロックします。それには、ブラウザ右上でご自分のプロフィール名をクリックし、[終了してチャイルドロックをかける] を選択します。
@@ -156,7 +155,6 @@
 <translation id="5062123544085870375">Chrome OS を再起動してください</translation>
 <translation id="5090044601776247154">監視対象ユーザーのプロフィールは、Google Chrome 70 よりご利用いただけなくなります。</translation>
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
-<translation id="5166975452760862670">Google Chrome はこの言語で表示されています</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
 <translation id="5193136243808726294">Google Chrome OS ではこのページを開けません。</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />利用規約<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -169,9 +167,9 @@
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> は危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
+<translation id="5686916850681061684">Google Chrome をカスタマイズ、制御します。確認の必要な項目があります。クリックして詳細をご覧ください。</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome は 1 秒後に再起動します}other{Google Chrome は # 秒後に再起動します}}</translation>
 <translation id="573759479754913123">Chrome OS について</translation>
-<translation id="5774845247549698882">Chrome OS はこの言語で表示されています</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome を起動できませんでした。もう一度お試しください。</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>

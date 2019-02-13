@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">മോണോ ഓഡിയോ</translation>
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="3019353588588144572">ബാറ്ററി പൂർണ്ണമായി ചാർജ്ജാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">നിങ്ങളുടെ മേൽനോട്ടത്തിലുള്ള ഉപയോക്തൃ പ്രൊഫൈൽ വൈകാതെ നീക്കം ചെയ്യപ്പെടും. കൂടുതലറിയാൻ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="3055162170959710888">നിങ്ങൾ ഇന്ന് <ph name="USED_TIME" />, ഈ ഉപകരണം ഉപയോഗിച്ചു</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">മെനു വികസിപ്പിക്കുക</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">ഒന്നിലധികം സൈൻ ഇന്നുകളിൽ നിങ്ങൾക്ക് <ph name="MULTI_PROFILE_USER_LIMIT" /> അക്കൗണ്ടുകൾ വരെ മാത്രമേ ഉണ്ടായിരിക്കാൻ പാടുള്ളൂ.</translation>
 <translation id="3154351730702813399">ഉപകരണ അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി നിരീക്ഷിച്ചേക്കാം.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ഒരു ഉപകരണത്തിലേക്ക് കണക്റ്റ് ചെയ്‌തു}other{# ഉപകരണങ്ങളിലേക്ക് കണക്റ്റ് ചെയ്‌തു}}</translation>
-<translation id="32244657276328332">നെറ്റ്‌വർക്കുമായി കണക്റ്റ് ചെയ്‌തിട്ടില്ല</translation>
 <translation id="3236488194889173876">മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
 <translation id="3255483164551725916">നിങ്ങൾക്ക് എന്ത് ചെയ്യാനാവും?</translation>
 <translation id="3294437725009624529">അതിഥി</translation>

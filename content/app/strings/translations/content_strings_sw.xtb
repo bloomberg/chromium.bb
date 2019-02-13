@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Lazima thamani iwe chache kuliko au sawa na <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">ufafanuzi</translation>
 <translation id="3557673793733683882">kichwa cha <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">sekunde zinazosalia za filamu</translation>
 <translation id="3706100364254443312">badilisha</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779">GB <ph name="QUANTITY" /></translation>
-<translation id="3785482301506746191">kitelezi cha muda cha filamu</translation>
 <translation id="3808586225841795776">neno</translation>
 <translation id="3822383571486410024">Tafadhali refusha maandishi haya hadi herufi <ph name="MIN_CHARACTERS" /> au zaidi (kwa sasa unatumia herufi <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Sehemu inayofuatwa na '<ph name="ATSIGN" />' haipaswi kuwa na alama ya '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">kitufe cha menyu</translation>
 <translation id="4446524499724042288">marejeleo ya farahasa</translation>
 <translation id="4522570452068850558">Maelezo</translation>
+<translation id="4542388879936266156">muda uliosalia: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">fomu</translation>
 <translation id="4661075872484491155">mti</translation>
 <translation id="4664250907885839816">Sehemu inayofuata '<ph name="ATSIGN" />' haipaswi kuwa na alama ya '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8284326494547611709">Manukuu</translation>
 <translation id="835897206747267392">Thamani batili.</translation>
+<translation id="8403857369060869934">muda uliopita: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">sehemu</translation>
 <translation id="8433900881053900389">upau wa vidhibiti</translation>
 <translation id="8444882422881193423">faili <ph name="NUMBER_OF_FILES" /></translation>

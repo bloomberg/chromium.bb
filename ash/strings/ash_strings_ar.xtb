@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">صوت أحادي</translation>
 <translation id="3009178788565917040">الإخراج</translation>
 <translation id="3019353588588144572">الوقت المتبقي حتى يتم شحن البطارية بالكامل <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">ستتم إزالة الملف الشخصي للمستخدم تحت الإشراف قريبًا. يمكنك تسجيل الدخول  للتعرُّف على مزيد من المعلومات.</translation>
 <translation id="3055162170959710888">استخدمت هذا الجهاز لمدة <ph name="USED_TIME" /> اليوم</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">توسيع القائمة</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">يمكنك الحصول فقط على ما يصل إلى <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب في الدخول المتعدد.</translation>
 <translation id="3154351730702813399">قد يراقب مشرف الجهاز نشاط التصفح.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{تم الاتصال بجهاز واحد}zero{تم الاتصال بـ # جهاز}two{تم الاتصال بجهازين (#)}few{تم الاتصال بـ # أجهزة}many{تم الاتصال بـ # جهازًا}other{تم الاتصال بـ # جهاز}}</translation>
-<translation id="32244657276328332">لا يتوفّر اتصال بالشبكة</translation>
 <translation id="3236488194889173876">ليست هناك شبكة جوّال متاحة</translation>
 <translation id="3255483164551725916">ما الإجراء المطلوب؟</translation>
 <translation id="3294437725009624529">ضيف</translation>

@@ -88,7 +88,6 @@
 <translation id="3080151273017101988">Google Chrome বন্ধ হলে পশ্চাদপট অ্যাপ্লিকেশানের চলা অবিরত রাখুন</translation>
 <translation id="3089968997497233615">Google Chrome-এর একটি নতুন, তুলনামূলক নিরাপদ ভার্সন উপলব্ধ৷</translation>
 <translation id="3149510190863420837">Chrome অ্যাপ্লিকেশানগুলি</translation>
-<translation id="3180085900771989961">আপনার পরিচালককে আপনাকে অবশ্যই Chrome থেকে সরিয়ে পুনরায় আপনাকে যোগ করতে হবে।</translation>
 <translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> কোন ওয়েবসাইটগুলি দেখতে পারবে তা সেট করার জন্য, আপনি <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> এ গিয়ে বিধিনিষেধ ও সেটিংস কনফিগার করতে পারেন। আপনি যদি ডিফল্ট সেটিংস পরিবর্তন না করেন, তাহলে <ph name="NEW_PROFILE_NAME" /> ওয়েবে সবকিছু ব্রাউজ করতে পারবে।
 
 <ph name="NEW_PROFILE_NAME" /> কে আপনার অ্যাকাউন্ট অ্যাক্সেস করা থেকে আটকানোর জন্য, আপনি যখন Chrome ব্যবহার করছেন না তখন আপনি আপনার প্রোফাইল লক করার বিষয়টি নিশ্চিত করুন। এটি করার জন্য, ব্রাউজারের উপরের ডান দিকের কোণায় অবস্থিত আপনার প্রোফাইল নামের উপর ক্লিক করুন এবং "প্রস্থান ও চাইল্ডলক করুন" বেছে নিন।
@@ -158,7 +157,6 @@
 <translation id="5062123544085870375">Chrome OS রিস্টার্ট করুন</translation>
 <translation id="5090044601776247154">তত্ত্বাবধানে থাকা ব্যবহারকারীর প্রোফাইল Google Chrome 70-এ আর উপলভ্য হবে না।</translation>
 <translation id="5132929315877954718">Google Chrome-এর দুর্দান্ত অ্যাপ্লিকেশান, গেম, এক্সটেনশান এবং থিম আবিষ্কার করুন৷</translation>
-<translation id="5166975452760862670">Google Chrome এই ভাষায় প্রদর্শিত হচ্ছে</translation>
 <translation id="5170938038195470297">আপনার প্রোফাইল ব্যবহার করা যাবে কারণ এটি Google Chrome-এর একটি নতুন ভার্সনে গঠিত৷ 
 
 কিছু বৈশিষ্ট্য অনুপলভ্য হতে পারে৷ একটি ভিন্ন প্রোফাইল নির্দেশিকা সুনির্দিষ্টভাবে উল্লেখ করুন অথবা Chrome এর নতুন ভার্সন ব্যবহার করুন৷</translation>
@@ -173,9 +171,9 @@
 <translation id="556024056938947818">Google Chrome পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
+<translation id="5686916850681061684">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন। একটি বিষয়ে আপনার নজর দেওয়া দরকার - বিস্তারিত বিবরণের জন্য ক্লিক করুন।</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome ১ সেকেন্ডের মধ্যে রিস্টার্ট হবে}one{Google Chrome # সেকেন্ডের মধ্যে রিস্টার্ট হবে}other{Google Chrome # সেকেন্ডের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
-<translation id="5774845247549698882">Chrome OS এই ভাষায় প্রদর্শিত হচ্ছে</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome লঞ্চ করা যায়নি। আবার চেষ্টা করুন।</translation>
 <translation id="5877064549588274448">চ্যানেল পরিবর্তিত হয়েছে৷ পরিবর্তনগুলি প্রয়োগ করার জন্য আপনার ডিভাইস আবার শুরু করুন৷</translation>

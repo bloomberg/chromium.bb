@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">بله</translation>
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="1455413310270022028">پاک‌کن</translation>
+<translation id="1463543813647160932">۵x۷</translation>
 <translation id="1484290072879560759">انتخاب نشانی تحویل کالا</translation>
 <translation id="1501859676467574491">‏کارت‌ها را از حساب Google خود نمایش دهید</translation>
 <translation id="1506687042165942984">یک نسخه ذخیره‌شده (یعنی قدیمی) از این صفحه نشان داده شود.</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936">صفحه‌های <ph name="LANGUAGE" /> ترجمه نخواهند شد.</translation>
 <translation id="2053553514270667976">کد پستی</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{۱ پیشنهاد}one{# پیشنهاد}other{# پیشنهاد}}</translation>
+<translation id="2068124040035837596">حسابتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود. این یعنی سرپرستتان می‌تواند حسابتان را ازراه‌دور پیکربندی کند.</translation>
 <translation id="2068663545051464999">شناسه گزارش خرابی بارگذاری‌شده <ph name="CRASH_ID" /> (زمینه محلی: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">این روش ارسال در دسترس نیست. روش دیگری را امتحان کنید.</translation>
 <translation id="2396249848217231973">&amp;واگرد حذف</translation>
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
+<translation id="244665789865330679">دستگاه و حسابتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود. این یعنی سرپرستتان می‌تواند دستگاه و حسابتان را ازراه‌دور پیکربندی کند.</translation>
 <translation id="2463193859425327265">صفحه اصلی را تغییر دهید</translation>
 <translation id="2463739503403862330">تکمیل</translation>
 <translation id="2465655957518002998">انتخاب روش ارسال</translation>
@@ -375,7 +378,6 @@
 <translation id="3287510313208355388">بارگیری بعد از آنلاین شدن</translation>
 <translation id="3293642807462928945">درباره خطمشی <ph name="POLICY_NAME" /> بیشتر بدانید</translation>
 <translation id="3303855915957856445">هیچ نتیجه‌ای برای جستجو یافت نشد</translation>
-<translation id="3305707030755673451">داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="3320021301628644560">افزودن نشانی صورتحساب</translation>
 <translation id="3324983252691184275">زرشکی</translation>
 <translation id="3338095232262050444">ایمن</translation>
@@ -561,6 +563,7 @@
 <translation id="4377125064752653719">شما سعی در دسترسی به <ph name="DOMAIN" /> را داشتید، اما صادر کننده، گواهی ارائه شده از سوی سرور را باطل کرده است. یعنی اصلاً نباید به اطلاعات کاربری که این سرور ارائه می‌کند اطمینان کرد. ممکن است شما با مهاجمی در ارتباط باشید.</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="4406896451731180161">نتایج جستجو</translation>
+<translation id="4406972042435603828">سرپرستتان افزونه‌هایی با قابلیت‌های قدرتمندی نصب کرده است.</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> کوکی</translation>
 <translation id="4415426530740016218">نشانی تحویل گرفتن</translation>
 <translation id="4424024547088906515">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد Chrome نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
@@ -632,10 +635,12 @@
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
 <translation id="4950898438188848926">‏دکمه جابه‌جایی برگه، برای جابه‌جایی به برگه باز، کلید Enter را فشار دهید، <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">کنش‌ها</translation>
+<translation id="495832697253704892">گزارش افزونه</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
 <translation id="4974590756084640048">فعال کردن مجدد اخطارها</translation>
 <translation id="4989163558385430922">دیدن همه</translation>
 <translation id="4989809363548539747">این افزایه پشتیبانی نمی‌شود</translation>
+<translation id="4996230189582812866">گزارش‌دهی</translation>
 <translation id="5002932099480077015">‏اگر فعال شود، Chrome یک کپی از کارت شما را برای پرکردن سریع‌تر فرم در این دستگاه ذخیره می‌کند.</translation>
 <translation id="5014174725590676422">‏صفحه اولین اجرای «دستیار Google» در Chrome نشان داده می‌شود</translation>
 <translation id="5015510746216210676">نام ماشین:</translation>
@@ -656,6 +661,7 @@
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="5094747076828555589">‏این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیت آن مورداعتماد Chromium نیست. علت این موضوع می‌توان پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="5095208057601539847">استان</translation>
+<translation id="5098222253617183465">دستگاهتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود و حسابتان توسط <ph name="ACCOUNT_DOMAIN" /> مدیریت می‌شود. این یعنی سرپرستتان می‌تواند دستگاه و حسابتان را ازراه‌دور پیکربندی کند.</translation>
 <translation id="5115563688576182185">(۶۴ بیت)</translation>
 <translation id="5128122789703661928">جلسه‌ای با این نام، برای حذف معتبر نیست.</translation>
 <translation id="5135404736266831032">مدیریت نشانی‌ها…</translation>
@@ -668,6 +674,7 @@
 <translation id="5172758083709347301">دستگاه</translation>
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
+<translation id="5200263511887412697">فهرست کاربران دستگاه را که اخیراً وارد سیستم شده‌اند گزارش می‌دهد</translation>
 <translation id="5201306358585911203">صفحه جاسازی‌شده‌ای در این صفحه می‌گوید</translation>
 <translation id="5205222826937269299">نام ضروری است</translation>
 <translation id="5215116848420601511">‏روش‌های پرداخت و نشانی‌های مورداستفاده در Google Pay</translation>
@@ -738,6 +745,7 @@
 <translation id="563324245173044180">محتوای فریب‌دهنده مسدود شد.</translation>
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5675650730144413517">این صفحه کار نمی‌کند</translation>
+<translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="5685654322157854305">افزودن نشانی تحویل کالا</translation>
 <translation id="5689199277474810259">‏صادر کردن به JSON</translation>
 <translation id="5689516760719285838">مکان</translation>
@@ -769,10 +777,10 @@
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5887400589839399685">کارت ذخیره‌ شد</translation>
+<translation id="5893718151540690985">فهرستی از واسط‌های شبکه را همراه با نوع و نشانی سخت‌افزاری آن‌ها گزارش می‌کند</translation>
 <translation id="5893752035575986141">کارت‌های اعتباری پذیرفته می‌شوند.</translation>
 <translation id="5901630391730855834">زرد</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (همگام‌سازی‌شده)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{۱ کوکی درحال استفاده}one{# کوکی درحال استفاده}other{# کوکی درحال استفاده}}</translation>
 <translation id="5921639886840618607">‏کارت در حساب Google ذخیره شود؟</translation>
 <translation id="5922853866070715753">تقريباً تمام است</translation>
 <translation id="5932224571077948991">سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
@@ -782,6 +790,7 @@
 <translation id="5967592137238574583">ویرایش اطلاعات تماس</translation>
 <translation id="5967867314010545767">حذف از سابقه</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
+<translation id="5977489021191000276">دستگاهتان توسط سرپرست مدیریت نمی‌شود.</translation>
 <translation id="5977976211062815271">در این دستگاه</translation>
 <translation id="598637245381783098">برنامه پرداخت باز نشد</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
@@ -793,6 +802,7 @@
 <translation id="6017850046339264347">مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> می‌توانند برنامه‌های فریب‌دهنده‌ای نصب کنند که وانمود می‌کنند چیز دیگری هستند یا داده‌هایی جمع‌آوری کنند که ممکن است برای ردیابی شما استفاده شوند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /> (همگام‌سازی‌شده)</translation>
 <translation id="6027201098523975773">نامی وارد کنید</translation>
+<translation id="6033927989869462158">‏آمار سخت‌افزاری مانند استفاده از CPU یا RAM را گزارش می‌کند</translation>
 <translation id="6034000775414344507">خاکستری کم‌رنگ</translation>
 <translation id="6039846035001940113">اگر مشکل ادامه دارد، با مالک سایت تماس بگیرید.</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -905,6 +915,8 @@
 <translation id="6897140037006041989">نماینده کاربر</translation>
 <translation id="6903319715792422884">‏با ارسال برخی <ph name="BEGIN_WHITEPAPER_LINK" />اطلاعات سیستم و محتوای صفحه<ph name="END_WHITEPAPER_LINK" /> به Google، به بهبود «مرور ایمن» کمک کنید. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">کاربر:</translation>
+<translation id="6934672428414710184">‏این نام از حساب Google شما گرفته شده است</translation>
+<translation id="6939583532829045966">دستگاهتان توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود. این یعنی سرپرستتان می‌تواند دستگاهتان را ازراه‌دور پیکربندی کند.</translation>
 <translation id="6944692733090228304">گذرواژه‌تان را در سایتی وارد کردید که توسط <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> مدیریت نمی‌شود. برای محافظت از حسابتان، از گذرواژه‌تان در برنامه‌ها و سایت‌های دیگر استفاده نکنید.</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6948701128805548767">برای دیدن روش‌های تحویل گرفتن و شرایط موردنیاز، یک نشانی انتخاب کنید</translation>
@@ -992,6 +1004,7 @@
     &lt;li&gt;روی &lt;strong&gt;اعمال&lt;/strong&gt; و سپس &lt;strong&gt;تأیید&lt;/strong&gt; کلیک کنید
     &lt;li&gt;برای آشنایی با نحوه برداشتن دائم نرم‌افزار از رایانه، از &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;مرکز راهنمای ‏Chrome‏&lt;/a&gt; بازدید کنید
     &lt;/ol&gt;</translation>
+<translation id="7413422570546054399">مدیریت <ph name="PRODUCT_NAME" /></translation>
 <translation id="7416351320495623771">مدیریت گذرواژه‌ها…</translation>
 <translation id="7419106976560586862">مسیر نمایه</translation>
 <translation id="7437289804838430631">افرودن اطلاعات تماس</translation>
@@ -1000,10 +1013,12 @@
 <translation id="7442725080345379071">نارنجی روشن</translation>
 <translation id="7444046173054089907">این سایت مسدود شده است</translation>
 <translation id="7445762425076701745">هویت سروری که به آن متصل شده‌اید به‌طور کامل راستی‌آزمایی نمی‌شود. با استفاده از نامی به سرور متصل شده‌اید که فقط در شبکه شما معتبر است و ارائه دهنده مجوز خارجی قادر به راستی‌آزمایی مالکیت آن نیست. به دلیل آنکه برخی از ارائه دهندگان مجوز بدون توجه به هر موردی، مجوزهایی را برای این نام‌ها ارائه می‌کنند، روشی برای اطمینان از این امر وجود ندارد که آیا شما به سایت موردنظر خود متصل شده‌اید یا یک سایت مضر.</translation>
+<translation id="7449109375006139765">گزارش‌های سیستم را به سرور مدیریت ارسال کند</translation>
 <translation id="7451311239929941790">درباره این مشکل <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">استفاده از پیش‌فرض جهانی (مسدود)</translation>
 <translation id="7460618730930299168">فیلم در حال نمایش با آنچه انتخاب کرده‌اید متفاوت است. ادامه می‌دهید؟</translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
+<translation id="7475525192983021547">دوره‌های زمانی را که کاربر در دستگاه فعال بوده است گزارش می‌کند</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7508255263130623398">شناسه دستگاه خط‌مشی برگردانده‌شده خالی است یا با شناسه کنونی دستگاه مطابقت ندارد</translation>
@@ -1096,6 +1111,7 @@
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="800218591365569300">سعی کنید برگه‌ها یا برنامه‌های دیگر را ببندید تا حافظه آزاد شود.</translation>
 <translation id="8009225694047762179">مدیریت گذرواژه</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{این کارت و نشانی صورت‌حساب آن ذخیره می‌شود. وقتی به سیستم <ph name="USER_EMAIL" /> وارد شوید می‌توانید از آن استفاده کنید.}one{این کارت‌ها و نشانی صورت‌حساب آن‌ها ذخیره می‌شود. وقتی به سیستم <ph name="USER_EMAIL" /> وارد شوید می‌توانید از آن‌ها استفاده کنید.}other{این کارت‌ها و نشانی صورت‌حساب آن‌ها ذخیره می‌شود. وقتی به سیستم <ph name="USER_EMAIL" /> وارد شوید می‌توانید از آن‌ها استفاده کنید.}}</translation>
 <translation id="8012647001091218357">در حال حاضر نمی‌توانیم با والدینتان ارتباط برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="8025119109950072390">مهاجمان در این سایت ممکن است شما را فریب دهند که کارهای خطرناکی مثل نصب نرم‌افزار یا ارائه اطلاعات شخصی‌تان (مثلاً گذرواژه‌ها، شماره تلفن‌ها یا کارت‌های اعتباری) انجام دهید.</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. مایلید آن را به <ph name="TARGET_LANGUAGE" /> ترجمه کنید؟</translation>
@@ -1106,6 +1122,7 @@
 <translation id="8041940743680923270">استفاده از پیش‌فرض جهانی (سؤال شود)</translation>
 <translation id="8042918947222776840">انتخاب روش تحویل گرفتن</translation>
 <translation id="8057711352706143257">«<ph name="SOFTWARE_NAME" />» درست پیکربندی نمی‌شود. معمولاً حذف‌ نصب «<ph name="SOFTWARE_NAME" />» مشکل را برطرف می‌کند. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">دستگاهتان برای این موارد پیکربندی شده است:</translation>
 <translation id="8078141288243656252">در حالت چرخش نمی‌توان حاشیه‌نویسی کرد</translation>
 <translation id="8079031581361219619">سایت تازه‌سازی شود؟</translation>
 <translation id="8088680233425245692">مشاهده مقاله ناموفق بود.</translation>
@@ -1156,6 +1173,7 @@
 <translation id="8363502534493474904">خاموش کردن حالت هواپیما</translation>
 <translation id="8364627913115013041">تنظیم نشده است.</translation>
 <translation id="8368476060205742148">‏خدمات Google Play</translation>
+<translation id="8371889962595521444">گواهی‌نامه ریشه سفارشی</translation>
 <translation id="8380941800586852976">خطرناک</translation>
 <translation id="8381674639488873545">ممکن است این هزینه‌ها یک‌باره یا تکرارشونده باشند و شاید شفاف نباشند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">نشانک‌هایی که به‌تازگی از آن‌ها دیدن کرده‌اید، در اینجا نشان داده می‌شوند</translation>
@@ -1165,6 +1183,7 @@
 <translation id="8416694386774425977">پیکربندی شبکه نامعتبر است و نمی‌توان آن را وارد کرد.
 توضیحات بیشتر:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533">دستگاه تحت‌مدیریت <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">تغییر</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
@@ -1225,6 +1244,7 @@
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="893332455753468063">افزودن نام</translation>
 <translation id="8938939909778640821">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
+<translation id="894185898663964645">سرپرستتان گواهینامه‌های ریشه سفارشی پیکربندی کرده است، که ممکن است به او اجازه دهد محتوای وب‌سایت‌هایی که بازدید می‌کنید را ببیند.</translation>
 <translation id="8943282376843390568">لیمویی</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8968766641738584599">ذخیره کارت</translation>

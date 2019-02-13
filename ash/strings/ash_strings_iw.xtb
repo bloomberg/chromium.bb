@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3019353588588144572">הזמן שנותר עד לטעינה מלאה של הסוללה, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">פרופיל המשתמש בפיקוח שלך יוסר בקרוב. יש להיכנס לחשבון כדי לקבל מידע נוסף.</translation>
 <translation id="3055162170959710888">השתמשת היום במכשיר הזה במשך <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">הרחבת התפריט</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">אפשר לכלול עד <ph name="MULTI_PROFILE_USER_LIMIT" /> חשבונות בכניסה עם מספר חשבונות.</translation>
 <translation id="3154351730702813399">ייתכן שמנהל המכשיר עוקב אחרי פעילות הגלישה שלך.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{מחובר למכשיר אחד}two{מחובר ל-# מכשירים}many{מחובר ל-# מכשירים}other{מחובר ל-# מכשירים}}</translation>
-<translation id="32244657276328332">לא מחובר לרשת</translation>
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
 <translation id="3255483164551725916">מה אפשר לעשות?</translation>
 <translation id="3294437725009624529">אורח</translation>

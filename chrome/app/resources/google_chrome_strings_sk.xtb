@@ -88,7 +88,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="3080151273017101988">Po zatvorení prehliadača Google Chrome nechať aplikácie na pozadí spustené</translation>
 <translation id="3089968997497233615">K dispozícii je nová, bezpečnejšia verzia prehliadača Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikácie Chrome</translation>
-<translation id="3180085900771989961">Správca vás musí odstrániť z Chromu a následne znova pridať.</translation>
 <translation id="3251381707915721925">Ak chcete nastaviť, ktoré weby môže používateľ <ph name="NEW_PROFILE_NAME" /> zobraziť, môžete na adrese <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> nakonfigurovať obmedzenia a nastavenia. Ak nezmeníte predvolené nastavenia, používateľ <ph name="NEW_PROFILE_NAME" /> bude môcť prehliadať všetky stránky na príslušnom webe.
 
 Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vášho účtu, uzamknite svoj profil, keď Chrome nepoužívate. Urobíte to tak, že kliknete na názov profilu v pravom hornom rohu tohto prehliadača a vyberiete možnosť Ukončiť a aktivovať detskú zámku.
@@ -158,7 +157,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="5062123544085870375">Reštartovanie Chrome OS</translation>
 <translation id="5090044601776247154">Od verzie 70 už nebudú v prehliadači Google Chrome ďalej k dispozícii kontrolované profily používateľov.</translation>
 <translation id="5132929315877954718">Objavte skvelé aplikácie, hry, rozšírenia a motívy pre prehliadač Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome sa zobrazuje v tomto jazyku</translation>
 <translation id="5170938038195470297">Váš profil sa nedá použiť, pretože pochádza z novšej verzie prehliadača Google Chrome.
 
 Niektoré funkcie môžu byť nedostupné. Zadajte iný adresár profilu alebo použite novšiu verziu prehliadača Chrome.</translation>
@@ -175,9 +173,9 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="556024056938947818">Prehliadač Google Chrome sa snaží zobraziť heslá.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Súbor <ph name="FILE_NAME" /> môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
+<translation id="5686916850681061684">Prispôsobte a ovládajte Google Chrome. Vyžaduje sa vaša pozornosť. Podrobnosti získate kliknutím.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome sa reštartuje o 1 sekundu}few{Google Chrome sa reštartuje o # sekundy}many{Google Chrome sa reštartuje o # sekundy}other{Google Chrome sa reštartuje o # sekúnd}}</translation>
 <translation id="573759479754913123">Informácie o systéme Chrome OS</translation>
-<translation id="5774845247549698882">Chrome OS sa zobrazuje v tomto jazyku</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome sa nepodarilo spustiť. Skúste to znova.</translation>
 <translation id="5877064549588274448">Kanál sa zmenil. Ak chcete zmeny použiť, reštartujte zariadenie.</translation>

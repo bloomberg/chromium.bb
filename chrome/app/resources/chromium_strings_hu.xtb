@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">A személy böngészési adatai törlődnek az eszközről. Az adatok visszaállításához jelentkezzen be a Chromiumba a következő felhasználóként: <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Link megnyi&amp;tása új Chromium-lapon</translation>
 <translation id="3728336900324680424">A Chromium hozzáfér Drive-jához, hogy javaslatokat nyújthasson a címsávon.</translation>
-<translation id="3762167353400286894">A Chromium OS ezen a nyelven jelenik meg</translation>
 <translation id="378917192836375108">A Chromium egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-on!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> -- Chromium</translation>
 <translation id="3852700440713538496">Chromium rögzítése a tálcán</translation>
+<translation id="388648406173476553">Személyre szabhatja a Chromium működését. Figyelmet kell fordítania valamire – a részletekért kattintson.</translation>
 <translation id="3889543394854987837">Kattintson a nevére a Chromium megnyitásához és a böngészés megkezdéséhez.</translation>
 <translation id="3898493977366060150">Webes böngészés Google-okostelefonokkal</translation>
 <translation id="3965668104013180445">{0,plural, =1{A Chromium OS 1 órán belül újraindul}other{A Chromium OS # órán belül újraindul}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">bejelentkezés a Chromiumba</translation>
 <translation id="5698481217667032250">A Chromium megjelenítése ezen a nyelven</translation>
 <translation id="5712253116097046984">Rendszergazdája arra kéri, hogy indítsa újra a Chromium OS-t a frissítés alkalmazásához</translation>
-<translation id="5726838626470692954">A kezelőjének el kell távolítania, majd újra hozzá kell adnia Önt a Chromiumhoz.</translation>
 <translation id="5768914737813585044">A Chromium operációs rendszer megjelenítése ezen a nyelven</translation>
 <translation id="5796460469508169315">A Chromium majdnem készen áll.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -230,7 +229,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7979877361127045932">Elrejtés a Chromium-menüben</translation>
 <translation id="8013436988911883588">Miután hozzáférést biztosított a Chromiumnak, a webhelyek is hozzáférést kérhetnek.</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára...</translation>
-<translation id="8157153840442649507">A Chromium ezen a nyelven jelenik meg</translation>
 <translation id="81770708095080097">Ez a fájl veszélyes, ezért a Chromium letiltotta.</translation>
 <translation id="8222496066431494154">Telepítse a Chromiumot telefonjára. SMS-t küldünk majd a fiók-helyreállítási telefonszámára: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8269379391216269538">Segítsen a Chromium továbbfejlesztésében</translation>

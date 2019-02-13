@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Monoljud</translation>
 <translation id="3009178788565917040">Utgång</translation>
 <translation id="3019353588588144572">Tid som återstår tills batteriet är fulladdat: <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Din profil som kontrollerad användare tas snart bort. Logga in och läs mer.</translation>
 <translation id="3055162170959710888">Du har använt den här enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3077734595579995578">skift</translation>
 <translation id="3081696990447829002">Utöka menyn</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Du kan högst använda <ph name="MULTI_PROFILE_USER_LIMIT" /> konton för multiinloggning.</translation>
 <translation id="3154351730702813399">Enhetsadministratören kan övervaka din webbaktivitet.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ansluten till en enhet}other{Ansluten till # enheter}}</translation>
-<translation id="32244657276328332">Inte ansluten till ett nätverk</translation>
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
 <translation id="3255483164551725916">Vad kan du göra?</translation>
 <translation id="3294437725009624529">Gäst</translation>

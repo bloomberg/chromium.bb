@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
-<translation id="114721135501989771">Chrome-এ Google স্মার্ট পান</translation>
 <translation id="1326317727527857210">আপনার অন্য ডিভাইসগুলি থেকে আপনার ট্যাবগুলি পেতে, Chrome এ প্রবেশ করুন।</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome গোপনীয়তা বিজ্ঞপ্তি</translation>
 <translation id="1863312987075920112">এই অ্যাপ্লিকেশনটি ব্যবহার করার মাধ্যমে আপনি Chrome এর <ph name="BEGIN_LINK_TOS" />পরিষেবার শর্তাবলী<ph name="END_LINK_TOS" /> এবং <ph name="BEGIN_LINK_PRIVACY" />গোপনীয়তা বিজ্ঞপ্তির<ph name="END_LINK_PRIVACY" /> সাথে সম্মত হচ্ছেন।</translation>
+<translation id="1984705450038014246">আপনার Chrome ডেটা সিঙ্ক করুন</translation>
 <translation id="2147651015520127414"><ph name="ISSUER" /> যে এই ওয়েবসাইটের সার্টিফিকেট প্রকাশ করেছে Chrome তা যাচাই করেছে।</translation>
 <translation id="2334084861041072223">কপিরাইট <ph name="YEAR" /> Google Inc৷ সর্বস্বত্ব সংরক্ষিত৷</translation>
 <translation id="2342981853652716282">আপনার বুকমার্ক, পাসওয়ার্ড, এবং অন্যান্য জিনিস আপনার সমস্ত ডিভাইসে পেতে Chrome এ সাইন-ইন করুন।</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">ছবি সংরক্ষণ করতে, Chrome কে আপনার ফটোগুলি ব্যবহার করার অনুমতি দিতে সেটিংস এ আলতো চাপুন</translation>
 <translation id="2576431527583832481">Chrome আরও ভাল হয়েছে! একটি নতুন ভার্সন উপলব্ধ আছে৷</translation>
 <translation id="257708665678654955">আপনি কি এরপর থেকে এই সাইটের <ph name="LANGUAGE_NAME" /> পৃষ্ঠাগুলিকে অনুবাদ করে দেওয়ার জন্য Google Chrome থেকে প্রম্পট পেতে চান?</translation>
-<translation id="2943166482989655199">Google-এ সিস্টেম ও ব্যবহারের ডেটা পাঠিয়ে Chrome এবং তার নিরাপত্তা উন্নত করুন</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> দ্বারা ম্যানেজ করা একটি অ্যাকাউন্ট থেকে আপনি সাইন-আউট করছেন বলে, এই ডিভাইস থেকে আপনার Chrome ডেটা মুছে যাবে। আপনার Google অ্যাকাউন্টে এই ডেটা থেকে যাবে।</translation>
 <translation id="3148434565183091099">সব ডিভাইসে আপনার বুকমার্কগুলি পেতে, Chrome এ প্রবেশ করুন।</translation>
 <translation id="3148688391461398285">আপনার অবস্থানের উপর ভিত্তি করে Chrome এ একটি ভাল অভিজ্ঞতা লাভ করুন৷</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">কিছু অ্যাড-অনের কারণে Chrome ক্র্যাশ করতে পারে৷ দয়া করে আনইনস্টল করুন:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি প্রস্থান করুন করছেন৷ এটি এই ডিভাইস থেকে আপনার Chrome ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>
 <translation id="5389212809648216794">Google Chrome আপনার ক্যামেরা ব্যবহার করতে পারছে না কারণ এটি অন্য একটি অ্যাপ্লিকেশান দ্বারা ব্যবহার করা হচ্ছে</translation>
-<translation id="5489543008378040943"><ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> যেকোনও সময় কাস্টমাইজ করা যায়। Google, আপনার দেখা সাইটগুলির কন্টেন্ট, ব্রাউজারের ইন্টার‍্যাকশন এবং অ্যাক্টিভিটি ব্যবহার করে Chrome এবং অন্যান্য Google পরিষেবা যেমন অনুবাদ, সার্চ ও বিজ্ঞাপনগুলি নিজের মতো করে সাজিয়ে নিতে পারে।</translation>
 <translation id="5639704535586432836">সেটিংস &gt; গোপনীয়তা &gt; ক্যামেরা &gt; Google Chrome খুলুন এবং ক্যামেরা চালু করুন।</translation>
 <translation id="5642200033778930880">Google Chrome আপনার ক্যামেরা বিভক্ত দৃশ্য মোডে ব্যবহার করতে পারবে না</translation>
 <translation id="5854621639439811139">Chrome টিপ। কিছু বোতাম এখন আপনার স্ক্রিনে নিচের দিকে রয়েছে যেমন, ব্যাক, ফরওয়ার্ড এবং সার্চ বোতাম।</translation>

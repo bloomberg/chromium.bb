@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">‏ستُحذَف بيانات تصفُّح هذا المستخدم من هذا الجهاز. ولاسترداد البيانات، سجّل الدخول إلى Chromium بصفتك <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">‏فتح الرابط في علامة تبويب جديدة في Chromium</translation>
 <translation id="3728336900324680424">‏سيصل Chromium إلى Drive لإنشاء الاقتراحات في شريط العناوين.</translation>
-<translation id="3762167353400286894">‏يتم عرض نظام تشغيل Chromium بهذه اللغة</translation>
 <translation id="378917192836375108">‏يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">‏تثبيت Chromium على شريط المهام</translation>
+<translation id="388648406173476553">‏تخصيص Chromium والتحكُّم فيه معلومات مهمة - انقر للحصول على التفاصيل.</translation>
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
 <translation id="3898493977366060150">‏تصفُح الويب من خلال ميزات Google الذكية</translation>
 <translation id="3965668104013180445">{0,plural, =1{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ساعة واحدة}zero{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعة}two{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال ساعتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعات}many{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chromium خلال # ساعة}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
 <translation id="5712253116097046984">‏يطلب المشرف إعادة تشغيل نظام التشغيل Chromium لتطبيق هذا التحديث.</translation>
-<translation id="5726838626470692954">‏يجب على مديرك إزالتك وإضافتك مرة أخرى إلى Chromium.</translation>
 <translation id="5768914737813585044">‏عرض نظام التشغيل Chromium بهذه اللغة</translation>
 <translation id="5796460469508169315">‏Chromium جاهز تقريبًا.</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
@@ -232,7 +231,6 @@
 <translation id="7979877361127045932">‏الإخفاء في قائمة Chromium</translation>
 <translation id="8013436988911883588">‏بعد حصول Chromium على إمكانية الوصول، ستتمكن المواقع الإلكترونية من مطالبتك بإمكانية الوصول.</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">‏يتم عرض Chromium بهذه اللغة</translation>
 <translation id="81770708095080097">‏هذا الملف ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="8222496066431494154">‏بادِر بتثبيت Chromium على هاتفك. سنرسل رسالة قصيرة SMS إلى رقم هاتف استرداد حسابك: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>

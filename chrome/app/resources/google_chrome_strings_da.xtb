@@ -86,7 +86,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3080151273017101988">Fortsæt med at køre baggrundsapps, når Google Chrome er lukket</translation>
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
-<translation id="3180085900771989961">Din administrator skal fjerne dig fra Chrome og tilføje dig igen.</translation>
 <translation id="3251381707915721925">Du kan angive, hvilke websites <ph name="NEW_PROFILE_NAME" /> skal kunne se, ved at konfigurere begrænsninger og indstillinger på <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Hvis du ikke ændrer standardindstillingerne, kan <ph name="NEW_PROFILE_NAME" /> besøge alle websites på nettet.
 
 Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ved at låse din profil, når du ikke bruger Chrome. Du gør dette ved at klikke på dit profilnavn øverst til højre i browseren og vælge "Afslut, og aktivér børnesikring".
@@ -156,7 +155,6 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="5062123544085870375">Genstart Chrome OS</translation>
 <translation id="5090044601776247154">Administrerede brugerprofiler vil ikke længere være tilgængelige fra og med Google Chrome 70.</translation>
 <translation id="5132929315877954718">Find fantastiske apps, spil, udvidelser og temaer til Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome vises på dette sprog</translation>
 <translation id="5170938038195470297">Din profil kan ikke bruges, fordi den stammer fra en nyere version af Google Chrome. Nogle funktioner er muligvis ikke tilgængelige. Angiv en anden profilmappe, eller brug en nyere version af Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS kan ikke åbne denne side.</translation>
 <translation id="5204098752394657250">Google Chromes <ph name="TERMS_OF_SERVICE_LINK" />Servicevilkår<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -169,9 +167,9 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="556024056938947818">Google Chrome forsøger at vise adgangskoder.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være skadelig, så Chrome har blokeret den.</translation>
+<translation id="5686916850681061684">Tilpas og administrer Google Chrome. Noget kræver din opmærksomhed – klik for at få oplysninger.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome genstarter om 1 sekund}one{Google Chrome genstarter om # sekund}other{Google Chrome genstarter om # sekunder}}</translation>
 <translation id="573759479754913123">Om Chrome OS</translation>
-<translation id="5774845247549698882">Chrome OS vises på dette sprog</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chrome kunne ikke startes. Prøv igen.</translation>
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>

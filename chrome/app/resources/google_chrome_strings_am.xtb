@@ -90,7 +90,6 @@
 <translation id="3080151273017101988">Google Chrome ሲዘጋ የጀርባ መተግበሪያዎችን ማሂዱን ይቀጥሉ</translation>
 <translation id="3089968997497233615">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የGoogle Chrome ስሪት ይገኛል።</translation>
 <translation id="3149510190863420837">Chrome መተግበሪያዎች</translation>
-<translation id="3180085900771989961">የእርስዎ አስተዳዳሪ እርስዎን አስወግደው መልሰው ወደ Chrome ማከል አለባቸው።</translation>
 <translation id="3251381707915721925">የትኛዎቹን ድር ጣቢያዎች <ph name="NEW_PROFILE_NAME" /> ማየት እንደሚችል ለማቀናበር <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />ን በመጎብኘት ገደቦችን እና ቅንብሮችን ማወቀር ይችላሉ። ነባሪ ቅንብሮቹን ካልለወጡ <ph name="NEW_PROFILE_NAME" /> በድር ላይ ሁሉንም ነገር ማሰስ ይችላል።
 
 <ph name="NEW_PROFILE_NAME" /> የእርስዎን መለያ እንዳይደርስበት ለመከላከል Chrome በማይጠቀሙበት ጊዜ መለያዎን መቆለፍዎን ያረጋግጡ። ይህን ለማድረግ በአሳሹ ላይኛው ቀኝ ጥግ ላይ የመገለጫ ስምዎን ጠቅ ያድርጉና «ውጣ እና የሕፃን መቆለፊያ»ን ይምረጡ።
@@ -160,7 +159,6 @@
 <translation id="5062123544085870375">Chrome OSን ዳግም አስጀምር</translation>
 <translation id="5090044601776247154">ክትትል የሚደረግበት ተጠቃሚ መገለጫዎች ከGoogle Chrome 70 ከሚጀምሩ ላይ ከእንግዲህ አይገኙም</translation>
 <translation id="5132929315877954718">ለGoogle Chrome ምርጥ መተግበሪያዎችን፣ ጨዋታዎችን፣ ቅጥያዎችን እና ገጽታዎችን ያግኙ።</translation>
-<translation id="5166975452760862670">Google Chrome በዚህ ቋንቋ እየታየ ነው</translation>
 <translation id="5170938038195470297">መገለጫዎ የአዲስ Google Chrome ስሪት አካል ስለሆነ መጠቀም አይቻልም።
 
 አንዳንድ ባሕሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም አዲሱን የChrome ስሪት ይጠቀሙ።</translation>
@@ -177,9 +175,9 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="556024056938947818">Google Chrome የይለፍ ቃላትን ለማሳየት እየሞከረ ነው።</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
+<translation id="5686916850681061684">Google Chromeን ያብጁ እና ይቆጣጠሩ። የሆነ ነገር ትኩረትዎ ያስፈልገዋል - ለዝርዝሮች ጠቅ ያድርጉ።</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome በ1 ሰከንድ ውስጥ ዳግም ይጀምራል}one{Google Chrome በ​​# ሰከንዶች ውስጥ ዳግም ይጀምራል}other{Google Chrome በ​​# ሰከንዶች ውስጥ ዳግም ይጀምራል}}</translation>
 <translation id="573759479754913123">ስለ Chrome OS</translation>
-<translation id="5774845247549698882">Chrome OS በዚህ ቋንቋ እየታየ ነው</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chromeን ማስጀመር አልተቻለም። እንደገና ይሞክሩ።</translation>
 <translation id="5877064549588274448">ሰርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>

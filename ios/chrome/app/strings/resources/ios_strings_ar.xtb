@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="1063454504051558093">استخدام كلمة مرور أخرى...</translation>
+<translation id="1066060668811609597">إدارة المزامنة</translation>
 <translation id="1076421457278169141">تم مسح الرمز ضوئيًا</translation>
 <translation id="1084365883616172403">‏اكتمل النشر على Facebook.</translation>
 <translation id="1104948393051856124">القبول والمتابعة</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="1219674500290482172">يتعذر الاتصال بالإنترنت.</translation>
 <translation id="122699739164161391">إغلاق جميع علامات التبويب</translation>
+<translation id="1231733316453485619">هل تريد تفعيل المزامنة؟</translation>
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1265739287306757398">تعرَّف على الطريقة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">تم نقل <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="213900355088104901">للتصفّح بخصوصية تامّة، افتح علامة تبويب للتصفُّح المتخفي</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
+<translation id="2198757192731523470">‏قد تستخدم Google السجلّ لتخصيص "بحث Google" والإعلانات وخدمات Google الأخرى.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> من مقالات "قائمة القراءة" غير المقروءة.</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
 <translation id="2239626343334228536">جارٍ محو بيانات التصفُّح...</translation>
@@ -255,6 +258,7 @@
 <translation id="5062321486222145940">‏تثبيت Google Drive</translation>
 <translation id="5083464117946352670">تعذر تحديد حجم الملف.</translation>
 <translation id="5094827893301452931">‏اكتملت مشاركة Tweet.</translation>
+<translation id="5132942445612118989">مزامنة كلمات المرور والسجلّ والمزيد على جميع الأجهزة</translation>
 <translation id="5181140330217080051">تنزيل</translation>
 <translation id="5186185447130319458">خاص</translation>
 <translation id="5190835502935405962">شريط الإشارات</translation>

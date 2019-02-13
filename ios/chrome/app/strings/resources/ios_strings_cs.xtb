@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Přidat stránku do záložek...</translation>
 <translation id="1049743911850919806">Anonymní režim</translation>
 <translation id="1063454504051558093">Použit jiné heslo...</translation>
+<translation id="1066060668811609597">Správa synchronizace</translation>
 <translation id="1076421457278169141">Kód byl naskenován</translation>
 <translation id="1084365883616172403">Příspěvek na Facebook byl odeslán.</translation>
 <translation id="1104948393051856124">Přijmout a pokračovat</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Prozatím skrýt</translation>
 <translation id="1219674500290482172">Nelze se připojit k internetu.</translation>
 <translation id="122699739164161391">Zavřít všechny karty</translation>
+<translation id="1231733316453485619">Zapnout synchronizaci?</translation>
 <translation id="1254117744268754948">Výběr složky</translation>
 <translation id="1265739287306757398">Postup</translation>
 <translation id="1272079795634619415">Zastavit</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">Počet přesunutých položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Procházejte internet v soukromí na anonymní kartě</translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
+<translation id="2198757192731523470">Google vaši historii může používat k personalizaci Vyhledávání, reklam a dalších služeb Google.</translation>
 <translation id="2207590065820824892">Počet nepřečtených článků v seznamu četby: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Webová stránka byla načtena</translation>
 <translation id="2239626343334228536">Mazání údajů o prohlížení...</translation>
@@ -255,6 +258,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5062321486222145940">Instalace Disku Google</translation>
 <translation id="5083464117946352670">Velikost souboru nelze zjistit.</translation>
 <translation id="5094827893301452931">Tweet byl odeslán.</translation>
+<translation id="5132942445612118989">Vaše hesla, historie a další údaje na všech zařízeních</translation>
 <translation id="5181140330217080051">Stahování</translation>
 <translation id="5186185447130319458">Soukromé</translation>
 <translation id="5190835502935405962">Lišta záložek</translation>

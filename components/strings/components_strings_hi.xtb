@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">हां</translation>
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1455413310270022028">इरेज़र</translation>
+<translation id="1463543813647160932">5x7</translation>
 <translation id="1484290072879560759">शिपिंग पता चुनें</translation>
 <translation id="1501859676467574491">अपने Google खाते में मौजूद कार्ड दिखाएं</translation>
 <translation id="1506687042165942984">इस पृष्‍ठ की सहेजी गई (अर्थात जिसे पुराना माना जाता है) कॉपी दिखाएं.</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> भाषा के पेजों का अनुवाद नहीं किया जाएगा.</translation>
 <translation id="2053553514270667976">ज़िप कोड</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 सुझाव}one{# सुझाव}other{# सुझाव}}</translation>
+<translation id="2068124040035837596">आपके खाते को <ph name="ENROLLMENT_DOMAIN" /> की ओर से प्रबंधित किया जाता है. इसका मतलब है कि आपका एडमिन दूर रहकर आपके खाते को कॉन्फ़िगर कर सकता है.</translation>
 <translation id="2068663545051464999">अपलोड की गई खराबी रिपोर्ट आईडी <ph name="CRASH_ID" /> (स्थानीय संदर्भ : <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="20817612488360358">सिस्‍टम प्रॉक्‍सी सेटिंग उपयोग किए जाने के लिए सेट हैं लेकिन कोई स्पष्‍ट प्रॉक्‍सी कॉन्फ़िगरेशन भी निर्दिष्ट है.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">शिपिंग का यह तरीका उपलब्ध नहीं है. कोई दूसरा तरीका आज़माएं.</translation>
 <translation id="2396249848217231973">&amp;हटाना वापस लाएं</translation>
 <translation id="2413528052993050574">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" />; इसका सुरक्षा प्रमाणपत्र निरस्त कर दिया गया है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
+<translation id="244665789865330679">आपके डिवाइस और खाते को <ph name="ENROLLMENT_DOMAIN" /> की ओर से प्रबंधित किया जाता है. इसका मतलब है कि आपका एडमिन दूर रहकर आपके डिवाइस और खाते को कॉन्फ़िगर कर सकता है.</translation>
 <translation id="2463193859425327265">होम पेज बदलें</translation>
 <translation id="2463739503403862330">भरें</translation>
 <translation id="2465655957518002998">डिलीवरी का तरीका चुनें</translation>
@@ -375,7 +378,6 @@
 <translation id="3287510313208355388">ऑनलाइन होने पर डाउनलोड करें</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> नीति के बारे में अधिक जानें</translation>
 <translation id="3303855915957856445">कोई खोज परिणाम नहीं मिला</translation>
-<translation id="3305707030755673451">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ <ph name="TIME" /> को एन्क्रिप्ट किया गया था. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
 <translation id="3324983252691184275">गहरा लाल</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
@@ -561,6 +563,7 @@
 <translation id="4377125064752653719">आपने <ph name="DOMAIN" /> तक पहुंचने का प्रयास किया, लेकिन सर्वर द्वारा प्रस्तुत प्रमाणपत्र को उसके जारीकर्ता द्वारा रद्द कर दिया गया है. इसका अर्थ है कि सर्वर द्वारा प्रस्तुत सुरक्षा प्रमाणिकता पर पूर्णतया विश्वास नहीं करना चाहिए. हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों.</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
 <translation id="4406896451731180161">खोज परिणाम</translation>
+<translation id="4406972042435603828">आपके एडमिन ने ज़्याद क्षमताओं वाले एक्सटेंशन इंस्टॉल किए हैं.</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> कुकी</translation>
 <translation id="4415426530740016218">पिकअप का पता</translation>
 <translation id="4424024547088906515">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र Chrome द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
@@ -632,10 +635,12 @@
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
 <translation id="4950898438188848926">'टैब' बदलने का बटन, नए टैब पर जाने के लिए Enter दबाएं, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">क्रियाएं</translation>
+<translation id="495832697253704892">एक्सटेंशन रिपोर्टिंग</translation>
 <translation id="4958444002117714549">सूची विस्तृत करें</translation>
 <translation id="4974590756084640048">चेतावनियां फिर से सक्षम करें</translation>
 <translation id="4989163558385430922">सभी देखें</translation>
 <translation id="4989809363548539747">यह प्लग इन समर्थित नहीं है</translation>
+<translation id="4996230189582812866">रिपोर्ट करना</translation>
 <translation id="5002932099480077015">यदि सक्षम किया हुआ हो, तो Chrome फ़ॉर्म को तेज़ी से भरने के लिए इस डिवाइस पर आपके कार्ड की एक प्रति संग्रहित करेगा.</translation>
 <translation id="5014174725590676422">'Chrome में Google Assistant' की सबसे पहली स्क्रीन दिखाई गई है</translation>
 <translation id="5015510746216210676">मशीन का नाम:</translation>
@@ -656,6 +661,7 @@
 <translation id="5089810972385038852">राज्य</translation>
 <translation id="5094747076828555589">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र Chromium द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="5095208057601539847">प्रांत</translation>
+<translation id="5098222253617183465">आपके डिवाइस को <ph name="ENROLLMENT_DOMAIN" /> की ओर से प्रबंधित किया जाता है और आपके खाते को <ph name="ACCOUNT_DOMAIN" /> की ओर से प्रबंधित किया जाता है. इसका मतलब है कि आपके एडमिन दूर रहकर आपके डिवाइस और खाते को कॉन्फ़िगर कर सकते हैं.</translation>
 <translation id="5115563688576182185">(64-बिट)</translation>
 <translation id="5128122789703661928">इस नाम वाला सीज़न मिटाने के लिए मान्य नहीं है.</translation>
 <translation id="5135404736266831032">पते प्रबंधित करें...</translation>
@@ -668,6 +674,7 @@
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> में नहीं है? इस गड़बड़ी की रिपोर्ट करें</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
+<translation id="5200263511887412697">हाल ही में लॉग इन करने वाले डिवाइस उपयोगकर्ताओं की रिपोर्ट सूची</translation>
 <translation id="5201306358585911203">इस पेज पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="5205222826937269299">नाम ज़रूरी है</translation>
 <translation id="5215116848420601511">Google Pay का इस्तेमाल करने वाले भुगतान के तरीके और पते</translation>
@@ -738,6 +745,7 @@
 <translation id="563324245173044180">भ्रामक सामग्री ब्लॉक की गई.</translation>
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5675650730144413517">यह पेज काम नहीं कर रहा है</translation>
+<translation id="5684874026226664614">ओह. इस पेज का अनुवाद नहीं किया जा सका.</translation>
 <translation id="5685654322157854305">शिपिंग पता जोड़ें</translation>
 <translation id="5689199277474810259">JSON में निर्यात करें</translation>
 <translation id="5689516760719285838">स्थान</translation>
@@ -769,10 +777,10 @@
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
 <translation id="5887400589839399685">कार्ड सेव किया गया</translation>
+<translation id="5893718151540690985">नेटवर्क इंटरफ़ेस के प्रकारों और हार्डवेयर पतों सहित उसकी रिपोर्ट सूची</translation>
 <translation id="5893752035575986141">क्रेडिट कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="5901630391730855834">पीला</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक किया गया)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 उपयोग में है}one{# उपयोग में हैं}other{# उपयोग में हैं}}</translation>
 <translation id="5921639886840618607">कार्ड को Google खाते में सेव करें?</translation>
 <translation id="5922853866070715753">करीब-करीब हो गया है</translation>
 <translation id="5932224571077948991">साइट में तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
@@ -782,6 +790,7 @@
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
+<translation id="5977489021191000276">आपके डिवाइस को किसी एडमिन की ओर से प्रबंधित नहीं किया जाता.</translation>
 <translation id="5977976211062815271">इस डिवाइस पर</translation>
 <translation id="598637245381783098">भुगतान ऐप्लिकेशन नहीं खोला जा सकता</translation>
 <translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL साफ़ तौर पर बताया गया है.</translation>
@@ -793,6 +802,7 @@
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर ऐसे भ्रामक ऐप्लिकेशन इंस्टॉल कर सकते हैं जो कुछ और होने का दावा करते हैं या ऐसा डेटा एकत्रित करते हैं जिसका उपयोग आप पर नज़र रखने के लिए किया जा सके. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक किए गए)</translation>
 <translation id="6027201098523975773">नाम डालें</translation>
+<translation id="6033927989869462158">हार्डवेयर आंकड़ों जैसे कि सीपीयू (CPU)/RAM इस्तेमाल की रिपोर्ट करें</translation>
 <translation id="6034000775414344507">हल्का भूरा</translation>
 <translation id="6039846035001940113">अगर समस्या बनी रहती है, तो साइट के मालिक से संपर्क करें.</translation>
 <translation id="6040143037577758943">बंद करें</translation>
@@ -905,6 +915,8 @@
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
 <translation id="6903319715792422884">'सुरक्षित ब्राउज़िंग' को बेहतर बनाने में मदद करने के लिए Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />'सिस्टम जानकारी' और 'पेज सामग्री'<ph name="END_WHITEPAPER_LINK" /> भेजें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
+<translation id="6934672428414710184">यह नाम आपके Google खाते से है</translation>
+<translation id="6939583532829045966">आपके डिवाइस को <ph name="ENROLLMENT_DOMAIN" /> की ओर से प्रबंधित किया जाता है. इसका मतलब है कि आपका एडमिन दूर रहकर आपके डिवाइस को कॉन्फ़िगर कर सकता है.</translation>
 <translation id="6944692733090228304">आपने एक ऐसी साइट पर अपना पासवर्ड डाला है जिसे <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> प्रबंधित नहीं करता है. अपने खाते को सुरक्षित रखने के लिए, दूसरे ऐप्लिकेशन और साइटों पर अपने पासवर्ड का दोबारा इस्तेमाल न करें.</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
@@ -992,6 +1004,7 @@
       &lt;li&gt;&lt;strong&gt;लागू करें&lt;/strong&gt; पर क्लिक करें, फिर &lt;strong&gt;ठीक है&lt;/strong&gt; पर क्लिक करें
       &lt;li&gt;&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome सहायता केंद्र&lt;/a&gt; पर जाकर अपने कंप्यूटर से सॉफ़्टवेयर को हमेशा के लिए हटाने का तरीका जानें
       &lt;/ol&gt;</translation>
+<translation id="7413422570546054399"><ph name="PRODUCT_NAME" /> प्रबंधन</translation>
 <translation id="7416351320495623771">पासवर्ड प्रबंधित करें…</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पथ</translation>
 <translation id="7437289804838430631">संपर्क जानकारी जोड़ें</translation>
@@ -1000,10 +1013,12 @@
 <translation id="7442725080345379071">हल्का नारंगी</translation>
 <translation id="7444046173054089907">यह साइट अवरोधित है</translation>
 <translation id="7445762425076701745">जिस सर्वर से आप कनेक्‍ट हैं उसकी पहचान पूर्णत: सत्‍यापित नहीं की जा सकती. आपने केवल आपके नेटवर्क में ही मान्‍य नाम का उपयोग कर किसी सर्वर से कनेक्‍ट किया है, जिसकी मान्‍यता का सत्‍यापन कोई बाह्य प्रमाणपत्र प्राधिकरण नहीं करता है. जैसा कि कुछ प्रमाणपत्र प्राधिकरण इन नामों के लिए प्रमाणपत्र जारी कर देंगे, और इस पर ध्यान नहीं दिया जाएगा कि यह सुनिश्‍चित करने का कोई तरीका नहीं है कि आप नियत वेबसाइट से कनेक्‍ट हैं, न कि किसी आक्रमणकर्ता से.</translation>
+<translation id="7449109375006139765">प्रबंधन सर्वर को सिस्टम लॉग भेजें</translation>
 <translation id="7451311239929941790">इस समस्या के बारे में <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">वैश्विक डिफ़ॉल्ट का उपयोग करें (अवरोधित करें)</translation>
 <translation id="7460618730930299168">यह स्क्रीनिंग आपकी चुनी गई स्क्रीनिंग से अलग है. क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="7473891865547856676">जी रहने दें</translation>
+<translation id="7475525192983021547">किसी उपयोगकर्ता के डिवाइस पर काम करते रहने पर समय अवधि को रिपोर्ट करें</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
 <translation id="7508255263130623398">वापस लौटाया हुआ नीति डिवाइस आईडी खाली है या उसका मिलान वर्तमान डिवाइस आईडी से नहीं होता है</translation>
@@ -1096,6 +1111,7 @@
 <translation id="7995512525968007366">निर्दिष्‍ट नहीं किया गया</translation>
 <translation id="800218591365569300">जगह खाली करने के लिए दूसरे टैब या प्रोग्राम बंद करके देखें.</translation>
 <translation id="8009225694047762179">पासवर्ड संभालें</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{इस कार्ड और इसके बिलिंग पते को सेव किया जाएगा. <ph name="USER_EMAIL" /> में साइन इन रहने पर आप इसका इस्तेमाल कर पाएंगे.}one{ये कार्ड और इनके बिलिंग पते सेव किए जाएंगे. <ph name="USER_EMAIL" /> में साइन इन रहने पर आप उनका इस्तेमाल कर पाएंगे.}other{ये कार्ड और इनके बिलिंग पते सेव किए जाएंगे. <ph name="USER_EMAIL" /> में साइन इन रहने पर आप उनका इस्तेमाल कर पाएंगे.}}</translation>
 <translation id="8012647001091218357">हम इस समय आपके अभिभावकों तक नहीं पहुंच पा रहे हैं. कृपया पुन: प्रयास करें.</translation>
 <translation id="8025119109950072390">इस साइट पर मौजूद हमलावर आपको धोखा देकर आपसे कुछ जोखिम वाला काम करा सकते हैं, जैसे सॉफ़्टवेयर इंस्टॉल करना या आपकी व्यक्तिगत जानकारी (उदाहरण के लिए, पासवर्ड, फ़ोन नंबर या क्रेडिट कार्ड) प्रकट करना.</translation>
 <translation id="8034522405403831421">यह पेज <ph name="SOURCE_LANGUAGE" /> में है. इसका <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
@@ -1106,6 +1122,7 @@
 <translation id="8041940743680923270">वैश्विक डिफ़ॉल्ट का उपयोग करें (पूछें)</translation>
 <translation id="8042918947222776840">पिकअप का तरीका चुनें</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" सही तरीके से कॉन्फ़िगर नहीं किया गया है. आमतौर पर "<ph name="SOFTWARE_NAME" />" को अनइंस्टॉल करने से समस्या ठीक हो जाती है. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">आपका डिवाइस इसके लिए कॉन्फ़िगर किया गया है:</translation>
 <translation id="8078141288243656252">घुमाने पर एनोटेट नहीं कर सकते</translation>
 <translation id="8079031581361219619">साइट को फिर लोड करें?</translation>
 <translation id="8088680233425245692">लेख देखने में विफल रहा.</translation>
@@ -1156,6 +1173,7 @@
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
 <translation id="8368476060205742148">Google Play सेवाएं</translation>
+<translation id="8371889962595521444">कस्टम रूट सर्टिफ़िकेट</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
 <translation id="8381674639488873545">ये शुल्क एक बार लगने वाले या बार-बार लगने वाले हो सकते हैं और हो सकता है कि इनके बारे में साफ़ तौर पर न बताया जाए. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">हाल ही में विज़िट किए गए आपके बुकमार्क यहां दिखाई देते हैं</translation>
@@ -1165,6 +1183,7 @@
 <translation id="8416694386774425977">नेटवर्क कॉन्फ़िगरेशन गलत है और उसे लाया नहीं जा सका.
 ज़्यादा जानकारी:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533"><ph name="ENROLLMENT_DOMAIN" /> की ओर से प्रबंधित डिवाइस</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">बदलें</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
@@ -1226,6 +1245,7 @@
 <translation id="8932102934695377596">आपकी घड़ी पीछे है</translation>
 <translation id="893332455753468063">नाम जोड़ें</translation>
 <translation id="8938939909778640821">स्वीकृत क्रेडिट और प्रीपेड कार्ड</translation>
+<translation id="894185898663964645">आपके एडमिन ने कस्टम रूट सर्टिफ़िकेट कॉन्फ़िगर किए हैं, जो एडमिन को उन वेबसाइट की सामग्री देखने दे सकते हैं जिन पर आप जाते हैं.</translation>
 <translation id="8943282376843390568">नींबू पीला</translation>
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल प्राधिकरण</translation>
 <translation id="8968766641738584599">कार्ड सेव करें</translation>

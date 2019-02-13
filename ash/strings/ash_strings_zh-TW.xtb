@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">單聲道音訊</translation>
 <translation id="3009178788565917040">輸出</translation>
 <translation id="3019353588588144572">電池剩餘充電時間：<ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">系統即將移除你的受監管使用者個人資料。登入即可瞭解詳情。</translation>
 <translation id="3055162170959710888">你今天的裝置使用時間：<ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081696990447829002">展開選單</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">使用多帳戶登入功能時，一次最多只能登入 <ph name="MULTI_PROFILE_USER_LIMIT" /> 個帳戶。</translation>
 <translation id="3154351730702813399">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{已連線至一部裝置}other{已連線至 # 部裝置}}</translation>
-<translation id="32244657276328332">未連上網路</translation>
 <translation id="3236488194889173876">沒有可用的行動網路</translation>
 <translation id="3255483164551725916">你會做些什麼？</translation>
 <translation id="3294437725009624529">訪客</translation>

@@ -89,7 +89,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3080151273017101988">Poursuivre l'exécution d'applications en arrière-plan après la fermeture de Google Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
-<translation id="3180085900771989961">Votre administrateur doit vous supprimer de Chrome et vous y rajouter.</translation>
 <translation id="3251381707915721925">Pour définir les sites Web que l'utilisateur <ph name="NEW_PROFILE_NAME" /> peut consulter, vous pouvez configurer des restrictions et des paramètres sur le site <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si vous conservez les paramètres par défaut, <ph name="NEW_PROFILE_NAME" /> peut parcourir l'ensemble des sites du Web.
 
 Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assurez-vous de verrouiller votre profil lorsque vous n'utilisez pas Chrome. Pour ce faire, cliquez sur le nom de votre profil dans l'angle supérieur droit du navigateur, puis sélectionnez "Fermer et activer le verrouillage enfant".
@@ -160,7 +159,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="5062123544085870375">Redémarrer Chrome OS</translation>
 <translation id="5090044601776247154">Les utilisateurs supervisés ne seront plus disponibles à partir de Chromium 70.</translation>
 <translation id="5132929315877954718">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome est affiché dans cette langue</translation>
 <translation id="5170938038195470297">Votre profil ne peut pas être utilisé parce qu'il vient d'une version plus récente de Google Chrome. 
 
 Certaines fonctionnalités peuvent être indisponibles. Veuillez spécifier un répertoire de profil différent ou utiliser une version plus récente de Google Chrome.</translation>
@@ -177,9 +175,9 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="556024056938947818">Tentative d'affichage des mots de passe dans Google Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier peut être dangereux.</translation>
+<translation id="5686916850681061684">Personnalisez et contrôlez Google Chrome. Une action de votre part est requise. Cliquez pour en savoir plus.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome va redémarrer dans 1 seconde}one{Google Chrome va redémarrer dans # seconde}other{Google Chrome va redémarrer dans # secondes}}</translation>
 <translation id="573759479754913123">À propos de Chrome OS</translation>
-<translation id="5774845247549698882">Chrome OS est affiché dans cette langue</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Impossible de lancer Chrome. Réessayez.</translation>
 <translation id="5877064549588274448">La version a été modifiée. Redémarrez votre appareil pour appliquer les modifications.</translation>

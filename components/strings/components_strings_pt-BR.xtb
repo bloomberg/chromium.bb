@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455413310270022028">Borracha</translation>
+<translation id="1463543813647160932">5x7</translation>
 <translation id="1484290072879560759">Escolher endereço de entrega</translation>
 <translation id="1501859676467574491">Mostre os cartões salvos na Conta do Google</translation>
 <translation id="1506687042165942984">Mostrar uma cópia salva (ou seja, reconhecidamente desatualizada) desta página.</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936">Páginas em <ph name="LANGUAGE" /> não serão traduzidas.</translation>
 <translation id="2053553514270667976">CEP</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 sugestão}one{# sugestão}other{# sugestões}}</translation>
+<translation id="2068124040035837596">Sua conta é gerenciada por <ph name="ENROLLMENT_DOMAIN" />. Isso significa que seu administrador pode configurá-la remotamente.</translation>
 <translation id="2068663545051464999">Upload do relatório de erros <ph name="CRASH_ID" /> concluído (Contexto local: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="20817612488360358">As configurações de proxy do sistema são definidas para serem utilizadas, mas uma configuração explícita de proxy também foi especificada.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">Esse método de envio não está disponível. Tente um método diferente.</translation>
 <translation id="2396249848217231973">&amp;Desfazer exclusão</translation>
 <translation id="2413528052993050574">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança pode ter sido revogado. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
+<translation id="244665789865330679">Seu dispositivo e sua conta são gerenciados por <ph name="ENROLLMENT_DOMAIN" />. Isso significa que seu administrador pode configurá-los remotamente.</translation>
 <translation id="2463193859425327265">Alterar a página inicial</translation>
 <translation id="2463739503403862330">Preencher</translation>
 <translation id="2465655957518002998">Escolher método de entrega</translation>
@@ -375,7 +378,6 @@
 <translation id="3287510313208355388">Fazer o download quando estiver on-line</translation>
 <translation id="3293642807462928945">Saiba mais sobre a política <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Nenhum resultado de pesquisa encontrado</translation>
-<translation id="3305707030755673451">Seus dados foram criptografados com sua senha longa de sincronização no dia <ph name="TIME" />. Informe-a para começar a sincronização.</translation>
 <translation id="3320021301628644560">Adicionar endereço de faturamento</translation>
 <translation id="3324983252691184275">Carmim</translation>
 <translation id="3338095232262050444">Seguro</translation>
@@ -561,6 +563,7 @@
 <translation id="4377125064752653719">Você tentou acessar <ph name="DOMAIN" />, mas o certificado que o servidor apresentou foi revogado pelo seu emissor. Isso significa que as credenciais de segurança que o servidor apresentou não são nem um pouco seguras. Talvez você esteja se comunicando com um invasor.</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="4406896451731180161">resultados da pesquisa</translation>
+<translation id="4406972042435603828">Seus administradores instalaram extensões com recursos avançados.</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Endereço de Retirada</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chrome. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
@@ -632,10 +635,12 @@
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="4950898438188848926">Botão de alternância de guia. Pressione Enter para alternar para a guia aberta, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Ações</translation>
+<translation id="495832697253704892">Relatório de extensões</translation>
 <translation id="4958444002117714549">Expandir lista</translation>
 <translation id="4974590756084640048">Reativar avisos</translation>
 <translation id="4989163558385430922">Ver tudo</translation>
 <translation id="4989809363548539747">Este plug-in não é compatível</translation>
+<translation id="4996230189582812866">Relatórios</translation>
 <translation id="5002932099480077015">Se ativado, o Chrome armazenará uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
 <translation id="5014174725590676422">Exibição da tela de primeiro acesso do Google Assistente no Chrome</translation>
 <translation id="5015510746216210676">Nome do computador:</translation>
@@ -656,6 +661,7 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5094747076828555589">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chromium. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="5095208057601539847">Província</translation>
+<translation id="5098222253617183465">Seu dispositivo é gerenciado por <ph name="ENROLLMENT_DOMAIN" />, e sua conta é gerenciada por <ph name="ACCOUNT_DOMAIN" />. Isso significa que seus administradores podem configurá-los remotamente.</translation>
 <translation id="5115563688576182185">64 bits</translation>
 <translation id="5128122789703661928">A sessão com este nome não é válida para exclusão.</translation>
 <translation id="5135404736266831032">Gerenciar endereços…</translation>
@@ -668,6 +674,7 @@
 <translation id="5172758083709347301">Máquina</translation>
 <translation id="5179510805599951267">Não está em <ph name="ORIGINAL_LANGUAGE" />? Informe este erro</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>
+<translation id="5200263511887412697">informar a lista de usuários do dispositivo que fizeram login recentemente</translation>
 <translation id="5201306358585911203">Uma página incorporada nesta página diz</translation>
 <translation id="5205222826937269299">Nome obrigatório</translation>
 <translation id="5215116848420601511">Formas de pagamento e endereços que usam o Google Pay</translation>
@@ -738,6 +745,7 @@
 <translation id="563324245173044180">Conteúdo enganoso bloqueado.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5675650730144413517">Esta página não está funcionando</translation>
+<translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
 <translation id="5685654322157854305">Adicionar endereço de entrega</translation>
 <translation id="5689199277474810259">Exportar para JSON</translation>
 <translation id="5689516760719285838">Local</translation>
@@ -769,10 +777,10 @@
 <translation id="5869405914158311789">Não é possível acessar esse site</translation>
 <translation id="5869522115854928033">Senhas salvas</translation>
 <translation id="5887400589839399685">Cartão salvo</translation>
+<translation id="5893718151540690985">informar uma lista de interfaces de rede com os tipos e endereços de hardware delas</translation>
 <translation id="5893752035575986141">Cartões de crédito são aceitos.</translation>
 <translation id="5901630391730855834">Amarelo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em uso}one{# em uso}other{# em uso}}</translation>
 <translation id="5921639886840618607">Salvar cartão na Conta do Google?</translation>
 <translation id="5922853866070715753">Quase pronto</translation>
 <translation id="5932224571077948991">No site, há exibição de anúncios invasivos ou enganosos</translation>
@@ -782,6 +790,7 @@
 <translation id="5967592137238574583">Edite as Informações de Contato</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
 <translation id="5975083100439434680">Diminuir zoom</translation>
+<translation id="5977489021191000276">Seu dispositivo não é gerenciado por um administrador.</translation>
 <translation id="5977976211062815271">Neste dispositivo</translation>
 <translation id="598637245381783098">Não foi possível abrir app de pagamento</translation>
 <translation id="5989320800837274978">Nem os servidores proxy fixos nem o URL de script .pac foram especificados.</translation>
@@ -793,6 +802,7 @@
 <translation id="6017850046339264347">Invasores em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem instalar apps enganosos que fingem ser outra pessoa ou coletam dados que podem ser usados para rastrear você. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sincronizados)</translation>
 <translation id="6027201098523975773">Insira um nome</translation>
+<translation id="6033927989869462158">informar estatísticas de hardware, como uso de CPU/RAM</translation>
 <translation id="6034000775414344507">Cinza-claro</translation>
 <translation id="6039846035001940113">Se o problema continuar, entre em contato com o proprietário do site.</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -905,6 +915,8 @@
 <translation id="6897140037006041989">Agente do usuário</translation>
 <translation id="6903319715792422884">Ajudar a melhorar o recurso "Navegação segura" enviando algumas <ph name="BEGIN_WHITEPAPER_LINK" />informações do sistema e conteúdo da página<ph name="END_WHITEPAPER_LINK" /> para o Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuário:</translation>
+<translation id="6934672428414710184">Este nome é da sua Conta do Google</translation>
+<translation id="6939583532829045966">Seu dispositivo é gerenciado por <ph name="ENROLLMENT_DOMAIN" />. Isso significa que seu administrador pode configurá-lo remotamente.</translation>
 <translation id="6944692733090228304">Você inseriu sua senha em um site que não é gerenciado por <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Para proteger sua conta, não reutilize sua senha em outros apps e sites.</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6948701128805548767">Para ver métodos e requisitos de retirada, selecione um endereço</translation>
@@ -992,6 +1004,7 @@ Mais detalhes:
     &lt;li&gt;Clique em &lt;strong&gt;Aplicar&lt;/strong&gt; e depois em &lt;strong&gt;OK&lt;/strong&gt;
     &lt;li&gt;Visite a &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Central de Ajuda do Chrome&lt;/a&gt; para saber como remover permanentemente o software do seu computador
     &lt;/ol&gt;</translation>
+<translation id="7413422570546054399">Gerenciamento do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7416351320495623771">Gerenciar senhas…</translation>
 <translation id="7419106976560586862">Caminho de perfil</translation>
 <translation id="7437289804838430631">Adicionar Informações de Contato</translation>
@@ -1000,10 +1013,12 @@ Mais detalhes:
 <translation id="7442725080345379071">Laranja-claro</translation>
 <translation id="7444046173054089907">Este site está bloqueado</translation>
 <translation id="7445762425076701745">A identidade do servidor ao qual você está conectado não pode ser validada completamente. Você está conectado ao servidor com um nome válido somente na sua rede e que, portanto, uma autoridade de certificação externa não consegue validar a propriedade. Como algumas autoridades de certificação emitem certificados para esses nomes mesmo assim, não é possível garantir que você esteja conectado ao site que gostaria e não a um invasor.</translation>
+<translation id="7449109375006139765">enviar registros do sistema para o servidor de gerenciamento</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Saber mais<ph name="END_LINK" /> sobre esse problema.</translation>
 <translation id="7455133967321480974">Usar padrão global (Bloquear)</translation>
 <translation id="7460618730930299168">A exibição na tela está diferente da que você selecionou. Continuar?</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
+<translation id="7475525192983021547">informar os períodos de atividade do usuário no dispositivo</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
 <translation id="7508255263130623398">O código do dispositivo da política retornado está em branco ou não corresponde ao código do dispositivo atual</translation>
@@ -1096,6 +1111,7 @@ Mais detalhes:
 <translation id="7995512525968007366">Não especificado</translation>
 <translation id="800218591365569300">Tente fechar outras guias ou programas para liberar memória.</translation>
 <translation id="8009225694047762179">Gerenciar senha</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{Este cartão e o endereço de faturamento dele serão salvos. Você poderá usá-lo quando a conta <ph name="USER_EMAIL" /> estiver conectada.}one{Este cartão e o endereço de faturamento dele serão salvos. Você poderá usá-lo quando a conta <ph name="USER_EMAIL" /> estiver conectada.}other{Estes cartões e os endereços de faturamento deles serão salvos. Você poderá usá-los quando a conta <ph name="USER_EMAIL" /> estiver conectada.}}</translation>
 <translation id="8012647001091218357">Não foi possível contatar seus pais. Tente novamente.</translation>
 <translation id="8025119109950072390">Invasores nesse site podem induzir você a fazer algo perigoso, como instalar um software ou revelar suas informações pessoais (por exemplo, senhas, números de telefone ou cartões de crédito).</translation>
 <translation id="8034522405403831421">Esta página está escrita em <ph name="SOURCE_LANGUAGE" />. Traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1106,6 +1122,7 @@ Mais detalhes:
 <translation id="8041940743680923270">Usar padrão global (Perguntar)</translation>
 <translation id="8042918947222776840">Escolher método de retirada</translation>
 <translation id="8057711352706143257">O software "<ph name="SOFTWARE_NAME" />" não foi configurado corretamente. A desinstalação do "<ph name="SOFTWARE_NAME" />" costuma resolver o problema. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">Seu dispositivo foi configurado para:</translation>
 <translation id="8078141288243656252">Não é possível fazer anotações em documentos girados</translation>
 <translation id="8079031581361219619">Atualizar o site?</translation>
 <translation id="8088680233425245692">Falha ao exibir artigo.</translation>
@@ -1156,6 +1173,7 @@ Mais detalhes:
 <translation id="8363502534493474904">Desativar modo avião</translation>
 <translation id="8364627913115013041">Não definida.</translation>
 <translation id="8368476060205742148">Serviços do Google Play</translation>
+<translation id="8371889962595521444">Personalizar certificados raiz</translation>
 <translation id="8380941800586852976">Perigoso</translation>
 <translation id="8381674639488873545">Essas cobranças podem ser únicas ou recorrentes e talvez não sejam óbvias. <ph name="BEGIN_LINK" />Mostrar mesmo assim<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Os favoritos visitados recentemente aparecerão aqui</translation>
@@ -1165,6 +1183,7 @@ Mais detalhes:
 <translation id="8416694386774425977">A configuração de rede é inválida e não pôde ser importada.
 Mais detalhes:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533">Dispositivo gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="8428213095426709021">Configurações</translation>
@@ -1226,6 +1245,7 @@ Mais detalhes:
 <translation id="8932102934695377596">Seu relógio está atrasado</translation>
 <translation id="893332455753468063">Adicione um Nome</translation>
 <translation id="8938939909778640821">Cartões de crédito e pré-pagos aceitos</translation>
+<translation id="894185898663964645">Seu administrador configurou certificados raiz personalizados, o que pode permitir que ele veja o conteúdo dos sites que você visita.</translation>
 <translation id="8943282376843390568">Verde-limão</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
 <translation id="8968766641738584599">Salvar cartão</translation>

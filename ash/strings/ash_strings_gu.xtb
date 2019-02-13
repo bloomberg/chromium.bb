@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">મૉનો ઑડિઓ</translation>
 <translation id="3009178788565917040">આઉટપુટ</translation>
 <translation id="3019353588588144572">બેટરી સંપૂર્ણપણે ચાર્જ થવામાં બાકી સમય, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">તમારું નિરીક્ષિત વપરાશકર્તા પ્રોફાઇલ ટૂંક સમયમાં કાઢી નાખવામાં આવશે. વધુ જાણવા માટે સાઇન ઇન કરો.</translation>
 <translation id="3055162170959710888">આજે તમે <ph name="USED_TIME" /> માટે આ ડિવાઇસનો ઉપયોગ કર્યો છે</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">મેનૂ વિસ્તૃત કરો</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">તમે એકથી વધુ સાઇન ઇનમાં માત્ર <ph name="MULTI_PROFILE_USER_LIMIT" /> સુધી એકાઉન્ટ રાખી શકો છો.</translation>
 <translation id="3154351730702813399">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ઉપકરણ સાથે કનેક્ટ કર્યું}one{# ઉપકરણો સાથે કનેક્ટ કર્યું}other{# ઉપકરણો સાથે કનેક્ટ કર્યું}}</translation>
-<translation id="32244657276328332">નેટવર્કથી કનેક્ટ થયેલું નથી</translation>
 <translation id="3236488194889173876">કોઈ મોબાઇલ નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="3255483164551725916">તમે શું કરી શકો?</translation>
 <translation id="3294437725009624529">અતિથિ</translation>

@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">値は <ph name="MAXIMUM" /> 以下にする必要があります。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3557673793733683882">見出し <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">残りの再生時間（秒）</translation>
 <translation id="3706100364254443312">切り替え</translation>
 <translation id="3732799496749320381">月</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">シークバー</translation>
 <translation id="3808586225841795776">用語</translation>
 <translation id="3822383571486410024">このテキストは <ph name="MIN_CHARACTERS" /> 文字以上で指定してください（現在は <ph name="CURRENT_LENGTH" /> 文字です）。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」の前の文字列に記号「<ph name="INVALIDCHARACTER" />」を使用しないでください。</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">メニューボタン</translation>
 <translation id="4446524499724042288">用語参照</translation>
 <translation id="4522570452068850558">詳細</translation>
+<translation id="4542388879936266156">残り時間: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">フォーム</translation>
 <translation id="4661075872484491155">ツリー</translation>
 <translation id="4664250907885839816">「<ph name="ATSIGN" />」に続く文字列に記号「<ph name="INVALIDCHARACTER" />」を使用しないでください。</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405"> 年 </translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">値が無効です。</translation>
+<translation id="8403857369060869934">経過時間: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">部</translation>
 <translation id="8433900881053900389">ツールバー</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ファイル</translation>

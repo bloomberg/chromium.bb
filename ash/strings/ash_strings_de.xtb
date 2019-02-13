@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Ihr Profil für betreute Nutzer wird bald entfernt. Melden Sie sich an, um mehr zu erfahren.</translation>
 <translation id="3055162170959710888">Du hast das Gerät heute <ph name="USED_TIME" /> verwendet</translation>
 <translation id="3077734595579995578">Umschalttaste</translation>
 <translation id="3081696990447829002">Menü maximieren</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
 <translation id="3154351730702813399">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Mit einem Gerät verbunden}other{Mit # Geräten verbunden}}</translation>
-<translation id="32244657276328332">Keine Netzwerkverbindung</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
 <translation id="3255483164551725916">Was kannst du alles tun?</translation>
 <translation id="3294437725009624529">Gast</translation>

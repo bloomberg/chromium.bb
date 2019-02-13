@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Η τιμή πρέπει να είναι μικρότερη ή ίση του <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">ορισμός</translation>
 <translation id="3557673793733683882">επικεφαλίδα <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">αριθμός δευτερολέπτων της ταινίας που απομένουν</translation>
 <translation id="3706100364254443312">εναλλαγή</translation>
 <translation id="3732799496749320381">μμ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">δείκτης χρόνου ταινίας</translation>
 <translation id="3808586225841795776">όρος</translation>
 <translation id="3822383571486410024">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε <ph name="CURRENT_LENGTH" /> χαρακτήρες).</translation>
 <translation id="383465348367842624">Το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">κουμπί μενού</translation>
 <translation id="4446524499724042288">αναφορά στο γλωσσάρι</translation>
 <translation id="4522570452068850558">Λεπτομέρειες</translation>
+<translation id="4542388879936266156">χρόνος που απομένει: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">φόρμα</translation>
 <translation id="4661075872484491155">δέντρο</translation>
 <translation id="4664250907885839816">Το τμήμα της διεύθυνσης μετά το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">εεεε</translation>
 <translation id="8284326494547611709">Υπότιτλοι</translation>
 <translation id="835897206747267392">Μη έγκυρη τιμή.</translation>
+<translation id="8403857369060869934">χρόνος που παρήλθε: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">τμήμα</translation>
 <translation id="8433900881053900389">γραμμή εργαλείων</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> αρχεία</translation>

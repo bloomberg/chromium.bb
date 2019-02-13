@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Data semakan imbas orang ini akan dipadamkan daripada peranti ini. Untuk memulihkan data itu, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Buka pautan dalam &amp;tab Chromium baharu</translation>
 <translation id="3728336900324680424">Chromium akan mengakses Drive anda untuk membuat cadangan dalam bar alamat</translation>
-<translation id="3762167353400286894">OS Chromium dipaparkan dalam bahasa ini</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Sematkan Chromium pada bar tugas anda</translation>
+<translation id="388648406173476553">Sesuaikan dan kawal Chromium. Perhatian anda diperlukan - klik untuk mendapatkan butiran.</translation>
 <translation id="3889543394854987837">Klik nama anda untuk membuka Chromium dan mula menyemak imbas.</translation>
 <translation id="3898493977366060150">Penyemakan imbas web dengan Google smarts</translation>
 <translation id="3965668104013180445">{0,plural, =1{OS Chromium akan dimulakan semula dalam masa sejam}other{OS Chromium akan dimulakan semula dalam masa # jam}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">log masuk ke Chromium</translation>
 <translation id="5698481217667032250">Paparkan Chromium dalam bahasa ini</translation>
 <translation id="5712253116097046984">Pentadbir anda meminta anda memulakan semula OS Chromium untuk menerapkan kemas kini ini</translation>
-<translation id="5726838626470692954">Pengurus anda mesti mengalih keluar dan menambahkan anda kembali pada Chromium.</translation>
 <translation id="5768914737813585044">Paparkan OS Chromium dalam bahasa ini</translation>
 <translation id="5796460469508169315">Chromium hampir sedia.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -232,7 +231,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7979877361127045932">Sembunyikan dalam menu Chromium</translation>
 <translation id="8013436988911883588">Sebaik sahaja Chromium mendapat akses, tapak web akan dapat meminta akses daripada anda.</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium dipaparkan dalam bahasa ini</translation>
 <translation id="81770708095080097">Fail ini berbahaya, maka Chromium telah menyekatnya.</translation>
 <translation id="8222496066431494154">Pasang Chromium pada telefon anda. Kami akan menghantar SMS ke nombor telefon pemulihan akaun anda: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Bantu menjadikan Chromium lebih baik</translation>

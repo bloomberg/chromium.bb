@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">মোনো অডিও</translation>
 <translation id="3009178788565917040">আউটপুট</translation>
 <translation id="3019353588588144572">ব্যাটারি পরিপূর্ণ চার্জ হতে, <ph name="TIME_REMAINING" /> সময় বাকি আছে</translation>
+<translation id="3051128274746680507">আপনার তত্ত্বাবধানে থাকা ব্যবহারকারীর প্রোফাইল শীঘ্রই সরিয়ে দেওয়া হবে। আরও জানতে সাইন-ইন করুন।</translation>
 <translation id="3055162170959710888">এই ডিভাইসটি আজ আপনি <ph name="USED_TIME" /> ব্যবহার করেছেন</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">মেনুটি বড় করুন</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">একধিক সাইন-ইনে আপনার কেবলমাত্র <ph name="MULTI_PROFILE_USER_LIMIT" />টি পর্যন্ত অ্যাকাউন্ট থাকতে পারে।</translation>
 <translation id="3154351730702813399">ডিভাইস প্রশাসক আপনার ব্রাউজিং অ্যাক্টিভিটি পর্যবেক্ষণ করতে পারেন।</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{একটি ডিভাইসে কানেক্ট রয়েছে}one{#টি ডিভাইসে কানেক্ট রয়েছে}other{#টি ডিভাইসে কানেক্ট রয়েছে}}</translation>
-<translation id="32244657276328332">কোনও নেটওয়ার্কে কানেক্ট নেই</translation>
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="3255483164551725916">আপনি কি করতে পারেন?</translation>
 <translation id="3294437725009624529">অতিথি</translation>

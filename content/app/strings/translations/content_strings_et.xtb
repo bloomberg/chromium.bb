@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM" />-ga.</translation>
 <translation id="3486220673238053218">definitsioon</translation>
 <translation id="3557673793733683882">päis <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">filmi järelejäänud aeg sekundites</translation>
 <translation id="3706100364254443312">lüliti</translation>
 <translation id="3732799496749320381">kk</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">video ajakursor</translation>
 <translation id="3808586225841795776">termin</translation>
 <translation id="3822383571486410024">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu <ph name="CURRENT_LENGTH" /> tähemärki).</translation>
 <translation id="383465348367842624">Märgile „<ph name="ATSIGN" />” eelnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER" />”.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">menüünupp</translation>
 <translation id="4446524499724042288">sõnastiku viide</translation>
 <translation id="4522570452068850558">Üksikasjad</translation>
+<translation id="4542388879936266156">järelejäänud aeg: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">vorm</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Märgile „<ph name="ATSIGN" />” järgnev osa ei tohi sisaldada sümbolit „<ph name="INVALIDCHARACTER" />”.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">aaaa</translation>
 <translation id="8284326494547611709">Subtiitrid</translation>
 <translation id="835897206747267392">Kehtetu väärtus.</translation>
+<translation id="8403857369060869934">möödunud aeg: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">osa</translation>
 <translation id="8433900881053900389">tööriistariba</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> faili</translation>

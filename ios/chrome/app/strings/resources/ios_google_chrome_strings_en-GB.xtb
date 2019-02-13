@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
-<translation id="114721135501989771">Get Google smarts in Chrome</translation>
 <translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome Privacy Notice</translation>
 <translation id="1863312987075920112">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK_TOS" />Terms of Service<ph name="END_LINK_TOS" /> and <ph name="BEGIN_LINK_PRIVACY" />Privacy Notice<ph name="END_LINK_PRIVACY" />.</translation>
+<translation id="1984705450038014246">Sync your Chrome data</translation>
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2342981853652716282">Sign in to Chrome to get your bookmarks, passwords and more on all your devices.</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">To save images, tap on Settings to let Chrome use your photos</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
 <translation id="257708665678654955">Would you like Google Chrome to offer to translate <ph name="LANGUAGE_NAME" /> pages from this site next time?</translation>
-<translation id="2943166482989655199">Improve Chrome and its security by sending system and usage data to Google</translation>
 <translation id="3030414234702425231">Because you're signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />, your Chrome data will be deleted from this device. Your data will remain in your Google account.</translation>
 <translation id="3148434565183091099">To get your bookmarks on all your devices, sign in to Chrome.</translation>
 <translation id="3148688391461398285">Get a better experience in Chrome based on your location.</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
 <translation id="4615174829807303908">You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN" />. This will delete your Chrome data from this device, but your data will remain in your Google account.</translation>
 <translation id="5389212809648216794">Google Chrome can't use your camera because it's in use by another application</translation>
-<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /> can be customised at any time. Google may use content on sites that you visit, as well as browsing activity and interactions, to personalise Chrome and Google services such as Translate, Search and ads.</translation>
 <translation id="5639704535586432836">Open Settings &gt; Privacy &gt; Camera &gt; Google Chrome and turn on the camera.</translation>
 <translation id="5642200033778930880">Google Chrome can't use your camera in Split View mode</translation>
 <translation id="5854621639439811139">Chrome tip. Some buttons are now at the bottom of your screen, such as Back, Forward and Search.</translation>

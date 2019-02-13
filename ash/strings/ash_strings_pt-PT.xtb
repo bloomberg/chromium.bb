@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3019353588588144572">Tempo restante até a bateria estar totalmente carregada: <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">O seu perfil de utilizador supervisionado será removido brevemente. Inicie sessão para saber mais.</translation>
 <translation id="3055162170959710888">Utilizou este dispositivo durante <ph name="USED_TIME" /> hoje.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expandir menu</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Apenas pode ter, no máximo, <ph name="MULTI_PROFILE_USER_LIMIT" /> contas no início de sessão integrado.</translation>
 <translation id="3154351730702813399">O gestor do dispositivo pode monitorizar a sua atividade de navegação:</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ligado a um dispositivo}other{Ligado a # dispositivos}}</translation>
-<translation id="32244657276328332">Sem ligação à rede</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3255483164551725916">O que podes fazer?</translation>
 <translation id="3294437725009624529">Convidado</translation>

@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Šī lietotāja pārlūkošanas dati tiks dzēsti no šīs ierīces. Lai atkoptu datus, pierakstieties pārlūkprogrammā Chromium kā lietotājs <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Atvērt saiti jaunā Chromium &amp;cilnē</translation>
 <translation id="3728336900324680424">Pārlūkā Chromium tiks izmantota Diskā pieejamā informācija, lai adrešu joslā piedāvātu ieteikumus</translation>
-<translation id="3762167353400286894">Chromium OS tiek rādīta šajā valodā.</translation>
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> — Chromium</translation>
 <translation id="3852700440713538496">Piespraudiet pārlūku Chromium uzdevumjoslai</translation>
+<translation id="388648406173476553">Pielāgojiet un kontrolējiet pārlūkprogrammu Chromium. Ir nepieciešama jūsu uzmanība. Noklikšķiniet, lai skatītu plašāku informāciju.</translation>
 <translation id="3889543394854987837">Noklikšķiniet uz sava vārda, lai atvērtu Chromium un sāktu pārlūkošanu.</translation>
 <translation id="3898493977366060150">Tīmekļa pārlūkošana, izmantojot Google viedās tehnoloģijas</translation>
 <translation id="3965668104013180445">{0,plural, =1{Operētājsistēma Chromium OS tiks restartēta pēc vienas stundas}zero{Operētājsistēma Chromium OS tiks restartēta pēc # stundām}one{Operētājsistēma Chromium OS tiks restartēta pēc # stundas}other{Operētājsistēma Chromium OS tiks restartēta pēc # stundām}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">pierakstieties pārlūkā Chromium</translation>
 <translation id="5698481217667032250">Rādīt Chromium šajā valodā</translation>
 <translation id="5712253116097046984">Lai lietotu šo atjauninājumu, administrators lūdz restartēt operētājsistēmu Chromium OS.</translation>
-<translation id="5726838626470692954">Jūsu konta pārzinim ir jānoņem jūs no pārlūka Chromium un atkal jāpievieno.</translation>
 <translation id="5768914737813585044">Rādīt Chromium OS šajā valodā</translation>
 <translation id="5796460469508169315">Chromium ir gandrīz gatavs!</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -230,7 +229,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="7979877361127045932">Paslēpt Chromium izvēlnē</translation>
 <translation id="8013436988911883588">Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.</translation>
 <translation id="8030318113982266900">Notiek ierīces atjaunināšana uz kanālu <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium tiek rādīts šajā valodā.</translation>
 <translation id="81770708095080097">Šis fails ir bīstams, tāpēc Chromium to bloķēja.</translation>
 <translation id="8222496066431494154">Instalējiet pārlūku Chromium savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu konta atkopšanas tālruņa numuru: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8269379391216269538">Palīdziet uzlabot Chromium</translation>

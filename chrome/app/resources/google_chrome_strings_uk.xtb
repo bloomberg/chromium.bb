@@ -86,7 +86,6 @@
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
-<translation id="3180085900771989961">Вашому адміністратору потрібно вилучити й знову додати вас у Chrome.</translation>
 <translation id="3251381707915721925">Щоб указати, які веб-сайти може переглядати <ph name="NEW_PROFILE_NAME" />, налаштуйте обмеження й параметри на сторінці <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Якщо не змінити налаштування за умовчанням, <ph name="NEW_PROFILE_NAME" /> зможе переглядати всі сайти в Інтернеті.
 
 Щоб користувач <ph name="NEW_PROFILE_NAME" /> не мав доступу до вашого облікового запису, блокуйте свій профіль, коли не користуєтеся Chrome. Для цього натисніть назву свого профілю у верхньому правому куті екрана й виберіть "Вийти та заблокувати".
@@ -156,7 +155,6 @@
 <translation id="5062123544085870375">Перезапустіть ОС Chrome</translation>
 <translation id="5090044601776247154">Профілі контрольованих користувачів будуть недоступні в Google Chrome 70 і новіших версій.</translation>
 <translation id="5132929315877954718">Знаходьте чудові додатки, ігри, розширення й теми для Google Chrome.</translation>
-<translation id="5166975452760862670">Для Google Chrome вибрано цю мову</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
 <translation id="5193136243808726294">Неможливо відкрити цю сторінку в ОС Google Chrome.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Умови використання<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome</translation>
@@ -169,9 +167,9 @@
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>
+<translation id="5686916850681061684">Налаштовуйте й керуйте Google Chrome. Якщо з’явиться сповіщення, натисніть його, щоб дізнатися більше.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome перезапуститься через 1 секунду}one{Google Chrome перезапуститься через # секунду}few{Google Chrome перезапуститься через # секунди}many{Google Chrome перезапуститься через # секунд}other{Google Chrome перезапуститься через # секунди}}</translation>
 <translation id="573759479754913123">Про ОС Chrome</translation>
-<translation id="5774845247549698882">Для ОС Chrome вибрано цю мову</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Не вдалося запустити Chrome. Повторіть спробу.</translation>
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>

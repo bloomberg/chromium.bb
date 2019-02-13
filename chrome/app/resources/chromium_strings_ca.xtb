@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-les, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Obre l'enllaç en una pes&amp;tanya nova a Chromium</translation>
 <translation id="3728336900324680424">Chromium accedirà a Drive per fer suggeriments a la barra d'adreces</translation>
-<translation id="3762167353400286894">Chromium OS es mostra en aquest idioma</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" />: Chromium</translation>
 <translation id="3852700440713538496">Ancora Chromium a la barra de tasques</translation>
+<translation id="388648406173476553">Personalitza i controla Chromium. Cal la teva intervenció. Fes clic per obtenir més informació.</translation>
 <translation id="3889543394854987837">Feu clic al vostre nom per obrir Chromium i començar a navegar.</translation>
 <translation id="3898493977366060150">Navegació web amb les eines intel·ligents de Google</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS es reiniciarà d'aquí a 1 hora}other{Chromium OS es reiniciarà d'aquí a # hores}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">Inicia la sessió a Chromium</translation>
 <translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
 <translation id="5712253116097046984">L'administrador demana que reiniciïs Chromium OS per aplicar aquesta actualització</translation>
-<translation id="5726838626470692954">El gestor t'ha de suprimir i tornar a afegir a Chromium.</translation>
 <translation id="5768914737813585044">Mostra Chromium OS en aquest idioma</translation>
 <translation id="5796460469508169315">Chromium ja està quasi llest.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -232,7 +231,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8013436988911883588">Un cop Chromium tingui accés, els llocs web et podran demanar accés.</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium es mostra en aquest idioma</translation>
 <translation id="81770708095080097">Chromium ha bloquejat aquest fitxer perquè és perillós.</translation>
 <translation id="8222496066431494154">Instal·la Chromium al telèfon. T'enviarem un SMS al número de telèfon de recuperació del compte: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Ajudeu a millorar Chromium</translation>

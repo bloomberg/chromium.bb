@@ -86,7 +86,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
-<translation id="3180085900771989961">El gestor t'ha de suprimir i tornar a afegir a Chrome.</translation>
 <translation id="3251381707915721925">Per definir quins llocs web pot veure <ph name="NEW_PROFILE_NAME" />, podeu configurar diferents restriccions i opcions a la pàgina <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no canvieu la configuració predeterminada, <ph name="NEW_PROFILE_NAME" /> podrà navegar per tot el web.
 
 Per impedir que <ph name="NEW_PROFILE_NAME" /> accedeixi al vostre compte, bloquegeu el vostre perfil quan no utilitzeu Chrome. Per fer-ho, feu clic al vostre nom de perfil, a l'extrem superior dret del navegador, i seleccioneu Surt i estableix el bloqueig infantil.
@@ -156,7 +155,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="5062123544085870375">Reinicia Chrome OS</translation>
 <translation id="5090044601776247154">A partir de Google Chrome 70, els perfils d'usuaris supervisats deixaran d'estar disponibles.</translation>
 <translation id="5132929315877954718">Descobriu aplicacions, jocs, extensions i temes genials per a Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome es mostra en aquest idioma</translation>
 <translation id="5170938038195470297">El vostre perfil no es pot utilitzar perquè prové d'una versió més nova de Google Chrome. Pot ser que algunes funcions no estiguin disponibles. Especifiqueu un directori de perfil diferent o utilitzeu una versió més nova de Chrome.</translation>
 <translation id="5193136243808726294">Google Chrome OS no pot obrir aquesta pàgina.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termes i condicions<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome</translation>
@@ -169,9 +167,9 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="556024056938947818">Google Chrome està provant de mostrar les contrasenyes.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè pot ser perillós.</translation>
+<translation id="5686916850681061684">Personalitza i controla Google Chrome. Cal la teva intervenció. Fes clic per obtenir més informació.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome es reiniciarà d'aquí a 1 segon}other{Google Chrome es reiniciarà d'aquí a # segons}}</translation>
 <translation id="573759479754913123">Sobre Chrome OS</translation>
-<translation id="5774845247549698882">Chrome OS es mostra en aquest idioma</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">No s'ha pogut iniciar Chrome. Torna-ho a provar.</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>

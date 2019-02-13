@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Keluaran</translation>
 <translation id="3019353588588144572">Waktu yang tersisa hingga baterai terisi penuh, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Profil pengguna yang dilindungi akan segera dihapus. Login untuk mempelajari lebih lanjut.</translation>
 <translation id="3055162170959710888">Anda menggunakan perangkat ini selama <ph name="USED_TIME" /> hari ini</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Luaskan menu</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3154351730702813399">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
-<translation id="32244657276328332">Tidak tersambung ke jaringan</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
 <translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
 <translation id="3294437725009624529">Tamu</translation>

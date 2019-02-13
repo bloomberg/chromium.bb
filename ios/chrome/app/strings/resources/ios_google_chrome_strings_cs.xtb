@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
-<translation id="114721135501989771">Získejte do Chromu chytré funkce Google</translation>
 <translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Upozornění ve věci ochrany soukromí v prohlížeči Google Chrome</translation>
 <translation id="1863312987075920112">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK_TOS" />smluvními podmínkami<ph name="END_LINK_TOS" /> a <ph name="BEGIN_LINK_PRIVACY" />zásadami ochrany soukromí<ph name="END_LINK_PRIVACY" /> prohlížeče Chrome.</translation>
+<translation id="1984705450038014246">Synchronizovat data prohlížeče Chrome</translation>
 <translation id="2147651015520127414">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
 <translation id="2334084861041072223">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2342981853652716282">Chcete-li mít své záložky, hesla a další obsah na všech zařízeních, přihlaste se do Chromu.</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">Chcete-li uložit obrázky, klepněte na Nastavení a umožněte Chromu používat vaše fotky.</translation>
 <translation id="2576431527583832481">Chrome je opět o něco lepší. K dispozici je nová verze.</translation>
 <translation id="257708665678654955">Chcete, aby Google Chrome příště pro stránky v jazyce <ph name="LANGUAGE_NAME" /> z tohoto webu nabízel překlad?</translation>
-<translation id="2943166482989655199">Vylepšete Chrome a jeho zabezpečení tím, že do Googlu budete odesílat údaje o systému a využití</translation>
 <translation id="3030414234702425231">Protože se odhlašujete z účtu spravovaného doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaše data prohlížeče Chrome z tohoto zařízení budou smazána. V účtu Google vám zůstanou.</translation>
 <translation id="3148434565183091099">Chcete-li záložky synchronizovat do všech zařízení, přihlaste se do Chromu.</translation>
 <translation id="3148688391461398285">Získejte v Chromu lepší funkce založené na poloze.</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">Některé doplňky způsobují selhání prohlížeče Chrome. Prosím odinstalujte:</translation>
 <translation id="4615174829807303908">Odhlašujete se z účtu, který je spravován doménou <ph name="SIGNOUT_MANAGED_DOMAIN" />. Touto akcí smažete svá data prohlížeče Chrome z tohoto zařízení, ve vašem účtu Google však vaše data zůstanou.</translation>
 <translation id="5389212809648216794">Google Chrome nemůže použít fotoaparát, protože jej právě používá jiná aplikace</translation>
-<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" /> lze kdykoliv upravit. Google může používat obsah na webech, které navštěvujete, interakce s prohlížečem a aktivity k personalizaci prohlížeče Chrome a služeb Google, jako jsou Překladač, Vyhledávání a reklamy.</translation>
 <translation id="5639704535586432836">Otevřete Nastavení &gt; Soukromí &gt; Fotoaparát &gt; Google Chrome a zapněte fotoaparát.</translation>
 <translation id="5642200033778930880">Google Chrome nemůže používat fotoaparát v režimu Split View</translation>
 <translation id="5854621639439811139">Tip pro Chrome. Některá tlačítka, například Zpět, Vpřed a Hledat, jsou teď v dolní části obrazovky.</translation>
