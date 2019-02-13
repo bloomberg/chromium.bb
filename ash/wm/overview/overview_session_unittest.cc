@@ -2099,14 +2099,14 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
   EXPECT_EQ(parent, widget3->GetNativeWindow()->parent());
   EXPECT_EQ(parent, min_widget2->GetNativeWindow()->parent());
 
-  // Verify that the item widget is stacked above the window if not minimized.
-  // Verify that the item widget is stacked above the minimized widget if
+  // Verify that the item widget is stacked below the window if not minimized.
+  // Verify that the item widget is stacked below the minimized widget if
   // minimized.
-  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+  EXPECT_LT(IndexOf(widget1->GetNativeWindow(), parent),
             IndexOf(window.get(), parent));
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
+  EXPECT_LT(IndexOf(widget2->GetNativeWindow(), parent),
             IndexOf(min_widget2->GetNativeWindow(), parent));
-  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
+  EXPECT_LT(IndexOf(widget3->GetNativeWindow(), parent),
             IndexOf(window3.get(), parent));
 
   // Drag the first window. Verify that it's item widget is not stacked above
@@ -2131,51 +2131,6 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
             IndexOf(widget1->GetNativeWindow(), parent));
   EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
             IndexOf(widget2->GetNativeWindow(), parent));
-}
-
-// Tests that overview widgets are stacked in the correct order.
-TEST_F(OverviewSessionTest, OverviewWidgetStackingOrderWithDragging) {
-  std::unique_ptr<aura::Window> window1(CreateTestWindow());
-  std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  std::unique_ptr<aura::Window> window3(CreateTestWindow());
-
-  EnterTabletMode();
-  ToggleOverview();
-  OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
-  OverviewItem* item2 = GetWindowItemForWindow(0, window2.get());
-  OverviewItem* item3 = GetWindowItemForWindow(0, window3.get());
-  views::Widget* widget1 = item_widget(item1);
-  views::Widget* widget2 = item_widget(item2);
-  views::Widget* widget3 = item_widget(item3);
-
-  // Initially the highest stacked widget is the most recently used window, in
-  // this case it is the most recently created window.
-  aura::Window* parent = window1->parent();
-  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
-            IndexOf(widget2->GetNativeWindow(), parent));
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
-            IndexOf(widget1->GetNativeWindow(), parent));
-
-  // Verify that during drag the dragged item widget is stacked above the other
-  // two.
-  const gfx::Point start_drag = item1->target_bounds().CenterPoint();
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(start_drag);
-  generator->PressLeftButton();
-  generator->MoveMouseTo(gfx::Point());
-  generator->MoveMouseTo(start_drag);
-  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
-            IndexOf(widget3->GetNativeWindow(), parent));
-  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
-            IndexOf(widget2->GetNativeWindow(), parent));
-
-  // Verify that after release the ordering is the same as before dragging.
-  generator->ReleaseLeftButton();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
-            IndexOf(widget2->GetNativeWindow(), parent));
-  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
-            IndexOf(widget1->GetNativeWindow(), parent));
 }
 
 // Verify that a windows which enter overview mode have a visible backdrop, if
