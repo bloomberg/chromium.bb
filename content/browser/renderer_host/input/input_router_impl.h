@@ -225,11 +225,6 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   InputDispositionHandler* disposition_handler_;
   int frame_tree_node_id_;
 
-  // Whether there are any active flings in the renderer. As the fling
-  // end notification is asynchronous, we use a count rather than a boolean
-  // to avoid races in bookkeeping when starting a new fling.
-  int active_renderer_fling_count_;
-
   // Whether the TouchScrollStarted event has been sent for the current
   // gesture scroll yet.
   bool touch_scroll_started_sent_;

@@ -73,7 +73,6 @@ InputRouterImpl::InputRouterImpl(
     : client_(client),
       disposition_handler_(disposition_handler),
       frame_tree_node_id_(-1),
-      active_renderer_fling_count_(0),
       touch_scroll_started_sent_(false),
       wheel_event_queue_(this),
       touch_event_queue_(this, config.touch_config),
@@ -217,8 +216,7 @@ void InputRouterImpl::NotifySiteIsMobileOptimized(bool is_mobile_optimized) {
 bool InputRouterImpl::HasPendingEvents() const {
   return !touch_event_queue_.Empty() || !gesture_event_queue_.empty() ||
          wheel_event_queue_.has_pending() ||
-         touchpad_pinch_event_queue_.has_pending() ||
-         active_renderer_fling_count_ > 0;
+         touchpad_pinch_event_queue_.has_pending();
 }
 
 void InputRouterImpl::SetDeviceScaleFactor(float device_scale_factor) {
