@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <div id="target">target</div>
 <script>
+var delay = 100;
 var results = [];
 
-if (window.internals) {
-  internals.DisableIntersectionObserverThrottleDelay();
-}
-
 function waitForNotification(f) {
-  requestAnimationFrame(function () {
-    setTimeout(function () {
-      setTimeout(f)
+  setTimeout(() => {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        setTimeout(f)
+      })
     })
-  })
+  }, delay)
 }
 
 window.addEventListener("message", event => {
   waitForNotification(() => {
-    window.parent.postMessage(results.map(e => { return e.isVisible }), "*");
+    window.parent.postMessage(results.map(e => e.isVisible), "*");
     results = [];
   });
 });
@@ -26,7 +25,7 @@ onload = () => {
   var target = document.getElementById("target");
   var observer = new IntersectionObserver(entries => {
     results = entries;
-  }, {trackVisibility: true, delay: 100});
+  }, {trackVisibility: true, delay: delay});
   observer.observe(document.getElementById("target"));
   window.parent.postMessage("", "*");
 };

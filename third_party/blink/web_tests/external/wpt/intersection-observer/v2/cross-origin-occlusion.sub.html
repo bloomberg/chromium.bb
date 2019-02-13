@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="../resources/intersection-observer-test-utils.js"></script>
 
 <style>
 pre, #log {
@@ -21,16 +22,10 @@ iframe {
 }
 </style>
 
-<iframe src="http://localhost:8080/intersection-observer/resources/v2-subframe.html"></iframe>
+<iframe src="http://{{domains[www1]}}:{{ports[http][0]}}/intersection-observer/resources/v2-subframe.html"></iframe>
 <div id="occluder"></div>
 
 <script>
-function waitForFrame(f) {
-  requestAnimationFrame(() => {
-    setTimeout(f)
-  })
-}
-
 async_test(function(t) {
   let iframe = document.querySelector("iframe");
   let occluder = document.getElementById("occluder");
@@ -61,7 +56,7 @@ async_test(function(t) {
   window.addEventListener("message", event => {
     if (steps.length) {
       t.step_func(steps.shift(), event);
-      waitForFrame(() => {
+      waitForFrame(t, () => {
         iframe.contentWindow.postMessage("", "*");
       });
     } else {

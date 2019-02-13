@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script src="../resources/intersection-observer-test-utils.js"></script>
 
 <style>
@@ -43,16 +43,7 @@ async_test(t => {
   entries = entries.concat(observer.takeRecords());
   assert_equals(entries.length, 0, "No initial notifications.");
   // The first notification should be sent without delay.
-  waitForNotification(t.step_func(step0));
-
-  function step0() {
-    assert_equals(entries.length, 1);
-    assert_true(entries[0].isVisible);
-    // This should trigger a notification on the next run.
-    occluder.style.marginTop = "-10px";
-    // Enter a rAF loop until the delay timer expires.
-    waitForDelay(false);
-  }
+  waitForNotification(t, t.step_func(step0));
 
   function waitForDelay(timerExpiredBeforeLastFrame) {
     requestAnimationFrame(t.step_func(() => {
@@ -69,6 +60,15 @@ async_test(t => {
         waitForDelay(timerExpired);
       }
     }));
+  }
+
+  function step0() {
+    assert_equals(entries.length, 1);
+    assert_true(entries[0].isVisible);
+    // This should trigger a notification on the next run.
+    occluder.style.marginTop = "-10px";
+    // Enter a rAF loop until the delay timer expires.
+    waitForDelay(false);
   }
 
 }, "'delay' parameter throttles frequency of notifications.");
