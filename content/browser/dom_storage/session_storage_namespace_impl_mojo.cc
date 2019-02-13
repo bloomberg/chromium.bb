@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "content/public/browser/child_process_security_policy.h"
+#include "content/browser/child_process_security_policy_impl.h"
 
 namespace content {
 
@@ -146,8 +146,8 @@ void SessionStorageNamespaceImplMojo::OpenArea(
   DCHECK(IsPopulated());
   DCHECK(!bindings_.empty());
   int process_id = bindings_.dispatch_context();
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
-          process_id, origin.GetURL())) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
+          process_id, origin)) {
     bindings_.ReportBadMessage("Access denied for sessionStorage request");
     return;
   }

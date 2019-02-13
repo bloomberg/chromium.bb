@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -829,6 +830,37 @@ TEST_F(OriginTest, CanBeDerivedFrom) {
     EXPECT_EQ(test_case.expected_value,
               test_case.origin->CanBeDerivedFrom(GURL(test_case.url)));
   }
+}
+
+TEST_F(OriginTest, GetDebugString) {
+  Origin http_origin = Origin::Create(GURL("http://192.168.9.1"));
+  EXPECT_STREQ(http_origin.GetDebugString().c_str(), "http://192.168.9.1");
+
+  Origin http_opaque_origin = http_origin.DeriveNewOpaqueOrigin();
+  EXPECT_THAT(
+      http_opaque_origin.GetDebugString().c_str(),
+      ::testing::MatchesRegex(
+          "null \\[internally: \\(\\w*\\) derived from http://192.168.9.1\\]"));
+
+  Origin data_origin = Origin::Create(GURL("data:"));
+  EXPECT_STREQ(data_origin.GetDebugString().c_str(),
+               "null [internally: (nonce TBD) anonymous]");
+
+  // The nonce of the origin will be initialized if a new opaque origin is
+  // derived.
+  Origin data_derived_origin = data_origin.DeriveNewOpaqueOrigin();
+  EXPECT_THAT(
+      data_derived_origin.GetDebugString().c_str(),
+      ::testing::MatchesRegex("null \\[internally: \\(\\w*\\) anonymous\\]"));
+
+  Origin file_origin = Origin::Create(GURL("file:///etc/passwd"));
+  EXPECT_STREQ(file_origin.GetDebugString().c_str(),
+               "file:// [internally: file://]");
+
+  Origin file_server_origin =
+      Origin::Create(GURL("file://example.com/etc/passwd"));
+  EXPECT_STREQ(file_server_origin.GetDebugString().c_str(),
+               "file:// [internally: file://example.com]");
 }
 
 }  // namespace url

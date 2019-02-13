@@ -52,7 +52,7 @@ void ValidateOriginOnUIThread(
     return;
 
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
-          process_id, origin.GetURL())) {
+          process_id, origin)) {
     callback_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback), "Unauthorized origin."));

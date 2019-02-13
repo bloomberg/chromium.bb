@@ -52,7 +52,7 @@ bool VerifyInitiatorOrigin(int process_id,
     return true;
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessDataForOrigin(process_id, initiator_origin.GetURL())) {
+  if (!policy->CanAccessDataForOrigin(process_id, initiator_origin)) {
     bad_message::ReceivedBadMessage(process_id,
                                     bad_message::INVALID_INITIATOR_ORIGIN);
     return false;

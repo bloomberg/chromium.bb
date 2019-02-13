@@ -261,6 +261,11 @@ class COMPONENT_EXPORT(URL) Origin {
   // |d|, and |d| is cross-origin to |a| and |c|.
   Origin DeriveNewOpaqueOrigin() const;
 
+  // Creates a string representation of the object that can be used for logging
+  // and debugging. It serializes the internal state, such as the nonce value
+  // and precursor information.
+  std::string GetDebugString() const;
+
  private:
   friend class blink::SecurityOrigin;
   friend class OriginTest;
