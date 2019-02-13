@@ -77,7 +77,8 @@ TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
   content::ResourceRequestInfo::AllocateForTesting(
       request_.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -1, -1, -1,
-      true, false, true, content::PREVIEWS_OFF, nullptr);
+      true, content::ResourceInterceptPolicy::kAllowNone, true,
+      content::PREVIEWS_OFF, nullptr);
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       kGaiaUrl, std::make_unique<TestRequestInterceptor>());
   request_->Start();

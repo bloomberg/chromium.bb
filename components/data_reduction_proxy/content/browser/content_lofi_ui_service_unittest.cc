@@ -74,8 +74,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
         request.get(), content::RESOURCE_TYPE_SUB_FRAME, nullptr,
         web_contents()->GetMainFrame()->GetProcess()->GetID(), -1,
         web_contents()->GetMainFrame()->GetRoutingID(),
-        /*is_main_frame=*/false,
-        /*allow_download=*/false,
+        /*is_main_frame=*/false, content::ResourceInterceptPolicy::kAllowNone,
         /*is_async=*/false, content::SERVER_LOFI_ON,
         /*navigation_ui_data*/ nullptr);
 

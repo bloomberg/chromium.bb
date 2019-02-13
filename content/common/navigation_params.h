@@ -22,6 +22,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_intercept_policy.h"
 #include "content/public/common/was_activated_option.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -113,9 +114,9 @@ enum class NavigationDownloadPolicy {
   kMaxValue = kDisallowSandbox
 };
 
-// Returns whether the given |policy| should allow for a download. This function
-// should be removed when http://crbug.com/632514 is resolved, when callers will
-// just compare with kAllow.
+ResourceInterceptPolicy CONTENT_EXPORT
+GetResourceInterceptPolicy(NavigationDownloadPolicy policy);
+
 bool CONTENT_EXPORT
 IsNavigationDownloadAllowed(NavigationDownloadPolicy policy);
 

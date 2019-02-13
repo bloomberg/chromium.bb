@@ -20,6 +20,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_intercept_policy.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -57,7 +58,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       ui::PageTransition transition_type,
       bool is_download,
       bool is_stream,
-      bool allow_download,
+      ResourceInterceptPolicy resource_intercept_policy,
       bool has_user_gesture,
       bool enable_load_timing,
       bool enable_upload_progress,
@@ -134,8 +135,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   }
   bool keepalive() const { return keepalive_; }
 
-  // Downloads are allowed only as a top level request.
-  bool allow_download() const { return allow_download_; }
+  ResourceInterceptPolicy resource_intercept_policy() const {
+    return resource_intercept_policy_;
+  }
 
   // Whether this is a download.
   void set_is_download(bool download) { is_download_ = download; }
@@ -232,7 +234,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   base::UnguessableToken fetch_window_id_;
   bool is_download_;
   bool is_stream_;
-  bool allow_download_;
+  ResourceInterceptPolicy resource_intercept_policy_;
   bool has_user_gesture_;
   bool enable_load_timing_;
   bool enable_upload_progress_;

@@ -164,9 +164,9 @@ TEST_F(ClearSiteDataThrottleTest, MaybeCreateThrottleForRequest) {
       ClearSiteDataThrottle::MaybeCreateThrottleForRequest(request.get()));
 
   // We can create the throttle for a valid ResourceRequestInfo.
-  ResourceRequestInfo::AllocateForTesting(request.get(), RESOURCE_TYPE_IMAGE,
-                                          nullptr, 0, 0, 0, false, true, true,
-                                          false, nullptr);
+  ResourceRequestInfo::AllocateForTesting(
+      request.get(), RESOURCE_TYPE_IMAGE, nullptr, 0, 0, 0, false,
+      ResourceInterceptPolicy::kAllowAll, true, false, nullptr);
   EXPECT_TRUE(
       ClearSiteDataThrottle::MaybeCreateThrottleForRequest(request.get()));
 }
@@ -610,7 +610,7 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
     ResourceRequestInfo::AllocateForTesting(
         request.get(),
         navigation ? RESOURCE_TYPE_SUB_FRAME : RESOURCE_TYPE_IMAGE, nullptr, 0,
-        0, 0, false, true, true, false, nullptr);
+        0, 0, false, ResourceInterceptPolicy::kAllowAll, true, false, nullptr);
 
     std::string output_buffer;
     std::unique_ptr<RedirectableTestThrottle> throttle =

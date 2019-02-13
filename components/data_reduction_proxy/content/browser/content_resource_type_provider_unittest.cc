@@ -104,7 +104,7 @@ class ContentResourceProviderTest : public testing::Test {
     content::ResourceRequestInfo::AllocateForTesting(
         request, resource_type, nullptr, -1, -1, -1,
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
-        false,  // allow_download
+        content::ResourceInterceptPolicy::kAllowNone,
         false,  // is_async
         content::PREVIEWS_OFF,
         nullptr);  // navigation_ui_data
