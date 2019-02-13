@@ -6,12 +6,14 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
@@ -19,6 +21,8 @@
 #include "components/search_engines/template_url_service_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -28,11 +32,15 @@ const char kClipboardURL[] = "http://example.com/clipboard";
 const char kClipboardText[] = "Search for me";
 const char kClipboardTitleText[] = "\"Search for me\"";
 
-class ClipboardURLProviderTest : public testing::Test {
+}  // namespace
+
+class ClipboardURLProviderTest : public testing::Test,
+                                 public AutocompleteProviderListener {
  public:
   ClipboardURLProviderTest()
       : client_(new MockAutocompleteProviderClient()),
         provider_(new ClipboardURLProvider(client_.get(),
+                                           this,
                                            nullptr,
                                            &clipboard_content_)) {
     SetClipboardUrl(GURL(kClipboardURL));
@@ -50,6 +58,11 @@ class ClipboardURLProviderTest : public testing::Test {
     clipboard_content_.SetClipboardText(text, base::TimeDelta::FromMinutes(10));
   }
 
+  void SetClipboardImage(const gfx::Image& image) {
+    clipboard_content_.SetClipboardImage(image,
+                                         base::TimeDelta::FromMinutes(10));
+  }
+
   AutocompleteInput CreateAutocompleteInput(bool from_omnibox_focus) {
     AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::OTHER,
                             classifier_);
@@ -59,11 +72,18 @@ class ClipboardURLProviderTest : public testing::Test {
   }
 
  protected:
+  // AutocompleteProviderListener:
+  void OnProviderUpdate(bool updated_matches) override;
+
   TestSchemeClassifier classifier_;
   FakeClipboardRecentContent clipboard_content_;
   std::unique_ptr<MockAutocompleteProviderClient> client_;
   scoped_refptr<ClipboardURLProvider> provider_;
 };
+
+void ClipboardURLProviderTest::OnProviderUpdate(bool updated_matches) {
+  // No action required.
+}
 
 TEST_F(ClipboardURLProviderTest, NotFromOmniboxFocus) {
   provider_->Start(CreateAutocompleteInput(false), false);
@@ -102,4 +122,19 @@ TEST_F(ClipboardURLProviderTest, MatchesText) {
             provider_->matches().back().contents);
 }
 
-}  // namespace
+TEST_F(ClipboardURLProviderTest, MatchesImage) {
+  base::test::ScopedFeatureList feature_list;
+  base::Feature imageFeature =
+      omnibox::kEnableClipboardProviderImageSuggestions;
+  feature_list.InitAndEnableFeature(imageFeature);
+  TemplateURLService template_url_service(/*initializers=*/nullptr,
+                                          /*count=*/0);
+
+  gfx::Image test_image = gfx::test::CreateImage(/*height=*/10, /*width=*/10);
+  scoped_refptr<base::RefCountedMemory> image_bytes =
+      provider_->EncodeClipboardImage(test_image);
+  ASSERT_TRUE(image_bytes);
+  provider_->ConstructImageMatchCallback(CreateAutocompleteInput(true),
+                                         &template_url_service, image_bytes);
+  ASSERT_GE(provider_->matches().size(), 1U);
+}

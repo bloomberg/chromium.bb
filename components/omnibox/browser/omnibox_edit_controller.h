@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "components/search_engines/template_url.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -17,6 +18,7 @@ class LocationBarModel;
 class OmniboxEditController {
  public:
   virtual void OnAutocompleteAccept(const GURL& destination_url,
+                                    TemplateURLRef::PostContent* post_content,
                                     WindowOpenDisposition disposition,
                                     ui::PageTransition transition,
                                     AutocompleteMatchType::Type match_type,
@@ -40,6 +42,7 @@ class OmniboxEditController {
   virtual ~OmniboxEditController();
 
   GURL destination_url() const { return destination_url_; }
+  TemplateURLRef::PostContent* post_content() const { return post_content_; }
   WindowOpenDisposition disposition() const { return disposition_; }
   ui::PageTransition transition() const { return transition_; }
   base::TimeTicks match_selection_timestamp() const {
@@ -49,6 +52,7 @@ class OmniboxEditController {
  private:
   // The details necessary to open the user's desired omnibox match.
   GURL destination_url_;
+  TemplateURLRef::PostContent* post_content_;
   WindowOpenDisposition disposition_;
   ui::PageTransition transition_;
   base::TimeTicks match_selection_timestamp_;

@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
+#import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -226,6 +227,7 @@ const int kLocationAuthorizationStatusCount = 4;
 #pragma mark - LocationBarURLLoader
 
 - (void)loadGURLFromLocationBar:(const GURL&)url
+                    postContent:(TemplateURLRef::PostContent*)postContent
                      transition:(ui::PageTransition)transition
                     disposition:(WindowOpenDisposition)disposition {
   if (url.SchemeIs(url::kJavaScriptScheme)) {
@@ -240,9 +242,12 @@ const int kLocationAuthorizationStatusCount = 4;
     // |loadURL|?  It doesn't seem to be causing major problems.  If we call
     // cancel before load, then any prerendered pages get destroyed before the
     // call to load.
-    web::NavigationManager::WebLoadParams params(url);
-    params.transition_type = transition;
-    params.extra_headers = [self variationHeadersForURL:url];
+    web::NavigationManager::WebLoadParams params =
+        web_navigation_util::CreateWebLoadParams(url, transition, postContent);
+    NSMutableDictionary* combinedExtraHeaders =
+        [[self variationHeadersForURL:url] mutableCopy];
+    [combinedExtraHeaders addEntriesFromDictionary:params.extra_headers];
+    params.extra_headers = [combinedExtraHeaders copy];
     ChromeLoadParams chromeParams(params);
     chromeParams.disposition = disposition;
     [self.URLLoader loadURLWithParams:chromeParams];

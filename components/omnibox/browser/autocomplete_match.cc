@@ -148,6 +148,9 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
           match.search_terms_args
               ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
               : nullptr),
+      post_content(match.post_content
+                       ? new TemplateURLRef::PostContent(*match.post_content)
+                       : nullptr),
       additional_info(match.additional_info),
       duplicate_matches(match.duplicate_matches) {}
 
@@ -193,6 +196,9 @@ AutocompleteMatch& AutocompleteMatch::operator=(
       match.search_terms_args
           ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
           : nullptr);
+  post_content.reset(match.post_content
+                         ? new TemplateURLRef::PostContent(*match.post_content)
+                         : nullptr);
   additional_info = match.additional_info;
   duplicate_matches = match.duplicate_matches;
   return *this;

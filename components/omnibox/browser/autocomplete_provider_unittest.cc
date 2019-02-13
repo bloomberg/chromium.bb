@@ -28,6 +28,7 @@
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -35,6 +36,8 @@
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/image/image_util.h"
 
 static std::ostream& operator<<(std::ostream& os,
                                 const AutocompleteResult::const_iterator& it) {
@@ -248,7 +251,9 @@ class AutocompleteProviderTest : public testing::Test {
 
   // Registers a test TemplateURL under the given keyword.
   void RegisterTemplateURL(const base::string16 keyword,
-                           const std::string& template_url);
+                           const std::string& template_url,
+                           const std::string& image_url,
+                           const std::string& image_url_post_params);
 
   // Resets |controller_| with two TestProviders.  |provider1_ptr| and
   // |provider2_ptr| are updated to point to the new providers if non-NULL.
@@ -282,8 +287,12 @@ class AutocompleteProviderTest : public testing::Test {
 
   // Returns match.destination_url as it would be set by
   // AutocompleteController::UpdateMatchDestinationURL().
-  GURL GetDestinationURL(AutocompleteMatch match,
+  GURL GetDestinationURL(AutocompleteMatch& match,
                          base::TimeDelta query_formulation_time) const;
+
+  // Returns the image from the clipboard as it would be from
+  // AutocompleteController::GetImageFromClipboard().
+  base::Optional<gfx::Image> GetImageFromClipboard() const;
 
   void set_search_provider_field_trial_triggered_in_session(bool val) {
     controller_->search_provider_->set_field_trial_triggered_in_session(val);
@@ -328,11 +337,15 @@ AutocompleteProviderTest::~AutocompleteProviderTest() {
 
 void AutocompleteProviderTest::RegisterTemplateURL(
     const base::string16 keyword,
-    const std::string& template_url) {
+    const std::string& template_url,
+    const std::string& image_url = "",
+    const std::string& image_url_post_params = "") {
   TemplateURLData data;
   data.SetURL(template_url);
   data.SetShortName(keyword);
   data.SetKeyword(keyword);
+  data.image_url = image_url;
+  data.image_url_post_params = image_url_post_params;
   TemplateURLService* turl_model = client_->GetTemplateURLService();
   TemplateURL* default_turl =
       turl_model->Add(std::make_unique<TemplateURL>(data));
@@ -556,7 +569,7 @@ void AutocompleteProviderTest::CopyResults() {
 }
 
 GURL AutocompleteProviderTest::GetDestinationURL(
-    AutocompleteMatch match,
+    AutocompleteMatch& match,
     base::TimeDelta query_formulation_time) const {
   controller_->UpdateMatchDestinationURLWithQueryFormulationTime(
       query_formulation_time, &match);

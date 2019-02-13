@@ -141,6 +141,7 @@ bool OmniboxPedal::IsConceptMatch(const base::string16& match_text) const {
 void OmniboxPedal::OpenURL(OmniboxPedal::ExecutionContext& context,
                            const GURL& url) const {
   context.controller_.OnAutocompleteAccept(
-      url, WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_GENERATED,
-      AutocompleteMatchType::PEDAL, context.match_selection_timestamp_);
+      url, nullptr, WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_GENERATED, AutocompleteMatchType::PEDAL,
+      context.match_selection_timestamp_);
 }

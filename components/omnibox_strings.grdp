@@ -194,8 +194,14 @@
   <message name="IDS_ACC_AUTOCOMPLETE_BOOKMARK" desc="Text for screenreaders describing a URL from a bookmark.">
     <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> bookmark</ph>
   </message>
-  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD" desc="Text for screenreaders describing a URL from a clipboard.">
-    <ph name="LOCATION_TITLE">$2<ex>The Chromium Projects</ex></ph> <ph name="SHORT_URL">$1<ex>www.chromium.org</ex> location from clipboard</ph>
+  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD_IMAGE" desc="Text for screenreaders describing an image from a clipboard.">
+    Search for clipboard image
+  </message>
+  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD_TEXT" desc="Text for screenreaders describing text from a clipboard.">
+    Search for clipboard text, <ph name="TEXT">$2<ex>Paris, france</ex></ph>
+  </message>
+  <message name="IDS_ACC_AUTOCOMPLETE_CLIPBOARD_URL" desc="Text for screenreaders describing a URL from a clipboard.">
+    Search for clipboard URL, <ph name="SHORT_URL">$2<ex>www.chromium.org</ex></ph>
   </message>
   <message name="IDS_ACC_SEARCH_ICON" desc="Text for screenreaders describing a search icon image.">
     Search icon

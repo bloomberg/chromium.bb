@@ -5,15 +5,24 @@
 #include "components/omnibox/browser/clipboard_url_provider.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/verbatim_match.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
@@ -21,16 +30,20 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_util.h"
 
 ClipboardURLProvider::ClipboardURLProvider(
     AutocompleteProviderClient* client,
+    AutocompleteProviderListener* listener,
     HistoryURLProvider* history_url_provider,
     ClipboardRecentContent* clipboard_content)
     : AutocompleteProvider(AutocompleteProvider::TYPE_CLIPBOARD_URL),
       client_(client),
+      listener_(listener),
       clipboard_content_(clipboard_content),
       history_url_provider_(history_url_provider),
-      current_url_suggested_times_(0) {
+      current_url_suggested_times_(0),
+      callback_weak_ptr_factory_(this) {
   DCHECK(clipboard_content_);
 }
 
@@ -41,13 +54,15 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   // If the user started typing, do not offer clipboard based match.
-  if (!input.from_omnibox_focus())
+  if (!input.from_omnibox_focus()) {
     return;
-
-  base::Optional<AutocompleteMatch> optional_match = CreateImageMatch(input);
-  if (!optional_match) {
-    optional_match = CreateURLMatch(input);
   }
+
+  // Image matched was kicked off asynchronously, so proceed when that ends.
+  if (CreateImageMatch(input)) {
+    return;
+  }
+  base::Optional<AutocompleteMatch> optional_match = CreateURLMatch(input);
   if (!optional_match) {
     optional_match = CreateTextMatch(input);
   }
@@ -56,13 +71,25 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
     return;
   }
 
+  AddCreatedMatchWithTracking(input, std::move(optional_match).value());
+}
+
+void ClipboardURLProvider::Stop(bool clear_cached_results,
+                                bool due_to_user_inactivity) {
+  callback_weak_ptr_factory_.InvalidateWeakPtrs();
+  AutocompleteProvider::Stop(clear_cached_results, due_to_user_inactivity);
+}
+
+void ClipboardURLProvider::AddCreatedMatchWithTracking(
+    const AutocompleteInput& input,
+    const AutocompleteMatch& match) {
   // Record the number of times the currently-offered URL has been suggested.
   // This only works over this run of Chrome; if the URL was in the clipboard
   // on a previous run, those offerings will not be counted.
-  if (optional_match.value().destination_url == current_url_suggested_) {
+  if (match.destination_url == current_url_suggested_) {
     current_url_suggested_times_++;
   } else {
-    current_url_suggested_ = optional_match.value().destination_url;
+    current_url_suggested_ = match.destination_url;
     current_url_suggested_times_ = 1;
   }
 
@@ -87,7 +114,7 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   UMA_HISTOGRAM_LONG_TIMES_100("Omnibox.ClipboardSuggestionShownAge",
                                clipboard_content_->GetClipboardContentAge());
 
-  matches_.emplace_back(std::move(optional_match).value());
+  matches_.emplace_back(match);
 }
 
 base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateURLMatch(
@@ -173,15 +200,17 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
       base::string16::npos, 0, match.description.length(),
       ACMatchClassification::NONE, &match.description_class);
 
+  match.keyword = default_url->keyword();
+  match.transition = ui::PAGE_TRANSITION_GENERATED;
+
   return match;
 }
 
-base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateImageMatch(
-    const AutocompleteInput& input) {
+bool ClipboardURLProvider::CreateImageMatch(const AutocompleteInput& input) {
   // Only try image match if feature is enabled
   if (!base::FeatureList::IsEnabled(
           omnibox::kEnableClipboardProviderImageSuggestions)) {
-    return base::nullopt;
+    return false;
   }
 
   // Make sure current provider supports image search
@@ -190,13 +219,37 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateImageMatch(
 
   if (!default_url || default_url->image_url().empty() ||
       !default_url->image_url_ref().IsValid(url_service->search_terms_data())) {
-    return base::nullopt;
+    return false;
   }
 
-  if (!clipboard_content_->GetRecentImageFromClipboard()) {
-    return base::nullopt;
+  base::Optional<gfx::Image> optional_image =
+      clipboard_content_->GetRecentImageFromClipboard();
+  if (!optional_image) {
+    return false;
   }
 
+  done_ = false;
+  PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ClipboardURLProvider::EncodeClipboardImage,
+                     optional_image.value()),
+      base::BindOnce(&ClipboardURLProvider::ConstructImageMatchCallback,
+                     callback_weak_ptr_factory_.GetWeakPtr(), input,
+                     url_service));
+  return true;
+}
+
+scoped_refptr<base::RefCountedMemory>
+ClipboardURLProvider::EncodeClipboardImage(gfx::Image image) {
+  gfx::Image resized_image = gfx::ResizedImageForSearchByImage(image);
+  return resized_image.As1xPNGBytes();
+}
+
+void ClipboardURLProvider::ConstructImageMatchCallback(
+    const AutocompleteInput& input,
+    TemplateURLService* url_service,
+    scoped_refptr<base::RefCountedMemory> image_bytes) {
+  const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, false,
                           AutocompleteMatchType::CLIPBOARD_IMAGE);
@@ -212,7 +265,21 @@ base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateImageMatch(
       base::string16::npos, 0, match.contents.length(),
       ACMatchClassification::NONE, &match.contents_class);
 
-  return match;
+  TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
+  search_args.image_thumbnail_content.assign(image_bytes->front_as<char>(),
+                                             image_bytes->size());
+  TemplateURLRef::PostContent post_content;
+  GURL result(default_url->image_url_ref().ReplaceSearchTerms(
+      search_args, url_service->search_terms_data(), &post_content));
+  match.destination_url = result;
+  match.post_content =
+      std::make_unique<TemplateURLRef::PostContent>(post_content);
+
+  match.transition = ui::PAGE_TRANSITION_GENERATED;
+
+  AddCreatedMatchWithTracking(input, match);
+  listener_->OnProviderUpdate(true);
+  done_ = true;
 }
 
 void ClipboardURLProvider::AddProviderInfo(ProvidersInfo* provider_info) const {

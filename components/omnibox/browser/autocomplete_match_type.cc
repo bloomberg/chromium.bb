@@ -136,20 +136,19 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
 
       // NAVSUGGEST_PERSONALIZED is like SEARCH_SUGGEST_PERSONALIZED, but it's a
       // URL instead of a search query.
-      IDS_ACC_AUTOCOMPLETE_HISTORY,    // NAVSUGGEST_PERSONALIZED
-      0,                               // CALCULATOR
-      IDS_ACC_AUTOCOMPLETE_CLIPBOARD,  // CLIPBOARD_URL
-      0,                               // VOICE_SUGGEST
-      0,                               // PHYSICAL_WEB_DEPRECATED
-      0,                               // PHYSICAL_WEB_OVERFLOW_DEPRECATED
-      IDS_ACC_AUTOCOMPLETE_HISTORY,    // TAB_SEARCH_DEPRECATED
-      0,                               // DOCUMENT_SUGGESTION
+      IDS_ACC_AUTOCOMPLETE_HISTORY,        // NAVSUGGEST_PERSONALIZED
+      0,                                   // CALCULATOR
+      IDS_ACC_AUTOCOMPLETE_CLIPBOARD_URL,  // CLIPBOARD_URL
+      0,                                   // VOICE_SUGGEST
+      0,                                   // PHYSICAL_WEB_DEPRECATED
+      0,                                   // PHYSICAL_WEB_OVERFLOW_DEPRECATED
+      IDS_ACC_AUTOCOMPLETE_HISTORY,        // TAB_SEARCH_DEPRECATED
+      0,                                   // DOCUMENT_SUGGESTION
 
       // TODO(orinj): Determine appropriate accessibility labels for Pedals
-      0,  // PEDAL
-      // TODO(rgibson): Determine appropriate accessibility labels for clipboard
-      0,  // CLIPBOARD_TEXT
-      0,  // CLIPBOARD_IMAGE
+      0,                                     // PEDAL
+      IDS_ACC_AUTOCOMPLETE_CLIPBOARD_TEXT,   // CLIPBOARD_TEXT
+      IDS_ACC_AUTOCOMPLETE_CLIPBOARD_IMAGE,  // CLIPBOARD_IMAGE
   };
   static_assert(base::size(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");
@@ -193,11 +192,20 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       break;
     case IDS_ACC_AUTOCOMPLETE_HISTORY:
     case IDS_ACC_AUTOCOMPLETE_BOOKMARK:
-    case IDS_ACC_AUTOCOMPLETE_CLIPBOARD:
       // History match.
       // May have descriptive text for the title of the page.
       description = match.description;
       has_description = true;
+      break;
+    case IDS_ACC_AUTOCOMPLETE_CLIPBOARD_URL:
+    case IDS_ACC_AUTOCOMPLETE_CLIPBOARD_TEXT:
+      // Clipboard match.
+      // Description contains clipboard content
+      description = match.description;
+      has_description = true;
+      break;
+    case IDS_ACC_AUTOCOMPLETE_CLIPBOARD_IMAGE:
+      // Clipboard match with no textual clipboard content.
       break;
     default:
       NOTREACHED();

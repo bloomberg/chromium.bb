@@ -413,20 +413,22 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     (const GURL&)replacementURL {
   // The specific class to swizzle depends on whether the UIRefresh experiment
   // is enabled.
-    void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*, const GURL&,
-                                         ui::PageTransition) =
-        ^void(LocationBarCoordinator* self, const GURL& url,
-              ui::PageTransition transition) {
-          web::NavigationManager::WebLoadParams params(replacementURL);
-          params.transition_type = transition;
-          ChromeLoadParams chromeParams(params);
-          [self.URLLoader loadURLWithParams:chromeParams];
-          [self cancelOmniboxEdit];
-        };
-    load_GURL_from_location_bar_swizzler_.reset(new ScopedBlockSwizzler(
-        [LocationBarCoordinator class],
-        @selector(loadGURLFromLocationBar:transition:disposition:),
-        loadGURLFromLocationBarBlock));
+  void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*,
+                                       TemplateURLRef::PostContent*,
+                                       const GURL&, ui::PageTransition) =
+      ^void(LocationBarCoordinator* self,
+            TemplateURLRef::PostContent* postContent, const GURL& url,
+            ui::PageTransition transition) {
+        web::NavigationManager::WebLoadParams params(replacementURL);
+        params.transition_type = transition;
+        ChromeLoadParams chromeParams(params);
+        [self.URLLoader loadURLWithParams:chromeParams];
+        [self cancelOmniboxEdit];
+      };
+  load_GURL_from_location_bar_swizzler_.reset(new ScopedBlockSwizzler(
+      [LocationBarCoordinator class],
+      @selector(loadGURLFromLocationBar:postContent:transition:disposition:),
+      loadGURLFromLocationBarBlock));
 }
 
 // Creates a new CameraController mock with camera permission granted if

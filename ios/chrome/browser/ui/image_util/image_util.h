@@ -39,9 +39,4 @@ NSString* GetImageExtensionFromData(NSData* data);
 // is nil, empty, or cannot be recognized, nil will be returned.
 NSString* GetImageUTIFromData(NSData* data);
 
-// Downsizes the image if its area exceeds kSearchByImageMaxImageArea AND
-// (either its width exceeds kSearchByImageMaxImageWidth OR its height exceeds
-// kSearchByImageMaxImageHeight) in preparation for searching.
-UIImage* ResizeImageForSearchByImage(UIImage* image);
-
 #endif  // IOS_CHROME_BROWSER_UI_IMAGE_UTIL_IMAGE_UTIL_H_
