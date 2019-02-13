@@ -171,7 +171,7 @@ class ImportNotifier(object):
 
             owners = self.owners_extractor.extract_owners(owners_file)
             # owners may be empty but not None.
-            cc = owners + ['robertma@chromium.org']
+            cc = owners
 
             component = self.owners_extractor.extract_component(owners_file)
             # component could be None.
