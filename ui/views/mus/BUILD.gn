@@ -52,8 +52,6 @@ jumbo_component("mus") {
     "//cc",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/catalog/public/cpp",
-    "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/ws/public/cpp",

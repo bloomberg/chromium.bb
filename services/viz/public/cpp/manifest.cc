@@ -44,7 +44,6 @@ const service_manager::Manifest& GetManifest() {
         .ExposeCapability(
             "viz_host",
             service_manager::Manifest::InterfaceList<mojom::VizMain>())
-        .RequireCapability("catalog", "directory")
         .RequireCapability("metrics", "url_keyed_metrics")
         .RequireCapability("ui", "ozone")
         .Build()
