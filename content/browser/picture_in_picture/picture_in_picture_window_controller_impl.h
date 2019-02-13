@@ -60,6 +60,7 @@ class PictureInPictureWindowControllerImpl
                                           bool reached_end_of_stream) override;
   CONTENT_EXPORT void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   CONTENT_EXPORT void SkipAd() override;
+  CONTENT_EXPORT void NextTrack() override;
 
   CONTENT_EXPORT void MediaSessionActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions);
@@ -117,6 +118,7 @@ class PictureInPictureWindowControllerImpl
 
   // Used to show/hide some actions in Picture-in-Picture window. These are set
   // to true when website handles some Media Session actions.
+  bool media_session_action_next_track_handled_ = false;
   bool media_session_action_play_handled_ = false;
   bool media_session_action_pause_handled_ = false;
   bool media_session_action_skip_ad_handled_ = false;

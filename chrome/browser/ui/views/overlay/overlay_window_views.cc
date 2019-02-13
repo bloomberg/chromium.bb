@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/overlay/back_to_tab_image_button.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
+#include "chrome/browser/ui/views/overlay/next_track_image_button.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
@@ -60,7 +61,11 @@ const int kOverlayBorderThickness = 10;
 // smaller of the screen's width and height.
 const float kControlRatioToWindow = 0.3;
 
+// Track buttons sizes are 60% smaller than Play/Pause button.
+const float kTrackButtonSizeScale = 0.6;
+
 const int kMinControlButtonSize = 48;
+const int kControlButtonMargin = 12;
 
 // Colors for the control buttons.
 SkColor kBgColor = SK_ColorWHITE;
@@ -122,7 +127,8 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
          window->GetCloseControlsBounds().Contains(point) ||
          window->GetFirstCustomControlsBounds().Contains(point) ||
          window->GetSecondCustomControlsBounds().Contains(point) ||
-         window->GetPlayPauseControlsBounds().Contains(point))) {
+         window->GetPlayPauseControlsBounds().Contains(point) ||
+         window->GetNextTrackControlsBounds().Contains(point))) {
       return window_component;
     }
 
@@ -196,6 +202,7 @@ OverlayWindowViews::OverlayWindowViews(
       resize_handle_view_(new views::ResizeHandleButton(this)),
 #endif
       play_pause_controls_view_(new views::PlaybackImageButton(this)),
+      next_track_controls_view_(new views::NextTrackImageButton(this)),
       hide_controls_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
@@ -376,6 +383,9 @@ void OverlayWindowViews::SetUpViews() {
       controller_->IsPlayerActive() ? kPlaying : kPaused);
   play_pause_controls_view_->set_owned_by_client();
 
+  // views::View that holds the next-track image button. ----------------------
+  next_track_controls_view_->set_owned_by_client();
+
 #if defined(OS_CHROMEOS)
   // views::View that shows the affordance that the window can be resized. ----
   resize_handle_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
@@ -386,6 +396,7 @@ void OverlayWindowViews::SetUpViews() {
 
   // Set up view::Views hierarchy. --------------------------------------------
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
+  controls_parent_view_->AddChildView(next_track_controls_view_.get());
   GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(skip_ad_controls_view_.get());
@@ -395,7 +406,7 @@ void OverlayWindowViews::SetUpViews() {
   GetContentsView()->AddChildView(resize_handle_view_.get());
 #endif
 
-  UpdatePlayPauseControlsSize();
+  UpdateButtonControlsSize();
   UpdateControlsVisibility(false);
 }
 
@@ -429,6 +440,8 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   play_pause_controls_view_->SetVisible(is_visible &&
                                         !always_hide_play_pause_button_);
+  next_track_controls_view_->ToggleVisibility(is_visible &&
+                                              show_next_track_button_);
   GetControlsScrimLayer()->SetVisible(is_visible);
   GetControlsParentLayer()->SetVisible(is_visible);
   GetBackToTabControlsLayer()->SetVisible(is_visible);
@@ -462,7 +475,17 @@ void OverlayWindowViews::UpdateControlsBounds() {
   controls_parent_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
 
-  UpdateControlsPositions();
+  // FIXME: Merge with UpdateControlsPositions when custom controls are removed.
+  if (show_next_track_button_) {
+    int mid_window_x = GetBounds().size().width() / 2;
+    play_pause_controls_view_->SetBoundsRect(CalculateControlsBounds(
+        mid_window_x - button_size_.width() / 2, button_size_));
+    next_track_controls_view_->SetBoundsRect(CalculateControlsBounds(
+        mid_window_x + button_size_.width() / 2 + kControlButtonMargin,
+        next_track_controls_view_->GetLastVisibleSize()));
+  } else {
+    UpdateControlsPositions();
+  }
 }
 
 void OverlayWindowViews::UpdateButtonSize() {
@@ -504,9 +527,13 @@ void OverlayWindowViews::UpdateCustomControlsSize(
                                      &control_background);
 }
 
-void OverlayWindowViews::UpdatePlayPauseControlsSize() {
+void OverlayWindowViews::UpdateButtonControlsSize() {
+  // FIXME: Inline UpdateButtonSize() when custom controls are removed.
   UpdateButtonSize();
-  play_pause_controls_view_->SetButtonSize(button_size_);
+  play_pause_controls_view_->SetSize(button_size_);
+  gfx::Size track_button_size =
+      gfx::ScaleToRoundedSize(button_size_, kTrackButtonSizeScale);
+  next_track_controls_view_->SetSize(track_button_size);
 }
 
 void OverlayWindowViews::CreateCustomControl(
@@ -648,6 +675,14 @@ void OverlayWindowViews::SetSkipAdButtonVisibility(bool is_visible) {
   show_skip_ad_button_ = is_visible;
 }
 
+void OverlayWindowViews::SetNextTrackButtonVisibility(bool is_visible) {
+  if (show_next_track_button_ == is_visible)
+    return;
+
+  show_next_track_button_ = is_visible;
+  UpdateControlsBounds();
+}
+
 void OverlayWindowViews::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
   // Clear any existing controls.
@@ -725,7 +760,7 @@ void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   // Update the view layers to scale to |new_size|.
   UpdateCustomControlsSize(first_custom_controls_view_.get());
   UpdateCustomControlsSize(second_custom_controls_view_.get());
-  UpdatePlayPauseControlsSize();
+  UpdateButtonControlsSize();
   UpdateLayerBoundsWithLetterboxing(new_size);
 
   views::Widget::OnNativeWidgetSizeChanged(new_size);
@@ -833,6 +868,9 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
     TogglePlayPause();
     event->SetHandled();
+  } else if (GetNextTrackControlsBounds().Contains(event->location())) {
+    controller_->NextTrack();
+    event->SetHandled();
   }
 }
 
@@ -850,6 +888,9 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
   if (sender == play_pause_controls_view_.get())
     TogglePlayPause();
+
+  if (sender == next_track_controls_view_.get())
+    controller_->NextTrack();
 
   if (sender == first_custom_controls_view_.get())
     controller_->CustomControlPressed(first_custom_controls_view_->id());
@@ -876,6 +917,10 @@ gfx::Rect OverlayWindowViews::GetResizeHandleControlsBounds() {
 
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
   return play_pause_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetNextTrackControlsBounds() {
+  return next_track_controls_view_->GetMirroredBounds();
 }
 
 gfx::Rect OverlayWindowViews::GetFirstCustomControlsBounds() {
@@ -906,10 +951,6 @@ ui::Layer* OverlayWindowViews::GetBackToTabControlsLayer() {
   return back_to_tab_controls_view_->layer();
 }
 
-ui::Layer* OverlayWindowViews::GetSkipAdControlsLayer() {
-  return skip_ad_controls_view_->layer();
-}
-
 ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
   return close_controls_view_->layer();
 }
@@ -933,6 +974,11 @@ void OverlayWindowViews::TogglePlayPause() {
 views::PlaybackImageButton*
 OverlayWindowViews::play_pause_controls_view_for_testing() const {
   return play_pause_controls_view_.get();
+}
+
+views::NextTrackImageButton*
+OverlayWindowViews::next_track_controls_view_for_testing() const {
+  return next_track_controls_view_.get();
 }
 
 gfx::Point OverlayWindowViews::back_to_tab_image_position_for_testing() const {

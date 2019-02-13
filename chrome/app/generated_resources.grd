@@ -5664,6 +5664,9 @@ the Bookmarks menu.">
       <message name="IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button toggles between play and pause controls.">
         Toggle video to play or pause
       </message>
+      <message name="IDS_PICTURE_IN_PICTURE_NEXT_TRACK_CONTROL_ACCESSIBLE_TEXT" desc="Accessible text label used for the controls button in the Picture-in-Picture window. The button invokes next track action.">
+        Next track
+      </message>
       <message name="IDS_PICTURE_IN_PICTURE_CONFIRM_CLOSE_TITLE" desc="Text label of the title for the confirmation dialog. This dialog appears when the user tries to close a tab / window while in Picture-in-Picture mode.">
         Are you sure you want to close this tab?
       </message>

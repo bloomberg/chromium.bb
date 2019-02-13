@@ -13,14 +13,15 @@ namespace views {
 // A resizable playback button with 3 states: play/pause/replay.
 class PlaybackImageButton : public views::ImageButton {
  public:
-  explicit PlaybackImageButton(ButtonListener* listener);
+  explicit PlaybackImageButton(ButtonListener*);
   ~PlaybackImageButton() override;
-
-  // Set button size and make sure images are sized accordindly.
-  void SetButtonSize(const gfx::Size& size);
 
   // Show appropriate images based on playback state.
   void SetPlaybackState(const OverlayWindowViews::PlaybackState playback_state);
+
+ protected:
+  // Overridden from views::View.
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   void UpdateImageAndTooltipText();

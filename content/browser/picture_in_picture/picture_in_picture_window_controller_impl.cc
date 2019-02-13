@@ -73,6 +73,8 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   DCHECK(surface_id_.is_valid());
 
   MediaSessionImpl* media_session = MediaSessionImpl::Get(initiator_);
+  media_session_action_next_track_handled_ = media_session->ShouldRouteAction(
+      media_session::mojom::MediaSessionAction::kNextTrack);
   media_session_action_play_handled_ = media_session->ShouldRouteAction(
       media_session::mojom::MediaSessionAction::kPlay);
   media_session_action_pause_handled_ = media_session->ShouldRouteAction(
@@ -82,6 +84,8 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
 
   UpdatePlayPauseButtonVisibility();
   window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
+  window_->SetNextTrackButtonVisibility(
+      media_session_action_next_track_handled_);
   window_->ShowInactive();
   initiator_->SetHasPictureInPictureVideo(true);
 
@@ -237,6 +241,11 @@ void PictureInPictureWindowControllerImpl::SkipAd() {
     MediaSession::Get(initiator_)->SkipAd();
 }
 
+void PictureInPictureWindowControllerImpl::NextTrack() {
+  if (media_session_action_next_track_handled_)
+    MediaSession::Get(initiator_)->NextTrack();
+}
+
 void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
     const std::set<media_session::mojom::MediaSessionAction>& actions) {
   // TODO(crbug.com/919842): Currently, the first Media Session to be created
@@ -244,6 +253,9 @@ void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
   // Skip Ad button for a PiP video from another frame. Ideally, we should have
   // a Media Session per frame, not per tab. This is not implemented yet.
 
+  media_session_action_next_track_handled_ =
+      actions.find(media_session::mojom::MediaSessionAction::kNextTrack) !=
+      actions.end();
   media_session_action_pause_handled_ =
       actions.find(media_session::mojom::MediaSessionAction::kPause) !=
       actions.end();
@@ -259,6 +271,8 @@ void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
 
   UpdatePlayPauseButtonVisibility();
   window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
+  window_->SetNextTrackButtonVisibility(
+      media_session_action_next_track_handled_);
 }
 
 void PictureInPictureWindowControllerImpl::MediaStartedPlaying(

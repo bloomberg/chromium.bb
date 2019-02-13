@@ -44,6 +44,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/views/overlay/next_track_image_button.h"
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
@@ -88,6 +89,7 @@ class MockPictureInPictureWindowController
   MOCK_METHOD1(CustomControlPressed, void(const std::string&));
   MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
   MOCK_METHOD0(SkipAd, void());
+  MOCK_METHOD0(NextTrack, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPictureInPictureWindowController);
@@ -1990,7 +1992,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 
   // Set Media Session action "pause" handler and check that Play/Pause button
   // is now displayed when mouse is hovering over the window.
-  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(content::ExecuteScript(active_web_contents,
                                      "setMediaSessionActionHandler('pause');"));
   base::RunLoop().RunUntilIdle();
@@ -2025,6 +2026,51 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
       overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
 }
 #endif
+
+// Tests that a Next Track button is displayed in the Picture-in-Picture window
+// when Media Session Action "nexttrack" is handled by the website.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       NextTrackButtonVisibility) {
+  LoadTabAndEnterPictureInPicture(browser());
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  // Next Track button is not displayed initially when mouse is hovering over
+  // the window.
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->next_track_controls_view_for_testing()->IsDrawn());
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Next Track button is not displayed if video is not playing even if mouse is
+  // hovering over the window and media session action handler has been set.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "setMediaSessionActionHandler('nexttrack');"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->next_track_controls_view_for_testing()->IsDrawn());
+
+  // Play video and check that Next Track button is now displayed when
+  // video plays and mouse is hovering over the window.
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_TRUE(
+      overlay_window->next_track_controls_view_for_testing()->IsDrawn());
+
+  // Unset action handler and check that Next Track button is not displayed when
+  // video plays and mouse is hovering over the window.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "unsetMediaSessionActionHandler('nexttrack');"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->next_track_controls_view_for_testing()->IsDrawn());
+}
 
 // Tests that clicking the Skip Ad button in the Picture-in-Picture window
 // calls the Media Session Action "skipad" handler function.
@@ -2074,6 +2120,27 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   // function is called.
   window_controller()->TogglePlayPause();
   expected_title = base::ASCIIToUTF16("play");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
+// Tests that clicking the Next Track button in the Picture-in-Picture window
+// calls the Media Session Action "nexttrack" handler function.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       NextTrackHandlerCalled) {
+  LoadTabAndEnterPictureInPicture(browser());
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "setMediaSessionActionHandler('nexttrack');"));
+  base::RunLoop().RunUntilIdle();
+
+  // Simulates user clicking "Next Track" and check the handler function is
+  // called.
+  window_controller()->NextTrack();
+  base::string16 expected_title = base::ASCIIToUTF16("nexttrack");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
