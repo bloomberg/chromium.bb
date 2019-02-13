@@ -2010,6 +2010,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-attribute-switching.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       LanguageDetectionLangDetectionBasic) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-detection-basic.html"));
+}
+
 //
 // These tests cover features of the testing infrastructure itself.
 //
