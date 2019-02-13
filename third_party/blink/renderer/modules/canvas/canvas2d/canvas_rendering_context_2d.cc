@@ -455,7 +455,7 @@ String CanvasRenderingContext2D::font() const {
   if (font_description.VariantCaps() == FontDescription::kSmallCaps)
     serialized_font.Append("small-caps ");
 
-  serialized_font.AppendNumber(font_description.ComputedPixelSize());
+  serialized_font.AppendNumber(font_description.ComputedSize());
   serialized_font.Append("px");
 
   const FontFamily& first_font_family = font_description.Family();
