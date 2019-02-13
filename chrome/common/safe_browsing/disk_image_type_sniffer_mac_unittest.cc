@@ -99,9 +99,9 @@ const ArchiveTestCase cases[] = {
 
 };
 
-INSTANTIATE_TEST_CASE_P(DiskImageTypeSnifferMacTestInstantiation,
-                        DiskImageTypeSnifferMacTest,
-                        testing::ValuesIn(cases));
+INSTANTIATE_TEST_SUITE_P(DiskImageTypeSnifferMacTestInstantiation,
+                         DiskImageTypeSnifferMacTest,
+                         testing::ValuesIn(cases));
 
 TEST(DiskImageTypeSnifferMacTest, IsAppleDiskImageTrailerIsCorrect) {
   uint8_t good_header[4] = {'k', 'o', 'l', 'y'};

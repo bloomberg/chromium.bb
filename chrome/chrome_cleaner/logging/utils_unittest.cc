@@ -148,7 +148,9 @@ class PUPToUwSTest : public ::testing::TestWithParam<bool> {
   TestPUPData test_pup_data_;
 };
 
-INSTANTIATE_TEST_CASE_P(PUPToUwS, PUPToUwSTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(PUPToUwS,
+                         PUPToUwSTest,
+                         ::testing::Values(false, true));
 
 TEST_P(PUPToUwSTest, PUPToUwS) {
   UwS uws = PUPToUwS(GetPUPWithExpectedFiles(), kUwSDetectedFlagsNone,

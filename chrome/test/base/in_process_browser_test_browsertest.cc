@@ -34,9 +34,9 @@ IN_PROC_BROWSER_TEST_P(InProcessBrowserTestP, TestP) {
   EXPECT_EQ(0, strcmp("foo", GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(IPBTP,
-                        InProcessBrowserTestP,
-                        ::testing::Values("foo"));
+INSTANTIATE_TEST_SUITE_P(IPBTP,
+                         InProcessBrowserTestP,
+                         ::testing::Values("foo"));
 
 // WebContents observer that can detect provisional load failures.
 class LoadFailObserver : public content::WebContentsObserver {

@@ -474,13 +474,13 @@ TEST_P(GcpGaiaUserCreationTest, ExistingGaiaUserTest) {
 // For a max retry of 10, it is possible to create gaia users 'gaia',
 // 'gaia0' ... 'gaia8' before failing. At 'gaia9' the test should fail.
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AvailableGaiaUserName,
     GcpGaiaUserCreationTest,
     ::testing::Combine(::testing::Range(0, kMaxUsernameAttempts - 2),
                        ::testing::Values(true)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UnavailableGaiaUserName,
     GcpGaiaUserCreationTest,
     ::testing::Values(std::make_tuple<int, bool>(kMaxUsernameAttempts - 1,

@@ -280,14 +280,14 @@ TEST_P(PUPTypemapTest, Echo) {
   EXPECT_EQ(expected_to_succeed_ ? 0 : kConnectionBrokenResultCode, exit_code);
 }
 
-INSTANTIATE_TEST_CASE_P(Success,
-                        PUPTypemapTest,
-                        testing::Combine(testing::Values(true),
-                                         testing::Values("EchoPUP",
-                                                         "EchoPUP_ExtraData")),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(Success,
+                         PUPTypemapTest,
+                         testing::Combine(testing::Values(true),
+                                          testing::Values("EchoPUP",
+                                                          "EchoPUP_ExtraData")),
+                         GetParamNameForTest());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Failure,
     PUPTypemapTest,
     testing::Combine(testing::Values(false),

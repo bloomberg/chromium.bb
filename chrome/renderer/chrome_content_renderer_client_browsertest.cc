@@ -231,7 +231,6 @@ IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
   WaitForYouTubeRequest();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    FlashEmbeds,
-    ChromeContentRendererClientBrowserTest,
-    ::testing::ValuesIn(kFlashEmbedsTestData));
+INSTANTIATE_TEST_SUITE_P(FlashEmbeds,
+                         ChromeContentRendererClientBrowserTest,
+                         ::testing::ValuesIn(kFlashEmbedsTestData));

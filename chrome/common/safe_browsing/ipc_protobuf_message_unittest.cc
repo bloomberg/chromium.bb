@@ -157,6 +157,6 @@ TEST_P(IPCProtobufMessageTest, RepeatedSubmessage) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(IPCProtobufMessage,
-                        IPCProtobufMessageTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(IPCProtobufMessage,
+                         IPCProtobufMessageTest,
+                         ::testing::Bool());

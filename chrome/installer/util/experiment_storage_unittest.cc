@@ -169,12 +169,12 @@ TEST_P(ExperimentStorageTest, TestLoadStoreMetrics) {
   EXPECT_EQ(metrics, stored_metrics);
 }
 
-INSTANTIATE_TEST_CASE_P(UserLevel,
-                        ExperimentStorageTest,
-                        ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(UserLevel,
+                         ExperimentStorageTest,
+                         ::testing::Values(false));
 
-INSTANTIATE_TEST_CASE_P(SystemLevel,
-                        ExperimentStorageTest,
-                        ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(SystemLevel,
+                         ExperimentStorageTest,
+                         ::testing::Values(true));
 
 }  // namespace installer

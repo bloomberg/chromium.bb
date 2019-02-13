@@ -198,6 +198,6 @@ TEST_P(GCAPIOmahaExperimentTest,
   VerifyExperimentLabels(expected_labels);
 }
 
-INSTANTIATE_TEST_CASE_P(, GCAPIOmahaExperimentTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, GCAPIOmahaExperimentTest, ::testing::Bool());
 
 }  // namespace

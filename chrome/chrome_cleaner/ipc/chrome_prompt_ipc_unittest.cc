@@ -381,18 +381,18 @@ TEST_P(ChromePromptIPCTest, Communication) {
   EXPECT_EQ(expected_exit_code, exit_code);
 }
 
-INSTANTIATE_TEST_CASE_P(NoUwSPresent,
-                        ChromePromptIPCTest,
-                        testing::Combine(
-                            /*uws_expected=*/Values(false),
-                            /*uwe_expected=*/Values(false),
-                            /*with_registry_keys=*/Values(false),
-                            Values(mojom::PromptAcceptance::DENIED),
-                            Values(ParentDisconnected::kNone,
-                                   ParentDisconnected::kOnStartup)),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(NoUwSPresent,
+                         ChromePromptIPCTest,
+                         testing::Combine(
+                             /*uws_expected=*/Values(false),
+                             /*uwe_expected=*/Values(false),
+                             /*with_registry_keys=*/Values(false),
+                             Values(mojom::PromptAcceptance::DENIED),
+                             Values(ParentDisconnected::kNone,
+                                    ParentDisconnected::kOnStartup)),
+                         GetParamNameForTest());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UwSPresent,
     ChromePromptIPCTest,
     testing::Combine(
