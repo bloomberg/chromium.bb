@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">मोनो ऑडियो</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बैटरी के पूरी तरह से चार्ज होने में शेष समय, <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">निगरानी में रखी गई आपकी उपयोगकर्ता प्रोफ़ाइल जल्द ही हटा दी जाएगी. ज़्यादा जानने के लिए साइन इन करें.</translation>
 <translation id="3055162170959710888">आपने आज इस डिवाइस का <ph name="USED_TIME" /> तक इस्तेमाल कर लिया है</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">मेन्यू बड़ा करें</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा में आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>
-<translation id="32244657276328332">नेटवर्क से जुड़ा हुआ नहीं है</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3255483164551725916">तुम क्या-क्या कर सकती हो?</translation>
 <translation id="3294437725009624529">अतिथि</translation>

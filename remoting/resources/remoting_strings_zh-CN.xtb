@@ -139,6 +139,7 @@
 <translation id="3989511127559254552">要继续，您必须先为该应用授予对您的计算机的扩展访问权限（该操作只需执行一次）。</translation>
 <translation id="4006787130661126000">如果您想使用 Chrome 远程桌面来访问此计算机，就必须启用远程连接。</translation>
 <translation id="405887016757208221">远程计算机未能将该会话初始化。如果问题仍然存在，请尝试重新配置主机。</translation>
+<translation id="4060747889721220580">下载文件</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
 <translation id="4126409073460786861">请在设置完毕后刷新此页面，然后您只需选择设备并输入相应的 PIN 码，便可访问这台计算机</translation>

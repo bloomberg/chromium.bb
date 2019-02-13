@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Valoarea trebuie să fie mai mică sau egală cu <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definiție</translation>
 <translation id="3557673793733683882">titlu <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">numărul secundelor rămase din film</translation>
 <translation id="3706100364254443312">comutator</translation>
 <translation id="3732799496749320381">ll</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">glisor redare film</translation>
 <translation id="3808586225841795776">termen</translation>
 <translation id="3822383571486410024">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești <ph name="CURRENT_LENGTH" /> caractere).</translation>
 <translation id="383465348367842624">Valoarea urmată de semnul „<ph name="ATSIGN" />” nu trebuie să conțină simbolul „<ph name="INVALIDCHARACTER" />”.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">buton de meniu</translation>
 <translation id="4446524499724042288">trimitere la glosar</translation>
 <translation id="4522570452068850558">Detalii</translation>
+<translation id="4542388879936266156">timp rămas: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">formular</translation>
 <translation id="4661075872484491155">arbore</translation>
 <translation id="4664250907885839816">Valoarea care urmează după semnul „<ph name="ATSIGN" />” nu trebuie să conțină simbolul „<ph name="INVALIDCHARACTER" />”.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">aaaa</translation>
 <translation id="8284326494547611709">Subtitrări</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>
+<translation id="8403857369060869934">timp scurs: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">parte</translation>
 <translation id="8433900881053900389">bară de instrumente</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fișiere</translation>

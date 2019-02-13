@@ -86,7 +86,6 @@
 <translation id="3080151273017101988">Google Chrome மூடப்பட்டிருக்கும்போது பின்புல பயன்பாடுகளை இயக்க அனுமதி</translation>
 <translation id="3089968997497233615">புதிய, இன்னும் பாதுகாப்பான Google Chrome பதிப்பு தற்போது கிடைக்கிறது.</translation>
 <translation id="3149510190863420837">Chrome பயன்பாடுகள்</translation>
-<translation id="3180085900771989961">நிர்வாகி உங்களை Chrome இலிருந்து அகற்றி மீண்டும் சேர்க்க வேண்டும்.</translation>
 <translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> எந்த இணையதளங்களைப் பார்க்கலாம் என்பதை அமைக்க, <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />க்குச் சென்று கட்டுப்பாடுகளையும் அமைப்புகளையும் உள்ளமைக்கலாம். இயல்புநிலை அமைப்புகளை மாற்றவில்லை எனில், <ph name="NEW_PROFILE_NAME" /> இணையத்தில் எல்லா தளங்களிலும் உலாவ முடியும்.
 
 உங்கள் கணக்கை அணுகாதபடி <ph name="NEW_PROFILE_NAME" />ஐத் தடுக்க, நீங்கள் Chromeஐப் பயன்படுத்தாத போது தவறாமல் உங்கள் சுயவிவரத்தைப் பூட்டவும். இதைச் செய்ய, உலாவியின் மேல் வலது மூலையில் உள்ள சுயவிவரப் பெயரைக் கிளிக் செய்து, "வெளியேறி, குழந்தைப்பூட்டை இயக்கு" என்பதைத் தேர்ந்தெடுக்கவும்.
@@ -156,7 +155,6 @@
 <translation id="5062123544085870375">Chrome OSஸை மீண்டும் தொடங்கவும்</translation>
 <translation id="5090044601776247154">Google Chrome 70 பதிப்பு முதல், மேற்பார்வையிடப்படும் பயனர் கணக்குகள் கிடைக்காது.</translation>
 <translation id="5132929315877954718">Google Chrome க்கான சிறந்த பயன்பாடுகள், கேம்ஸ், நீட்டிப்புகள் மற்றும் தீம்களைக் கண்டறியவும்.</translation>
-<translation id="5166975452760862670">Google Chrome இந்த மொழியில் காட்டப்படுகிறது</translation>
 <translation id="5170938038195470297">Google Chrome இன் புத்தம் புதிய பதிப்பு என்பதால், உங்கள் சுயவிவரத்தைப் பயன்படுத்த முடியாது. சில அம்சங்கள் கிடைக்காமல் போகலாம். வேறு சுயவிவர கோப்பகத்தைக் குறிப்பிடுக அல்லது Chrome இன் புதிய பதிப்பைப் பயன்படுத்துக.</translation>
 <translation id="5193136243808726294">Google Chrome OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />சேவை விதிமுறைகள்<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -169,9 +167,9 @@
 <translation id="556024056938947818">Google Chrome ஆனது கடவுச்சொற்களைக் காட்ட முயற்சிக்கிறது.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ஆபத்தானதாக இருக்கலாம் என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
+<translation id="5686916850681061684">Google Chromeமைத் தனிப்பயனாக்கும், கட்டுப்படுத்தும். சிலவற்றை நீங்கள் கவனிக்க வேண்டும் - விவரங்களுக்கு, கிளிக் செய்யவும்.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 1 வினாடியில் மீண்டும் தொடங்கும்}other{Google Chrome # வினாடிகளில் மீண்டும் தொடங்கும்}}</translation>
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
-<translation id="5774845247549698882">Chrome OS இந்த மொழியில் காட்டப்படுகிறது</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">Chromeஐத் தொடங்க முடியவில்லை. மீண்டும் முயலவும்.</translation>
 <translation id="5877064549588274448">சேனல் மாற்றப்பட்டது. மாற்றங்களைச் செயல்படுத்த உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்.</translation>

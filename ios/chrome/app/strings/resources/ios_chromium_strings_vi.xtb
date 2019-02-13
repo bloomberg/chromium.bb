@@ -4,7 +4,6 @@
 <translation id="102360288709523007">Cải thiện Chromium bằng cách gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="1185134272377778587">Giới thiệu về Chromium</translation>
 <translation id="1289966288285062467">Thông báo bảo mật của Chromium</translation>
-<translation id="1341317949260424055">Cải thiện Chromium và tăng cường bảo mật bằng cách gửi dữ liệu sử dụng và dữ liệu về hệ thống cho Google</translation>
 <translation id="1472013873724362412">Tài khoản của bạn không hoạt động trên Chromium. Vui lòng liên hệ với quản trị viên miền của bạn hoặc sử dụng Tài khoản Google thông thường để đăng nhập.</translation>
 <translation id="1736662517232558588">Đã xóa dữ liệu Chromium</translation>
 <translation id="1838412507805038478">Chromium xác minh rằng <ph name="ISSUER" /> đã cấp chứng chỉ của trang web này.</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">Một số tiện ích bổ sung khiến Chromium trục trặc. Hãy gỡ cài đặt:</translation>
 <translation id="2178608107313874732">Chromium hiện không thể dùng máy ảnh</translation>
 <translation id="2195025571279539885">Bạn có muốn Chromium đề xuất dịch các trang <ph name="LANGUAGE_NAME" /> của trang web này vào lần tiếp theo không?</translation>
+<translation id="2517624234762908348">Đồng bộ hóa dữ liệu Chromium</translation>
 <translation id="2647554856022461007">Chromium có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tùy ý vô hiệu hóa các dịch vụ này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">Trải nghiệm các tính năng thông minh của Google trong Chromium</translation>
 <translation id="2730884209570016437">Chromium không thể sử dụng máy ảnh của bạn do một ứng dụng khác đang dùng máy ảnh.</translation>
 <translation id="2915596697727466327">Chromium sử dụng Face ID để đảm bảo rằng chỉ những người được ủy quyền mới có thể truy cập vào mật khẩu của bạn.</translation>
 <translation id="3256316712990552818">Đã sao chép vào Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">Xóa dữ liệu Chromium của bạn khỏi thiết bị này?</translation>
 <translation id="8175055321229419309">Mẹo: <ph name="BEGIN_LINK" />Di chuyển Chromium sang thanh dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Có được trải nghiệm Google tốt hơn trong Chromium dựa trên vị trí của bạn.</translation>
-<translation id="8508544542427105412">Bạn có thể tùy chỉnh mục <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" /> bất cứ lúc nào. Google có thể sử dụng nội dung trên các trang web bạn truy cập, hoạt động và những tương tác trên trình duyệt để cá nhân hóa Chromium và các dịch vụ của Google, chẳng hạn như Dịch, Tìm kiếm và quảng cáo.</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8809780021347235332">Để lưu hình ảnh, nhấn vào Cài đặt để cho phép Chromium sử dụng ảnh của bạn</translation>
 <translation id="9022552996538154597">Đăng nhập vào Chromium</translation>

@@ -86,7 +86,6 @@
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
-<translation id="3180085900771989961">ผู้จัดการต้องนำคุณออกแล้วเพิ่มคุณกลับเข้าไปใน Chrome ใหม่</translation>
 <translation id="3251381707915721925">ในการตั้งค่าเว็บไซต์ที่ <ph name="NEW_PROFILE_NAME" /> สามารถเข้าดูได้ คุณสามารถกำหนดค่าข้อจำกัดและการตั้งค่าโดยไปที่ <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> หากคุณไม่เปลี่ยนการตั้งค่าเริ่มต้น <ph name="NEW_PROFILE_NAME" /> จะสามารถเรียกดูทุกอย่างบนเว็บได้
 
 หากต้องการป้องกันไม่ให้ <ph name="NEW_PROFILE_NAME" /> สามารถเข้าถึงบัญชีของคุณ โปรดตรวจสอบว่าคุณได้ล็อกโปรไฟล์เวลาที่ไม่ได้ใช้ Chrome โดยทำดังนี้ คลิกชื่อโปรไฟล์ของคุณที่มุมขวาบนของเบราว์เซอร์ แล้วเลือก "ออกและล็อกป้องกันเด็ก"
@@ -157,7 +156,6 @@
 <translation id="5062123544085870375">รีสตาร์ท Chrome OS</translation>
 <translation id="5090044601776247154">คุณจะใช้โปรไฟล์ผู้ใช้ภายใต้การดูแลไม่ได้อีกแล้วโดยเริ่มตั้งแต่ Google Chrome 70 เป็นต้นไป</translation>
 <translation id="5132929315877954718">พบกับแอป เกม ส่วนขยาย และธีมเด็ดๆ สำหรับ Google Chrome</translation>
-<translation id="5166975452760862670">Google Chrome แสดงในภาษานี้</translation>
 <translation id="5170938038195470297">โปรไฟล์ของคุณไม่สามารถใช้ได้เพราะมาจากรุ่นที่ใหม่กว่าของ Google Chrome ฟีเจอร์บางอย่างอาจจะไม่พร้อมใช้งาน โปรดระบุไดเรกทอรีของโปรไฟล์อื่นหรือใช้ Chrome รุ่นที่ใหม่กว่า</translation>
 <translation id="5193136243808726294">Google Chrome OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_TERMS_OF_SERVICE_LINK" />ของ Google Chrome</translation>
@@ -170,9 +168,9 @@
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
+<translation id="5686916850681061684">ปรับแต่งและควบคุม Google Chrome มีสิ่งที่คุณจำเป็นต้องทราบ โปรดคลิกเพื่อดูรายละเอียด</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome จะรีสตาร์ทใน 1 วินาที}other{Google Chrome จะรีสตาร์ทใน # วินาที}}</translation>
 <translation id="573759479754913123">เกี่ยวกับ Chrome OS</translation>
-<translation id="5774845247549698882">Chrome OS แสดงในภาษานี้</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
 <translation id="5804318322022881572">เปิด Chrome ไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>

@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="1455413310270022028">橡皮擦</translation>
+<translation id="1463543813647160932">5x7</translation>
 <translation id="1484290072879560759">选择送货地址</translation>
 <translation id="1501859676467574491">显示您的 Google 帐号中保存的支付卡</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936">系统不会翻译<ph name="LANGUAGE" />网页。</translation>
 <translation id="2053553514270667976">邮编</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
+<translation id="2068124040035837596">您的帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的帐号。</translation>
 <translation id="2068663545051464999">已上传的崩溃报告的 ID：<ph name="CRASH_ID" />（本地上下文：<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">该送货方式不可用。请另选一种方式。</translation>
 <translation id="2396249848217231973">撤消删除(&amp;U)</translation>
 <translation id="2413528052993050574">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能已被撤消。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
+<translation id="244665789865330679">您的设备和帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的设备和帐号。</translation>
 <translation id="2463193859425327265">更改主页</translation>
 <translation id="2463739503403862330">填充</translation>
 <translation id="2465655957518002998">选择速递方式</translation>
@@ -373,7 +376,6 @@
 <translation id="3287510313208355388">联网时下载</translation>
 <translation id="3293642807462928945">详细了解“<ph name="POLICY_NAME" />”政策</translation>
 <translation id="3303855915957856445">未找到任何搜索结果</translation>
-<translation id="3305707030755673451">您的数据已于 <ph name="TIME" />使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="3320021301628644560">添加账单邮寄地址</translation>
 <translation id="3324983252691184275">深红色</translation>
 <translation id="3338095232262050444">安全</translation>
@@ -557,6 +559,7 @@
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
 <translation id="4378154925671717803">电话机</translation>
 <translation id="4406896451731180161">搜索结果</translation>
+<translation id="4406972042435603828">您的管理员安装了一些具有强大功能的扩展程序。</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" />Cookie</translation>
 <translation id="4415426530740016218">取货地址</translation>
 <translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN" />；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -628,10 +631,12 @@
 <translation id="4943872375798546930">找不到结果</translation>
 <translation id="4950898438188848926">标签页切换按钮，按 Enter 键可切换到打开的标签页，<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">操作</translation>
+<translation id="495832697253704892">扩展程序报告</translation>
 <translation id="4958444002117714549">展开列表</translation>
 <translation id="4974590756084640048">重新启用警告功能</translation>
 <translation id="4989163558385430922">查看全部</translation>
 <translation id="4989809363548539747">该插件不受支持</translation>
+<translation id="4996230189582812866">报告</translation>
 <translation id="5002932099480077015">如果您选中此项，Chrome 会将您的卡的副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="5014174725590676422">显示 Chrome 中的 Google 助理的首次运行屏幕</translation>
 <translation id="5015510746216210676">设备名称：</translation>
@@ -652,6 +657,7 @@
 <translation id="5089810972385038852">州/省/直辖市/自治区</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5095208057601539847">省</translation>
+<translation id="5098222253617183465">您的设备由 <ph name="ENROLLMENT_DOMAIN" /> 管理，而您的帐号由 <ph name="ACCOUNT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的设备和帐号。</translation>
 <translation id="5115563688576182185">（64 位）</translation>
 <translation id="5128122789703661928">无法删除此会话，因为它的名称无效。</translation>
 <translation id="5135404736266831032">管理地址…</translation>
@@ -664,6 +670,7 @@
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
 <translation id="5190835502935405962">书签栏</translation>
+<translation id="5200263511887412697">以列表的形式报告最近登录过的设备用户</translation>
 <translation id="5201306358585911203">此网页上的嵌入式页面显示</translation>
 <translation id="5205222826937269299">需要提供名称</translation>
 <translation id="5215116848420601511">Google Pay 中存储的付款方式和地址信息</translation>
@@ -734,6 +741,7 @@
 <translation id="563324245173044180">欺骗性内容已被拦截。</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5675650730144413517">该网页无法正常运作</translation>
+<translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="5685654322157854305">添加送货地址</translation>
 <translation id="5689199277474810259">导出为 JSON 格式</translation>
 <translation id="5689516760719285838">位置</translation>
@@ -765,10 +773,10 @@
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5887400589839399685">已保存卡片</translation>
+<translation id="5893718151540690985">以列表的形式报告网络接口及其类型和硬件地址</translation>
 <translation id="5893752035575986141">接受信用卡。</translation>
 <translation id="5901630391730855834">黄色</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（已同步）</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
 <translation id="5921639886840618607">将银行卡信息保存到 Google 帐号中？</translation>
 <translation id="5922853866070715753">即将完成</translation>
 <translation id="5932224571077948991">网站展示过侵扰性或误导性广告</translation>
@@ -778,6 +786,7 @@
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
+<translation id="5977489021191000276">您的设备不受管理员管理。</translation>
 <translation id="5977976211062815271">在这部设备上</translation>
 <translation id="598637245381783098">无法打开付款应用</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
@@ -789,6 +798,7 @@
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击者可能会安装欺骗性应用来冒充其他内容或收集可用于对您进行跟踪的数据。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" />（已同步）</translation>
 <translation id="6027201098523975773">请输入名称</translation>
+<translation id="6033927989869462158">报告硬件统计信息（例如 CPU/RAM 使用情况）</translation>
 <translation id="6034000775414344507">浅灰色</translation>
 <translation id="6039846035001940113">如果问题仍然存在，请与网站所有者联系。</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -900,6 +910,8 @@
 <translation id="6897140037006041989">用户代理</translation>
 <translation id="6903319715792422884">您可以选择向 Google 发送一些<ph name="BEGIN_WHITEPAPER_LINK" />系统信息和网页内容<ph name="END_WHITEPAPER_LINK" />，以帮助我们改进安全浏览功能。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">用户：</translation>
+<translation id="6934672428414710184">此名称来自您的 Google 帐号</translation>
+<translation id="6939583532829045966">您的设备由 <ph name="ENROLLMENT_DOMAIN" /> 管理。这意味着，您的管理员可能会远程配置您的设备。</translation>
 <translation id="6944692733090228304">您在一个不受 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 管理的网站上输入了您的密码。为了保护您的帐号，请不要在其他应用和网站上重复使用您的密码。</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6948701128805548767">要查看取货方式和要求，请选择相应地址</translation>
@@ -987,6 +999,7 @@
       &lt;li&gt;依次点击&lt;strong&gt;应用&lt;/strong&gt;和&lt;strong&gt;确定&lt;/strong&gt;
       &lt;li&gt;访问 &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome 帮助中心&lt;/a&gt;，了解如何从您的计算机中永久移除该软件
       &lt;/ol&gt;</translation>
+<translation id="7413422570546054399"><ph name="PRODUCT_NAME" />管理</translation>
 <translation id="7416351320495623771">管理密码…</translation>
 <translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7437289804838430631">添加联系信息</translation>
@@ -995,10 +1008,12 @@
 <translation id="7442725080345379071">浅橙色</translation>
 <translation id="7444046173054089907">此网站已被屏蔽</translation>
 <translation id="7445762425076701745">无法完全验证您所连接到的服务器的身份。您在连接服务器时使用的服务器名称仅在您的网络中有效，而外部证书授权中心无法验证该名称的所有权。由于一些证书授权中心仍然会为这些名称颁发证书，因此无法确保您连接到想要访问的网站而不是攻击网站。</translation>
+<translation id="7449109375006139765">将系统日志发送到管理服务器</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7455133967321480974">使用全局默认设置（阻止）</translation>
 <translation id="7460618730930299168">此处显示的放映时间不同于您的选择。继续？</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
+<translation id="7475525192983021547">报告用户在设备上处于活跃状态的时间段</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>
@@ -1091,6 +1106,7 @@
 <translation id="7995512525968007366">未指定</translation>
 <translation id="800218591365569300">请尝试关闭其他标签页或程序以释放内存。</translation>
 <translation id="8009225694047762179">管理密码</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{这张卡及其帐单邮寄地址将被保存。登录 <ph name="USER_EMAIL" /> 后即可使用这张卡。}other{这些卡及其帐单邮寄地址将被保存。登录 <ph name="USER_EMAIL" /> 后即可使用这些卡。}}</translation>
 <translation id="8012647001091218357">我们暂时无法与您父母取得联系，请重试。</translation>
 <translation id="8025119109950072390">此网站上的攻击者可能会诱骗您做出一些诸如安装软件或泄露个人信息（例如：密码、电话号码或信用卡信息）之类的危险事情。</translation>
 <translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE" />，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
@@ -1101,6 +1117,7 @@
 <translation id="8041940743680923270">使用全局默认设置（询问）</translation>
 <translation id="8042918947222776840">选择取货方式</translation>
 <translation id="8057711352706143257">“<ph name="SOFTWARE_NAME" />”的配置有误。卸载“<ph name="SOFTWARE_NAME" />”通常可解决此问题。<ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">您的设备已被配置为：</translation>
 <translation id="8078141288243656252">无法在旋转后添加注释</translation>
 <translation id="8079031581361219619">重新加载此网站？</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
@@ -1151,6 +1168,7 @@
 <translation id="8363502534493474904">关闭飞行模式</translation>
 <translation id="8364627913115013041">未设置。</translation>
 <translation id="8368476060205742148">Google Play 服务</translation>
+<translation id="8371889962595521444">自定义的根证书</translation>
 <translation id="8380941800586852976">危险</translation>
 <translation id="8381674639488873545">这些费用可能会一次性收取，也可能会周期性收取，而且可能不易察觉。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">您最近访问过的书签会显示在此处</translation>
@@ -1160,6 +1178,7 @@
 <translation id="8416694386774425977">网络配置无效，因此无法导入。
 更多详情：
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533">设备由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> - <ph name="SECOND_LABEL" /> - <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">更改</translation>
 <translation id="8428213095426709021">设置</translation>
@@ -1221,6 +1240,7 @@
 <translation id="8932102934695377596">您的时钟慢了</translation>
 <translation id="893332455753468063">添加名称</translation>
 <translation id="8938939909778640821">接受的信用卡和预付卡</translation>
+<translation id="894185898663964645">您的管理员配置了自定义根证书，这些证书可能会允许管理员查看您所访问的网站的内容。</translation>
 <translation id="8943282376843390568">绿黄色</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8968766641738584599">保存卡片</translation>

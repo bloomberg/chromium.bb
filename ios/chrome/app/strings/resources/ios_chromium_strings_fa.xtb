@@ -4,7 +4,6 @@
 <translation id="102360288709523007">‏‫با ارسال آمار کاربرد و گزارش‌های خرابی به Google، به بهبود Chromium کمک کنید.</translation>
 <translation id="1185134272377778587">‏درباره Chromium</translation>
 <translation id="1289966288285062467">‏اعلان حریم خصوصی Chromium</translation>
-<translation id="1341317949260424055">‏بهبود Chromium و امنیت آن با ارسال داده‌های سیستم و آمار استفاده به Google</translation>
 <translation id="1472013873724362412">‏حساب شما در Chromium کار نمی‌کند. لطفاً با سرپرست دامنه‌تان تماس بگیرید یا از یک حساب Google معمولی برای ثبت ورود استفاده کنید.</translation>
 <translation id="1736662517232558588">‏داده‌های Chromium پاک شد</translation>
 <translation id="1838412507805038478">‏Chromium تأیید کرد که <ph name="ISSUER" /> گواهینامه این وب‌سایت را صادر کرده است.</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">‏برخی از افزونه‌ها باعث خرابی Chromium می‌شود. لطفاً آن‌ها را حذف نصب کنید:</translation>
 <translation id="2178608107313874732">‏Chromium اکنون نمی‌تواند از دوربین استفاده کند</translation>
 <translation id="2195025571279539885">‏می‌خواهید دفعه دیگر Chromium پیشنهاد ترجمه صفحات <ph name="LANGUAGE_NAME" /> را از این سایت بدهد؟</translation>
+<translation id="2517624234762908348">‏همگام‌سازی داده‌های Chromium</translation>
 <translation id="2647554856022461007">‏ممکن است Chromium برای بهبود تجربه مرور شما از سرویس‌های وب استفاده کند. می‌توانید به‌صورت اختیاری این سرویس‌ها را غیرفعال کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">‏هوشمندی‌های Google را در Chromium دریافت کنید</translation>
 <translation id="2730884209570016437">‏Chromium نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>
 <translation id="2915596697727466327">‏Chromium برای اطمینان از دسترسی مجاز به گذرواژه‌هایتان، از «شناسه تشخیص چهره» استفاده می‌کند.</translation>
 <translation id="3256316712990552818">‏به Chromium کپی شد</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">‏داده‌های Chromium شما از این دستگاه پاک شود؟</translation>
 <translation id="8175055321229419309">‏نکته: <ph name="BEGIN_LINK" />Chromium را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏با استفاده از مکانتان در Chromium، تجربه بهتری از Google داشته باشید.</translation>
-<translation id="8508544542427105412">‏هرزمان بخواهید می‌توانید <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> را سفارشی کنید. ممکن است Google از محتوای موجود در سایت‌هایی که بازدید می‌کنید و تعاملات و فعالیت مرورگر برای شخصی‌سازی Chromium و سرویس‌های Google (مانند «مترجم»، «جستجو» و آگهی‌ها) استفاده کند.</translation>
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR" /> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
 <translation id="8809780021347235332">‏برای ذخیره تصاویر، با ضربه زدن روی Settings (تنظیمات) به Chromium اجازه دهید از عکس‌هایتان استفاده کند</translation>
 <translation id="9022552996538154597">‏ورود به سیستم Chromium</translation>

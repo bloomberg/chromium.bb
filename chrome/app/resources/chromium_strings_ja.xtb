@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">この操作を行うと、このユーザーの閲覧データがこのデバイスから削除されます。データを復元するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="3713809861844741608">新しい Chromium タブでリンクを開く(&amp;T)</translation>
 <translation id="3728336900324680424">Chromium からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
-<translation id="3762167353400286894">Chromium OS はこの言語で表示されています</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Chromium をタスクバーにピン留めする</translation>
+<translation id="388648406173476553">Chromium をカスタマイズ、制御します。確認の必要な項目があります。クリックして詳細をご覧ください。</translation>
 <translation id="3889543394854987837">Chromium を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="3898493977366060150">Google の最先端技術を活用したウェブ ブラウジング</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS は 1 時間後に再起動されます}other{Chromium OS は # 時間後に再起動されます}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">Chromium にログイン</translation>
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
 <translation id="5712253116097046984">管理者が、このアップデートを適用するために Chromium OS を再起動するよう求めています</translation>
-<translation id="5726838626470692954">Chromium へのユーザーの削除と追加は管理者が行う必要があります。</translation>
 <translation id="5768914737813585044">Chromium OS をこの言語で表示</translation>
 <translation id="5796460469508169315">もうすぐ Chromium を使用できます。</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -232,7 +231,6 @@
 <translation id="7979877361127045932">Chromium メニューで非表示</translation>
 <translation id="8013436988911883588">Chromium にアクセスを許可すると、ウェブサイトからアクセスをリクエストできるようになります。</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
-<translation id="8157153840442649507">Chromium はこの言語で表示されています</translation>
 <translation id="81770708095080097">このファイルは危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="8222496066431494154">Chromium をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
 <translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>

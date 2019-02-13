@@ -84,10 +84,10 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3639635944603682591">This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Open link in new Chromium &amp;tab</translation>
 <translation id="3728336900324680424">Chromium will access your Drive to make suggestions in the address bar</translation>
-<translation id="3762167353400286894">Chromium OS is displayed in this language</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Pin Chromium to your taskbar</translation>
+<translation id="388648406173476553">Customise and control Chromium. Something needs your attention – click for details.</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="3898493977366060150">Web browsing with Google smarts</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS will restart in an hour}other{Chromium OS will restart in # hours}}</translation>
@@ -139,7 +139,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5712253116097046984">Your administrator asks that you restart Chromium OS to apply this update</translation>
-<translation id="5726838626470692954">Your manager must remove and add you back to Chromium.</translation>
 <translation id="5768914737813585044">Display Chromium OS in this language</translation>
 <translation id="5796460469508169315">Chromium is almost ready.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -234,7 +233,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7979877361127045932">Hide in Chromium menu</translation>
 <translation id="8013436988911883588">Once Chromium has access, websites will be able to ask you for access.</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>
-<translation id="8157153840442649507">Chromium is displayed in this language</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
 <translation id="8222496066431494154">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Help make Chromium better</translation>

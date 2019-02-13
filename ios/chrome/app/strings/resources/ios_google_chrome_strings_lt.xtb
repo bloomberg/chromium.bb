@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
-<translation id="114721135501989771">„Google“ išm. funkc. „Chrome“</translation>
 <translation id="1326317727527857210">Prisijunkite prie „Chrome“, kad pasiektumėte skirtukus iš kitų įrenginių.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">„Google Chrome“ privatumo pranešimas</translation>
 <translation id="1863312987075920112">Naudodami šią programą sutinkate su „Chrome“ <ph name="BEGIN_LINK_TOS" />paslaugų teikimo sąlygomis<ph name="END_LINK_TOS" /> ir <ph name="BEGIN_LINK_PRIVACY" />privatumo pranešimo<ph name="END_LINK_PRIVACY" /> sąlygomis.</translation>
+<translation id="1984705450038014246">„Chrome“ duomenų sinchronizavimas</translation>
 <translation id="2147651015520127414">„Chrome“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą.</translation>
 <translation id="2334084861041072223">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="2342981853652716282">Prisijunkite prie „Chrome“, kad galėtumėte naudoti žymes, slaptažodžius ir kitus nustatymus visuose įrenginiuose.</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">Jei norite išsaugoti vaizdus, palieskite „Nustatymai“ ir leiskite „Chrome“ naudoti jūsų nuotraukas</translation>
 <translation id="2576431527583832481">„Chrome“ patobulėjo! Galima nauja versija.</translation>
 <translation id="257708665678654955">Ar norėtumėte, kad kitą kartą „Google Chrome“ būtų siūloma išversti šios svetainės puslapius <ph name="LANGUAGE_NAME" /> k.?</translation>
-<translation id="2943166482989655199">Patobulinkite „Chrome“ ir jos saugą siųsdami sistemos bei naudojimo duomenis „Google“</translation>
 <translation id="3030414234702425231">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />, todėl „Chrome“ duomenys bus ištrinti iš šio įrenginio. Duomenys išliks jūsų „Google“ paskyroje.</translation>
 <translation id="3148434565183091099">Prisijunkite naršyklėje „Chrome“, kad pasiektumėte žymes visuose įrenginiuose.</translation>
 <translation id="3148688391461398285">Gaukite geresnių funkcijų naudodami pagal vietovę pritaikytą „Chrome“.</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">Dėl tam tikrų priedų „Chrome“ užstringa . Pašalinkite:</translation>
 <translation id="4615174829807303908">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />. „Chrome“ duomenys bus ištrinti iš šio įrenginio, bet liks „Google“ paskyroje.</translation>
 <translation id="5389212809648216794">„Google Chrome“ negali naudoti fotoaparato, nes jį naudoja kita programa</translation>
-<translation id="5489543008378040943"><ph name="BEGIN_LINK" />Nustatymus<ph name="END_LINK" /> galima tinkinti bet kuriuo metu. „Google“ gali naudoti jūsų lankomų svetainių turinį, naršyklės sąveikas ir veiklą suasmenindama „Chrome“ ir kitas „Google“ paslaugas, pvz., Vertėją, Paiešką ir skelbimus.</translation>
 <translation id="5639704535586432836">Atidarykite „Nustatymai“ &gt; „Privatumas“ &gt; „Fotoaparatas“ &gt; „Google Chrome“ ir įjunkite fotoaparatą.</translation>
 <translation id="5642200033778930880">„Google Chrome“ negali naudoti fotoaparato padalyto rodinio režimu</translation>
 <translation id="5854621639439811139">„Chrome“ patarimas. Kai kurie mygtukai dabar yra ekrano apačioje, pvz., mygtukai „Atgal“, „Pirmyn“ ir „Ieškoti“.</translation>

@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Selle isiku sirvimisandmed kustutatakse seadmest. Andmete taastamiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Ava link Chromiumi uuel &amp;vahekaardil</translation>
 <translation id="3728336900324680424">Chromium pääseb teie Drive'ile juurde, et aadressiribal soovitusi anda</translation>
-<translation id="3762167353400286894">Chromium OS kuvatakse selles keeles</translation>
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Chromiumi kinnitamine tegumiribale</translation>
+<translation id="388648406173476553">Chromiumi kohandamine ja haldamine. Miski vajab teie tähelepanu – klõpsake üksikasjade nägemiseks.</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="3898493977366060150">Veebi sirvimine Google'i nutikate funktsioonidega</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS taaskäivitatakse tunni pärast}other{Chromium OS taaskäivitatakse # tunni pärast}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">logige Chromiumi sisse</translation>
 <translation id="5698481217667032250">Kuva Chromium selles keeles</translation>
 <translation id="5712253116097046984">Administraator palub teil Chromium OS-i selle värskenduse rakendamiseks taaskäivitada</translation>
-<translation id="5726838626470692954">Haldur peab teid Chromiumist eemaldama ja uuesti lisama.</translation>
 <translation id="5768914737813585044">Kuva Chromium OS selles keeles</translation>
 <translation id="5796460469508169315">Chromium on peaaegu valmis.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -232,7 +231,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7979877361127045932">Chromiumi menüüs peitmine</translation>
 <translation id="8013436988911883588">Kui annate Chromiumile juurdepääsu, saavad veebisaidid küsida teilt juurdepääsuluba.</translation>
 <translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>
-<translation id="8157153840442649507">Chromium kuvatakse selles keeles</translation>
 <translation id="81770708095080097">Chromium blokeeris faili, kuna see on ohtlik.</translation>
 <translation id="8222496066431494154">Installige Chromium oma telefoni. Saadame SMS-i teie konto taastamise telefoninumbrile: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8269379391216269538">Aidake muuta Chromiumi paremaks</translation>

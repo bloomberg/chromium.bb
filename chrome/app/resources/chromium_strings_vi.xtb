@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Dữ liệu duyệt web của người này sẽ bị xóa khỏi thiết bị này. Để khôi phục dữ liệu, hãy đăng nhập vào Chromium bằng <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Mở liên kết trong tab mới của Chromium</translation>
 <translation id="3728336900324680424">Chromium sẽ truy cập vào Drive của bạn để đưa ra đề xuất trên thanh địa chỉ</translation>
-<translation id="3762167353400286894">Chromium OS được hiển thị bằng ngôn ngữ này</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Ghim Chromium vào thanh tác vụ của bạn</translation>
+<translation id="388648406173476553">Tùy chỉnh và kiểm soát Chromium. Bạn cần lưu ý - nhấp để xem thông tin chi tiết.</translation>
 <translation id="3889543394854987837">Nhấp vào tên của bạn để mở Chromium và bắt đầu duyệt web.</translation>
 <translation id="3898493977366060150">Duyệt web bằng Google smarts</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS sẽ khởi động lại sau một giờ}other{Chromium OS sẽ khởi động lại sau # giờ}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
 <translation id="5712253116097046984">Quản trị viên yêu cầu bạn khởi động lại Chromium OS để áp dụng bản cập nhật này</translation>
-<translation id="5726838626470692954">Người quản lý của bạn phải xóa và thêm lại bạn vào Chromium.</translation>
 <translation id="5768914737813585044">Hiển thị Chromium OS bằng ngôn ngữ này</translation>
 <translation id="5796460469508169315">Chromium gần như đã sẵn sàng.</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
@@ -232,7 +231,6 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="7979877361127045932">Ẩn trong menu Chromium</translation>
 <translation id="8013436988911883588">Sau khi Chromium có quyền truy cập, các trang web sẽ có thể yêu cầu bạn cấp quyền truy cập.</translation>
 <translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium được hiển thị bằng ngôn ngữ này</translation>
 <translation id="81770708095080097">Tệp này nguy hiểm, do đó Chromium đã chặn tệp.</translation>
 <translation id="8222496066431494154">Cài đặt Chromium trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới số điện thoại khôi phục tài khoản của bạn: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Giúp cải thiện Chromium</translation>

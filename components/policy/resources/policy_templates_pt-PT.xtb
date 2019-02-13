@@ -145,14 +145,15 @@
 <translation id="1243570869342663665">Controlar a filtragem de conteúdo para adultos do SafeSites</translation>
 <translation id="1257550411839719984">Defina o diretório de transferências predefinido.</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
+<translation id="1290634681382861275">Controla diversas definições, incluindo USB, Bluetooth, atualização de políticas, modo de programador, entre outras.</translation>
 <translation id="1291880496936992484">Aviso: o RC4 será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016) e esta política deixa de funcionar nessa altura.
 
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras RC4 no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.</translation>
 <translation id="1297182715641689552">Utilizar um script de proxy .pac</translation>
 <translation id="1304973015437969093">Instalar IDs de extensões/aplicações e URLs de atualização silenciosamente</translation>
-<translation id="1307415922184340052">Envie o nome de utilizador e o nome de ficheiro para o servidor das impressoras nativas com cada tarefa de impressão. A predefinição é não enviar.</translation>
 <translation id="1307454923744766368">Origens ou padrões de nomes de anfitrião aos quais as restrições sobre
       origens inseguras não devem ser aplicadas</translation>
+<translation id="1312799700549720683">Controla as definições de visualização.</translation>
 <translation id="1313457536529613143">Especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado.
 
           Se esta política estiver definida, especifica a percentagem que determina a escala do atraso do esbatimento do ecrã quando há atividade da parte do utilizador, enquanto o ecrã é esbatido ou pouco depois de o ecrã ter sido desligado. Quando se determina a escala do atraso do esbatimento, o bloqueio e a ação de desligar o ecrã e atrasos inativos são ajustados para manter as mesmas distâncias do atraso de esbatimento do ecrã, conforme foi configurado originalmente.
@@ -351,6 +352,7 @@
       Se estiver definida como verdadeira ou não estiver definida, as estatísticas são comunicadas.</translation>
 <translation id="1843117931376765605">Taxa de atualização para a política de utilizador</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas com o desbloqueio rápido.</translation>
+<translation id="1845405905602899692">Definições de quiosque</translation>
 <translation id="1847960418907100918">Especifica os parâmetros utilizados ao efetuar uma pesquisa instantânea com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {searchTerms} no exemplo acima, será substituído por dados dos termos de pesquisa reais.
 
           Esta política é opcional. Se não for definida, será enviado um pedido de pesquisa instantânea de sugestões através do método GET.
@@ -438,6 +440,7 @@
       Se esta política for definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> tentará transferir payloads de atualização automática através de HTTP. Se esta política for definida como falsa ou não for definida, será utilizado HTTPS para transferir payloads de atualização automática.</translation>
 <translation id="199764499252435679">Ativar as atualizações de componentes no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2006530844219044261">Gestão de energia</translation>
+<translation id="2014757022750736514">Controla o comportamento do ecrã de início de sessão, onde os utilizadores iniciam sessão nas respetivas contas. As definições incluem quem pode iniciar sessão, o tipo de contas permitido, que métodos de autenticação devem ser utilizados, bem como a acessibilidade geral, o método de introdução e as definições locais.</translation>
 <translation id="201557587962247231">Frequência de carregamentos de relatórios de estado do dispositivo</translation>
 <translation id="2017301949684549118">URLs para a instalação silenciosa de aplicações Web.</translation>
 <translation id="2018836497795982119">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da Política do Utilizador.
@@ -584,6 +587,20 @@
       A verificação ortográfica também pode ser efetuada através de um dicionário previamente transferido; esta política apenas controla a utilização do serviço online.
 
       Se esta definição não estiver configurada, os utilizadores podem optar por utilizar o serviço de verificação ortográfica ou não.</translation>
+<translation id="2294283832646774959">Configura uma lista de impressoras.
+
+      Esta política permite que os administradores facultem configurações de impressoras aos utilizadores.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar os PPDs adequados à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
+
+      A configuração das impressoras fica concluída com a primeira utilização de uma impressora. Os PPDs não são transferidos enquanto a impressora não for utilizada. Posteriormente, os PPDs utilizados com frequência são colocados em cache.
+
+      Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
+
+      Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
+      </translation>
 <translation id="2294382669900758280">A reprodução de vídeos em aplicações para Android não é tida em consideração mesmo que esta política esteja definida como <ph name="TRUE" />.</translation>
 <translation id="2298647742290373702">Configurar a página Novo separador predefinida no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Especificar uma lista de plug-ins ativados</translation>
@@ -766,6 +783,15 @@
 
       Quando esta política está definida como <ph name="BR_UNDER_USER_CONTROL" />, é perguntado ao utilizador se pretende utilizar a cópia de segurança e o restauro do Android. Se o utilizador ativar a cópia de segurança e o restauro, os dados de aplicações para Android são carregados para os servidores de cópia de segurança do Android e restaurados a partir dos mesmos após a reinstalação de aplicações compatíveis.</translation>
 <translation id="2757054304033424106">Tipos de extensões/aplicações com permissão para serem instaladas</translation>
+<translation id="2758084448533744848">Especifica o fuso horário aplicado a utilizar para o dispositivo. Quando esta política estiver definida, os utilizadores no dispositivo não podem substituir o fuso horário especificado. Se for fornecido um valor inválido, a política continua ativada e utilizará "GMT" como alternativa. Se for fornecida uma string vazia, a política é ignorada.
+
+      Se esta política não for utilizada, o fuso horário atualmente ativo continua a ser utilizado. No entanto, os utilizadores podem alterar o fuso horário.
+
+      Os novos dispositivos começam com o fuso horário definido para "EUA/Pacífico".
+
+      O formato do valor segue os nomes dos fusos horários na "Base de dados de fusos horários IANA" (consulte "https://en.wikipedia.org/wiki/Tz_database"). Em particular, a maioria dos fusos horários pode ser referida como "continente/grande_cidade" ou "oceano/grande_cidade".
+
+      A definição desta política desativa completamente a resolução automática do fuso horário através da localização do dispositivo. Além disso, substitui a política SystemTimezoneAutomaticDetection.</translation>
 <translation id="2759224876420453487">Controlar o comportamento dos utilizadores numa sessão multiperfil</translation>
 <translation id="2761483219396643566">Atraso do aviso de inatividade quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="2762164719979766599">Especifica a lista de contas locais do dispositivo que serão mostradas no ecrã de início de sessão.
@@ -791,7 +817,7 @@
           Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, esta máquina apenas permitirá ligações de máquinas cliente dentro da rede local.
 
           Se deixar esta política por definir, a definição será ativada.</translation>
-<translation id="2813281962735757923">Esta política controla os intervalos de tempo durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não está autorizado a realizar verificações automáticas de atualizações
+<translation id="2813281962735757923">Esta política controla os intervalos de tempo durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não está autorizado a realizar verificações automáticas de atualizações.
       Quando esta política estiver definida para uma lista não vazia de intervalos de tempo:
       Os dispositivos não poderão realizar verificações automáticas de atualizações durante os intervalos de tempo especificados. Os dispositivos que requerem uma reversão ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política devido a possíveis problemas de segurança. Além disso, esta política não bloqueia as verificações de atualizações solicitadas pelos utilizadores ou administradores.
       Quando esta política não estiver definida ou não contiver quaisquer intervalos de tempo:
@@ -1023,6 +1049,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3414260318408232239">Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão mínima predefinida, neste caso, TLS 1.0.
 
       Caso contrário, pode ser definida para um dos seguintes valores: "tls1", "tls1.1" ou "tls1.2". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS inferiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
+<translation id="34160070798637152">Controla a configuração de rede ao nível do dispositivo.</translation>
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
 
      Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de convidado.</translation>
@@ -1036,6 +1063,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política estiver definida como Desativada ou não for definido qualquer valor, o <ph name="PRODUCT_NAME" /> não aplica o Modo restrito no YouTube. As políticas externas, tais como as políticas do YouTube, podem ainda assim aplicar o Modo restrito.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
+<translation id="3432863169147125747">Controla as definições de impressão.</translation>
 <translation id="3437924696598384725">Permitir a gestão de ligações VPN pelo utilizador.</translation>
 <translation id="3449886121729668969">Configura as definições de proxy para o <ph name="PRODUCT_NAME" />. Estas definições de proxy também estão disponíveis para aplicações ARC.
 
@@ -1087,6 +1115,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="355118380775352753">Websites a abrir num navegador alternativo</translation>
 <translation id="3577251398714997599">Definição dos anúncios para sites com anúncios intrusivos</translation>
+<translation id="3583230441447348508">Especifica uma lista de partilhas de ficheiros de rede pré-configuradas.
+
+      Cada item de lista da política é um objeto com dois membros: "share_url" e "mode". "share_url" deve ser o URL da partilha e "mode" deve ser "drop_down" ou "pre_mount". O modo "drop_down" indica que "share_url" será adicionado à lista pendente da deteção de partilhas. O modo "pre_mount" indica que "share_url" será montado.</translation>
 <translation id="3591527072193107424">Ativar a funcionalidade Compatibilidade com o navegador antigo</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
 <translation id="3624171042292187668">
@@ -1109,6 +1140,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
         Esta política é utilizada pela inscrição de políticas de nuvem num âmbito automático em computadores e pode ser definida pela Base de dados de registo ou GPO no Windows, pelo plist no Mac e pelo ficheiro da política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
+<translation id="3701121231485832347">Controla definições específicas para dispositivos <ph name="PRODUCT_OS_NAME" /> geridos por <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (O campo de uma única linha foi descontinuado e será removido no futuro. Comece a utilizar a caixa de texto multilinha abaixo.)</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
@@ -1184,6 +1216,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, o teclado no ecrã está inicialmente desativado, mas o utilizador pode ativá-lo em qualquer altura.</translation>
 <translation id="382476126209906314">Configurar o prefixo TalkGadget para anfitriões de acesso remoto</translation>
+<translation id="3824972131618513497">Controla as definições relacionadas com a gestão de energia e o reinício.</translation>
 <translation id="3831376478177535007">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> considera os certificados emitidos pelas operações da PKI antiga da Symantec Corporation de confiança se forem validados e incluírem com êxito uma cadeia para um certificado da AC (Autoridade de certificação) reconhecido.
 
       Tenha em atenção que esta política depende do reconhecimento do sistema operativo de certificados da infraestrutura antiga da Symantec. Se uma atualização do SO alterar o processamento do SO desses certificados, esta política deixa de ter efeito. Além disso, esta política serve de solução temporária para dar às empresas mais tempo para se desvincularem de certificados antigos da Symantec. Esta política será removida em meados do dia 1 de janeiro de 2019.
@@ -1441,6 +1474,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       </translation>
 <translation id="4442582539341804154">Ativar o bloqueio quando o dispositivo fica inativo ou entra em suspensão.</translation>
 <translation id="4449545651113180484">Rodar o ecrã 270 graus para a direita</translation>
+<translation id="445270821089253489">Controla o tipo de informações do utilizador e do dispositivo comunicadas.</translation>
 <translation id="4454820008017317557">Apresentar o ícone da barra de ferramentas do <ph name="PRODUCT_NAME" /></translation>
 <translation id="4467952432486360968">Bloquear cookies de terceiros</translation>
 <translation id="4474167089968829729">Permitir guardar palavras-passe no gestor de palavras-passe</translation>
@@ -1475,6 +1509,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4531706050939927436">As aplicações para Android podem ser instaladas à força a partir da Consola do gestor do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais do dispositivo</translation>
+<translation id="4543502256674577024">Definições de atualização do dispositivo</translation>
 <translation id="4544079461524242527">Configura as definições de gestão de extensões do produto <ph name="PRODUCT_NAME" />.
 
           Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
@@ -1584,6 +1619,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="4816674326202173458">Permitir que o utilizador empresarial seja principal e secundário (comportamento predefinido para utilizadores não geridos)</translation>
 <translation id="4826326557828204741">Ação a executar quando o atraso de inatividade for atingido e estiver a ser utilizada a energia da bateria</translation>
+<translation id="4832852360828533362">Relatórios de utilizadores e dispositivos</translation>
 <translation id="4834526953114077364">Os utilizadores menos utilizados recentemente que não tenham iniciado sessão nos últimos 3 meses são removidos até existir espaço livre suficiente</translation>
 <translation id="4858735034935305895">Permitir modo de ecrã inteiro</translation>
 <translation id="4861767323695239729">Configurar os métodos de introdução permitidos numa sessão de utilizador</translation>
@@ -1799,6 +1835,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5423197884968724595">Nome da restrição WebView do Android:</translation>
 <translation id="5424147596523390018">Permitir todos os modos a cores</translation>
 <translation id="5442026853063570579">Esta política também controla o acesso às Opções de programador do Android. Se a definir como "DeveloperToolsDisallowed" (valor 2), os utilizadores não poderão aceder às Opções de programador. Se a definir com outro valor ou não a definir, os utilizadores poderão aceder às Opções de programador ao tocar sete vezes no número da compilação na aplicação Definições do Android.</translation>
+<translation id="544342220587994947">Permite especificar uma lista de padrões de URL que especificam sites para os quais o <ph name="PRODUCT_NAME" /> deverá selecionar automaticamente um certificado de cliente, se o site pedir um certificado.
+
+          O valor tem de ser uma matriz de dicionários JSON em forma de string. Cada dicionário tem de ter o formato { "pattern": "$URL_PATTERN", "filter" : $FILTER }, no qual $URL_PATTERN é um padrão de definições de conteúdo. $FILTER restringe a partir de que certificados de cliente o navegador seleciona automaticamente. Independentemente do filtro, apenas são selecionados os certificados que correspondam ao pedido de certificado do servidor. Por exemplo, se $FILTER tiver o formato { "ISSUER": { "CN": "$ISSUER_CN" } }, apenas são selecionados os certificados de cliente emitidos por um certificado com o CommonName $ISSUER_CN. Se $FILTER tiver as secções "ISSUER" e "SUBJECT", um certificado de cliente tem de cumprir ambas as condições para ser selecionado. Se $FILTER especificar uma entidade ("O"), um certificado tem de ter, pelo menos, uma entidade correspondente ao valor especificado a selecionar. Se $FILTER especificar uma unidade organizacional ("UO"), um certificado tem de ter, pelo menos, uma unidade organizacional correspondente ao valor especificado a selecionar. Se $FILTER for o dicionário vazio {}, a seleção de certificados de cliente não é adicionalmente restrita.
+
+          Se esta política não for definida, não é efetuada a seleção automática para nenhum site.</translation>
 <translation id="5447306928176905178">Ativar informações de memória de relatórios (tamanho da área dinâmica para dados JS) para a página (descontinuado)</translation>
 <translation id="5457065417344056871">Ativar o modo convidado no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador de HTML predefinido quando o <ph name="PRODUCT_FRAME_NAME" /> é instalado. Se esta política não for definida, será utilizada a predefinição para permitir que o processamento seja efetuado pelo navegador anfitrião. Opcionalmente, pode substituir esta definição e configurar o <ph name="PRODUCT_FRAME_NAME" /> para processar páginas HTML por predefinição.</translation>
@@ -1881,6 +1922,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       NOTA: esta política é aplicável apenas ao Chrome no Android nos dispositivos estritamente com mais de 1 GB de RAM. Para aplicar a política a plataformas não Android, utilize IsolateOrigins.
       </translation>
+<translation id="5599461642204007579">Definições de gestão de <ph name="MS_AD_NAME" /></translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5689430183304951538">Tamanho da página de impressão padrão</translation>
@@ -1927,6 +1969,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           O valor da política deve ser especificado em milissegundos.</translation>
 <translation id="5783009211970309878">Imprimir cabeçalhos e rodapés</translation>
+<translation id="5809210507920527553">Controla as definições do contentor do Linux (Crostini).</translation>
 <translation id="5809728392451418079">Definir o nome a apresentar para contas locais do dispositivo</translation>
 <translation id="5814301096961727113">Definir o estado predefinido de respostas faladas no ecrã de início de sessão</translation>
 <translation id="5815129011704381141">Reiniciar automaticamente após uma atualização</translation>
@@ -2068,6 +2111,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Para fixar aplicações ao iniciador, consulte PinnedLauncherApps.</translation>
 <translation id="602728333950205286">URL instantâneo do fornecedor de pesquisas predefinido</translation>
 <translation id="603410445099326293">Parâmetros do URL de sugestões que utilize POST</translation>
+<translation id="6034341625190551415">Controla os tipos de conta de sessão pública e quiosque.</translation>
 <translation id="6036523166753287175">Ativar transposição da firewall a partir do anfitrião de acesso remoto</translation>
 <translation id="6070667616071269965">Esquemas de teclado do ecrã de início de sessão do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>
@@ -2091,6 +2135,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Deve especificar o valor da política em milissegundos. Os valores estão afixados para serem inferiores ao período de atraso de inatividade.</translation>
 <translation id="6097601282776163274">Ativar a recolha de dados anónimos com chave de URL</translation>
 <translation id="6099853574908182288">Modo a cores de impressão padrão</translation>
+<translation id="6107642964266628393">Controla como e quando são aplicadas atualizações do Chrome OS.</translation>
 <translation id="6111936128861357925">Permitir o jogo do ovo da Páscoa do dinossauro</translation>
 <translation id="6114416803310251055">obsoleta</translation>
 <translation id="6133088669883929098">Permitir que todos os sites utilizem a geração de chaves</translation>
@@ -2338,6 +2383,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6786967369487349613">Definir o diretório do perfil de roaming</translation>
 <translation id="6810445994095397827">Bloquear JavaScript nestes sites</translation>
+<translation id="6813263547126514821">Energia e encerramento</translation>
 <translation id="681446116407619279">Esquemas de autenticação suportados</translation>
 <translation id="6816212867679667972">Determinar o nome do anfitrião do dispositivo utilizado nos pedidos de DHCP.
 
@@ -2652,23 +2698,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida para "RemoveLRUIfDormant", a limpeza automática continuará a remover utilizadores que não iniciam sessão há, pelo menos, 3 meses, pela ordem de início de sessão menos recente até existir espaço livre suficiente.
 
       Se esta política não estiver definida, a limpeza automática utiliza a estratégia integrada predefinida. Atualmente, é a estratégia "RemoveLRUIfDormant".</translation>
+<translation id="7336785017449297672">Controla as definições do relógio e do fuso horário.</translation>
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
-<translation id="7337967786223261174">Configura uma lista de impressoras.
-
-      Esta política permite que os administradores facultem configurações de impressoras
-      aos utilizadores.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir do computador do cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com o <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar o PPD adequado à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
-
-      A configuração das impressoras fica concluída com a primeira utilização de uma impressora. Os PPDs não são transferidos enquanto a impressora não for utilizada. Posteriormente, os PPDs utilizados com frequência são colocados em cache.
-
-      Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
-
-      Para dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
-      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE" /> (letras minúsculas) foi descontinuado no M71 e será removido no M72.
-      </translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
 <translation id="7343497214039883642">Ficheiro de configuração de impressoras empresariais para dispositivos</translation>
 <translation id="7349338075015720646">Especifica uma lista de Websites que são instalados silenciosamente, sem interação do utilizador, e que não podem ser desinstalados nem desativados pelo utilizador.
@@ -2680,11 +2711,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Quando esta política está definida para Falso, não são recolhidas informações que podem ser utilizadas para identificar máquinas.
 
       Esta política apenas entra em vigor quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e a máquina está associada à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="7367028210010532881">O serviço de Navegação segura apresenta uma página de aviso quando os utilizadores navegam para sites sinalizados como potencialmente maliciosos. A ativação desta definição impede que os utilizadores prossigam da página de aviso para o site com conteúdo malicioso.
-
-      Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.
-
-      Consulte https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="737655323154569539">Restringe o tamanho da página de impressão. Uma política não definida ou uma definição vazia são consideradas uma não restrição.</translation>
 <translation id="7417972229667085380">Percentagem que determina a escala do atraso de inatividade no modo de apresentação (descontinuado)</translation>
 <translation id="7421483919690710988">Definir o tamanho da cache do disco multimédia em bytes</translation>
@@ -3074,6 +3100,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
           Se não estiver definido ou estiver definido como falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
 <translation id="8300992833374611099">Controla onde é possível utilizar as Ferramentas para programadores.</translation>
+<translation id="8306117673860983372">Definições de início de sessão</translation>
 <translation id="8312129124898414409">Permite definir se os Sites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Sites ou negá-la para todos os Sites.
           Se esta política não for definida, é utilizada a opção "BlockKeygen" e o utilizador pode alterá-la.</translation>
 <translation id="8329984337216493753">Esta política está ativa apenas no modo de retalho.
@@ -3102,6 +3129,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8390049129576938611">Desativa o visualizador de PDF interno no <ph name="PRODUCT_NAME" />. Em vez disso, trata-o como uma transferência e permite ao utilizador abrir ficheiros PDF com a aplicação predefinida.
 
       Se esta política não for definida ou for desativada, é utilizado o plug-in de PDF para abrir ficheiros PDF, a menos que o utilizador o desative.</translation>
+<translation id="8395749934754392549">Controla as definições do contentor do Android (ARC) e das aplicações Android.</translation>
 <translation id="8396145449084377015">Esta política controla se devem ser carregadas as regras da política SiteList do Internet Explorer.
 
       Quando esta política não está definida ou está definida como falsa, o <ph name="PRODUCT_NAME" /> não utiliza a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer como origem de regras para alternar entre navegadores.
@@ -3166,6 +3194,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       Aviso: não é recomendável configurar restrições de versão, uma vez que podem impedir os utilizadores de receberem atualizações de software e correções de segurança críticas. A restrição de atualizações para um prefixo de versão específico pode criar situações de risco para os utilizadores.</translation>
 <translation id="8519264904050090490">URLs de exceção no manual do utilizador gerido</translation>
+<translation id="8525526490824335042">Contentor do Linux</translation>
 <translation id="8538235451413605457">Configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />. As versões inferiores são tratadas como obsoletas e o dispositivo não permite ao utilizador iniciar sessão até o SO ser atualizado.
       Se a versão atual se tornar obsoleta durante a sessão do utilizador, esta é terminada à força.
 

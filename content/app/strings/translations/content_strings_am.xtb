@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">ዋጋ ከ<ph name="MAXIMUM" /> የሚያንስ ወይም ከእሱ እኩል መሆን አለበት።</translation>
 <translation id="3486220673238053218">ብየና</translation>
 <translation id="3557673793733683882">አርዕስት <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">የፊልሙ ቀሪ ሰከንዶች ብዛት</translation>
 <translation id="3706100364254443312">ቀይር</translation>
 <translation id="3732799496749320381">ሚሜ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ጊባ</translation>
-<translation id="3785482301506746191">የፊልም ሰዓት አንፏቃቂ</translation>
 <translation id="3808586225841795776">የጊዜ ቆይታ</translation>
 <translation id="3822383571486410024">እባክዎ ይህን ጽሑፍ ወደ <ph name="MIN_CHARACTERS" /> ቁምፊዎች ወይም ከዚያ በላይ ያራዝሙት (አሁን እየተጠቀሙ ያሉት <ph name="CURRENT_LENGTH" />ቁምፊዎችን ነው)።</translation>
 <translation id="383465348367842624">ከ«<ph name="ATSIGN" />» በፊት የሚመጣ ክፍል የ«<ph name="INVALIDCHARACTER" />» ምልክት መያዝ የለበትም።</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">የምናሌ አዝራር</translation>
 <translation id="4446524499724042288">የሙዳየ ቃላት ዋቢ</translation>
 <translation id="4522570452068850558">ዝርዝሮች</translation>
+<translation id="4542388879936266156">ቀሪ ጊዜ፦ <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">ቅጽ</translation>
 <translation id="4661075872484491155">ዛፍ</translation>
 <translation id="4664250907885839816">ከ«<ph name="ATSIGN" />» በኋላ የሚመጣ ክፍል የ«<ph name="INVALIDCHARACTER" />» ምልክት መያዝ የለበትም።</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">ዓዓዓዓ</translation>
 <translation id="8284326494547611709">መግለጫ ጽሑፎች</translation>
 <translation id="835897206747267392">ልክ ያልሆነ እሴት።</translation>
+<translation id="8403857369060869934">ያለፈው ጊዜ፦ <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">ክፍለ አካል</translation>
 <translation id="8433900881053900389">የመሣሪያ አሞሌ</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ፋይሎች</translation>

@@ -80,10 +80,10 @@
 <translation id="3639635944603682591">Bu kullanıcının tarama verileri bu cihazdan silinecektir. Verileri kurtarmak için Chromium'da <ph name="USER_EMAIL" /> olarak oturum açın.</translation>
 <translation id="3713809861844741608">Bağlantıyı yeni Chromium &amp;sekmesinde aç</translation>
 <translation id="3728336900324680424">Chromium, adres çubuğunda öneriler göstermek için Drive'ınıza erişecektir</translation>
-<translation id="3762167353400286894">Chromium OS bu dilde görüntüleniyor</translation>
 <translation id="378917192836375108">Chromium Web'de bir telefon numarasını tıklayarak Skype ile aramanıza olanak sağlar!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Chromium'u görev çubuğunuza sabitleme</translation>
+<translation id="388648406173476553">Chromium'u özelleştirin ve kontrol edin. İlgilenmeniz gereken bir konu var. Ayrıntılar için tıklayın.</translation>
 <translation id="3889543394854987837">Chromium'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>
 <translation id="3898493977366060150">Google Smarts ile web'e göz atma</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS bir saat içinde yeniden başlatılacak}other{Chromium OS # saat içinde yeniden başlatılacak}}</translation>
@@ -135,7 +135,6 @@
 <translation id="5680901439334282664">Chromium'da oturum açın</translation>
 <translation id="5698481217667032250">Chromium'u bu dilde görüntüle</translation>
 <translation id="5712253116097046984">Yöneticiniz bu güncellemeyi uygulamak için Chromium OS'i yeniden başlatmanızı istiyor</translation>
-<translation id="5726838626470692954">Yöneticinizin sizi Chromium'dan kaldırması ve daha sonra tekrar eklemesi gerekir.</translation>
 <translation id="5768914737813585044">Chromium OS'yi bu dilde görüntüle</translation>
 <translation id="5796460469508169315">Chromium neredeyse hazır.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -230,7 +229,6 @@ Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kon
 <translation id="7979877361127045932">Chromium menüsünde gizle</translation>
 <translation id="8013436988911883588">Chromium erişim izni aldıktan sonra, web siteleri de erişim için sizden izin isteyebilecek.</translation>
 <translation id="8030318113982266900">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor...</translation>
-<translation id="8157153840442649507">Chromium bu dilde görüntüleniyor</translation>
 <translation id="81770708095080097">Bu dosya tehlikeli olduğu için Chromium tarafından engellendi.</translation>
 <translation id="8222496066431494154">Chromium'u telefonunuza yükleyin. Hesap kurtarma telefon numaranıza SMS göndereceğiz: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromium'u daha iyi hale getirmeye yardımcı olun</translation>

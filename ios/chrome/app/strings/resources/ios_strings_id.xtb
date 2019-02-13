@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Bookmark Halaman Ini...</translation>
 <translation id="1049743911850919806">Penyamaran</translation>
 <translation id="1063454504051558093">Gunakan Sandi Lain...</translation>
+<translation id="1066060668811609597">Kelola Sinkronisasi</translation>
 <translation id="1076421457278169141">Kode telah dipindai</translation>
 <translation id="1084365883616172403">Kirim Facebook selesai.</translation>
 <translation id="1104948393051856124">Terima &amp; Lanjutkan</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Sembunyikan sekarang</translation>
 <translation id="1219674500290482172">Tidak dapat tersambung ke internet.</translation>
 <translation id="122699739164161391">Tutup Semua Tab</translation>
+<translation id="1231733316453485619">Aktifkan sinkronisasi?</translation>
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1265739287306757398">Pelajari Caranya</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipindah</translation>
 <translation id="213900355088104901">Untuk melakukan browsing rahasia, buka tab penyamaran</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
+<translation id="2198757192731523470">Google dapat menggunakan histori Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artikel yang belum dibaca di Daftar Bacaan.</translation>
 <translation id="2230173723195178503">Halaman web dimuat</translation>
 <translation id="2239626343334228536">Menghapus data browsing...</translation>
@@ -255,6 +258,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5062321486222145940">Instal Google Drive</translation>
 <translation id="5083464117946352670">Tidak dapat menentukan ukuran file.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
+<translation id="5132942445612118989">Sinkronkan sandi, histori, dan lainnya di semua perangkat</translation>
 <translation id="5181140330217080051">Mendownload</translation>
 <translation id="5186185447130319458">Pribadi</translation>
 <translation id="5190835502935405962">Bilah Bookmark</translation>
@@ -447,7 +451,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="842017693807136194">Login Dengan</translation>
 <translation id="8428045167754449968">Kota</translation>
 <translation id="8428213095426709021">Setelan</translation>
-<translation id="8438566539970814960">Jadikan penelusuran dan penjelajahan lebih baik</translation>
+<translation id="8438566539970814960">Jadikan penelusuran dan browsing lebih baik</translation>
 <translation id="8458397775385147834">1 item dihapus</translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8503813439785031346">Nama Pengguna</translation>

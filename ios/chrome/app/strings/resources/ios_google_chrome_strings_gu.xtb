@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
-<translation id="114721135501989771">Chromeમાં Google સ્માર્ટ મેળવો</translation>
 <translation id="1326317727527857210">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome ગોપનીયતા સૂચના</translation>
 <translation id="1863312987075920112">આ ઍપ્લિકેશનનો ઉપયોગ કરીને, તમે Chromeની <ph name="BEGIN_LINK_TOS" />સેવાની શરતો<ph name="END_LINK_TOS" /> અને <ph name="BEGIN_LINK_PRIVACY" />ગોપનીયતા સૂચના<ph name="END_LINK_PRIVACY" /> સાથે સંમત થાઓ છો.</translation>
+<translation id="1984705450038014246">તમારા Chromeના ડેટાને સિંક કરો</translation>
 <translation id="2147651015520127414">Chrome એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે.</translation>
 <translation id="2334084861041072223">કોપિરાઇટ <ph name="YEAR" /> Google Inc. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="2342981853652716282">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક, પાસવર્ડ અને બીજુ ઘણું મેળવવા માટે Chromeમાં સાઇન ઇન કરો.</translation>
@@ -13,7 +13,6 @@
 <translation id="2441696206556358796">ફોટા સાચવવા માટે, Chrome ને તમારા ફોટાનો ઉપયોગ કરવા દેવા માટે સેટિંગ પર ટૅપ કરો</translation>
 <translation id="2576431527583832481">Chrome હમણાં જ વધુ સારું થયું છે! એક નવું વર્ઝન ઉપલબ્ધ છે.</translation>
 <translation id="257708665678654955">શું તમે Google Chrome ને આ સાઇટથી આગલી વખતે <ph name="LANGUAGE_NAME" /> પેજને અનુવાદ કરવાની ઓફર કરવા માગો છો?</translation>
-<translation id="2943166482989655199">Googleને સિસ્ટમ તથા વપરાશ ડેટા મોકલીને Chrome અને તેની સુરક્ષા બહેતર બનાવો</translation>
 <translation id="3030414234702425231">કારણ કે તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો, આ ડિવાઇસમાંથી તમારા Chrome ડેટા ડિલીટ થઈ જશે. તમારો ડેટા તમારા Google એકાઉન્ટમાં જળવાઈ રહેશે.</translation>
 <translation id="3148434565183091099">તમારા સમગ્ર ઉપકરણો પર તમારા બુકમાર્ક્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="3148688391461398285">તમારા સ્થાનના આધારે Chrome માં બહેતર અનુભવ મેળવો.</translation>
@@ -32,7 +31,6 @@
 <translation id="4523886039239821078">કેટલાંક એડ-ઓનને કારણે Chrome ક્રૅશ થાય છે. કૃપા કરી આને અનઇન્સ્ટૉલ કરો:</translation>
 <translation id="4615174829807303908">તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો. આ તમારા Chrome ડેટાને આ ડિવાઇસમાંથી ડિલીટ કરશે, પરંતુ તમારો ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
 <translation id="5389212809648216794">Google Chrome, તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી કારણ કે તે બીજી ઍપ્લિકેશન દ્વારા ઉપયોગમાં છે</translation>
-<translation id="5489543008378040943"><ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />ને કોઈપણ સમયે કસ્ટમાઇઝ કરી શકાય છે. Google તમે મુલાકાત લીધેલ સાઇટના કન્ટેન્ટનો તથા બ્રાઉઝિંગ ક્રિયાપ્રતિક્રિયા અને પ્રવૃત્તિનો ઉપયોગ Chrome અને Google સેવાઓ જેમ કે અનુવાદ, શોધ અને જાહેરાતોને વ્યક્તિગત બનાવવા માટે કરી શકે છે.</translation>
 <translation id="5639704535586432836">સેટિંગ્સ &gt; ગોપનીયતા &gt; કૅમેરો &gt; Google Chrome ખોલો અને કૅમેરો ચાલુ કરો.</translation>
 <translation id="5642200033778930880">Google Chrome, વિભાજિત દૃશ્ય મોડમાં તમારા કૅમેરાનો ઉપયોગ કરી શકતુંં નથી</translation>
 <translation id="5854621639439811139">Chrome ટિપ. પાછળ, ફૉર્વર્ડ અને શોધ જેવાં કેટલાક બટનો હવે તમારી સ્ક્રીનના તળિયે છે.</translation>

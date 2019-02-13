@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Skapa bokmärke för den här sidan...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1063454504051558093">Använd ett annat lösenord …</translation>
+<translation id="1066060668811609597">Hantera synkronisering</translation>
 <translation id="1076421457278169141">Koden skannades</translation>
 <translation id="1084365883616172403">Inlägg på Facebook klart.</translation>
 <translation id="1104948393051856124">Godkänn och fortsätt</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Dölj för tillfället</translation>
 <translation id="1219674500290482172">Det går inte att ansluta till internet.</translation>
 <translation id="122699739164161391">Stäng alla flikar</translation>
+<translation id="1231733316453485619">Vill du aktivera synkronisering?</translation>
 <translation id="1254117744268754948">Välj mapp</translation>
 <translation id="1265739287306757398">Läs mer</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
 <translation id="213900355088104901">Öppna en inkognitoflik om du vill surfa privat</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
+<translation id="2198757192731523470">Google kan anpassa Sök, annonser och andra Google-tjänster utifrån historiken.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> olästa artiklar i läslistan.</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
 <translation id="2239626343334228536">Tar bort webbinformation …</translation>
@@ -255,6 +258,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5062321486222145940">Installera Google Drive</translation>
 <translation id="5083464117946352670">Det gick inte att bestämma filstorleken.</translation>
 <translation id="5094827893301452931">Tweet klart.</translation>
+<translation id="5132942445612118989">Synkronisera lösenord, historik med mera på alla dina enheter</translation>
 <translation id="5181140330217080051">Nedladdning</translation>
 <translation id="5186185447130319458">Privat</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>

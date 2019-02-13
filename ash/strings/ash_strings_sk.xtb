@@ -134,6 +134,7 @@
 <translation id="3000461861112256445">Zvuk mono</translation>
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3019353588588144572">Čas zostávajúci do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>
+<translation id="3051128274746680507">Váš profil kontrolovaného používateľa bude čoskoro odstránený. Ak chcete získať ďalšie informácie, prihláste sa.</translation>
 <translation id="3055162170959710888">Toto zariadenie si dnes používal(a) <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Rozbaliť ponuku</translation>
@@ -145,7 +146,6 @@
 <translation id="3153444934357957346">V rámci viacnásobného prihlásenia môžete mať maximálne nasledujúci počet účtov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3154351730702813399">Správca zariadenia môže sledovať vašu aktivitu prehliadania.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Pripojené k zariadeniu}few{Pripojené k # zariadeniam}many{Connected to # devices}other{Pripojené k # zariadeniam}}</translation>
-<translation id="32244657276328332">Nemáte pripojenie k sieti</translation>
 <translation id="3236488194889173876">Nie je k dispozícii žiadna mobilná sieť</translation>
 <translation id="3255483164551725916">Čo dokážeš?</translation>
 <translation id="3294437725009624529">Hosť</translation>

@@ -89,7 +89,6 @@
 <translation id="3080151273017101988">जेव्हा Google Chrome बंद असेल तेव्हा पार्श्वभूमीत अॅप्लिकेशन चालणे सुरू ठेवा</translation>
 <translation id="3089968997497233615">Google Chrome ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
-<translation id="3180085900771989961">तुमच्या व्यवस्थापकाने तुम्हाला Chrome वर पुन्हा काढणे आणि जोडणे आवश्यक आहे.</translation>
 <translation id="3251381707915721925"><ph name="NEW_PROFILE_NAME" /> कोणत्या वेबसाइट पाहू शकतो ते सेट करण्‍यासाठी, <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> वर भेट देऊन तुम्ही प्रतिबंध आणि सेटिंग्ज कॉन्फिगर करू शकता. तुम्ही डीफॉल्ट सेटिंग्ज बदलत नसल्यास, <ph name="NEW_PROFILE_NAME" /> वेबवरील प्रत्येक गोष्ट पाहू शकतो.
 
 <ph name="NEW_PROFILE_NAME" /> ला आपल्या खात्यात प्रवेश करण्‍यापासून प्रतिबंधित करण्यासाठी, तुम्ही Chrome वापरत नसता तेव्हा तुम्ही तुमचे प्रोफाइल लॉक करता याची खात्री करा. हे करण्‍यासाठी, ब्राउझरच्या वरील उजव्या कोपर्‍यातील तुमचे प्रोफाइल नाव क्लिक करा आणि "बाहेर पडा आणि मुलांचा लॉक" निवडा. <ph name="BEGIN_LINK_2" />अधिक जाणून घ्या<ph name="END_LINK_2" />
@@ -158,7 +157,6 @@
 <translation id="5062123544085870375">Chrome OS रीस्टार्ट करा</translation>
 <translation id="5090044601776247154">Google Chrome 70 सह सुरू झालेले व्यवस्थापित वापरकर्ता प्रोफाइल यापुढे उपलब्ध होणार नाहीत.</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
-<translation id="5166975452760862670">Google Chrome या भाषेत प्रदर्शित केले आहे</translation>
 <translation id="5170938038195470297">तुमचे प्रोफाइल वापरले जाणे शक्य नाही कारण ते Google Chrome च्या नवीनतम आवृत्तीमधील आहे.
 काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात. कृपया एक भिन्न प्रोफाइल निर्देशिका निर्दिष्‍ट करा किंवा Google Chrome ची नवीनतम आवृत्ती वापरा.</translation>
 <translation id="5193136243808726294">Google Chrome OS हे पृष्ठ उघडू शकत नाही.</translation>
@@ -174,9 +172,9 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="556024056938947818">Google Chrome पासवर्ड दर्शवण्याचा प्रयत्न करत आहे.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-मध्ये)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> धोकादायक असू शकते, त्यामुळे Chrom ने ते अवरोधित केले आहे.</translation>
+<translation id="5686916850681061684">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा. एका गोष्टीवर तुम्ही लक्ष द्यायला हवे - तपशिलांसाठी क्लिक करा.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome १ सेकंदात रीस्टार्ट होईल}one{Google Chrome # सेकंदात रीस्टार्ट होईल}other{Google Chrome # सेकंदांत रीस्टार्ट होईल}}</translation>
 <translation id="573759479754913123">Chrome OS बद्दल</translation>
-<translation id="5774845247549698882">Chrome OS या भाषेत प्रदर्शित केली आहे</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome कॅनरी</translation>
 <translation id="5804318322022881572">Chrome लाँच करता आले नाही. पुन्हा प्रयत्न करा.</translation>
 <translation id="5877064549588274448">चॅनेल बदलले. बदल लागू करण्यासाठी तुमचे डिव्हाइस रीस्टार्ट करा.</translation>

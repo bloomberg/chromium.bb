@@ -84,10 +84,10 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3639635944603682591">Den här personens webbläsardata tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill återställa data.</translation>
 <translation id="3713809861844741608">Öppna länken i en ny &amp;flik i Chromium</translation>
 <translation id="3728336900324680424">Chromium får åtkomst till din Drive så att du kan få förslag därifrån i adressfältet</translation>
-<translation id="3762167353400286894">Chromium OS visas på det här språket</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Fäst Chromium i aktivitetsfältet</translation>
+<translation id="388648406173476553">Anpassa och kontrollera Chromium. Någonting behöver ses över. Klicka här för mer information.</translation>
 <translation id="3889543394854987837">Öppna Chromium genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="3898493977366060150">Surfa smart med Google</translation>
 <translation id="3965668104013180445">{0,plural, =1{Om en timme startas Chromium OS om}other{Om # timmar startas Chromium OS om}}</translation>
@@ -139,7 +139,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5698481217667032250">Visa Chromium på det här språket</translation>
 <translation id="5712253116097046984">Administratören meddelar att du bör starta om Chromium OS så att uppdateringen tillämpas</translation>
-<translation id="5726838626470692954">Den ansvariga måste ta bort och lägga till dig i Chromium på nytt.</translation>
 <translation id="5768914737813585044">Visa Chromium OS på det här språket</translation>
 <translation id="5796460469508169315">Chromium är nästan klart.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -234,7 +233,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="7979877361127045932">Dölj i Chromium-menyn</translation>
 <translation id="8013436988911883588">När du har gett Chromium åtkomst kan webbplatser begära att få åtkomst.</translation>
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>
-<translation id="8157153840442649507">Chromium visas på det här språket</translation>
 <translation id="81770708095080097">Filen är farlig och har blockerats av Chromium.</translation>
 <translation id="8222496066431494154">Installera Chromium på mobilen. Vi skickar ett sms till ditt telefonnummer för kontoåterställning: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Bidra till att förbättra Chromium</translation>

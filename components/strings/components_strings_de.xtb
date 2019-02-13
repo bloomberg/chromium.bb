@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1455413310270022028">Radierer</translation>
+<translation id="1463543813647160932">5 x 7</translation>
 <translation id="1484290072879560759">Versandadresse auswählen</translation>
 <translation id="1501859676467574491">Zeigen Sie Karten von Ihrem Google-Konto</translation>
 <translation id="1506687042165942984">Zeigt eine gespeicherte (veraltete) Kopie dieser Seite an</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt.</translation>
 <translation id="2053553514270667976">Postleitzahl</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 Vorschlag}other{# Vorschläge}}</translation>
+<translation id="2068124040035837596">Ihr Konto wird durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Das bedeutet, dass der Administrator Ihr Konto per Remotezugriff konfigurieren kann.</translation>
 <translation id="2068663545051464999">ID des hochgeladenen Absturzberichts: <ph name="CRASH_ID" /> (lokaler Kontext: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">Diese Versandart ist nicht verfügbar. Bitte wählen Sie eine andere aus.</translation>
 <translation id="2396249848217231973">&amp;Löschen rückgängig machen</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
+<translation id="244665789865330679">Ihr Gerät und Ihr Konto werden durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Dies bedeutet, dass der Administrator Ihr Gerät und Ihr Konto per Remotezugriff konfigurieren kann.</translation>
 <translation id="2463193859425327265">Startseite ändern</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
 <translation id="2465655957518002998">Lieferoption auswählen</translation>
@@ -375,17 +378,16 @@
 <translation id="3287510313208355388">Herunterladen, sobald eine Internetverbindung besteht</translation>
 <translation id="3293642807462928945">Weitere Informationen zur "<ph name="POLICY_NAME" />"-Richtlinie</translation>
 <translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
-<translation id="3305707030755673451">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
 <translation id="3324983252691184275">Purpur</translation>
 <translation id="3338095232262050444">Sicher</translation>
 <translation id="3345135638360864351">Ihre Zugriffsanfrage für diese Website konnte nicht an <ph name="NAME" /> gesendet werden. Bitte versuchen Sie es erneut.</translation>
 <translation id="3355823806454867987">Proxy-Einstellungen ändern...</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />speichert die folgenden Informationen nicht<ph name="END_EMPHASIS" />:
+<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />speichert die folgenden Daten nicht<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Ihren Browserverlauf
           <ph name="LIST_ITEM" />Cookies und Websitedaten
-          <ph name="LIST_ITEM" />In Formulare eingegebene Informationen
+          <ph name="LIST_ITEM" />In Formulare eingegebene Daten
         <ph name="END_LIST" /></translation>
 <translation id="3366477098757335611">Karten ansehen</translation>
 <translation id="3369192424181595722">Fehler bei der Uhrzeit</translation>
@@ -559,6 +561,7 @@
 <translation id="4377125064752653719">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, das vom Server übermittelte Zertifikat wurde jedoch vom entsprechenden Aussteller widerrufen. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen nicht vertrauenswürdig sind. Möglicherweise kommunizieren Sie mit einem Hacker.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4406896451731180161">Suchergebnisse</translation>
+<translation id="4406972042435603828">Ihre Administratoren haben Erweiterungen mit leistungsstarken Funktionen installiert.</translation>
 <translation id="4408413947728134509">Cookies <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Abholadresse</translation>
 <translation id="4424024547088906515">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chrome als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
@@ -630,10 +633,12 @@
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="4950898438188848926">Schaltfläche zum Wechseln von Tabs, Eingabetaste drücken, um zum offenen Tab "<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />" zu wechseln</translation>
 <translation id="495170559598752135">Aktionen</translation>
+<translation id="495832697253704892">Berichte zu Erweiterungen</translation>
 <translation id="4958444002117714549">Liste einblenden</translation>
 <translation id="4974590756084640048">Warnmeldungen wieder aktivieren</translation>
 <translation id="4989163558385430922">Alle ansehen</translation>
 <translation id="4989809363548539747">Dieses Plug-in wird nicht unterstützt</translation>
+<translation id="4996230189582812866">Berichte</translation>
 <translation id="5002932099480077015">Wenn diese Funktion aktiviert ist, speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, um ein Ausfüllen von Formularen zu beschleunigen.</translation>
 <translation id="5014174725590676422">Bildschirm für die erste Ausführung von Google Assistant für Chrome wird angezeigt</translation>
 <translation id="5015510746216210676">Computername:</translation>
@@ -654,6 +659,7 @@
 <translation id="5089810972385038852">Bundesstaat</translation>
 <translation id="5094747076828555589">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chromium als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5095208057601539847">Provinz</translation>
+<translation id="5098222253617183465">Ihr Gerät wird durch <ph name="ENROLLMENT_DOMAIN" /> und Ihr Konto durch <ph name="ACCOUNT_DOMAIN" /> verwaltet. Das bedeutet, dass die Administratoren Ihr Gerät und Ihr Konto per Remotezugriff konfigurieren können.</translation>
 <translation id="5115563688576182185">(64-Bit)</translation>
 <translation id="5128122789703661928">Die Sitzung mit diesem Namen kann nicht gelöscht werden.</translation>
 <translation id="5135404736266831032">Adressen verwalten…</translation>
@@ -666,6 +672,7 @@
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
+<translation id="5200263511887412697">erstellt eine Liste der Gerätenutzer, die sich kürzlich angemeldet haben</translation>
 <translation id="5201306358585911203">Auf einer in dieser Seite eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="5205222826937269299">Name erforderlich</translation>
 <translation id="5215116848420601511">Bei Google Pay gespeicherte Zahlungsmethoden und Adressen</translation>
@@ -736,6 +743,7 @@
 <translation id="563324245173044180">Betrügerische Inhalte blockiert.</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
+<translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5685654322157854305">Versandadresse hinzufügen</translation>
 <translation id="5689199277474810259">Als JSON exportieren</translation>
 <translation id="5689516760719285838">Ort</translation>
@@ -767,10 +775,10 @@
 <translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5887400589839399685">Karte gespeichert</translation>
+<translation id="5893718151540690985">meldet eine Liste der Netzwerkschnittstellen mit deren Typen und Hardwareadressen</translation>
 <translation id="5893752035575986141">Kreditkarten werden akzeptiert.</translation>
 <translation id="5901630391730855834">Gelb</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisiert)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 wird verwendet}other{# werden verwendet}}</translation>
 <translation id="5921639886840618607">Karte im Google-Konto speichern?</translation>
 <translation id="5922853866070715753">Fast fertig</translation>
 <translation id="5932224571077948991">Website zeigt aufdringliche oder irreführende Werbung an</translation>
@@ -780,6 +788,7 @@
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
 <translation id="5967867314010545767">Aus Verlauf entfernen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
+<translation id="5977489021191000276">Ihr Gerät wird nicht von einem Administrator verwaltet.</translation>
 <translation id="5977976211062815271">Auf diesem Gerät</translation>
 <translation id="598637245381783098">Fehler beim Öffnen der Zahlungs-App</translation>
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
@@ -791,6 +800,7 @@
 <translation id="6017850046339264347">Angreifer auf der Website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> könnten betrügerische Apps installieren, die scheinbar einem anderen Zweck dienen oder Daten erfassen, um Sie auszuspionieren. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronisiert)</translation>
 <translation id="6027201098523975773">Geben Sie einen Namen ein</translation>
+<translation id="6033927989869462158">meldet Hardwarestatistiken wie die CPU/RAM-Nutzung</translation>
 <translation id="6034000775414344507">Hellgrau</translation>
 <translation id="6039846035001940113">Falls das Problem weiterhin besteht, wenden Sie sich an den Inhaber der Website.</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -903,6 +913,8 @@
 <translation id="6897140037006041989">User-Agent</translation>
 <translation id="6903319715792422884">Sie können uns dabei helfen, Safe Browsing weiter zu verbessern, <ph name="BEGIN_WHITEPAPER_LINK" />indem Sie einige Systeminformationen und Seiteninhalte an Google senden<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Nutzer:</translation>
+<translation id="6934672428414710184">Dieser Name stammt aus Ihrem Google-Konto</translation>
+<translation id="6939583532829045966">Ihr Gerät wird durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Dies bedeutet, dass der Administrator Ihr Gerät per Remotezugriff konfigurieren kann.</translation>
 <translation id="6944692733090228304">Sie haben Ihr Passwort auf einer Website eingegeben, die nicht von <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> verwaltet wird. Zum Schutz Ihres Kontos sollten Sie das Passwort nicht für andere Apps und Websites verwenden.</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6948701128805548767">Wählen Sie eine Adresse aus, um Abholoptionen und -anforderungen zu sehen</translation>
@@ -990,6 +1002,7 @@ Weitere Details:
       &lt;li&gt;Klicken Sie auf &lt;strong&gt;Übernehmen&lt;/strong&gt; und dann auf &lt;strong&gt;OK&lt;/strong&gt;.
       &lt;li&gt;In der &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome-Hilfe&lt;/a&gt; finden Sie eine Anleitung dazu, wie Sie die Software von Ihrem Computer entfernen.
       &lt;/ol&gt;</translation>
+<translation id="7413422570546054399"><ph name="PRODUCT_NAME" />-Verwaltung</translation>
 <translation id="7416351320495623771">Passwörter verwalten…</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
 <translation id="7437289804838430631">Kontaktdaten hinzufügen</translation>
@@ -998,10 +1011,12 @@ Weitere Details:
 <translation id="7442725080345379071">Helles Orange</translation>
 <translation id="7444046173054089907">Diese Website ist blockiert</translation>
 <translation id="7445762425076701745">Die Identität des Servers, mit dem Sie verbunden sind, kann nicht vollständig überprüft werden. Sie sind mit einem Server verbunden, dessen Name nur innerhalb Ihres Netzwerks gültig ist und dessen Eigentümerschaft von einer externen Zertifizierungsstelle nicht überprüft werden kann. Da einige Zertifizierungsstellen ungeachtet dessen dennoch Zertifikate für diese Namen ausstellen, gibt es keine Möglichkeit, sicherzustellen, dass Sie mit der gewünschten Website und nicht mit einem Angreifer verbunden sind.</translation>
+<translation id="7449109375006139765">Systemprotokolle an den Verwaltungsserver senden</translation>
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7455133967321480974">Globalen Standard verwenden (Blockieren)</translation>
 <translation id="7460618730930299168">Die Filmvorführung entspricht nicht Ihrer Auswahl. Möchten Sie fortfahren?</translation>
 <translation id="7473891865547856676">Nein danke</translation>
+<translation id="7475525192983021547">meldet die Zeiträume, in denen ein Nutzer auf dem Gerät aktiv ist</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7485870689360869515">Keine Daten gefunden</translation>
 <translation id="7508255263130623398">Zurückgegebene Geräte-ID der Richtlinie ist leer oder entspricht nicht der aktuellen Geräte-ID</translation>
@@ -1094,6 +1109,7 @@ Weitere Details:
 <translation id="7995512525968007366">Nicht angegeben</translation>
 <translation id="800218591365569300">Versuchen Sie, andere Tabs oder Programme zu schließen, um Speicher freizugeben.</translation>
 <translation id="8009225694047762179">Passwort verwalten</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{Diese Karte und die entsprechende Rechnungsadresse werden gespeichert. Sie können sie nutzen, wenn Sie in <ph name="USER_EMAIL" /> angemeldet sind.}other{Diese Karten und die entsprechenden Rechnungsadressen werden gespeichert. Sie können sie nutzen, wenn Sie in <ph name="USER_EMAIL" /> angemeldet sind.}}</translation>
 <translation id="8012647001091218357">Wir können deine Eltern momentan nicht erreichen. Bitte versuche es später noch einmal.</translation>
 <translation id="8025119109950072390">Unbefugte Dritte auf dieser Website versuchen unter Umständen auf betrügerische Weise, Sie zur Installation von Software zu bewegen oder Ihnen personenbezogene Daten zu entlocken, zum Beispiel Passwörter, Telefonnummern oder Kreditkartendaten.</translation>
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE" />?</translation>
@@ -1104,6 +1120,7 @@ Weitere Details:
 <translation id="8041940743680923270">Globalen Standard verwenden (Fragen)</translation>
 <translation id="8042918947222776840">Abholoption auswählen</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ist nicht ordnungsgemäß konfiguriert. Durch die Deinstallation von "<ph name="SOFTWARE_NAME" />" sollte das Problem behoben werden. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">Ihr Gerät wurde so konfiguriert:</translation>
 <translation id="8078141288243656252">Anmerkungen bei gedrehtem Dokument nicht möglich</translation>
 <translation id="8079031581361219619">Website neu laden?</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
@@ -1154,6 +1171,7 @@ Weitere Details:
 <translation id="8363502534493474904">Flugmodus ausschalten</translation>
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
 <translation id="8368476060205742148">Google Play-Dienste</translation>
+<translation id="8371889962595521444">Benutzerdefinierte Root-Zertifikate</translation>
 <translation id="8380941800586852976">Schädlich</translation>
 <translation id="8381674639488873545">Diese Kosten können einmalig oder wiederkehrend sein und sind vielleicht nicht klar zu erkennen. <ph name="BEGIN_LINK" />Trotzdem anzeigen<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">Hier werden Ihre kürzlich aufgerufenen Lesezeichen angezeigt</translation>
@@ -1163,6 +1181,7 @@ Weitere Details:
 <translation id="8416694386774425977">Die Netzwerkkonfiguration ist ungültig und konnte nicht importiert werden.
 Weitere Details:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533">Gerät verwaltet durch <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" />, <ph name="SECOND_LABEL" />, <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">Ändern</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
@@ -1224,6 +1243,7 @@ Weitere Details:
 <translation id="8932102934695377596">Ihre Uhr geht nach</translation>
 <translation id="893332455753468063">Namen hinzufügen</translation>
 <translation id="8938939909778640821">Akzeptierte Kredit- und Prepaidkarten</translation>
+<translation id="894185898663964645">Ihr Administrator hat benutzerdefinierte Root-Zertifikate konfiguriert, mit denen er unter Umständen die Inhalte der von Ihnen besuchten Websites sehen kann.</translation>
 <translation id="8943282376843390568">Limone</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8968766641738584599">Karte speichern</translation>

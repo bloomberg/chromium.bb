@@ -4,7 +4,6 @@
 <translation id="102360288709523007">Pahusayin ang Chromium, magpadala sa Google ng istatistika ng paggamit at ulat ng crash.</translation>
 <translation id="1185134272377778587">Tungkol sa Chromium</translation>
 <translation id="1289966288285062467">Notification ng Privacy ng Chromium</translation>
-<translation id="1341317949260424055">Pahusayin ang Chromium at ang seguridad nito sa pamamagitan ng pagpapadala ng data ng system at paggamit sa Google</translation>
 <translation id="1472013873724362412">Hindi gumagana ang iyong account sa Chromium. Mangyaring makipag-ugnayan sa iyong administrator ng domain o gumamit ng regular na Google Account upang mag-sign in.</translation>
 <translation id="1736662517232558588">Na-clear Chromium data</translation>
 <translation id="1838412507805038478">Na-verify ng Chromium na ang <ph name="ISSUER" /> ang nag-isyu ng certificate ng website na ito.</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">Nagiging dahilan ng pag-crash ng Chromium ang ilang add-on. Paki-uninstall.</translation>
 <translation id="2178608107313874732">Di magamit ng Chromium ang camera mo ngayon</translation>
 <translation id="2195025571279539885">Gusto mo bang mag-alok ang Chromium na isalin ang mga <ph name="LANGUAGE_NAME" /> page mula sa site na ito sa susunod na pagkakataon?</translation>
+<translation id="2517624234762908348">I-sync ang iyong data ng Chromium</translation>
 <translation id="2647554856022461007">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pag-browse. Opsyonal mong madi-disable ang mga serbisyong ito. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">Magkaroon ng mga smart na feature ng Google sa Chromium</translation>
 <translation id="2730884209570016437">Hindi magamit ng Chromium ang iyong camera ngayon dahil ginagamit ito sa isa pang application</translation>
 <translation id="2915596697727466327">Gumagamit ang Chromium ng Face ID para tiyakin ang awtorisadong pag-access sa iyong mga password.</translation>
 <translation id="3256316712990552818">Kinopya sa Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">I-clear ang iyong data sa Chromium sa device na ito?</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Ilipat ang Chromium sa iyong dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Magkaroon ng mas mahusay na karanasan sa Google sa Chromium batay sa iyong lokasyon.</translation>
-<translation id="8508544542427105412">Maaaring i-customize ang <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" /> anumang oras. Maaaring gamitin ng Google ang content sa mga site na binibisita mo, mga pakikipag-ugnayan, at aktibidad sa browser para ma-personalize ang Chromium at ang mga serbisyo ng Google tulad ng Translate, Search at mga ad.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ang Mga May-akda ng Chromium. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="8809780021347235332">Para mag-save ng larawan, mag-tap sa Mga Setting para pahintulutan ang Chromium na gamitin ang larawan</translation>
 <translation id="9022552996538154597">Mag-sign in sa Chromium</translation>

@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Дані веб-перегляду користувача буде видалено з цього пристрою. Щоб відновити їх, увійдіть в обліковий запис Chromium як <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">Відкрити посилання в новій &amp;вкладці Chromium</translation>
 <translation id="3728336900324680424">Chromium матиме доступ до Диска, щоб робити пропозиції в адресному рядку</translation>
-<translation id="3762167353400286894">Для ОС Chromium вибрано цю мову</translation>
 <translation id="378917192836375108">Chromium дозволяє натиснути номер телефону в Інтернеті та зателефонувати за ним через Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Як закріпити значок Chromium на панелі завдань</translation>
+<translation id="388648406173476553">Налаштуйте й керуйте Chromium. Якщо з’явиться сповіщення, натисніть його, щоб дізнатися більше.</translation>
 <translation id="3889543394854987837">Натисніть своє ім’я, щоб відкрити Chromium і розпочати перегляд сайтів.</translation>
 <translation id="3898493977366060150">Перегляд веб-сторінок із розумними функціями Google</translation>
 <translation id="3965668104013180445">{0,plural, =1{ОС Chromium перезапуститься через годину}one{ОС Chromium перезапуститься через # годину}few{ОС Chromium перезапуститься через # години}many{ОС Chromium перезапуститься через # годин}other{ОС Chromium перезапуститься через # години}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">увійдіть в обліковий запис Chromium</translation>
 <translation id="5698481217667032250">Вибрати цю мову для Chromium</translation>
 <translation id="5712253116097046984">Адміністратор просить перезапустити ОС Chromium, щоб застосувати це оновлення</translation>
-<translation id="5726838626470692954">Вашому адміністратору потрібно вилучити й знову додати вас у Chromium.</translation>
 <translation id="5768914737813585044">Вибрати цю мову для ОС Chromium</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
@@ -232,7 +231,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="7979877361127045932">Сховати в меню Chromium</translation>
 <translation id="8013436988911883588">Коли Chromium отримає доступ, веб-сайти зможуть надсилати вам запити на доступ.</translation>
 <translation id="8030318113982266900">Оновлення пристрою до каналу <ph name="CHANNEL_NAME" />…</translation>
-<translation id="8157153840442649507">Для Chromium вибрано цю мову</translation>
 <translation id="81770708095080097">Цей файл небезпечний, тому Chromium заблокував його.</translation>
 <translation id="8222496066431494154">Установіть Chromium на телефоні. Ми надішлемо SMS на номер телефону для відновлення облікового запису: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Допоможіть покращити Chromium</translation>

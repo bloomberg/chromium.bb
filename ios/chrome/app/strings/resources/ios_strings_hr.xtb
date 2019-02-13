@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Označi ovu stranicu...</translation>
 <translation id="1049743911850919806">Anonimno</translation>
 <translation id="1063454504051558093">Upotrijebi drugu zaporku...</translation>
+<translation id="1066060668811609597">Upravljanje sinkronizacijom</translation>
 <translation id="1076421457278169141">Kod skeniran</translation>
 <translation id="1084365883616172403">Dovršen je post za Facebook.</translation>
 <translation id="1104948393051856124">Prihvati i nastavi</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Sakrij za sad</translation>
 <translation id="1219674500290482172">Povezivanje s internetom nije moguće.</translation>
 <translation id="122699739164161391">Zatvori sve kartice</translation>
+<translation id="1231733316453485619">Želite li uključiti sinkronizaciju?</translation>
 <translation id="1254117744268754948">Odabir mape</translation>
 <translation id="1265739287306757398">Saznajte kako</translation>
 <translation id="1272079795634619415">Zaustavi</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Da biste pregledavali privatno, otvorite anonimnu karticu</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
+<translation id="2198757192731523470">Google može upotrebljavati vašu povijest za prilagodbu Pretraživanja, oglasa i drugih Googleovih usluga.</translation>
 <translation id="2207590065820824892">Nepročitanih članaka na popisu za čitanje: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Web-stranica učitana</translation>
 <translation id="2239626343334228536">Brisanje podataka o pregledavanju...</translation>
@@ -255,6 +258,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5062321486222145940">Instaliraj Google disk</translation>
 <translation id="5083464117946352670">Veličina datoteke nije utvrđena.</translation>
 <translation id="5094827893301452931">Tweet je dovršen.</translation>
+<translation id="5132942445612118989">Sinkronizirajte svoje zaporke, povijest i drugo na svim uređajima</translation>
 <translation id="5181140330217080051">Preuzimanje</translation>
 <translation id="5186185447130319458">Privatno</translation>
 <translation id="5190835502935405962">Traka oznaka</translation>

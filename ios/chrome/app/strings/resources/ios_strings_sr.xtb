@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Обележи ову страницу...</translation>
 <translation id="1049743911850919806">Без архивирања</translation>
 <translation id="1063454504051558093">Користи другу лозинку...</translation>
+<translation id="1066060668811609597">Управљајте синхронизацијом</translation>
 <translation id="1076421457278169141">Скенирали сте кôд</translation>
 <translation id="1084365883616172403">Facebook пост је довршен.</translation>
 <translation id="1104948393051856124">Прихвати и настави</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Сакриј за сада</translation>
 <translation id="1219674500290482172">Повезивање са интернетом није могуће.</translation>
 <translation id="122699739164161391">Затвори све картице</translation>
+<translation id="1231733316453485619">Желите ли да укључите синхронизацију?</translation>
 <translation id="1254117744268754948">Избор директоријума</translation>
 <translation id="1265739287306757398">Сазнајте како</translation>
 <translation id="1272079795634619415">Заустави</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">Број премештених ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Да бисте прегледали приватно, отворите картицу без архивирања</translation>
 <translation id="2149973817440762519">Измените обележивач</translation>
+<translation id="2198757192731523470">Google може да користи историју за персонализацију Претраге, огласа и других Google услуга.</translation>
 <translation id="2207590065820824892">Непрочитани чланци на листи за читање: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница је учитана</translation>
 <translation id="2239626343334228536">Бришу се подаци прегледања...</translation>
@@ -255,6 +258,7 @@
 <translation id="5062321486222145940">Инсталирај Google диск</translation>
 <translation id="5083464117946352670">Није могуће утврдити величину датотеке.</translation>
 <translation id="5094827893301452931">Твит је довршен.</translation>
+<translation id="5132942445612118989">Синхронизујте лозинке, историју и други садржај на свим уређајима</translation>
 <translation id="5181140330217080051">Преузимање</translation>
 <translation id="5186185447130319458">Приватно</translation>
 <translation id="5190835502935405962">Трака са обележивачима</translation>
@@ -305,7 +309,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6021332621416007159">Отвори у...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Затвори</translation>
-<translation id="6042308850641462728">Више</translation>
+<translation id="6042308850641462728">Још</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Додирните да бисте отказали.</translation>
 <translation id="6108923351542677676">Подешавање је у току...</translation>

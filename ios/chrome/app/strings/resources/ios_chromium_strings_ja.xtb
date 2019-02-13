@@ -4,7 +4,6 @@
 <translation id="102360288709523007">使用統計情報と障害レポートを Google に送信して Chromium の機能向上に役立てる。</translation>
 <translation id="1185134272377778587">Chromium について</translation>
 <translation id="1289966288285062467">Chromium のプライバシーに関するお知らせ</translation>
-<translation id="1341317949260424055">システムと使用状況に関するデータが Google に送信され、Chromium とそのセキュリティの向上に役立てられます</translation>
 <translation id="1472013873724362412">このアカウントは Chromium では使用できません。ドメイン管理者に問い合わせるか、通常の Google アカウントでログインしてください。</translation>
 <translation id="1736662517232558588">Chromium データを削除しました</translation>
 <translation id="1838412507805038478">このウェブサイトの証明書が <ph name="ISSUER" /> 発行のものであることが Chromium で確認されました。</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">アドオンが原因で Chromium がクラッシュしました。次をアンインストールしてください:</translation>
 <translation id="2178608107313874732">現在 Chromium ではカメラを使用できません</translation>
 <translation id="2195025571279539885">次回から Chromium でこのサイトの <ph name="LANGUAGE_NAME" /> ページの翻訳を表示しますか？</translation>
+<translation id="2517624234762908348">Chromium のデータを同期</translation>
 <translation id="2647554856022461007">Chromium は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらのサービスは無効にすることもできます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">Chromium で Google の最先端技術を活用</translation>
 <translation id="2730884209570016437">カメラは別のアプリが使用中のため、Chromium では使用できません</translation>
 <translation id="2915596697727466327">Chromium では Face ID の使用により、パスワードへの認証されたアクセスのみが許可されます。</translation>
 <translation id="3256316712990552818">Chromium にコピー済み</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">Chromium データをこの端末から削除しますか？</translation>
 <translation id="8175055321229419309">ヒント: <ph name="BEGIN_LINK" />Chromium を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
 <translation id="8252885722420466166">ユーザーの現在時に基づいて Chromium で Google を使いやすくします。</translation>
-<translation id="8508544542427105412"><ph name="BEGIN_LINK" />設定<ph name="END_LINK" />はいつでも変更できます。Google は、Chromium やその他の Google サービス（翻訳、検索、広告など）をカスタマイズする目的で、ユーザーがアクセスしたサイトのコンテンツ、ユーザーの閲覧行動や操作を使用することがあります。</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8809780021347235332">画像を保存するには、[設定] をタップして写真の使用を Chromium に許可してください</translation>
 <translation id="9022552996538154597">Chromium にログイン</translation>

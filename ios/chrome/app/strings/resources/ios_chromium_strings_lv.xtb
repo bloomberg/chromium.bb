@@ -4,7 +4,6 @@
 <translation id="102360288709523007">Uzlabojiet Chromium, sūtot lietojuma statistiku un avāriju pārskatus Google serveriem.</translation>
 <translation id="1185134272377778587">Par Chromium</translation>
 <translation id="1289966288285062467">Chromium konfidencialitātes paziņojums</translation>
-<translation id="1341317949260424055">Uzlabojiet pārlūku Chromium un tā drošību, nosūtot sistēmas un lietojuma datus Google serveriem.</translation>
 <translation id="1472013873724362412">Jūsu konts nedarbojas pārlūkā Chromium. Sazinieties ar savu domēna administratoru vai pierakstieties, izmantojot parastu Google kontu.</translation>
 <translation id="1736662517232558588">Chromium dati dzēsti</translation>
 <translation id="1838412507805038478">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">Daži papildinājumi var izraisīt pārlūka Chromium avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
 <translation id="2178608107313874732">Chromium pašlaik nevar izmantot jūsu kameru.</translation>
 <translation id="2195025571279539885">Vai vēlaties, lai Chromium nākamreiz piedāvātu šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="2517624234762908348">Sinhronizēt jūsu Chromium datus</translation>
 <translation id="2647554856022461007">Chromium var izmantot tīmekļa pakalpojumus, lai uzlabotu jūsu pārlūkošanas pieredzi. Varat arī atspējot šos pakalpojumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
-<translation id="2687023731466035790">Google viedās tehnoloģijas pārlūkā Chromium</translation>
 <translation id="2730884209570016437">Chromium nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
 <translation id="2915596697727466327">Chromium izmanto Face ID, lai jūsu parolēm varētu piekļūt tikai pilnvarotas personas.</translation>
 <translation id="3256316712990552818">Nokopēta pārlūkā Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">Vai dzēst jūsu Chromium datus no šīs ierīces?</translation>
 <translation id="8175055321229419309">Padoms. <ph name="BEGIN_LINK" />Pārvietojiet pārlūku Chromium uz savu doku<ph name="END_LINK" />.</translation>
 <translation id="8252885722420466166">Izmantojiet visas Google sniegtās iespējas pārlūkā Chromium, sūtot informāciju par savu atrašanās vietu.</translation>
-<translation id="8508544542427105412"><ph name="BEGIN_LINK" />Iestatījumus<ph name="END_LINK" /> var pielāgot jebkurā laikā. Google var izmantot jūsu apmeklēto vietņu saturu, pārlūkā veiktās mijiedarbības un darbības, lai personalizētu pārlūku Chromium un tādus Google pakalpojumus kā Tulkotājs, Meklēšana un reklāmas.</translation>
 <translation id="8586442755830160949">Autortiesības <ph name="YEAR" /> Chromium autori. Visas tiesības paturētas.</translation>
 <translation id="8809780021347235332">Lai saglabātu attēlus, pieskarieties vienumam Iestatījumi un atļaujiet Chromium lietot fotoattēlus.</translation>
 <translation id="9022552996538154597">Pierakstieties pārlūkā Chromium</translation>

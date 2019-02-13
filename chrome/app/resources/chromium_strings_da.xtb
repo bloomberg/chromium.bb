@@ -82,10 +82,10 @@
 <translation id="3639635944603682591">Brugerens browserdata slettes fra denne enhed. Log ind på Chromium som <ph name="USER_EMAIL" /> for at gendanne dataene.</translation>
 <translation id="3713809861844741608">Åbn linket på en ny Chromium-&amp;fane</translation>
 <translation id="3728336900324680424">Chromium har adgang til Drev, så der kan vises forslag i adresselinjen</translation>
-<translation id="3762167353400286894">Chromium OS vises på dette sprog</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3852700440713538496">Fastgør Chromium til proceslinjen</translation>
+<translation id="388648406173476553">Tilpas og administrer Chromium. Noget kræver din opmærksomhed – klik for at få oplysninger.</translation>
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>
 <translation id="3898493977366060150">Webbrowsing med Googles smarte funktioner</translation>
 <translation id="3965668104013180445">{0,plural, =1{Chromium OS genstarter om en time}one{Chromium OS genstarter om # time}other{Chromium OS genstarter om # timer}}</translation>
@@ -137,7 +137,6 @@
 <translation id="5680901439334282664">log ind på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette sprog</translation>
 <translation id="5712253116097046984">Din administrator anmoder om, at du genstarter Chromium OS for at anvende denne opdatering</translation>
-<translation id="5726838626470692954">Din administrator skal fjerne dig fra Chromium og tilføje dig igen.</translation>
 <translation id="5768914737813585044">Vis Chromium OS på dette sprog</translation>
 <translation id="5796460469508169315">Chromium er næsten klar.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -232,7 +231,6 @@ Gå til din mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejlednin
 <translation id="7979877361127045932">Skjul i Chromium-menuen</translation>
 <translation id="8013436988911883588">Når Chromium har adgang, kan websites bede dig om adgang.</translation>
 <translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">Chromium vises på dette sprog</translation>
 <translation id="81770708095080097">Denne fil er farlig, så Chromium har blokeret den.</translation>
 <translation id="8222496066431494154">Installer Chromium på din telefon. Vi sender en sms til dit telefonnummer til gendannelse: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Hjælp med at gøre Chromium bedre</translation>

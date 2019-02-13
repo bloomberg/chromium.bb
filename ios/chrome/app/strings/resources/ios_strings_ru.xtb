@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Добавить страницу в закладки…</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="1063454504051558093">Использовать другой пароль</translation>
+<translation id="1066060668811609597">Синхронизация</translation>
 <translation id="1076421457278169141">Код отсканирован</translation>
 <translation id="1084365883616172403">Опубликовано в Facebook.</translation>
 <translation id="1104948393051856124">Продолжить</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Скрыть</translation>
 <translation id="1219674500290482172">Не удалось подключиться к Интернету.</translation>
 <translation id="122699739164161391">Закрыть все вкладки</translation>
+<translation id="1231733316453485619">Включить синхронизацию?</translation>
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1265739287306757398">Подробнее</translation>
 <translation id="1272079795634619415">Остановить</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
 <translation id="2149973817440762519">Закладка</translation>
+<translation id="2198757192731523470">Google может использовать вашу историю, чтобы персонализировать рекламу, а также Поиск и другие сервисы.</translation>
 <translation id="2207590065820824892">Число непрочитанных статей в Списке для чтения: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
 <translation id="2239626343334228536">Удаление данных о работе в браузере…</translation>
@@ -255,6 +258,7 @@
 <translation id="5062321486222145940">Установить Google Диск</translation>
 <translation id="5083464117946352670">Не установлен размер файла</translation>
 <translation id="5094827893301452931">Опубликовано в Твиттере.</translation>
+<translation id="5132942445612118989">Синхронизируйте пароли, историю и другие данные на всех ваших устройствах</translation>
 <translation id="5181140330217080051">Скачивается</translation>
 <translation id="5186185447130319458">Конфиденциально</translation>
 <translation id="5190835502935405962">Панель закладок</translation>

@@ -80,10 +80,10 @@
 <translation id="3639635944603682591">‏נתוני הגלישה של האדם הזה יימחקו מהמכשיר. כדי לשחזר את הנתונים, יש להיכנס ל-Chromium בתור <ph name="USER_EMAIL" />.</translation>
 <translation id="3713809861844741608">‏פתח את הקישור ב&amp;כרטיסיית Chromium חדשה</translation>
 <translation id="3728336900324680424">‏Chromium ייגש ל-Drive שלך כדי להציג הצעות בשורת כתובת האתר</translation>
-<translation id="3762167353400286894">‏Chromium OS מוצג בשפה זו</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">‏הצמד את Chromium לשורת המשימות</translation>
+<translation id="388648406173476553">‏התאמה אישית וניהול של Chromium נחוצה פעולה שלך - יש ללחוץ לקבלת פרטים נוספים.</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
 <translation id="3898493977366060150">‏גלישה באינטרנט עם Google Smarts</translation>
 <translation id="3965668104013180445">{0,plural, =1{‏Chromium OS תופעל מחדש בעוד שעה אחת}two{‏Chromium OS תופעל מחדש בעוד שעתיים}many{‏Chromium OS תופעל מחדש בעוד # שעות}other{‏Chromium OS תופעל מחדש בעוד # שעות}}</translation>
@@ -135,7 +135,6 @@
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
 <translation id="5712253116097046984">‏לפי הבקשה של מנהל המערכת, צריך להפעיל מחדש את Chromium OS כדי להחיל את העדכון</translation>
-<translation id="5726838626470692954">‏המנהל שלך צריך להסיר אותך מ-Chromium ולאחר מכן להוסיף אותך חזרה.</translation>
 <translation id="5768914737813585044">‏הצג את Chromium OS בשפה זו</translation>
 <translation id="5796460469508169315">‏Chromium כמעט מוכן.</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
@@ -230,7 +229,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7979877361127045932">‏הסתר בתפריט Chromium</translation>
 <translation id="8013436988911883588">‏אחרי מתן גישה ל-Chromium, אתרים יוכלו לבקש ממך גישה.</translation>
 <translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>
-<translation id="8157153840442649507">‏Chromium מוצג בשפה זו</translation>
 <translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8222496066431494154">‏יש להתקין את Chromium בטלפון שלך, ולאחר מכן נשלח הודעת SMS למספר שמוגדר לשחזור החשבון: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>

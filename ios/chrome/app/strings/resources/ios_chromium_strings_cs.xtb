@@ -4,7 +4,6 @@
 <translation id="102360288709523007">Pomozte Chromium zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="1185134272377778587">O prohlížeči Chromium</translation>
 <translation id="1289966288285062467">Upozornění ve věci ochrany soukromí v prohlížeči Chromium</translation>
-<translation id="1341317949260424055">Vylepšete prohlížeč Chromium a jeho zabezpečení tím, že do Googlu budete odesílat údaje o systému a využití</translation>
 <translation id="1472013873724362412">Váš účet v prohlížeči Chromium nefunguje. Kontaktujte administrátora domény nebo se přihlaste pomocí běžného účtu Google.</translation>
 <translation id="1736662517232558588">Data prohlížeče Chromium byla vymazána</translation>
 <translation id="1838412507805038478">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />.</translation>
@@ -13,8 +12,8 @@
 <translation id="2168108852149185974">Některé doplňky způsobují selhání prohlížeče Chromium. Prosím odinstalujte:</translation>
 <translation id="2178608107313874732">Chromium teď nemůže použít fotoaparát</translation>
 <translation id="2195025571279539885">Chcete, aby prohlížeč Chromium příště pro stránky v jazyce <ph name="LANGUAGE_NAME" /> z tohoto webu nabízel překlad?</translation>
+<translation id="2517624234762908348">Synchronizovat data prohlížeče Chromium</translation>
 <translation id="2647554856022461007">Chromium vám může usnadnit prohlížení pomocí webových služeb. Tyto služby můžete případně zakázat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">Získejte do prohlížeče Chromium chytré funkce Google</translation>
 <translation id="2730884209570016437">Chromium nemůže použít fotoaparát, protože jej právě používá jiná aplikace</translation>
 <translation id="2915596697727466327">Chromium pomocí funkce Face ID ověřuje přístup k heslům.</translation>
 <translation id="3256316712990552818">Zkopírováno do prohlížeče Chromium</translation>
@@ -50,7 +49,6 @@
 <translation id="8073677936375100957">Vymazat z tohoto zařízení data prohlížeče Chromium?</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Přesuňte si prohlížeč Chromium do doku<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Služby Google mohou v prohlížeči Chromium díky údajům o poloze fungovat lépe.</translation>
-<translation id="8508544542427105412"><ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" /> lze kdykoliv upravit. Google může používat obsah na webech, které navštěvujete, interakce s prohlížečem a aktivity k personalizaci prohlížeče Chromium a služeb Google, jako jsou Překladač, Vyhledávání a reklamy.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8809780021347235332">Chcete-li uložit obrázky, klepněte na Nastavení a umožněte prohlížeči Chromium používat vaše fotky.</translation>
 <translation id="9022552996538154597">Přihlásit se do prohlížeče Chromium</translation>

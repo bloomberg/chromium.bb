@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1049743911850919806">시크릿</translation>
 <translation id="1063454504051558093">다른 비밀번호를 사용하세요...</translation>
+<translation id="1066060668811609597">동기화 관리</translation>
 <translation id="1076421457278169141">코드 스캔됨</translation>
 <translation id="1084365883616172403">Facebook 게시가 완료되었습니다.</translation>
 <translation id="1104948393051856124">동의 및 계속</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">지금 숨기기</translation>
 <translation id="1219674500290482172">인터넷에 연결할 수 없습니다.</translation>
 <translation id="122699739164161391">탭 모두 닫기</translation>
+<translation id="1231733316453485619">동기화를 사용하시겠습니까?</translation>
 <translation id="1254117744268754948">폴더 선택</translation>
 <translation id="1265739287306757398">자세히 알아보기</translation>
 <translation id="1272079795634619415">중지</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
 <translation id="213900355088104901">비공개로 탐색하려면 시크릿 탭을 여세요.</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
+<translation id="2198757192731523470">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 방문 기록을 사용할 수 있습니다.</translation>
 <translation id="2207590065820824892">읽기 목록에 읽지 않은 기사가 <ph name="UNREAD_COUNT" />개 있습니다.</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2239626343334228536">인터넷 사용 기록 삭제 중...</translation>
@@ -255,6 +258,7 @@
 <translation id="5062321486222145940">Google 드라이브 설치</translation>
 <translation id="5083464117946352670">파일 크기를 알 수 없습니다.</translation>
 <translation id="5094827893301452931">Tweet이 완료되었습니다.</translation>
+<translation id="5132942445612118989">모든 기기의 비밀번호, 방문 기록 등 동기화</translation>
 <translation id="5181140330217080051">다운로드 중</translation>
 <translation id="5186185447130319458">비공개</translation>
 <translation id="5190835502935405962">북마크바</translation>

@@ -90,7 +90,6 @@
 <translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
-<translation id="3180085900771989961">Менаџер мора да вас уклони из Chrome-а, па да вас поново дода.</translation>
 <translation id="3251381707915721925">Да бисте подесили које веб-сајтове <ph name="NEW_PROFILE_NAME" /> може да прегледа, можете да конфигуришете ограничења и подешавања ако посетите <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ако не промените подразумевана подешавања, <ph name="NEW_PROFILE_NAME" /> може да прегледа све сајтове на вебу.
 
 Да бисте спречили да <ph name="NEW_PROFILE_NAME" /> приступа вашем налогу, обавезно закључајте профил када не користите Chrome. Да бисте то урадили, кликните на име профила у горњем десном углу прегледача и изаберите „Изађи и закључај за децу“.
@@ -160,7 +159,6 @@
 <translation id="5062123544085870375">Рестартујте Chrome ОС</translation>
 <translation id="5090044601776247154">Профили корисника под надзором неће више бити доступни почев од Google Chrome верзије 70.</translation>
 <translation id="5132929315877954718">Откријте одличне апликације, игре, додатке и теме за Google Chrome.</translation>
-<translation id="5166975452760862670">Google Chrome се приказује на овом језику</translation>
 <translation id="5170938038195470297">Профил не може да се користи јер је из новије верзије Google Chrome-а.
 
 Неке функције су можда недоступне. Наведите други директоријум профила или користите новију верзију Chrome-а.</translation>
@@ -177,9 +175,9 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="556024056938947818">Google Chrome покушава да прикаже лозинке.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Датотека <ph name="FILE_NAME" /> је можда опасна, па ју је Chrome блокирао.</translation>
+<translation id="5686916850681061684">Прилагодите и контролишите Google Chrome. Треба да обратите пажњу на нешто – кликните за више детаља.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome ће се рестартовати за 1 секунду}one{Google Chrome ће се рестартовати за # секунду}few{Google Chrome ће се рестартовати за # секунде}other{Google Chrome ће се рестартовати за # секунди}}</translation>
 <translation id="573759479754913123">О Chrome ОС-у</translation>
-<translation id="5774845247549698882">Chrome ОС се приказује на овом језику</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Није могуће покренути Chrome. Покушајте поново.</translation>
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>

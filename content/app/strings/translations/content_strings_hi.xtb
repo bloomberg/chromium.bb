@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">मान <ph name="MAXIMUM" /> से कम या इसके बराबर होना चाहिए.</translation>
 <translation id="3486220673238053218">परिभाषा</translation>
 <translation id="3557673793733683882">शीर्षक <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">फ़िल्म के शेष सेकंड</translation>
 <translation id="3706100364254443312">स्विच करें</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> जीबी</translation>
-<translation id="3785482301506746191">फ़िल्म समय स्क्रबर</translation>
 <translation id="3808586225841795776">शब्द</translation>
 <translation id="3822383571486410024">कृपया इस लेख को <ph name="MIN_CHARACTERS" /> वर्णों या अधिक तक बढ़ाएं (वर्तमान में आप <ph name="CURRENT_LENGTH" /> वर्णों का उपयोग कर रहे हैं).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' के बाद आने वाले भाग में '<ph name="INVALIDCHARACTER" />' प्रतीक शामिल नहीं होना चाहिए.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">मेनू बटन</translation>
 <translation id="4446524499724042288">संदर्भ के लिए शब्दावली</translation>
 <translation id="4522570452068850558">विवरण</translation>
+<translation id="4542388879936266156">बचा हुआ समय: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">फ़ॉर्म</translation>
 <translation id="4661075872484491155">ट्री</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' के बाद आने वाले भाग में '<ph name="INVALIDCHARACTER" />' प्रतीक शामिल नहीं होना चाहिए.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8284326494547611709">कैप्शन</translation>
 <translation id="835897206747267392">अमान्य मान.</translation>
+<translation id="8403857369060869934">बीता हुआ समय: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">भाग</translation>
 <translation id="8433900881053900389">टूलबार</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> फ़ाइल</translation>

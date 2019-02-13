@@ -4,7 +4,6 @@
 <translation id="102360288709523007">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1289966288285062467">Sekretessmeddelande för Chromium</translation>
-<translation id="1341317949260424055">Gör Chromium bättre och säkrare genom att skicka information om system och användning till Google</translation>
 <translation id="1472013873724362412">Kontot fungerar inte på Chromium. Kontakta domänadministratören eller logga in med ett vanligt Google-konto.</translation>
 <translation id="1736662517232558588">Chromium-data har rensats</translation>
 <translation id="1838412507805038478">Chromium har verifierat att <ph name="ISSUER" /> har utfärdat webbplatsens certifikat.</translation>
@@ -14,8 +13,8 @@
 <translation id="2168108852149185974">Några tillägg har fått Chromium att krascha. Avinstallera följande:</translation>
 <translation id="2178608107313874732">Chromium kan inte använda kameran just nu</translation>
 <translation id="2195025571279539885">Vill du att Chromium ska översätta sidor skrivna på <ph name="LANGUAGE_NAME" /> på den här webbplatsen nästa gång?</translation>
+<translation id="2517624234762908348">Synkronisera data i Chromium</translation>
 <translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">Få Google-teknik i Chromium</translation>
 <translation id="2730884209570016437">Chromium kan inte använda kameran eftersom den används av en annan app</translation>
 <translation id="2915596697727466327">Chromium använder Face ID för att se till att endast behöriga har åtkomst till lösenorden.</translation>
 <translation id="3256316712990552818">Kopierat till Chromium</translation>
@@ -51,7 +50,6 @@
 <translation id="8073677936375100957">Vill du rensa din data i Chromium från den här enheten?</translation>
 <translation id="8175055321229419309">Tips! <ph name="BEGIN_LINK" />Flytta Chromium till Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Ange din plats och få en bättre upplevelse av Google när du använder Chromium.</translation>
-<translation id="8508544542427105412"><ph name="BEGIN_LINK" />Inställningarna<ph name="END_LINK" /> kan anpassas när som helst. Google kan anpassa Chromium och tjänster från Google som Översätt, Sök och annonser utifrån innehållet på webbplatser du besöker, vad du interagerar med i webbläsaren och annan aktivitet.</translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR" /> The Chromium Authors. Med ensamrätt.</translation>
 <translation id="8809780021347235332">Tryck på Inställningar och ge Chromium behörighet att använda dina foton om du vill spara foton</translation>
 <translation id="9022552996538154597">Logga in i Chromium</translation>

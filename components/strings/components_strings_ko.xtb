@@ -92,6 +92,7 @@
 <translation id="1426410128494586442">예</translation>
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1455413310270022028">지우개</translation>
+<translation id="1463543813647160932">5x7</translation>
 <translation id="1484290072879560759">배송지 주소 선택</translation>
 <translation id="1501859676467574491">Google 계정에 저장된 카드 표시</translation>
 <translation id="1506687042165942984">오래된 것으로 알려진 이 페이지의 저장된 사본을 표시합니다.</translation>
@@ -186,6 +187,7 @@
 <translation id="2053111141626950936"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
 <translation id="2053553514270667976">우편번호</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{제안 1개}other{제안 #개}}</translation>
+<translation id="2068124040035837596"><ph name="ENROLLMENT_DOMAIN" />에서 내 계정을 관리합니다. 이는 관리자가 내 계정을 원격으로 구성할 수 있음을 의미합니다.</translation>
 <translation id="2068663545051464999">비정상 종료 보고서 ID <ph name="CRASH_ID" />업로드됨(로컬 컨텍스트: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="20817612488360358">시스템 프록시 설정이 사용하도록 설정되었지만 명시적 프록시 설정도 지정되어 있습니다.</translation>
@@ -244,6 +246,7 @@
 <translation id="239429038616798445">사용할 수 없는 배송 방법입니다. 다른 방법을 선택하세요.</translation>
 <translation id="2396249848217231973">삭제 실행 취소(&amp;U)</translation>
 <translation id="2413528052993050574">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 취소될 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
+<translation id="244665789865330679"><ph name="ENROLLMENT_DOMAIN" />에서 내 기기 및 계정을 관리합니다. 이는 관리자가 내 기기와 계정을 원격으로 구성할 수 있음을 의미합니다.</translation>
 <translation id="2463193859425327265">홈페이지 변경</translation>
 <translation id="2463739503403862330">입력</translation>
 <translation id="2465655957518002998">배달 방법 선택</translation>
@@ -375,7 +378,6 @@
 <translation id="3287510313208355388">온라인 상태일 때 다운로드</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> 정책에 관해 자세히 알아보기</translation>
 <translation id="3303855915957856445">검색결과 없음</translation>
-<translation id="3305707030755673451"><ph name="TIME" />에 동기화 암호로 데이터가 암호화되었습니다. 동기화를 시작하려면 입력하세요.</translation>
 <translation id="3320021301628644560">청구지 주소 추가</translation>
 <translation id="3324983252691184275">진홍색</translation>
 <translation id="3338095232262050444">보안 연결</translation>
@@ -561,6 +563,7 @@
 <translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
 <translation id="4378154925671717803">전화기</translation>
 <translation id="4406896451731180161">검색결과</translation>
+<translation id="4406972042435603828">관리자가 강력한 기능이 포함된 확장 프로그램을 설치했습니다.</translation>
 <translation id="4408413947728134509">쿠키 <ph name="NUM_COOKIES" />개</translation>
 <translation id="4415426530740016218">픽업 주소</translation>
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
@@ -632,10 +635,12 @@
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
 <translation id="4950898438188848926">탭 전환 버튼, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> 열린 탭으로 전환하려면 Enter를 누르세요</translation>
 <translation id="495170559598752135">작업</translation>
+<translation id="495832697253704892">확장 프로그램 보고</translation>
 <translation id="4958444002117714549">펼치기 목록</translation>
 <translation id="4974590756084640048">경고 다시 사용</translation>
 <translation id="4989163558385430922">모두 보기</translation>
 <translation id="4989809363548539747">이 플러그인은 지원되지 않습니다.</translation>
+<translation id="4996230189582812866">보고</translation>
 <translation id="5002932099480077015">선택하면 Chrome에서 양식을 더 빠르게 작성할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>
 <translation id="5014174725590676422">Chrome의 Google 어시스턴트 첫 실행 화면이 표시됩니다.</translation>
 <translation id="5015510746216210676">컴퓨터 이름:</translation>
@@ -656,6 +661,7 @@
 <translation id="5089810972385038852">시/도</translation>
 <translation id="5094747076828555589">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chromium에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5095208057601539847">주/도</translation>
+<translation id="5098222253617183465"><ph name="ENROLLMENT_DOMAIN" />에서 내 기기를 관리하고 <ph name="ACCOUNT_DOMAIN" />에서 내 계정을 관리합니다. 이는 관리자가 내 기기와 계정을 원격으로 구성할 수 있음을 의미합니다.</translation>
 <translation id="5115563688576182185">(64비트)</translation>
 <translation id="5128122789703661928">세션 이름이 잘못되어 삭제할 수 없습니다.</translation>
 <translation id="5135404736266831032">주소 관리...</translation>
@@ -668,6 +674,7 @@
 <translation id="5172758083709347301">컴퓨터</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />가 아닙니까? 오류 신고</translation>
 <translation id="5190835502935405962">북마크바</translation>
+<translation id="5200263511887412697">최근 로그인한 기기 사용자 목록을 보고합니다.</translation>
 <translation id="5201306358585911203">이 페이지에 삽입된 페이지 내용:</translation>
 <translation id="5205222826937269299">이름은 필수입니다.</translation>
 <translation id="5215116848420601511">Google Pay에 사용되는 결제 수단 및 주소</translation>
@@ -738,6 +745,7 @@
 <translation id="563324245173044180">사기성 콘텐츠 차단됨</translation>
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5675650730144413517">페이지가 작동하지 않습니다.</translation>
+<translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5685654322157854305">배송지 주소 추가</translation>
 <translation id="5689199277474810259">JSON 형식으로 내보내기</translation>
 <translation id="5689516760719285838">위치</translation>
@@ -769,10 +777,10 @@
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
 <translation id="5887400589839399685">저장된 카드</translation>
+<translation id="5893718151540690985">네트워크 유형과 하드웨어 주소를 포함한 네트워크 인터페이스 목록을 보고합니다.</translation>
 <translation id="5893752035575986141">신용카드를 사용할 수 있습니다.</translation>
 <translation id="5901630391730855834">노란색</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />(동기화됨)</translation>
-<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1개 사용 중}other{#개 사용 중}}</translation>
 <translation id="5921639886840618607">카드를 Google 계정에 저장하시겠습니까?</translation>
 <translation id="5922853866070715753">거의 완료되었습니다</translation>
 <translation id="5932224571077948991">사이트에서 방해가 되거나 사용자를 현혹하는 광고를 표시함</translation>
@@ -782,6 +790,7 @@
 <translation id="5967592137238574583">연락처 정보 수정</translation>
 <translation id="5967867314010545767">기록에서 삭제</translation>
 <translation id="5975083100439434680">축소</translation>
+<translation id="5977489021191000276">내 기기는 관리자에 의해 관리되지 않습니다.</translation>
 <translation id="5977976211062815271">이 기기에서</translation>
 <translation id="598637245381783098">결제 앱을 열 수 없습니다.</translation>
 <translation id="5989320800837274978">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되지 않았습니다.</translation>
@@ -793,6 +802,7 @@
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />에 있는 공격자는 다른 앱인 것처럼 가장하거나 사용자를 추적하는 데 사용될 수 있는 데이터를 수집하는 사기성 앱을 설치할 수도 있습니다. <ph name="BEGIN_LEARN_MORE_LINK" />자세히 알아보기<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" />(동기화됨)</translation>
 <translation id="6027201098523975773">이름을 입력하세요.</translation>
+<translation id="6033927989869462158">CPU/RAM 사용 등의 하드웨어 통계를 보고합니다.</translation>
 <translation id="6034000775414344507">연한 회색</translation>
 <translation id="6039846035001940113">문제가 계속되면 사이트 소유자에게 문의하세요.</translation>
 <translation id="6040143037577758943">닫기</translation>
@@ -905,6 +915,8 @@
 <translation id="6897140037006041989">사용자 에이전트</translation>
 <translation id="6903319715792422884">일부 <ph name="BEGIN_WHITEPAPER_LINK" />시스템 정보와 페이지 콘텐츠를<ph name="END_WHITEPAPER_LINK" /> Google로 전송하여 세이프 브라우징을 개선하도록 도와주세요. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">사용자:</translation>
+<translation id="6934672428414710184">Google 계정에 등록된 이름입니다.</translation>
+<translation id="6939583532829045966"><ph name="ENROLLMENT_DOMAIN" />에서 내 기기를 관리합니다. 이는 관리자가 내 기기를 원격으로 구성할 수 있음을 의미합니다.</translation>
 <translation id="6944692733090228304"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />에서 관리하지 않는 사이트에 비밀번호를 입력했습니다. 계정을 안전하게 보호하려면 다른 앱과 사이트에서 동일한 비밀번호를 재사용하지 마세요.</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6948701128805548767">수령 방법과 요구사항을 확인하려면 주소를 선택하세요.</translation>
@@ -991,6 +1003,7 @@
       &lt;li&gt;&lt;strong&gt;서비스 상태&lt;/strong&gt;에서 &lt;strong&gt;중지&lt;/strong&gt;를 클릭합니다.
       &lt;li&gt;&lt;strong&gt;적용&lt;/strong&gt;을 클릭한 다음 &lt;strong&gt;확인&lt;/strong&gt;을 클릭합니다.
       &lt;li&gt;&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome 고객센터&lt;/a&gt;를 방문하여 컴퓨터에서 소프트웨어를 영구적으로 삭제하는 방법을 알아보세요.      &lt;/ol&gt;</translation>
+<translation id="7413422570546054399"><ph name="PRODUCT_NAME" /> 관리</translation>
 <translation id="7416351320495623771">비밀번호 관리...</translation>
 <translation id="7419106976560586862">프로필 경로</translation>
 <translation id="7437289804838430631">연락처 정보 추가</translation>
@@ -999,10 +1012,12 @@
 <translation id="7442725080345379071">연한 주황색</translation>
 <translation id="7444046173054089907">차단된 사이트</translation>
 <translation id="7445762425076701745">연결하려는 서버 ID를 확인할 수 없습니다. 외부 인증 기관에서 소유권을 확인할 수 없으므로 네트워크에서 유효한 이름을 사용하여 서버에 연결됩니다. 일부 인증 기관에서는 이러한 이름에 대해 관계없이 인증서를 발급하기 때문에 공격자가 아니라 의도한 웹사이트에 연결되어 있는지 확인할 수 없습니다.</translation>
+<translation id="7449109375006139765">시스템 로그를 관리 서버로 전송합니다.</translation>
 <translation id="7451311239929941790">이 문제를 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7455133967321480974">전체 기본값 사용(차단)</translation>
 <translation id="7460618730930299168">선택한 영화와 상영 영화가 다릅니다. 계속하시겠습니까?</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
+<translation id="7475525192983021547">사용자가 기기를 사용한 시간을 보고합니다.</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="7508255263130623398">반환된 정책 기기 ID가 비었거나 현재 기기 ID와 일치하지 않음</translation>
@@ -1095,6 +1110,7 @@
 <translation id="7995512525968007366">지정되지 않음</translation>
 <translation id="800218591365569300">다른 탭이나 프로그램을 종료하여 메모리를 확보하세요.</translation>
 <translation id="8009225694047762179">비밀번호 관리</translation>
+<translation id="8012116502927253373">{NUM_CARDS,plural, =1{이 카드와 청구서 수신 주소가 저장됩니다. <ph name="USER_EMAIL" /> 계정으로 로그인하면 카드를 사용할 수 있습니다.}other{이 카드와 청구서 수신 주소가 저장됩니다. <ph name="USER_EMAIL" /> 계정으로 로그인하면 카드를 사용할 수 있습니다.}}</translation>
 <translation id="8012647001091218357">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8025119109950072390">이 사이트의 공격자가 소프트웨어를 설치하거나 개인정보(예: 비밀번호, 전화번호, 신용카드)를 공개하는 등의 위험한 행동을 하도록 사용자를 속일 수 있습니다.</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
@@ -1105,6 +1121,7 @@
 <translation id="8041940743680923270">전체 기본값 사용(요청)</translation>
 <translation id="8042918947222776840">수령 방법 선택</translation>
 <translation id="8057711352706143257">'<ph name="SOFTWARE_NAME" />이(가) 올바르게 설정되지 않았습니다. 일반적으로 '<ph name="SOFTWARE_NAME" />'을(를) 제거하면 문제가 해결됩니다. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8068418091938640101">기기가 다음과 같이 구성되었습니다.</translation>
 <translation id="8078141288243656252">회전 시 주석을 달 수 없습니다.</translation>
 <translation id="8079031581361219619">사이트를 새로고침하시겠습니까?</translation>
 <translation id="8088680233425245692">글을 조회하지 못했습니다.</translation>
@@ -1155,6 +1172,7 @@
 <translation id="8363502534493474904">비행기 모드 사용 중지</translation>
 <translation id="8364627913115013041">설정 안됨</translation>
 <translation id="8368476060205742148">Google Play 서비스</translation>
+<translation id="8371889962595521444">맞춤 루트 인증서</translation>
 <translation id="8380941800586852976">위험</translation>
 <translation id="8381674639488873545">이러한 청구는 일회성이거나 반복적일 수 있으며 명확하지 않을 수도 있습니다. <ph name="BEGIN_LINK" />사이트 표시하기<ph name="END_LINK" /></translation>
 <translation id="8382348898565613901">최근에 방문한 북마크가 여기에 표시됩니다.</translation>
@@ -1164,6 +1182,7 @@
 <translation id="8416694386774425977">네트워크 설정이 잘못되어 가져올 수 없습니다.
 추가 세부정보:
 <ph name="DEBUG_INFO" /></translation>
+<translation id="8422642323886341533"><ph name="ENROLLMENT_DOMAIN" />에서 관리하는 기기</translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8425213833346101688">변경</translation>
 <translation id="8428213095426709021">설정</translation>
@@ -1224,6 +1243,7 @@
 <translation id="8932102934695377596">시간이 너무 먼 과거로 설정되어 있습니다.</translation>
 <translation id="893332455753468063">이름 추가</translation>
 <translation id="8938939909778640821">사용 가능한 신용카드 및 선불카드</translation>
+<translation id="894185898663964645">관리자가 맞춤 루트 인증서를 구성했으며, 이로 인해 관리자가 내가 방문하는 웹사이트의 콘텐츠를 볼 수 있습니다.</translation>
 <translation id="8943282376843390568">라임색</translation>
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
 <translation id="8968766641738584599">카드 저장</translation>

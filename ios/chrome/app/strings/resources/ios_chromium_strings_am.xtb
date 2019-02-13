@@ -4,7 +4,6 @@
 <translation id="102360288709523007">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromiumን የተሻለ ለማድረግ ያግዙ።</translation>
 <translation id="1185134272377778587">ስለChromium</translation>
 <translation id="1289966288285062467">የChromium ግላዊነት ማስታወቂያ</translation>
-<translation id="1341317949260424055">የሥርዓት እና አጠቃቀም ውሂብን ወደ Google በመላክ Chromiumን እና ደህንነቱን ያሻሽሉ</translation>
 <translation id="1472013873724362412">የእርስዎ መለያ በChromium ላይ አይሠራም። እባክዎ የእርስዎን የጎራ አስተዳዳሪ ያነጋግሩ ወይም ለመግባት መደበኛ Google መለያ ይጠቀሙ።</translation>
 <translation id="1736662517232558588">የChromium ውሂብ ጸድቷል</translation>
 <translation id="1838412507805038478">Chromium የዚህ ድር ጣቢያ እውቅና ማረጋገጫ ያወጣው <ph name="ISSUER" /> መሆኑን አረጋግጧል።</translation>
@@ -13,8 +12,8 @@
 <translation id="2168108852149185974">አንዳንድ ተጨማሪዎች Chromium እንዲበላሽ ያደርጋሉ። እባክዎ የሚከተለውን ያራግፉ፦</translation>
 <translation id="2178608107313874732">Chromium አሁን ካሜራዎን መጠቀም አይችልም</translation>
 <translation id="2195025571279539885">Chromium በሚቀጥለው ጊዜ ከዚህ ጣቢያ የመጡ የ<ph name="LANGUAGE_NAME" /> ገጾችን እንዲተረጎምልዎ ይፈልጋሉ?</translation>
+<translation id="2517624234762908348">የChromium ውሂብዎን ያሳምሩ</translation>
 <translation id="2647554856022461007">Chromium የአሰሳ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል። እነዚህን አገልግሎቶች በአማራጭነት ሊያሰናክሏቸው ይችላሉ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">የGoogle ዘመናዊ ነገሮችን በChromium ውስጥ ያግኙ</translation>
 <translation id="2730884209570016437">ሌላ መተግበሪያ ካሜራዎን እየተጠቀመበት ስለሆነ Chromium ካሜራዎን መጠቀም አይችልም</translation>
 <translation id="2915596697727466327">Chromium ወደ የእርስዎ የይለፍ ቃላት መዳረሻ መፈቀዱን ለማረጋገጥ የመልክ መታወቂያን ይጠቀማል።</translation>
 <translation id="3256316712990552818">ወደ Chromium ተቀድቷል</translation>
@@ -50,7 +49,6 @@
 <translation id="8073677936375100957">የChromium ውሂብዎ ከዚህ መሣሪያ ላይ ይጽዳ?</translation>
 <translation id="8175055321229419309">ጠቃሚ ምክር፦ <ph name="BEGIN_LINK" />Chromiumን ወደ የእርስዎ መትከያ ይውሰዱት<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">በአካባቢዎ ላይ በመመስረት በChromium ውስጥ የተሻለ የGoogle ተሞክሮ ያግኙ።</translation>
-<translation id="8508544542427105412"><ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" />ን በማንኛውም ጊዜ ማበጀት ይችላሉ። Chromiumን እና እንደ ትርጉም፣ ፍለጋ እና ማስታወቂያዎች ያሉ ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ Google እርስዎ በሚጎበኟቸው ጣቢያዎች ላይ ያለ ይዘትን እና የአሰሳ እንቅስቃሴ ሊጠቀም ይችላል።</translation>
 <translation id="8586442755830160949">የቅጂ መብት <ph name="YEAR" /> የChromium ደራሲያን። ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="8809780021347235332">ምስሎችን ለማስቀመጥ Chromium የእርስዎን ፎቶዎች መጠቀም እንዲችል በቅንብሮች ላይ መታ ያድርጉ።</translation>
 <translation id="9022552996538154597">Chromium ውስጥ ይግቡ</translation>

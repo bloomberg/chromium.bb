@@ -5,6 +5,7 @@
 <translation id="1047726139967079566">Agregar esta página a favoritos...</translation>
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="1063454504051558093">Usar otra contraseña…</translation>
+<translation id="1066060668811609597">Administrar la sincronización</translation>
 <translation id="1076421457278169141">Código escaneado</translation>
 <translation id="1084365883616172403">Entrada de Facebook publicada</translation>
 <translation id="1104948393051856124">Aceptar y continuar</translation>
@@ -19,6 +20,7 @@
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="1219674500290482172">No se puede establecer conexión con Internet.</translation>
 <translation id="122699739164161391">Cerrar todas las pestañas</translation>
+<translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1265739287306757398">Más información</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
@@ -77,6 +79,7 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
 <translation id="213900355088104901">Para navegar de forma privada, abre una pestaña de incógnito</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
+<translation id="2198757192731523470">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artículos sin leer en tu lista de lectura</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
@@ -255,6 +258,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5062321486222145940">Instalar Google Drive</translation>
 <translation id="5083464117946352670">Tamaño de archivo desconocido</translation>
 <translation id="5094827893301452931">Tweet publicado</translation>
+<translation id="5132942445612118989">Sincroniza tus contraseñas, historial y más en todos los dispositivos</translation>
 <translation id="5181140330217080051">Descargando...</translation>
 <translation id="5186185447130319458">Privado</translation>
 <translation id="5190835502935405962">Barra de favoritos</translation>

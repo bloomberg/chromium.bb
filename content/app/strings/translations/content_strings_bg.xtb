@@ -72,11 +72,9 @@
 <translation id="3450233048674729344">Стойността трябва да е по-малка или равна на <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниция</translation>
 <translation id="3557673793733683882">заглавие от ниво <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">брой оставащи секунди от филма</translation>
 <translation id="3706100364254443312">превключвател</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> ГБ</translation>
-<translation id="3785482301506746191">времеви плъзгач за филма</translation>
 <translation id="3808586225841795776">термин</translation>
 <translation id="3822383571486410024">Моля, удължете този текст поне до <ph name="MIN_CHARACTERS" /> знака (понастоящем използвате <ph name="CURRENT_LENGTH" />).</translation>
 <translation id="383465348367842624">Текстът преди „<ph name="ATSIGN" />“ не бива да съдържа символа „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -97,6 +95,7 @@
 <translation id="4413860115965805769">бутон за меню</translation>
 <translation id="4446524499724042288">препратка към определение в терминологичния речник</translation>
 <translation id="4522570452068850558">Подробности</translation>
+<translation id="4542388879936266156">оставащо време: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">формуляр</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Текстът след „<ph name="ATSIGN" />“ не бива да съдържа символа „<ph name="INVALIDCHARACTER" />“.</translation>
@@ -200,6 +199,7 @@
 <translation id="8199524924445686405">гггг</translation>
 <translation id="8284326494547611709">Надписи</translation>
 <translation id="835897206747267392">Невалидна стойност.</translation>
+<translation id="8403857369060869934">изминало време: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">част</translation>
 <translation id="8433900881053900389">лента с инструменти</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> файла</translation>

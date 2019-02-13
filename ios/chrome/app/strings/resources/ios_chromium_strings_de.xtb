@@ -4,7 +4,6 @@
 <translation id="102360288709523007">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chromium an Google senden.</translation>
 <translation id="1185134272377778587">Über Chromium</translation>
 <translation id="1289966288285062467">Chromium-Datenschutzhinweise</translation>
-<translation id="1341317949260424055">Verbessern Sie Chromium und die Sicherheit, indem Sie System- und Nutzungsdaten an Google senden</translation>
 <translation id="1472013873724362412">Dieses Konto funktioniert in Chromium nicht. Wenden Sie sich an Ihren Domainadministrator oder melden Sie sich mit einem Google-Standardkonto an.</translation>
 <translation id="1736662517232558588">Chromium-Daten gelöscht</translation>
 <translation id="1838412507805038478">Chromium hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat.</translation>
@@ -13,8 +12,8 @@
 <translation id="2168108852149185974">Einige Add-ons führen zum Ausfall von Chromium. Bitte deinstallieren Sie:</translation>
 <translation id="2178608107313874732">Chromium kann gerade nicht auf die Kamera zugreifen</translation>
 <translation id="2195025571279539885">Soll Chromium beim nächsten Mal eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE_NAME" /> sind?</translation>
+<translation id="2517624234762908348">Chromium-Daten synchronisieren</translation>
 <translation id="2647554856022461007">Chromium verwendet möglicherweise Webdienste zur Verbesserung Ihrer Nutzererfahrung beim Surfen im Internet. Sie haben die Möglichkeit, diese Dienste zu deaktivieren. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
-<translation id="2687023731466035790">Chromium intelligent nutzen mit Google</translation>
 <translation id="2730884209570016437">Chromium kann nicht auf die Kamera zugreifen, da diese gerade von einer anderen App verwendet wird</translation>
 <translation id="2915596697727466327">Chromium verwendet Face ID, um den autorisierten Zugriff auf Ihre Passwörter zu gewährleisten.</translation>
 <translation id="3256316712990552818">In Chromium kopiert</translation>
@@ -50,7 +49,6 @@
 <translation id="8073677936375100957">Ihre Chromium-Daten von diesem Gerät löschen?</translation>
 <translation id="8175055321229419309">Tipp: <ph name="BEGIN_LINK" />Ziehen Sie Chromium in Ihr Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Geben Sie Ihren Standort an, um Google über Chromium noch besser nutzen zu können.</translation>
-<translation id="8508544542427105412">Die <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> können jederzeit angepasst werden. Google kann die Inhalte der von Ihnen besuchten Websites, Browserinteraktionen und Browseraktivitäten nutzen, um Chromium und andere Google-Dienste wie Übersetzer, die Google-Suche und Werbung zu personalisieren.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8809780021347235332">Speichern Sie Bilder, indem Sie auf "Einstellungen" tippen und zulassen, dass Ihre Fotos in Chromium verwendet werden</translation>
 <translation id="9022552996538154597">In Chromium anmelden</translation>
