@@ -221,6 +221,9 @@ interface LoginScreen {
   // Sets whether parent access button can be shown on the login shelf.
   SetShowParentAccessButton(bool show);
 
+  // Sets whether parent access code input dialog is shown on the lock screen.
+  SetShowParentAccessDialog(bool show);
+
   // Transitions focus to the shelf area. If |reverse|, focuses the status area.
   FocusLoginShelf(bool reverse);
 };

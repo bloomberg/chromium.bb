@@ -489,6 +489,9 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       Shell::Get()->login_screen_controller()->ShowGaiaSignin(
           true /*can_close*/, base::nullopt /*prefilled_account*/);
       break;
+    case kParentAccess:
+      Shell::Get()->login_screen_controller()->SetShowParentAccessDialog(true);
+      break;
     default:
       NOTREACHED();
   }

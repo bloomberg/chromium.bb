@@ -122,6 +122,9 @@ class ASH_EXPORT LoginDataDispatcher {
     // base is attached or detached.
     virtual void OnDetachableBasePairingStatusChanged(
         DetachableBasePairingStatus pairing_status);
+
+    // Called when parent access code input dialog visibility should change.
+    virtual void OnSetShowParentAccessDialog(bool show);
   };
 
   LoginDataDispatcher();
@@ -164,6 +167,7 @@ class ASH_EXPORT LoginDataDispatcher {
       bool show_full_management_disclosure);
   void SetDetachableBasePairingStatus(
       DetachableBasePairingStatus pairing_status);
+  void SetShowParentAccessDialog(bool show);
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

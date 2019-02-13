@@ -25,6 +25,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "keyboard.icon",
     "lock_screen_alert.icon",
     "lock_screen_arrow.icon",
+    "lock_screen_arrow_back.icon",
     "lock_screen_backspace.icon",
     "lock_screen_caps_lock.icon",
     "lock_screen_dropdown.icon",

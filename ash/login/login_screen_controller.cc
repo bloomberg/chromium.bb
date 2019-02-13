@@ -512,6 +512,11 @@ void LoginScreenController::SetShowParentAccessButton(bool show) {
       ->SetShowParentAccessButton(show);
 }
 
+void LoginScreenController::SetShowParentAccessDialog(bool show) {
+  if (DataDispatcher())
+    DataDispatcher()->SetShowParentAccessDialog(show);
+}
+
 void LoginScreenController::FocusLoginShelf(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow());
   // Tell the focus direction to the status area or the shelf so they can focus

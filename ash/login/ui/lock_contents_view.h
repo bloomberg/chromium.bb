@@ -181,6 +181,7 @@ class ASH_EXPORT LockContentsView
       bool show_full_management_disclosure) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
+  void OnSetShowParentAccessDialog(bool show) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -304,6 +305,9 @@ class ASH_EXPORT LockContentsView
   void OnEasyUnlockIconHovered();
   // Called when the easy unlock icon is tapped.
   void OnEasyUnlockIconTapped();
+
+  // Called when parent access code was submitted by user.
+  void OnParentAccessCodeSubmitted(const std::string& code);
 
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
