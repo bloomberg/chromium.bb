@@ -159,6 +159,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
+  NGContainerFragmentBuilder& SetHasBlockFragmentation() {
+    has_block_fragmentation_ = true;
+    return *this;
+  }
+
 #ifndef NDEBUG
   String ToString() const;
 #endif
@@ -230,6 +235,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   bool has_orthogonal_flow_roots_ = false;
   bool has_depends_on_percentage_block_size_child_ = false;
+  bool has_block_fragmentation_ = false;
 };
 
 }  // namespace blink

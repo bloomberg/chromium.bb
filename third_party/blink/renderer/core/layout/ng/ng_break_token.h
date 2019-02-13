@@ -100,7 +100,7 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   unsigned has_last_resort_break_ : 1;
 };
 
-typedef Vector<scoped_refptr<NGBreakToken>, 16> NGBreakTokenVector;
+typedef Vector<scoped_refptr<NGBreakToken>> NGBreakTokenVector;
 
 }  // namespace blink
 
