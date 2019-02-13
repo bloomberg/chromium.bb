@@ -14,6 +14,7 @@ namespace ash {
 class FeaturePodButton;
 class FeaturePodsContainerView;
 class TopShortcutsView;
+class NotificationHiddenView;
 class UnifiedMessageCenterView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
@@ -110,6 +111,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   views::FocusTraversable* GetFocusTraversableParent() override;
   views::View* GetFocusTraversableParentView() override;
 
+  NotificationHiddenView* notification_hidden_view_for_testing() {
+    return notification_hidden_view_;
+  }
+
  private:
   class FocusSearch;
 
@@ -119,7 +124,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemTrayController* const controller_;
 
   // Owned by views hierarchy.
-  views::View* const notification_hidden_view_;
+  NotificationHiddenView* const notification_hidden_view_;
   TopShortcutsView* const top_shortcuts_view_;
   FeaturePodsContainerView* const feature_pods_container_;
   UnifiedSlidersContainerView* const sliders_container_;
