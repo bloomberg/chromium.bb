@@ -1227,6 +1227,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       Path to the snapshot root.
     """
     snapshot = self.CreateTempDir('%-snapshot' % os.path.basename(path))
+    osutils.EmptyDir(snapshot)
     osutils.CopyDirContents(path, snapshot)
     return snapshot
 
@@ -1521,6 +1522,27 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         capture_output=True)
 
     self.assertIn('ERROR: Branch old-branch exists', result.error)
+    self.AssertNoRemoteDiff()
+
+  def testCreateExistingVersion(self):
+    """Test create dies when given a version that was already branched."""
+    git.CreateBranch(self.manifest_internal_root, 'release-R12-3.B')
+    self.cros_internal_snapshot = self.Snapshot(self.cros_internal_root)
+
+    result = cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'create',
+         '--file', self.full_manifest_path,
+         '--stabilize'],
+        input='yes',
+        error_code_ok=True,
+        capture_output=True)
+
+    self.assertIn('Already branched 3.0.0.', result.error)
     self.AssertNoRemoteDiff()
 
   def testRename(self):

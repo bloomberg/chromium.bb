@@ -778,30 +778,30 @@ Delete Examples:
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
-
-      # Handle sync and perform validations.
+      # Handle sync. Unfortunately, we cannot validate until we have a copy of
+      # chromeos_version.sh.
       if self.options.file:
         checkout.SyncFile(self.options.file)
-      else:
-        # First, check that the version is valid.
-        vinfo = manifest_version.VersionInfo(
-            version_string=self.options.version)
-        if int(vinfo.patch_number):
-          raise BranchError('Cannot branch version with nonzero patch number.')
-
-        # Second, check that we did not already branch from this version.
-        # manifest-internal serves as the sentinel project.
-        manifest_internal = checkout.manifest.GetUniqueProject(
-            'chromeos/manifest-internal')
-        pattern = '.*-%s\\.B$' % '\\.'.join(
-            str(comp) for comp in vinfo.VersionComponents() if comp)
-        if checkout.BranchExists(manifest_internal, pattern) and not force:
-          raise BranchError(
-              'Already branched %s. Please rerun with --force if you wish to '
-              'proceed' % self.options.version)
-
-        # Good to sync.
+      elif self.options.version.strip().endswith('0'):
         checkout.SyncVersion(self.options.version)
+      else:
+        raise BranchError('Cannot branch version from nonzero patch number.')
+
+      # First, double check that the checkout has a zero patch number.
+      vinfo = checkout.ReadVersion()
+      if int(vinfo.patch_number):
+        raise BranchError('Cannot branch version with nonzero patch number.')
+
+      # Second, check that we did not already branch from this version.
+      # manifest-internal serves as the sentinel project.
+      manifest_internal = checkout.manifest.GetUniqueProject(
+          'chromeos/manifest-internal')
+      pattern = '.*-%s\\.B$' % '\\.'.join(
+          str(comp) for comp in vinfo.VersionComponents() if comp)
+      if checkout.BranchExists(manifest_internal, pattern) and not force:
+        raise BranchError(
+            'Already branched %s. Please rerun with --force if you wish to '
+            'proceed.' % vinfo.VersionString())
 
       # Determine what kind of branch we will create. If we generated the branch
       # name, confirm with the user that it is what they wanted.
