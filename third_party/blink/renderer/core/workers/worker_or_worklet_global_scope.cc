@@ -127,21 +127,20 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::EnsureFetcher() {
   if (inside_settings_resource_fetcher_)
     return inside_settings_resource_fetcher_;
   inside_settings_resource_fetcher_ = CreateFetcherInternal(
-      MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this));
+      *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*this));
   return inside_settings_resource_fetcher_;
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
-    FetchClientSettingsObject* fetch_client_settings_object) {
+    const FetchClientSettingsObject& fetch_client_settings_object) {
   DCHECK(IsContextThread());
-  DCHECK(fetch_client_settings_object);
   InitializeWebFetchContextIfNeeded();
   ResourceFetcherProperties* properties = nullptr;
   FetchContext* context = nullptr;
   ResourceFetcher::LoaderFactory* loader_factory = nullptr;
   if (web_worker_fetch_context_) {
     properties = MakeGarbageCollected<WorkerResourceFetcherProperties>(
-        *this, *fetch_client_settings_object, web_worker_fetch_context_);
+        *this, fetch_client_settings_object, web_worker_fetch_context_);
     context = MakeGarbageCollected<WorkerFetchContext>(
         *this, web_worker_fetch_context_, subresource_filter_);
     loader_factory = MakeGarbageCollected<LoaderFactoryForWorker>(
@@ -168,7 +167,7 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::Fetcher() const {
 }
 
 ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
-    FetchClientSettingsObject* fetch_client_settings_object) {
+    const FetchClientSettingsObject& fetch_client_settings_object) {
   DCHECK(IsContextThread());
   return CreateFetcherInternal(fetch_client_settings_object);
 }
@@ -239,7 +238,7 @@ void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     mojom::RequestContextType destination,
     network::mojom::FetchCredentialsMode credentials_mode,
     ModuleScriptCustomFetchType custom_fetch_type,

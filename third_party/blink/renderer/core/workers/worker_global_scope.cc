@@ -358,7 +358,7 @@ void WorkerGlobalScope::EvaluateClassicScript(
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void WorkerGlobalScope::ImportClassicScript(
     const KURL& script_url,
-    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(
              features::kOffMainThreadDedicatedWorkerScriptFetch) ||

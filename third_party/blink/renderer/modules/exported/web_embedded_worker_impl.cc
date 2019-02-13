@@ -495,7 +495,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     network::mojom::FetchCredentialsMode credentials_mode =
         network::mojom::FetchCredentialsMode::kOmit;
     worker_thread_->ImportModuleScript(worker_start_data_.script_url,
-                                       outside_settings_object,
+                                       *outside_settings_object,
                                        credentials_mode);
   }
 }

@@ -116,14 +116,14 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // Called on the main thread after Start().
   void ImportClassicScript(
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to import a top-level module script on the worker thread.
   // Called on the main thread after Start().
   void ImportModuleScript(
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate

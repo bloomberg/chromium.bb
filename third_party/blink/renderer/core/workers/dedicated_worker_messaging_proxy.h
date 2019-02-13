@@ -39,7 +39,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
       std::unique_ptr<GlobalScopeCreationParams>,
       const WorkerOptions*,
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId&,
       const String& source_code);
   void PostMessageToWorkerGlobalScope(BlinkTransferableMessage);

@@ -150,12 +150,12 @@ class CORE_EXPORT WorkerGlobalScope
                              const v8_inspector::V8StackTraceId& stack_id);
   void ImportClassicScript(
       const KURL& script_url,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       const v8_inspector::V8StackTraceId& stack_id);
   // Imports the top-level module script for |module_url_record|.
   virtual void ImportModuleScript(
       const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) = 0;
 
   void ReceiveMessage(BlinkTransferableMessage);

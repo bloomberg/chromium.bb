@@ -166,7 +166,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // TODO(nhiroki): Queue a task instead of executing this here.
   for (const auto& proxy : proxies_) {
     proxy->FetchAndInvokeScript(module_url_record, credentials_mode,
-                                outside_settings_object,
+                                *outside_settings_object,
                                 outside_settings_task_runner, pending_tasks);
   }
 }

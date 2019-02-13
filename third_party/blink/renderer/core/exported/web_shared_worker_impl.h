@@ -128,7 +128,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       std::unique_ptr<GlobalScopeCreationParams>,
       const KURL& script_response_url,
       const String& source_code,
-      FetchClientSettingsObjectSnapshot* outside_settings_object);
+      const FetchClientSettingsObjectSnapshot& outside_settings_object);
   WorkerClients* CreateWorkerClients();
 
   void ConnectTaskOnWorkerThread(MessagePortChannel);
