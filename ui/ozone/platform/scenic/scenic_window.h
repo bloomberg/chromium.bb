@@ -5,10 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 
-#include <fuchsia/ui/input/cpp/fidl.h>
+#include <fuchsia/ui/viewsv1/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/resources.h>
 #include <lib/ui/scenic/cpp/session.h>
-#include <lib/zx/eventpair.h>
 #include <string>
 #include <vector>
 
@@ -28,6 +27,7 @@ class ScenicWindowManager;
 class PlatformWindowDelegate;
 
 class OZONE_EXPORT ScenicWindow : public PlatformWindow,
+                                  public fuchsia::ui::viewsv1::ViewListener,
                                   public InputEventDispatcherDelegate {
  public:
   // Both |window_manager| and |delegate| must outlive the ScenicWindow.
@@ -65,19 +65,20 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   gfx::Rect GetRestoredBoundsInPixels() const override;
 
  private:
+  // views::ViewListener interface.
+  void OnPropertiesChanged(fuchsia::ui::viewsv1::ViewProperties properties,
+                           OnPropertiesChangedCallback callback) override;
+
   // Callbacks for |scenic_session_|.
   void OnScenicError(zx_status_t status);
   void OnScenicEvents(std::vector<fuchsia::ui::scenic::Event> events);
 
-  // Called from OnScenicEvents() to handle view properties and metrics changes.
-  void OnViewProperties(const fuchsia::ui::gfx::ViewProperties& properties);
-  void OnViewMetrics(const fuchsia::ui::gfx::Metrics& metrics);
-
-  // Called from OnScenicEvents() to handle input events.
-  void OnInputEvent(const fuchsia::ui::input::InputEvent& event);
-
   // InputEventDispatcher::Delegate interface.
   void DispatchEvent(ui::Event* event) override;
+
+  // Error handler for |view_|. This error normally indicates the View was
+  // destroyed (e.g. dropping ViewOwner).
+  void OnViewError(zx_status_t status);
 
   void UpdateSize();
 
@@ -88,13 +89,17 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   // Dispatches Scenic input events as Chrome ui::Events.
   InputEventDispatcher event_dispatcher_;
 
+  // Underlying View in the view_manager.
+  fuchsia::ui::viewsv1::ViewPtr view_;
+  fidl::Binding<fuchsia::ui::viewsv1::ViewListener> view_listener_binding_;
+
   // Scenic session used for all drawing operations in this View.
   scenic::Session scenic_session_;
 
-  // The view resource in |scenic_session_|.
-  scenic::View view_;
+  // Node in |scenic_session_| for the parent view.
+  scenic::ImportNode parent_node_;
 
-  // Entity node for the |view_|.
+  // Node in |scenic_session_| for the parent view.
   scenic::EntityNode node_;
 
   // Node in |scenic_session_| for receiving input that hits within our View.
