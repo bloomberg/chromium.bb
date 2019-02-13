@@ -5,8 +5,11 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
@@ -18,6 +21,7 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ProtocolErrorClientAction;
 import org.chromium.components.sync.StopSource;
+import org.chromium.ui.UiUtils;
 
 /**
  * Helper methods for sync preferences.
@@ -93,13 +97,34 @@ public class SyncPreferenceUtils {
             if (profileSyncService.isPassphraseRequiredForDecryption()) {
                 return res.getString(R.string.sync_need_passphrase);
             }
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+                return context.getString(R.string.sync_and_services_summary_sync_on);
+            }
             return context.getString(R.string.account_management_sync_summary, accountName);
         }
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            return context.getString(R.string.account_management_sync_off_summary, accountName);
-        }
         return context.getString(R.string.sync_is_disabled);
+    }
+
+    /**
+     * Returns an icon that represents the current sync state.
+     */
+    public static @Nullable Drawable getSyncStatusIcon(Context context) {
+        if (!ChromeSigninController.get().isSignedIn()) return null;
+
+        ProfileSyncService profileSyncService = ProfileSyncService.get();
+        if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
+            return UiUtils.getTintedDrawable(
+                    context, R.drawable.ic_sync_green_40dp, R.color.modern_grey_700);
+        }
+
+        if (profileSyncService.isEngineInitialized()
+                && (profileSyncService.hasUnrecoverableError()
+                        || profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE
+                        || profileSyncService.isPassphraseRequiredForDecryption())) {
+            return AppCompatResources.getDrawable(context, R.drawable.ic_sync_error_40dp);
+        }
+
+        return AppCompatResources.getDrawable(context, R.drawable.ic_sync_green_40dp);
     }
 
     /**

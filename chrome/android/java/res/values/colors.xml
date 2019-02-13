@@ -49,6 +49,7 @@
 
     <!-- TODO(https://crbug.com/919835): Clarify whether these colors can be reused. -->
     <color name="google_green_600">#1E8E3E</color>
+    <color name="google_red_600">#D93025</color>
     <color name="google_yellow_600">#F9AB00</color>
 
     <!-- Infobar colors -->

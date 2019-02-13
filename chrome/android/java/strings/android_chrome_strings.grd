@@ -327,6 +327,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SIGNIN_PREF_SUMMARY" desc="Summary for the entry in Settings to sign in to Chrome, explaining benefits of signing in.">
         Sync and personalize across devices
       </message>
+      <message name="IDS_SYNC_AND_SERVICES_SUMMARY_SYNC_ON" desc="Summary for 'Sync and Google services' preference row when sync is enabled.">
+        Sync is on
+      </message>
       <message name="IDS_SIGN_IN_TO_CHROME_DISABLED_SUMMARY" desc="A descriptive line of text that appears under the 'Sign in to Chrome' option, in Chrome Settings on Android. The text explains why 'Sign in to Chrome' is disabled. 'Administrator' refers to the IT administrator of the company/organization that owns the user’s device.">
           Disabled by the administrator of this device
       </message>
@@ -1486,9 +1489,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_SUMMARY" desc="Description for which account the data is being synced to">
         Syncing to <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
-      </message>
-      <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_OFF_SUMMARY" desc="Description for Chrome Sync status when Chrome Sync is disabled">
-        Sync off for <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_SIGN_OUT" desc="Button text for signing out of Chrome">
         Sign out of Chrome
