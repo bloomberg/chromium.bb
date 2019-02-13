@@ -60,9 +60,10 @@ base::string16 AccessibilityTreeFormatter::DumpAccessibilityTreeFromManager(
   else
     formatter = Create();
   base::string16 accessibility_contents_utf16;
-  std::vector<Filter> filters;
-  filters.push_back(Filter(base::ASCIIToUTF16("*"), Filter::ALLOW));
-  formatter->SetFilters(filters);
+  std::vector<PropertyFilter> property_filters;
+  property_filters.push_back(
+      PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
+  formatter->SetPropertyFilters(property_filters);
   formatter->FormatAccessibilityTree(ax_mgr->GetRoot(),
                                      &accessibility_contents_utf16);
   return accessibility_contents_utf16;
@@ -89,6 +90,11 @@ AccessibilityTreeFormatter::FilterAccessibilityTree(
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     const base::DictionaryValue& dict, base::string16* contents, int depth) {
+  // Check dictionary against node filters, may require us to skip this node
+  // and its children.
+  if (MatchesNodeFilters(dict))
+    return;
+
   base::string16 indent = base::string16(depth * kIndentSymbolCount,
                                          kIndentSymbol);
   base::string16 line = indent + ProcessTreeForOutput(dict);
@@ -115,27 +121,32 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
   }
 }
 
-void AccessibilityTreeFormatter::SetFilters(
-    const std::vector<Filter>& filters) {
-  filters_ = filters;
+void AccessibilityTreeFormatter::SetPropertyFilters(
+    const std::vector<PropertyFilter>& property_filters) {
+  property_filters_ = property_filters;
+}
+
+void AccessibilityTreeFormatter::SetNodeFilters(
+    const std::vector<NodeFilter>& node_filters) {
+  node_filters_ = node_filters;
 }
 
 // static
-bool AccessibilityTreeFormatter::MatchesFilters(
-    const std::vector<Filter>& filters,
+bool AccessibilityTreeFormatter::MatchesPropertyFilters(
+    const std::vector<PropertyFilter>& property_filters,
     const base::string16& text,
     bool default_result) {
   bool allow = default_result;
-  for (const auto& filter : filters) {
+  for (const auto& filter : property_filters) {
     if (base::MatchPattern(text, filter.match_str)) {
       switch (filter.type) {
-        case Filter::ALLOW_EMPTY:
+        case PropertyFilter::ALLOW_EMPTY:
           allow = true;
           break;
-        case Filter::ALLOW:
+        case PropertyFilter::ALLOW:
           allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
           break;
-        case Filter::DENY:
+        case PropertyFilter::DENY:
           allow = false;
           break;
       }
@@ -144,9 +155,30 @@ bool AccessibilityTreeFormatter::MatchesFilters(
   return allow;
 }
 
-bool AccessibilityTreeFormatter::MatchesFilters(
-    const base::string16& text, bool default_result) const {
-  return MatchesFilters(filters_, text, default_result);
+bool AccessibilityTreeFormatter::MatchesNodeFilters(
+    const std::vector<NodeFilter>& node_filters,
+    const base::DictionaryValue& dict) {
+  for (const auto& filter : node_filters) {
+    base::string16 value;
+    if (!dict.GetString(filter.property, &value)) {
+      continue;
+    }
+    if (base::MatchPattern(value, filter.pattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool AccessibilityTreeFormatter::MatchesPropertyFilters(
+    const base::string16& text,
+    bool default_result) const {
+  return MatchesPropertyFilters(property_filters_, text, default_result);
+}
+
+bool AccessibilityTreeFormatter::MatchesNodeFilters(
+    const base::DictionaryValue& dict) const {
+  return MatchesNodeFilters(node_filters_, dict);
 }
 
 base::string16 AccessibilityTreeFormatter::FormatCoordinates(
@@ -171,7 +203,7 @@ bool AccessibilityTreeFormatter::WriteAttribute(bool include_by_default,
                                                 base::string16* line) {
   if (attr.empty())
     return false;
-  if (!MatchesFilters(attr, include_by_default))
+  if (!MatchesPropertyFilters(attr, include_by_default))
     return false;
   if (!line->empty())
     *line += base::ASCIIToUTF16(" ");

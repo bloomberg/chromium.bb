@@ -150,8 +150,8 @@ base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
       AccessibilityTreeFormatter::Create());
   DCHECK(formatter);
   formatter->set_show_ids(true);
-  formatter->SetFilters({AccessibilityTreeFormatter::Filter(
-      L"*", AccessibilityTreeFormatter::Filter::ALLOW)});
+  formatter->SetPropertyFilters({AccessibilityTreeFormatter::PropertyFilter(
+      L"*", AccessibilityTreeFormatter::PropertyFilter::ALLOW)});
 
   base::string16 str;
   formatter->FormatAccessibilityTree(

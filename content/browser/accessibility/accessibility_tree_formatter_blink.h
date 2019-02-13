@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_BLINK_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
@@ -22,6 +23,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   uint32_t ChildCount(const BrowserAccessibility& node) const override;
   BrowserAccessibility* GetChild(const BrowserAccessibility& node,
                                  uint32_t i) const override;

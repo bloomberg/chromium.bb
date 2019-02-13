@@ -89,6 +89,7 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   void AddProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                      base::DictionaryValue* dict,
                      LONG root_x,
@@ -981,6 +982,10 @@ const std::string AccessibilityTreeFormatterWin::GetAllowString() {
 
 const std::string AccessibilityTreeFormatterWin::GetDenyString() {
   return "@WIN-DENY:";
+}
+
+const std::string AccessibilityTreeFormatterWin::GetDenyNodeString() {
+  return "@WIN-DENY-NODE:";
 }
 
 }  // namespace content

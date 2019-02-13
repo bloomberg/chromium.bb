@@ -18,6 +18,7 @@ class AccessibilityTreeFormatterStub
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
   base::string16 ProcessTreeForOutput(
@@ -67,6 +68,10 @@ const std::string AccessibilityTreeFormatterStub::GetAllowString() {
 }
 
 const std::string AccessibilityTreeFormatterStub::GetDenyString() {
+  return std::string();
+}
+
+const std::string AccessibilityTreeFormatterStub::GetDenyNodeString() {
   return std::string();
 }
 

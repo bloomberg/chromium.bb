@@ -79,9 +79,9 @@ AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
   Format(*formatter, *dict, filters_path, use_json);
 }
 
-std::vector<AccessibilityTreeFormatter::Filter> GetFilters(
+std::vector<AccessibilityTreeFormatter::PropertyFilter> GetPropertyFilters(
     const base::FilePath& filters_path) {
-  std::vector<AccessibilityTreeFormatter::Filter> filters;
+  std::vector<AccessibilityTreeFormatter::PropertyFilter> filters;
   if (!filters_path.empty()) {
     std::string raw_filters_text;
     base::ScopedAllowBlockingForTesting allow_io_for_test_setup;
@@ -91,26 +91,27 @@ std::vector<AccessibilityTreeFormatter::Filter> GetFilters(
                              base::SPLIT_WANT_ALL)) {
         if (base::StartsWith(line, kAllowOptEmptyStr,
                              base::CompareCase::SENSITIVE)) {
-          filters.push_back(AccessibilityTreeFormatter::Filter(
+          filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
               base::UTF8ToUTF16(line.substr(strlen(kAllowOptEmptyStr))),
-              AccessibilityTreeFormatter::Filter::ALLOW_EMPTY));
+              AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY));
         } else if (base::StartsWith(line, kAllowOptStr,
                                     base::CompareCase::SENSITIVE)) {
-          filters.push_back(AccessibilityTreeFormatter::Filter(
+          filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
               base::UTF8ToUTF16(line.substr(strlen(kAllowOptStr))),
-              AccessibilityTreeFormatter::Filter::ALLOW));
+              AccessibilityTreeFormatter::PropertyFilter::ALLOW));
         } else if (base::StartsWith(line, kDenyOptStr,
                                     base::CompareCase::SENSITIVE)) {
-          filters.push_back(AccessibilityTreeFormatter::Filter(
+          filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
               base::UTF8ToUTF16(line.substr(strlen(kDenyOptStr))),
-              AccessibilityTreeFormatter::Filter::DENY));
+              AccessibilityTreeFormatter::PropertyFilter::DENY));
         }
       }
     }
   }
   if (filters.empty()) {
-    filters = {AccessibilityTreeFormatter::Filter(
-        base::ASCIIToUTF16("*"), AccessibilityTreeFormatter::Filter::ALLOW)};
+    filters = {AccessibilityTreeFormatter::PropertyFilter(
+        base::ASCIIToUTF16("*"),
+        AccessibilityTreeFormatter::PropertyFilter::ALLOW)};
   }
 
   return filters;
@@ -120,11 +121,11 @@ void AXTreeServer::Format(AccessibilityTreeFormatter& formatter,
                           const base::DictionaryValue& dict,
                           const base::FilePath& filters_path,
                           bool use_json) {
-  std::vector<AccessibilityTreeFormatter::Filter> filters =
-      GetFilters(filters_path);
+  std::vector<AccessibilityTreeFormatter::PropertyFilter> filters =
+      GetPropertyFilters(filters_path);
 
   // Set filters.
-  formatter.SetFilters(filters);
+  formatter.SetPropertyFilters(filters);
 
   std::string accessibility_contents_utf8;
 

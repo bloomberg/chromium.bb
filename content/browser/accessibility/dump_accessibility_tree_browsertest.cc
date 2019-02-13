@@ -43,7 +43,7 @@
 
 namespace content {
 
-typedef AccessibilityTreeFormatter::Filter Filter;
+typedef AccessibilityTreeFormatter::PropertyFilter PropertyFilter;
 
 // See content/test/data/accessibility/readme.md for an overview.
 //
@@ -59,11 +59,13 @@ typedef AccessibilityTreeFormatter::Filter Filter;
 //    exactly match.
 class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
  public:
-  void AddDefaultFilters(std::vector<Filter>* filters) override;
-  void AddFilter(std::vector<Filter>* filters,
-                 std::string filter,
-                 Filter::Type type = Filter::ALLOW) {
-    filters->push_back(Filter(base::ASCIIToUTF16(filter), type));
+  void AddDefaultFilters(
+      std::vector<PropertyFilter>* property_filters) override;
+  void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
+                         std::string filter,
+                         PropertyFilter::Type type = PropertyFilter::ALLOW) {
+    property_filters->push_back(
+        PropertyFilter(base::ASCIIToUTF16(filter), type));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -130,7 +132,8 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   std::vector<std::string> Dump(std::vector<std::string>& unused) override {
     std::unique_ptr<AccessibilityTreeFormatter> formatter(
         CreateAccessibilityTreeFormatter());
-    formatter->SetFilters(filters_);
+    formatter->SetPropertyFilters(property_filters_);
+    formatter->SetNodeFilters(node_filters_);
     base::string16 actual_contents_utf16;
     WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
         shell()->web_contents());
@@ -155,10 +158,23 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
 
     RunTest(language_detection_file, "accessibility/language-detection");
   }
+
+  // Testing of the Test Harness itself.
+  void RunTestHarnessTest(const base::FilePath::CharType* file_path) {
+    base::FilePath test_path = GetTestFilePath("accessibility", "test-harness");
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath test_harness_file =
+        test_path.Append(base::FilePath(file_path));
+
+    RunTest(test_harness_file, "accessibility/test-harness");
+  }
 };
 
 void DumpAccessibilityTreeTest::AddDefaultFilters(
-    std::vector<Filter>* filters) {
+    std::vector<PropertyFilter>* property_filters) {
   // TODO(aleventhal) Each platform deserves separate default filters.
 
   //
@@ -170,50 +186,50 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   //            IA2_STATE_SINGLE_LINE, IA2_STATE_VERTICAL.
   // Too unpredictible: OFFSCREEN
   // Windows states to log by default:
-  AddFilter(filters, "ALERT*");
-  AddFilter(filters, "ANIMATED*");
-  AddFilter(filters, "BUSY");
-  AddFilter(filters, "CHECKED");
-  AddFilter(filters, "COLLAPSED");
-  AddFilter(filters, "EXPANDED");
-  AddFilter(filters, "FLOATING");
-  AddFilter(filters, "FOCUSABLE");
-  AddFilter(filters, "HASPOPUP");
-  AddFilter(filters, "INVISIBLE");
-  AddFilter(filters, "MARQUEED");
-  AddFilter(filters, "MIXED");
-  AddFilter(filters, "MOVEABLE");
-  AddFilter(filters, "MULTISELECTABLE");
-  AddFilter(filters, "PRESSED");
-  AddFilter(filters, "PROTECTED");
-  AddFilter(filters, "READONLY");
-  AddFilter(filters, "SELECTED");
-  AddFilter(filters, "SIZEABLE");
-  AddFilter(filters, "TRAVERSED");
-  AddFilter(filters, "UNAVAILABLE");
-  AddFilter(filters, "IA2_STATE_ACTIVE");
-  AddFilter(filters, "IA2_STATE_ARMED");
-  AddFilter(filters, "IA2_STATE_CHECKABLE");
-  AddFilter(filters, "IA2_STATE_DEFUNCT");
-  AddFilter(filters, "IA2_STATE_HORIZONTAL");
-  AddFilter(filters, "IA2_STATE_ICONIFIED");
-  AddFilter(filters, "IA2_STATE_INVALID_ENTRY");
-  AddFilter(filters, "IA2_STATE_MODAL");
-  AddFilter(filters, "IA2_STATE_MULTI_LINE");
-  AddFilter(filters, "IA2_STATE_PINNED");
-  AddFilter(filters, "IA2_STATE_REQUIRED");
-  AddFilter(filters, "IA2_STATE_STALE");
-  AddFilter(filters, "IA2_STATE_TRANSIENT");
+  AddPropertyFilter(property_filters, "ALERT*");
+  AddPropertyFilter(property_filters, "ANIMATED*");
+  AddPropertyFilter(property_filters, "BUSY");
+  AddPropertyFilter(property_filters, "CHECKED");
+  AddPropertyFilter(property_filters, "COLLAPSED");
+  AddPropertyFilter(property_filters, "EXPANDED");
+  AddPropertyFilter(property_filters, "FLOATING");
+  AddPropertyFilter(property_filters, "FOCUSABLE");
+  AddPropertyFilter(property_filters, "HASPOPUP");
+  AddPropertyFilter(property_filters, "INVISIBLE");
+  AddPropertyFilter(property_filters, "MARQUEED");
+  AddPropertyFilter(property_filters, "MIXED");
+  AddPropertyFilter(property_filters, "MOVEABLE");
+  AddPropertyFilter(property_filters, "MULTISELECTABLE");
+  AddPropertyFilter(property_filters, "PRESSED");
+  AddPropertyFilter(property_filters, "PROTECTED");
+  AddPropertyFilter(property_filters, "READONLY");
+  AddPropertyFilter(property_filters, "SELECTED");
+  AddPropertyFilter(property_filters, "SIZEABLE");
+  AddPropertyFilter(property_filters, "TRAVERSED");
+  AddPropertyFilter(property_filters, "UNAVAILABLE");
+  AddPropertyFilter(property_filters, "IA2_STATE_ACTIVE");
+  AddPropertyFilter(property_filters, "IA2_STATE_ARMED");
+  AddPropertyFilter(property_filters, "IA2_STATE_CHECKABLE");
+  AddPropertyFilter(property_filters, "IA2_STATE_DEFUNCT");
+  AddPropertyFilter(property_filters, "IA2_STATE_HORIZONTAL");
+  AddPropertyFilter(property_filters, "IA2_STATE_ICONIFIED");
+  AddPropertyFilter(property_filters, "IA2_STATE_INVALID_ENTRY");
+  AddPropertyFilter(property_filters, "IA2_STATE_MODAL");
+  AddPropertyFilter(property_filters, "IA2_STATE_MULTI_LINE");
+  AddPropertyFilter(property_filters, "IA2_STATE_PINNED");
+  AddPropertyFilter(property_filters, "IA2_STATE_REQUIRED");
+  AddPropertyFilter(property_filters, "IA2_STATE_STALE");
+  AddPropertyFilter(property_filters, "IA2_STATE_TRANSIENT");
   // Reduce flakiness.
-  AddFilter(filters, "FOCUSED", Filter::DENY);
-  AddFilter(filters, "HOTTRACKED", Filter::DENY);
-  AddFilter(filters, "OFFSCREEN", Filter::DENY);
-  AddFilter(filters, "value='*'");
+  AddPropertyFilter(property_filters, "FOCUSED", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "HOTTRACKED", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "OFFSCREEN", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "value='*'");
   // The value attribute on the document object contains the URL of the current
   // page which will not be the same every time the test is run.
-  AddFilter(filters, "value='http*'", Filter::DENY);
+  AddPropertyFilter(property_filters, "value='http*'", PropertyFilter::DENY);
   // Object attributes.value
-  AddFilter(filters, "layout-guess:*", Filter::ALLOW);
+  AddPropertyFilter(property_filters, "layout-guess:*", PropertyFilter::ALLOW);
 
   //
   // Blink
@@ -223,61 +239,62 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   //   editable, focus*, horizontal, linked, richlyEditable, vertical
   // Too flaky: hovered, offscreen
   // States
-  AddFilter(filters, "check*");
-  AddFilter(filters, "descript*");
-  AddFilter(filters, "collapsed");
-  AddFilter(filters, "haspopup");
-  AddFilter(filters, "horizontal");
-  AddFilter(filters, "invisible");
-  AddFilter(filters, "multiline");
-  AddFilter(filters, "multiselectable");
-  AddFilter(filters, "protected");
-  AddFilter(filters, "required");
-  AddFilter(filters, "select*");
-  AddFilter(filters, "visited");
+  AddPropertyFilter(property_filters, "check*");
+  AddPropertyFilter(property_filters, "descript*");
+  AddPropertyFilter(property_filters, "collapsed");
+  AddPropertyFilter(property_filters, "haspopup");
+  AddPropertyFilter(property_filters, "horizontal");
+  AddPropertyFilter(property_filters, "invisible");
+  AddPropertyFilter(property_filters, "multiline");
+  AddPropertyFilter(property_filters, "multiselectable");
+  AddPropertyFilter(property_filters, "protected");
+  AddPropertyFilter(property_filters, "required");
+  AddPropertyFilter(property_filters, "select*");
+  AddPropertyFilter(property_filters, "visited");
   // Other attributes
-  AddFilter(filters, "busy=true");
-  AddFilter(filters, "valueForRange*");
-  AddFilter(filters, "minValueForRange*");
-  AddFilter(filters, "maxValueForRange*");
-  AddFilter(filters, "hierarchicalLevel*");
-  AddFilter(filters, "autoComplete*");
-  AddFilter(filters, "restriction*");
-  AddFilter(filters, "keyShortcuts*");
-  AddFilter(filters, "activedescendantId*");
-  AddFilter(filters, "controlsIds*");
-  AddFilter(filters, "flowtoIds*");
-  AddFilter(filters, "detailsIds*");
-  AddFilter(filters, "invalidState=*");
-  AddFilter(filters, "invalidState=false",
-            Filter::DENY);  // Don't show false value
-  AddFilter(filters, "roleDescription=*");
-  AddFilter(filters, "errormessageId=*");
+  AddPropertyFilter(property_filters, "busy=true");
+  AddPropertyFilter(property_filters, "valueForRange*");
+  AddPropertyFilter(property_filters, "minValueForRange*");
+  AddPropertyFilter(property_filters, "maxValueForRange*");
+  AddPropertyFilter(property_filters, "hierarchicalLevel*");
+  AddPropertyFilter(property_filters, "autoComplete*");
+  AddPropertyFilter(property_filters, "restriction*");
+  AddPropertyFilter(property_filters, "keyShortcuts*");
+  AddPropertyFilter(property_filters, "activedescendantId*");
+  AddPropertyFilter(property_filters, "controlsIds*");
+  AddPropertyFilter(property_filters, "flowtoIds*");
+  AddPropertyFilter(property_filters, "detailsIds*");
+  AddPropertyFilter(property_filters, "invalidState=*");
+  AddPropertyFilter(property_filters, "invalidState=false",
+                    PropertyFilter::DENY);  // Don't show false value
+  AddPropertyFilter(property_filters, "roleDescription=*");
+  AddPropertyFilter(property_filters, "errormessageId=*");
 
   //
   // OS X
   //
 
-  AddFilter(filters, "AXValueAutofill*");
-  AddFilter(filters, "AXAutocomplete*");
+  AddPropertyFilter(property_filters, "AXValueAutofill*");
+  AddPropertyFilter(property_filters, "AXAutocomplete*");
 
   //
   // Android
   //
 
-  AddFilter(filters, "hint=*");
-  AddFilter(filters, "interesting", Filter::DENY);
-  AddFilter(filters, "has_character_locations", Filter::DENY);
-  AddFilter(filters, "has_image", Filter::DENY);
+  AddPropertyFilter(property_filters, "hint=*");
+  AddPropertyFilter(property_filters, "interesting", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "has_character_locations",
+                    PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "has_image", PropertyFilter::DENY);
 
   //
   // General
   //
 
   // Deny most empty values
-  AddFilter(filters, "*=''", Filter::DENY);
+  AddPropertyFilter(property_filters, "*=''", PropertyFilter::DENY);
   // After denying empty values, because we want to allow name=''
-  AddFilter(filters, "name=*", Filter::ALLOW_EMPTY);
+  AddPropertyFilter(property_filters, "name=*", PropertyFilter::ALLOW_EMPTY);
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
@@ -1991,6 +2008,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        LanguageDetectionLangAttributeSwitching) {
   RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-attribute-switching.html"));
+}
+
+//
+// These tests cover features of the testing infrastructure itself.
+//
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DenyNode) {
+  RunTestHarnessTest(FILE_PATH_LITERAL("deny-node.html"));
 }
 
 }  // namespace content

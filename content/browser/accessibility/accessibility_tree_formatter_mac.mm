@@ -224,6 +224,7 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBrowser {
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
   base::string16 ProcessTreeForOutput(const base::DictionaryValue& node,
@@ -363,6 +364,10 @@ const string AccessibilityTreeFormatterMac::GetAllowString() {
 
 const string AccessibilityTreeFormatterMac::GetDenyString() {
   return "@MAC-DENY:";
+}
+
+const string AccessibilityTreeFormatterMac::GetDenyNodeString() {
+  return "@MAC-DENY-NODE:";
 }
 
 }  // namespace content
