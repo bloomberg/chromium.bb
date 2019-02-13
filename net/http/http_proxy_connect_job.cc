@@ -165,8 +165,6 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     RequestPriority priority,
     const CommonConnectJobParams& common_connect_job_params,
     const scoped_refptr<HttpProxySocketParams>& params,
-    TransportClientSocketPool* transport_pool,
-    TransportClientSocketPool* ssl_pool,
     Delegate* delegate)
     : ConnectJob(
           priority,
@@ -182,8 +180,6 @@ HttpProxyConnectJob::HttpProxyConnectJob(
               common_connect_job_params.network_quality_estimator),
           base::TimeDelta::FromSeconds(kHttpProxyConnectJobTimeoutInSeconds),
           common_connect_job_params,
-          transport_pool,
-          ssl_pool,
           params->transport_params(),
           params->ssl_params(),
           params->quic_version(),
@@ -205,11 +201,7 @@ LoadState HttpProxyConnectJob::GetLoadState() const {
 }
 
 bool HttpProxyConnectJob::HasEstablishedConnection() const {
-  // Returning true prevents the socket pool this belongs to from using backup
-  // jobs.
-  // TODO(https://crbug.com/472729): Implement this, as nested pools are
-  // removed.
-  return true;
+  return client_socket_->HasEstablishedConnection();
 }
 
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {

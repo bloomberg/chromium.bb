@@ -191,8 +191,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
             nullptr /* socket_performance_watcher_factory */,
             &network_quality_estimator_, nullptr /* net_log */,
             nullptr /* websocket_endpoint_lock_manager */),
-        std::move(http_proxy_socket_params), &transport_socket_pool_,
-        &ssl_socket_pool_, delegate);
+        std::move(http_proxy_socket_params), delegate);
   }
 
   void InitProxyDelegate() {
@@ -297,6 +296,156 @@ TEST_P(HttpProxyConnectJobTest, NoTunnel) {
         "Net.HttpProxy.ConnectLatency.Secure.Success",
         is_secure_proxy ? loop_iterations : 0);
   }
+}
+
+// Pauses an HttpProxyConnectJob at various states, and check the value of
+// HasEstablishedConnection().
+TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionNoTunnel) {
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  SequencedSocketData data;
+  data.set_connect_data(MockConnect(ASYNC, OK));
+  socket_factory_.AddSocketDataProvider(&data);
+
+  // Set up SSL, if needed.
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  switch (GetParam()) {
+    case HTTP:
+      // No SSL needed.
+      break;
+    case HTTPS:
+      // SSL negotiation is the last step in non-tunnel connections over HTTPS
+      // proxies, so pause there, to check the final state before completion.
+      ssl_data = SSLSocketDataProvider(SYNCHRONOUS, ERR_IO_PENDING);
+      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      break;
+    case SPDY:
+      InitializeSpdySsl(&ssl_data);
+      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      break;
+  }
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> connect_job =
+      CreateConnectJobForHttpRequest(&test_delegate);
+
+  // Connecting should run until the request hits the HostResolver.
+  EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
+  EXPECT_FALSE(connect_job->HasEstablishedConnection());
+
+  // Once the HostResolver completes, the job should start establishing a
+  // connection, which will complete asynchronously.
+  session_deps_.host_resolver->ResolveOnlyRequestNow();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, connect_job->GetLoadState());
+  EXPECT_FALSE(connect_job->HasEstablishedConnection());
+
+  switch (GetParam()) {
+    case HTTP:
+    case SPDY:
+      // Connection completes. Since no tunnel is established, the socket is
+      // returned immediately, and HasEstablishedConnection() is only specified
+      // to work before the ConnectJob completes.
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+      break;
+    case HTTPS:
+      base::RunLoop().RunUntilIdle();
+      EXPECT_FALSE(test_delegate.has_result());
+      EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, connect_job->GetLoadState());
+      EXPECT_TRUE(connect_job->HasEstablishedConnection());
+
+      // Unfortunately, there's no API to advance the paused SSL negotiation,
+      // so just end the test here.
+  }
+}
+
+// Pauses an HttpProxyConnectJob at various states, and check the value of
+// HasEstablishedConnection().
+TEST_P(HttpProxyConnectJobTest, HasEstablishedConnectionTunnel) {
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  // HTTP proxy CONNECT request / response, with a pause during the read.
+  MockWrite http1_writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.endpoint.test:443 HTTP/1.1\r\n"
+                "Host: www.endpoint.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+  MockRead http1_reads[] = {
+      // Pause at first read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+  SequencedSocketData http1_data(http1_reads, http1_writes);
+  http1_data.set_connect_data(MockConnect(ASYNC, OK));
+
+  // SPDY proxy CONNECT request / response, with a pause during the read.
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
+      nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  MockRead spdy_reads[] = {
+      // Pause at first read.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      CreateMockRead(resp, 2, ASYNC),
+      MockRead(ASYNC, 0, 3),
+  };
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
+  spdy_data.set_connect_data(MockConnect(ASYNC, OK));
+
+  // Will point to either the HTTP/1.x or SPDY data, depending on GetParam().
+  SequencedSocketData* sequenced_data = nullptr;
+
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+
+  switch (GetParam()) {
+    case HTTP:
+      sequenced_data = &http1_data;
+      break;
+    case HTTPS:
+      sequenced_data = &http1_data;
+      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      break;
+    case SPDY:
+      sequenced_data = &spdy_data;
+      InitializeSpdySsl(&ssl_data);
+      socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+      break;
+  }
+
+  socket_factory_.AddSocketDataProvider(sequenced_data);
+
+  TestConnectJobDelegate test_delegate;
+  std::unique_ptr<ConnectJob> connect_job =
+      CreateConnectJobForTunnel(&test_delegate);
+
+  // Connecting should run until the request hits the HostResolver.
+  EXPECT_THAT(connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_TRUE(session_deps_.host_resolver->has_pending_requests());
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, connect_job->GetLoadState());
+  EXPECT_FALSE(connect_job->HasEstablishedConnection());
+
+  // Once the HostResolver completes, the job should start establishing a
+  // connection, which will complete asynchronously.
+  session_deps_.host_resolver->ResolveOnlyRequestNow();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, connect_job->GetLoadState());
+  EXPECT_FALSE(connect_job->HasEstablishedConnection());
+
+  // Run until the socket starts reading the proxy's handshake response.
+  sequenced_data->RunUntilPaused();
+  EXPECT_FALSE(test_delegate.has_result());
+  EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL, connect_job->GetLoadState());
+  EXPECT_TRUE(connect_job->HasEstablishedConnection());
+
+  // Finish the read, and run the job until it's complete.
+  sequenced_data->Resume();
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
 }
 
 TEST_P(HttpProxyConnectJobTest, ProxyDelegateExtraHeaders) {

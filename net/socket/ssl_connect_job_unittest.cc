@@ -101,22 +101,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
             new TransportSocketParams(HostPortPair("host", 443),
                                       false,
                                       OnHostResolutionCallback())),
-        transport_socket_pool_(kMaxSockets,
-                               kMaxSocketsPerGroup,
-                               &socket_factory_,
-                               &host_resolver_,
-                               nullptr /* proxy_delegate */,
-                               nullptr /* cert_verifier */,
-                               nullptr /* channel_id_server */,
-                               nullptr /* transport_security_state */,
-                               nullptr /* cert_transparency_verifier */,
-                               nullptr /* ct_policy_enforcer */,
-                               nullptr /* ssl_client_session_cache */,
-                               std::string() /* ssl_session_cache_shard */,
-                               nullptr /* ssl_config_service */,
-                               nullptr /* socket_performance_watcher_factory */,
-                               nullptr /* network_quality_estimator */,
-                               nullptr /* net_log */),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
                                       false,
@@ -155,10 +139,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
             nullptr /* ssl_config_service */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
-            nullptr /* net_log */,
-            nullptr /* http_proxy_pool_for_ssl_pool */,
-            &transport_socket_pool_,
-            nullptr /* ssl_pool_for_http_proxy_pool */) {
+            nullptr /* net_log */) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
 
     // Set an initial delay to ensure that the first call to TimeTicks::Now()
@@ -236,7 +217,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   SSLClientSocketContext ssl_client_socket_context_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;
-  TransportClientSocketPool transport_socket_pool_;
 
   scoped_refptr<TransportSocketParams> proxy_transport_socket_params_;
   scoped_refptr<SOCKSSocketParams> socks_socket_params_;

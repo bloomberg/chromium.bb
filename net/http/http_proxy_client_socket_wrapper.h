@@ -31,14 +31,12 @@
 
 namespace net {
 
-class ClientSocketHandle;
 class IOBuffer;
 class HttpAuthCache;
 class HttpResponseInfo;
 class IOBuffer;
 class SpdySessionPool;
 class SSLSocketParams;
-class TransportClientSocketPool;
 class TransportSocketParams;
 
 // Class that establishes connections by calling into the lower layer socket
@@ -53,15 +51,14 @@ class TransportSocketParams;
 // TODO(mmenke): Ideally, we'd have a central location store auth state across
 // multiple connections to the same server instead.
 class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
-    : public ProxyClientSocket {
+    : public ProxyClientSocket,
+      public ConnectJob::Delegate {
  public:
   HttpProxyClientSocketWrapper(
       RequestPriority priority,
       base::TimeDelta connect_timeout_duration,
       base::TimeDelta proxy_negotiation_timeout_duration,
       const CommonConnectJobParams& common_connect_job_params,
-      TransportClientSocketPool* transport_pool,
-      TransportClientSocketPool* ssl_pool,
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
       quic::QuicTransportVersion quic_version,
@@ -127,6 +124,11 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
 
+  // ConnectJob::Delegate implementation.
+  void OnConnectJobComplete(int result, ConnectJob* job) override;
+
+  bool HasEstablishedConnection();
+
   NetErrorDetails* quic_net_error_details() { return &quic_net_error_details_; }
 
  private:
@@ -188,8 +190,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   const base::TimeDelta connect_timeout_duration_;
   const base::TimeDelta proxy_negotiation_timeout_duration_;
 
-  TransportClientSocketPool* const transport_pool_;
-  TransportClientSocketPool* const ssl_pool_;
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
 
@@ -208,9 +208,13 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   bool is_trusted_proxy_;
   NextProto negotiated_protocol_;
 
+  // Set to true once a connection has been successfully established. Remains
+  // true even if a new socket is being connected to retry with auth.
+  bool has_established_connection_;
+
   std::unique_ptr<HttpResponseInfo> error_response_info_;
 
-  std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
+  std::unique_ptr<ConnectJob> nested_connect_job_;
   std::unique_ptr<ProxyClientSocket> transport_socket_;
 
   // Called when a connection is established. Also used when restarting with

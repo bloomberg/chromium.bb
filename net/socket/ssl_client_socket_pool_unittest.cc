@@ -72,9 +72,6 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
             new TransportSocketParams(HostPortPair("host", 443),
                                       false,
                                       OnHostResolutionCallback())),
-        transport_socket_pool_(kMaxSockets,
-                               kMaxSocketsPerGroup,
-                               &socket_factory_),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
                                       false,
@@ -108,10 +105,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
             nullptr /* ssl_config_service */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
-            nullptr /* net_log */,
-            nullptr /* http_proxy_pool_for_ssl_pool */,
-            &transport_socket_pool_,
-            nullptr /* ssl_pool_for_http_proxy_pool */) {
+            nullptr /* net_log */) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
   }
 
@@ -179,7 +173,6 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   const std::unique_ptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;
-  MockTransportClientSocketPool transport_socket_pool_;
 
   scoped_refptr<TransportSocketParams> proxy_transport_socket_params_;
 

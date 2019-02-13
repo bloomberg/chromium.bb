@@ -28,7 +28,6 @@ class HttpProxyClientSocketWrapper;
 class NetworkQualityEstimator;
 class SpdySessionPool;
 class SSLSocketParams;
-class TransportClientSocketPool;
 class TransportSocketParams;
 class QuicStreamFactory;
 
@@ -104,8 +103,6 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   HttpProxyConnectJob(RequestPriority priority,
                       const CommonConnectJobParams& common_connect_job_params,
                       const scoped_refptr<HttpProxySocketParams>& params,
-                      TransportClientSocketPool* transport_pool,
-                      TransportClientSocketPool* ssl_pool,
                       Delegate* delegate);
   ~HttpProxyConnectJob() override;
 

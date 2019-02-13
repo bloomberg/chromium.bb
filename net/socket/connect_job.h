@@ -126,6 +126,11 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // released socket, or nullptr if there was a connection error.
   std::unique_ptr<StreamSocket> PassSocket();
 
+  // Returns the connected socket, or nullptr if PassSocket() has already been
+  // called. Used to query the socket state. May only be called after the
+  // ConnectJob completes.
+  StreamSocket* socket() { return socket_.get(); }
+
   void ChangePriority(RequestPriority priority);
 
   // Begins connecting the socket.  Returns OK on success, ERR_IO_PENDING if it
@@ -196,7 +201,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   }
 
   void SetSocket(std::unique_ptr<StreamSocket> socket);
-  StreamSocket* socket() { return socket_.get(); }
   void NotifyDelegateOfCompletion(int rv);
   void ResetTimer(base::TimeDelta remaining_time);
 
