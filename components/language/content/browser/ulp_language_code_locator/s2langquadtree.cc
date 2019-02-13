@@ -30,7 +30,8 @@ std::string S2LangQuadTreeNode::Get(const S2CellId& cell,
 
 const S2LangQuadTreeNode* S2LangQuadTreeNode::GetChild(
     const int child_index) const {
-  return children_.empty() ? nullptr : &children_[child_index];
+  auto it = children_.find(child_index);
+  return it == children_.end() ? nullptr : &it->second;
 }
 
 bool S2LangQuadTreeNode::IsLeaf() const {
