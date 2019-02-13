@@ -148,7 +148,11 @@ class EventSender {
 
   void LeapForward(int milliseconds);
 
+  void BeginDragWithItems(
+      const blink::WebVector<blink::WebDragData::Item>& items);
   void BeginDragWithFiles(const std::vector<std::string>& files);
+  void BeginDragWithStringData(const std::string& data,
+                               const std::string& mime_type);
 
   void AddTouchPoint(float x, float y, gin::Arguments* args);
 
