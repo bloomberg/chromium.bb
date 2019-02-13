@@ -87,9 +87,10 @@ void WebRtcAudioSink::DeliverRebufferedAudio(const media::AudioBus& audio_bus,
 
   // TODO(henrika): Remove this conversion once the interface in libjingle
   // supports float vectors.
-  audio_bus.ToInterleaved(audio_bus.frames(),
-                          sizeof(interleaved_data_[0]),
-                          interleaved_data_.get());
+  static_assert(sizeof(interleaved_data_[0]) == 2,
+                "ToInterleaved expects 2 bytes.");
+  audio_bus.ToInterleaved<media::SignedInt16SampleTypeTraits>(
+      audio_bus.frames(), interleaved_data_.get());
   adapter_->DeliverPCMToWebRtcSinks(interleaved_data_.get(),
                                     params_.sample_rate(),
                                     audio_bus.channels(),

@@ -558,20 +558,6 @@ TEST_F(AudioBusTest, ToInterleavedPartial) {
            kTestVectorFrameCount * sizeof(*expected->channel(ch)));
   }
 
-  // Test deprecated version that takes |bytes_per_sample| as an input.
-  {
-    SCOPED_TRACE("int16_t");
-    int16_t test_array[base::size(kTestVectorInt16)];
-    expected->ToInterleavedPartial(kPartialStart, kPartialFrames,
-                                   sizeof(*kTestVectorInt16), test_array);
-    ASSERT_EQ(0, memcmp(test_array, kTestVectorInt16 +
-                                        kPartialStart * kTestVectorChannelCount,
-                        kPartialFrames * sizeof(*kTestVectorInt16) *
-                            kTestVectorChannelCount));
-  }
-
-  // Test non-deprecated version that takes SampleTypeTraits as a template
-  // parameter.
   {
     SCOPED_TRACE("Float32SampleTypeTraits");
     float test_array[base::size(kTestVectorFloat32)];

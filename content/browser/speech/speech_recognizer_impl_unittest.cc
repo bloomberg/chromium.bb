@@ -116,8 +116,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
     const int channels =
         ChannelLayoutToChannelCount(SpeechRecognizerImpl::kChannelLayout);
-    bytes_per_sample_ = SpeechRecognizerImpl::kNumBitsPerAudioSample / 8;
-    const int frames = audio_packet_length_bytes / channels / bytes_per_sample_;
+    int bytes_per_sample = SpeechRecognizerImpl::kNumBitsPerAudioSample / 8;
+    const int frames = audio_packet_length_bytes / channels / bytes_per_sample;
     audio_bus_ = media::AudioBus::Create(channels, frames);
     audio_bus_->Zero();
   }
@@ -226,9 +226,11 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   }
 
   void CopyPacketToAudioBus() {
+    static_assert(SpeechRecognizerImpl::kNumBitsPerAudioSample == 16,
+                  "FromInterleaved expects 2 bytes.");
     // Copy the created signal into an audio bus in a deinterleaved format.
-    audio_bus_->FromInterleaved(
-        &audio_packet_[0], audio_bus_->frames(), bytes_per_sample_);
+    audio_bus_->FromInterleaved<media::SignedInt16SampleTypeTraits>(
+        reinterpret_cast<int16_t*>(audio_packet_.data()), audio_bus_->frames());
   }
 
   void FillPacketWithTestWaveform() {
@@ -289,7 +291,6 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   blink::mojom::SpeechRecognitionErrorCode error_;
   std::vector<uint8_t> audio_packet_;
   std::unique_ptr<media::AudioBus> audio_bus_;
-  int bytes_per_sample_;
   float volume_;
   float noise_volume_;
 };
