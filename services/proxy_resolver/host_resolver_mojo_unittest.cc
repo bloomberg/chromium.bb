@@ -102,10 +102,9 @@ class MockMojoHostResolver : public HostResolverMojo::Impl {
 
   const std::vector<std::string>& requests() { return requests_received_; }
 
-  void ResolveDns(
-      const std::string& hostname,
-      net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
-      mojom::HostResolverRequestClientPtr) override;
+  void ResolveDns(const std::string& hostname,
+                  net::ProxyResolveDnsOperation operation,
+                  mojom::HostResolverRequestClientPtr) override;
 
  private:
   std::vector<HostResolverAction> actions_;
@@ -129,7 +128,7 @@ void MockMojoHostResolver::AddAction(HostResolverAction action) {
 
 void MockMojoHostResolver::ResolveDns(
     const std::string& hostname,
-    net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
+    net::ProxyResolveDnsOperation operation,
     mojom::HostResolverRequestClientPtr client) {
   requests_received_.push_back(hostname);
   ASSERT_LE(results_returned_, actions_.size());
@@ -169,8 +168,7 @@ class HostResolverMojoTest : public testing::Test {
               std::vector<net::IPAddress>* out_addresses) {
     std::unique_ptr<net::ProxyHostResolver::Request> request =
         resolver_->CreateRequest(hostname,
-                                 net::ProxyResolverV8::JSBindings::
-                                     ResolveDnsOperation::DNS_RESOLVE_EX);
+                                 net::ProxyResolveDnsOperation::DNS_RESOLVE_EX);
 
     net::TestCompletionCallback callback;
     int result = callback.GetResult(request->Start(callback.callback()));
@@ -240,12 +238,10 @@ TEST_F(HostResolverMojoTest, Multiple) {
 
   std::unique_ptr<net::ProxyHostResolver::Request> request1 =
       resolver_->CreateRequest("example.com",
-                               net::ProxyResolverV8::JSBindings::
-                                   ResolveDnsOperation::DNS_RESOLVE_EX);
+                               net::ProxyResolveDnsOperation::DNS_RESOLVE_EX);
   std::unique_ptr<net::ProxyHostResolver::Request> request2 =
       resolver_->CreateRequest("example.org",
-                               net::ProxyResolverV8::JSBindings::
-                                   ResolveDnsOperation::DNS_RESOLVE_EX);
+                               net::ProxyResolveDnsOperation::DNS_RESOLVE_EX);
   net::TestCompletionCallback callback1;
   net::TestCompletionCallback callback2;
   ASSERT_EQ(net::ERR_IO_PENDING, request1->Start(callback1.callback()));
@@ -290,8 +286,7 @@ TEST_F(HostResolverMojoTest, Cancel) {
 
   std::unique_ptr<net::ProxyHostResolver::Request> request =
       resolver_->CreateRequest("example.com",
-                               net::ProxyResolverV8::JSBindings::
-                                   ResolveDnsOperation::DNS_RESOLVE_EX);
+                               net::ProxyResolveDnsOperation::DNS_RESOLVE_EX);
   request->Start(base::BindOnce(&Fail));
 
   request.reset();

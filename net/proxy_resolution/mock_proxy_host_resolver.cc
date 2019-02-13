@@ -61,9 +61,8 @@ MockProxyHostResolver::MockProxyHostResolver(bool synchronous_mode)
 MockProxyHostResolver::~MockProxyHostResolver() = default;
 
 std::unique_ptr<ProxyHostResolver::Request>
-MockProxyHostResolver::CreateRequest(
-    const std::string& hostname,
-    ProxyResolverV8::JSBindings::ResolveDnsOperation operation) {
+MockProxyHostResolver::CreateRequest(const std::string& hostname,
+                                     ProxyResolveDnsOperation operation) {
   ++num_resolve_;
 
   if (fail_all_)
@@ -78,17 +77,15 @@ MockProxyHostResolver::CreateRequest(
   return std::make_unique<RequestImpl>(match->second, synchronous_mode_);
 }
 
-void MockProxyHostResolver::SetError(
-    const std::string& hostname,
-    ProxyResolverV8::JSBindings::ResolveDnsOperation operation) {
+void MockProxyHostResolver::SetError(const std::string& hostname,
+                                     ProxyResolveDnsOperation operation) {
   fail_all_ = false;
   results_[{hostname, operation}].clear();
 }
 
-void MockProxyHostResolver::SetResult(
-    const std::string& hostname,
-    ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
-    std::vector<IPAddress> result) {
+void MockProxyHostResolver::SetResult(const std::string& hostname,
+                                      ProxyResolveDnsOperation operation,
+                                      std::vector<IPAddress> result) {
   DCHECK(!result.empty());
   fail_all_ = false;
   results_[{hostname, operation}] = std::move(result);
@@ -126,9 +123,8 @@ HangingProxyHostResolver::HangingProxyHostResolver(
 HangingProxyHostResolver::~HangingProxyHostResolver() = default;
 
 std::unique_ptr<ProxyHostResolver::Request>
-HangingProxyHostResolver::CreateRequest(
-    const std::string& hostname,
-    ProxyResolverV8::JSBindings::ResolveDnsOperation operation) {
+HangingProxyHostResolver::CreateRequest(const std::string& hostname,
+                                        ProxyResolveDnsOperation operation) {
   return std::make_unique<RequestImpl>(this);
 }
 

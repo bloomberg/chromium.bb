@@ -13,7 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "net/dns/host_cache.h"
 #include "net/proxy_resolution/proxy_host_resolver.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace proxy_resolver {
@@ -25,10 +25,9 @@ class HostResolverMojo : public net::ProxyHostResolver {
   class Impl {
    public:
     virtual ~Impl() = default;
-    virtual void ResolveDns(
-        const std::string& hostname,
-        net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
-        mojom::HostResolverRequestClientPtr) = 0;
+    virtual void ResolveDns(const std::string& hostname,
+                            net::ProxyResolveDnsOperation operation,
+                            mojom::HostResolverRequestClientPtr) = 0;
   };
 
   // |impl| must outlive |this|.
@@ -38,7 +37,7 @@ class HostResolverMojo : public net::ProxyHostResolver {
   // ProxyHostResolver overrides.
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation) override;
+      net::ProxyResolveDnsOperation operation) override;
 
  private:
   class Job;

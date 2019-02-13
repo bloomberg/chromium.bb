@@ -29,10 +29,10 @@ constexpr auto kNegativeCacheEntryTTL = base::TimeDelta();
 
 net::HostCache::Key CacheKeyForRequest(
     const std::string& hostname,
-    net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation) {
+    net::ProxyResolveDnsOperation operation) {
   net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
-  if (operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS ||
-      operation == net::ProxyResolverV8::JSBindings::DNS_RESOLVE) {
+  if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+      operation == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
     address_family = net::ADDRESS_FAMILY_IPV4;
   }
 
@@ -46,7 +46,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
                                       public mojom::HostResolverRequestClient {
  public:
   RequestImpl(const std::string& hostname,
-              net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
+              net::ProxyResolveDnsOperation operation,
               base::WeakPtr<net::HostCache> host_cache,
               Impl* impl)
       : hostname_(hostname),
@@ -131,7 +131,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
   }
 
   const std::string hostname_;
-  const net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation_;
+  const net::ProxyResolveDnsOperation operation_;
 
   mojo::Binding<mojom::HostResolverRequestClient> binding_;
   net::CompletionOnceCallback callback_;
@@ -151,9 +151,8 @@ HostResolverMojo::HostResolverMojo(Impl* impl)
 HostResolverMojo::~HostResolverMojo() = default;
 
 std::unique_ptr<net::ProxyHostResolver::Request>
-HostResolverMojo::CreateRequest(
-    const std::string& hostname,
-    net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation) {
+HostResolverMojo::CreateRequest(const std::string& hostname,
+                                net::ProxyResolveDnsOperation operation) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_unique<RequestImpl>(
       hostname, operation, host_cache_weak_factory_.GetWeakPtr(), impl_);
