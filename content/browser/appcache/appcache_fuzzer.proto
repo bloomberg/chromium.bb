@@ -10,7 +10,8 @@ message Session {
   repeated Command commands = 1;
 }
 
-// Based on blink::mojom::AppCacheBackend interface
+// Based on blink::mojom::AppCacheBackend and blink::mojom::AppCacheHost
+// interfaces.
 // See third_party/blink/public/mojom/appcache/appcache.mojom
 message Command {
   oneof command {

@@ -236,8 +236,7 @@ void EmbeddedSharedWorkerStub::SelectAppCacheID(long long app_cache_id) {
   if (app_cache_host_) {
     // app_cache_host_ could become stale as it's owned by blink's
     // DocumentLoader. This method is assumed to be called while it's valid.
-    app_cache_host_->backend()->SelectCacheForSharedWorker(
-        app_cache_host_->host_id(), app_cache_id);
+    app_cache_host_->SelectCacheForSharedWorker(app_cache_id);
   }
 }
 

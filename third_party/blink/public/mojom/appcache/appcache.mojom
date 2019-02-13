@@ -57,18 +57,24 @@ struct AppCacheErrorDetails {
 // AppCache messages sent from the child process to the browser.
 interface AppCacheBackend {
   // Informs the browser of a new appcache host.
-  // TODO(mek): Switch host to be a per-frame interface, and stop passing frame
-  // ID over mojo.
-  RegisterHost(int32 host_id, int32 render_frame_id);
+  //
+  // Unregistering the host is accomplished by closing the AppCacheHost pipe.
+  //
+  // TODO(mek): Move this method to DocumentInterfaceBroker to stop passing
+  // frame ID over mojo.
+  RegisterHost(AppCacheHost& host_request, int32 host_id, int32 render_frame_id);
+};
 
-  // Informs the browser of an appcache host being destroyed.
-  UnregisterHost(int32 host_id);
-
+interface AppCacheHost {
   // Informs the browser of which host caused another to be created.
   // This can influence which appcache should be utilized for the main
   // resource load into the newly created host, so it should be sent
   // prior to the main resource request being initiated.
-  SetSpawningHostId(int32 host_id, int32 spawning_host_id);
+  //
+  // Called prior to the main resource load. When the system contains multiple
+  // candidates for a main resource load, the appcache preferred by the host
+  // that created this host is used to break ties.
+  SetSpawningHostId(int32 spawning_host_id);
 
   // Initiates the cache selection algorithm for the given host.
   // This is sent prior to any subresource loads. An AppCacheMsg_CacheSelected
@@ -78,34 +84,32 @@ interface AppCacheBackend {
   // 'appcache_document_was_loaded_from' the id of the appcache the main
   //     resource was loaded from or kAppCacheNoCacheId
   // 'opt_manifest_url' the manifest url specified in the <html> tag if any
-  SelectCache(int32 host_id,
-              url.mojom.Url document_url,
+  SelectCache(url.mojom.Url document_url,
               int64 appcache_document_was_loaded_from,
               url.mojom.Url opt_manifest_url);
 
   // Initiates worker specific cache selection algorithm for the given host.
-  SelectCacheForSharedWorker(int32 host_id, int64 appcache_id);
+  SelectCacheForSharedWorker(int64 appcache_id);
 
   // Informs the browser of a 'foreign' entry in an appcache.
-  MarkAsForeignEntry(int32 host_id,
-                     url.mojom.Url document_url,
+  MarkAsForeignEntry(url.mojom.Url document_url,
                      int64 appcache_document_was_loaded_from);
 
   // Returns the status of the appcache associated with host_id.
   [Sync]
-  GetStatus(int32 host_id) => (AppCacheStatus status);
+  GetStatus() => (AppCacheStatus status);
 
   // Initiates an update of the appcache associated with host_id.
   [Sync]
-  StartUpdate(int32 host_id) => (bool success);
+  StartUpdate() => (bool success);
 
   // Swaps a new pending appcache, if there is one, into use for host_id.
   [Sync]
-  SwapCache(int32 host_id) => (bool success);
+  SwapCache() => (bool success);
 
   // Gets resource list from appcache synchronously.
   [Sync]
-  GetResourceList(int32 host_id) => (array<AppCacheResourceInfo> resources);
+  GetResourceList() => (array<AppCacheResourceInfo> resources);
 };
 
 // AppCache messages sent from the browser to the renderer process.

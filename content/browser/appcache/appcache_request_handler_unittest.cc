@@ -254,7 +254,8 @@ class AppCacheRequestHandlerTest
     backend_impl_->set_frontend_for_testing(mock_frontend_.get());
     const int kHostId = 1;
     const int kRenderFrameId = 2;
-    backend_impl_->RegisterHost(kHostId, kRenderFrameId);
+    backend_impl_->RegisterHost(mojo::MakeRequest(&host_ptr_), kHostId,
+                                kRenderFrameId);
     host_ = backend_impl_->GetHost(kHostId);
     job_factory_.reset(new MockURLRequestJobFactory());
     empty_context_->set_job_factory(job_factory_.get());
@@ -966,6 +967,7 @@ class AppCacheRequestHandlerTest
   std::unique_ptr<MockFrontend> mock_frontend_;
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
+  blink::mojom::AppCacheHostPtr host_ptr_;
   std::unique_ptr<net::URLRequestContext> empty_context_;
   std::unique_ptr<MockURLRequestJobFactory> job_factory_;
   MockURLRequestDelegate delegate_;
