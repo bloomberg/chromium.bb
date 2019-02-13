@@ -46,6 +46,11 @@ POLYMER = Tag(
     'polymer', 'Polymer stories')
 REPAINT_DESKTOP = Tag(
     'repaint_desktop', 'Repaint desktop stories')
+REPRESENTATIVE_MAC_DESKTOP = Tag(
+    'representative_mac_desktop', 'Rendering desktop representatives for mac')
+REPRESENTATIVE_WIN_DESKTOP = Tag(
+    'representative_win_desktop',
+    'Rendering desktop representatives for windows')
 SIMPLE_MOBILE_SITES = Tag(
     'simple_mobile_sites', 'Simple mobile sites')
 TOP_REAL_WORLD_DESKTOP = Tag(

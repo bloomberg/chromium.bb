@@ -57,11 +57,13 @@ class ParticlesPage(ToughWebglPage):
   BASE_NAME = 'particles'
   # pylint: disable=line-too-long
   URL = 'http://www.khronos.org/registry/webgl/sdk/demos/google/particles/index.html'
+  TAGS = ToughWebglPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class EarthPage(ToughWebglPage):
   BASE_NAME = 'earth'
   URL = 'http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html'
+  TAGS = ToughWebglPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class ManyPlanetsDeepPage(ToughWebglPage):
@@ -73,6 +75,7 @@ class ManyPlanetsDeepPage(ToughWebglPage):
 class AquariumPage(ToughWebglPage):
   BASE_NAME = 'aquarium'
   URL = 'http://webglsamples.org/aquarium/aquarium.html'
+  TAGS = ToughWebglPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class Aquarium20KFishPage(ToughWebglPage):

@@ -24,6 +24,7 @@ class MotionMarkCanvasFillShapesPage(ToughPathRenderingPage):
   BASE_NAME = 'motion_mark_canvas_fill_shapes'
   # pylint: disable=line-too-long
   URL = 'http://rawgit.com/WebKit/webkit/master/PerformanceTests/MotionMark/developer.html?test-name=Fillshapes&test-interval=20&display=minimal&tiles=big&controller=fixed&frame-rate=50&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Canvassuite&complexity=1000'
+  TAGS = ToughPathRenderingPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class MotionMarkCanvasStrokeShapesPage(ToughPathRenderingPage):

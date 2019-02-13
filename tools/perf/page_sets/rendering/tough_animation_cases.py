@@ -304,6 +304,7 @@ class CssAnimationsStaggeredInfinitePage(ToughAnimationPage):
   BASE_NAME = 'css_animations_staggered_infinite_iterations'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_animations_staggered_infinite_iterations.html?N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class CssAnimationsTriggeredStyleElementPage(ToughAnimationPage):
@@ -340,6 +341,7 @@ class WebAnimationsManyKeyframesPage(ToughAnimationPage):
   BASE_NAME = 'web_animations_many_keyframes'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/web_animations_many_keyframes.html?N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class WebAnimationsSetCurrentTimePage(ToughAnimationPage):
@@ -409,6 +411,7 @@ class CssValueTypeLengthComplexPage(ToughAnimationPage):
   BASE_NAME = 'css_value_type_length_complex'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_length_complex.html?api=css_animations&N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class CssValueTypeLengthSimplePage(ToughAnimationPage):
@@ -430,6 +433,10 @@ class CssValueTypeShadowPage(ToughAnimationPage):
   BASE_NAME = 'css_value_type_shadow'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_shadow.html?api=css_animations&N=0316'
+  TAGS = ToughAnimationPage.TAGS + [
+      story_tags.REPRESENTATIVE_WIN_DESKTOP,
+      story_tags.REPRESENTATIVE_MAC_DESKTOP,
+  ]
 
 
 class CssValueTypeTransformComplexPage(ToughAnimationPage):
@@ -458,6 +465,7 @@ class WebAnimationValueTypeLength3dPage(ToughAnimationPage):
   BASE_NAME = 'web_animation_value_type_length_3d'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_length_3d.html?api=web_animations&N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class WebAnimationValueTypeLengthComplexPage(ToughAnimationPage):
@@ -465,6 +473,7 @@ class WebAnimationValueTypeLengthComplexPage(ToughAnimationPage):
   BASE_NAME = 'web_animation_value_type_length_complex'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_length_complex.html?api=web_animations&N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class WebAnimationValueTypeLengthSimplePage(ToughAnimationPage):
@@ -479,6 +488,7 @@ class WebAnimationValueTypePathPage(ToughAnimationPage):
   BASE_NAME = 'web_animation_value_type_path'
   # pylint: disable=line-too-long
   URL = 'file://../tough_animation_cases/css_value_type_path.html?api=web_animations&N=0316'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class WebAnimationValueTypeShadowPage(ToughAnimationPage):
@@ -508,6 +518,7 @@ class CompositorHeavyAnimationPage(ToughAnimationPage):
   """
   BASE_NAME = 'compositor_heavy_animation'
   URL = 'file://../tough_animation_cases/compositor_heavy_animation.html?N=0200'
+  TAGS = ToughAnimationPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class KeyframedAnimationsPage(ToughAnimationPage):

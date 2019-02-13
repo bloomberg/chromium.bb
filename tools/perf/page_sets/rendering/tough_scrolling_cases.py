@@ -281,3 +281,4 @@ class ScrollingCanvas90000Page(ToughFastScrollingPage):
   BASE_NAME = 'canvas_90000_pixels_per_second'
   URL = 'file://../tough_scrolling_cases/canvas.html'
   SPEED_IN_PIXELS_PER_SECOND = 90000
+  TAGS = ToughFastScrollingPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
