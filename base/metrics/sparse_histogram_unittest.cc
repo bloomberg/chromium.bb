@@ -86,10 +86,9 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
 };
 
 // Run all HistogramTest cases with both heap and persistent memory.
-INSTANTIATE_TEST_CASE_P(HeapAndPersistent,
-                        SparseHistogramTest,
-                        testing::Bool());
-
+INSTANTIATE_TEST_SUITE_P(HeapAndPersistent,
+                         SparseHistogramTest,
+                         testing::Bool());
 
 TEST_P(SparseHistogramTest, BasicTest) {
   std::unique_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));

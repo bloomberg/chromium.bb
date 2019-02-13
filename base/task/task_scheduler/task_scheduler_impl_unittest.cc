@@ -465,9 +465,9 @@ TEST_P(TaskSchedulerImplTest, FlushAsyncForTestingSimple) {
   flush_event.Wait();
 }
 
-INSTANTIATE_TEST_CASE_P(OneTaskSchedulerImplTestParams,
-                        TaskSchedulerImplTest,
-                        ::testing::ValuesIn(GetTaskSchedulerImplTestParams()));
+INSTANTIATE_TEST_SUITE_P(OneTaskSchedulerImplTestParams,
+                         TaskSchedulerImplTest,
+                         ::testing::ValuesIn(GetTaskSchedulerImplTestParams()));
 
 // Spawns threads that simultaneously post Tasks to TaskRunners with various
 // TaskTraits and ExecutionModes. Verifies that each Task runs on a thread with

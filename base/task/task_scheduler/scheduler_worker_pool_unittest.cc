@@ -334,26 +334,28 @@ TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
   task_tracker_.FlushForTesting();
 }
 
-INSTANTIATE_TEST_CASE_P(GenericParallel,
-                        TaskSchedulerWorkerPoolTest,
-                        ::testing::Values(PoolExecutionType{
-                            PoolType::GENERIC, test::ExecutionMode::PARALLEL}));
-INSTANTIATE_TEST_CASE_P(GenericSequenced,
-                        TaskSchedulerWorkerPoolTest,
-                        ::testing::Values(PoolExecutionType{
-                            PoolType::GENERIC,
-                            test::ExecutionMode::SEQUENCED}));
+INSTANTIATE_TEST_SUITE_P(GenericParallel,
+                         TaskSchedulerWorkerPoolTest,
+                         ::testing::Values(PoolExecutionType{
+                             PoolType::GENERIC,
+                             test::ExecutionMode::PARALLEL}));
+INSTANTIATE_TEST_SUITE_P(GenericSequenced,
+                         TaskSchedulerWorkerPoolTest,
+                         ::testing::Values(PoolExecutionType{
+                             PoolType::GENERIC,
+                             test::ExecutionMode::SEQUENCED}));
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(WinParallel,
-                        TaskSchedulerWorkerPoolTest,
-                        ::testing::Values(PoolExecutionType{
-                            PoolType::WINDOWS, test::ExecutionMode::PARALLEL}));
-INSTANTIATE_TEST_CASE_P(WinSequenced,
-                        TaskSchedulerWorkerPoolTest,
-                        ::testing::Values(PoolExecutionType{
-                            PoolType::WINDOWS,
-                            test::ExecutionMode::SEQUENCED}));
+INSTANTIATE_TEST_SUITE_P(WinParallel,
+                         TaskSchedulerWorkerPoolTest,
+                         ::testing::Values(PoolExecutionType{
+                             PoolType::WINDOWS,
+                             test::ExecutionMode::PARALLEL}));
+INSTANTIATE_TEST_SUITE_P(WinSequenced,
+                         TaskSchedulerWorkerPoolTest,
+                         ::testing::Values(PoolExecutionType{
+                             PoolType::WINDOWS,
+                             test::ExecutionMode::SEQUENCED}));
 #endif
 
 }  // namespace internal

@@ -365,12 +365,12 @@ TEST_P(TaskSchedulerWorkerTest, IntermittentWork) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(OneTaskPerSequence,
-                        TaskSchedulerWorkerTest,
-                        ::testing::Values(1));
-INSTANTIATE_TEST_CASE_P(TwoTasksPerSequence,
-                        TaskSchedulerWorkerTest,
-                        ::testing::Values(2));
+INSTANTIATE_TEST_SUITE_P(OneTaskPerSequence,
+                         TaskSchedulerWorkerTest,
+                         ::testing::Values(1));
+INSTANTIATE_TEST_SUITE_P(TwoTasksPerSequence,
+                         TaskSchedulerWorkerTest,
+                         ::testing::Values(2));
 
 namespace {
 

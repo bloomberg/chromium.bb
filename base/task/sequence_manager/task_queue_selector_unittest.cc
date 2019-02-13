@@ -788,9 +788,9 @@ TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
             GetParam().expected_did_starve_immediate_queue);
 }
 
-INSTANTIATE_TEST_CASE_P(ChooseOldestWithPriorityTest,
-                        ChooseOldestWithPriorityTest,
-                        testing::ValuesIn(kChooseOldestWithPriorityTestCases));
+INSTANTIATE_TEST_SUITE_P(ChooseOldestWithPriorityTest,
+                         ChooseOldestWithPriorityTest,
+                         testing::ValuesIn(kChooseOldestWithPriorityTestCases));
 
 class SmallPriorityQueueTest : public testing::Test {
  public:

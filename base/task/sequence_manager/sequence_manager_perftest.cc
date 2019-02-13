@@ -681,7 +681,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
   std::unique_ptr<PerfTestDelegate> delegate_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     SequenceManagerPerfTest,
     testing::Values(

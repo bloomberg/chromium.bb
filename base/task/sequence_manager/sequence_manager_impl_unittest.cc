@@ -398,14 +398,14 @@ class SequenceManagerTestWithCustomInitialization
   void SetUp() override { ASSERT_EQ(GetParam(), TestType::kCustom); }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SequenceManagerTestWithMessageLoop,
-                        testing::Values(TestType::kUseMessageLoop,
-                                        TestType::kUseMessagePump));
+INSTANTIATE_TEST_SUITE_P(,
+                         SequenceManagerTestWithMessageLoop,
+                         testing::Values(TestType::kUseMessageLoop,
+                                         TestType::kUseMessagePump));
 
-INSTANTIATE_TEST_CASE_P(,
-                        SequenceManagerTestWithCustomInitialization,
-                        testing::Values(TestType::kCustom));
+INSTANTIATE_TEST_SUITE_P(,
+                         SequenceManagerTestWithCustomInitialization,
+                         testing::Values(TestType::kCustom));
 
 void PostFromNestedRunloop(scoped_refptr<TestTaskQueue> runner,
                            std::vector<std::pair<OnceClosure, bool>>* tasks) {

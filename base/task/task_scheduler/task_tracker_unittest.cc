@@ -866,15 +866,15 @@ TEST_P(TaskSchedulerTaskTrackerTest, DelayedTasksDoNotBlockShutdown) {
   tracker_.Shutdown();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ContinueOnShutdown,
     TaskSchedulerTaskTrackerTest,
     ::testing::Values(TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SkipOnShutdown,
     TaskSchedulerTaskTrackerTest,
     ::testing::Values(TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BlockShutdown,
     TaskSchedulerTaskTrackerTest,
     ::testing::Values(TaskShutdownBehavior::BLOCK_SHUTDOWN));

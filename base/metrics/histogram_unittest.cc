@@ -110,8 +110,7 @@ class HistogramTest : public testing::TestWithParam<bool> {
 };
 
 // Run all HistogramTest cases with both heap and persistent memory.
-INSTANTIATE_TEST_CASE_P(HeapAndPersistent, HistogramTest, testing::Bool());
-
+INSTANTIATE_TEST_SUITE_P(HeapAndPersistent, HistogramTest, testing::Bool());
 
 // Check for basic syntax and use.
 TEST_P(HistogramTest, BasicTest) {
