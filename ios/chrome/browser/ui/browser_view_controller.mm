@@ -3625,7 +3625,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     NewTabPageController* pageController = [[NewTabPageController alloc]
                  initWithUrl:url
-                      loader:self
                      focuser:self.dispatcher
                 browserState:_browserState
              toolbarDelegate:self.toolbarInterface
@@ -3638,10 +3637,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else if (url_host == kChromeUIOfflineHost &&
              [self hasControllerForURL:url]) {
     StaticHtmlNativeContent* staticNativeController =
-        [[OfflinePageNativeContent alloc] initWithLoader:self
-                                            browserState:_browserState
-                                                webState:webState
-                                                     URL:url];
+        [[OfflinePageNativeContent alloc] initWithBrowserState:_browserState
+                                                      webState:webState
+                                                           URL:url];
     [self setOverScrollActionControllerToStaticNativeContent:
               staticNativeController];
     nativeController = staticNativeController;
@@ -4907,7 +4905,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     NewTabPageCoordinator* newTabPageCoordinator =
         [[NewTabPageCoordinator alloc] initWithBrowserState:_browserState];
     newTabPageCoordinator.dispatcher = self.dispatcher;
-    newTabPageCoordinator.URLLoader = self;
     newTabPageCoordinator.toolbarDelegate = self.toolbarInterface;
     newTabPageCoordinator.webStateList = self.tabModel.webStateList;
     _ntpCoordinatorsForWebStates[webState] = newTabPageCoordinator;

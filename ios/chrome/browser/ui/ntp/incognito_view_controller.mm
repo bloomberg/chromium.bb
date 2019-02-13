@@ -9,8 +9,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,26 +19,25 @@
 @interface IncognitoViewController ()
 // The scrollview containing the actual views.
 @property(nonatomic, strong) IncognitoView* incognitoView;
-@property(nonatomic, weak) id<UrlLoader> loader;
 @end
 
-@implementation IncognitoViewController
+@implementation IncognitoViewController {
+  // The UrlLoadingService associated with this view.
+  UrlLoadingService* _urlLoadingService;  // weak
+}
 
-@synthesize incognitoView = _incognitoView;
-@synthesize loader = _loader;
-
-- (id)initWithLoader:(id<UrlLoader>)loader {
+- (id)initWithUrlLoadingService:(UrlLoadingService*)urlLoadingService {
   self = [super init];
   if (self) {
-    _loader = loader;
+    _urlLoadingService = urlLoadingService;
   }
   return self;
 }
 
 - (void)viewDidLoad {
   self.incognitoView = [[IncognitoView alloc]
-      initWithFrame:[UIApplication sharedApplication].keyWindow.bounds
-          urlLoader:self.loader];
+          initWithFrame:[UIApplication sharedApplication].keyWindow.bounds
+      urlLoadingService:_urlLoadingService];
   [self.incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                           UIViewAutoresizingFlexibleWidth];
 

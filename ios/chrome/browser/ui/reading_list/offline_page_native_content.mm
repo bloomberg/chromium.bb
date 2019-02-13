@@ -41,11 +41,9 @@
   BOOL _restored;
 }
 
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(web::BrowserState*)browserState
-                      webState:(web::WebState*)webState
-                           URL:(const GURL&)URL {
-  DCHECK(loader);
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+                            webState:(web::WebState*)webState
+                                 URL:(const GURL&)URL {
   DCHECK(browserState);
   DCHECK(URL.is_valid());
 
@@ -66,9 +64,7 @@
   _entryURL = reading_list::EntryURLForOfflineURL(URL);
   _virtualURL = reading_list::VirtualURLForOfflineURL(URL);
 
-  return [super initWithLoader:loader
-      staticHTMLViewController:HTMLViewController
-                           URL:URL];
+  return [super initWithStaticHTMLViewController:HTMLViewController URL:URL];
 }
 
 - (void)willBeDismissed {

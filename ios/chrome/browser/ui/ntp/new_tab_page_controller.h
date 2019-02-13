@@ -50,7 +50,6 @@ class ChromeBrowserState;
 // Init with the given url (presumably "chrome://newtab") and loader object.
 // |loader| may be nil, but isn't retained so it must outlive this controller.
 - (id)initWithUrl:(const GURL&)url
-                  loader:(id<UrlLoader>)loader
                  focuser:(id<OmniboxFocuser>)focuser
             browserState:(ios::ChromeBrowserState*)browserState
          toolbarDelegate:(id<NewTabPageControllerDelegate>)toolbarDelegate

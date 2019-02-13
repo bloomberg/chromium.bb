@@ -38,8 +38,6 @@ class WebStateList;
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
-// URL loader to pass to ContentSuggestionsCoordinator.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 // The web state list to pass to ContentSuggestionsCoordinator.
 @property(nonatomic, assign) WebStateList* webStateList;
 // The toolbar delegate to pass to ContentSuggestionsCoordinator.

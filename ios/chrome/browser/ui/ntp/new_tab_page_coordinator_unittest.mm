@@ -54,7 +54,6 @@ class NewTabPageCoordinatorTest : public PlatformTest {
         IOSChromeLargeIconServiceFactory::GetDefaultFactory());
     browser_state_ = test_cbs_builder.Build();
 
-    loader_ = OCMProtocolMock(@protocol(UrlLoader));
     toolbar_delegate_ =
         OCMProtocolMock(@protocol(NewTabPageControllerDelegate));
     dispatcher_ = OCMProtocolMock(@protocol(NewTabPageTabDispatcher));
@@ -71,7 +70,6 @@ class NewTabPageCoordinatorTest : public PlatformTest {
       coordinator_ = [[NewTabPageCoordinator alloc]
           initWithBrowserState:browser_state_.get()];
     }
-    coordinator_.URLLoader = loader_;
     coordinator_.toolbarDelegate = toolbar_delegate_;
     coordinator_.dispatcher = dispatcher_;
     coordinator_.webStateList = web_state_list_.get();
@@ -79,7 +77,6 @@ class NewTabPageCoordinatorTest : public PlatformTest {
 
   id dispatcher_;
   id toolbar_delegate_;
-  id loader_;
   id delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;

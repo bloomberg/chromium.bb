@@ -78,10 +78,6 @@ typedef void (^HtmlCallback)(NSString*);
         allowingReadAccessToURL:(const GURL&)resourcesRoot
                    browserState:(web::BrowserState*)browserState;
 
-// Set the |loader| to use to allow navigation to external URL. The |referrer|
-// is the URL that will be used as referrer for those navigations.
-- (void)setLoader:(id<UrlLoader>)loader referrer:(const web::Referrer&)referrer;
-
 // Asynchronously executes the supplied JavaScript. Calls |completionHandler|
 // with results of the execution. If the controller cannot execute JS at the
 // moment, |completionHandler| is called with an NSError. The

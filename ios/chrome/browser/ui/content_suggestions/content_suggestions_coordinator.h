@@ -29,7 +29,6 @@ class WebStateList;
 // BrowserState used to create the ContentSuggestionFactory.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // URLLoader used to open pages.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 @property(nonatomic, assign) WebStateList* webStateList;
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 @property(nonatomic, weak) id<ApplicationCommands,

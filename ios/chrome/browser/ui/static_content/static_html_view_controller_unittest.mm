@@ -10,6 +10,8 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/browser/url_loading/test_url_loading_service.h"
+#include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/referrer.h"
@@ -103,7 +105,11 @@ class StaticHtmlViewControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    chrome_browser_state_ = TestChromeBrowserState::Builder().Build();
+    TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        UrlLoadingServiceFactory::GetInstance(),
+        UrlLoadingServiceFactory::GetDefaultFactory());
+    chrome_browser_state_ = test_cbs_builder.Build();
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -124,7 +130,6 @@ TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
   StaticHtmlViewController* content = [[StaticHtmlViewController alloc]
       initWithResource:@"terms_en.html"
           browserState:chrome_browser_state_.get()];
-  [content setLoader:loader referrer:referrer];
   [content setDelegate:delegate];
   [[(OCMockObject*)delegate expect]
        nativeContent:content
@@ -135,7 +140,12 @@ TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
       }]];
   [content triggerPendingLoad];
   DryRunLoop(false);
-  ASSERT_OCMOCK_VERIFY(loader);
+
+  TestUrlLoadingService* url_loader =
+      (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  EXPECT_EQ(GURL("terms_en.html"), url_loader->last_web_params.url);
+
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
   id block = [(id) ^ (const GURL& url, const web::Referrer& referrer,
                       ui::PageTransition transition, BOOL rendererInitiated) {
@@ -173,7 +183,6 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
       allowingReadAccessToURL:net::GURLWithNSURL(
                                   [fileURL URLByDeletingLastPathComponent])
                  browserState:chrome_browser_state_.get()];
-  [content setLoader:loader referrer:referrer];
   [content setDelegate:delegate];
   [[(OCMockObject*)delegate expect]
        nativeContent:content
@@ -184,7 +193,12 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
       }]];
   [content triggerPendingLoad];
   DryRunLoop(false);
-  ASSERT_OCMOCK_VERIFY(loader);
+
+  TestUrlLoadingService* url_loader =
+      (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
+          chrome_browser_state_.get());
+  EXPECT_EQ(GURL("terms_en.html"), url_loader->last_web_params.url);
+
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
   id block = [(id) ^ (const GURL& url, const web::Referrer& referrer,
                       ui::PageTransition transition, BOOL rendererInitiated) {
@@ -221,12 +235,7 @@ TEST_F(StaticHtmlViewControllerTest, L10NTest) {
   StaticHtmlViewController* content = [[StaticHtmlViewController alloc]
       initWithGenerator:generator
            browserState:chrome_browser_state_.get()];
-  id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
-  [content setLoader:loader
-            referrer:web::Referrer(GURL("chrome://foo"),
-                                   web::ReferrerPolicyDefault)];
   [content triggerPendingLoad];
-  ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
   __block id string_in_page = nil;
   base::test::ios::WaitUntilCondition(^bool {
     string_in_page = web::test::ExecuteJavaScript([content webView],
