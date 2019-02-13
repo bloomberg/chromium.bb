@@ -20,15 +20,18 @@
 namespace device {
 namespace pin {
 
+// IsValid returns true if |pin|, which must be UTF-8, is a syntactically valid
+// PIN.
+bool IsValid(const std::string& pin);
+
 // kMinBytes is the minimum number of *bytes* of PIN data that a CTAP2 device
 // will accept. Since the PIN is UTF-8 encoded, this could be a single code
 // point. However, the platform is supposed to additionally enforce a 4
 // *character* minimum
 constexpr size_t kMinBytes = 4;
 // kMaxBytes is the maximum number of bytes of PIN data that a CTAP2 device will
-// accept. (FIXME: this should be 255 according to the spec but a value larger
-// than this doesn't appear to work with Yubikeys.)
-constexpr size_t kMaxBytes = 127;
+// accept.
+constexpr size_t kMaxBytes = 63;
 
 // RetriesRequest asks an authenticator for the number of remaining PIN attempts
 // before the device is locked.
@@ -73,13 +76,9 @@ struct KeyAgreementResponse {
 // SetRequest sets an initial PIN on an authenticator. (This is distinct from
 // changing a PIN.)
 class SetRequest {
-  SetRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
-
  public:
-  // New creates a new PIN request. The |pin| must be between |kMinBytes| and
-  // |kMaxBytes| and be valid UTF-8
-  static base::Optional<SetRequest> New(const std::string& pin,
-                                        const KeyAgreementResponse& peer_key);
+  // IsValid(pin) must be true.
+  SetRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
 
   std::vector<uint8_t> EncodeAsCBOR() const;
 
@@ -92,11 +91,27 @@ struct EmptyResponse {
   static base::Optional<EmptyResponse> Parse(base::span<const uint8_t> buffer);
 };
 
-using SetResponse = EmptyResponse;
+// ChangeRequest changes the PIN on an authenticator that already has a PIN set.
+// (This is distinct from setting an initial PIN.)
+class ChangeRequest {
+ public:
+  // IsValid(new_pin) must be true.
+  ChangeRequest(const std::string& old_pin,
+                const std::string& new_pin,
+                const KeyAgreementResponse& peer_key);
 
-// ResetRequest resets an authenticator, which should invalidate all credentials
-// and clear any configured PIN. This is not strictly a PIN-related command, but
-// is generally used to reset a PIN and so is included here.
+  std::vector<uint8_t> EncodeAsCBOR() const;
+
+ private:
+  const KeyAgreementResponse peer_key_;
+  uint8_t old_pin_hash_[16];
+  uint8_t new_pin_[kMaxBytes + 1];
+};
+
+// ResetRequest resets an authenticator, which should invalidate all
+// credentials and clear any configured PIN. This is not strictly a
+// PIN-related command, but is generally used to reset a PIN and so is
+// included here.
 struct ResetRequest {
   std::vector<uint8_t> EncodeAsCBOR() const;
 };
