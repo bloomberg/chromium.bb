@@ -18,6 +18,10 @@ namespace {
 static const char kStdScheme[] = "std";
 static const char kInternalScheme[] = "std-internal";
 
+static const char kImportScheme[] = "import";
+
+constexpr char kBuiltinSpecifierPrefix[] = "@std/";
+
 int GetResourceIDFromPath(const String& path) {
   for (size_t i = 0; i < base::size(kLayeredAPIResources); ++i) {
     if (path == kLayeredAPIResources[i].path) {
@@ -33,14 +37,26 @@ bool IsImplemented(const String& name) {
 
 }  // namespace
 
+String GetBuiltinPath(const KURL& url) {
+  if (url.ProtocolIs(kStdScheme))
+    return url.GetPath();
+
+  const StringView prefix(kBuiltinSpecifierPrefix);
+  if (url.ProtocolIs(kImportScheme) && url.GetPath().StartsWith(prefix))
+    return url.GetPath().Substring(prefix.length());
+
+  return String();
+}
+
 // https://github.com/drufball/layered-apis/blob/master/spec.md#user-content-layered-api-fetching-url
 KURL ResolveFetchingURL(const KURL& url) {
   // <spec step="1">If url's scheme is not "std", return url.</spec>
-  if (!url.ProtocolIs(kStdScheme))
-    return url;
-
   // <spec step="2">Let path be url's path[0].</spec>
-  const String path = url.GetPath();
+  // Note: Also accepts "import:@std/x".
+  // See the comment at GetBuiltinPath() declaration.
+  String path = GetBuiltinPath(url);
+  if (path.IsNull())
+    return url;
 
   // <spec step="5">If the layered API identified by path is implemented by this
   // user agent, return the result of parsing the concatenation of "std:" with
@@ -57,11 +73,12 @@ KURL ResolveFetchingURL(const KURL& url) {
 }
 
 KURL GetInternalURL(const KURL& url) {
-  if (url.ProtocolIs(kStdScheme)) {
+  String path = GetBuiltinPath(url);
+  if (!path.IsNull()) {
     StringBuilder url_string;
     url_string.Append(kInternalScheme);
     url_string.Append("://");
-    url_string.Append(url.GetPath());
+    url_string.Append(path);
     url_string.Append("/index.js");
     return KURL(NullURL(), url_string.ToString());
   }

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/parsed_specifier.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
@@ -108,49 +109,44 @@ ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#resolve-a-module-specifier">
-KURL ModulatorImplBase::ResolveModuleSpecifier(const String& module_request,
+KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
                                                const KURL& base_url,
                                                String* failure_reason) {
-  // <spec step="1">Apply the URL parser to specifier. If the result is not
-  // failure, return the result.</spec>
-  KURL url(NullURL(), module_request);
-  if (url.IsValid()) {
-    // <spec
-    // href="https://github.com/drufball/layered-apis/blob/master/spec.md#resolve-a-module-specifier"
-    // step="1">Let parsed be the result of applying the URL parser to
-    // specifier. If parsed is not failure, then return the layered API fetching
-    // URL given parsed and script's base URL.</spec>
-    if (RuntimeEnabledFeatures::LayeredAPIEnabled())
-      return blink::layered_api::ResolveFetchingURL(url);
+  ParsedSpecifier parsed_specifier =
+      ParsedSpecifier::Create(specifier, base_url);
 
-    return url;
-  }
-
-  // <spec step="2">If specifier does not start with the character U+002F
-  // SOLIDUS (/), the two-character sequence U+002E FULL STOP, U+002F SOLIDUS
-  // (./), or the three-character sequence U+002E FULL STOP, U+002E FULL STOP,
-  // U+002F SOLIDUS (../), return failure.</spec>
-  if (!module_request.StartsWith("/") && !module_request.StartsWith("./") &&
-      !module_request.StartsWith("../")) {
+  if (!parsed_specifier.IsValid()) {
     if (failure_reason) {
       *failure_reason =
-          "Relative references must start with either \"/\", \"./\", or "
-          "\"../\".";
+          "Invalid relative url or base scheme isn't hierarchical.";
     }
     return KURL();
   }
 
-  // <spec step="3">Return the result of applying the URL parser to specifier
-  // with base URL as the base URL.</spec>
-  DCHECK(base_url.IsValid());
-  KURL absolute_url(base_url, module_request);
-  if (absolute_url.IsValid())
-    return absolute_url;
+  switch (parsed_specifier.GetType()) {
+    case ParsedSpecifier::Type::kInvalid:
+      NOTREACHED();
+      return KURL();
 
-  if (failure_reason) {
-    *failure_reason = "Invalid relative url or base scheme isn't hierarchical.";
+    case ParsedSpecifier::Type::kBare:
+      // Allow |@std/x| specifiers if Layered API is enabled.
+      if (RuntimeEnabledFeatures::LayeredAPIEnabled()) {
+        if (parsed_specifier.GetImportMapKeyString().StartsWith("@std/")) {
+          return KURL("import:" + parsed_specifier.GetImportMapKeyString());
+        }
+      }
+
+      // Reject bare specifiers as specced by the pre-ImportMap spec.
+      if (failure_reason) {
+        *failure_reason =
+            "Relative references must start with either \"/\", \"./\", or "
+            "\"../\".";
+      }
+      return KURL();
+
+    case ParsedSpecifier::Type::kURL:
+      return parsed_specifier.GetUrl();
   }
-  return KURL();
 }
 
 bool ModulatorImplBase::HasValidContext() {
