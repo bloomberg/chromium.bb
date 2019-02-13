@@ -96,7 +96,6 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -122,7 +121,7 @@ namespace switches {
 const char kPasswordFileForTest[] = "password-file-for-test";
 const char kSyncUserForTest[] = "sync-user-for-test";
 const char kSyncPasswordForTest[] = "sync-password-for-test";
-}
+}  // namespace switches
 
 namespace {
 
@@ -154,8 +153,7 @@ class SyncProfileDelegate : public Profile::Delegate {
   void OnProfileCreated(Profile* profile,
                         bool success,
                         bool is_new_profile) override {
-    g_browser_process->profile_manager()->RegisterTestingProfile(profile,
-                                                                 true,
+    g_browser_process->profile_manager()->RegisterTestingProfile(profile, true,
                                                                  false);
 
     // Perform any custom work needed before the profile is initialized.
@@ -240,10 +238,7 @@ SyncTest::SyncTest(TestType test_type)
       previous_profile_(nullptr),
       num_clients_(-1),
       use_verifier_(true),
-      create_gaia_account_at_runtime_(false),
-      test_shared_url_loader_factory_(
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)) {
+      create_gaia_account_at_runtime_(false) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT:
@@ -314,7 +309,6 @@ void SyncTest::TearDown() {
   // Return OSCrypt to its real behaviour
   OSCryptMocker::TearDown();
 
-  test_shared_url_loader_factory_->Detach();
   fake_server_.reset();
 }
 
@@ -344,9 +338,8 @@ void SyncTest::AddOptionalTypesToCommandLine(base::CommandLine* cl) {}
 
 bool SyncTest::CreateGaiaAccount(const std::string& username,
                                  const std::string& password) {
-  std::string relative_url = base::StringPrintf("/CreateUsers?%s=%s",
-                                                username.c_str(),
-                                                password.c_str());
+  std::string relative_url = base::StringPrintf(
+      "/CreateUsers?%s=%s", username.c_str(), password.c_str());
   GURL create_user_url =
       GaiaUrls::GetInstance()->gaia_url().Resolve(relative_url);
   // NavigateToURL blocks until the navigation finishes.
@@ -357,7 +350,7 @@ bool SyncTest::CreateGaiaAccount(const std::string& username,
   EXPECT_TRUE(entry)
       << "Could not get a hold on NavigationEntry post URL navigate.";
   DVLOG(1) << "Create Gaia account request return code = "
-      << entry->GetHttpStatusCode();
+           << entry->GetHttpStatusCode();
   return entry->GetHttpStatusCode() == 200;
 }
 
@@ -408,7 +401,8 @@ bool SyncTest::CreateProfile(int index) {
         std::make_unique<SyncProfileDelegate>(base::Bind(
             &SyncTest::InitializeProfile, base::Unretained(this), index));
     Profile* profile = MakeTestProfile(profile_path, index);
-    SetURLLoaderFactoryForTest(profile, test_shared_url_loader_factory_);
+    SetURLLoaderFactoryForTest(profile,
+                               test_url_loader_factory_.GetSafeWeakWrapper());
   }
 
   // Once profile initialization has kicked off, wait for it to finish.
@@ -439,12 +433,10 @@ void SyncTest::CreateProfileCallback(const base::Closure& quit_closure,
 Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::RunLoop run_loop;
-  ProfileManager::CreateCallback create_callback = base::Bind(
-      &CreateProfileCallback, run_loop.QuitClosure());
-  profile_manager->CreateProfileAsync(profile_path,
-                                      create_callback,
-                                      base::string16(),
-                                      std::string());
+  ProfileManager::CreateCallback create_callback =
+      base::Bind(&CreateProfileCallback, run_loop.QuitClosure());
+  profile_manager->CreateProfileAsync(profile_path, create_callback,
+                                      base::string16(), std::string());
   run_loop.Run();
   return profile_manager->GetProfileByPath(profile_path);
 }
@@ -661,7 +653,8 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
                 fake_server_->AsWeakPtr())));
   }
 
-  ProfileSyncServiceHarness::SigninType singin_type = UsingExternalServers()
+  ProfileSyncServiceHarness::SigninType singin_type =
+      UsingExternalServers()
           ? ProfileSyncServiceHarness::SigninType::UI_SIGNIN
           : ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN;
 
@@ -691,7 +684,8 @@ void SyncTest::SetDecryptionPassphraseForClient(int index,
 }
 
 void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
-  SetURLLoaderFactoryForTest(profile, test_shared_url_loader_factory_);
+  SetURLLoaderFactoryForTest(profile,
+                             test_url_loader_factory_.GetSafeWeakWrapper());
 }
 
 void SyncTest::SetUpInvalidations(int index) {
@@ -1009,13 +1003,12 @@ void SyncTest::ReadPasswordFile() {
                << switches::kPasswordFileForTest << "=<filename>";
   std::string file_contents;
   base::ReadFileToString(password_file_, &file_contents);
-  ASSERT_NE(file_contents, "") << "Password file \""
-      << password_file_.value() << "\" does not exist.";
+  ASSERT_NE(file_contents, "")
+      << "Password file \"" << password_file_.value() << "\" does not exist.";
   std::vector<std::string> tokens = base::SplitString(
       file_contents, "\r\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  ASSERT_EQ(2U, tokens.size()) << "Password file \""
-      << password_file_.value()
-      << "\" must contain exactly two lines of text.";
+  ASSERT_EQ(2U, tokens.size()) << "Password file \"" << password_file_.value()
+                               << "\" must contain exactly two lines of text.";
   username_ = tokens[0];
   password_ = tokens[1];
 }
@@ -1259,10 +1252,10 @@ void SyncTest::DisableNotificationsImpl() {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   std::string path = "chromiumsync/disablenotifications";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Notifications disabled",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
+  ASSERT_EQ(
+      "Notifications disabled",
+      base::UTF16ToASCII(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
 }
 
 void SyncTest::DisableNotifications() {
@@ -1273,10 +1266,10 @@ void SyncTest::EnableNotificationsImpl() {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   std::string path = "chromiumsync/enablenotifications";
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Notifications enabled",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
+  ASSERT_EQ(
+      "Notifications enabled",
+      base::UTF16ToASCII(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
 }
 
 void SyncTest::EnableNotifications() {
@@ -1287,18 +1280,18 @@ void SyncTest::TriggerNotification(syncer::ModelTypeSet changed_types) {
   ASSERT_TRUE(ServerSupportsNotificationControl());
   const std::string& data =
       syncer::P2PNotificationData(
-          "from_server",
-          syncer::NOTIFY_ALL,
+          "from_server", syncer::NOTIFY_ALL,
           syncer::ObjectIdInvalidationMap::InvalidateAll(
-              syncer::ModelTypeSetToObjectIdSet(changed_types))).ToString();
+              syncer::ModelTypeSetToObjectIdSet(changed_types)))
+          .ToString();
   const std::string& path =
       std::string("chromiumsync/sendnotification?channel=") +
       syncer::kSyncP2PNotificationChannel + "&data=" + data;
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Notification sent",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
+  ASSERT_EQ(
+      "Notification sent",
+      base::UTF16ToASCII(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
 }
 
 bool SyncTest::ServerSupportsErrorTriggering() const {
@@ -1319,10 +1312,10 @@ void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
     joiner = '&';
   }
   ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ("Migration: 200",
-            base::UTF16ToASCII(
-                browser()->tab_strip_model()->GetActiveWebContents()->
-                    GetTitle()));
+  ASSERT_EQ(
+      "Migration: 200",
+      base::UTF16ToASCII(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
 }
 
 fake_server::FakeServer* SyncTest::GetFakeServer() const {
