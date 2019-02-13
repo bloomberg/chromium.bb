@@ -16,6 +16,7 @@
 #include "chrome/browser/android/background_tab_manager.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
+#include "chrome/browser/android/tab_printer.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/android/trusted_cdn.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -27,8 +28,6 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/printing/print_view_manager_basic.h"
-#include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -627,35 +626,6 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(
       web_contents()->GetController().GetVisibleEntry();
   if (entry && url == entry->GetVirtualURL().spec())
     entry->SetTitle(title);
-}
-
-bool TabAndroid::Print(JNIEnv* env,
-                       const JavaParamRef<jobject>& obj,
-                       jint render_process_id,
-                       jint render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!web_contents())
-    return false;
-
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-
-  if (!rfh)
-    rfh = printing::GetFrameToPrint(web_contents());
-
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-
-  printing::PrintViewManagerBasic* print_view_manager =
-      printing::PrintViewManagerBasic::FromWebContents(contents);
-  return print_view_manager && print_view_manager->PrintNow(rfh);
-}
-
-void TabAndroid::SetPendingPrint(int render_process_id, int render_frame_id) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_setPendingPrint(env, weak_java_tab_.get(env), render_process_id,
-                           render_frame_id);
 }
 
 ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(

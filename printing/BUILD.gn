@@ -134,6 +134,10 @@ component("printing") {
     ]
   }
 
+  if (is_android) {
+    deps += [ "//ui/android" ]
+  }
+
   if (use_cups) {
     configs += [ ":cups" ]
 
@@ -345,6 +349,7 @@ if (is_android) {
   android_library("printing_java") {
     deps = [
       "//base:base_java",
+      "//ui/android:ui_java",
     ]
     java_files = [
       "android/java/src/org/chromium/printing/PrintDocumentAdapterWrapper.java",

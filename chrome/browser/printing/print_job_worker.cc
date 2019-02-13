@@ -34,6 +34,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/tab_printer.h"
+#include "printing/printing_context_android.h"
 #endif
 
 #if defined(OS_WIN)
@@ -291,8 +293,11 @@ void PrintJobWorker::GetSettingsWithUI(
     // call will return since startPendingPrint will make it return immediately
     // in case of error.
     if (tab) {
-      tab->SetPendingPrint(printing_context_delegate->render_process_id(),
-                           printing_context_delegate->render_frame_id());
+      PrintingContextAndroid::SetPendingPrint(
+          web_contents->GetTopLevelNativeWindow(),
+          GetPrintableForTab(tab->GetJavaObject()),
+          printing_context_delegate->render_process_id(),
+          printing_context_delegate->render_frame_id());
     }
   }
 #endif
