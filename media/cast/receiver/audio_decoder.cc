@@ -205,8 +205,7 @@ class AudioDecoder::Pcm16Impl : public AudioDecoder::ImplBase {
       pcm_data[i] = static_cast<int16_t>(base::NetToHost16(pcm_data[i]));
 #endif
     audio_bus = AudioBus::Create(num_channels_, num_samples);
-    audio_bus->FromInterleaved<SignedInt16SampleTypeTraits>(pcm_data,
-                                                            num_samples);
+    audio_bus->FromInterleaved(pcm_data, num_samples, sizeof(int16_t));
     return audio_bus;
   }
 

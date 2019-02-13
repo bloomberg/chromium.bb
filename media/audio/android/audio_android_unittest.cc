@@ -280,13 +280,12 @@ class FileAudioSink : public AudioInputStream::AudioInputCallback {
               double volume) override {
     const int num_samples = src->frames() * src->channels();
     std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
-    src->ToInterleaved<SignedInt16SampleTypeTraits>(src->frames(),
-                                                    interleaved.get());
+    const int bytes_per_sample = sizeof(*interleaved);
+    src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
 
     // Store data data in a temporary buffer to avoid making blocking
     // fwrite() calls in the audio callback. The complete buffer will be
     // written to file in the destructor.
-    const int bytes_per_sample = sizeof(*interleaved);
     const int size = bytes_per_sample * num_samples;
     if (!buffer_->Append((const uint8_t*)interleaved.get(), size))
       event_->Signal();
@@ -332,9 +331,8 @@ class FullDuplexAudioSinkSource
 
     const int num_samples = src->frames() * src->channels();
     std::unique_ptr<int16_t> interleaved(new int16_t[num_samples]);
-    src->ToInterleaved<SignedInt16SampleTypeTraits>(src->frames(),
-                                                    interleaved.get());
     const int bytes_per_sample = sizeof(*interleaved);
+    src->ToInterleaved(src->frames(), bytes_per_sample, interleaved.get());
     const int size = bytes_per_sample * num_samples;
 
     base::AutoLock lock(lock_);
