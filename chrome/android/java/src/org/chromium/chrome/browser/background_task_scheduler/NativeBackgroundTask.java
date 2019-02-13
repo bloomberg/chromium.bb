@@ -52,6 +52,9 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
 
     /** The id of the task from {@link TaskParameters} used for metrics logging. */
     private int mTaskId;
+  
+    /** Make sure that we do not double record task finished metric */
+    private boolean mFinishMetricRecorded;
 
     @Override
     public final boolean onStartTask(
@@ -60,7 +63,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
         mTaskId = taskParameters.getTaskId();
 
         TaskFinishedCallback wrappedCallback = needsReschedule -> {
-            BackgroundTaskSchedulerExternalUma.reportNativeTaskFinished(mTaskId);
+            recordTaskFinishedMetric();
             callback.taskFinished(needsReschedule);
         };
 
@@ -95,7 +98,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     public final boolean onStopTask(Context context, TaskParameters taskParameters) {
         ThreadUtils.assertOnUiThread();
         mTaskStopped = true;
-        BackgroundTaskSchedulerExternalUma.reportNativeTaskFinished(mTaskId);
+        recordTaskFinishedMetric();
         if (isNativeLoaded()) {
             return onStopTaskWithNative(context, taskParameters);
         } else {
@@ -232,5 +235,13 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     @VisibleForTesting
     protected BrowserStartupController getBrowserStartupController() {
         return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
+    }
+  
+    private void recordTaskFinishedMetric() {
+      ThreadUtils.assertOnUiThread();
+      if (!mFinishMetricRecorded) {
+        mFinishMetricRecorded = true;
+        BackgroundTaskSchedulerExternalUma.reportNativeTaskFinished(mTaskId);
+      }
     }
 }
