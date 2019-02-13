@@ -5401,8 +5401,6 @@ static_library("test_support") {
     "search_engines/template_url_service_factory_test_util.h",
     "search_engines/template_url_service_test_util.cc",
     "search_engines/template_url_service_test_util.h",
-    "signin/fake_account_fetcher_service_builder.cc",
-    "signin/fake_account_fetcher_service_builder.h",
     "signin/gaia_cookie_manager_service_test_util.cc",
     "signin/gaia_cookie_manager_service_test_util.h",
     "signin/identity_test_environment_profile_adaptor.cc",
