@@ -127,6 +127,8 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStrip(
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   if (hosted_app_button_container()) {
     DCHECK(browser_view()->IsBrowserTypeHostedApp());
+    if (ShouldHideTopUIForFullscreen())
+      return 0;
     return hosted_app_button_container()->GetPreferredSize().height() +
            kHostedAppMenuMargin * 2;
   }
