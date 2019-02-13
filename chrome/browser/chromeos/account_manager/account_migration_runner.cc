@@ -30,9 +30,12 @@ void AccountMigrationRunner::Step::FinishWithSuccess() {
   std::move(callback_).Run(true);
 }
 
-void AccountMigrationRunner::Step::FinishWithFailure() {
+void AccountMigrationRunner::Step::FinishWithFailure(bool emit_uma_stats) {
   DCHECK(callback_);
-  base::UmaHistogramBoolean(GetStepResultMetricName(), false);
+
+  if (emit_uma_stats)
+    base::UmaHistogramBoolean(GetStepResultMetricName(), false);
+
   std::move(callback_).Run(false);
 }
 
