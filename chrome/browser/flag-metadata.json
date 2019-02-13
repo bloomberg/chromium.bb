@@ -1499,8 +1499,8 @@
   },
   {
     "name": "enable-ntp-button",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "twellington" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-ntp-offline-page-download-suggestions",
