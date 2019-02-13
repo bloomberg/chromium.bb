@@ -65,8 +65,11 @@ target(crash_key_target_type, "crash_key") {
     ]
   }
 
-  deps = [
+  public_deps = [
     ":crash_buildflags",
+  ]
+
+  deps = [
     "//base",
   ]
 
