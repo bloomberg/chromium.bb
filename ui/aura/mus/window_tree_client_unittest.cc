@@ -929,7 +929,7 @@ TEST_F(WindowTreeClientTest, InputEventBasic) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -964,7 +964,7 @@ TEST_F(WindowTreeClientTest, InputEventMouse) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -998,7 +998,7 @@ TEST_F(WindowTreeClientTest, InputEventPen) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
 
@@ -1035,7 +1035,7 @@ TEST_F(WindowTreeClientTest, InputEventFindTargetAndConversion) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -1103,7 +1103,7 @@ TEST_F(WindowTreeClientTest, InputEventCustomWindowTargeter) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -1169,7 +1169,8 @@ TEST_F(WindowTreeClientTest, InputEventCaptureWindow) {
           CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host->window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host->SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(window_tree_host.get())
+      ->SetBoundsInPixels(bounds);
   window_tree_host->InitHost();
   window_tree_host->Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -1253,7 +1254,7 @@ TEST_F(WindowTreeClientTest, InputEventRootWindow) {
   InputEventBasicTestEventHandler root_handler(top_level);
   top_level->AddPreTargetHandler(&root_handler);
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -1296,7 +1297,7 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -1360,7 +1361,7 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
@@ -1448,7 +1449,7 @@ TEST_F(WindowTreeClientTest, OnWindowInputEventWithObserver) {
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(50, 50, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)->SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(bounds.size(), top_level->bounds().size());
@@ -1680,7 +1681,8 @@ TEST_F(WindowTreeClientTest, NewWindowGetsAllChangesInFlight) {
   top_level->Hide();
 
   // Change bounds to 5, 6, 7, 8.
-  window_tree_host.SetBoundsInPixels(gfx::Rect(5, 6, 7, 8));
+  static_cast<WindowTreeHost*>(&window_tree_host)
+      ->SetBoundsInPixels(gfx::Rect(5, 6, 7, 8));
   EXPECT_EQ(gfx::Rect(0, 0, 7, 8), window_tree_host.window()->bounds());
 
   const uint8_t explicitly_set_test_property1_value = 2;
@@ -2471,7 +2473,8 @@ TEST_F(WindowTreeClientTestHighDPI, HostCtorInitializesDisplayScale) {
   // should still be scaled to DIP bounds for the window tree before InitHost.
   gfx::Rect bounds(2, 4, 60, 80);
   gfx::Rect pixel_bounds = gfx::ConvertRectToPixel(2.0f, bounds);
-  window_tree_host.SetBoundsInPixels(pixel_bounds);
+  static_cast<WindowTreeHost*>(&window_tree_host)
+      ->SetBoundsInPixels(pixel_bounds);
   EXPECT_EQ(bounds, window_tree()->last_set_window_bounds());
 }
 
@@ -2516,7 +2519,8 @@ TEST_F(WindowTreeClientTestHighDPI, InputEventsInDip) {
 
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds_in_pixels(0, 0, 100, 100);
-  window_tree_host.SetBoundsInPixels(bounds_in_pixels);
+  static_cast<WindowTreeHost*>(&window_tree_host)
+      ->SetBoundsInPixels(bounds_in_pixels);
   window_tree_host.InitHost();
   window_tree_host.Show();
   EXPECT_EQ(gfx::ConvertRectToDIP(2.0f, bounds_in_pixels), top_level->bounds());
@@ -2778,7 +2782,8 @@ TEST_F(WindowTreeClientTest, TopLevelSurfaceIds) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &new_top_level_change_id));
   EXPECT_EQ(0u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
-  top_level->host->SetBoundsInPixels(gfx::Rect(1, 2, 3, 4));
+  static_cast<WindowTreeHost*>(top_level->host.get())
+      ->SetBoundsInPixels(gfx::Rect(1, 2, 3, 4));
   EXPECT_EQ(1u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
   // As the initial LocalSurfaceId comes from the server, there shouldn't be
@@ -2845,7 +2850,8 @@ TEST_F(WindowTreeClientTest, TopLevelBoundsChangeFails) {
 
   // Resize the window.
   const gfx::Rect initial_bounds(1, 2, 3, 4);
-  top_level->host->SetBoundsInPixels(initial_bounds);
+  static_cast<WindowTreeHost*>(top_level->host.get())
+      ->SetBoundsInPixels(initial_bounds);
   auto initial_lsia = root->GetLocalSurfaceIdAllocation();
   EXPECT_TRUE(initial_lsia.IsValid());
   EXPECT_EQ(1u,

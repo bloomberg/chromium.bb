@@ -25,8 +25,7 @@ class WindowTreeHostMus;
 class AURA_EXPORT WindowTreeHostMusDelegate {
  public:
   // Called when the bounds of a WindowTreeHostMus is about to change.
-  // |bounds| is the bounds supplied to WindowTreeHostMus::SetBounds() and is
-  // in screen pixel coordinates.
+  // |bounds| is the bounds supplied to WindowTreeHostMus::SetBounds().
   virtual void OnWindowTreeHostBoundsWillChange(
       WindowTreeHostMus* window_tree_host,
       const gfx::Rect& bounds) = 0;

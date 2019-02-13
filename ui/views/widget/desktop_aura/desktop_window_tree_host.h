@@ -18,6 +18,7 @@ class Window;
 
 namespace client {
 class DragDropClient;
+class ScreenPositionClient;
 }
 }  // namespace aura
 
@@ -69,6 +70,11 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // DesktopWindowTreeHost.
   virtual std::unique_ptr<aura::client::DragDropClient> CreateDragDropClient(
       DesktopNativeCursorManager* cursor_manager) = 0;
+
+  // Creates the ScreenPositionClient to use for the WindowTreeHost. Default
+  // implementation creates DesktopScreenPositionClient.
+  virtual std::unique_ptr<aura::client::ScreenPositionClient>
+  CreateScreenPositionClient();
 
   virtual void Close() = 0;
   virtual void CloseNow() = 0;

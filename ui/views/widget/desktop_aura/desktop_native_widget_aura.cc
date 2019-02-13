@@ -515,7 +515,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   wm::SetActivationClient(host_->window(), focus_controller);
   host_->window()->AddPreTargetHandler(focus_controller);
 
-  position_client_.reset(new DesktopScreenPositionClient(host_->window()));
+  position_client_ = desktop_window_tree_host_->CreateScreenPositionClient();
 
   drag_drop_client_ = desktop_window_tree_host_->CreateDragDropClient(
       native_cursor_manager_);

@@ -32,6 +32,8 @@ jumbo_component("mus") {
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
+    "screen_position_client_mus.cc",
+    "screen_position_client_mus.h",
     "window_manager_constants_converters.cc",
     "window_manager_constants_converters.h",
     "window_manager_frame_values.cc",

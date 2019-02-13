@@ -10,10 +10,10 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/aura/window_tree_host.h"
 
 namespace aura {
 namespace {
@@ -132,7 +132,7 @@ void EmbedRoot::OnScheduledEmbedForExistingClient(
   delegate_->OnEmbedTokenAvailable(token);
 }
 
-void EmbedRoot::OnEmbed(std::unique_ptr<WindowTreeHost> window_tree_host) {
+void EmbedRoot::OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) {
   focus_client_ =
       std::make_unique<EmbeddedFocusClient>(window_tree_host->window());
   window_tree_host_ = std::move(window_tree_host);
