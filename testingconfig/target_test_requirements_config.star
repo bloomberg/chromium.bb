@@ -15,7 +15,8 @@ load('//target_test_requirements_config_helper.star',
      'standard_bvt_cq',
      'standard_bvt_inline',
      'standard_bvt_tast_cq',
-     'target_test_requirements')
+     'target_test_requirements',
+     'vm_smoke_test_config')
 
 set_up_graph()
 
@@ -266,3 +267,81 @@ target_test_requirements(
       standard_bvt_tast_cq(),
   ],
 )
+
+target_test_requirements(
+  build_target = 'amd64-generic-asan',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'amd64-generic-ubsan',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'betty-arc64',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'betty-arcnext',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=False),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'betty-asan',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'betty',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=False),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'lakitu-gpu',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'lakitu-nc',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'lakitu',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'lakitu-st',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'lakitu_next',
+  vm_test_configs = [
+      vm_smoke_test_config(use_ctest=True),
+  ],
+)
+

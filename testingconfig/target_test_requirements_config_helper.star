@@ -21,7 +21,7 @@ def target_test_requirements(
     reference_design=None,
     build_target=None,
     hw_test_configs=[],
-    test_suites=[]):
+    vm_test_configs=[]):
   """Create a PerTargetTestRestriction and binds it in the Starlark graph.
 
   Exactly one of reference_design or build_target must be selected. The former
@@ -31,15 +31,23 @@ def target_test_requirements(
   Args:
     reference_design: string, a mosys platform family, e.g. Google_Reef
     build_target: string, a particular CrOS build target, e.g. kevin
-    test_suites: list(string), the test suites to run
+    hw_test_configs: list(config_pb.HwTest)
+    vm_test_configs: list(config_pb.VmTest)
   """
 
   if bool(reference_design) == bool(build_target):
     fail('Expected exactly one of reference_design and build_target to be set. '
          + 'Instead, got %s and %s'%(reference_design, build_target))
 
-  hw_test_configs = sorted(hw_test_configs, key=lambda t: t.suite)
-  hw_test_cfg = config_pb.HwTestCfg(hw_test=hw_test_configs)
+  hw_test_cfg = None
+  if hw_test_configs:
+    hw_test_configs = sorted(hw_test_configs, key=lambda t: t.suite)
+    hw_test_cfg = config_pb.HwTestCfg(hw_test=hw_test_configs)
+
+  vm_test_cfg = None
+  if vm_test_configs:
+    vm_test_configs = sorted(vm_test_configs, key=lambda t: t.test_suite)
+    vm_test_cfg = config_pb.VmTestCfg(vm_test=vm_test_configs)
 
   if reference_design:
     target_name = reference_design
@@ -52,7 +60,8 @@ def target_test_requirements(
 
   testing_reqs = config_pb.PerTargetTestRequirements(
       build_criteria=build_criteria,
-      hw_test_cfg=hw_test_cfg)
+      hw_test_cfg=hw_test_cfg,
+      vm_test_cfg=vm_test_cfg)
   graph.add_node(
       graph.key(test_reqs_kind, target_name),
       props={'target_test_requirements': testing_reqs})
@@ -161,6 +170,26 @@ def standard_bvt_arc():
     blocking=False,
     minimum_duts=4)
 
+
+def vm_smoke_test_config(use_ctest):
+  """Creates a smoke VmTest with default settings.
+
+  See the proto for full descriptions of what each arg is.
+
+  Args:
+    use_ctest: bool
+
+  Returns:
+    config_pb.VmTest
+  """
+  return config_pb.VmTestCfg.VmTest(
+    max_retries=5,
+    retry=False,
+    test_suite='smoke',
+    test_type='vm_suite',
+    timeout_sec=5400,
+    use_ctest=use_ctest,
+    warn_only=False)
 
 
 def gen(ctx):
