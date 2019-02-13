@@ -807,6 +807,12 @@ class BuildSpecsManager(object):
       version_info.UpdateVersionFile(message, dry_run=self.dry_run)
       assert version != self.latest
       logging.info('Incremented version number to  %s', version)
+    else:
+      # See https://crbug.com/927911
+      logging.info(
+          'Version file does not match, not updating. Latest from buildspec'
+          ' is %s but chromeos_version.sh has %s.',
+          self.latest, version)
 
     return version
 
