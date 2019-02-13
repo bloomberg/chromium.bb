@@ -10370,7 +10370,7 @@ HttpCacheHugeResourceTest::GetTestModes() {
 std::list<HugeCacheTestConfiguration> HttpCacheHugeResourceTest::kTestModes =
     HttpCacheHugeResourceTest::GetTestModes();
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     _,
     HttpCacheHugeResourceTest,
     ::testing::ValuesIn(HttpCacheHugeResourceTest::kTestModes));
@@ -10380,7 +10380,7 @@ INSTANTIATE_TEST_CASE_P(
 // Test what happens when StopCaching() is called while reading a huge resource
 // fetched via GET. Various combinations of cache state and when StopCaching()
 // is called is controlled by the parameter passed into the test via the
-// INSTANTIATE_TEST_CASE_P invocation above.
+// INSTANTIATE_TEST_SUITE_P invocation above.
 TEST_P(HttpCacheHugeResourceTest,
        StopCachingFollowedByReadForHugeTruncatedResource) {
   // This test is going to be repeated for all combinations of TransactionPhase
@@ -11567,7 +11567,7 @@ class HttpCacheMemoryDumpTest
     : public testing::TestWithParam<base::trace_event::MemoryDumpLevelOfDetail>,
       public WithScopedTaskEnvironment {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HttpCacheMemoryDumpTest,
     ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,

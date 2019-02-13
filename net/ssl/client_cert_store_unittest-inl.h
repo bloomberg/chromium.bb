@@ -50,11 +50,11 @@ const unsigned char kAuthorityRootDN[] = {
 // filtering behavior.
 //
 // NOTE: If any test cases are added, removed, or renamed, the
-// REGISTER_TYPED_TEST_CASE_P macro at the bottom of this file must be updated.
+// REGISTER_TYPED_TEST_SUITE_P macro at the bottom of this file must be updated.
 //
-// The type T provided as the third argument to INSTANTIATE_TYPED_TEST_CASE_P by
-// the platform implementation should implement this method:
-// bool SelectClientCerts(const CertificateList& input_certs,
+// The type T provided as the third argument to INSTANTIATE_TYPED_TEST_SUITE_P
+// by the platform implementation should implement this method: bool
+// SelectClientCerts(const CertificateList& input_certs,
 //                        const SSLCertRequestInfo& cert_request_info,
 //                        ClientCertIdentityList* selected_identities);
 template <typename T>
@@ -63,7 +63,7 @@ class ClientCertStoreTest : public TestWithScopedTaskEnvironment {
   T delegate_;
 };
 
-TYPED_TEST_CASE_P(ClientCertStoreTest);
+TYPED_TEST_SUITE_P(ClientCertStoreTest);
 
 TYPED_TEST_P(ClientCertStoreTest, EmptyQuery) {
   CertificateList certs;
@@ -170,11 +170,11 @@ TYPED_TEST_P(ClientCertStoreTest, PrintableStringContainingUTF8) {
       selected_identities[0]->certificate()->EqualsExcludingChain(cert.get()));
 }
 
-REGISTER_TYPED_TEST_CASE_P(ClientCertStoreTest,
-                           EmptyQuery,
-                           AllIssuersAllowed,
-                           DISABLED_CertAuthorityFiltering,
-                           PrintableStringContainingUTF8);
+REGISTER_TYPED_TEST_SUITE_P(ClientCertStoreTest,
+                            EmptyQuery,
+                            AllIssuersAllowed,
+                            DISABLED_CertAuthorityFiltering,
+                            PrintableStringContainingUTF8);
 
 }  // namespace net
 

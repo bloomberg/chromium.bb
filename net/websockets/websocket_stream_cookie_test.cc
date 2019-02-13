@@ -382,9 +382,9 @@ const ClientUseCookieParameter kClientUseCookieParameters[] = {
      kNoCookieHeader},
 };
 
-INSTANTIATE_TEST_CASE_P(WebSocketStreamClientUseCookieTest,
-                        WebSocketStreamClientUseCookieTest,
-                        ValuesIn(kClientUseCookieParameters));
+INSTANTIATE_TEST_SUITE_P(WebSocketStreamClientUseCookieTest,
+                         WebSocketStreamClientUseCookieTest,
+                         ValuesIn(kClientUseCookieParameters));
 
 const ServerSetCookieParameter kServerSetCookieParameters[] = {
     // Cookies coming from ws
@@ -514,9 +514,9 @@ const ServerSetCookieParameter kServerSetCookieParameters[] = {
      "Set-Cookie: test-cookie"},
 };
 
-INSTANTIATE_TEST_CASE_P(WebSocketStreamServerSetCookieTest,
-                        WebSocketStreamServerSetCookieTest,
-                        ValuesIn(kServerSetCookieParameters));
+INSTANTIATE_TEST_SUITE_P(WebSocketStreamServerSetCookieTest,
+                         WebSocketStreamServerSetCookieTest,
+                         ValuesIn(kServerSetCookieParameters));
 
 }  // namespace
 }  // namespace net

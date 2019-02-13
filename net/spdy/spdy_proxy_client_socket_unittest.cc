@@ -478,9 +478,9 @@ spdy::SpdySerializedFrame SpdyProxyClientSocketTest::ConstructBodyFrame(
 
 // ----------- Connect
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SpdyProxyClientSocketTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SpdyProxyClientSocketTest,
+                         ::testing::Bool());
 
 TEST_P(SpdyProxyClientSocketTest, ConnectSendsCorrectRequest) {
   spdy::SpdySerializedFrame conn(ConstructConnectRequestFrame());

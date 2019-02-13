@@ -247,13 +247,13 @@ const CompatibilityTestParameter kCompatibilityTestParameters[] = {
     {"; client_max_window_bits=12", "; client_max_window_bits=13", true},
 };
 
-INSTANTIATE_TEST_CASE_P(WebSocketDeflateParametersInitializeTest,
-                        WebSocketDeflateParametersInitializeTest,
-                        ::testing::ValuesIn(InitializeTestParameters()));
+INSTANTIATE_TEST_SUITE_P(WebSocketDeflateParametersInitializeTest,
+                         WebSocketDeflateParametersInitializeTest,
+                         ::testing::ValuesIn(InitializeTestParameters()));
 
-INSTANTIATE_TEST_CASE_P(WebSocketDeflateParametersCompatibilityTest,
-                        WebSocketDeflateParametersCompatibilityTest,
-                        ::testing::ValuesIn(kCompatibilityTestParameters));
+INSTANTIATE_TEST_SUITE_P(WebSocketDeflateParametersCompatibilityTest,
+                         WebSocketDeflateParametersCompatibilityTest,
+                         ::testing::ValuesIn(kCompatibilityTestParameters));
 
 }  // namespace
 

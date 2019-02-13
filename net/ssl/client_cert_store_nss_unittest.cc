@@ -67,9 +67,9 @@ class ClientCertStoreNSSTestDelegate {
   }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(NSS,
-                              ClientCertStoreTest,
-                              ClientCertStoreNSSTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(NSS,
+                               ClientCertStoreTest,
+                               ClientCertStoreNSSTestDelegate);
 
 // Tests that ClientCertStoreNSS attempts to build a certificate chain by
 // querying NSS before return a certificate.

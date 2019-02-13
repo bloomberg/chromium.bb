@@ -144,7 +144,7 @@ class GzipSourceStreamTest : public ::testing::TestWithParam<GzipTestParam> {
   std::unique_ptr<GzipSourceStream> stream_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GzipSourceStreamTests,
     GzipSourceStreamTest,
     ::testing::Values(GzipTestParam(kBigBufferSize,

@@ -6066,11 +6066,11 @@ class SpdySessionReadIfReadyTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SpdySessionReadIfReadyTest,
-                        testing::Values(READ_IF_READY_ENABLED_SUPPORTED,
-                                        READ_IF_READY_ENABLED_NOT_SUPPORTED,
-                                        READ_IF_READY_DISABLED));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SpdySessionReadIfReadyTest,
+                         testing::Values(READ_IF_READY_ENABLED_SUPPORTED,
+                                         READ_IF_READY_ENABLED_NOT_SUPPORTED,
+                                         READ_IF_READY_DISABLED));
 
 // Tests basic functionality of ReadIfReady() when it is enabled or disabled.
 TEST_P(SpdySessionReadIfReadyTest, ReadIfReady) {

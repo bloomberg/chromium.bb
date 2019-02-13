@@ -5656,9 +5656,9 @@ class SpdyNetworkTransactionPushHeaderTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SpdyNetworkTransactionPushHeaderTest,
-                        ::testing::ValuesIn(push_header_test_cases));
+INSTANTIATE_TEST_SUITE_P(,
+                         SpdyNetworkTransactionPushHeaderTest,
+                         ::testing::ValuesIn(push_header_test_cases));
 
 TEST_P(SpdyNetworkTransactionPushHeaderTest,
        PushedResponseHeadersReceivedBeforeRequest) {
@@ -5863,9 +5863,9 @@ class SpdyNetworkTransactionPushUrlTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SpdyNetworkTransactionPushUrlTest,
-                        ::testing::ValuesIn(push_url_test_cases));
+INSTANTIATE_TEST_SUITE_P(,
+                         SpdyNetworkTransactionPushUrlTest,
+                         ::testing::ValuesIn(push_url_test_cases));
 
 TEST_P(SpdyNetworkTransactionPushUrlTest, PushUrlTest) {
   RunTest();

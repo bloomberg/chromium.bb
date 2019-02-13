@@ -345,9 +345,9 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
 };
 
 // Instantiates each FileNetLogObserverTest to use bounded and unbounded modes.
-INSTANTIATE_TEST_CASE_P(,
-                        FileNetLogObserverTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         FileNetLogObserverTest,
+                         ::testing::Values(true, false));
 
 // Tests deleting a FileNetLogObserver without first calling StopObserving().
 TEST_P(FileNetLogObserverTest, ObserverDestroyedWithoutStopObserving) {
