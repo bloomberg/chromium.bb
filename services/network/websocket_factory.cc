@@ -12,6 +12,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/websocket.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace network {
 
@@ -61,8 +62,13 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
   }
 
   bool CanReadRawCookies(const GURL& url) override {
+    DCHECK(url.SchemeIsWSOrWSS());
+    GURL::Replacements replace_scheme;
+    replace_scheme.SetSchemeStr(
+        url.SchemeIs(url::kWssScheme) ? url::kHttpsScheme : url::kHttpScheme);
+    GURL url_to_check = url.ReplaceComponents(replace_scheme);
     return factory_->context_->network_service()->HasRawHeadersAccess(
-        process_id_, url);
+        process_id_, url_to_check);
   }
 
   void OnCreateURLRequest(int child_id,

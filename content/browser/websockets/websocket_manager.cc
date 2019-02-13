@@ -86,7 +86,7 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
     ChildProcessSecurityPolicyImpl* impl =
         ChildProcessSecurityPolicyImpl::GetInstance();
     return impl->CanReadRawCookies(manager_->process_id_) &&
-           impl->CanAccessDataForOrigin(manager_->process_id_, url);
+           impl->CanAccessDataForWebSocket(manager_->process_id_, url);
   }
 
   void OnCreateURLRequest(int child_id,
