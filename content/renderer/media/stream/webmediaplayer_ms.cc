@@ -647,18 +647,12 @@ void WebMediaPlayerMS::SetVolume(double volume) {
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
 }
 
-void WebMediaPlayerMS::EnterPictureInPicture() {
+void WebMediaPlayerMS::OnRequestPictureInPicture() {
   if (!bridge_)
     ActivateSurfaceLayerForVideo();
 
   DCHECK(bridge_);
   DCHECK(bridge_->GetSurfaceId().is_valid());
-}
-
-void WebMediaPlayerMS::ExitPictureInPicture() {
-  // Internal cleanups.
-  // TODO(mlamouri): remove the need for this.
-  OnPictureInPictureModeEnded();
 }
 
 void WebMediaPlayerMS::SetPictureInPictureCustomControls(

@@ -50,8 +50,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   void Seek(double seconds) override {}
   void SetRate(double) override {}
   void SetVolume(double) override {}
-  void EnterPictureInPicture() override {}
-  void ExitPictureInPicture() override {}
+  void OnRequestPictureInPicture() override {}
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>&) override {}
   blink::WebTimeRanges Buffered() const override {

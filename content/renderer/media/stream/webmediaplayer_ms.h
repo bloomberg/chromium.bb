@@ -116,8 +116,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
-  void EnterPictureInPicture() override;
-  void ExitPictureInPicture() override;
+  void OnRequestPictureInPicture() override;
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>&) override;
   void SetSinkId(

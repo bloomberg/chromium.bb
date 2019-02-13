@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/picture_in_picture_control_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
@@ -99,6 +100,8 @@ PictureInPictureControllerImpl::IsElementAllowed(
 void PictureInPictureControllerImpl::EnterPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver) {
+  DCHECK(element->GetWebMediaPlayer());
+
   if (picture_in_picture_element_ == element) {
     if (resolver)
       resolver->Resolve(picture_in_picture_window_);
@@ -106,12 +109,13 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
     return;
   }
 
-  element->enterPictureInPicture();
-
-  DCHECK(element->GetWebMediaPlayer());
-
   if (!EnsureService())
     return;
+
+  if (element->DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
+    Fullscreen::ExitFullscreen(*GetSupplementable());
+
+  element->GetWebMediaPlayer()->OnRequestPictureInPicture();
 
   picture_in_picture_service_->StartSession(
       element->GetWebMediaPlayer()->GetDelegateId(),
@@ -131,7 +135,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver,
     const WebSize& picture_in_picture_window_size) {
-  if (IsElementAllowed(*element) == Status::kDisabledByAttribute) {
+  if (IsElementAllowed(*element) != Status::kEnabled) {
     if (resolver) {
       resolver->Reject(
           DOMException::Create(DOMExceptionCode::kInvalidStateError, ""));
@@ -173,9 +177,6 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 void PictureInPictureControllerImpl::ExitPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver) {
-  if (element->GetWebMediaPlayer())
-    element->GetWebMediaPlayer()->ExitPictureInPicture();
-
   if (!EnsureService())
     return;
 

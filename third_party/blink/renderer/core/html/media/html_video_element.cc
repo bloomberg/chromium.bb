@@ -663,14 +663,6 @@ bool HTMLVideoElement::SupportsPictureInPicture() const {
          PictureInPictureController::Status::kEnabled;
 }
 
-void HTMLVideoElement::enterPictureInPicture() {
-  if (DisplayType() == WebMediaPlayer::DisplayType::kFullscreen)
-    Fullscreen::ExitFullscreen(GetDocument());
-
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->EnterPictureInPicture();
-}
-
 void HTMLVideoElement::SendCustomControlsToPipWindow() {
   // TODO(sawtelle): Allow setting controls multiple times for a video, even
   // when not active, https://crbug.com/869133

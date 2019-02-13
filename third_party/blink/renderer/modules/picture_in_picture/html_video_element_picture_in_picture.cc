@@ -95,13 +95,7 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  document.GetTaskRunner(TaskType::kMediaElementEvent)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(&PictureInPictureControllerImpl::EnterPictureInPicture,
-                    WrapPersistent(&controller), WrapPersistent(&element),
-                    WrapPersistent(resolver)));
-
+  controller.EnterPictureInPicture(&element, resolver);
   return promise;
 }
 

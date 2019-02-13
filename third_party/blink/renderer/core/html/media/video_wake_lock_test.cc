@@ -53,6 +53,12 @@ class VideoWakeLockPictureInPictureService
   mojo::Binding<mojom::blink::PictureInPictureService> binding_;
 };
 
+class VideoWakeLockMediaPlayer final : public EmptyWebMediaPlayer {
+ public:
+  ReadyState GetReadyState() const final { return kReadyStateHaveMetadata; }
+  bool HasVideo() const final { return true; }
+};
+
 class VideoWakeLockFrameClient : public test::MediaStubLocalFrameClient {
  public:
   static VideoWakeLockFrameClient* Create(
@@ -109,7 +115,7 @@ class VideoWakeLockTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetupPageWithClients(
         nullptr, VideoWakeLockFrameClient::Create(
-                     std::make_unique<EmptyWebMediaPlayer>()));
+                     std::make_unique<VideoWakeLockMediaPlayer>()));
 
     service_manager::InterfaceProvider::TestApi test_api(
         GetFrame().Client()->GetInterfaceProvider());
@@ -119,6 +125,7 @@ class VideoWakeLockTest : public PageTestBase {
                            WTF::Unretained(&pip_service_)));
 
     video_ = HTMLVideoElement::Create(GetDocument());
+    video_->SetReadyState(HTMLMediaElement::ReadyState::kHaveMetadata);
     video_wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*video_.Get());
 
     GetPage().SetIsHidden(false, true);
