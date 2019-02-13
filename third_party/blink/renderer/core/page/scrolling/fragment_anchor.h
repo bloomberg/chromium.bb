@@ -14,62 +14,40 @@ namespace blink {
 class LocalFrame;
 class KURL;
 
-// This class encapsulates the behavior of a "fragment anchor". A fragment
-// anchor allows a page to link to a specific part of a page by specifying an
-// element id in the URL fragment. The fragment is the part after the '#'
-// character. E.g. navigating to www.example.com/index.html#section3 will find
-// the element with id "section3" and focus and scroll it into view.
+// This class is an interface for the concept of a "fragment anchor". A
+// fragment anchor allows a page to link to a specific part of a page by using
+// the URL fragment. The fragment is the part after the '#' character. E.g.
+// navigating to www.example.com/index.html#section3 will find the element with
+// id "section3" and focus and scroll it into view.
 //
-// While the page is loading, the fragment anchor tries to repeatedly scroll
-// the element into view since it's position may change as a result of layouts.
-// TODO(bokan): Maybe we no longer need the repeated scrolling since that
-// should be handled by scroll-anchoring?
+// This class provides an interface that different types of fragment anchors
+// can implement, allowing fragments to specify different kinds of anchors.
+// Callers should use the TryCreate static method to create and return the
+// appropriate type of base class.
 class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
  public:
-  // Parses the fragment string and tries to create a FragmentAnchor object. If
-  // an appropriate target was found based on the given fragment, this method
-  // will create and return a FragmentAnchor object that can be used to keep it
-  // in view.  Otherwise, this will return nullptr. In either case,
-  // side-effects on the document will be performed, for example,
-  // setting/clearing :target and svgView(). If needs_invoke is false, only the
-  // side effects will be performed, the element won't be scrolled/focused and
-  // this method returns nullptr (e.g. used during history navigation where we
-  // don't want to clobber the history scroll restoration).
+  // Parses the fragment string and tries to create a FragmentAnchor object of
+  // the appropriate derived type. If no anchor could be created from the given
+  // url, this returns nullptr. In either case, side-effects on the document
+  // will be performed, for example, setting/clearing :target and svgView().
   static FragmentAnchor* TryCreate(const KURL& url,
                                    bool needs_invoke,
                                    LocalFrame& frame);
 
-  FragmentAnchor(Node& anchor_node, LocalFrame& frame);
+  FragmentAnchor() = default;
   virtual ~FragmentAnchor() = default;
 
   // Invoking the fragment anchor scrolls it into view and performs any other
   // desired actions. This is called repeatedly during loading as the lifecycle
   // is updated to keep the element in view. If true, the anchor should be kept
   // alive and invoked again. Otherwise it may be disposed.
-  bool Invoke();
+  virtual bool Invoke() = 0;
 
-  // Used to let the fragment know the frame's been scrolled and so we should
-  // abort keeping the fragment target in view to avoid fighting with user
-  // scrolls.
-  void DidScroll(ScrollType type);
+  virtual void DidScroll(ScrollType type) = 0;
+  virtual void PerformPreRafActions() = 0;
+  virtual void DidCompleteLoad() = 0;
 
-  void PerformPreRafActions();
-
-  void DidCompleteLoad();
-
-  void Trace(blink::Visitor*);
-
- private:
-  void ApplyFocusIfNeeded();
-
-  WeakMember<Node> anchor_node_;
-  Member<LocalFrame> frame_;
-  bool needs_focus_;
-
-  // While this is true, the fragment is still "active" in the sense that we
-  // want the owner to continue calling Invoke(). Once this is false, calling
-  // Invoke has no effect and the fragment can be disposed.
-  bool needs_invoke_ = true;
+  virtual void Trace(blink::Visitor*) {}
 };
 
 }  // namespace blink
