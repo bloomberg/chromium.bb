@@ -217,6 +217,8 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
                                                  "sharedworker");
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Site",
                                                  site_value.c_str());
+    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
+                                                 "same-origin");
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-User", "?F");
   }
 }
