@@ -8,22 +8,26 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+
+class Profile;
 
 namespace app_list {
 
 class CrostiniRepositorySearchResult : public ChromeSearchResult {
  public:
-  explicit CrostiniRepositorySearchResult(const std::string& app_name);
+  CrostiniRepositorySearchResult(Profile* profile, const std::string& app_name);
   ~CrostiniRepositorySearchResult() override;
 
   // ChromeSearchResult overrides:
-  // TODO(https://crbug.com/921429): Implement open functionality (confirmation
-  // and installation of app).
   void Open(int event_flags) override;
 
  private:
+  void OnOpen(const crostini::LinuxPackageInfo& package);
+
+  Profile* profile_;
   std::string app_name_;
   base::WeakPtrFactory<CrostiniRepositorySearchResult> weak_ptr_factory_;
 

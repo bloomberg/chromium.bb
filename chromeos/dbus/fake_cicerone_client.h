@@ -245,6 +245,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     container_app_icon_response_ = container_app_icon_response;
   }
 
+  void set_search_app_response(
+      const vm_tools::cicerone::AppSearchResponse& search_app_response) {
+    search_app_response_ = search_app_response;
+  }
+
   const vm_tools::cicerone::LinuxPackageInfoRequest&
   get_most_recent_linux_package_info_request() const {
     return most_recent_linux_package_info_request_;
