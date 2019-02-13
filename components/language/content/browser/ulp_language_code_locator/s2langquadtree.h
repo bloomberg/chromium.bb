@@ -31,13 +31,14 @@ class S2LangQuadTreeNode {
     return Get(cell, &level);
   }
 
-  // Reconstruct a S2LangQuadTree with structure given by |tree| and with
-  // languages given by |languages|. |tree| represents a depth-first traversal
-  // of the tree with (1) internal nodes represented by a single bit 0, and (2)
-  // leaf nodes represented by a bit 1 followed by the binary form of the index
-  // of the language at that leaf into |languages|. We assume those indexes have
-  // the smallest number of bits necessary. Indices are 1-based; index 0
-  // represents absent language.
+  // Reconstruct a (complete) S2LangQuadTree with structure given by |tree| and
+  // with languages given by |languages|. |tree| represents a depth-first
+  // traversal of the tree with (1) internal nodes represented by a single bit
+  // 0, and (2) leaf nodes represented by a bit 1 followed by the binary form of
+  // the index of the language at that leaf into |languages|. We assume those
+  // indexes have the smallest number of bits necessary. Indices are 1-based;
+  // index 0 represents absent language.
+  //
   // The bitset size is templated to allow this method to be re-used for the
   // small number of different-sized serialized trees we have.
   template <size_t numbits>
@@ -71,13 +72,13 @@ class S2LangQuadTreeNode {
       return bits_per_lang_index + 1;
     } else {
       size_t subtree_size = 1;
+      root->children_.reserve(4);
       for (int child_index = 0; child_index < 4; child_index++) {
         S2LangQuadTreeNode child;
         subtree_size +=
             DeserializeSubtree(serialized, bit_offset + subtree_size, languages,
                                bits_per_lang_index, &child);
-        if (!child.IsNullLeaf())
-          root->children_[child_index] = child;
+        root->children_.push_back(child);
       }
       return subtree_size;
     }
@@ -96,7 +97,7 @@ class S2LangQuadTreeNode {
     return base::bits::Log2Ceiling(num_languages + 1);
   }
 
-  std::map<int, S2LangQuadTreeNode> children_;
+  std::vector<S2LangQuadTreeNode> children_;
   std::string language_;
 };
 
