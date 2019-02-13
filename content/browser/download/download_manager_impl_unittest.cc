@@ -761,6 +761,8 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   OnInProgressDownloadManagerInitialized();
   ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
 
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId(_))
+      .WillOnce(RunCallback<0>(1));
   OnHistoryDBInitialized();
   ASSERT_TRUE(download_manager_->GetDownloadByGuid(kGuid));
   download::DownloadItem* download =

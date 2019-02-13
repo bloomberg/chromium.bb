@@ -1204,4 +1204,9 @@ void RecordInProgressDBCount(InProgressDBCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION("Download.InProgressDB.Counts", type);
 }
 
+void RecordDuplicateInProgressDownloadIdCount(int count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DuplicateInProgressDownloadIdCount",
+                              count, 1, 10, 11);
+}
+
 }  // namespace download

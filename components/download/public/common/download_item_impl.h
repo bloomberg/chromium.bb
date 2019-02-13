@@ -349,6 +349,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   void SetDelegate(DownloadItemImplDelegate* delegate);
 
+  void SetDownloadId(uint32_t download_id);
+
   const DownloadUrlParameters::RequestHeadersType& request_headers() const {
     return request_headers_;
   }

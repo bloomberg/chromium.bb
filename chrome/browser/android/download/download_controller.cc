@@ -388,6 +388,9 @@ void DownloadController::OnDownloadStarted(
 }
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {
+  if (item->IsTemporary() || item->IsTransient())
+    return;
+
   if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED)) {
     // Dont't show notification for a dangerous download, as user can resume
     // the download after browser crash through notification.
