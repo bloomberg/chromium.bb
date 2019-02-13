@@ -49,6 +49,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->show_in_search = internal_app.searchable
                             ? apps::mojom::OptionalBool::kTrue
                             : apps::mojom::OptionalBool::kFalse;
+  app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
   return app;
 }

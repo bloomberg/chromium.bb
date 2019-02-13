@@ -39,6 +39,7 @@ struct App {
   // show_in_yyy fields?
   OptionalBool show_in_launcher;
   OptionalBool show_in_search;
+  OptionalBool show_in_management;
 
   // When adding new fields, also update the Merge method and other helpers in
   // chrome/services/app_service/public/cpp/app_update.*

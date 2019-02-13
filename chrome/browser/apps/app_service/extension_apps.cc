@@ -29,6 +29,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/switches.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -361,6 +362,21 @@ bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
   return app_id == arc::kPlayStoreAppId;
 }
 
+// static
+apps::mojom::OptionalBool ExtensionApps::ShouldShowInAppManagement(
+    const extensions::Extension* extension) {
+  // Component extensions should not show up in App Management as they
+  // are only extensions as an implementation detail of Chrome, and have
+  // no meaningful settings.
+  if (extensions::Manifest::IsComponentLocation(extension->location()) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          extensions::switches::kShowComponentExtensionOptions)) {
+    return apps::mojom::OptionalBool::kFalse;
+  } else {
+    return apps::mojom::OptionalBool::kTrue;
+  }
+}
+
 void ExtensionApps::PopulatePermissions(
     const extensions::Extension* extension,
     std::vector<mojom::PermissionPtr>* target) {
@@ -450,6 +466,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
                   : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;
   app->show_in_search = show;
+  app->show_in_management = ShouldShowInAppManagement(extension);
 
   return app;
 }

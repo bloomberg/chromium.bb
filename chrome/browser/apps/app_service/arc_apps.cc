@@ -419,6 +419,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
                                         : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;
   app->show_in_search = show;
+  app->show_in_management = show;
 
   return app;
 }

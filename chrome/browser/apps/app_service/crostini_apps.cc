@@ -188,6 +188,7 @@ apps::mojom::AppPtr CrostiniApps::Convert(
                                         : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;
   app->show_in_search = show;
+  app->show_in_management = show;
 
   return app;
 }
