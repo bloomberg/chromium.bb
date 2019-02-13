@@ -133,29 +133,27 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
 
   device_names->push_back(AudioDeviceName::CreateDefault());
 
-  if (base::FeatureList::IsEnabled(features::kEnumerateAudioDevices)) {
-    chromeos::AudioDeviceList devices;
-    GetAudioDevices(&devices);
+  chromeos::AudioDeviceList devices;
+  GetAudioDevices(&devices);
 
-    // |dev_idx_map| is a map of dev_index and their audio devices.
-    std::map<int, chromeos::AudioDeviceList> dev_idx_map;
-    for (const auto& device : devices) {
-      if (device.is_input != is_input || !device.is_for_simple_usage())
-        continue;
+  // |dev_idx_map| is a map of dev_index and their audio devices.
+  std::map<int, chromeos::AudioDeviceList> dev_idx_map;
+  for (const auto& device : devices) {
+    if (device.is_input != is_input || !device.is_for_simple_usage())
+      continue;
 
-      dev_idx_map[dev_index_of(device.id)].push_back(device);
-    }
+    dev_idx_map[dev_index_of(device.id)].push_back(device);
+  }
 
-    for (const auto& item : dev_idx_map) {
-      if (1 == item.second.size()) {
-        const chromeos::AudioDevice& device = item.second.front();
-        device_names->emplace_back(device.display_name,
-                                   base::NumberToString(device.id));
-      } else {
-        // Create virtual device name for audio nodes that share the same device
-        // index.
-        ProcessVirtualDeviceName(device_names, item.second);
-      }
+  for (const auto& item : dev_idx_map) {
+    if (1 == item.second.size()) {
+      const chromeos::AudioDevice& device = item.second.front();
+      device_names->emplace_back(device.display_name,
+                                 base::NumberToString(device.id));
+    } else {
+      // Create virtual device name for audio nodes that share the same device
+      // index.
+      ProcessVirtualDeviceName(device_names, item.second);
     }
   }
 }
@@ -216,9 +214,6 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
 
 std::string AudioManagerCras::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
-  if (!base::FeatureList::IsEnabled(features::kEnumerateAudioDevices))
-    return "";
-
   chromeos::AudioDeviceList devices;
   GetAudioDevices(&devices);
 

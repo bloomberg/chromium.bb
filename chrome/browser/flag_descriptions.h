@@ -391,9 +391,6 @@ extern const char kEnableSystemWebAppsDescription[];
 extern const char kEnforceTLS13DowngradeName[];
 extern const char kEnforceTLS13DowngradeDescription[];
 
-extern const char kEnableEnumeratingAudioDevicesName[];
-extern const char kEnableEnumeratingAudioDevicesDescription[];
-
 extern const char kEnableGenericSensorName[];
 extern const char kEnableGenericSensorDescription[];
 

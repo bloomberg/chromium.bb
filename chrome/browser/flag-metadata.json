@@ -2102,11 +2102,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enumerate-audio-devices",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "expensive-background-timer-throttling",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
