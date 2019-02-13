@@ -10,7 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
 
 class CrostiniBrowserTestChromeBrowserMainExtraParts;
 
@@ -27,8 +27,7 @@ class CrostiniDialogBrowserTest : public DialogBrowserTest {
   void SetUp() override;
   void SetUpOnMainThread() override;
 
-  void SetConnectionType(
-      net::NetworkChangeNotifier::ConnectionType connection_type);
+  void SetConnectionType(network::mojom::ConnectionType connection_type);
 
   void UnregisterTermina();
 
