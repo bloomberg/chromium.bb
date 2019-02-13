@@ -30,7 +30,17 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 import os
 import sys
 
-fullscreen_script = r"""
+# Waits for [x] seconds after browser launch before measuring power to
+# avoid startup tasks affecting results.
+_POWER_MEASUREMENT_DELAY = 20
+
+# Measures power for [x] seconds and calculates the average as results.
+_POWER_MEASUREMENT_DURATION = 30
+
+# Measures power in resolution of [x] milli-seconds.
+_POWER_MEASUREMENT_RESOLUTION = 100
+
+_FULLSCREEN_SCRIPT = r"""
   function locateElement(tag) {
     // return the element with largest width.
     var elements = document.getElementsByTagName(tag);
@@ -120,14 +130,17 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def AddCommandlineArgs(cls, parser):
     super(PowerMeasurementIntegrationTest, cls).AddCommandlineArgs(parser)
-    parser.add_option("--duration", default=60, type="int",
+    parser.add_option("--duration", default=_POWER_MEASUREMENT_DURATION,
+                      type="int",
                       help="specify how many seconds Intel Power Gadget "
-                      "measures. By default, 60 seconds is selected.")
-    parser.add_option("--delay", default=10, type="int",
+                      "measures. By default, %d seconds is selected." %
+                          _POWER_MEASUREMENT_DURATION)
+    parser.add_option("--delay", default=_POWER_MEASUREMENT_DELAY, type="int",
                       help="specify how many seconds we skip in the data "
                       "Intel Power Gadget collects. This time is for starting "
                       "video play, switching to fullscreen mode, etc. "
-                      "By default, 10 seconds is selected.")
+                      "By default, %d seconds is selected." %
+                          _POWER_MEASUREMENT_DELAY)
     parser.add_option("--resolution", default=100, type="int",
                       help="specify how often Intel Power Gadget samples "
                       "data in milliseconds. By default, 100 ms is selected.")
@@ -157,14 +170,20 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('url', options.url, (options.repeat,
-                                options.outliers,
-                                options.fullscreen,
-                                options.underlay,
-                                options.logdir,
-                                options.duration,
-                                options.delay,
-                                options.resolution))
+    yield ('Basic', '-', {'test_func': 'Basic'})
+    if options.url is not None:
+      # This is for local testing convenience only and is not to be added to
+      # any bots.
+      yield ('URL', options.url,
+             {'test_func': 'URL',
+              'repeat': options.repeat,
+              'outliers': options.outliers,
+              'fullscreen': options.fullscreen,
+              'underlay': options.underlay,
+              'logdir': options.logdir,
+              'duration': options.duration,
+              'delay': options.delay,
+              'resolution': options.resolution})
 
   @classmethod
   def SetUpProcess(cls):
@@ -178,15 +197,38 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     ipg_path = ipg_utils.LocateIPG()
     if not ipg_path:
       self.fail("Fail to locate Intel Power Gadget")
+    test_params = args[0]
+    assert test_params is not None and 'test_func' in test_params
+    prefixed_test_func_name = '_RunTest_%s' % test_params['test_func']
+    getattr(self, prefixed_test_func_name)(test_path, test_params)
 
-    repeat = args[0]
-    outliers = args[1]
-    fullscreen = args[2]
-    underlay = args[3]
-    ipg_logdir = args[4]
-    ipg_duration = args[5]
-    ipg_delay = args[6]
-    ipg_resolution = args[7]
+  @classmethod
+  def _CreateExpectations(cls):
+    return PowerMeasurementExpectations()
+
+  #########################################
+  # Actual test functions
+
+  def _RunTest_Basic(self, test_path, params):
+    logfile = None # Use the default path
+    ipg_utils.RunIPG(_POWER_MEASUREMENT_DURATION + _POWER_MEASUREMENT_DELAY,
+                     _POWER_MEASUREMENT_RESOLUTION,
+                     logfile)
+    results = ipg_utils.AnalyzeIPGLogFile(logfile, _POWER_MEASUREMENT_DELAY)
+    # TODO(zmo): output in a way that the results can be tracked at
+    # chromeperf.appspot.com.
+    print "Results: ", results
+
+
+  def _RunTest_URL(self, test_path, params):
+    repeat = params['repeat']
+    outliers = params['outliers']
+    fullscreen = params['fullscreen']
+    underlay = params['underlay']
+    ipg_logdir = params['logdir']
+    ipg_duration = params['duration']
+    ipg_delay = params['delay']
+    ipg_resolution = params['resolution']
 
     print ""
     print "Total iterations: ", repeat
@@ -195,7 +237,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       run_label = "Iteration_%d" % iteration
       print run_label
       if test_path:
-        self.tab.action_runner.Navigate(test_path, fullscreen_script)
+        self.tab.action_runner.Navigate(test_path, _FULLSCREEN_SCRIPT)
         self.tab.WaitForDocumentReadyStateToBeComplete()
         code = "setupVideoElement(%s)" % ("true" if underlay else "false")
         if not self.tab.action_runner.EvaluateJavaScript(code):
@@ -237,9 +279,6 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         logfiles, ipg_delay, outliers, json_path)
       print 'Summary: ', summary
 
-  @classmethod
-  def _CreateExpectations(cls):
-    return PowerMeasurementExpectations()
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
