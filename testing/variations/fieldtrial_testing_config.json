@@ -4356,6 +4356,26 @@
             ]
         }
     ],
+    "ServiceWorkerAggressiveCodeCache": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190212",
+                    "enable_features": [
+                        "ServiceWorkerAggressiveCodeCache"
+                    ]
+                }
+            ]
+        }
+    ],
     "ServiceWorkerForegroundPriority": [
         {
             "platforms": [
