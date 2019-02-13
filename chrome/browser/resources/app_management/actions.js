@@ -19,12 +19,12 @@ cr.define('app_management.actions', function() {
   }
 
   /**
-   * @param {App} update
+   * @param {App} app
    */
-  function changeApp(update) {
+  function changeApp(app) {
     return {
       name: 'change-app',
-      update: update,
+      app: app,
     };
   }
 

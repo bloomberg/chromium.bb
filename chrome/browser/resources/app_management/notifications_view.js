@@ -48,21 +48,29 @@ Polymer({
   },
 
   attached: function() {
-    this.onViewLoaded_();
-
     this.watch('apps_', state => state.apps);
     this.updateFromStore();
+
+    this.onViewLoaded_();
   },
 
   /**
+   * Creates arrays of displayed and collapsed apps based on the sets of apps
+   * with notifications allowed and blocked in the Store. The orders of apps
+   * in these arrays should then remain fixed while this view is showing.
+   *
    * If all the apps have / don't have notification permission, display the
    * whole list, else display those with notification permission before
    * expanding.
    * @private
    */
   onViewLoaded_: function() {
-    [this.displayedApps_, this.collapsedApps_] =
-        app_management.util.splitByNotificationPermission();
+    const state = this.getState();
+    this.displayedApps_ =
+        Array.from(state.notifications.allowedIds, id => state.apps[id]);
+    this.collapsedApps_ =
+        Array.from(state.notifications.blockedIds, id => state.apps[id]);
+
     if (this.displayedApps_.length === 0) {
       this.displayedApps_ = this.collapsedApps_;
       this.collapsedApps_ = [];
@@ -86,17 +94,16 @@ Polymer({
     // If any new apps have been added, append them to the appropriate list.
     for (const appId of unhandledAppIds) {
       const app = this.apps_[appId];
-      switch (app_management.util.notificationsValue(app)) {
-        case OptionalBool.kUnknown:
-          break;
-        case OptionalBool.kFalse:
-          this.collapsedApps_.push(app);
-          break;
-        case OptionalBool.kTrue:
-          this.displayedApps_.push(app);
-          break;
-        default:
-          assertNotReached();
+      const allowed = app_management.util.notificationsAllowed(app);
+
+      if (allowed === OptionalBool.kUnknown) {
+        continue;
+      }
+
+      if (allowed === OptionalBool.kTrue) {
+        this.displayedApps_.push(app);
+      } else {
+        this.collapsedApps_.push(app);
       }
     }
   },

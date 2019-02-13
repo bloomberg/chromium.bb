@@ -90,7 +90,7 @@
 
       <div id="expander-row" class="expander-list-row"
           on-click="toggleListExpanded_">
-        <span>[[moreAppsString_(apps_.length,listExpanded_)]]</span>
+        <span>[[moreAppsString_(apps_, listExpanded_)]]</span>
         <paper-icon-button-light class="expand-button">
           <button>
             <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]">

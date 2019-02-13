@@ -21,6 +21,10 @@ cr.define('app_management.util', function() {
         term: null,
         results: null,
       },
+      notifications: {
+        allowedIds: new Set(),
+        blockedIds: new Set(),
+      },
     };
   }
 
@@ -33,6 +37,18 @@ cr.define('app_management.util', function() {
 
     for (const app of apps) {
       initialState.apps[app.id] = app;
+
+      const allowed = notificationsAllowed(app);
+
+      if (allowed === OptionalBool.kUnknown) {
+        continue;
+      }
+
+      if (allowed === OptionalBool.kTrue) {
+        initialState.notifications.allowedIds.add(app.id);
+      } else {
+        initialState.notifications.blockedIds.add(app.id);
+      }
     }
 
     return initialState;
@@ -61,37 +77,53 @@ cr.define('app_management.util', function() {
   }
 
   /**
-   * @return {!Array<!Array<App>>}
+   * If the given value is not in the set, returns a new set with the value
+   * added, otherwise returns the old set.
+   * @template T
+   * @param {!Set<T>} set
+   * @param {T} value
+   * @return {!Set<T>}
    */
-  function splitByNotificationPermission() {
-    const apps = Object.values(app_management.Store.getInstance().data.apps);
-    const notificationsAllowed = [];
-    const notificationsBlocked = [];
-
-    for (const app of apps) {
-      switch (notificationsValue(app)) {
-        case OptionalBool.kUnknown:
-          break;
-        case OptionalBool.kFalse:
-          notificationsBlocked.push(app);
-          break;
-        case OptionalBool.kTrue:
-          notificationsAllowed.push(app);
-          break;
-        default:
-          assertNotReached();
-      }
+  function addIfNeeded(set, value) {
+    if (!set.has(value)) {
+      set = new Set(set);
+      set.add(value);
     }
-
-    return [notificationsAllowed, notificationsBlocked];
+    return set;
   }
 
+  /**
+   * If the given value is in the set, returns a new set without the value,
+   * otherwise returns the old set.
+   * @template T
+   * @param {!Set<T>} set
+   * @param {T} value
+   * @return {!Set<T>}
+   */
+  function removeIfNeeded(set, value) {
+    if (set.has(value)) {
+      set = new Set(set);
+      set.delete(value);
+    }
+    return set;
+  }
 
   /**
+   * This function determines whether the given app should be treated by the
+   * notifications view as having notifications allowed or blocked, or not
+   * having a notifications permission at all.
+   *
+   * There are three possible cases:
+   *  - kUnknown is returned if the given app does not have a notifications
+   *    permission, due to how permissions work for its AppType.
+   *  - kTrue is returned if the notifications permission of the app is allowed.
+   *  - kFalse is returned if the notifications permission of the app is
+   *  - blocked, or set to ask in the case of a tristate permission.
+   *
    * @param {App} app
    * @return {OptionalBool}
    */
-  function notificationsValue(app) {
+  function notificationsAllowed(app) {
     const permissionType = notificationsPermissionType(app);
 
     if (!permissionType) {
@@ -177,6 +209,7 @@ cr.define('app_management.util', function() {
   }
 
   return {
+    addIfNeeded: addIfNeeded,
     createEmptyState: createEmptyState,
     createInitialState: createInitialState,
     createPermission: createPermission,
@@ -184,9 +217,9 @@ cr.define('app_management.util', function() {
     getPermission: getPermission,
     getPermissionValueBool: getPermissionValueBool,
     getSelectedApp: getSelectedApp,
+    notificationsAllowed: notificationsAllowed,
     notificationsPermissionType: notificationsPermissionType,
-    notificationsValue: notificationsValue,
     permissionTypeHandle: permissionTypeHandle,
-    splitByNotificationPermission: splitByNotificationPermission,
+    removeIfNeeded: removeIfNeeded,
   };
 });
