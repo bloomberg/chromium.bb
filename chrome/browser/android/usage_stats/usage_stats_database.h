@@ -19,6 +19,8 @@
 
 namespace usage_stats {
 
+using leveldb_proto::ProtoDatabase;
+
 // Stores website events, suspensions and token to fully-qualified domain name
 // (FQDN) mappings in LevelDB.
 class UsageStatsDatabase {
@@ -36,14 +38,14 @@ class UsageStatsDatabase {
 
   using StatusCallback = base::OnceCallback<void(Error)>;
 
-  using UsageStatMap = std::map<std::string, UsageStat>;
-
   // Initializes the database with user |profile|.
   explicit UsageStatsDatabase(Profile* profile);
 
   // Initializes the database with a |ProtoDatabase|. Useful for testing.
   explicit UsageStatsDatabase(
-      std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db);
+      std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db,
+      std::unique_ptr<ProtoDatabase<Suspension>> suspension_db,
+      std::unique_ptr<ProtoDatabase<TokenMapping>> token_mapping_db);
 
   ~UsageStatsDatabase();
 
@@ -84,29 +86,31 @@ class UsageStatsDatabase {
   void OnLoadEntriesForGetAllEvents(
       EventsCallback callback,
       bool isSuccess,
-      std::unique_ptr<std::vector<UsageStat>> stats);
+      std::unique_ptr<std::vector<WebsiteEvent>> stats);
 
   void OnLoadEntriesForQueryEventsInRange(
       EventsCallback callback,
       bool isSuccess,
-      std::unique_ptr<UsageStatMap> stat_map);
+      std::unique_ptr<std::map<std::string, WebsiteEvent>> event_map);
 
   void OnLoadEntriesForDeleteEventsInRange(
       StatusCallback callback,
       bool isSuccess,
-      std::unique_ptr<UsageStatMap> stat_map);
+      std::unique_ptr<std::map<std::string, WebsiteEvent>> event_map);
 
   void OnLoadEntriesForGetAllSuspensions(
       SuspensionsCallback callback,
       bool isSuccess,
-      std::unique_ptr<std::vector<UsageStat>> stats);
+      std::unique_ptr<std::vector<Suspension>> suspensions);
 
   void OnLoadEntriesForGetAllTokenMappings(
       TokenMappingsCallback callback,
       bool isSuccess,
-      std::unique_ptr<std::vector<UsageStat>> stats);
+      std::unique_ptr<std::vector<TokenMapping>> mappings);
 
-  std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db_;
+  std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db_;
+  std::unique_ptr<ProtoDatabase<Suspension>> suspension_db_;
+  std::unique_ptr<ProtoDatabase<TokenMapping>> token_mapping_db_;
 
   base::WeakPtrFactory<UsageStatsDatabase> weak_ptr_factory_;
 
