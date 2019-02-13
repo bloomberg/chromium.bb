@@ -14,7 +14,7 @@ you'll need to acquire hardware and then land **three** CLs:
 2. in [chromium/tools/build][17], modifying the chromium\_tests
    configuration.
 3. in [chromium/src][18], modifying all of the following:
-    1. LUCI service configurations in `//infra/config/global`
+    1. LUCI service configurations in `//infra/config`
     2. Compile configuration in `//tools/mb`
     3. Test configuration in `//testing/buildbot`
 
@@ -170,7 +170,7 @@ It's generally ok to land all of them in a single CL.
 
 ### LUCI services
 
-LUCI services used by chromium are configured in [//infra/config/global][6].
+LUCI services used by chromium are configured in [//infra/config][6].
 
 #### Buildbucket
 
@@ -322,13 +322,13 @@ reach out to infra-dev@chromium.org or [file a bug][19]!
 [3]: https://bit.ly/chromium-build-naming
 [4]: https://luci-config.appspot.com/#/services/chromium-swarm
 [5]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests
-[6]: /infra/config/global
+[6]: /infra/config
 [7]: https://luci-config.appspot.com/schemas/projects:cr-buildbucket.cfg
-[8]: /infra/config/global/cr-buildbucket.cfg
+[8]: /infra/config/cr-buildbucket.cfg
 [9]: http://luci-config.appspot.com/schemas/projects:luci-milo.cfg
-[10]: /infra/config/global/luci-milo.cfg
+[10]: /infra/config/luci-milo.cfg
 [11]: https://chromium.googlesource.com/infra/luci/luci-go/+/master/scheduler/appengine/messages/config.proto
-[12]: /infra/config/global/luci-scheduler.cfg
+[12]: /infra/config/luci-scheduler.cfg
 [13]: /tools/mb/README.md
 [14]: /tools/mb/docs/user_guide.md#the-mb_config_pyl-config-file
 [15]: /testing/buildbot/README.md
