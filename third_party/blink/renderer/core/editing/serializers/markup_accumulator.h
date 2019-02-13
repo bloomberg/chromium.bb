@@ -42,8 +42,6 @@ class Attribute;
 class Element;
 class Node;
 
-using Namespaces = HashMap<AtomicString, AtomicString>;
-
 class MarkupAccumulator {
   STACK_ALLOCATED();
 
@@ -87,6 +85,8 @@ class MarkupAccumulator {
   void PushNamespaces(const Element& element);
   void PopNamespaces(const Element& element);
   void RecordNamespaceInformation(const Element& element);
+  AtomicString RetrievePreferredPrefixString(const AtomicString& ns,
+                                             const AtomicString& prefix);
   void AddPrefix(const AtomicString& prefix, const AtomicString& namespace_uri);
   AtomicString LookupNamespaceURI(const AtomicString& prefix);
   AtomicString GeneratePrefix(const AtomicString& new_namespace);
@@ -107,8 +107,13 @@ class MarkupAccumulator {
   template <typename Strategy>
   void SerializeNodesWithNamespaces(const Node& target_node,
                                     EChildrenOnly children_only);
-
-  Vector<Namespaces> namespace_stack_;
+  using PrefixToNamespaceMap = HashMap<AtomicString, AtomicString>;
+  using NamespaceToPrefixesMap = HashMap<AtomicString, Vector<AtomicString>>;
+  // TODO(tkent): Make a class consists of these two maps.
+  Vector<PrefixToNamespaceMap> namespace_stack_;
+  // Map a namespace URI to a list of prefixes.
+  // https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map
+  Vector<NamespaceToPrefixesMap> ns_prefixes_map_stack_;
   // https://w3c.github.io/DOM-Parsing/#dfn-generated-namespace-prefix-index
   uint32_t prefix_index_;
 
