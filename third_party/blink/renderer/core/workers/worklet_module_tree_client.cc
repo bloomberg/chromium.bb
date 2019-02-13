@@ -74,7 +74,7 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
       *outside_settings_task_runner_, FROM_HERE,
       CrossThreadBind(&WorkletPendingTasks::DecrementCounter,
                       WrapCrossThreadPersistent(pending_tasks_.Get())));
-};
+}
 
 void WorkletModuleTreeClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);

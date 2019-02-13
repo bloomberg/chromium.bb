@@ -155,7 +155,7 @@ class GridBaselineAlignment {
   // Sets the Grid Container's writing-mode so that we can avoid the
   // dependecy of the LayoutGrid class for determining whether a grid
   // item is orthogonal or not.
-  void SetBlockFlow(WritingMode block_flow) { block_flow_ = block_flow; };
+  void SetBlockFlow(WritingMode block_flow) { block_flow_ = block_flow; }
 
   // Clearing the Baseline Alignment context and their internal
   // classes and data structures.

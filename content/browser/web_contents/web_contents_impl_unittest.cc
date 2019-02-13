@@ -3291,7 +3291,7 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager {
                            DialogClosedCallback callback,
                            bool* did_suppress_message) override {
     *did_suppress_message = true;
-  };
+  }
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              RenderFrameHost* render_frame_host,

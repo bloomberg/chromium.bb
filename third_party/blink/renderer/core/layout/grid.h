@@ -41,7 +41,7 @@ class CORE_EXPORT Grid {
 
   virtual const GridItemList& Cell(size_t row, size_t column) const = 0;
 
-  virtual ~Grid(){};
+  virtual ~Grid() {}
 
   // Note that out of flow children are not grid items.
   bool HasGridItems() const { return !grid_item_area_.IsEmpty(); }
@@ -72,7 +72,7 @@ class CORE_EXPORT Grid {
   OrderIterator& GetOrderIterator() { return order_iterator_; }
 
   void SetNeedsItemsPlacement(bool);
-  bool NeedsItemsPlacement() const { return needs_items_placement_; };
+  bool NeedsItemsPlacement() const { return needs_items_placement_; }
 
 #if DCHECK_IS_ON()
   bool HasAnyGridItemPaintOrder() const;

@@ -24,7 +24,7 @@ class NetworkActivityCheckerForTest
 
   virtual void SetActiveConnections(int active_connections) {
     active_connections_ = active_connections;
-  };
+  }
   int GetActiveConnections() override;
 
  private:

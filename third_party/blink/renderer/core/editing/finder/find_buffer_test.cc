@@ -421,7 +421,7 @@ TEST_F(FindBufferTest, WhiteSpaceCollapsingPreWrap) {
   EXPECT_EQ(
       1u,
       buffer.FindMatches("a b c d  e  ", kCaseInsensitive)->CountForTesting());
-};
+}
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPre) {
   SetBodyContent("<div style='white-space: pre;'>a \n b</div>");

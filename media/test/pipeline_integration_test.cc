@@ -2178,7 +2178,7 @@ TEST_F(PipelineIntegrationTest, BasicFallback) {
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
-};
+}
 
 TEST_P(MSEPipelineIntegrationTest, ConfigChange_MP4) {
   TestMediaSource source("bear-640x360-av_frag.mp4", kAppendWholeFile);

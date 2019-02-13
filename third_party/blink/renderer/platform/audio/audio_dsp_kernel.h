@@ -59,7 +59,7 @@ class PLATFORM_EXPORT AudioDSPKernel {
                        uint32_t frames_to_process) = 0;
   // Subclasses that have AudioParams must override this to process the
   // AudioParams.
-  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process){};
+  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process) {}
   virtual void Reset() = 0;
 
   float SampleRate() const { return sample_rate_; }

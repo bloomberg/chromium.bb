@@ -52,7 +52,7 @@ class RecordTest final : public ScriptWrappable {
 
   bool unionReceivedARecord(const BooleanOrByteStringByteStringRecord& arg);
 
-  void setFloatOrStringElementRecord(const FloatOrStringElementRecord&){};
+  void setFloatOrStringElementRecord(const FloatOrStringElementRecord&) {}
 
   void Trace(blink::Visitor*) override;
 

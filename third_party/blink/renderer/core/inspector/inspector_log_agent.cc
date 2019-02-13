@@ -267,6 +267,6 @@ void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
   ConsoleMessage* message = ConsoleMessage::Create(
       kViolationMessageSource, kVerboseMessageLevel, text, location->Clone());
   ConsoleMessageAdded(message);
-};
+}
 
 }  // namespace blink

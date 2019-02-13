@@ -18,7 +18,6 @@ class ModuleScript;
 class ModuleScriptLoaderClient : public GarbageCollectedMixin {
  public:
   virtual ~ModuleScriptLoaderClient() = default;
-  ;
 
  private:
   friend class ModuleScriptLoader;

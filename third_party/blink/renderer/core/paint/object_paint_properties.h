@@ -68,6 +68,7 @@ class CORE_EXPORT ObjectPaintProperties {
 // class-level comment ("update & clear implementation note") for details
 // about why this is needed for efficient updates.
 #define ADD_NODE(type, function, variable)                                   \
+ public:                                                                     \
   const type##PaintPropertyNode* function() const { return variable.get(); } \
   UpdateResult Update##function(const type##PaintPropertyNode& parent,       \
                                 type##PaintPropertyNode::State&& state,      \
@@ -88,10 +89,8 @@ class CORE_EXPORT ObjectPaintProperties {
   }                                                                          \
                                                                              \
  private:                                                                    \
-  scoped_refptr<type##PaintPropertyNode> variable;                           \
-                                                                             \
- public:
-// (End of ADD_NODE definition)
+  scoped_refptr<type##PaintPropertyNode> variable;
+  // (End of ADD_NODE definition)
 
 #define ADD_TRANSFORM(function, variable) \
   ADD_NODE(Transform, function, variable)
@@ -208,7 +207,7 @@ class CORE_EXPORT ObjectPaintProperties {
   //       containment. It is the deepest child of any clip tree on the contain:
   //       paint element.
   ADD_CLIP(FragmentClip, fragment_clip_);
-  ADD_CLIP(ClipPathClip, clip_path_clip_);
+  ADD_CLIP(ClipPathClip, clip_path_clip_)
   ADD_CLIP(MaskClip, mask_clip_);
   ADD_CLIP(CssClip, css_clip_);
   ADD_CLIP(CssClipFixedPosition, css_clip_fixed_position_);
@@ -217,6 +216,12 @@ class CORE_EXPORT ObjectPaintProperties {
   ADD_CLIP(OverflowClip, overflow_clip_);
   ADD_CLIP(ClipIsolationNode, clip_isolation_node_);
 
+#undef ADD_CLIP
+#undef ADD_EFFECT
+#undef ADD_TRANSFORM
+#undef ADD_NODE
+
+ public:
 #if DCHECK_IS_ON()
   // Used by FindPropertiesNeedingUpdate.h for verifying state doesn't change.
   void SetImmutable() const { is_immutable_ = true; }

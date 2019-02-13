@@ -852,7 +852,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineLTR) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineRTL) {
   LoadAhem();
@@ -863,7 +863,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineRTL) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineLTR) {
   LoadAhem();
@@ -874,7 +874,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineLTR) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
   LoadAhem();
@@ -885,7 +885,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
-};
+}
 
 // crbug.com/834686
 TEST_P(ParameterizedLocalCaretRectTest, AfterTrimedLineBreak) {
@@ -896,7 +896,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterTrimedLineBreak) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(30, 0, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(30, 0, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest,
        UnicodeBidiPlaintextWithDifferentBlockDirection) {

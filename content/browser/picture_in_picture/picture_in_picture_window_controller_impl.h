@@ -76,9 +76,7 @@ class PictureInPictureWindowControllerImpl
   // state of this object.
   void UpdateMediaPlayerId();
 
-  void set_service(PictureInPictureServiceImpl* service) {
-    service_ = service;
-  };
+  void set_service(PictureInPictureServiceImpl* service) { service_ = service; }
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;

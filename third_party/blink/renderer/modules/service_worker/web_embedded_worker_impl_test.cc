@@ -98,7 +98,7 @@ class MockServiceWorkerInstalledScriptsManager
             Platform::Current()
                 ->CreateThread(ThreadCreationParams(WebThreadType::kTestThread)
                                    .SetThreadNameForTest("io thread"))
-                ->GetTaskRunner()){};
+                ->GetTaskRunner()) {}
   MOCK_CONST_METHOD1(IsScriptInstalled, bool(const KURL& script_url));
   MOCK_METHOD1(GetRawScriptData,
                std::unique_ptr<ThreadSafeScriptContainer::RawScriptData>(

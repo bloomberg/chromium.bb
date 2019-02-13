@@ -205,10 +205,10 @@ class LineLayoutBlockFlow : public LineLayoutBox {
  private:
   LayoutBlockFlow* ToBlockFlow() {
     return ToLayoutBlockFlow(GetLayoutObject());
-  };
+  }
   const LayoutBlockFlow* ToBlockFlow() const {
     return ToLayoutBlockFlow(GetLayoutObject());
-  };
+  }
 };
 
 }  // namespace blink

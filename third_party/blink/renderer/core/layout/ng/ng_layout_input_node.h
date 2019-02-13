@@ -171,7 +171,7 @@ class CORE_EXPORT NGLayoutInputNode {
   NGPhysicalSize InitialContainingBlockSize() const;
 
   // Returns the LayoutObject which is associated with this node.
-  LayoutBox* GetLayoutBox() const { return box_; };
+  LayoutBox* GetLayoutBox() const { return box_; }
 
   const ComputedStyle& Style() const { return box_->StyleRef(); }
 
