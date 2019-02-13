@@ -91,6 +91,7 @@ CrElementsToolbarSearchFieldTest.*
 CrExtensionsActivityLogTest.*
 CrExtensionsActivityLogHistoryTest.*
 CrExtensionsActivityLogItemTest.*
+CrExtensionsActivityLogStreamTest.*
 CrExtensionsA11yTest.*
 CrExtensionsA11yTestWithMultipleExensions.*
 CrExtensionsCodeSectionTest.*

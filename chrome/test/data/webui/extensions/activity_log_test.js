@@ -173,4 +173,30 @@ suite('ExtensionsActivityLogTest', function() {
     expectDeepEquals(
         currentPage, {page: Page.DETAILS, extensionId: EXTENSION_ID});
   });
+
+  test('tab transitions', function() {
+    Polymer.dom.flush();
+    // Default view should be the history view.
+    testVisible('activity-log-history', true);
+
+    // Navigate to the activity log stream.
+    activityLog.$$('#real-time-tab').click();
+    Polymer.dom.flush();
+    testVisible('activity-log-stream', true);
+
+    const activityLogStream = activityLog.$$('activity-log-stream');
+    assertTrue(activityLogStream.isStreamOnForTest());
+
+    // Navigate back to the activity log history tab.
+    activityLog.$$('#history-tab').click();
+
+    // Expect a refresh of the activity log.
+    proxyDelegate.whenCalled('getExtensionActivityLog').then(() => {
+      Polymer.dom.flush();
+      testVisible('activity-log-history', true);
+
+      // Stream should be turned off.
+      assertFalse(activityLogStream.isStreamOnForTest());
+    });
+  });
 });
