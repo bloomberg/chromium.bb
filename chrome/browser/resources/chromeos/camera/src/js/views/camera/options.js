@@ -166,47 +166,6 @@ cca.views.camera.Options.prototype.animatePreviewGrid_ = function() {
 };
 
 /**
- * Schedules ticks by the timer option if any.
- * @return {?Promise} Promise for the operation.
- * TODO(yuli): Move this function into timerticks.js.
- */
-cca.views.camera.Options.prototype.timerTicks = function() {
-  if (!document.body.classList.contains('timer')) {
-    return null;
-  }
-  var cancel;
-  var tickTimeout = null;
-  var tickMsg = document.querySelector('#timer-tick-msg');
-  var ticks = new Promise((resolve, reject) => {
-    var tickCounter = document.body.classList.contains('_10sec') ? 10 : 3;
-    var onTimerTick = () => {
-      if (tickCounter == 0) {
-        resolve();
-      } else {
-        cca.sound.play('#sound-tick');
-        tickMsg.textContent = tickCounter + '';
-        cca.util.animateOnce(tickMsg);
-        tickTimeout = setTimeout(onTimerTick, 1000);
-        tickCounter--;
-      }
-    };
-    // First tick immediately in the next message loop cycle.
-    tickTimeout = setTimeout(onTimerTick, 0);
-    cancel = reject;
-  });
-
-  ticks.cancel = () => {
-    if (tickTimeout) {
-      clearTimeout(tickTimeout);
-      tickTimeout = null;
-    }
-    cca.util.animateCancel(tickMsg);
-    cancel();
-  };
-  return ticks;
-};
-
-/**
  * Updates the options' values for the current constraints and stream.
  * @param {Object} constraints Current stream constraints in use.
  * @param {MediaStream} stream Current Stream in use.
