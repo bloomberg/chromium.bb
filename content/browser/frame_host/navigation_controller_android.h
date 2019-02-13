@@ -126,6 +126,10 @@ class CONTENT_EXPORT NavigationControllerAndroid {
                          jint index,
                          const base::android::JavaParamRef<jstring>& jkey,
                          const base::android::JavaParamRef<jstring>& jvalue);
+  jboolean IsEntryMarkedToBeSkipped(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint index);
 
  private:
   NavigationControllerImpl* navigation_controller_;
