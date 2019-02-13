@@ -65,7 +65,7 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kDedicatedWorkerGlobalScope;
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void DedicatedWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,

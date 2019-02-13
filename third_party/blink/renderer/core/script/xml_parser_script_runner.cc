@@ -14,9 +14,9 @@ namespace blink {
 
 // Spec links:
 // <specdef label="Parsing"
-// href="https://html.spec.whatwg.org/multipage/xhtml.html#parsing-xhtml-documents">
+// href="https://html.spec.whatwg.org/C/#parsing-xhtml-documents">
 // <specdef label="Prepare"
-// href="https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script">
+// href="https://html.spec.whatwg.org/C/#prepare-a-script">
 
 XMLParserScriptRunner::XMLParserScriptRunner(XMLParserScriptRunnerHost* host)
     : host_(host) {}

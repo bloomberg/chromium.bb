@@ -144,7 +144,7 @@ StepRange RangeInputType::CreateStepRange(
                            GetElement().FastGetAttribute(kStepAttr));
   // Range type always has range limitations because it has default
   // minimum/maximum.
-  // https://html.spec.whatwg.org/multipage/forms.html#range-state-(type=range):concept-input-min-default
+  // https://html.spec.whatwg.org/C/#range-state-(type=range):concept-input-min-default
   const bool kHasRangeLimitations = true;
   return StepRange(step_base, minimum, maximum, kHasRangeLimitations, step,
                    step_description);

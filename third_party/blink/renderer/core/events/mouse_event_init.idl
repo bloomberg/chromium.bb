@@ -19,6 +19,6 @@ dictionary MouseEventInit : EventModifierInit {
     long movementY = 0;
 
     // Canvas Hit Regions
-    // https://html.spec.whatwg.org/multipage/scripting.html#hit-regions:mouseeventinit
+    // https://html.spec.whatwg.org/C/#hit-regions:mouseeventinit
     DOMString? region = null;
 };

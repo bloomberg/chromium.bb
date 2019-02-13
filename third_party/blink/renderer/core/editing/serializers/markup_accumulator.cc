@@ -127,7 +127,7 @@ bool MarkupAccumulator::ShouldIgnoreElement(const Element& element) const {
 }
 
 void MarkupAccumulator::AppendElement(const Element& element) {
-  // https://html.spec.whatwg.org/multipage/parsing.html#html-fragment-serialisation-algorithm
+  // https://html.spec.whatwg.org/C/#html-fragment-serialisation-algorithm
   RecordNamespaceInformation(element);
   AppendStartTagOpen(element);
 

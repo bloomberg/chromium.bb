@@ -21,10 +21,10 @@ class KURL;
 class SecurityOrigin;
 
 // ScriptFetchOptions corresponds to the spec concept "script fetch options".
-// https://html.spec.whatwg.org/multipage/webappapis.html#script-fetch-options
+// https://html.spec.whatwg.org/C/#script-fetch-options
 class PLATFORM_EXPORT ScriptFetchOptions final {
  public:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
+  // https://html.spec.whatwg.org/C/#default-classic-script-fetch-options
   // "The default classic script fetch options are a script fetch options whose
   // cryptographic nonce is the empty string, integrity metadata is the empty
   // string, parser metadata is "not-parser-inserted", and credentials mode
@@ -70,7 +70,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   }
   mojom::FetchImportanceMode Importance() const { return importance_; }
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
+  // https://html.spec.whatwg.org/C/#fetch-a-classic-script
   // Steps 1 and 3.
   FetchParameters CreateFetchParameters(const KURL&,
                                         const SecurityOrigin*,
@@ -79,20 +79,20 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
                                         FetchParameters::DeferOption) const;
 
  private:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-nonce
+  // https://html.spec.whatwg.org/C/#concept-script-fetch-options-nonce
   const String nonce_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-integrity
+  // https://html.spec.whatwg.org/C/#concept-script-fetch-options-integrity
   const IntegrityMetadataSet integrity_metadata_;
   const String integrity_attribute_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-parser
+  // https://html.spec.whatwg.org/C/#concept-script-fetch-options-parser
   const ParserDisposition parser_state_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-credentials
+  // https://html.spec.whatwg.org/C/#concept-script-fetch-options-credentials
   const network::mojom::FetchCredentialsMode credentials_mode_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-fetch-options-referrer-policy
+  // https://html.spec.whatwg.org/C/#concept-script-fetch-options-referrer-policy
   const network::mojom::ReferrerPolicy referrer_policy_;
 
   // Priority Hints and a request's "importance" mode are currently

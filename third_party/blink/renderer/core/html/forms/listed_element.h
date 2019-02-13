@@ -44,7 +44,7 @@ class Node;
 class ValidationMessageClient;
 class ValidityState;
 
-// https://html.spec.whatwg.org/multipage/forms.html#category-listed
+// https://html.spec.whatwg.org/C/#category-listed
 class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
   virtual ~ListedElement();
@@ -118,9 +118,9 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   bool IsValidElement();
   // Returns true if
   //  - this is not a candidate for constraint validation, or
-  //    https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#candidate-for-constraint-validation
+  //    https://html.spec.whatwg.org/C/#candidate-for-constraint-validation
   //  - this satisfies its constraints
-  //    https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fv-valid
+  //    https://html.spec.whatwg.org/C/#concept-fv-valid
   bool IsNotCandidateOrValid();
 
   // This must be called when a validation constraint or control value is
@@ -144,7 +144,7 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // This is for HTMLFieldSetElement class.
   void AncestorDisabledStateWasChanged();
 
-  // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
+  // https://html.spec.whatwg.org/C/#concept-element-disabled
   bool IsActuallyDisabled() const;
 
   // Returns a static value of class-level support of the state restore

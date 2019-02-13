@@ -57,7 +57,7 @@ DocumentFragment* HTMLTemplateElement::content() const {
   return content_.Get();
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#the-template-element:concept-node-clone-ext
+// https://html.spec.whatwg.org/C/#the-template-element:concept-node-clone-ext
 void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {

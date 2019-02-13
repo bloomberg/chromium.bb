@@ -39,7 +39,7 @@ class LayoutObject;
 class Node;
 
 // Represents an "ordinal value" and its related algorithms:
-// https://html.spec.whatwg.org/multipage/grouping-content.html#ordinal-value
+// https://html.spec.whatwg.org/C/#ordinal-value
 //
 // The ordinal value is determined by the DOM tree order. However, since any
 // elements with 'display: list-item' can be list items, the layout tree

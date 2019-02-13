@@ -63,18 +63,18 @@ class CORE_EXPORT ModuleTreeClient
 };
 
 // spec: "top-level module fetch flag"
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-is-top-level
+// https://html.spec.whatwg.org/C/#fetching-scripts-is-top-level
 enum class ModuleGraphLevel { kTopLevelModuleFetch, kDependentModuleFetch };
 
 // spec: "custom peform the fetch hook"
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch
+// https://html.spec.whatwg.org/C/#fetching-scripts-perform-fetch
 enum class ModuleScriptCustomFetchType {
   // Fetch module scripts without invoking custom fetch steps.
   kNone,
 
   // Perform custom fetch steps for worker's constructor defined in the HTML
   // spec:
-  // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+  // https://html.spec.whatwg.org/C/#worker-processing-model
   kWorkerConstructor,
 
   // Perform custom fetch steps for Worklet's addModule() function defined in
@@ -89,7 +89,7 @@ enum class ModuleScriptCustomFetchType {
 
 // A Modulator is an interface for "environment settings object" concept for
 // module scripts.
-// https://html.spec.whatwg.org/multipage/webappapis.html#environment-settings-object
+// https://html.spec.whatwg.org/C/#environment-settings-object
 //
 // A Modulator also serves as an entry point for various module spec algorithms.
 class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
@@ -112,12 +112,12 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptState* GetScriptState() = 0;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-bc-noscript
+  // https://html.spec.whatwg.org/C/#concept-bc-noscript
   // "scripting is disabled for settings's responsible browsing context"
   virtual bool IsScriptingDisabled() const = 0;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
+  // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
+  // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
   // Note that |this| is the "module map settings object" and
   // ResourceFetcher represents "fetch client settings object"
   // used in the "fetch a module worker script graph" algorithm.
@@ -130,7 +130,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   // Asynchronously retrieve a module script from the module map, or fetch it
   // and put it in the map if it's not there already.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
   // Note that |this| is the "module map settings object" and
   // |fetch_client_settings_object_fetcher| represents
   // "fetch client settings object", which can be different from the
@@ -154,7 +154,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // is still "fetching".
   virtual ModuleScript* GetFetchedModuleScript(const KURL&) = 0;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#resolve-a-module-specifier
+  // https://html.spec.whatwg.org/C/#resolve-a-module-specifier
   virtual KURL ResolveModuleSpecifier(const String& module_request,
                                       const KURL& base_url,
                                       String* failure_reason = nullptr) = 0;
@@ -165,7 +165,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                   const ReferrerScriptInfo&,
                                   ScriptPromiseResolver*) = 0;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#hostgetimportmetaproperties
+  // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
   virtual ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const = 0;
 
   virtual bool HasValidContext() = 0;
@@ -184,7 +184,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   enum class CaptureEvalErrorFlag : bool { kReport, kCapture };
 
   // ExecuteModule implements #run-a-module-script HTML spec algorithm.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#run-a-module-script
+  // https://html.spec.whatwg.org/C/#run-a-module-script
   // CaptureEvalErrorFlag is used to implement "rethrow errors" parameter in
   // run-a-module-script.
   // - When "rethrow errors" is to be set, use kCapture for EvaluateModule().

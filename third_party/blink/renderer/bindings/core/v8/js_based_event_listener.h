@@ -36,7 +36,7 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
   // content attribute to get compiled, potentially unsuccessfully.
   //
   // Implements "get the current value of the event handler".
-  // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // https://html.spec.whatwg.org/C/#getting-the-current-value-of-the-event-handler
   // Returns v8::Null with firing error event instead of throwing an exception
   // on failing to compile the uncompiled script body in eventHandler's value.
   // Also, this can return empty because of crbug.com/881688 .

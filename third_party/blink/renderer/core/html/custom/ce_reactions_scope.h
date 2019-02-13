@@ -16,7 +16,7 @@ namespace blink {
 class CustomElementReaction;
 class Element;
 
-// https://html.spec.whatwg.org/multipage/scripting.html#cereactions
+// https://html.spec.whatwg.org/C/#cereactions
 class CORE_EXPORT CEReactionsScope final {
   STACK_ALLOCATED();
 

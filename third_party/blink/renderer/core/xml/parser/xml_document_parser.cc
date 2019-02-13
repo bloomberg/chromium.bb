@@ -766,7 +766,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(true) {
   // Step 2 of
-  // https://html.spec.whatwg.org/multipage/xhtml.html#xml-fragment-parsing-algorithm
+  // https://html.spec.whatwg.org/C/#xml-fragment-parsing-algorithm
   // The following code collects prefix-namespace mapping in scope on
   // |parent_element|.
   HeapVector<Member<Element>> elem_stack;
@@ -1463,7 +1463,7 @@ static void ExternalSubsetHandler(void* closure,
                                   const xmlChar*,
                                   const xmlChar* external_id,
                                   const xmlChar*) {
-  // https://html.spec.whatwg.org/multipage/xhtml.html#parsing-xhtml-documents:named-character-references
+  // https://html.spec.whatwg.org/C/#parsing-xhtml-documents:named-character-references
   String ext_id = ToString(external_id);
   if (ext_id == "-//W3C//DTD XHTML 1.0 Transitional//EN" ||
       ext_id == "-//W3C//DTD XHTML 1.1//EN" ||

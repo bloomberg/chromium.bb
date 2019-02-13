@@ -22,10 +22,10 @@
 namespace blink {
 
 // ModuleScript is a model object for the "module script" spec concept.
-// https://html.spec.whatwg.org/multipage/webappapis.html#module-script
+// https://html.spec.whatwg.org/C/#module-script
 class CORE_EXPORT ModuleScript final : public Script, public NameClient {
  public:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
+  // https://html.spec.whatwg.org/C/#creating-a-module-script
   static ModuleScript* Create(
       const ParkableString& source_text,
       Modulator*,
@@ -95,16 +95,16 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   friend class ModulatorImplBase;
   friend class ModuleTreeLinkerTestModulator;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
+  // https://html.spec.whatwg.org/C/#settings-object
   Member<Modulator> settings_object_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-record
+  // https://html.spec.whatwg.org/C/#concept-script-record
   // TODO(keishi): Visitor only defines a trace method for v8::Value so this
   // needs to be cast.
   GC_PLUGIN_IGNORE("757708")
   TraceWrapperV8Reference<v8::Module> record_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-parse-error
+  // https://html.spec.whatwg.org/C/#concept-script-parse-error
   //
   // |record_|, |parse_error_| and |error_to_rethrow_| are wrapper traced and
   // kept alive via one or more of following reference graphs:
@@ -141,7 +141,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   //   will require moderate code changes (e.g. to move compilation timing).
   TraceWrapperV8Reference<v8::Value> parse_error_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-error-to-rethrow
+  // https://html.spec.whatwg.org/C/#concept-script-error-to-rethrow
   TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
 
   // For CSP check.

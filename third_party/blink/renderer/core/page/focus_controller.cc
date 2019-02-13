@@ -173,7 +173,7 @@ class ScopedFocusNavigation {
   // @return The focus element that comes after/before start element.
   //
   // [1]
-  // https://html.spec.whatwg.org/multipage/interaction.html#sequential-focus-navigation
+  // https://html.spec.whatwg.org/C/#sequential-focus-navigation
   // [2] https://w3c.github.io/webcomponents/spec/shadow/#focus-navigation
   Element* FindFocusableElement(WebFocusType type) {
     return (type == kWebFocusTypeForward) ? NextFocusableElement()

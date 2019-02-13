@@ -12,7 +12,7 @@
 namespace blink {
 
 // rowIndex
-// https://html.spec.whatwg.org/multipage/tables.html#dom-tr-rowindex
+// https://html.spec.whatwg.org/C/#dom-tr-rowindex
 
 TEST(HTMLTableRowElementTest, rowIndex_notInTable) {
   Document* document = Document::CreateForTest();

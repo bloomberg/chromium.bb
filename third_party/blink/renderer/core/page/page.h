@@ -125,7 +125,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // Returns pages related to the current browsing context (excluding the
   // current page).  See also
-  // https://html.spec.whatwg.org/multipage/browsers.html#unit-of-related-browsing-contexts
+  // https://html.spec.whatwg.org/C/#unit-of-related-browsing-contexts
   HeapVector<Member<Page>> RelatedPages();
 
   static void PlatformColorsChanged();
@@ -224,9 +224,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   // Pausing is used to implement the "Optionally, pause while waiting for
   // the user to acknowledge the message" step of simple dialog processing:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#simple-dialogs
+  // https://html.spec.whatwg.org/C/#simple-dialogs
   //
-  // Per https://html.spec.whatwg.org/multipage/webappapis.html#pause, no loads
+  // Per https://html.spec.whatwg.org/C/#pause, no loads
   // are allowed to start/continue in this state, and all background processing
   // is also paused.
   bool Paused() const { return paused_; }

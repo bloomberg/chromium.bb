@@ -84,7 +84,7 @@ TaskType is a required parameter of all GetTaskRunner() methods and FrameSchedul
 returns an appropriate task runner based on the TaskType.
 
 All tasks mentioned in the spec should have task source explicitly defined
-(e.g. see [generic task sources definition](https://html.spec.whatwg.org/multipage/webappapis.html#generic-task-sources)
+(e.g. see [generic task sources definition](https://html.spec.whatwg.org/C/#generic-task-sources)
 in the spec). There are still some places where the task source is not mentioned
 explicitly — reach out to domenic@ and garykac@ for advice.
 

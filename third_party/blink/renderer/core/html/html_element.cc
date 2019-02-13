@@ -1008,7 +1008,7 @@ void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
 
 bool HTMLElement::HasDirectionAuto() const {
   // <bdi> defaults to dir="auto"
-  // https://html.spec.whatwg.org/multipage/semantics.html#the-bdi-element
+  // https://html.spec.whatwg.org/C/#the-bdi-element
   const AtomicString& direction = FastGetAttribute(kDirAttr);
   return (IsHTMLBDIElement(*this) && direction == g_null_atom) ||
          DeprecatedEqualIgnoringCase(direction, "auto");

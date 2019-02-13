@@ -15,7 +15,7 @@
 namespace blink {
 
 // Entry struct represents a value in "module map" spec object.
-// https://html.spec.whatwg.org/multipage/webappapis.html#module-map
+// https://html.spec.whatwg.org/C/#module-map
 class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
                                public NameClient,
                                public ModuleScriptLoaderClient {

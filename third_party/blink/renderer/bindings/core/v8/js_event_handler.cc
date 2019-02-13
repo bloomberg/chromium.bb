@@ -34,7 +34,7 @@ void JSEventHandler::SetCompiledHandler(ScriptState* incumbent_script_state,
                                         v8::Local<v8::Function> listener) {
   DCHECK(!HasCompiledHandler());
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // https://html.spec.whatwg.org/C/#getting-the-current-value-of-the-event-handler
   // Step 12: Set eventHandler's value to the result of creating a Web IDL
   // EventHandler callback function object whose object reference is function
   // and whose callback context is settings object.

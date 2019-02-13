@@ -186,7 +186,7 @@ CustomElementDefinition::ConstructionStackScope::~ConstructionStackScope() {
   construction_stack_.pop_back();
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
+// https://html.spec.whatwg.org/C/#concept-upgrade-an-element
 void CustomElementDefinition::Upgrade(Element& element) {
   DCHECK_EQ(element.GetCustomElementState(), CustomElementState::kUndefined);
 
@@ -287,7 +287,7 @@ void CustomElementDefinition::EnqueueAttributeChangedCallbackForAllAttributes(
     Element& element) {
   // Avoid synchronizing all attributes unless it is needed, while enqueing
   // callbacks "in order" as defined in the spec.
-  // https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element
+  // https://html.spec.whatwg.org/C/#concept-upgrade-an-element
   for (const AtomicString& name : observed_attributes_)
     element.SynchronizeAttribute(name);
   for (const auto& attribute : element.AttributesWithoutUpdate()) {

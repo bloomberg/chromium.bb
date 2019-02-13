@@ -211,7 +211,7 @@ static const UChar32 kIsUprightInMixedVerticalRanges[] = {
     0x100000, 0x10FFFD,
 };
 
-// https://html.spec.whatwg.org/multipage/scripting.html#prod-potentialcustomelementname
+// https://html.spec.whatwg.org/C/#prod-potentialcustomelementname
 static const UChar32 kIsPotentialCustomElementNameCharArray[] = {
     '-', '.', '_', 0xB7,
 };

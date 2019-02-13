@@ -115,7 +115,7 @@ enum class SelectionBehaviorOnFocus {
   kNone,
 };
 
-// https://html.spec.whatwg.org/multipage/dom.html#dom-document-nameditem-filter
+// https://html.spec.whatwg.org/C/#dom-document-nameditem-filter
 enum class NamedItemType {
   kNone,
   kName,
@@ -780,7 +780,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   // Elements that may have an insertion mode other than "in body" should
   // override this and return true.
-  // https://html.spec.whatwg.org/multipage/parsing.html#reset-the-insertion-mode-appropriately
+  // https://html.spec.whatwg.org/C/#reset-the-insertion-mode-appropriately
   virtual bool HasNonInBodyInsertionMode() const { return false; }
 
   bool CanContainRangeEndPoint() const override { return true; }

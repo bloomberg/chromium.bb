@@ -1,4 +1,4 @@
-This directory contains the base implementation of all worker and worklet types. Also, this contains the implementation of the [Web Workers API](https://html.spec.whatwg.org/multipage/workers.html#workers) (Dedicated Worker and Shared Worker) and [Worklets API](https://drafts.css-houdini.org/worklets/).
+This directory contains the base implementation of all worker and worklet types. Also, this contains the implementation of the [Web Workers API](https://html.spec.whatwg.org/C/#workers) (Dedicated Worker and Shared Worker) and [Worklets API](https://drafts.css-houdini.org/worklets/).
 
 # Worker / Worklet types
 

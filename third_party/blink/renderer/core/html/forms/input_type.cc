@@ -354,7 +354,7 @@ std::pair<String, String> InputType::ValidationMessage(
     return std::make_pair(TypeMismatchText(), g_empty_string);
 
   if (PatternMismatch(value)) {
-    // https://html.spec.whatwg.org/multipage/forms.html#attr-input-pattern
+    // https://html.spec.whatwg.org/C/#attr-input-pattern
     //   When an input element has a pattern attribute specified, authors
     //   should include a title attribute to give a description of the
     //   pattern. User agents may use the contents of this attribute, if it
@@ -675,7 +675,7 @@ void InputType::ApplyStep(const Decimal& current,
                           AnyStepHandling any_step_handling,
                           TextFieldEventBehavior event_behavior,
                           ExceptionState& exception_state) {
-  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-stepup
+  // https://html.spec.whatwg.org/C/#dom-input-stepup
 
   StepRange step_range(CreateStepRange(any_step_handling));
   // 2. If the element has no allowed value step, then throw an

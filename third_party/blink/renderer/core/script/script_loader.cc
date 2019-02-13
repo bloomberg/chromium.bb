@@ -201,13 +201,13 @@ bool ScriptLoader::BlockForNoModule(mojom::ScriptType script_type,
 }
 
 // Corresponds to
-// https://html.spec.whatwg.org/multipage/urls-and-fetching.html#module-script-credentials-mode
+// https://html.spec.whatwg.org/C/#module-script-credentials-mode
 // which is a translation of the CORS settings attribute in the context of
 // module scripts. This is used in:
 //   - Step 17 of
-//     https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+//     https://html.spec.whatwg.org/C/#prepare-a-script
 //   - Step 6 of obtaining a preloaded module script
-//     https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload.
+//     https://html.spec.whatwg.org/C/#link-type-modulepreload.
 network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     CrossOriginAttributeValue cross_origin) {
   switch (cross_origin) {
@@ -749,7 +749,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   return true;
 }
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
+// https://html.spec.whatwg.org/C/#fetch-a-classic-script
 void ScriptLoader::FetchClassicScript(const KURL& url,
                                       Document& element_document,
                                       const ScriptFetchOptions& options,

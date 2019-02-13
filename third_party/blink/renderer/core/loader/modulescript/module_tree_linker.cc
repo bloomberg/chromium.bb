@@ -150,7 +150,7 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
   }
 }
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+// https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
 void ModuleTreeLinker::FetchRoot(const KURL& original_url,
                                  const ScriptFetchOptions& options) {
 #if DCHECK_IS_ON()
@@ -255,7 +255,7 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
 
   if (state_ == State::kFetchingSelf) {
     // Corresponds to top-level calls to
-    // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
+    // https://html.spec.whatwg.org/C/#fetch-the-descendants-of-and-instantiate-a-module-script
     // i.e. [IMSGF] with the top-level module fetch flag set (external), or
     // Step 22 of "prepare a script" (inline).
     // |module_script| is the top-level module, and will be instantiated
@@ -365,7 +365,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
 
   // [FD] Step 6. Let options be the descendant script fetch options for module
   // script's fetch options.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#descendant-script-fetch-options
+  // https://html.spec.whatwg.org/C/#descendant-script-fetch-options
   // the descendant script fetch options are a new script fetch options whose
   // items all have the same values, except for the integrity metadata, which is
   // instead the empty string.

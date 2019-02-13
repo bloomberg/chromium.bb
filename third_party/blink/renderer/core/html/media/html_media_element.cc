@@ -2905,7 +2905,7 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
                                           const AtomicString& label,
                                           const AtomicString& language,
                                           ExceptionState& exception_state) {
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-media-addtexttrack
+  // https://html.spec.whatwg.org/C/#dom-media-addtexttrack
 
   // The addTextTrack(kind, label, language) method of media elements, when
   // invoked, must run the following steps:

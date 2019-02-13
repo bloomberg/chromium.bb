@@ -320,7 +320,7 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
   }
 
   // document.domain handling, as per
-  // https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
+  // https://html.spec.whatwg.org/C/#dom-document-domain:
   //
   // 1) Neither document has set document.domain. In this case, we insist
   //    that the scheme, host, and port of the URLs match.

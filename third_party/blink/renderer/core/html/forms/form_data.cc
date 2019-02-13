@@ -79,7 +79,7 @@ class FormDataIterationSource final
 };
 
 String Normalize(const String& input) {
-  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#append-an-entry
+  // https://html.spec.whatwg.org/C/#append-an-entry
   return ReplaceUnmatchedSurrogates(NormalizeLineEndingsToCRLF(input));
 }
 

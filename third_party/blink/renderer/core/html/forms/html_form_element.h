@@ -92,7 +92,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void setMethod(const AtomicString&);
 
   // Find the 'default button.'
-  // https://html.spec.whatwg.org/multipage/forms.html#default-button
+  // https://html.spec.whatwg.org/C/#default-button
   HTMLFormControlElement* FindDefaultButton() const;
 
   bool checkValidity();
@@ -111,7 +111,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void InvalidateDefaultButtonStyle() const;
 
   // 'construct the entry list'
-  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set
+  // https://html.spec.whatwg.org/C/#constructing-the-form-data-set
   // Returns nullptr if this form is already running this function.
   FormData* ConstructEntryList(HTMLFormControlElement* submit_button,
                                const WTF::TextEncoding& encoding);
@@ -165,7 +165,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   // Do not access image_elements_ directly. Use ImageElements() instead.
   HeapVector<Member<HTMLImageElement>> image_elements_;
 
-  // https://html.spec.whatwg.org/multipage/forms.html#planned-navigation
+  // https://html.spec.whatwg.org/C/#planned-navigation
   // Unlike the specification, we use this only for web-exposed submit()
   // function in 'submit' event handler.
   Member<FormSubmission> planned_navigation_;

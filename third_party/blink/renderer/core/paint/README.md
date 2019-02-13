@@ -26,7 +26,7 @@ are treated in different ways during painting:
     *   Stacking contexts: elements with non-auto z-indices or other properties
         that affect stacking e.g. transform, opacity, blend-mode.
 
-    *   Replaced normal-flow stacking elements: [replaced elements](https://html.spec.whatwg.org/multipage/rendering.html#replaced-elements)
+    *   Replaced normal-flow stacking elements: [replaced elements](https://html.spec.whatwg.org/C/#replaced-elements)
         that do not have non-auto z-index but are stacking contexts for
         elements below them. Right now the only example is SVG <foreignObject>.
         The difference between these elements and regular stacking contexts is

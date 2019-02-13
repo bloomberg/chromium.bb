@@ -156,7 +156,7 @@ void WorkerGlobalScope::importScripts(
 }
 
 // Implementation of the "importScripts()" algorithm:
-// https://html.spec.whatwg.org/multipage/workers.html#dom-workerglobalscope-importscripts
+// https://html.spec.whatwg.org/C/#dom-workerglobalscope-importscripts
 void WorkerGlobalScope::importScriptsFromStrings(
     const Vector<String>& urls,
     ExceptionState& exception_state) {
@@ -355,7 +355,7 @@ void WorkerGlobalScope::EvaluateClassicScript(
     debugger->ExternalAsyncTaskFinished(stack_id);
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerGlobalScope::ImportClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
@@ -402,7 +402,7 @@ void WorkerGlobalScope::DidReceiveResponseForClassicScript(
   probe::didReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerGlobalScope::DidImportClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {

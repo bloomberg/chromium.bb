@@ -217,7 +217,7 @@ void TextTrack::addCue(TextTrackCue* cue) {
   if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()))
     return;
 
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-addcue
+  // https://html.spec.whatwg.org/C/#dom-texttrack-addcue
 
   // The addCue(cue) method of TextTrack objects, when invoked, must run the
   // following steps:
@@ -242,7 +242,7 @@ void TextTrack::addCue(TextTrackCue* cue) {
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exception_state) {
   DCHECK(cue);
 
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-removecue
+  // https://html.spec.whatwg.org/C/#dom-texttrack-removecue
 
   // The removeCue(cue) method of TextTrack objects, when invoked, must run the
   // following steps:

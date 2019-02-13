@@ -145,7 +145,7 @@ void V8ScriptValueSerializer::FinalizeTransfer(
     ExceptionState& exception_state) {
   // TODO(jbroman): Strictly speaking, this is not correct; transfer should
   // occur in the order of the transfer list.
-  // https://html.spec.whatwg.org/multipage/infrastructure.html#structuredclonewithtransfer
+  // https://html.spec.whatwg.org/C/#structuredclonewithtransfer
 
   v8::Isolate* isolate = script_state_->GetIsolate();
 

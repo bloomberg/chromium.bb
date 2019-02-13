@@ -793,7 +793,7 @@ void HTMLSelectElement::RecalcListItems() const {
 }
 
 void HTMLSelectElement::ResetToDefaultSelection(ResetReason reason) {
-  // https://html.spec.whatwg.org/multipage/forms.html#ask-for-a-reset
+  // https://html.spec.whatwg.org/C/#ask-for-a-reset
   if (IsMultiple())
     return;
   HTMLOptionElement* first_enabled_option = nullptr;

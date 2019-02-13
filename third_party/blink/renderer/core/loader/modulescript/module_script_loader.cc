@@ -93,7 +93,7 @@ void ModuleScriptLoader::Fetch(
                         level, custom_fetch_type);
 }
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+// https://html.spec.whatwg.org/C/#fetch-a-single-module-script
 void ModuleScriptLoader::FetchInternal(
     const ModuleScriptFetchRequest& module_request,
     ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -128,7 +128,7 @@ void ModuleScriptLoader::FetchInternal(
   // Step 6. "Set up the module script request given request and options."
   // [spec text]
   // [SMSR]
-  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-module-script-request
+  // https://html.spec.whatwg.org/C/#set-up-the-module-script-request
 
   // [SMSR] "... its parser metadata to options's parser metadata, ..."
   // [spec text]
@@ -195,7 +195,7 @@ void ModuleScriptLoader::FetchInternal(
   // -> set by ResourceFetcher
 
   // Note: The fetch request's "origin" isn't specified in
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
   // Thus, the "origin" is "client" per
   // https://fetch.spec.whatwg.org/#concept-request-origin
 

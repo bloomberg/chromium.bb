@@ -66,7 +66,7 @@ class JSEventHandlerForContentAttribute final : public JSEventHandler {
   // The compiled v8::Function is returned and |JSEventHandler::event_handler_|
   // gets initialized with it if lazy compilation succeeds.
   // Otherwise, v8::Null is returned.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler
+  // https://html.spec.whatwg.org/C/#getting-the-current-value-of-the-event-handler
   v8::Local<v8::Value> GetCompiledHandler(EventTarget&);
 
   // Lazy compilation for content attribute should be tried only once, but we

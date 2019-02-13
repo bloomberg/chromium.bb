@@ -262,7 +262,7 @@ void ImageDocument::CreateDocumentStructure() {
     // Adding a UA shadow root here is because the container <div> should be
     // hidden so that only the <img> element should be visible in <body>,
     // according to the spec:
-    // https://html.spec.whatwg.org/multipage/browsing-the-web.html#read-media
+    // https://html.spec.whatwg.org/C/#read-media
     ShadowRoot& shadow_root = body->EnsureUserAgentShadowRoot();
     shadow_root.AppendChild(div_element_);
   } else {

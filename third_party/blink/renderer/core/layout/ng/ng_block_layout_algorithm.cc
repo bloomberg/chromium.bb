@@ -574,7 +574,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     // perform this calculation differently, e.g. by just ignoring the
     // *last* quirky margin.
     // TODO: revisit previous implementation to avoid changing behavior and
-    // https://html.spec.whatwg.org/multipage/rendering.html#margin-collapsing-quirks
+    // https://html.spec.whatwg.org/C/#margin-collapsing-quirks
     LayoutUnit margin_strut_sum = node_.IsQuirkyContainer()
                                       ? end_margin_strut.QuirkyContainerSum()
                                       : end_margin_strut.Sum();

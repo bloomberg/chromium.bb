@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#formdataeventinit
+// https://html.spec.whatwg.org/C/#formdataeventinit
 
 dictionary FormDataEventInit : EventInit {
   required FormData formData;

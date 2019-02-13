@@ -52,7 +52,7 @@ HTMLLabelElement* HTMLLabelElement::Create(Document& document) {
 }
 
 HTMLElement* HTMLLabelElement::control() const {
-  // https://html.spec.whatwg.org/multipage/forms.html#labeled-control
+  // https://html.spec.whatwg.org/C/#labeled-control
   const AtomicString& control_id = getAttribute(kForAttr);
   if (control_id.IsNull()) {
     // "If the for attribute is not specified, but the label element has a

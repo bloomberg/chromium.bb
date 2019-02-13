@@ -31,7 +31,7 @@ void DocumentModulatorImplTest::SetUp() {
 
 TEST_F(DocumentModulatorImplTest, ResolveModuleSpecifier) {
   // Taken from examples listed in
-  // https://html.spec.whatwg.org/multipage/webappapis.html#resolve-a-module-specifier
+  // https://html.spec.whatwg.org/C/#resolve-a-module-specifier
 
   // "The following are valid module specifiers according to the above
   // algorithm:"

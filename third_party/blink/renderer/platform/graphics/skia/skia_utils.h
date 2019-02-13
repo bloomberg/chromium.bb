@@ -135,7 +135,7 @@ inline float BlurRadiusToStdDev(float radius) {
 
   // Per spec, sigma is exactly half the blur radius:
   // https://www.w3.org/TR/css-backgrounds-3/#shadow-blur
-  // https://html.spec.whatwg.org/multipage/canvas.html#when-shadows-are-drawn
+  // https://html.spec.whatwg.org/C/#when-shadows-are-drawn
   return radius * 0.5f;
 }
 

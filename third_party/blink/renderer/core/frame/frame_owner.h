@@ -58,7 +58,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
   // Returns the 'name' content attribute value of the browsing context
   // container.
-  // https://html.spec.whatwg.org/multipage/browsers.html#browsing-context-container
+  // https://html.spec.whatwg.org/C/#browsing-context-container
   virtual AtomicString BrowsingContextContainerName() const = 0;
   virtual ScrollbarMode ScrollingMode() const = 0;
   virtual int MarginWidth() const = 0;

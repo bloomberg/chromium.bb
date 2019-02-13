@@ -49,7 +49,7 @@ namespace blink {
 // observable effect on web-visible state, on should suspend that activity while
 // the page is paused by overriding ContextLifecycleStateChanged().
 //
-// https://html.spec.whatwg.org/multipage/webappapis.html#pause
+// https://html.spec.whatwg.org/C/#pause
 // https://wicg.github.io/page-lifecycle/spec.html
 class CORE_EXPORT ContextLifecycleStateObserver
     : public ContextLifecycleObserver {

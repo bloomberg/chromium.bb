@@ -252,7 +252,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
   return simulated_token;
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#html-integration-point
+// https://html.spec.whatwg.org/C/#html-integration-point
 bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
     const CompactHTMLToken& token) const {
   DCHECK(token.GetType() == HTMLToken::kStartTag) << token.GetType();
@@ -278,7 +278,7 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
   return false;
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#html-integration-point
+// https://html.spec.whatwg.org/C/#html-integration-point
 bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForEndTag(
     const CompactHTMLToken& token) const {
   if (token.GetType() != HTMLToken::kEndTag)

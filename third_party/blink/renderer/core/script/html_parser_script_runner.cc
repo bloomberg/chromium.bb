@@ -92,10 +92,10 @@ void TraceParserBlockingScript(const PendingScript* pending_script,
   // cases:
   // * the script's execution is blocked on the completed load of the script
   //   resource
-  //   (https://html.spec.whatwg.org/multipage/scripting.html#pending-parsing-blocking-script)
+  //   (https://html.spec.whatwg.org/C/#pending-parsing-blocking-script)
   // * the script's execution is blocked on the load of a style sheet or other
   //   resources that are blocking scripts
-  //   (https://html.spec.whatwg.org/multipage/semantics.html#a-style-sheet-that-is-blocking-scripts)
+  //   (https://html.spec.whatwg.org/C/#a-style-sheet-that-is-blocking-scripts)
   //
   // Both of these cases can introduce significant latency when loading a
   // web page, especially for users on slow connections, since the HTML parser
@@ -237,7 +237,7 @@ void HTMLParserScriptRunner::
 // Should be correspond to
 //
 // <specdef
-// href="https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block">
+// href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 //
 // but currently does more than specced, because historically this and
 // ExecutePendingParserBlockingScriptAndDispatchEvent() was the same method.
@@ -506,7 +506,7 @@ void HTMLParserScriptRunner::RequestDeferredScript(
 // The initial steps for 'An end tag whose tag name is "script"'
 // <specdef href="https://html.spec.whatwg.org/C/#scriptEndTag">
 // <specdef label="prepare-a-script"
-// href="https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script">
+// href="https://html.spec.whatwg.org/C/#prepare-a-script">
 void HTMLParserScriptRunner::ProcessScriptElementInternal(
     Element* script,
     const TextPosition& script_start_position) {

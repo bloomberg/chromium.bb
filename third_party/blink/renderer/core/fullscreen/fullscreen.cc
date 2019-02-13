@@ -204,7 +204,7 @@ void Unfullscreen(Document& document) {
     Unfullscreen(*element);
 }
 
-// https://html.spec.whatwg.org/multipage/embedded-content.html#allowed-to-use
+// https://html.spec.whatwg.org/C/#allowed-to-use
 bool AllowedToUseFullscreen(const Document& document,
                             ReportOptions report_on_failure) {
   // To determine whether a Document object |document| is allowed to use the

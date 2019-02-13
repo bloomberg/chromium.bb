@@ -35,7 +35,7 @@ void CustomElementReactionQueue::InvokeReactions(Element& element) {
   // Unlike V0CustomElementsCallbackQueue, reactions are always
   // inserted by steps which bump the global element queue. This
   // means we do not need queue "owner" guards.
-  // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-reactions
+  // https://html.spec.whatwg.org/C/#custom-element-reactions
   Clear();
 }
 

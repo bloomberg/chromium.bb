@@ -58,8 +58,8 @@ struct CrossThreadFetchClientSettingsObjectData {
 // instance of this class can be passed to another thread without cross-thread
 // synchronization. Don't keep this object persistently, instead create a new
 // instance per each "fetch a module script graph" algorithm:
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
+// https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
+// https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
 //
 // This class should be used only for main worker (worklet) script loading. For
 // other resources, FetchClientSettingsObjectImpl should be used. See the class

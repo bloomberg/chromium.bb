@@ -39,7 +39,7 @@
     // *existing* document at a different origin.
     // However, *reading* |href|, or accessing any component, is a security
     // problem, since that allows tracking navigation.
-    // https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)
+    // https://html.spec.whatwg.org/C/#crossoriginproperties-(-o-)
     [CallWith=Isolate, CrossOrigin, RaisesException, Unforgeable] void replace(URLString url);
     [Unforgeable] void reload();
 

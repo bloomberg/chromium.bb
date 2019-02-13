@@ -55,7 +55,7 @@ const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kSharedWorkerGlobalScope;
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void SharedWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,

@@ -9,7 +9,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
+// https://html.spec.whatwg.org/C/#fetch-a-classic-script
 FetchParameters ScriptFetchOptions::CreateFetchParameters(
     const KURL& url,
     const SecurityOrigin* security_origin,
@@ -36,7 +36,7 @@ FetchParameters ScriptFetchOptions::CreateFetchParameters(
   // Step 3. Set up the classic script request given request and options. [spec
   // text]
   //
-  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-classic-script-request
+  // https://html.spec.whatwg.org/C/#set-up-the-classic-script-request
   // Set request's cryptographic nonce metadata to options's cryptographic
   // nonce, [spec text]
   params.SetContentSecurityPolicyNonce(Nonce());

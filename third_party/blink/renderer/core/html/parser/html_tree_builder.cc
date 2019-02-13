@@ -459,7 +459,7 @@ static void MapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map,
 }
 
 // "Any other start tag" bullet in
-// https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inforeign
+// https://html.spec.whatwg.org/C/#parsing-main-inforeign
 static void AdjustSVGTagNameCase(AtomicHTMLToken* token) {
   static PrefixedNameToQualifiedNameMap* case_map = nullptr;
   if (!case_map) {
@@ -490,12 +490,12 @@ static void AdjustAttributes(AtomicHTMLToken* token) {
   }
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes
+// https://html.spec.whatwg.org/C/#adjust-svg-attributes
 static void AdjustSVGAttributes(AtomicHTMLToken* token) {
   AdjustAttributes<svg_names::GetAttrs, svg_names::kAttrsCount>(token);
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#adjust-mathml-attributes
+// https://html.spec.whatwg.org/C/#adjust-mathml-attributes
 static void AdjustMathMLAttributes(AtomicHTMLToken* token) {
   AdjustAttributes<mathml_names::GetAttrs, mathml_names::kAttrsCount>(token);
 }

@@ -249,7 +249,7 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(
 
   v8::HandleScope handle_scope(GetIsolate());
 
-  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigate
+  // https://html.spec.whatwg.org/C/#navigate
   // Step 12.8 "Let base URL be settings object's API base URL." [spec text]
   KURL base_url = owner_document->BaseURL();
 

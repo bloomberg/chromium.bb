@@ -210,11 +210,11 @@ void V8Window::NamedPropertyGetterCustom(
 
   // Note that named access on WindowProxy is allowed in the cross-origin case.
   // 7.4.5 [[GetOwnProperty]] (P), step 6.
-  // https://html.spec.whatwg.org/multipage/browsers.html#windowproxy-getownproperty
+  // https://html.spec.whatwg.org/C/#windowproxy-getownproperty
   //
   // 7.3.3 Named access on the Window object
   // The document-tree child browsing context name property set
-  // https://html.spec.whatwg.org/multipage/browsers.html#document-tree-child-browsing-context-name-property-set
+  // https://html.spec.whatwg.org/C/#document-tree-child-browsing-context-name-property-set
   Frame* child = frame->Tree().ScopedChild(name);
   if (child) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
@@ -252,7 +252,7 @@ void V8Window::NamedPropertyGetterCustom(
           CurrentDOMWindow(info.GetIsolate()), window,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
-    // https://html.spec.whatwg.org/multipage/browsers.html#crossorigingetownpropertyhelper-(-o,-p-)
+    // https://html.spec.whatwg.org/C/#crossorigingetownpropertyhelper-(-o,-p-)
     // step 3. If P is "then", @@toStringTag, @@hasInstance, or
     //   @@isConcatSpreadable, then return PropertyDescriptor{ [[Value]]:
     //   undefined, [[Writable]]: false, [[Enumerable]]: false,

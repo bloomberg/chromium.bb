@@ -209,7 +209,7 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
       std::move(transferable_message));
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void DedicatedWorker::Start() {
   DCHECK(GetExecutionContext()->IsContextThread());
 

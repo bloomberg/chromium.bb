@@ -25,7 +25,7 @@
  *
  */
 
-// https://html.spec.whatwg.org/multipage/comms.html#the-messageevent-interfaces
+// https://html.spec.whatwg.org/C/#the-messageevent-interfaces
 
 [
     Constructor(DOMString type, optional MessageEventInit eventInitDict),

@@ -10,7 +10,7 @@ namespace blink {
 // Type of <script>'s scheduling.
 //
 // In the spec, this is determined which clause of Step 25 of
-// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+// https://html.spec.whatwg.org/C/#prepare-a-script
 // is taken.
 //
 // The enum values are used in histograms and thus do not change existing

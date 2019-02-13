@@ -520,7 +520,7 @@ void ServiceWorkerContainer::ReceiveMessage(WebServiceWorkerObjectInfo source,
     if (!HasFiredDomContentLoaded(*document)) {
       // Wait for DOMContentLoaded. This corresponds to the specification steps
       // for "Parsing HTML documents": "The end" at
-      // https://html.spec.whatwg.org/multipage/parsing.html#the-end:
+      // https://html.spec.whatwg.org/C/#the-end:
       //
       // 1. Fire an event named DOMContentLoaded at the Document object, with
       // its bubbles attribute initialized to true.

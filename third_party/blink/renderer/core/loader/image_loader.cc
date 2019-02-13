@@ -832,7 +832,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
 
     // The error event should not fire if the image data update is a result of
     // environment change.
-    // https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element:the-img-element-55
+    // https://html.spec.whatwg.org/C/#the-img-element:the-img-element-55
     if (!suppress_error_events_)
       DispatchErrorEvent();
     return;

@@ -22,7 +22,7 @@ void TextAlign::ApplyValue(StyleResolverState& state,
       ToCSSIdentifierValue(value).GetValueID() != CSSValueWebkitMatchParent) {
     // Special case for th elements - UA stylesheet text-align does not apply if
     // parent's computed value for text-align is not its initial value
-    // https://html.spec.whatwg.org/multipage/rendering.html#tables-2
+    // https://html.spec.whatwg.org/C/#tables-2
     const CSSIdentifierValue& ident_value = ToCSSIdentifierValue(value);
     if (ident_value.GetValueID() == CSSValueInternalCenter &&
         state.ParentStyle()->GetTextAlign() !=

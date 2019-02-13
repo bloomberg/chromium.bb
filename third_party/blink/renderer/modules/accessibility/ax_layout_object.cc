@@ -1508,7 +1508,7 @@ String AXLayoutObject::StringValue() const {
   // time controls, by returning their value converted to text, with the
   // exception of checkboxes and radio buttons (which would return "on"), and
   // buttons which will return their name.
-  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
+  // https://html.spec.whatwg.org/C/#dom-input-value
   if (const auto* input = ToHTMLInputElementOrNull(GetNode())) {
     if (input->type() != input_type_names::kButton &&
         input->type() != input_type_names::kCheckbox &&
@@ -2199,7 +2199,7 @@ AtomicString AXLayoutObject::Language() const {
   // The style engine relies on, for example, the "lang" attribute of the
   // current node and its ancestors, and the document's "content-language"
   // header. See the Language of a Node Spec at
-  // https://html.spec.whatwg.org/multipage/dom.html#language
+  // https://html.spec.whatwg.org/C/#language
 
   if (!GetLayoutObject())
     return AXNodeObject::Language();

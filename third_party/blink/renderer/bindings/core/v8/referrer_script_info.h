@@ -17,7 +17,7 @@ namespace blink {
 
 // ReferrerScriptInfo carries a copy of "referencing script's" info referenced
 // in HTML Spec: "HostImportModuleDynamically" algorithm.
-// https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
+// https://html.spec.whatwg.org/C/#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
 class CORE_EXPORT ReferrerScriptInfo {
  public:
   ReferrerScriptInfo() {}
@@ -62,7 +62,7 @@ class CORE_EXPORT ReferrerScriptInfo {
 
  private:
   // Spec: "referencing script's base URL"
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  // https://html.spec.whatwg.org/C/#concept-script-base-url
   //
   // If base_url_.IsNull(), refer to ScriptOrigin::ResourceName() instead.
   // Note: This improves the chance of getting into the fast path in
@@ -71,7 +71,7 @@ class CORE_EXPORT ReferrerScriptInfo {
 
   // Spec: "referencing script's credentials mode"
   // The default value is "same-origin" per:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
+  // https://html.spec.whatwg.org/C/#default-classic-script-fetch-options
   const network::mojom::FetchCredentialsMode credentials_mode_ =
       network::mojom::FetchCredentialsMode::kSameOrigin;
 
@@ -80,12 +80,12 @@ class CORE_EXPORT ReferrerScriptInfo {
 
   // Spec: "referencing script's parser state"
   // The default value is "not-parser-inserted" per:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
+  // https://html.spec.whatwg.org/C/#default-classic-script-fetch-options
   const ParserDisposition parser_state_ = kNotParserInserted;
 
   // Spec: "referencing script's referrer policy"
   // The default value is "the empty string" per:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
+  // https://html.spec.whatwg.org/C/#default-classic-script-fetch-options
   const network::mojom::ReferrerPolicy referrer_policy_ =
       network::mojom::ReferrerPolicy::kDefault;
 };

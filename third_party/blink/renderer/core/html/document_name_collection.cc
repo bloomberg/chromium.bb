@@ -13,7 +13,7 @@ DocumentNameCollection::DocumentNameCollection(ContainerNode& document,
                                                const AtomicString& name)
     : HTMLNameCollection(document, kDocumentNamedItems, name) {}
 
-// https://html.spec.whatwg.org/multipage/dom.html#dom-document-nameditem-filter
+// https://html.spec.whatwg.org/C/#dom-document-nameditem-filter
 bool DocumentNameCollection::ElementMatches(const HTMLElement& element) const {
   // Match images, forms, embeds, objects and iframes by name,
   // object by id, and images by id but only if they have
