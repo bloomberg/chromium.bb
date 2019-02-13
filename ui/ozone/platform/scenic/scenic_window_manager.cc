@@ -20,18 +20,6 @@ std::unique_ptr<PlatformScreen> ScenicWindowManager::CreateScreen() {
   return screen;
 }
 
-fuchsia::ui::viewsv1::ViewManager* ScenicWindowManager::GetViewManager() {
-  if (!view_manager_) {
-    view_manager_ = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                        ->ConnectToService<fuchsia::ui::viewsv1::ViewManager>();
-    view_manager_.set_error_handler([](zx_status_t status) {
-      ZX_LOG(FATAL, status) << " ViewManager lost.";
-    });
-  }
-
-  return view_manager_.get();
-}
-
 fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
   if (!scenic_) {
     scenic_ = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
