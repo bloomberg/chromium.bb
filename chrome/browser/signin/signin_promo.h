@@ -12,7 +12,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 
 class GURL;
-class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -23,24 +22,17 @@ namespace signin {
 
 extern const char kSignInPromoQueryKeyAccessPoint[];
 extern const char kSignInPromoQueryKeyAutoClose[];
-extern const char kSignInPromoQueryKeyContinue[];
 extern const char kSignInPromoQueryKeyForceKeepData[];
 extern const char kSignInPromoQueryKeyReason[];
 extern const char kSignInPromoQueryKeySource[];
 extern const char kSigninPromoLandingURLSuccessPage[];
 
-// Returns true if we should show the sign in promo at startup.
-bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile);
-
-// Called when the sign in promo has been shown so that we can keep track
-// of the number of times we've displayed it.
-void DidShowPromoAtStartup(Profile* profile);
-
-// Registers the fact that the user has skipped the sign in promo.
-void SetUserSkippedPromo(Profile* profile);
-
 // Gets the sign in landing page URL.
 GURL GetLandingURL(signin_metrics::AccessPoint access_point);
+
+#if !defined(OS_CHROMEOS)
+// These functions are only used to unlock the profile from the desktop user
+// manager and the windows credential provider.
 
 // Returns the sign in promo URL that can be used in a modal dialog with
 // the given arguments in the query.
@@ -56,6 +48,7 @@ GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
 GURL GetEmbeddedReauthURLWithEmail(signin_metrics::AccessPoint access_point,
                                    signin_metrics::Reason reason,
                                    const std::string& email);
+#endif  // !defined(OS_CHROMEOS)
 
 // Returns the URL to be used to signin and turn on Sync when DICE is enabled.
 // If email is not empty, then it will pass email as hint to the page so that it
@@ -82,9 +75,6 @@ signin_metrics::Reason GetSigninReasonForEmbeddedPromoURL(const GURL& url);
 
 // Returns true if the auto_close parameter in the given URL is set to true.
 bool IsAutoCloseEnabledInEmbeddedURL(const GURL& url);
-
-// Forces UseWebBasedSigninFlow() to return true when set; used in tests only.
-void ForceWebBasedSigninFlowForTesting(bool force);
 
 // Registers the preferences the Sign In Promo needs.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

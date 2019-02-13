@@ -4,11 +4,13 @@
 
 #include "chrome/browser/signin/signin_promo.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace signin {
 
+#if !defined(OS_CHROMEOS)
 TEST(SigninPromoTest, TestPromoURL) {
   GURL expected_url_1(
       "chrome://chrome-signin/?access_point=0&reason=0&auto_close=1");
@@ -33,6 +35,7 @@ TEST(SigninPromoTest, TestReauthURL) {
                 signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
                 signin_metrics::Reason::REASON_UNLOCK, "example@domain.com"));
 }
+#endif  // !defined(OS_CHROMEOS)
 
 TEST(SigninPromoTest, TestLandingURL) {
   GURL expected_url_1(
