@@ -2479,7 +2479,7 @@ const char kEnableWebPaymentsMethodSectionOrderV2Description[] =
 
 const char kEphemeralTabName[] = "An Ephemeral Tab in an Overlay Panel";
 const char kEphemeralTabDescription[] =
-    "Enable a 'sneak peek' at a linked page in an overlay.";
+    "Enable a 'Preview page/image' at a linked page into an overlay.";
 
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
