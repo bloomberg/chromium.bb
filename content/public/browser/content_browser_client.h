@@ -56,6 +56,7 @@
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
 #include "third_party/blink/public/platform/web_feature.mojom-forward.h"
 #include "third_party/blink/public/web/window_features.mojom-forward.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -1476,6 +1477,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // blacklist policies are applied there.
   virtual bool IsRendererDebugURLBlacklisted(const GURL& url,
                                              BrowserContext* context);
+
+  // Returns the default accessibility mode for the given browser context.
+  virtual ui::AXMode GetAXModeForBrowserContext(
+      BrowserContext* browser_context);
 };
 
 }  // namespace content

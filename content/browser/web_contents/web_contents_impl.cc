@@ -42,7 +42,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
@@ -589,7 +588,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
       accessibility_mode_(
-          BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode()),
+          GetContentClient()->browser()->GetAXModeForBrowserContext(
+              browser_context)),
       audio_stream_monitor_(this),
       bluetooth_connected_device_count_(0),
       media_device_group_id_salt_base_(

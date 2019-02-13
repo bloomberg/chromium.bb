@@ -564,6 +564,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsRendererDebugURLBlacklisted(const GURL& url,
                                      content::BrowserContext* context) override;
 
+  ui::AXMode GetAXModeForBrowserContext(
+      content::BrowserContext* browser_context) override;
+
   // Determines the committed previews state for the passed in params.
   static content::PreviewsState DetermineCommittedPreviewsForURL(
       const GURL& url,
