@@ -67,6 +67,14 @@ install_headers(
 	subdir: dir_include_libweston
 )
 
+if get_option('renderer-gl')
+	dep_egl = dependency('egl', required: false)
+	if not dep_egl.found()
+		error('libweston + gl-renderer requires egl which was not found. Or, you can use \'-Drenderer-gl=false\'.')
+	endif
+	deps_libweston += dep_egl
+endif
+
 lib_weston = shared_library(
 	'weston-@0@'.format(libweston_major),
 	srcs_libweston,
@@ -375,11 +383,10 @@ if get_option('backend-x11')
 	endif
 
 	if get_option('renderer-gl')
-		d = dependency('egl', required: false)
-		if not d.found()
+		if not dep_egl.found()
 			error('x11-backend + gl-renderer requires egl which was not found. Or, you can use \'-Dbackend-x11=false\' or \'-Drenderer-gl=false\'.')
 		endif
-		deps_x11 += d
+		deps_x11 += dep_egl
 	endif
 
 	plugin_x11 = shared_library(
