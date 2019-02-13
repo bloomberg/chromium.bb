@@ -67,6 +67,9 @@ void AssistantClient::MaybeInit(Profile* profile) {
 }
 
 void AssistantClient::MaybeStartAssistantOptInFlow() {
+  if (!initialized_)
+    return;
+
   assistant_setup_->MaybeStartAssistantOptInFlow();
 }
 
