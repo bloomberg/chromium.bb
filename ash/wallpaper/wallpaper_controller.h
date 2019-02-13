@@ -632,6 +632,11 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // change). Has the same lifetime with |confirm_preview_wallpaper_callback_|.
   base::RepeatingClosure reload_preview_wallpaper_callback_;
 
+  // Called when the always-on-top wallpaper needs to be reloaded (e.g. display
+  // size change). Non-empty if and only if |is_always_on_top_wallpaper_| is
+  // true.
+  base::RepeatingClosure reload_always_on_top_wallpaper_callback_;
+
   // If true, use a solid color wallpaper as if it is the decoded image.
   bool bypass_decode_for_testing_ = false;
 

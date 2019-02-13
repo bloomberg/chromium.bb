@@ -1659,8 +1659,7 @@ TEST_F(WallpaperControllerTest, SigninWallpaperIsKeptAfterRotation) {
             GetDecodeFilePaths()[0]);
 }
 
-// Display size change should trigger reload for both user wallpaper and preview
-// wallpaper.
+// Display size change should trigger wallpaper reload.
 TEST_F(WallpaperControllerTest, ReloadWallpaper) {
   CreateAndSaveWallpapers(account_id_1);
 
@@ -1697,6 +1696,26 @@ TEST_F(WallpaperControllerTest, ReloadWallpaper) {
   // Rotating the display should trigger a wallpaper reload.
   ClearWallpaperCount();
   UpdateDisplay("800x600");
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  ClearWallpaperCount();
+  controller_->CancelPreviewWallpaper();
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+
+  // Show an always-on-top wallpaper.
+  const base::FilePath image_path =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          chromeos::switches::kGuestWallpaperLarge);
+  CreateDefaultWallpapers();
+  SetBypassDecode();
+  ClearWallpaperCount();
+  controller_->ShowAlwaysOnTopWallpaper(image_path);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  // Rotating the display should trigger a wallpaper reload.
+  ClearWallpaperCount();
+  UpdateDisplay("800x600/r");
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
 }

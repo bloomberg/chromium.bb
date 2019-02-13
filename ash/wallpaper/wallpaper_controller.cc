@@ -1225,9 +1225,12 @@ void WallpaperController::ShowAlwaysOnTopWallpaper(
 }
 
 void WallpaperController::RemoveAlwaysOnTopWallpaper() {
-  if (!is_always_on_top_wallpaper_)
+  if (!is_always_on_top_wallpaper_) {
+    DCHECK(!reload_always_on_top_wallpaper_callback_);
     return;
+  }
   is_always_on_top_wallpaper_ = false;
+  reload_always_on_top_wallpaper_callback_.Reset();
   ReloadWallpaper(/*clear_cache=*/false);
 }
 
@@ -1913,7 +1916,9 @@ void WallpaperController::ReloadWallpaper(bool clear_cache) {
   if (clear_cache)
     wallpaper_cache_map_.clear();
 
-  if (reload_preview_wallpaper_callback_)
+  if (reload_always_on_top_wallpaper_callback_)
+    reload_always_on_top_wallpaper_callback_.Run();
+  else if (reload_preview_wallpaper_callback_)
     reload_preview_wallpaper_callback_.Run();
   else if (current_user_)
     ShowUserWallpaper(std::move(current_user_));
@@ -2027,8 +2032,11 @@ void WallpaperController::OnAlwaysOnTopWallpaperDecoded(
     is_always_on_top_wallpaper_ = false;
     return;
   }
-  ShowWallpaperImage(image, info, /*preview_mode=*/false,
-                     /*always_on_top=*/true);
+  reload_always_on_top_wallpaper_callback_ =
+      base::BindRepeating(&WallpaperController::ShowWallpaperImage,
+                          weak_factory_.GetWeakPtr(), image, info,
+                          /*preview_mode=*/false, /*always_on_top=*/true);
+  reload_always_on_top_wallpaper_callback_.Run();
 }
 
 bool WallpaperController::MoveToLockedContainer() {
