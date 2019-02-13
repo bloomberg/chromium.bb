@@ -449,7 +449,7 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   UseLayoutObjectAndAhem();
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetLineHeight(Length(1, kFixed));
+  style->SetLineHeight(Length::Fixed(1));
   style->GetFont().Update(nullptr);
   NGInlineNodeForTest node = CreateInlineNode();
   node = CreateBidiIsolateNode(node, style.get(), layout_object_);

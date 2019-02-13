@@ -766,24 +766,28 @@ void TableLayoutAlgorithmAuto::UpdateLayout() {
   // columns then empty columns.
   if (available > 0 && (num_auto || num_auto_empty_cells_only)) {
     available += alloc_auto;
-    if (num_auto)
+    if (num_auto) {
       DistributeWidthToColumns<float, kAuto, kNonEmptyCells, kInitialWidth,
                                kStartToEnd>(available, total_auto);
-    if (num_auto_empty_cells_only)
+    }
+    if (num_auto_empty_cells_only) {
       DistributeWidthToColumns<unsigned, kAuto, kEmptyCells, kInitialWidth,
                                kStartToEnd>(available,
                                             num_auto_empty_cells_only);
+    }
   }
 
   // Any remaining available width expands fixed width, percent width, and
   // non-empty auto width columns, in that order.
-  if (available > 0 && num_fixed)
+  if (available > 0 && num_fixed) {
     DistributeWidthToColumns<float, kFixed, kAllCells, kExtraWidth,
                              kStartToEnd>(available, total_fixed);
+  }
 
-  if (available > 0 && has_percent_ && total_percent < 100)
+  if (available > 0 && has_percent_ && total_percent < 100) {
     DistributeWidthToColumns<float, kPercent, kAllCells, kExtraWidth,
                              kStartToEnd>(available, total_percent);
+  }
 
   if (available > 0 && n_eff_cols > num_auto_empty_cells_only) {
     unsigned total = n_eff_cols - num_auto_empty_cells_only;

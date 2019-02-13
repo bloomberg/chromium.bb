@@ -556,9 +556,9 @@ void LayoutThemeMac::SetSizeFromFont(ComputedStyle& style,
   // account.
   IntSize size = SizeForFont(style, sizes);
   if (style.Width().IsIntrinsicOrAuto() && size.Width() > 0)
-    style.SetWidth(Length(size.Width(), kFixed));
+    style.SetWidth(Length::Fixed(size.Width()));
   if (style.Height().IsAuto() && size.Height() > 0)
-    style.SetHeight(Length(size.Height(), kFixed));
+    style.SetHeight(Length::Fixed(size.Height()));
 }
 
 void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
@@ -641,7 +641,7 @@ void LayoutThemeMac::AdjustMenuListStyle(ComputedStyle& style,
   style.ResetPadding();
 
   // Height is locked to auto.
-  style.SetHeight(Length(kAuto));
+  style.SetHeight(Length::Auto());
 
   // White-space is locked to pre.
   style.SetWhiteSpace(EWhiteSpace::kPre);
@@ -726,7 +726,7 @@ void LayoutThemeMac::AdjustMenuListButtonStyle(ComputedStyle& style,
               int(kBaseBorderRadius + font_scale - 1)));  // FIXME: Round up?
 
   const int kMinHeight = 15;
-  style.SetMinHeight(Length(kMinHeight, kFixed));
+  style.SetMinHeight(Length::Fixed(kMinHeight));
 
   style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 }
@@ -808,7 +808,7 @@ void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   style.SetBorderTopStyle(EBorderStyle::kInset);
 
   // Override height.
-  style.SetHeight(Length(kAuto));
+  style.SetHeight(Length::Auto());
   SetSearchFieldSize(style);
 
   NSControlSize control_size = ControlSizeForFont(style);
@@ -817,10 +817,10 @@ void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   const int vertical_padding = 1 * style.EffectiveZoom();
   const int horizontal_padding =
       SearchFieldHorizontalPaddings()[control_size] * style.EffectiveZoom();
-  style.SetPaddingLeft(Length(horizontal_padding, kFixed));
-  style.SetPaddingRight(Length(horizontal_padding, kFixed));
-  style.SetPaddingTop(Length(vertical_padding, kFixed));
-  style.SetPaddingBottom(Length(vertical_padding, kFixed));
+  style.SetPaddingLeft(Length::Fixed(horizontal_padding));
+  style.SetPaddingRight(Length::Fixed(horizontal_padding));
+  style.SetPaddingTop(Length::Fixed(vertical_padding));
+  style.SetPaddingBottom(Length::Fixed(vertical_padding));
 
   SetFontFromControlSize(style, control_size);
 
@@ -836,8 +836,8 @@ const IntSize* LayoutThemeMac::CancelButtonSizes() const {
 void LayoutThemeMac::AdjustSearchFieldCancelButtonStyle(
     ComputedStyle& style) const {
   IntSize size = SizeForSystemFont(style, CancelButtonSizes());
-  style.SetWidth(Length(size.Width(), kFixed));
-  style.SetHeight(Length(size.Height(), kFixed));
+  style.SetWidth(Length::Fixed(size.Width()));
+  style.SetHeight(Length::Fixed(size.Height()));
   style.SetBoxShadow(nullptr);
 }
 
@@ -855,7 +855,7 @@ void LayoutThemeMac::AdjustProgressBarBounds(ComputedStyle& style) const {
   int height = ProgressBarHeights()[control_size] * zoom_level;
 
   // Now inflate it to account for the shadow.
-  style.SetMinHeight(Length(height + zoom_level, kFixed));
+  style.SetMinHeight(Length::Fixed(height + zoom_level));
 }
 
 void LayoutThemeMac::AdjustSliderThumbSize(ComputedStyle& style) const {
@@ -863,9 +863,9 @@ void LayoutThemeMac::AdjustSliderThumbSize(ComputedStyle& style) const {
   if (style.Appearance() == kSliderThumbHorizontalPart ||
       style.Appearance() == kSliderThumbVerticalPart) {
     style.SetWidth(
-        Length(static_cast<int>(kSliderThumbWidth * zoom_level), kFixed));
+        Length::Fixed(static_cast<int>(kSliderThumbWidth * zoom_level)));
     style.SetHeight(
-        Length(static_cast<int>(kSliderThumbHeight * zoom_level), kFixed));
+        Length::Fixed(static_cast<int>(kSliderThumbHeight * zoom_level)));
   }
 }
 

@@ -1491,10 +1491,10 @@ class ComputedStyle : public ComputedStyleBase,
            !PaddingTop().IsZero() || !PaddingBottom().IsZero();
   }
   void ResetPadding() {
-    SetPaddingTop(Length(kFixed));
-    SetPaddingBottom(Length(kFixed));
-    SetPaddingLeft(Length(kFixed));
-    SetPaddingRight(Length(kFixed));
+    SetPaddingTop(Length::Fixed());
+    SetPaddingBottom(Length::Fixed());
+    SetPaddingLeft(Length::Fixed());
+    SetPaddingRight(Length::Fixed());
   }
   void SetPadding(const LengthBox& b) {
     SetPaddingTop(b.top_);
@@ -1786,7 +1786,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   void SetBorderRadius(const IntSize& s) {
     SetBorderRadius(
-        LengthSize(Length(s.Width(), kFixed), Length(s.Height(), kFixed)));
+        LengthSize(Length::Fixed(s.Width()), Length::Fixed(s.Height())));
   }
 
   FloatRoundedRect GetRoundedBorderFor(

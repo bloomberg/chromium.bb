@@ -206,14 +206,14 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
 static Length ConvertToLength(const StyleResolverState& state,
                               const CSSPrimitiveValue* value) {
   if (!value)
-    return Length(0, kFixed);
+    return Length::Fixed(0);
   return value->ConvertToLength(state.CssToLengthConversionData());
 }
 
 static LengthSize ConvertToLengthSize(const StyleResolverState& state,
                                       const CSSValuePair* value) {
   if (!value)
-    return LengthSize(Length(0, kFixed), Length(0, kFixed));
+    return LengthSize(Length::Fixed(0), Length::Fixed(0));
 
   return LengthSize(
       ConvertToLength(state, &ToCSSPrimitiveValue(value->First())),
@@ -224,7 +224,7 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
     const StyleResolverState& state,
     CSSValue* value) {
   BasicShapeCenterCoordinate::Direction direction;
-  Length offset = Length(0, kFixed);
+  Length offset = Length::Fixed(0);
 
   CSSValueID keyword = CSSValueTop;
   if (!value) {
@@ -250,7 +250,7 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
       break;
     case CSSValueCenter:
       direction = BasicShapeCenterCoordinate::kTopLeft;
-      offset = Length(50, kPercent);
+      offset = Length::Percent(50);
       break;
     default:
       NOTREACHED();

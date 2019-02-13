@@ -62,13 +62,15 @@ class GridTrackSize {
   GridTrackSize(const GridLength& length,
                 GridTrackSizeType track_size_type = kLengthTrackSizing)
       : type_(track_size_type),
-        min_track_breadth_(
-            track_size_type == kFitContentTrackSizing ? Length(kAuto) : length),
-        max_track_breadth_(
-            track_size_type == kFitContentTrackSizing ? Length(kAuto) : length),
+        min_track_breadth_(track_size_type == kFitContentTrackSizing
+                               ? Length::Auto()
+                               : length),
+        max_track_breadth_(track_size_type == kFitContentTrackSizing
+                               ? Length::Auto()
+                               : length),
         fit_content_track_breadth_(track_size_type == kFitContentTrackSizing
                                        ? length
-                                       : GridLength(Length(kFixed))) {
+                                       : GridLength(Length::Fixed())) {
     DCHECK(track_size_type == kLengthTrackSizing ||
            track_size_type == kFitContentTrackSizing);
     DCHECK(track_size_type != kFitContentTrackSizing || length.IsLength());
@@ -80,7 +82,7 @@ class GridTrackSize {
       : type_(kMinMaxTrackSizing),
         min_track_breadth_(min_track_breadth),
         max_track_breadth_(max_track_breadth),
-        fit_content_track_breadth_(GridLength(Length(kFixed))) {
+        fit_content_track_breadth_(GridLength(Length::Fixed())) {
     CacheMinMaxTrackBreadthTypes();
   }
 

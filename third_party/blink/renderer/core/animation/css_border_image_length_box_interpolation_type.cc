@@ -430,14 +430,14 @@ void CSSBorderImageLengthBoxInterpolationType::ApplyStandardPropertyValue(
         return clampTo<double>(ToInterpolableNumber(list.Get(index))->Value(),
                                0);
       case SideType::kAuto:
-        return Length(kAuto);
+        return Length::Auto();
       case SideType::kLength:
         return LengthInterpolationFunctions::CreateLength(
             *list.Get(index), non_interpolable_values[index].get(),
             state.CssToLengthConversionData(), kValueRangeNonNegative);
       default:
         NOTREACHED();
-        return Length(kAuto);
+        return Length::Auto();
     }
   };
   BorderImageLengthBox box(convert_side(kSideTop), convert_side(kSideRight),

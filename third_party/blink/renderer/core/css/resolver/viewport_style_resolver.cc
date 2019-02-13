@@ -296,9 +296,9 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
   if (value->IsIdentifierValue()) {
     CSSValueID value_id = ToCSSIdentifierValue(value)->GetValueID();
     if (value_id == CSSValueInternalExtendToZoom)
-      return Length(kExtendToZoom);
+      return Length::ExtendToZoom();
     if (value_id == CSSValueAuto)
-      return Length(kAuto);
+      return Length::Auto();
   }
 
   const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(value);

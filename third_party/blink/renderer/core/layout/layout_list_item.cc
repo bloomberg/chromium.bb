@@ -205,7 +205,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
         marker_parent = nullptr;
       }
     } else if (line_box_parent) {
-      ForceLogicalHeight(*marker_parent, Length(0, kFixed));
+      ForceLogicalHeight(*marker_parent, Length::Fixed(0));
     }
   }
 
@@ -216,7 +216,7 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
       // Create marker_container and set its LogicalHeight to 0px.
       LayoutBlock* marker_container = CreateAnonymousBlock();
       if (line_box_parent)
-        ForceLogicalHeight(*marker_container, Length(0, kFixed));
+        ForceLogicalHeight(*marker_container, Length::Fixed(0));
       marker_container->AddChild(marker_,
                                  FirstNonMarkerChild(marker_container));
       AddChild(marker_container, before_child);

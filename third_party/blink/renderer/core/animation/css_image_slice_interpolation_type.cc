@@ -162,10 +162,14 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertNeutral(
   conversion_checkers.push_back(
       UnderlyingSliceTypesChecker::Create(underlying_types));
   LengthBox zero_box(
-      Length(0, underlying_types.is_number[kSideTop] ? kFixed : kPercent),
-      Length(0, underlying_types.is_number[kSideRight] ? kFixed : kPercent),
-      Length(0, underlying_types.is_number[kSideBottom] ? kFixed : kPercent),
-      Length(0, underlying_types.is_number[kSideLeft] ? kFixed : kPercent));
+      underlying_types.is_number[kSideTop] ? Length::Fixed(0)
+                                           : Length::Percent(0),
+      underlying_types.is_number[kSideRight] ? Length::Fixed(0)
+                                             : Length::Percent(0),
+      underlying_types.is_number[kSideBottom] ? Length::Fixed(0)
+                                              : Length::Percent(0),
+      underlying_types.is_number[kSideLeft] ? Length::Fixed(0)
+                                            : Length::Percent(0));
   return ConvertImageSlice(ImageSlice(zero_box, underlying_types.fill), 1);
 }
 
@@ -272,9 +276,8 @@ void CSSImageSliceInterpolationType::ApplyStandardPropertyValue(
   const auto& convert_side = [&types, &list, &style](wtf_size_t index) {
     float value =
         clampTo<float>(ToInterpolableNumber(list.Get(index))->Value(), 0);
-    return types.is_number[index]
-               ? Length(value * style.EffectiveZoom(), kFixed)
-               : Length(value, kPercent);
+    return types.is_number[index] ? Length::Fixed(value * style.EffectiveZoom())
+                                  : Length::Percent(value);
   };
   LengthBox box(convert_side(kSideTop), convert_side(kSideRight),
                 convert_side(kSideBottom), convert_side(kSideLeft));

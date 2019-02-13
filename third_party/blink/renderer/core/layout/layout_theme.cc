@@ -898,9 +898,9 @@ void LayoutTheme::AdjustStyleUsingFallbackTheme(ComputedStyle& style) {
 // static
 void LayoutTheme::SetSizeIfAuto(ComputedStyle& style, const IntSize& size) {
   if (style.Width().IsIntrinsicOrAuto())
-    style.SetWidth(Length(size.Width(), kFixed));
+    style.SetWidth(Length::Fixed(size.Width()));
   if (style.Height().IsIntrinsicOrAuto())
-    style.SetHeight(Length(size.Height(), kFixed));
+    style.SetHeight(Length::Fixed(size.Height()));
 }
 
 // static
@@ -925,8 +925,8 @@ void LayoutTheme::SetMinimumSize(ComputedStyle& style,
 // static
 void LayoutTheme::SetMinimumSizeIfAuto(ComputedStyle& style,
                                        const IntSize& size) {
-  LengthSize length_size(Length(size.Width(), kFixed),
-                         Length(size.Height(), kFixed));
+  LengthSize length_size(Length::Fixed(size.Width()),
+                         Length::Fixed(size.Height()));
   SetMinimumSize(style, &length_size);
 }
 

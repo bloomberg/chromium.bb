@@ -140,7 +140,7 @@ bool NumberPropertyFunctions::SetNumber(const CSSProperty& property,
       style.SetFloodOpacity(value);
       return true;
     case CSSPropertyLineHeight:
-      style.SetLineHeight(Length(value * 100, kPercent));
+      style.SetLineHeight(Length::Percent(value * 100));
       return true;
     case CSSPropertyOpacity:
       style.SetOpacity(value);

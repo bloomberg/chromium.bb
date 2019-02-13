@@ -1039,7 +1039,7 @@ MinMaxSize LayoutFlexibleBox::ComputeMinAndMaxSizesForChild(
     sizes.min_size = std::max(LayoutUnit(), sizes.min_size);
   } else if (algorithm.ShouldApplyMinSizeAutoForChild(child)) {
     LayoutUnit content_size =
-        ComputeMainAxisExtentForChild(child, kMinSize, Length(kMinContent));
+        ComputeMainAxisExtentForChild(child, kMinSize, Length::MinContent());
     DCHECK_GE(content_size, LayoutUnit());
     if (HasAspectRatio(child) && child.IntrinsicSize().Height() > 0)
       content_size =
@@ -1108,7 +1108,7 @@ bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
   // 2) of the flexbox spec.
   // We need to check for the flexbox to have a definite main size.
   // We make up a percentage to check whether we have a definite size.
-  if (!MainAxisLengthIsDefinite(child, Length(0, kPercent)))
+  if (!MainAxisLengthIsDefinite(child, Length::Percent(0)))
     return false;
 
   if (MainAxisIsInlineAxis(child))

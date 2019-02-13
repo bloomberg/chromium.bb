@@ -112,7 +112,7 @@ class PLATFORM_EXPORT Theme {
   virtual LengthSize MinimumControlSize(ControlPart,
                                         const FontDescription&,
                                         float /*zoomFactor*/) const {
-    return LengthSize(Length(0, kFixed), Length(0, kFixed));
+    return LengthSize(Length::Fixed(0), Length::Fixed(0));
   }
 
   // Allows the theme to modify the existing padding/border.

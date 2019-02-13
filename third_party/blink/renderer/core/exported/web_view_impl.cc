@@ -2564,7 +2564,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
   Length default_min_width =
       document->GetViewportData().ViewportDefaultMinWidth();
   if (default_min_width.IsAuto())
-    default_min_width = Length(kExtendToZoom);
+    default_min_width = Length::ExtendToZoom();
 
   ViewportDescription adjusted_description = description;
   if (SettingsImpl()->ViewportMetaLayoutSizeQuirk() &&
@@ -2573,10 +2573,10 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
     if (adjusted_description.max_width.IsFixed() &&
         adjusted_description.max_width.Value() <=
             kLegacyWidthSnappingMagicNumber)
-      adjusted_description.max_width = Length(kDeviceWidth);
+      adjusted_description.max_width = Length::DeviceWidth();
     if (adjusted_description.max_height.IsFixed() &&
         adjusted_description.max_height.Value() <= size_.height)
-      adjusted_description.max_height = Length(kDeviceHeight);
+      adjusted_description.max_height = Length::DeviceHeight();
     adjusted_description.min_width = adjusted_description.max_width;
     adjusted_description.min_height = adjusted_description.max_height;
   }
@@ -2591,7 +2591,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
       GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale *
               DeviceScaleFactor() <=
           1) {
-    if (description.max_width == Length(kDeviceWidth) ||
+    if (description.max_width == Length::DeviceWidth() ||
         (description.max_width.IsAuto() &&
          GetPageScaleConstraintsSet().PageDefinedConstraints().initial_scale ==
              1.0f))

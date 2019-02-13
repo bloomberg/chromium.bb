@@ -480,7 +480,7 @@ LayoutUnit ComputeInlineSizeForFragment(
   const ComputedStyle& style = node.Style();
   Length logical_width = style.LogicalWidth();
   if (logical_width.IsAuto() && space.IsShrinkToFit())
-    logical_width = Length(kFitContent);
+    logical_width = Length::FitContent();
 
   LayoutBox* box = node.GetLayoutBox();
   // If we have usable cached min/max intrinsic sizes, use those if we can. They
@@ -1127,7 +1127,7 @@ NGLogicalSize CalculateBorderBoxSize(const NGConstraintSpace& constraint_space,
        node.Style().FlexBasis().IsPercentOrCalc())) {
     // This call has the side-effect of setting HasPercentHeightDescendants
     // correctly.
-    node.GetLayoutBox()->ComputePercentageLogicalHeight(Length(0, kPercent));
+    node.GetLayoutBox()->ComputePercentageLogicalHeight(Length::Percent(0));
   }
 
   return NGLogicalSize(

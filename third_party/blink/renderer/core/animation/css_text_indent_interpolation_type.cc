@@ -137,7 +137,7 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertNeutral(
       ToCSSTextIndentNonInterpolableValue(*underlying.non_interpolable_value)
           .Mode();
   conversion_checkers.push_back(UnderlyingIndentModeChecker::Create(mode));
-  return CreateValue(Length(0, kFixed), mode, 1);
+  return CreateValue(Length::Fixed(0), mode, 1);
 }
 
 InterpolationValue CSSTextIndentInterpolationType::MaybeConvertInitial(

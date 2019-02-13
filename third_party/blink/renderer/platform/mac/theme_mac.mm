@@ -82,9 +82,9 @@ static LengthSize SizeFromNSControlSize(NSControlSize ns_control_size,
                            control_size.Height() * zoom_factor);
   LengthSize result = zoomed_size;
   if (zoomed_size.Width().IsIntrinsicOrAuto() && control_size.Width() > 0)
-    result.SetWidth(Length(control_size.Width(), kFixed));
+    result.SetWidth(Length::Fixed(control_size.Width()));
   if (zoomed_size.Height().IsIntrinsicOrAuto() && control_size.Height() > 0)
-    result.SetHeight(Length(control_size.Height(), kFixed));
+    result.SetHeight(Length::Fixed(control_size.Height()));
   return result;
 }
 
@@ -436,13 +436,13 @@ LengthSize ThemeMac::MinimumControlSize(ControlPart part,
   switch (part) {
     case kSquareButtonPart:
     case kButtonPart:
-      return LengthSize(Length(0, kFixed),
-                        Length(static_cast<int>(15 * zoom_factor), kFixed));
+      return LengthSize(Length::Fixed(0),
+                        Length::Fixed(static_cast<int>(15 * zoom_factor)));
     case kInnerSpinButtonPart: {
       IntSize base = StepperSizes()[NSMiniControlSize];
       return LengthSize(
-          Length(static_cast<int>(base.Width() * zoom_factor), kFixed),
-          Length(static_cast<int>(base.Height() * zoom_factor), kFixed));
+          Length::Fixed(static_cast<int>(base.Width() * zoom_factor)),
+          Length::Fixed(static_cast<int>(base.Height() * zoom_factor)));
     }
     default:
       return Theme::MinimumControlSize(part, font_description, zoom_factor);

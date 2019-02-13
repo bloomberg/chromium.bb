@@ -212,7 +212,7 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
         break;
       }
       case CSSValueBlur: {
-        Length std_deviation = Length(0, kFixed);
+        Length std_deviation = Length::Fixed(0);
         if (filter_value->length() >= 1) {
           std_deviation = first_value->ConvertToLength(conversion_data);
         }
@@ -296,7 +296,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
         break;
       }
       case CSSValueBlur: {
-        Length std_deviation = Length(0, kFixed);
+        Length std_deviation = Length::Fixed(0);
         if (filter_value->length() >= 1) {
           std_deviation = first_value->ConvertToLength(conversion_data);
         }

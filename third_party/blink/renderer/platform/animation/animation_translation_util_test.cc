@@ -40,7 +40,7 @@ TEST(AnimationTranslationUtilTest, transformsWork) {
   CompositorTransformOperations out_ops;
 
   ops.Operations().push_back(TranslateTransformOperation::Create(
-      Length(2, kFixed), Length(0, kFixed), TransformOperation::kTranslateX));
+      Length::Fixed(2), Length::Fixed(0), TransformOperation::kTranslateX));
   ops.Operations().push_back(RotateTransformOperation::Create(
       0.1, 0.2, 0.3, 200000.4, TransformOperation::kRotate3D));
   ops.Operations().push_back(ScaleTransformOperation::Create(

@@ -188,8 +188,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
       case TransformOperation::kTranslate:
       case TransformOperation::kTranslateX:
       case TransformOperation::kTranslateY: {
-        Length tx = Length(0, kFixed);
-        Length ty = Length(0, kFixed);
+        Length tx = Length::Fixed(0);
+        Length ty = Length::Fixed(0);
         if (transform_type == TransformOperation::kTranslateY)
           ty = ConvertToFloatLength(first_value, conversion_data);
         else {
@@ -209,8 +209,8 @@ TransformOperations TransformBuilder::CreateTransformOperations(
       }
       case TransformOperation::kTranslateZ:
       case TransformOperation::kTranslate3D: {
-        Length tx = Length(0, kFixed);
-        Length ty = Length(0, kFixed);
+        Length tx = Length::Fixed(0);
+        Length ty = Length::Fixed(0);
         double tz = 0;
         if (transform_type == TransformOperation::kTranslateZ) {
           tz = first_value.ComputeLength<double>(conversion_data);

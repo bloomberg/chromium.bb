@@ -90,7 +90,7 @@ InterpolationValue ConvertTranslateOperation(
                                translate->Y(), zoom)
                                .interpolable_value);
   result->Set(kTranslateZ, LengthInterpolationFunctions::MaybeConvertLength(
-                               Length(translate->Z(), kFixed), zoom)
+                               Length::Fixed(translate->Z()), zoom)
                                .interpolable_value);
   return InterpolationValue(std::move(result));
 }

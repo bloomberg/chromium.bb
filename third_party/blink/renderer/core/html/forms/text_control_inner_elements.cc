@@ -78,7 +78,7 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
   style->InheritFrom(OwnerShadowHost()->ComputedStyleRef());
 
   style->SetFlexGrow(1);
-  style->SetMinWidth(Length(0, kFixed));
+  style->SetMinWidth(Length::Fixed(0));
   style->SetDisplay(EDisplay::kBlock);
   style->SetDirection(TextDirection::kLtr);
 

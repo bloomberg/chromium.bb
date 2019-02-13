@@ -69,11 +69,11 @@ static GridLength ConvertGridTrackBreadth(const StyleResolverState& state,
 
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueMinContent)
-    return Length(kMinContent);
+    return Length::MinContent();
 
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueMaxContent)
-    return Length(kMaxContent);
+    return Length::MaxContent();
 
   return StyleBuilderConverter::ConvertLengthOrAuto(state, value);
 }
@@ -1005,7 +1005,7 @@ Length StyleBuilderConverter::ConvertLengthOrAuto(
     const CSSValue& value) {
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto)
-    return Length(kAuto);
+    return Length::Auto();
   return ToCSSPrimitiveValue(value).ConvertToLength(
       state.CssToLengthConversionData());
 }
@@ -1019,17 +1019,17 @@ Length StyleBuilderConverter::ConvertLengthSizing(StyleResolverState& state,
   switch (identifier_value.GetValueID()) {
     case CSSValueMinContent:
     case CSSValueWebkitMinContent:
-      return Length(kMinContent);
+      return Length::MinContent();
     case CSSValueMaxContent:
     case CSSValueWebkitMaxContent:
-      return Length(kMaxContent);
+      return Length::MaxContent();
     case CSSValueWebkitFillAvailable:
-      return Length(kFillAvailable);
+      return Length::FillAvailable();
     case CSSValueWebkitFitContent:
     case CSSValueFitContent:
-      return Length(kFitContent);
+      return Length::FitContent();
     case CSSValueAuto:
-      return Length(kAuto);
+      return Length::Auto();
     default:
       NOTREACHED();
       return Length();
@@ -1040,7 +1040,7 @@ Length StyleBuilderConverter::ConvertLengthMaxSizing(StyleResolverState& state,
                                                      const CSSValue& value) {
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
-    return Length(kMaxSizeNone);
+    return Length::MaxSizeNone();
   return ConvertLengthSizing(state, value);
 }
 
@@ -1071,22 +1071,19 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
           LineHeightToLengthConversionData(state));
     }
     if (primitive_value.IsPercentage()) {
-      return Length(
+      return Length::Fixed(
           (state.Style()->ComputedFontSize() * primitive_value.GetIntValue()) /
-              100.0,
-          kFixed);
+          100.0);
     }
     if (primitive_value.IsNumber()) {
-      return Length(clampTo<float>(primitive_value.GetDoubleValue() * 100.0),
-                    kPercent);
+      return Length::Percent(
+          clampTo<float>(primitive_value.GetDoubleValue() * 100.0));
     }
     if (primitive_value.IsCalculated()) {
       Length zoomed_length = Length(primitive_value.CssCalcValue()->ToCalcValue(
           LineHeightToLengthConversionData(state)));
-      return Length(
-          ValueForLength(zoomed_length,
-                         LayoutUnit(state.Style()->ComputedFontSize())),
-          kFixed);
+      return Length::Fixed(ValueForLength(
+          zoomed_length, LayoutUnit(state.Style()->ComputedFontSize())));
     }
   }
 
@@ -1153,7 +1150,7 @@ LengthPoint StyleBuilderConverter::ConvertPositionOrAuto(
   if (value.IsValuePair())
     return ConvertPosition(state, value);
   DCHECK(ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto);
-  return LengthPoint(Length(kAuto), Length(kAuto));
+  return LengthPoint(Length::Auto(), Length::Auto());
 }
 
 static float ConvertPerspectiveLength(
@@ -1550,7 +1547,7 @@ StyleBuilderConverter::ConvertTranslate(StyleResolverState& state,
   const CSSValueList& list = ToCSSValueList(value);
   DCHECK_LE(list.length(), 3u);
   Length tx = ConvertLength(state, list.Item(0));
-  Length ty(0, kFixed);
+  Length ty = Length::Fixed(0);
   double tz = 0;
   if (list.length() >= 2)
     ty = ConvertLength(state, list.Item(1));

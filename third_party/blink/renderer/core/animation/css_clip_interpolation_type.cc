@@ -180,10 +180,10 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertNeutral(
   if (underlying_autos.is_auto)
     return nullptr;
   LengthBox neutral_box(
-      underlying_autos.is_top_auto ? Length(kAuto) : Length(0, kFixed),
-      underlying_autos.is_right_auto ? Length(kAuto) : Length(0, kFixed),
-      underlying_autos.is_bottom_auto ? Length(kAuto) : Length(0, kFixed),
-      underlying_autos.is_left_auto ? Length(kAuto) : Length(0, kFixed));
+      underlying_autos.is_top_auto ? Length::Auto() : Length::Fixed(0),
+      underlying_autos.is_right_auto ? Length::Auto() : Length::Fixed(0),
+      underlying_autos.is_bottom_auto ? Length::Auto() : Length::Fixed(0),
+      underlying_autos.is_left_auto ? Length::Auto() : Length::Fixed(0));
   return CreateClipValue(neutral_box, 1);
 }
 
@@ -287,7 +287,7 @@ void CSSClipInterpolationType::ApplyStandardPropertyValue(
   const InterpolableList& list = ToInterpolableList(interpolable_value);
   const auto& convert_index = [&list, &state](bool is_auto, wtf_size_t index) {
     if (is_auto)
-      return Length(kAuto);
+      return Length::Auto();
     return LengthInterpolationFunctions::CreateLength(
         *list.Get(index), nullptr, state.CssToLengthConversionData(),
         kValueRangeAll);
