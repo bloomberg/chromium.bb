@@ -88,6 +88,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     public void destroy() {
         destroyFetcher();
+        if (mUpdateFailureHandler != null) {
+            mUpdateFailureHandler.removeCallbacksAndMessages(null);
+        }
     }
 
     public static void setUpdatesEnabledForTesting(boolean enabled) {
