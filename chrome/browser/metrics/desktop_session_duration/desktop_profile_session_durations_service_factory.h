@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_DESKTOP_PROFILE_SESSION_DURATIONS_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace metrics {
