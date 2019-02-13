@@ -876,7 +876,8 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   SetupInitializedProfileSyncService();
 
   auto* identity_manager = identity_test_env()->identity_manager();
-  AccountInfo primary_account_info = identity_manager->GetPrimaryAccountInfo();
+  CoreAccountInfo primary_account_info =
+      identity_manager->GetPrimaryAccountInfo();
   DCHECK_EQ(primary_account_info.email, kTestUser);
 
   auto* accounts_mutator = identity_manager->GetAccountsMutator();
