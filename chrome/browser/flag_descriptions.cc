@@ -2273,6 +2273,12 @@ const char kCCTModuleCustomHeaderDescription[] =
     "Enables header customization by dynamically loaded modules in "
     "Chrome Custom Tabs.";
 
+const char kCCTModuleCustomRequestHeaderName[] =
+    "Chrome Custom Tabs Module Custom Request Header";
+const char kCCTModuleCustomRequestHeaderDescription[] =
+    "Enables a custom request header for URLs managed by dynamically loaded "
+    "modules in Chrome Custom Tabs.";
+
 const char kCCTModuleDexLoadingName[] = "Chrome Custom Tabs Module Dex Loading";
 const char kCCTModuleDexLoadingDescription[] =
     "Enables loading Chrome Custom Tabs module code from a dex file "
