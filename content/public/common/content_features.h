@@ -109,7 +109,11 @@ CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangeAcceptHeader;
 CONTENT_EXPORT extern const char
     kSignedHTTPExchangeAcceptHeaderFieldTrialParamName[];
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangeOriginTrial;
-CONTENT_EXPORT extern const base::Feature kSkipPassthroughTouchEventQueueFilter;
+CONTENT_EXPORT extern const base::Feature kSkipBrowserTouchFilter;
+CONTENT_EXPORT extern const char kSkipBrowserTouchFilterTypeParamName[];
+CONTENT_EXPORT extern const char
+    kSkipBrowserTouchFilterTypeParamValueDiscrete[];
+CONTENT_EXPORT extern const char kSkipBrowserTouchFilterTypeParamValueAll[];
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
 CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;

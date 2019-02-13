@@ -6,12 +6,16 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_PASSTHROUGH_TOUCH_EVENT_QUEUE_H_
 
 #include <set>
+#include <string>
 
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/input_event_ack_source.h"
 #include "content/public/common/input_event_ack_state.h"
 
@@ -54,7 +58,10 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
               base::TimeDelta::FromMilliseconds(200)),
           mobile_touch_ack_timeout_delay(
               base::TimeDelta::FromMilliseconds(1000)),
-          touch_ack_timeout_supported(false) {}
+          touch_ack_timeout_supported(false),
+          skip_touch_filter(
+              base::FeatureList::IsEnabled(features::kSkipBrowserTouchFilter)),
+          events_to_always_forward(kSkipBrowserTouchFilterType.Get()) {}
 
     // Touch ack timeout delay for desktop sites. If zero, timeout behavior
     // is disabled for such sites. Defaults to 200ms.
@@ -67,6 +74,11 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
     // Whether the platform supports touch ack timeout behavior.
     // Defaults to false (disabled).
     bool touch_ack_timeout_supported;
+
+    // Whether we should allow events to bypass normal queue filter rules.
+    bool skip_touch_filter;
+    // What events types are allowed to bypass the filter.
+    std::string events_to_always_forward;
   };
 
   PassthroughTouchEventQueue(PassthroughTouchEventQueueClient* client,
@@ -136,6 +148,14 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
                            TouchMoveWithoutSequenceHandlerFiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchStartUnfilteredWithForwardDiscrete);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveFilteredWithForwardDiscrete);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchStartUnfilteredWithForwardAll);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveUnfilteredWithForwardAll);
 
   friend class TouchTimeoutHandler;
 
@@ -171,6 +191,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // Filter touches prior to forwarding to the renderer, e.g., if the renderer
   // has no touch handler.
   PreFilterResult FilterBeforeForwarding(const blink::WebTouchEvent& event);
+  PreFilterResult FilterBeforeForwardingImpl(const blink::WebTouchEvent& event);
 
   void AckTouchEventToClient(const TouchEventWithLatencyInfo& acked_event,
                              InputEventAckSource ack_source,
@@ -215,6 +236,12 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // not yet been ack'd by the renderer. The set is explicitly ordered based
   // on the unique touch event id.
   std::set<TouchEventWithLatencyInfoAndAckState> outstanding_touches_;
+
+  // Whether we should allow events to bypass normal queue filter rules.
+  const bool skip_touch_filter_;
+  // What events types are allowed to bypass the filter.
+  const std::string events_to_always_forward_;
+  static const base::FeatureParam<std::string> kSkipBrowserTouchFilterType;
 
   DISALLOW_COPY_AND_ASSIGN(PassthroughTouchEventQueue);
 };
