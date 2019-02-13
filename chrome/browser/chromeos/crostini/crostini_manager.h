@@ -365,6 +365,13 @@ class CrostiniManager : public KeyedService,
                           std::string container_name,
                           CrostiniResultCallback callback);
 
+  // Checks the arguments for deleting an Lxd container via
+  // CiceroneClient::DeleteLxdContainer. |callback| is called immediately if the
+  // arguments are bad, or once the container has been deleted.
+  void DeleteLxdContainer(std::string vm_name,
+                          std::string container_name,
+                          CrostiniResultCallback callback);
+
   // Checks the arguments for starting an Lxd container via
   // CiceroneClient::StartLxdContainer. |callback| is called immediately if the
   // arguments are bad, or once the container has been created.
@@ -662,6 +669,13 @@ class CrostiniManager : public KeyedService,
       CrostiniResultCallback callback,
       base::Optional<vm_tools::cicerone::CreateLxdContainerResponse> reply);
 
+  // Callback for CiceroneClient::DeleteLxdContainer.
+  void OnDeleteLxdContainer(
+      std::string vm_name,
+      std::string container_name,
+      CrostiniResultCallback callback,
+      base::Optional<vm_tools::cicerone::DeleteLxdContainerResponse> reply);
+
   // Callback for CiceroneClient::StartLxdContainer.
   void OnStartLxdContainer(
       std::string vm_name,
@@ -806,6 +820,12 @@ class CrostiniManager : public KeyedService,
   // wait for an LxdContainerCreate signal.
   std::multimap<ContainerId, CrostiniResultCallback>
       create_lxd_container_callbacks_;
+
+  // Pending DeleteLxdContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs. These are used if DeleteLxdContainer indicates we need to
+  // wait for an LxdContainerDelete signal.
+  std::multimap<std::pair<std::string, std::string>, CrostiniResultCallback>
+      delete_lxd_container_callbacks_;
 
   // Pending StartLxdContainer callbacks are keyed by <vm_name, container_name>
   // string pairs. These are used if StartLxdContainer indicates we need to

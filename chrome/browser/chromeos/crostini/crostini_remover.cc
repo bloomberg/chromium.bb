@@ -70,9 +70,9 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
   }
 
   CrostiniRegistryServiceFactory::GetForProfile(profile_)->ClearApplicationList(
-      vm_name_);
+      vm_name_, "");
   CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
-      vm_name_);
+      vm_name_, "");
   CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(
       base::FilePath(vm_name_),
       vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,

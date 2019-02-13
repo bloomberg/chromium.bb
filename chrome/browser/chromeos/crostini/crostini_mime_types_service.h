@@ -39,7 +39,8 @@ class CrostiniMimeTypesService : public KeyedService {
 
   // Remove all MIME type associations for the named VM. Used in the
   // uninstall process.
-  void ClearMimeTypes(const std::string& vm_name);
+  void ClearMimeTypes(const std::string& vm_name,
+                      const std::string& container_name);
 
   // The existing list of MIME type mappings is replaced by
   // |mime_type_mappings|.

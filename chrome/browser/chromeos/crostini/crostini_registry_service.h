@@ -166,8 +166,16 @@ class CrostiniRegistryService : public KeyedService {
   void MaybeRequestIcon(const std::string& app_id,
                         ui::ScaleFactor scale_factor);
 
-  // Remove all apps from the named VM. Used in the uninstall process.
-  void ClearApplicationList(const std::string& vm_name);
+  // Remove all apps from the named VM and container. If |container_name| is an
+  // empty string, this function removes all apps associated with the VM,
+  // regardless of container. Used in the uninstall process.
+  void ClearApplicationList(const std::string& vm_name,
+                            const std::string& container_name);
+
+  // Remove all apps from the named container. Used when deleting a container
+  // without deleting the whole VM.
+  void ClearApplicationListForContainer(const std::string& vm_name,
+                                        const std::string& container_name);
 
   // The existing list of apps is replaced by |application_list|.
   void UpdateApplicationList(const vm_tools::apps::ApplicationList& app_list);

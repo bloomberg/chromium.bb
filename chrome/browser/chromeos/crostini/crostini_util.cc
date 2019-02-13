@@ -17,6 +17,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/crostini/crostini_app_launch_observer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
@@ -422,11 +424,33 @@ void AddNewLxdContainerToPrefs(Profile* profile,
   auto* pref_service = profile->GetPrefs();
 
   base::Value new_container(base::Value::Type::DICTIONARY);
-  new_container.SetKey("vm_name", base::Value(vm_name));
-  new_container.SetKey("container_name", base::Value(container_name));
+  new_container.SetKey(prefs::kVmKey, base::Value(vm_name));
+  new_container.SetKey(prefs::kContainerKey, base::Value(container_name));
 
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
   updater->GetList().emplace_back(std::move(new_container));
+}
+
+void RemoveLxdContainerFromPrefs(Profile* profile,
+                                 std::string vm_name,
+                                 std::string container_name) {
+  auto* pref_service = profile->GetPrefs();
+  ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
+
+  for (auto it = updater->GetList().begin(); it != updater->GetList().end();
+       it++) {
+    auto* vm_name_test = it->FindKey(prefs::kVmKey);
+    auto* container_name_test = it->FindKey(prefs::kContainerKey);
+    if (vm_name_test->GetString() == vm_name &&
+        container_name_test->GetString() == container_name) {
+      updater->GetList().erase(it);
+      break;
+    }
+  }
+  CrostiniRegistryServiceFactory::GetForProfile(profile)->ClearApplicationList(
+      vm_name, container_name);
+  CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(
+      vm_name, container_name);
 }
 
 }  // namespace crostini
