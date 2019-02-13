@@ -56,12 +56,6 @@ void PluginVmImageManager::StartUnzipping() {
     OnUnzipped(false);
     return;
   }
-  if (!EnsureDirectoryForPluginVmImageIsPresent() ||
-      !EnsureDownloadedPluginVmImageArchiveIsPresent()) {
-    LOG(ERROR) << "Unzipping of PluginVm image couldn't be proceeded";
-    OnUnzipped(false);
-    return;
-  }
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
@@ -210,6 +204,12 @@ bool PluginVmImageManager::VerifyDownload(std::string downloaded_archive_hash) {
 }
 
 bool PluginVmImageManager::UnzipDownloadedPluginVmImageArchive() {
+  if (!EnsureDirectoryForPluginVmImageIsPresent() ||
+      !EnsureDownloadedPluginVmImageArchiveIsPresent()) {
+    LOG(ERROR) << "Unzipping of PluginVm image couldn't be proceeded";
+    return false;
+  }
+
   base::File file(downloaded_plugin_vm_image_archive_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
@@ -318,24 +318,45 @@ bool PluginVmImageManager::EnsureDirectoryForPluginVmImageIsPresent() {
 
 void PluginVmImageManager::RemoveTemporaryPluginVmImageArchiveIfExists() {
   if (!downloaded_plugin_vm_image_archive_.empty()) {
-    if (!base::DeleteFile(downloaded_plugin_vm_image_archive_,
-                          false /* recursive */)) {
-      LOG(ERROR) << "Downloaded PluginVm image archive located in "
-                 << downloaded_plugin_vm_image_archive_.value()
-                 << " failed to be deleted";
-    }
-    downloaded_plugin_vm_image_archive_.clear();
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&base::DeleteFile, downloaded_plugin_vm_image_archive_,
+                       false /* recursive */),
+        base::BindOnce(
+            &PluginVmImageManager::OnTemporaryPluginVmImageArchiveRemoved,
+            weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void PluginVmImageManager::OnTemporaryPluginVmImageArchiveRemoved(
+    bool success) {
+  if (!success) {
+    LOG(ERROR) << "Downloaded PluginVm image archive located in "
+               << downloaded_plugin_vm_image_archive_.value()
+               << " failed to be deleted";
+    return;
+  }
+  downloaded_plugin_vm_image_archive_.clear();
 }
 
 void PluginVmImageManager::RemovePluginVmImageDirectoryIfExists() {
   if (!plugin_vm_image_dir_.empty()) {
-    if (!base::DeleteFile(plugin_vm_image_dir_, true /* recursive */)) {
-      LOG(ERROR) << "Directory with PluginVm image "
-                 << plugin_vm_image_dir_.value() << " failed to be deleted";
-    }
-    plugin_vm_image_dir_.clear();
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&base::DeleteFile, plugin_vm_image_dir_,
+                       true /* recursive */),
+        base::BindOnce(&PluginVmImageManager::OnPluginVmImageDirectoryRemoved,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void PluginVmImageManager::OnPluginVmImageDirectoryRemoved(bool success) {
+  if (!success) {
+    LOG(ERROR) << "Directory with PluginVm image "
+               << plugin_vm_image_dir_.value() << " failed to be deleted";
+    return;
+  }
+  plugin_vm_image_dir_.clear();
 }
 
 }  // namespace plugin_vm

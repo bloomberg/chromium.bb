@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -35,7 +37,9 @@ void plugin_vm::ShowPluginVmLauncherView(Profile* profile) {
   g_plugin_vm_launcher_view->GetWidget()->Show();
 }
 
-PluginVmLauncherView::PluginVmLauncherView(Profile* profile) {
+PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
+    : plugin_vm_image_manager_(
+          plugin_vm::PluginVmImageManagerFactory::GetForProfile(profile)) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
@@ -113,13 +117,10 @@ bool PluginVmLauncherView::Accept() {
 }
 
 bool PluginVmLauncherView::Cancel() {
-  if (state_ == State::DOWNLOADING) {
-    // TODO(https://crbug.com/904852): Cancel download and delete partially
-    // downloaded PluginVm image.
-  }
-  if (state_ == State::UNZIPPING) {
-    // TODO(https://crbug.com/904852): Remove PluginVm image files.
-  }
+  if (state_ == State::DOWNLOADING)
+    plugin_vm_image_manager_->CancelDownload();
+  if (state_ == State::UNZIPPING)
+    plugin_vm_image_manager_->CancelUnzipping();
   return true;
 }
 
@@ -131,28 +132,50 @@ gfx::Size PluginVmLauncherView::CalculatePreferredSize() const {
 }
 
 PluginVmLauncherView::~PluginVmLauncherView() {
+  plugin_vm_image_manager_->RemoveObserver();
   g_plugin_vm_launcher_view = nullptr;
+}
+
+void PluginVmLauncherView::OnDownloadStarted() {}
+
+void PluginVmLauncherView::OnProgressUpdated(
+    base::Optional<double> fraction_complete) {
+  DCHECK_EQ(state_, State::DOWNLOADING);
+  if (fraction_complete.has_value())
+    progress_bar_->SetValue(fraction_complete.value());
+  else
+    progress_bar_->SetValue(-1);
 }
 
 void PluginVmLauncherView::OnDownloadCompleted() {
   DCHECK_EQ(state_, State::DOWNLOADING);
+
+  plugin_vm_image_manager_->StartUnzipping();
   state_ = State::UNZIPPING;
   OnStateUpdated();
+}
 
-  // TODO(https://crbug.com/904852): Unzip downloaded PluginVm image.
+void PluginVmLauncherView::OnDownloadCancelled() {}
 
+void PluginVmLauncherView::OnDownloadFailed() {
+  state_ = State::ERROR;
+  OnStateUpdated();
+}
+
+void PluginVmLauncherView::OnUnzipped() {
   DCHECK_EQ(state_, State::UNZIPPING);
   state_ = State::FINISHED;
   OnStateUpdated();
 }
 
-void PluginVmLauncherView::OnError() {
-  DCHECK(state_ == State::DOWNLOADING || state_ == State::UNZIPPING);
+void PluginVmLauncherView::OnUnzippingFailed() {
   state_ = State::ERROR;
-
   OnStateUpdated();
+}
 
-  // TODO(https://crbug.com/904852): Remove PluginVm image files.
+plugin_vm::PluginVmImageManager*
+PluginVmLauncherView::GetPluginVmImageManagerForTesting() {
+  return plugin_vm_image_manager_;
 }
 
 void PluginVmLauncherView::AddedToWidget() {
@@ -194,8 +217,9 @@ void PluginVmLauncherView::OnStateUpdated() {
 }
 
 void PluginVmLauncherView::StartPluginVmImageDownload() {
-  // TODO(https://crbug.com/904852): Start PluginVm image download.
-  state_ = State::DOWNLOADING;
+  plugin_vm_image_manager_->SetObserver(this);
+  plugin_vm_image_manager_->StartDownload();
 
+  state_ = State::DOWNLOADING;
   OnStateUpdated();
 }

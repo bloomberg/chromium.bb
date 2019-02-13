@@ -31,6 +31,32 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     return view_->GetDialogClientView()->cancel_button() != nullptr;
   }
 
+  void CheckSetupIsInProgress() {
+    EXPECT_TRUE(HasCancelButton());
+    EXPECT_FALSE(HasAcceptButton());
+    EXPECT_EQ(view_->GetWindowTitle(),
+              l10n_util::GetStringUTF16(
+                  IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE));
+  }
+
+  void CheckSetupFailed() {
+    EXPECT_TRUE(HasAcceptButton());
+    EXPECT_TRUE(HasCancelButton());
+    EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
+              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON));
+    EXPECT_EQ(view_->GetWindowTitle(),
+              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
+  }
+
+  void CheckSetupIsCompleted() {
+    EXPECT_TRUE(HasAcceptButton());
+    EXPECT_FALSE(HasCancelButton());
+    EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
+              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON));
+    EXPECT_EQ(view_->GetWindowTitle(),
+              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE));
+  }
+
  protected:
   PluginVmLauncherView* view_;
 
@@ -44,54 +70,64 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, InvokeUi_default) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, SetupCompleted) {
+  // TODO(https://crbug.com/904852): Add a proper end-to-end test that
+  // checks that file specified by PluginVmImage user policy is being
+  // downloaded and unzipped to the specified location.
+
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  EXPECT_TRUE(HasCancelButton());
-  EXPECT_FALSE(HasAcceptButton());
-  EXPECT_EQ(view_->GetWindowTitle(),
-            l10n_util::GetStringUTF16(
-                IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE));
+  CheckSetupIsInProgress();
 
-  view_->OnDownloadCompleted();
+  view_->GetPluginVmImageManagerForTesting()->OnDownloadCompleted(
+      base::FilePath());
 
-  EXPECT_TRUE(HasAcceptButton());
-  EXPECT_FALSE(HasCancelButton());
-  EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
-            l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON));
-  EXPECT_EQ(view_->GetWindowTitle(),
-            l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE));
+  CheckSetupIsInProgress();
+
+  view_->GetPluginVmImageManagerForTesting()->OnUnzipped(true /* success */);
+
+  CheckSetupIsCompleted();
 
   view_->GetDialogClientView()->AcceptWindow();
 
   EXPECT_TRUE(view_->GetWidget()->IsClosed());
 }
 
-IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, RetryAfterSetupError) {
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+                       RetryAfterDownloadFailed) {
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  EXPECT_TRUE(HasCancelButton());
-  EXPECT_FALSE(HasAcceptButton());
-  EXPECT_EQ(view_->GetWindowTitle(),
-            l10n_util::GetStringUTF16(
-                IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE));
+  CheckSetupIsInProgress();
 
-  view_->OnError();
+  view_->GetPluginVmImageManagerForTesting()->OnDownloadFailed();
 
-  EXPECT_TRUE(HasAcceptButton());
-  EXPECT_TRUE(HasCancelButton());
-  EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
-            l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON));
-  EXPECT_EQ(view_->GetWindowTitle(),
-            l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
+  CheckSetupFailed();
 
   // Retry button clicked to retry the download.
   view_->GetDialogClientView()->AcceptWindow();
 
-  EXPECT_TRUE(HasCancelButton());
-  EXPECT_FALSE(HasAcceptButton());
-  EXPECT_EQ(view_->GetWindowTitle(),
-            l10n_util::GetStringUTF16(
-                IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE));
+  CheckSetupIsInProgress();
+}
+
+IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
+                       RetryAfterUnzippingFailed) {
+  ShowUi("default");
+  EXPECT_NE(nullptr, view_);
+
+  CheckSetupIsInProgress();
+
+  view_->GetPluginVmImageManagerForTesting()->OnDownloadCompleted(
+      base::FilePath());
+
+  CheckSetupIsInProgress();
+
+  view_->GetPluginVmImageManagerForTesting()->OnUnzipped(false /* success */);
+
+  CheckSetupFailed();
+
+  // Retry button clicked to retry the download.
+  view_->GetDialogClientView()->AcceptWindow();
+
+  CheckSetupIsInProgress();
 }
