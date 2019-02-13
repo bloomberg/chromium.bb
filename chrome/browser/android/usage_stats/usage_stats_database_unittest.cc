@@ -47,20 +47,36 @@ MATCHER_P(EqualsWebsiteEvent, other, "") {
 class UsageStatsDatabaseTest : public testing::Test {
  public:
   UsageStatsDatabaseTest() {
-    auto fake_db = std::make_unique<FakeDB<UsageStat>>(&fake_db_unowned_store_);
+    auto fake_website_event_db =
+        std::make_unique<FakeDB<WebsiteEvent>>(&website_event_store_);
+    auto fake_suspension_db =
+        std::make_unique<FakeDB<Suspension>>(&suspension_store_);
+    auto fake_token_mapping_db =
+        std::make_unique<FakeDB<TokenMapping>>(&token_mapping_store_);
 
-    // Maintain a pointer to the FakeDB for test callback execution.
-    fake_db_unowned_ = fake_db.get();
+    // Maintain pointers to the FakeDBs for test callback execution.
+    website_event_db_unowned_ = fake_website_event_db.get();
+    suspension_db_unowned_ = fake_suspension_db.get();
+    token_mapping_db_unowned_ = fake_token_mapping_db.get();
 
-    usage_stats_database_ =
-        std::make_unique<UsageStatsDatabase>(std::move(fake_db));
+    usage_stats_database_ = std::make_unique<UsageStatsDatabase>(
+        std::move(fake_website_event_db), std::move(fake_suspension_db),
+        std::move(fake_token_mapping_db));
   }
 
   UsageStatsDatabase* usage_stats_database() {
     return usage_stats_database_.get();
   }
 
-  FakeDB<UsageStat>* fake_db() { return fake_db_unowned_; }
+  FakeDB<WebsiteEvent>* fake_website_event_db() {
+    return website_event_db_unowned_;
+  }
+
+  FakeDB<Suspension>* fake_suspension_db() { return suspension_db_unowned_; }
+
+  FakeDB<TokenMapping>* fake_token_mapping_db() {
+    return token_mapping_db_unowned_;
+  }
 
   MOCK_METHOD1(OnUpdateDone, void(UsageStatsDatabase::Error));
   MOCK_METHOD2(OnGetEventsDone,
@@ -71,8 +87,14 @@ class UsageStatsDatabaseTest : public testing::Test {
                void(UsageStatsDatabase::Error, UsageStatsDatabase::TokenMap));
 
  private:
-  std::map<std::string, UsageStat> fake_db_unowned_store_;
-  FakeDB<UsageStat>* fake_db_unowned_;
+  std::map<std::string, WebsiteEvent> website_event_store_;
+  std::map<std::string, Suspension> suspension_store_;
+  std::map<std::string, TokenMapping> token_mapping_store_;
+
+  FakeDB<WebsiteEvent>* website_event_db_unowned_;
+  FakeDB<Suspension>* suspension_db_unowned_;
+  FakeDB<TokenMapping>* token_mapping_db_unowned_;
+
   std::unique_ptr<UsageStatsDatabase> usage_stats_database_;
 
   DISALLOW_COPY_AND_ASSIGN(UsageStatsDatabaseTest);
@@ -80,7 +102,9 @@ class UsageStatsDatabaseTest : public testing::Test {
 
 TEST_F(UsageStatsDatabaseTest, Initialization) {
   ASSERT_NE(nullptr, usage_stats_database());
-  ASSERT_NE(nullptr, fake_db());
+  ASSERT_NE(nullptr, fake_website_event_db());
+  ASSERT_NE(nullptr, fake_suspension_db());
+  ASSERT_NE(nullptr, fake_token_mapping_db());
 }
 
 // Website Event Tests
@@ -91,7 +115,7 @@ TEST_F(UsageStatsDatabaseTest, GetAllEventsSuccess) {
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllEventsFailure) {
@@ -101,7 +125,7 @@ TEST_F(UsageStatsDatabaseTest, GetAllEventsFailure) {
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
-  fake_db()->LoadCallback(false);
+  fake_website_event_db()->LoadCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddEventsEmpty) {
@@ -113,7 +137,7 @@ TEST_F(UsageStatsDatabaseTest, AddEventsEmpty) {
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
@@ -128,7 +152,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 event.
   EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
@@ -137,7 +161,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndQueryEventsInRange) {
@@ -154,7 +178,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndQueryEventsInRange) {
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Get events between time 0 (inclusive) and 9 (exclusive).
   // This test validates the correct lexicographic ordering of timestamps such
@@ -167,7 +191,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndQueryEventsInRange) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetEventsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteAllEvents) {
@@ -182,7 +206,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteAllEvents) {
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Delete all events.
   EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
@@ -190,7 +214,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteAllEvents) {
   usage_stats_database()->DeleteAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnUpdateDone, base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Get all events (expecting none).
   EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
@@ -199,7 +223,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteAllEvents) {
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
@@ -218,7 +242,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Delete events between time 1 (inclusive) and 10 (exclusive).
   EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
@@ -228,8 +252,8 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
       base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->LoadCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 remaining event outside range (at time 10).
   EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
@@ -238,7 +262,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
@@ -257,7 +281,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Delete 2 events by FQDN.
   base::flat_set<std::string> domains({kFqdn1});
@@ -267,7 +291,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 remaining event with non-matching FQDN.
   EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
@@ -276,7 +300,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_website_event_db()->LoadCallback(true);
 }
 
 // Suspension Tests
@@ -289,7 +313,7 @@ TEST_F(UsageStatsDatabaseTest, SetSuspensionsSuccess) {
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_suspension_db()->UpdateCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetSuspensionsFailure) {
@@ -301,7 +325,7 @@ TEST_F(UsageStatsDatabaseTest, SetSuspensionsFailure) {
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
-  fake_db()->UpdateCallback(false);
+  fake_suspension_db()->UpdateCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllSuspensionsSuccess) {
@@ -314,7 +338,7 @@ TEST_F(UsageStatsDatabaseTest, GetAllSuspensionsSuccess) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_suspension_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllSuspensionsFailure) {
@@ -327,7 +351,7 @@ TEST_F(UsageStatsDatabaseTest, GetAllSuspensionsFailure) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(false);
+  fake_suspension_db()->LoadCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetAndGetSuspension) {
@@ -340,7 +364,7 @@ TEST_F(UsageStatsDatabaseTest, SetAndGetSuspension) {
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_suspension_db()->UpdateCallback(true);
 
   // Get 1 suspension.
   std::vector<std::string> expected({kFqdn1});
@@ -352,7 +376,7 @@ TEST_F(UsageStatsDatabaseTest, SetAndGetSuspension) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_suspension_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetSuspension) {
@@ -365,7 +389,7 @@ TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetSuspension) {
       domains1, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_suspension_db()->UpdateCallback(true);
 
   // Insert 1 suspension, and remove the other.
   base::flat_set<std::string> domains2({kFqdn1});
@@ -376,7 +400,7 @@ TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetSuspension) {
       domains2, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_suspension_db()->UpdateCallback(true);
 
   // Get 1 suspension.
   std::vector<std::string> expected({kFqdn1});
@@ -388,7 +412,7 @@ TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetSuspension) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_suspension_db()->LoadCallback(true);
 }
 
 // Token Mapping Tests
@@ -402,7 +426,7 @@ TEST_F(UsageStatsDatabaseTest, SetTokenMappingsSuccess) {
       mappings, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_token_mapping_db()->UpdateCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetTokenMappingsFailure) {
@@ -414,7 +438,7 @@ TEST_F(UsageStatsDatabaseTest, SetTokenMappingsFailure) {
       mappings, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
 
-  fake_db()->UpdateCallback(false);
+  fake_token_mapping_db()->UpdateCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllTokenMappingsSuccess) {
@@ -427,7 +451,7 @@ TEST_F(UsageStatsDatabaseTest, GetAllTokenMappingsSuccess) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_token_mapping_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllTokenMappingsFailure) {
@@ -440,7 +464,7 @@ TEST_F(UsageStatsDatabaseTest, GetAllTokenMappingsFailure) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(false);
+  fake_token_mapping_db()->LoadCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetAndGetTokenMapping) {
@@ -453,7 +477,7 @@ TEST_F(UsageStatsDatabaseTest, SetAndGetTokenMapping) {
       mapping, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_token_mapping_db()->UpdateCallback(true);
 
   // Get 1 token mapping.
   EXPECT_CALL(*this, OnGetAllTokenMappingsDone(
@@ -463,7 +487,7 @@ TEST_F(UsageStatsDatabaseTest, SetAndGetTokenMapping) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_token_mapping_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetTokenMapping) {
@@ -477,7 +501,7 @@ TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetTokenMapping) {
       mappings1, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                 base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_token_mapping_db()->UpdateCallback(true);
 
   // Re-insert 1 token mapping, and remove the other.apping) {
   UsageStatsDatabase::TokenMap mappings2({{kToken1, kFqdn1}});
@@ -488,7 +512,7 @@ TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetTokenMapping) {
       mappings2, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                 base::Unretained(this)));
 
-  fake_db()->UpdateCallback(true);
+  fake_token_mapping_db()->UpdateCallback(true);
 
   // Get 1 remaining token mapping.
   EXPECT_CALL(*this, OnGetAllTokenMappingsDone(
@@ -498,6 +522,6 @@ TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetTokenMapping) {
       base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
                      base::Unretained(this)));
 
-  fake_db()->LoadCallback(true);
+  fake_token_mapping_db()->LoadCallback(true);
 }
 }  // namespace usage_stats
