@@ -13,16 +13,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 public class UnifiedConsentServiceBridge {
     private UnifiedConsentServiceBridge() {}
 
-    /** Sets whether the user has given unified consent. */
-    public static void setUnifiedConsentGiven(boolean unifiedConsentGiven) {
-        nativeSetUnifiedConsentGiven(Profile.getLastUsedProfile(), unifiedConsentGiven);
-    }
-
-    /** Returns whether the user has given unified consent. */
-    public static boolean isUnifiedConsentGiven() {
-        return nativeIsUnifiedConsentGiven(Profile.getLastUsedProfile());
-    }
-
     /** Returns whether collection of URL-keyed anonymized data is enabled. */
     public static boolean isUrlKeyedAnonymizedDataCollectionEnabled() {
         return nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile.getLastUsedProfile());
@@ -37,9 +27,6 @@ public class UnifiedConsentServiceBridge {
     public static boolean isUrlKeyedAnonymizedDataCollectionManaged() {
         return nativeIsUrlKeyedAnonymizedDataCollectionManaged(Profile.getLastUsedProfile());
     }
-
-    private static native void nativeSetUnifiedConsentGiven(Profile profile, boolean consentGiven);
-    private static native boolean nativeIsUnifiedConsentGiven(Profile profile);
 
     private static native boolean nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile profile);
     private static native void nativeSetUrlKeyedAnonymizedDataCollectionEnabled(
