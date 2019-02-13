@@ -10,12 +10,15 @@
 # lucicfg generate ./target_test_requirements_config.star
 
 load('//target_test_requirements_config_helper.star',
+     'gce_sanity_test_config',
+     'moblab_smoke_test_config',
      'set_up_graph',
      'standard_bvt_arc',
      'standard_bvt_cq',
      'standard_bvt_inline',
      'standard_bvt_tast_cq',
      'target_test_requirements',
+     'tast_vm_cq_test_config',
      'vm_smoke_test_config')
 
 set_up_graph()
@@ -284,6 +287,9 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'betty-arc64',
+  tast_vm_test_configs = [
+      tast_vm_cq_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
@@ -305,6 +311,9 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'betty',
+  tast_vm_test_configs = [
+      tast_vm_cq_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=False),
   ],
@@ -312,6 +321,9 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'lakitu-gpu',
+  gce_test_configs = [
+      gce_sanity_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
@@ -319,6 +331,9 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'lakitu-nc',
+  gce_test_configs = [
+      gce_sanity_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
@@ -326,6 +341,9 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'lakitu',
+  gce_test_configs = [
+      gce_sanity_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
@@ -333,6 +351,9 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'lakitu-st',
+  gce_test_configs = [
+      gce_sanity_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
@@ -340,8 +361,24 @@ target_test_requirements(
 
 target_test_requirements(
   build_target = 'lakitu_next',
+  gce_test_configs = [
+      gce_sanity_test_config(),
+  ],
   vm_test_configs = [
       vm_smoke_test_config(use_ctest=True),
   ],
 )
 
+target_test_requirements(
+  build_target = 'amd64-generic',
+  tast_vm_test_configs = [
+      tast_vm_cq_test_config(),
+  ],
+)
+
+target_test_requirements(
+  build_target = 'moblab-generic-vm',
+  moblab_test_configs = [
+      moblab_smoke_test_config(),
+  ],
+)

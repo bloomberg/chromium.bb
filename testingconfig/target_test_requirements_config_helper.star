@@ -20,7 +20,10 @@ def set_up_graph():
 def target_test_requirements(
     reference_design=None,
     build_target=None,
+    gce_test_configs=[],
     hw_test_configs=[],
+    moblab_test_configs=[],
+    tast_vm_test_configs=[],
     vm_test_configs=[]):
   """Create a PerTargetTestRestriction and binds it in the Starlark graph.
 
@@ -31,7 +34,10 @@ def target_test_requirements(
   Args:
     reference_design: string, a mosys platform family, e.g. Google_Reef
     build_target: string, a particular CrOS build target, e.g. kevin
+    gce_test_configs: list(config_pb.GceTest)
     hw_test_configs: list(config_pb.HwTest)
+    moblab_test_configs: list(config_pb.MoblabTest)
+    tast_vm_test_configs: list(config_pb.TastVmTest)
     vm_test_configs: list(config_pb.VmTest)
   """
 
@@ -39,15 +45,28 @@ def target_test_requirements(
     fail('Expected exactly one of reference_design and build_target to be set. '
          + 'Instead, got %s and %s'%(reference_design, build_target))
 
+  gce_test_cfg = None
+  if gce_test_configs:
+    gce_test_configs = sorted(gce_test_configs, key=lambda t: t.test_suite)
+    gce_test_cfg = config_pb.GceTestCfg(gce_test=gce_test_configs)
+
   hw_test_cfg = None
   if hw_test_configs:
     hw_test_configs = sorted(hw_test_configs, key=lambda t: t.suite)
     hw_test_cfg = config_pb.HwTestCfg(hw_test=hw_test_configs)
 
+  moblab_vm_test_cfg = None
+  if moblab_test_configs:
+    moblab_test_configs = sorted(moblab_test_configs, key=lambda t: t.test_type)
+    moblab_vm_test_cfg = config_pb.MoblabVmTestCfg(moblab_test=moblab_test_configs)
+
   vm_test_cfg = None
-  if vm_test_configs:
+  if vm_test_configs or tast_vm_test_configs:
+    tast_vm_test_configs = sorted(tast_vm_test_configs, key=lambda t: t.suite_name)
     vm_test_configs = sorted(vm_test_configs, key=lambda t: t.test_suite)
-    vm_test_cfg = config_pb.VmTestCfg(vm_test=vm_test_configs)
+    vm_test_cfg = config_pb.VmTestCfg(
+        tast_vm_test=tast_vm_test_configs,
+        vm_test=vm_test_configs)
 
   if reference_design:
     target_name = reference_design
@@ -60,12 +79,26 @@ def target_test_requirements(
 
   testing_reqs = config_pb.PerTargetTestRequirements(
       build_criteria=build_criteria,
+      gce_test_cfg=gce_test_cfg,
       hw_test_cfg=hw_test_cfg,
+      moblab_vm_test_cfg=moblab_vm_test_cfg,
       vm_test_cfg=vm_test_cfg)
   graph.add_node(
       graph.key(test_reqs_kind, target_name),
       props={'target_test_requirements': testing_reqs})
   graph.add_edge(root_key, graph.key(test_reqs_kind, target_name))
+
+
+def gce_sanity_test_config():
+  """ Creates a standard GCE sanity test.
+
+  Returns: config_pb.GceTest
+  """
+  return config_pb.GceTestCfg.GceTest(
+    test_suite='gce-sanity',
+    test_type='gce_suite',
+    timeout_sec=3600,
+    use_ctest=True)
 
 
 def _hw_test_config(
@@ -169,6 +202,30 @@ def standard_bvt_arc():
     suite_name='bvt-arc',
     blocking=False,
     minimum_duts=4)
+
+
+def moblab_smoke_test_config():
+  """Creates a Moblab smoke test with default settings.
+
+  Returns:
+    config_pb.MoblabTest
+  """
+  return config_pb.MoblabVmTestCfg.MoblabTest(
+    test_type='moblab_smoke_test',
+    timeout_sec=3600)
+
+
+def tast_vm_cq_test_config():
+  """Creates a CQ TastVmTest with default settings.
+
+  Returns:
+    config_pb.TastVmTest
+  """
+  tast_test_expr = [config_pb.VmTestCfg.TastTestExpr(
+    test_expr='(!disabled && !"group:*" && !informational)')]
+  return config_pb.VmTestCfg.TastVmTest(
+    suite_name='tast_vm_paladin',
+    tast_test_expr=tast_test_expr)
 
 
 def vm_smoke_test_config(use_ctest):
