@@ -224,6 +224,9 @@ extern const char kDisableLoggingRedirect[];
 extern const char kDisableLoginScreenApps[];
 extern const char kMashServiceName[];
 extern const char kShortMergeSessionTimeoutForTest[];
+extern const char kSchedulerConfiguration[];
+extern const char kSchedulerConfigurationConservative[];
+extern const char kSchedulerConfigurationPerformance[];
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

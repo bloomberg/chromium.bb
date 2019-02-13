@@ -595,6 +595,16 @@ const FeatureEntry::Choice kAshUiModeChoices[] = {
     {flag_descriptions::kUiModeAuto, ash::switches::kAshUiMode,
      ash::switches::kAshUiModeAuto},
 };
+
+const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kSchedulerConfigurationConservative,
+     switches::kSchedulerConfiguration,
+     switches::kSchedulerConfigurationConservative},
+    {flag_descriptions::kSchedulerConfigurationPerformance,
+     switches::kSchedulerConfiguration,
+     switches::kSchedulerConfigurationPerformance},
+};
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
@@ -3032,6 +3042,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"force-tablet-mode", flag_descriptions::kUiModeName,
      flag_descriptions::kUiModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshUiModeChoices)},
+
+    {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
+     flag_descriptions::kSchedulerConfigurationDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kSchedulerConfigurationChoices)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)

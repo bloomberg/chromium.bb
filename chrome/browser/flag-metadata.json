@@ -2852,6 +2852,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "scheduler-configuration",
+    "owners": [ "kerrnel", "mnissler" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "search-suggestions-on-local-ntp",
     "owners": [ "kmilka", "ramyan" ],
     "expiry_milestone": 74

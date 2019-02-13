@@ -54,6 +54,9 @@ const CommandLinePrefStore::SwitchToPreferenceMapEntry
         // implement this. Refactor enterprise policy and command line handling
         // so that this line isn't necessary, if possible.
         {switches::kIsolateOrigins, prefs::kIsolateOrigins},
+#if defined(OS_CHROMEOS)
+        {switches::kSchedulerConfiguration, prefs::kSchedulerConfiguration},
+#endif
 };
 
 const CommandLinePrefStore::SwitchToPreferenceMapEntry

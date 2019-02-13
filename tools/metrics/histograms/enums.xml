@@ -31362,6 +31362,7 @@ from previous Chrome versions.
   <int value="-966290456" label="WebAuthenticationCtap2:enabled"/>
   <int value="-965842218" label="MultiDeviceApi:disabled"/>
   <int value="-964676765" label="enable-accelerated-mjpeg-decode"/>
+  <int value="-956696029" label="scheduler-configuration"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
