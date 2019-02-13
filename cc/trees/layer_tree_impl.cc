@@ -1469,9 +1469,7 @@ void LayerTreeImpl::ClearLayersThatShouldPushProperties() {
 }
 
 void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
-  // TODO(bokan): Temporarily and speculatively CHECK in release builds to see
-  // if this is the cause of crbug.com/924068.
-  CHECK(!LayerById(layer->id()));
+  DCHECK(!LayerById(layer->id()));
   layer_id_map_[layer->id()] = layer;
 }
 
