@@ -32,7 +32,7 @@ namespace {
 class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
  public:
   MockQuicSimpleDispatcher(
-      const QuicConfig& config,
+      const QuicConfig* config,
       const QuicCryptoServerConfig* crypto_config,
       QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
@@ -67,7 +67,7 @@ class TestQuicServer : public QuicServer {
  protected:
   QuicDispatcher* CreateQuicDispatcher() override {
     mock_dispatcher_ = new MockQuicSimpleDispatcher(
-        config(), &crypto_config(), version_manager(),
+        &config(), &crypto_config(), version_manager(),
         std::unique_ptr<QuicEpollConnectionHelper>(
             new QuicEpollConnectionHelper(epoll_server(),
                                           QuicAllocator::BUFFER_POOL)),
@@ -157,7 +157,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
                        TlsServerHandshaker::CreateSslCtx()),
         version_manager_(AllSupportedVersions()),
         dispatcher_(
-            config_,
+            &config_,
             &crypto_config_,
             &version_manager_,
             std::unique_ptr<QuicEpollConnectionHelper>(

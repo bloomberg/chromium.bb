@@ -24,7 +24,7 @@
 #include "net/third_party/quic/test_tools/quic_client_peer.h"
 #include "net/third_party/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quic/test_tools/quic_stream_peer.h"
+#include "net/third_party/quic/test_tools/quic_spdy_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/tools/quic_url.h"
 
@@ -380,7 +380,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
   if (stream == nullptr) {
     return 0;
   }
-  QuicStreamPeer::set_ack_listener(stream, ack_listener);
+  QuicSpdyStreamPeer::set_ack_listener(stream, ack_listener);
 
   ssize_t ret = 0;
   if (headers != nullptr) {
@@ -391,7 +391,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     ret = stream->SendRequest(std::move(spdy_headers), body, fin);
     ++num_requests_;
   } else {
-    stream->WriteOrBufferBody(QuicString(body), fin, ack_listener);
+    stream->WriteOrBufferBody(QuicString(body), fin);
     ret = body.length();
   }
   if (GetQuicReloadableFlag(enable_quic_stateless_reject_support)) {

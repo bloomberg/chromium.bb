@@ -133,7 +133,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
   socket_.swap(socket);
 
   dispatcher_.reset(new quic::QuicSimpleDispatcher(
-      config_, &crypto_config_, &version_manager_,
+      &config_, &crypto_config_, &version_manager_,
       std::unique_ptr<quic::QuicConnectionHelperInterface>(helper_),
       std::unique_ptr<quic::QuicCryptoServerStream::Helper>(
           new QuicSimpleServerSessionHelper(quic::QuicRandom::GetInstance())),

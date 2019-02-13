@@ -304,11 +304,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // be generated and calculates the appropriate size.
   static size_t GetWindowUpdateFrameSize(QuicTransportVersion version,
                                          const QuicWindowUpdateFrame& frame);
-  // Size in bytes of all MaxStreamId frame fields.
-  static size_t GetMaxStreamIdFrameSize(QuicTransportVersion version,
-                                        const QuicMaxStreamIdFrame& frame);
-  // Size in bytes of all StreamIdBlocked frame fields.
-  static size_t GetStreamIdBlockedFrameSize(
+  // Size in bytes of all MaxStreams frame fields.
+  static size_t GetMaxStreamsFrameSize(QuicTransportVersion version,
+                                       const QuicMaxStreamIdFrame& frame);
+  // Size in bytes of all StreamsBlocked frame fields.
+  static size_t GetStreamsBlockedFrameSize(
       QuicTransportVersion version,
       const QuicStreamIdBlockedFrame& frame);
   // Size in bytes of all Blocked frame fields.
@@ -378,11 +378,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                         char* buffer,
                                         size_t packet_length);
 
-  // Serializes an IETF probing packet, which is a padded PING packet.
-  // Returns the length of the packet. Returns 0 if it fails to serialize.
-  size_t BuildIetfConnectivityProbingPacket(const QuicPacketHeader& header,
-                                            char* buffer,
-                                            size_t packet_length);
+  // Serializes a probing packet, which is a padded PING packet. Returns the
+  // length of the packet. Returns 0 if it fails to serialize.
+  size_t BuildConnectivityProbingPacketNew(const QuicPacketHeader& header,
+                                           char* buffer,
+                                           size_t packet_length);
 
   // Serialize a probing packet that uses IETF QUIC's PATH CHALLENGE frame. Also
   // fills the packet with padding.
@@ -437,6 +437,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendIetfTypeByte(const QuicFrame& frame,
                           bool last_frame_in_packet,
                           QuicDataWriter* writer);
+  size_t AppendIetfFrames(const QuicFrames& frames, QuicDataWriter* writer);
   bool AppendStreamFrame(const QuicStreamFrame& frame,
                          bool last_frame_in_packet,
                          QuicDataWriter* writer);
@@ -513,21 +514,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns true if |header| is considered as an stateless reset packet.
   bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
-  // Returns header wire format of last received packet.
-  // Please do not use this method.
-  // TODO(fayang): Remove last_header_form_ when deprecating
-  // quic_fix_last_packet_is_ietf_quic flag.
-  PacketHeaderFormat GetLastPacketFormat() const;
-
   void set_validate_flags(bool value) { validate_flags_ = value; }
 
   Perspective perspective() const { return perspective_; }
 
   QuicVersionLabel last_version_label() const { return last_version_label_; }
-
-  void set_last_packet_form(PacketHeaderFormat form) {
-    last_header_form_ = form;
-  }
 
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
@@ -565,12 +556,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
     // Number of ACK blocks needed for the ACK frame.
     size_t num_ack_blocks;
   };
-
-  // The same as BuildDataPacket, but it only builds IETF-format packets.
-  size_t BuildIetfDataPacket(const QuicPacketHeader& header,
-                             const QuicFrames& frames,
-                             char* buffer,
-                             size_t packet_length);
 
   bool ProcessDataPacket(QuicDataReader* reader,
                          QuicPacketHeader* header,
@@ -789,10 +774,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessMaxStreamDataFrame(QuicDataReader* reader,
                                  QuicWindowUpdateFrame* frame);
 
-  bool AppendMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame,
-                              QuicDataWriter* writer);
-  bool ProcessMaxStreamIdFrame(QuicDataReader* reader,
-                               QuicMaxStreamIdFrame* frame);
+  bool AppendMaxStreamsFrame(const QuicMaxStreamIdFrame& frame,
+                             QuicDataWriter* writer);
+  bool ProcessMaxStreamsFrame(QuicDataReader* reader,
+                              QuicMaxStreamIdFrame* frame,
+                              uint64_t frame_type);
 
   bool AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
                               QuicDataWriter* writer);
@@ -803,10 +789,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessStreamBlockedFrame(QuicDataReader* reader,
                                  QuicBlockedFrame* frame);
 
-  bool AppendStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame,
-                                  QuicDataWriter* writer);
-  bool ProcessStreamIdBlockedFrame(QuicDataReader* reader,
-                                   QuicStreamIdBlockedFrame* frame);
+  bool AppendStreamsBlockedFrame(const QuicStreamIdBlockedFrame& frame,
+                                 QuicDataWriter* writer);
+  bool ProcessStreamsBlockedFrame(QuicDataReader* reader,
+                                  QuicStreamIdBlockedFrame* frame,
+                                  uint64_t frame_type);
+
   bool AppendNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame,
                                   QuicDataWriter* writer);
   bool ProcessNewConnectionIdFrame(QuicDataReader* reader,
@@ -845,9 +833,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicConnectionId last_serialized_connection_id_;
   // The last QUIC version label received.
   QuicVersionLabel last_version_label_;
-  // Format of last received packet header, whether it is Google QUIC, IETF long
-  // header packet or IETF short header packet.
-  PacketHeaderFormat last_header_form_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
   // This vector contains QUIC versions which we currently support.

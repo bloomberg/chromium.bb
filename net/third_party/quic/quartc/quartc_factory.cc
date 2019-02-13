@@ -7,15 +7,15 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
+#include "net/third_party/quic/quartc/quartc_connection_helper.h"
 #include "net/third_party/quic/quartc/quartc_session.h"
 
 namespace quic {
 
 QuartcFactory::QuartcFactory(const QuartcFactoryConfig& factory_config)
     : alarm_factory_(factory_config.alarm_factory),
-      clock_(factory_config.clock) {}
-
-QuartcFactory::~QuartcFactory() {}
+      clock_(factory_config.clock),
+      connection_helper_(QuicMakeUnique<QuartcConnectionHelper>(clock_)) {}
 
 std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
     const QuartcSessionConfig& quartc_session_config) {
@@ -177,7 +177,7 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   return QuicMakeUnique<QuartcSession>(
       std::move(quic_connection), quic_config, CurrentSupportedVersions(),
       quartc_session_config.unique_remote_server_id, perspective,
-      this /*QuicConnectionHelperInterface*/, clock_, std::move(writer));
+      connection_helper_.get(), clock_, std::move(writer));
 }
 
 std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
@@ -195,21 +195,9 @@ std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
   }
   QuicSocketAddress dummy_address(QuicIpAddress::Any4(), 0 /*Port*/);
   return QuicMakeUnique<QuicConnection>(
-      dummy_id, dummy_address, this, /*QuicConnectionHelperInterface*/
-      alarm_factory_ /*QuicAlarmFactory*/, packet_writer, /*owns_writer=*/false,
-      perspective, CurrentSupportedVersions());
-}
-
-const QuicClock* QuartcFactory::GetClock() const {
-  return clock_;
-}
-
-QuicRandom* QuartcFactory::GetRandomGenerator() {
-  return QuicRandom::GetInstance();
-}
-
-QuicBufferAllocator* QuartcFactory::GetStreamSendBufferAllocator() {
-  return &buffer_allocator_;
+      dummy_id, dummy_address, connection_helper_.get(), alarm_factory_,
+      packet_writer, /*owns_writer=*/false, perspective,
+      CurrentSupportedVersions());
 }
 
 std::unique_ptr<QuartcFactory> CreateQuartcFactory(

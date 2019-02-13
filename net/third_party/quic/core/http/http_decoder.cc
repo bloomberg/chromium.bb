@@ -22,7 +22,7 @@ uint8_t ExtractBits(uint8_t flags, uint8_t num_bits, uint8_t offset) {
 }
 
 // Length of the type field of HTTP/3 frames.
-static const size_t kFrameTypeLength = 1;
+static const QuicByteCount kFrameTypeLength = 1;
 
 }  // namespace
 
@@ -40,7 +40,7 @@ HttpDecoder::HttpDecoder()
 
 HttpDecoder::~HttpDecoder() {}
 
-size_t HttpDecoder::ProcessInput(const char* data, size_t len) {
+QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
   has_payload_ = false;
   QuicDataReader reader(data, len, NETWORK_BYTE_ORDER);
   while (error_ == QUIC_NO_ERROR && reader.BytesRemaining() != 0) {
@@ -105,8 +105,8 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
             Http3FrameLengths(current_length_field_size_ + kFrameTypeLength,
                               current_frame_length_));
       }
-      size_t bytes_to_read =
-          std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
+      QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+          remaining_frame_length_, reader->BytesRemaining());
       QuicStringPiece payload;
       if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
         RaiseError(QUIC_INTERNAL_ERROR, "Unable to read data");
@@ -126,8 +126,8 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       if (current_frame_length_ == remaining_frame_length_) {
         visitor_->OnHeadersFrameStart();
       }
-      size_t bytes_to_read =
-          std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
+      QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+          remaining_frame_length_, reader->BytesRemaining());
       QuicStringPiece payload;
       if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
         RaiseError(QUIC_INTERNAL_ERROR, "Unable to read data");
@@ -138,7 +138,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       if (remaining_frame_length_ == 0) {
         state_ = STATE_READING_FRAME_LENGTH;
         current_length_field_size_ = 0;
-        visitor_->OnHeadersFrameEnd();
+        visitor_->OnHeadersFrameEnd(current_frame_length_);
       }
       return;
     }
@@ -197,7 +197,7 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
     }
     case 0x5: {  // PUSH_PROMISE
       if (current_frame_length_ == remaining_frame_length_) {
-        size_t bytes_remaining = reader->BytesRemaining();
+        QuicByteCount bytes_remaining = reader->BytesRemaining();
         PushId push_id;
         // TODO(rch): Handle partial delivery of this field.
         if (!reader->ReadVarInt62(&push_id)) {
@@ -207,8 +207,8 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
         remaining_frame_length_ -= bytes_remaining - reader->BytesRemaining();
         visitor_->OnPushPromiseFrameStart(push_id);
       }
-      size_t bytes_to_read =
-          std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
+      QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+          remaining_frame_length_, reader->BytesRemaining());
       if (bytes_to_read == 0) {
         return;
       }
@@ -305,8 +305,8 @@ void HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
 }
 
 void HttpDecoder::DiscardFramePayload(QuicDataReader* reader) {
-  size_t bytes_to_read =
-      std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
+  QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+      remaining_frame_length_, reader->BytesRemaining());
   QuicStringPiece payload;
   if (!reader->ReadStringPiece(&payload, bytes_to_read)) {
     RaiseError(QUIC_INTERNAL_ERROR, "Unable to read frame payload");
@@ -324,8 +324,8 @@ void HttpDecoder::BufferFramePayload(QuicDataReader* reader) {
     buffer_.erase(buffer_.size());
     buffer_.reserve(current_frame_length_);
   }
-  size_t bytes_to_read =
-      std::min<size_t>(remaining_frame_length_, reader->BytesRemaining());
+  QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+      remaining_frame_length_, reader->BytesRemaining());
   if (!reader->ReadBytes(
           &(buffer_[0]) + current_frame_length_ - remaining_frame_length_,
           bytes_to_read)) {
@@ -349,8 +349,8 @@ void HttpDecoder::BufferFrameLength(QuicDataReader* reader) {
     length_buffer_.erase(length_buffer_.size());
     length_buffer_.reserve(current_length_field_size_);
   }
-  size_t bytes_to_read = std::min<size_t>(remaining_length_field_length_,
-                                          reader->BytesRemaining());
+  QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+      remaining_length_field_length_, reader->BytesRemaining());
   if (!reader->ReadBytes(&(length_buffer_[0]) + current_length_field_size_ -
                              remaining_length_field_length_,
                          bytes_to_read)) {

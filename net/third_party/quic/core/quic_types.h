@@ -234,15 +234,14 @@ enum QuicIetfFrameType : uint8_t {
   // 0x09 through 0x0f are various flag settings of the IETF_STREAM frame.
   IETF_MAX_DATA = 0x10,
   IETF_MAX_STREAM_DATA = 0x11,
-  IETF_MAX_STREAM_ID = 0x12,  // TODO(fkastenholz): Will become IETF_MAX_STREAMS
-  // 0x13 reserved, a flag setting for IETF_MAX_STREAMS.
+  IETF_MAX_STREAMS_BIDIRECTIONAL = 0x12,
+  IETF_MAX_STREAMS_UNIDIRECTIONAL = 0x13,
   IETF_BLOCKED = 0x14,  // TODO(fkastenholz): Should, eventually, be renamed to
                         // IETF_DATA_BLOCKED
   IETF_STREAM_BLOCKED = 0x15,  // TODO(fkastenholz): Should, eventually, be
                                // renamed to IETF_STREAM_DATA_BLOCKED
-  IETF_STREAM_ID_BLOCKED =
-      0x16,  // TODO(fkastenholz): Will become IETF_STREAMS_BLOCKED
-  // 0x17 reserved, a flag setting for IETF_STREAMS_BLOCKED
+  IETF_STREAMS_BLOCKED_BIDIRECTIONAL = 0x16,
+  IETF_STREAMS_BLOCKED_UNIDIRECTIONAL = 0x17,
   IETF_NEW_CONNECTION_ID = 0x18,
   IETF_RETIRE_CONNECTION_ID = 0x19,
   IETF_PATH_CHALLENGE = 0x1a,

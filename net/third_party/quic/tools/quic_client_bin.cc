@@ -33,6 +33,9 @@
 //   IP=`dig www.google.com +short | head -1`
 //   quic_client mail.google.com --host=${IP}
 //
+// Send repeated requests and change ephemeral port between requests
+//   quic_client www.google.com --num_requests=10
+//
 // Try to connect to a host which does not speak QUIC:
 //   Get IP address of the www.example.com
 //   IP=`dig www.example.com +short | head -1`
@@ -97,6 +100,8 @@ bool FLAGS_redirect_is_success = true;
 int32_t FLAGS_initial_mtu = 0;
 // If true, drop response body immediately after it is received.
 bool FLAGS_drop_response_body = false;
+// How many sequential requests to make on a single connection.
+int32_t FLAGS_num_requests = 1;
 
 class FakeProofVerifier : public ProofVerifier {
  public:
@@ -259,6 +264,7 @@ int main(int argc, char* argv[]) {
         quic::PROTOCOL_QUIC_CRYPTO,
         static_cast<quic::QuicTransportVersion>(FLAGS_quic_version)));
   }
+  const int32_t num_requests = FLAGS_num_requests;
   // For secure QUIC we need to verify the cert chain.
   std::unique_ptr<ProofVerifier> proof_verifier;
   if (line->HasSwitch("disable-certificate-verification")) {
@@ -320,55 +326,71 @@ int main(int argc, char* argv[]) {
   // Make sure to store the response, for later output.
   client.set_store_response(true);
 
-  // Send the request.
-  client.SendRequestAndWaitForResponse(header_block, body, /*fin=*/true);
+  for (int i = 0; i < num_requests; ++i) {
+    // Send the request.
+    client.SendRequestAndWaitForResponse(header_block, body, /*fin=*/true);
 
-  // Print request and response details.
-  if (!FLAGS_quiet) {
-    cout << "Request:" << endl;
-    cout << "headers:" << header_block.DebugString();
-    if (!FLAGS_body_hex.empty()) {
-      // Print the user provided hex, rather than binary body.
-      cout << "body:\n"
-           << QuicTextUtils::HexDump(QuicTextUtils::HexDecode(FLAGS_body_hex))
-           << endl;
-    } else {
-      cout << "body: " << body << endl;
-    }
-    cout << endl;
-
-    if (!client.preliminary_response_headers().empty()) {
-      cout << "Preliminary response headers: "
-           << client.preliminary_response_headers() << endl;
+    // Print request and response details.
+    if (!FLAGS_quiet) {
+      cout << "Request:" << endl;
+      cout << "headers:" << header_block.DebugString();
+      if (!FLAGS_body_hex.empty()) {
+        // Print the user provided hex, rather than binary body.
+        cout << "body:\n"
+             << QuicTextUtils::HexDump(QuicTextUtils::HexDecode(FLAGS_body_hex))
+             << endl;
+      } else {
+        cout << "body: " << body << endl;
+      }
       cout << endl;
+
+      if (!client.preliminary_response_headers().empty()) {
+        cout << "Preliminary response headers: "
+             << client.preliminary_response_headers() << endl;
+        cout << endl;
+      }
+
+      cout << "Response:" << endl;
+      cout << "headers: " << client.latest_response_headers() << endl;
+      string response_body = client.latest_response_body();
+      if (!FLAGS_body_hex.empty()) {
+        // Assume response is binary data.
+        cout << "body:\n" << QuicTextUtils::HexDump(response_body) << endl;
+      } else {
+        cout << "body: " << response_body << endl;
+      }
+      cout << "trailers: " << client.latest_response_trailers() << endl;
     }
 
-    cout << "Response:" << endl;
-    cout << "headers: " << client.latest_response_headers() << endl;
-    string response_body = client.latest_response_body();
-    if (!FLAGS_body_hex.empty()) {
-      // Assume response is binary data.
-      cout << "body:\n" << QuicTextUtils::HexDump(response_body) << endl;
-    } else {
-      cout << "body: " << response_body << endl;
-    }
-    cout << "trailers: " << client.latest_response_trailers() << endl;
-  }
-
-  size_t response_code = client.latest_response_code();
-  if (response_code >= 200 && response_code < 300) {
-    cout << "Request succeeded (" << response_code << ")." << endl;
-    return 0;
-  } else if (response_code >= 300 && response_code < 400) {
-    if (FLAGS_redirect_is_success) {
-      cout << "Request succeeded (redirect " << response_code << ")." << endl;
-      return 0;
-    } else {
-      cout << "Request failed (redirect " << response_code << ")." << endl;
+    if (!client.connected()) {
+      cerr << "Request caused connection failure. Error: "
+           << quic::QuicErrorCodeToString(client.session()->error()) << endl;
       return 1;
     }
-  } else {
-    cerr << "Request failed (" << response_code << ")." << endl;
-    return 1;
+
+    size_t response_code = client.latest_response_code();
+    if (response_code >= 200 && response_code < 300) {
+      cout << "Request succeeded (" << response_code << ")." << endl;
+    } else if (response_code >= 300 && response_code < 400) {
+      if (FLAGS_redirect_is_success) {
+        cout << "Request succeeded (redirect " << response_code << ")." << endl;
+      } else {
+        cout << "Request failed (redirect " << response_code << ")." << endl;
+        return 1;
+      }
+    } else {
+      cerr << "Request failed (" << response_code << ")." << endl;
+      return 1;
+    }
+
+    // Change the ephemeral port if there are more requests to do.
+    if (i + 1 < num_requests) {
+      if (!client.ChangeEphemeralPort()) {
+        cout << "Failed to change ephemeral port." << endl;
+        return 1;
+      }
+    }
   }
+
+  return 0;
 }

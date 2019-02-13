@@ -149,11 +149,6 @@ QUIC_FLAG(bool,
 // expire when the bandwidth increases more than 25% in QUIC BBR STARTUP.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
 
-// If true, try to aggregate acked stream frames.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_aggregate_acked_stream_frames_2,
-          true)
-
 // If true, disable QUIC version 35.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, true)
 
@@ -175,12 +170,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_flexible_app_limited, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_reading_when_level_triggered,
           false)
-
-// If true, mark packets for loss retransmission even they do not contain
-// retransmittable frames.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_mark_for_loss_retransmission,
-          true)
 
 // If true, enable version 45.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_45, false)
@@ -206,12 +195,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_timestamps, false)
 // When true, QUIC server push uses a unidirectional stream.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_unidirectional_server_push_stream,
-          true)
-
-// This flag fixes a bug where dispatcher's last_packet_is_ietf_quic may be
-// wrong when getting proof asynchronously.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic,
           true)
 
 // If true, dispatcher passes in a single version when creating a server
@@ -323,10 +306,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_keep_ack_decimation_reordering,
           false)
 
-// If true, close QUIC connection if peer acks packet number 0 because our
-// implementation never sends packet number 0.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disallow_peer_ack_0, true)
-
 // If true, log leaf cert subject name into warning log.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
@@ -356,3 +335,13 @@ QUIC_FLAG(
 
 // If true, enable QUIC version 47 which adds CRYPTO frames.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
+
+// If true, disable QUIC version 39.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
+
+// If true, simplifies the implementation of
+// QuicFramer::BuildConnectivityProbingPacket().
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_simplify_build_connectivity_probing_packet,
+    false)

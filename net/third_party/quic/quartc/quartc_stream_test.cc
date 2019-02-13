@@ -561,8 +561,10 @@ TEST_F(QuartcStreamTest, MaxRetransmissionsWithAckedFrame) {
 
   // Ack bytes [0, 7).  These bytes should be pruned from the data tracked by
   // the stream.
-  stream_->OnStreamFrameAcked(0, 7, false,
-                              QuicTime::Delta::FromMilliseconds(1));
+  QuicByteCount newly_acked_length = 0;
+  stream_->OnStreamFrameAcked(0, 7, false, QuicTime::Delta::FromMilliseconds(1),
+                              &newly_acked_length);
+  EXPECT_EQ(7u, newly_acked_length);
   stream_->OnCanWrite();
 
   EXPECT_EQ("Foo barFoo bar", write_buffer_);

@@ -32,7 +32,7 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
                        quic::KeyExchangeSource::Default(),
                        quic::TlsServerHandshaker::CreateSslCtx()),
         version_manager_(quic::AllSupportedVersions()),
-        dispatcher_(config_,
+        dispatcher_(&config_,
                     &crypto_config_,
                     &version_manager_,
                     std::unique_ptr<quic::test::MockQuicConnectionHelper>(

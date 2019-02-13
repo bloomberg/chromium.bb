@@ -40,44 +40,32 @@ namespace test {
 
 size_t kFakeFrameLen = 60;
 
-class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
+class TestStream : public QuicSimpleServerStream {
  public:
-  QuicSimpleServerStreamPeer(
-      QuicStreamId stream_id,
-      QuicSpdySession* session,
-      StreamType type,
-      QuicSimpleServerBackend* quic_simple_server_backend)
+  TestStream(QuicStreamId stream_id,
+             QuicSpdySession* session,
+             StreamType type,
+             QuicSimpleServerBackend* quic_simple_server_backend)
       : QuicSimpleServerStream(stream_id,
                                session,
                                type,
                                quic_simple_server_backend) {}
 
-  ~QuicSimpleServerStreamPeer() override = default;
+  ~TestStream() override = default;
 
-  using QuicSimpleServerStream::SendErrorResponse;
-  using QuicSimpleServerStream::SendResponse;
+  // Expose protected QuicSimpleServerStream methods.
+  void DoSendResponse() { SendResponse(); }
+  void DoSendErrorResponse() { SendErrorResponse(); }
 
   spdy::SpdyHeaderBlock* mutable_headers() { return &request_headers_; }
   void set_body(QuicString body) { body_ = std::move(body); }
+  const QuicString& body() const { return body_; }
+  int content_length() const { return content_length_; }
 
-  static void SendResponse(QuicSimpleServerStream* stream) {
-    stream->SendResponse();
-  }
-
-  static void SendErrorResponse(QuicSimpleServerStream* stream) {
-    stream->SendErrorResponse();
-  }
-
-  static const QuicString& body(QuicSimpleServerStream* stream) {
-    return stream->body_;
-  }
-
-  static int content_length(QuicSimpleServerStream* stream) {
-    return stream->content_length_;
-  }
-
-  static spdy::SpdyHeaderBlock& headers(QuicSimpleServerStream* stream) {
-    return stream->request_headers_;
+  QuicStringPiece GetHeader(QuicStringPiece key) const {
+    auto it = request_headers_.find(key);
+    DCHECK(it != request_headers_.end());
+    return it->second;
   }
 };
 
@@ -217,7 +205,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-    stream_ = new QuicSimpleServerStreamPeer(
+    stream_ = new TestStream(
         QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
             session_, 0),
         &session_, BIDIRECTIONAL, &memory_cache_backend_);
@@ -226,9 +214,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
-  const QuicString& StreamBody() {
-    return QuicSimpleServerStreamPeer::body(stream_);
-  }
+  const QuicString& StreamBody() { return stream_->body(); }
 
   QuicString StreamHeadersValue(const QuicString& key) {
     return (*stream_->mutable_headers())[key].as_string();
@@ -248,7 +234,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicCompressedCertsCache compressed_certs_cache_;
   QuicMemoryCacheBackend memory_cache_backend_;
   StrictMock<MockQuicSimpleServerSession> session_;
-  QuicSimpleServerStreamPeer* stream_;  // Owned by session_.
+  TestStream* stream_;  // Owned by session_.
   std::unique_ptr<QuicBackendResponse> quic_response_;
   QuicString body_;
   QuicHeaderList header_list_;
@@ -377,7 +363,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
       .WillOnce(Return(QuicConsumedData(
           strlen(QuicSimpleServerStream::kErrorResponseBody), true)));
 
-  QuicSimpleServerStreamPeer::SendResponse(stream_);
+  stream_->DoSendResponse();
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->write_side_closed());
 }
@@ -415,14 +401,14 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
       .WillOnce(Return(QuicConsumedData(
           strlen(QuicSimpleServerStream::kErrorResponseBody), true)));
 
-  QuicSimpleServerStreamPeer::SendResponse(stream_);
+  stream_->DoSendResponse();
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
 TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   // Create a new promised stream with even id().
-  QuicSimpleServerStreamPeer* promised_stream = new QuicSimpleServerStreamPeer(
+  TestStream* promised_stream = new TestStream(
       QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(session_,
                                                                        0),
       &session_, WRITE_UNIDIRECTIONAL, &memory_cache_backend_);
@@ -448,7 +434,7 @@ TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   EXPECT_CALL(session_,
               SendRstStream(promised_stream->id(), QUIC_STREAM_CANCELLED, 0));
 
-  QuicSimpleServerStreamPeer::SendResponse(promised_stream);
+  promised_stream->DoSendResponse();
 }
 
 TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
@@ -481,7 +467,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
 
-  QuicSimpleServerStreamPeer::SendResponse(stream_);
+  stream_->DoSendResponse();
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->write_side_closed());
 }
@@ -527,7 +513,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithPushResources) {
   }
   EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
-  QuicSimpleServerStreamPeer::SendResponse(stream_);
+  stream_->DoSendResponse();
   EXPECT_EQ(*request_headers, session_.original_request_headers_);
 }
 
@@ -553,10 +539,9 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
       QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(session_,
                                                                        0);
   // Create a server initiated stream and pass it to session_.
-  QuicSimpleServerStreamPeer* server_initiated_stream =
-      new QuicSimpleServerStreamPeer(kServerInitiatedStreamId, &session_,
-                                     WRITE_UNIDIRECTIONAL,
-                                     &memory_cache_backend_);
+  TestStream* server_initiated_stream =
+      new TestStream(kServerInitiatedStreamId, &session_, WRITE_UNIDIRECTIONAL,
+                     &memory_cache_backend_);
   session_.ActivateStream(QuicWrapUnique(server_initiated_stream));
 
   const QuicString kHost = "www.foo.com";
@@ -591,12 +576,8 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   EXPECT_CALL(session_, WritevData(_, kServerInitiatedStreamId, _, _, _))
       .WillOnce(Return(QuicConsumedData(kBody.size(), true)));
   server_initiated_stream->PushResponse(std::move(headers));
-  EXPECT_EQ(kPath, QuicSimpleServerStreamPeer::headers(
-                       server_initiated_stream)[":path"]
-                       .as_string());
-  EXPECT_EQ("GET", QuicSimpleServerStreamPeer::headers(
-                       server_initiated_stream)[":method"]
-                       .as_string());
+  EXPECT_EQ(kPath, server_initiated_stream->GetHeader(":path"));
+  EXPECT_EQ("GET", server_initiated_stream->GetHeader(":method"));
 }
 
 TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
@@ -613,7 +594,7 @@ TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(3, true)));
 
-  QuicSimpleServerStreamPeer::SendErrorResponse(stream_);
+  stream_->DoSendErrorResponse();
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->write_side_closed());
 }
@@ -659,7 +640,7 @@ TEST_P(QuicSimpleServerStreamTest, ValidMultipleContentLength) {
 
   stream_->OnStreamHeaderList(false, kFakeFrameLen, header_list_);
 
-  EXPECT_EQ(11, QuicSimpleServerStreamPeer::content_length(stream_));
+  EXPECT_EQ(11, stream_->content_length());
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream_));
   EXPECT_FALSE(stream_->reading_stopped());
   EXPECT_FALSE(stream_->write_side_closed());

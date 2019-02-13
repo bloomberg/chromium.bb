@@ -44,7 +44,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef QuicLinkedHashMap<QuicBlockedWriterInterface*, bool> WriteBlockedList;
 
-  QuicDispatcher(const QuicConfig& config,
+  QuicDispatcher(const QuicConfig* config,
                  const QuicCryptoServerConfig* crypto_config,
                  QuicVersionManager* version_manager,
                  std::unique_ptr<QuicConnectionHelperInterface> helper,
@@ -271,7 +271,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   }
   const QuicReceivedPacket& current_packet() const { return *current_packet_; }
 
-  const QuicConfig& config() const { return config_; }
+  const QuicConfig& config() const { return *config_; }
 
   const QuicCryptoServerConfig* crypto_config() const { return crypto_config_; }
 
@@ -351,11 +351,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Skip validating that the public flags are set to legal values.
   void DisableFlagValidation();
 
-  // Please do not use this method.
-  // TODO(fayang): Remove this method when deprecating
-  // quic_fix_last_packet_is_ietf_quic flag.
-  PacketHeaderFormat GetLastPacketFormat() const;
-
  private:
   friend class test::QuicDispatcherPeer;
   friend class StatelessRejectorProcessDoneCallback;
@@ -410,7 +405,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
     new_sessions_allowed_per_event_loop_ = new_sessions_allowed_per_event_loop;
   }
 
-  const QuicConfig& config_;
+  const QuicConfig* config_;
 
   const QuicCryptoServerConfig* crypto_config_;
 

@@ -236,7 +236,6 @@ QuicStream::QuicStream(QuicStreamId id,
       stream_contributes_to_connection_flow_control_(true),
       busy_counter_(0),
       add_random_padding_after_fin_(false),
-      ack_listener_(nullptr),
       send_buffer_(
           session->connection()->helper()->GetStreamSendBufferAllocator()),
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
@@ -783,13 +782,14 @@ void QuicStream::AddRandomPaddingAfterFin() {
 bool QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                     QuicByteCount data_length,
                                     bool fin_acked,
-                                    QuicTime::Delta ack_delay_time) {
+                                    QuicTime::Delta ack_delay_time,
+                                    QuicByteCount* newly_acked_length) {
   QUIC_DVLOG(1) << ENDPOINT << "stream " << id_ << " Acking "
                 << "[" << offset << ", " << offset + data_length << "]"
                 << " fin = " << fin_acked;
-  QuicByteCount newly_acked_length = 0;
+  *newly_acked_length = 0;
   if (!send_buffer_.OnStreamDataAcked(offset, data_length,
-                                      &newly_acked_length)) {
+                                      newly_acked_length)) {
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to ack unsent data.");
     return false;
@@ -801,16 +801,13 @@ bool QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
   }
   // Indicates whether ack listener's OnPacketAcked should be called.
   const bool new_data_acked =
-      newly_acked_length > 0 || (fin_acked && fin_outstanding_);
+      *newly_acked_length > 0 || (fin_acked && fin_outstanding_);
   if (fin_acked) {
     fin_outstanding_ = false;
     fin_lost_ = false;
   }
   if (!IsWaitingForAcks()) {
     session_->OnStreamDoneWaitingForAcks(id_);
-  }
-  if (ack_listener_ != nullptr && new_data_acked) {
-    ack_listener_->OnPacketAcked(newly_acked_length, ack_delay_time);
   }
   return new_data_acked;
 }
@@ -821,9 +818,6 @@ void QuicStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
   send_buffer_.OnStreamDataRetransmitted(offset, data_length);
   if (fin_retransmitted) {
     fin_lost_ = false;
-  }
-  if (ack_listener_ != nullptr) {
-    ack_listener_->OnPacketRetransmitted(data_length);
   }
 }
 

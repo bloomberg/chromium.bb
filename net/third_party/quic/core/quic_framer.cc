@@ -343,6 +343,63 @@ bool IsValidFullPacketNumber(uint64_t full_packet_number,
           version == QUIC_VERSION_99);
 }
 
+// Convert a stream ID to a count of streams, for IETF QUIC/Version 99 only.
+// There is no need to take into account whether the ID is for uni- or
+// bi-directional streams, or whether it's server- or client- initiated.  It
+// always returns a valid count.
+QuicStreamId StreamIdToCount(QuicTransportVersion version,
+                             QuicStreamId stream_id) {
+  DCHECK_EQ(QUIC_VERSION_99, version);
+  if ((stream_id & 0x3) == 0) {
+    return (stream_id / QuicUtils::StreamIdDelta(version));
+  }
+  return (stream_id / QuicUtils::StreamIdDelta(version)) + 1;
+}
+
+// Returns the maximum value that a stream count may have, taking into account
+// the fact that bidirectional, client initiated, streams have one fewer stream
+// available than the others. This is because the old crypto streams, with ID ==
+// 0 are not included in the count.
+// The version is not included in the call, nor does the method take the version
+// into account, because this is called only from code used for IETF QUIC.
+// TODO(fkastenholz): Remove this method and replace calls to it with direct
+// references to kMaxQuicStreamIdCount when streamid 0 becomes a normal stream
+// id.
+QuicStreamId GetMaxStreamCount(bool unidirectional, Perspective perspective) {
+  if (!unidirectional && perspective == Perspective::IS_CLIENT) {
+    return kMaxQuicStreamId >> 2;
+  }
+  return (kMaxQuicStreamId >> 2) + 1;
+}
+
+// Convert a stream count to the maximum stream ID for that count.
+// Needs to know whether the resulting stream ID  should be uni-directional,
+// bi-directional, server-initiated, or client-initiated.
+// Returns true if it works, false if not. The only error condition is that
+// the stream_count is too big and it would generate a stream id that is larger
+// than the implementation's maximum stream id value.
+bool StreamCountToId(QuicStreamId stream_count,
+                     bool unidirectional,
+                     Perspective perspective,
+                     QuicTransportVersion version,
+                     QuicStreamId* generated_stream_id) {
+  DCHECK_EQ(QUIC_VERSION_99, version);
+  // TODO(fkastenholz): when the MAX_STREAMS and STREAMS_BLOCKED frames
+  // are connected all the way up to the stream_id_manager, handle count==0
+  // properly (interpret it as "can open 0 streams") and the count being too
+  // large (close the connection).
+  if ((stream_count == 0) ||
+      (stream_count > GetMaxStreamCount(unidirectional, perspective))) {
+    return false;
+  }
+  *generated_stream_id =
+      ((unidirectional)
+           ? QuicUtils::GetFirstUnidirectionalStreamId(version, perspective)
+           : QuicUtils::GetFirstBidirectionalStreamId(version, perspective)) +
+      ((stream_count - 1) * QuicUtils::StreamIdDelta(version));
+  return true;
+}
+
 }  // namespace
 
 QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
@@ -352,7 +409,6 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       error_(QUIC_NO_ERROR),
       last_serialized_connection_id_(EmptyQuicConnectionId()),
       last_version_label_(0),
-      last_header_form_(GOOGLE_QUIC_PACKET),
       version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
       supported_versions_(supported_versions),
       decrypter_level_(ENCRYPTION_NONE),
@@ -498,24 +554,32 @@ size_t QuicFramer::GetWindowUpdateFrameSize(
 }
 
 // static
-size_t QuicFramer::GetMaxStreamIdFrameSize(QuicTransportVersion version,
-                                           const QuicMaxStreamIdFrame& frame) {
+size_t QuicFramer::GetMaxStreamsFrameSize(QuicTransportVersion version,
+                                          const QuicMaxStreamIdFrame& frame) {
   if (version != QUIC_VERSION_99) {
     QUIC_BUG << "In version " << version
              << " - not 99 - and tried to serialize MaxStreamId Frame.";
   }
-  return kQuicFrameTypeSize +
-         QuicDataWriter::GetVarInt62Len(frame.max_stream_id);
+
+  // Convert from the stream id on which the connection is blocked to a count
+  QuicStreamId stream_count = StreamIdToCount(version, frame.max_stream_id);
+
+  return kQuicFrameTypeSize + QuicDataWriter::GetVarInt62Len(stream_count);
 }
+
 // static
-size_t QuicFramer::GetStreamIdBlockedFrameSize(
+size_t QuicFramer::GetStreamsBlockedFrameSize(
     QuicTransportVersion version,
     const QuicStreamIdBlockedFrame& frame) {
   if (version != QUIC_VERSION_99) {
     QUIC_BUG << "In version " << version
              << " - not 99 - and tried to serialize StreamIdBlocked Frame.";
   }
-  return kQuicFrameTypeSize + QuicDataWriter::GetVarInt62Len(frame.stream_id);
+
+  // Convert from the stream id on which the connection is blocked to a count
+  QuicStreamId stream_count = StreamIdToCount(version, frame.stream_id);
+
+  return kQuicFrameTypeSize + QuicDataWriter::GetVarInt62Len(stream_count);
 }
 
 // static
@@ -588,10 +652,9 @@ size_t QuicFramer::GetRetransmittableControlFrameSize(
     case NEW_TOKEN_FRAME:
       return GetNewTokenFrameSize(*frame.new_token_frame);
     case MAX_STREAM_ID_FRAME:
-      return GetMaxStreamIdFrameSize(version, frame.max_stream_id_frame);
+      return GetMaxStreamsFrameSize(version, frame.max_stream_id_frame);
     case STREAM_ID_BLOCKED_FRAME:
-      return GetStreamIdBlockedFrameSize(version,
-                                         frame.stream_id_blocked_frame);
+      return GetStreamsBlockedFrameSize(version, frame.stream_id_blocked_frame);
     case PATH_RESPONSE_FRAME:
       return GetPathResponseFrameSize(*frame.path_response_frame);
     case PATH_CHALLENGE_FRAME:
@@ -762,13 +825,14 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
                                    const QuicFrames& frames,
                                    char* buffer,
                                    size_t packet_length) {
-  if (version_.transport_version == QUIC_VERSION_99) {
-    return BuildIetfDataPacket(header, frames, buffer, packet_length);
-  }
   QuicDataWriter writer(packet_length, buffer, endianness());
   if (!AppendPacketHeader(header, &writer)) {
     QUIC_BUG << "AppendPacketHeader failed";
     return 0;
+  }
+
+  if (version_.transport_version == QUIC_VERSION_99) {
+    return AppendIetfFrames(frames, &writer);
   }
 
   size_t i = 0;
@@ -904,28 +968,20 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
   return writer.length();
 }
 
-size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
-                                       const QuicFrames& frames,
-                                       char* buffer,
-                                       size_t packet_length) {
-  QuicDataWriter writer(packet_length, buffer, endianness());
-  if (!AppendIetfPacketHeader(header, &writer)) {
-    QUIC_BUG << "AppendPacketHeader failed";
-    return 0;
-  }
-
+size_t QuicFramer::AppendIetfFrames(const QuicFrames& frames,
+                                    QuicDataWriter* writer) {
   size_t i = 0;
   for (const QuicFrame& frame : frames) {
     // Determine if we should write stream frame length in header.
     const bool last_frame_in_packet = i == frames.size() - 1;
-    if (!AppendIetfTypeByte(frame, last_frame_in_packet, &writer)) {
+    if (!AppendIetfTypeByte(frame, last_frame_in_packet, writer)) {
       QUIC_BUG << "AppendIetfTypeByte failed";
       return 0;
     }
 
     switch (frame.type) {
       case PADDING_FRAME:
-        if (!AppendPaddingFrame(frame.padding_frame, &writer)) {
+        if (!AppendPaddingFrame(frame.padding_frame, writer)) {
           QUIC_BUG << "AppendPaddingFrame of "
                    << frame.padding_frame.num_padding_bytes << " failed";
           return 0;
@@ -933,13 +989,13 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         break;
       case STREAM_FRAME:
         if (!AppendStreamFrame(frame.stream_frame, last_frame_in_packet,
-                               &writer)) {
+                               writer)) {
           QUIC_BUG << "AppendStreamFrame failed";
           return 0;
         }
         break;
       case ACK_FRAME:
-        if (!AppendIetfAckFrameAndTypeByte(*frame.ack_frame, &writer)) {
+        if (!AppendIetfAckFrameAndTypeByte(*frame.ack_frame, writer)) {
           QUIC_BUG << "AppendAckFrameAndTypeByte failed";
           return 0;
         }
@@ -955,14 +1011,14 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         // Ping has no payload.
         break;
       case RST_STREAM_FRAME:
-        if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
+        if (!AppendRstStreamFrame(*frame.rst_stream_frame, writer)) {
           QUIC_BUG << "AppendRstStreamFrame failed";
           return 0;
         }
         break;
       case CONNECTION_CLOSE_FRAME:
         if (!AppendConnectionCloseFrame(*frame.connection_close_frame,
-                                        &writer)) {
+                                        writer)) {
           QUIC_BUG << "AppendConnectionCloseFrame failed";
           return 0;
         }
@@ -975,90 +1031,89 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         // MAX STREAM DATA frame or a MAX DATA frame.
         if (frame.window_update_frame->stream_id ==
             QuicUtils::GetInvalidStreamId(transport_version())) {
-          if (!AppendMaxDataFrame(*frame.window_update_frame, &writer)) {
+          if (!AppendMaxDataFrame(*frame.window_update_frame, writer)) {
             QUIC_BUG << "AppendMaxDataFrame failed";
             return 0;
           }
         } else {
-          if (!AppendMaxStreamDataFrame(*frame.window_update_frame, &writer)) {
+          if (!AppendMaxStreamDataFrame(*frame.window_update_frame, writer)) {
             QUIC_BUG << "AppendMaxStreamDataFrame failed";
             return 0;
           }
         }
         break;
       case BLOCKED_FRAME:
-        if (!AppendBlockedFrame(*frame.blocked_frame, &writer)) {
+        if (!AppendBlockedFrame(*frame.blocked_frame, writer)) {
           QUIC_BUG << "AppendBlockedFrame failed";
           return 0;
         }
         break;
       case APPLICATION_CLOSE_FRAME:
         if (!AppendApplicationCloseFrame(*frame.application_close_frame,
-                                         &writer)) {
+                                         writer)) {
           QUIC_BUG << "AppendApplicationCloseFrame failed";
           return 0;
         }
         break;
       case MAX_STREAM_ID_FRAME:
-        if (!AppendMaxStreamIdFrame(frame.max_stream_id_frame, &writer)) {
-          QUIC_BUG << "AppendMaxStreamIdFrame failed";
+        if (!AppendMaxStreamsFrame(frame.max_stream_id_frame, writer)) {
+          QUIC_BUG << "AppendMaxStreamsFrame failed";
           return 0;
         }
         break;
       case STREAM_ID_BLOCKED_FRAME:
-        if (!AppendStreamIdBlockedFrame(frame.stream_id_blocked_frame,
-                                        &writer)) {
-          QUIC_BUG << "AppendMaxStreamIdFrame failed";
+        if (!AppendStreamsBlockedFrame(frame.stream_id_blocked_frame, writer)) {
+          QUIC_BUG << "AppendStreamsBlockedFrame failed";
           return 0;
         }
         break;
       case NEW_CONNECTION_ID_FRAME:
         if (!AppendNewConnectionIdFrame(*frame.new_connection_id_frame,
-                                        &writer)) {
+                                        writer)) {
           QUIC_BUG << "AppendNewConnectionIdFrame failed";
           return 0;
         }
         break;
       case RETIRE_CONNECTION_ID_FRAME:
         if (!AppendRetireConnectionIdFrame(*frame.retire_connection_id_frame,
-                                           &writer)) {
+                                           writer)) {
           QUIC_BUG << "AppendRetireConnectionIdFrame failed";
           return 0;
         }
         break;
       case NEW_TOKEN_FRAME:
-        if (!AppendNewTokenFrame(*frame.new_token_frame, &writer)) {
+        if (!AppendNewTokenFrame(*frame.new_token_frame, writer)) {
           QUIC_BUG << "AppendNewTokenFrame failed";
           return 0;
         }
         break;
       case STOP_SENDING_FRAME:
-        if (!AppendStopSendingFrame(*frame.stop_sending_frame, &writer)) {
+        if (!AppendStopSendingFrame(*frame.stop_sending_frame, writer)) {
           QUIC_BUG << "AppendStopSendingFrame failed";
           return 0;
         }
         break;
       case PATH_CHALLENGE_FRAME:
-        if (!AppendPathChallengeFrame(*frame.path_challenge_frame, &writer)) {
+        if (!AppendPathChallengeFrame(*frame.path_challenge_frame, writer)) {
           QUIC_BUG << "AppendPathChallengeFrame failed";
           return 0;
         }
         break;
       case PATH_RESPONSE_FRAME:
-        if (!AppendPathResponseFrame(*frame.path_response_frame, &writer)) {
+        if (!AppendPathResponseFrame(*frame.path_response_frame, writer)) {
           QUIC_BUG << "AppendPathResponseFrame failed";
           return 0;
         }
         break;
       case MESSAGE_FRAME:
         if (!AppendMessageFrameAndTypeByte(*frame.message_frame,
-                                           last_frame_in_packet, &writer)) {
+                                           last_frame_in_packet, writer)) {
           QUIC_BUG << "AppendMessageFrame failed";
           return 0;
         }
         break;
       case CRYPTO_FRAME:
-        if (!AppendCryptoFrame(*frame.crypto_frame, &writer)) {
+        if (!AppendCryptoFrame(*frame.crypto_frame, writer)) {
           QUIC_BUG << "AppendCryptoFrame failed";
           return 0;
         }
@@ -1071,10 +1126,10 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
     ++i;
   }
 
-  return writer.length();
+  return writer->length();
 }
 
-size_t QuicFramer::BuildIetfConnectivityProbingPacket(
+size_t QuicFramer::BuildConnectivityProbingPacketNew(
     const QuicPacketHeader& header,
     char* buffer,
     size_t packet_length) {
@@ -1088,16 +1143,20 @@ size_t QuicFramer::BuildIetfConnectivityProbingPacket(
   QuicPaddingFrame padding_frame;
   frames.push_back(QuicFrame(padding_frame));
 
-  return BuildIetfDataPacket(header, frames, buffer, packet_length);
+  return BuildDataPacket(header, frames, buffer, packet_length);
 }
 
 size_t QuicFramer::BuildConnectivityProbingPacket(
     const QuicPacketHeader& header,
     char* buffer,
     size_t packet_length) {
-  if (version_.transport_version == QUIC_VERSION_99) {
-    return BuildIetfConnectivityProbingPacket(header, buffer, packet_length);
+  if (version_.transport_version == QUIC_VERSION_99 ||
+      GetQuicReloadableFlag(quic_simplify_build_connectivity_probing_packet)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_simplify_build_connectivity_probing_packet);
+    // TODO(rch): Remove this method when the flag is deprecated.
+    return BuildConnectivityProbingPacketNew(header, buffer, packet_length);
   }
+
   QuicDataWriter writer(packet_length, buffer, endianness());
 
   if (!AppendPacketHeader(header, &writer)) {
@@ -1150,7 +1209,7 @@ size_t QuicFramer::BuildPaddedPathChallengePacket(
   QuicPaddingFrame padding_frame;
   frames.push_back(QuicFrame(padding_frame));
 
-  return BuildIetfDataPacket(header, frames, buffer, packet_length);
+  return BuildDataPacket(header, frames, buffer, packet_length);
 }
 
 size_t QuicFramer::BuildPathResponsePacket(
@@ -1190,7 +1249,7 @@ size_t QuicFramer::BuildPathResponsePacket(
     frames.push_back(QuicFrame(padding_frame));
   }
 
-  return BuildIetfDataPacket(header, frames, buffer, packet_length);
+  return BuildDataPacket(header, frames, buffer, packet_length);
 }
 
 // static
@@ -1395,7 +1454,6 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     DCHECK_NE("", detailed_error_);
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
-  last_header_form_ = header.form;
 
   if (!visitor_->OnUnauthenticatedPublicHeader(header)) {
     // The visitor suppresses further processing of the packet.
@@ -2554,9 +2612,10 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
-        case IETF_MAX_STREAM_ID: {
+        case IETF_MAX_STREAMS_BIDIRECTIONAL:
+        case IETF_MAX_STREAMS_UNIDIRECTIONAL: {
           QuicMaxStreamIdFrame frame;
-          if (!ProcessMaxStreamIdFrame(reader, &frame)) {
+          if (!ProcessMaxStreamsFrame(reader, &frame, frame_type)) {
             return RaiseError(QUIC_MAX_STREAM_ID_DATA);
           }
           QUIC_CODE_COUNT_N(max_stream_id_received, 1, 2);
@@ -2601,9 +2660,10 @@ bool QuicFramer::ProcessIetfFrameData(QuicDataReader* reader,
           }
           break;
         }
-        case IETF_STREAM_ID_BLOCKED: {
+        case IETF_STREAMS_BLOCKED_UNIDIRECTIONAL:
+        case IETF_STREAMS_BLOCKED_BIDIRECTIONAL: {
           QuicStreamIdBlockedFrame frame;
-          if (!ProcessStreamIdBlockedFrame(reader, &frame)) {
+          if (!ProcessStreamsBlockedFrame(reader, &frame, frame_type)) {
             return RaiseError(QUIC_STREAM_ID_BLOCKED_DATA);
           }
           QUIC_CODE_COUNT_N(stream_id_blocked_received, 1, 2);
@@ -2925,9 +2985,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
     return false;
   }
 
-  if (GetQuicReloadableFlag(quic_disallow_peer_ack_0) &&
-      largest_acked < first_sending_packet_number_.ToUint64()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_disallow_peer_ack_0, 1, 3);
+  if (largest_acked < first_sending_packet_number_.ToUint64()) {
     // Connection always sends packet starting from kFirstSendingPacketNumber >
     // 0, peer has observed an unsent packet.
     set_detailed_error("Largest acked is 0.");
@@ -2964,25 +3022,12 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
   }
 
   if (first_block_length == 0) {
-    // For non-empty ACKs, the first block length must be non-zero.
-    // TODO(fayang): remove this if and return false directly when deprecating
-    // quic_reloadable_flag_quic_disallow_peer_ack_0.
-    if (largest_acked != 0 || num_ack_blocks != 0) {
-      set_detailed_error(
-          QuicStrCat("First block length is zero but ACK is "
-                     "not empty. largest acked is ",
-                     largest_acked, ", num ack blocks is ",
-                     QuicTextUtils::Uint64ToString(num_ack_blocks), ".")
-              .c_str());
-      return false;
-    }
-    DCHECK(!GetQuicReloadableFlag(quic_disallow_peer_ack_0));
+    set_detailed_error("First block length is zero.");
+    return false;
   }
   bool first_ack_block_underflow = first_block_length > largest_acked + 1;
-  if (GetQuicReloadableFlag(quic_disallow_peer_ack_0) &&
-      first_block_length + first_sending_packet_number_.ToUint64() >
-          largest_acked + 1) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_disallow_peer_ack_0, 2, 3);
+  if (first_block_length + first_sending_packet_number_.ToUint64() >
+      largest_acked + 1) {
     first_ack_block_underflow = true;
   }
   if (first_ack_block_underflow) {
@@ -3016,10 +3061,8 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
         return false;
       }
       bool ack_block_underflow = first_received < gap + current_block_length;
-      if (GetQuicReloadableFlag(quic_disallow_peer_ack_0) &&
-          first_received < gap + current_block_length +
+      if (first_received < gap + current_block_length +
                                first_sending_packet_number_.ToUint64()) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_disallow_peer_ack_0, 3, 3);
         ack_block_underflow = true;
       }
       if (ack_block_underflow) {
@@ -3954,10 +3997,20 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       type_byte = IETF_NEW_TOKEN;
       break;
     case MAX_STREAM_ID_FRAME:
-      type_byte = IETF_MAX_STREAM_ID;
+      if (QuicUtils::IsBidirectionalStreamId(
+              frame.max_stream_id_frame.max_stream_id)) {
+        type_byte = IETF_MAX_STREAMS_BIDIRECTIONAL;
+      } else {
+        type_byte = IETF_MAX_STREAMS_UNIDIRECTIONAL;
+      }
       break;
     case STREAM_ID_BLOCKED_FRAME:
-      type_byte = IETF_STREAM_ID_BLOCKED;
+      if (QuicUtils::IsBidirectionalStreamId(
+              frame.max_stream_id_frame.max_stream_id)) {
+        type_byte = IETF_STREAMS_BLOCKED_BIDIRECTIONAL;
+      } else {
+        type_byte = IETF_STREAMS_BLOCKED_UNIDIRECTIONAL;
+      }
       break;
     case PATH_RESPONSE_FRAME:
       type_byte = IETF_PATH_RESPONSE;
@@ -4803,10 +4856,6 @@ bool QuicFramer::StartsWithChlo(QuicStreamId id,
          0;
 }
 
-PacketHeaderFormat QuicFramer::GetLastPacketFormat() const {
-  return last_header_form_;
-}
-
 bool QuicFramer::AppendIetfConnectionCloseFrame(
     const QuicConnectionCloseFrame& frame,
     QuicDataWriter* writer) {
@@ -5057,22 +5106,47 @@ bool QuicFramer::ProcessMaxStreamDataFrame(QuicDataReader* reader,
   return true;
 }
 
-bool QuicFramer::AppendMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame,
-                                        QuicDataWriter* writer) {
-  if (!writer->WriteVarInt62(frame.max_stream_id)) {
-    set_detailed_error("Can not write MAX_STREAM_ID stream id");
+bool QuicFramer::AppendMaxStreamsFrame(const QuicMaxStreamIdFrame& frame,
+                                       QuicDataWriter* writer) {
+  // Convert from the stream id on which the connection is blocked to a count
+  QuicStreamId stream_count =
+      StreamIdToCount(version_.transport_version, frame.max_stream_id);
+
+  if (!writer->WriteVarInt62(stream_count)) {
+    set_detailed_error("Can not write MAX_STREAMS stream count");
     return false;
   }
   return true;
 }
 
-bool QuicFramer::ProcessMaxStreamIdFrame(QuicDataReader* reader,
-                                         QuicMaxStreamIdFrame* frame) {
-  if (!reader->ReadVarIntStreamId(&frame->max_stream_id)) {
-    set_detailed_error("Can not read MAX_STREAM_ID stream id.");
+bool QuicFramer::ProcessMaxStreamsFrame(QuicDataReader* reader,
+                                        QuicMaxStreamIdFrame* frame,
+                                        uint64_t frame_type) {
+  QuicStreamId received_stream_count;
+  if (!reader->ReadVarIntStreamId(&received_stream_count)) {
+    set_detailed_error("Can not read MAX_STREAMS stream count.");
     return false;
   }
-  return true;
+  // TODO(fkastenholz): handle properly when the STREAMS_BLOCKED
+  // frame is implemented and passed up to the stream ID manager.
+  if (received_stream_count == 0) {
+    set_detailed_error("MAX_STREAMS stream count of 0 not supported.");
+    return false;
+  }
+  // Note that this code assumes that the only possible error that
+  // StreamCountToId can detect is that the stream count is too big or is 0.
+  // Too big is prevented by passing in the minimum of the received count
+  // and the maximum supported count, ensuring that the stream ID is
+  // pegged at the maximum allowed ID.
+  // count==0 is handled above, so that detailed_error_ may be set
+  // properly.
+  return StreamCountToId(
+      std::min(
+          received_stream_count,
+          GetMaxStreamCount((frame_type == IETF_MAX_STREAMS_UNIDIRECTIONAL),
+                            perspective_)),
+      /*unidirectional=*/(frame_type == IETF_MAX_STREAMS_UNIDIRECTIONAL),
+      perspective_, version_.transport_version, &frame->max_stream_id);
 }
 
 bool QuicFramer::AppendIetfBlockedFrame(const QuicBlockedFrame& frame,
@@ -5121,23 +5195,58 @@ bool QuicFramer::ProcessStreamBlockedFrame(QuicDataReader* reader,
   return true;
 }
 
-bool QuicFramer::AppendStreamIdBlockedFrame(
+bool QuicFramer::AppendStreamsBlockedFrame(
     const QuicStreamIdBlockedFrame& frame,
     QuicDataWriter* writer) {
-  if (!writer->WriteVarInt62(frame.stream_id)) {
-    set_detailed_error("Can not write STREAM_ID_BLOCKED stream id");
+  // Convert from the stream id on which the connection is blocked to a count
+  QuicStreamId stream_count =
+      StreamIdToCount(version_.transport_version, frame.stream_id);
+
+  if (!writer->WriteVarInt62(stream_count)) {
+    set_detailed_error("Can not write STREAMS_BLOCKED stream count");
     return false;
   }
   return true;
 }
 
-bool QuicFramer::ProcessStreamIdBlockedFrame(QuicDataReader* reader,
-                                             QuicStreamIdBlockedFrame* frame) {
-  if (!reader->ReadVarIntStreamId(&frame->stream_id)) {
-    set_detailed_error("Can not read STREAM_ID_BLOCKED stream id.");
+bool QuicFramer::ProcessStreamsBlockedFrame(QuicDataReader* reader,
+                                            QuicStreamIdBlockedFrame* frame,
+                                            uint64_t frame_type) {
+  QuicStreamId received_stream_count;
+  if (!reader->ReadVarIntStreamId(&received_stream_count)) {
+    set_detailed_error("Can not read STREAMS_BLOCKED stream id.");
     return false;
   }
-  return true;
+  // TODO(fkastenholz): handle properly when the STREAMS_BLOCKED
+  // frame is implemented and passed up to the stream ID manager.
+  if (received_stream_count == 0) {
+    set_detailed_error("STREAMS_BLOCKED stream count 0 not supported.");
+    return false;
+  }
+  // TODO(fkastenholz): handle properly when the STREAMS_BLOCKED
+  // frame is implemented and passed up to the stream ID manager.
+  if (received_stream_count >
+      GetMaxStreamCount((frame_type == IETF_MAX_STREAMS_UNIDIRECTIONAL),
+                        ((perspective_ == Perspective::IS_CLIENT)
+                             ? Perspective::IS_SERVER
+                             : Perspective::IS_CLIENT))) {
+    // If stream count is such that the resulting stream ID would exceed our
+    // implementation limit, generate an error.
+    set_detailed_error(
+        "STREAMS_BLOCKED stream count exceeds implementation limit.");
+    return false;
+  }
+  // Convert the stream count to an ID that can be used.
+  // The STREAMS_BLOCKED frame is a request for more streams
+  // that the peer will initiate. If this node is a client, it
+  // means that the peer is a server, and wants server-initiated
+  // stream IDs.
+  return StreamCountToId(
+      received_stream_count,
+      /*unidirectional=*/(frame_type == IETF_STREAMS_BLOCKED_UNIDIRECTIONAL),
+      (perspective_ == Perspective::IS_CLIENT) ? Perspective::IS_SERVER
+                                               : Perspective::IS_CLIENT,
+      version_.transport_version, &frame->stream_id);
 }
 
 bool QuicFramer::AppendNewConnectionIdFrame(

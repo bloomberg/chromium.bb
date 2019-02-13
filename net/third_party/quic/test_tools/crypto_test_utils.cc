@@ -590,7 +590,7 @@ QuicString GetValueForTag(const CryptoHandshakeMessage& message, QuicTag tag) {
 
 uint64_t LeafCertHashForTesting() {
   QuicReferenceCountedPointer<ProofSource::Chain> chain;
-  QuicSocketAddress server_address;
+  QuicSocketAddress server_address(QuicIpAddress::Any4(), 42);
   QuicCryptoProof proof;
   std::unique_ptr<ProofSource> proof_source(ProofSourceForTesting());
 
