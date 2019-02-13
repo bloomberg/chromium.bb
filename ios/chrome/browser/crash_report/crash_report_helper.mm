@@ -146,7 +146,9 @@ const int kNumberOfURLsToSend = 1;
     return;
   NSString* url = [notification.userInfo objectForKey:kTabUrlKey];
   DCHECK(url);
-  [self recordURL:url forTabId:tab.tabId pending:NO];
+  [self recordURL:url
+         forTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()
+          pending:NO];
 }
 
 - (void)urlChangeExpected:(NSNotification*)notification {
@@ -156,7 +158,9 @@ const int kNumberOfURLsToSend = 1;
     return;
   NSString* url = [notification.userInfo objectForKey:kTabUrlKey];
   DCHECK(url);
-  [self recordURL:url forTabId:tab.tabId pending:YES];
+  [self recordURL:url
+         forTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()
+          pending:YES];
 }
 
 - (void)removeTabId:(NSString*)tabId {
@@ -203,14 +207,14 @@ const int kNumberOfURLsToSend = 1;
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index {
-  [self removeTabId:tab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
 }
 
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab
           withTab:(Tab*)newTab
           atIndex:(NSUInteger)index {
-  [self removeTabId:oldTab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(oldTab.webState)->tab_id()];
 }
 
 - (void)tabModel:(TabModel*)model
@@ -222,7 +226,7 @@ const int kNumberOfURLsToSend = 1;
   const GURL& URL = pendingItem ? pendingItem->GetURL()
                                 : newTab.webState->GetLastCommittedURL();
   [self recordURL:base::SysUTF8ToNSString(URL.spec())
-         forTabId:newTab.tabId
+         forTabId:TabIdTabHelper::FromWebState(newTab.webState)->tab_id()
           pending:pendingItem ? YES : NO];
 }
 
@@ -314,14 +318,14 @@ const int kNumberOfURLsToSend = 1;
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index {
-  [self removeTabId:tab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
 }
 
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab
           withTab:(Tab*)newTab
           atIndex:(NSUInteger)index {
-  [self removeTabId:oldTab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(oldTab.webState)->tab_id()];
 }
 
 @end
