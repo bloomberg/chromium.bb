@@ -46,6 +46,41 @@
 
 namespace blink {
 
+class MarkupAccumulator::NamespaceContext final {
+  USING_FAST_MALLOC(MarkupAccumulator::NamespaceContext);
+
+ public:
+  // https://w3c.github.io/DOM-Parsing/#dfn-add
+  void Add(const AtomicString& prefix, const AtomicString& namespace_uri) {
+    const AtomicString& non_null_prefix = prefix ? prefix : g_empty_atom;
+    prefix_ns_map_.Set(non_null_prefix, namespace_uri);
+    auto result = ns_prefixes_map_.insert(
+        namespace_uri ? namespace_uri : g_empty_atom, Vector<AtomicString>());
+    result.stored_value->value.push_back(non_null_prefix);
+  }
+
+  AtomicString LookupNamespaceURI(const AtomicString& prefix) const {
+    return prefix_ns_map_.at(prefix ? prefix : g_empty_atom);
+  }
+
+  const Vector<AtomicString> PrefixList(const AtomicString& ns) const {
+    return ns_prefixes_map_.at(ns ? ns : g_empty_atom);
+  }
+
+ private:
+  using PrefixToNamespaceMap = HashMap<AtomicString, AtomicString>;
+  PrefixToNamespaceMap prefix_ns_map_;
+
+  // Map a namespace URI to a list of prefixes.
+  // https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map
+  using NamespaceToPrefixesMap = HashMap<AtomicString, Vector<AtomicString>>;
+  NamespaceToPrefixesMap ns_prefixes_map_;
+
+  // TODO(tkent): Add 'context namespace' field. It is required to fix
+  // crbug.com/929035.
+  // https://w3c.github.io/DOM-Parsing/#dfn-context-namespace
+};
+
 MarkupAccumulator::MarkupAccumulator(EAbsoluteURLs resolve_urls_method,
                                      SerializationType serialization_type)
     : formatter_(resolve_urls_method, serialization_type) {}
@@ -241,16 +276,13 @@ void MarkupAccumulator::PushNamespaces(const Element& element) {
   // We can't do |namespace_stack_.emplace_back(namespace_stack_.back())|
   // because back() returns a reference in the vector backing, and
   // emplace_back() can reallocate it.
-  namespace_stack_.push_back(PrefixToNamespaceMap(namespace_stack_.back()));
-  ns_prefixes_map_stack_.push_back(
-      NamespaceToPrefixesMap(ns_prefixes_map_stack_.back()));
+  namespace_stack_.push_back(NamespaceContext(namespace_stack_.back()));
 }
 
 void MarkupAccumulator::PopNamespaces(const Element& element) {
   if (SerializeAsHTMLDocument(element))
     return;
   namespace_stack_.pop_back();
-  ns_prefixes_map_stack_.pop_back();
 }
 
 // https://w3c.github.io/DOM-Parsing/#dfn-recording-the-namespace-information
@@ -280,7 +312,7 @@ AtomicString MarkupAccumulator::RetrievePreferredPrefixString(
     return preferred_prefix;
 
   const Vector<AtomicString>& candidate_list =
-      ns_prefixes_map_stack_.back().at(ns ? ns : g_empty_atom);
+      namespace_stack_.back().PrefixList(ns);
   // Get the last effective prefix.
   //
   // <el1 xmlns:p="U1" xmlns:q="U1">
@@ -309,18 +341,13 @@ AtomicString MarkupAccumulator::RetrievePreferredPrefixString(
   return g_null_atom;
 }
 
-// https://w3c.github.io/DOM-Parsing/#dfn-add
 void MarkupAccumulator::AddPrefix(const AtomicString& prefix,
                                   const AtomicString& namespace_uri) {
-  const AtomicString& non_null_prefix = prefix ? prefix : g_empty_atom;
-  namespace_stack_.back().Set(non_null_prefix, namespace_uri);
-  auto result = ns_prefixes_map_stack_.back().insert(
-      namespace_uri ? namespace_uri : g_empty_atom, Vector<AtomicString>());
-  result.stored_value->value.push_back(non_null_prefix);
+  namespace_stack_.back().Add(prefix, namespace_uri);
 }
 
 AtomicString MarkupAccumulator::LookupNamespaceURI(const AtomicString& prefix) {
-  return namespace_stack_.back().at(prefix ? prefix : g_empty_atom);
+  return namespace_stack_.back().LookupNamespaceURI(prefix);
 }
 
 // https://w3c.github.io/DOM-Parsing/#dfn-generating-a-prefix
@@ -421,7 +448,6 @@ String MarkupAccumulator::SerializeNodes(const Node& target_node,
     DCHECK_EQ(namespace_stack_.size(), 0u);
     // 2. Let prefix map be a new namespace prefix map.
     namespace_stack_.emplace_back();
-    ns_prefixes_map_stack_.emplace_back();
     // 3. Add the XML namespace with prefix value "xml" to prefix map.
     AddPrefix(g_xml_atom, xml_names::kNamespaceURI);
     // 4. Let prefix index be a generated namespace prefix index with value 1.
