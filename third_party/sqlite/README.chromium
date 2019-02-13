@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.26.0
+Version: 3.27.1
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -108,7 +108,7 @@ ninja -C out/Default
 # Only "_fini" and "_init" should be unprefixed.
 nm -B out/Default/libchromium_sqlite3.so | cut -c 18- | sort | grep '^T'
 out/Default/sql_unittests
-third_party/blink/tools/run_web_tests.py -t Default storage/websql/*
+third_party/blink/tools/run_web_tests.py -t Default storage/websql/
 cd third_party/sqlite
 
 #### Create the review.
@@ -117,7 +117,7 @@ git rm patches/*
 git format-patch --output-directory=patches --zero-commit \
     sqlite-base..sqlite-dev
 git add amalgamation/
-git add patches/*.patch
+git add patches/
 git commit -m "Squash: regenerate amalgamation and patches."
 git branch --set-upstream-to=origin/master
 git cl upload --squash
@@ -148,8 +148,8 @@ cd third_party/sqlite
 
 # The numbers below are SQLite version numbers, and use upstream's convention
 # for tagging release binaries and source zipballs.
-export OLD=3260000
-export NEW=3270000
+export OLD=3270100
+export NEW=3280000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Download and unpack the new SQLite release.
@@ -166,7 +166,7 @@ xdg-open sqlite-src-$NEW  # Make sure everything looks right.
 #### Add the new release code in a separate CL, for code review sanity.
 git add sqlite-src-$NEW  # Committing the code as downloaded, on purpose.
 git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
-git commit -m "sqlite: Add code for release 3.26.0"
+git commit -m "sqlite: Add code for release 3.28.0"
 git cl upload  # Have the new code in a separate (impossible to review) CL.
 
 #### Create a branch for the old SQLite release's upstream version.
@@ -223,8 +223,7 @@ git cl format amalgamation/rename_exports.h
 # corruption. Sometimes, new seed databases are added upstream.
 # Find any files of the pattern src/test/dbfuzz2-seed*.db, and copy them to
 # the fuzz/db_corpus directory.
-cp --no-clobber third_party/sqlite/src/test/dbfuzz2-seed*.db \
-    third_party/sqlite/fuzz/db_corpus
+cp --no-clobber src/test/dbfuzz2-seed*.db fuzz/db_corpus
 
 #### Validate the upgrade.
 # The goal is to have a set of reasonably-independent CLs which can be
@@ -246,7 +245,7 @@ git rm patches/*
 git format-patch --output-directory=patches --zero-commit \
     sqlite-new-base..sqlite-new
 git add amalgamation/
-git add patches/*.patch
+git add patches/
 git commit -m "Squash: regenerate amalgamation and patches."
 git branch --set-upstream-to=origin/master
 git cl upload --squash
