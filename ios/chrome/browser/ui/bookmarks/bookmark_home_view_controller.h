@@ -21,7 +21,6 @@ class GURL;
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
-@protocol UrlLoader;
 class WebStateList;
 
 @protocol BookmarkHomeViewControllerDelegate
@@ -50,10 +49,9 @@ class WebStateList;
 @property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
 
 // Initializers.
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState
-                    dispatcher:(id<ApplicationCommands>)dispatcher
-                  webStateList:(WebStateList*)webStateList
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:(id<ApplicationCommands>)dispatcher
+                        webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)tableViewStyle
                            appBarStyle:

@@ -9,7 +9,6 @@
 @protocol ApplicationCommands;
 @protocol BookmarkInteractionControllerDelegate;
 @class Tab;
-@protocol UrlLoader;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -29,7 +28,6 @@ class WebStateList;
 @property(nonatomic, weak) id<BookmarkInteractionControllerDelegate> delegate;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                              loader:(id<UrlLoader>)loader
                     parentController:(UIViewController*)parentController
                           dispatcher:(id<ApplicationCommands>)dispatcher
                         webStateList:(WebStateList*)webStateList
