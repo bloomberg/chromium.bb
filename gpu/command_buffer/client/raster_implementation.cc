@@ -1177,11 +1177,15 @@ void RasterImplementation::IssueImageDecodeCacheEntryCreation(
   DCHECK(image_decode_accelerator_);
   DCHECK(handle.IsValid());
 
+  // Insert a sync token to signal that |handle|'s buffer has been registered.
+  SyncToken sync_token;
+  GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+
   // Send the decode request to the service.
   *decode_sync_token = image_decode_accelerator_->ScheduleImageDecode(
       encoded_data, output_size, gpu_control_->GetCommandBufferID(),
       transfer_cache_entry_id, handle.shm_id(), handle.byte_offset(),
-      target_color_space, needs_mips);
+      sync_token.release_count(), target_color_space, needs_mips);
 }
 
 GLuint RasterImplementation::CreateAndConsumeForGpuRaster(
