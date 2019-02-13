@@ -111,6 +111,10 @@ void JNI_CronetTestUtil_CleanupNetworkThread(
       jcontext_adapter, base::Bind(&CleanupNetworkThreadOnNetworkThread));
 }
 
+jboolean JNI_CronetTestUtil_CanGetTaggedBytes(JNIEnv* env) {
+  return net::CanGetTaggedBytes();
+}
+
 jlong JNI_CronetTestUtil_GetTaggedBytes(JNIEnv* env,
                                         jint jexpected_tag) {
   return net::GetTaggedBytes(jexpected_tag);

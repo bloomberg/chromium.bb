@@ -87,6 +87,11 @@ public class CronetTestUtil {
     }
 
     /**
+     * Returns whether the device supports calling nativeGetTaggedBytes().
+     */
+    public static native boolean nativeCanGetTaggedBytes();
+
+    /**
      * Query the system to find out how many bytes were received with tag
      * {@code expectedTag} for our UID.
      * @param expectedTag the tag to query for.
