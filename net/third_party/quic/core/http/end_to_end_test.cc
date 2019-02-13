@@ -1368,7 +1368,7 @@ TEST_P(EndToEndTestWithTls, DoNotSetSendAlarmIfConnectionFlowControlBlocked) {
 
   // Make sure that the stream has data pending so that it will be marked as
   // write blocked when it receives a stream level WINDOW_UPDATE.
-  stream->WriteOrBufferBody("hello", false, nullptr);
+  stream->WriteOrBufferBody("hello", false);
 
   // The stream now attempts to write, fails because it is still connection
   // level flow control blocked, and is added to the write blocked list.
@@ -1958,7 +1958,7 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 
   // Open a data stream to make sure the stream level flow control is updated.
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
-  stream->WriteOrBufferBody("hello", false, nullptr);
+  stream->WriteOrBufferBody("hello", false);
 
   // Client should have the right values for server's receive window.
   EXPECT_EQ(kServerStreamIFCW,
@@ -2014,7 +2014,7 @@ TEST_P(EndToEndTest, NegotiatedServerInitialFlowControlWindow) {
 
   // Open a data stream to make sure the stream level flow control is updated.
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
-  stream->WriteOrBufferBody("hello", false, nullptr);
+  stream->WriteOrBufferBody("hello", false);
 
   // Client should have the right values for server's receive window.
   EXPECT_EQ(kExpectedStreamIFCW,
@@ -2232,20 +2232,9 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   QuicString request_string =
       "a request body bigger than one packet" + QuicString(kMaxPacketSize, '.');
 
-  // Calculate header length for version 99, so that the ack listener know how
-  // many actual bytes will be acked.
-  QuicByteCount header_length = 0;
-  if (client_->client()->client_session()->connection()->transport_version() ==
-      QUIC_VERSION_99) {
-    HttpEncoder encoder;
-    std::unique_ptr<char[]> buf;
-    header_length =
-        encoder.SerializeDataFrameHeader(request_string.length(), &buf);
-  }
-
   // The TestAckListener will cause a failure if not notified.
   QuicReferenceCountedPointer<TestAckListener> ack_listener(
-      new TestAckListener(request_string.length() + header_length));
+      new TestAckListener(request_string.length()));
 
   // Send the request, and register the delegate for ACKs.
   client_->SendData(request_string, true, ack_listener);
@@ -3505,13 +3494,12 @@ TEST_P(EndToEndTest, ResetStreamOnTtlExpires) {
 
   // 1 MB body.
   QuicString body(1024 * 1024, 'a');
-  stream->WriteOrBufferBody(body, true, nullptr);
+  stream->WriteOrBufferBody(body, true);
   client_->WaitForResponse();
   EXPECT_EQ(QUIC_STREAM_TTL_EXPIRED, client_->stream_error());
 }
 
 TEST_P(EndToEndTest, SendMessages) {
-  SetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission, true);
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   QuicSession* client_session = client_->client()->client_session();

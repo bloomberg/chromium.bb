@@ -456,7 +456,7 @@ TEST_P(QuicSessionTestServer, PeerAddress) {
 }
 
 TEST_P(QuicSessionTestServer, SelfAddress) {
-  EXPECT_EQ(QuicSocketAddress(), session_.self_address());
+  EXPECT_TRUE(session_.self_address().IsInitialized());
 }
 
 TEST_P(QuicSessionTestServer, DontCallOnWriteBlockedForDisconnectedConnection) {

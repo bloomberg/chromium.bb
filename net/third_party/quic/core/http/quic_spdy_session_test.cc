@@ -418,7 +418,7 @@ TEST_P(QuicSpdySessionTestServer, PeerAddress) {
 }
 
 TEST_P(QuicSpdySessionTestServer, SelfAddress) {
-  EXPECT_EQ(QuicSocketAddress(), session_.self_address());
+  EXPECT_TRUE(session_.self_address().IsInitialized());
 }
 
 TEST_P(QuicSpdySessionTestServer, IsCryptoHandshakeConfirmed) {
@@ -1092,7 +1092,7 @@ TEST_P(QuicSpdySessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   EXPECT_CALL(*connection_, SendControlFrame(_)).Times(AtLeast(1));
-  stream2->WriteOrBufferBody(body, false, nullptr);
+  stream2->WriteOrBufferBody(body, false);
   EXPECT_TRUE(stream2->flow_controller()->IsBlocked());
   EXPECT_TRUE(session_.IsConnectionFlowControlBlocked());
   EXPECT_TRUE(session_.IsStreamFlowControlBlocked());

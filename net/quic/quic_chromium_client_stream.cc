@@ -556,7 +556,7 @@ bool QuicChromiumClientStream::WriteStreamData(quic::QuicStringPiece data,
   // Must not be called when data is buffered.
   DCHECK(!HasBufferedData());
   // Writes the data, or buffers it.
-  WriteOrBufferBody(data, fin, nullptr);
+  WriteOrBufferBody(data, fin);
   return !HasBufferedData();  // Was all data written?
 }
 
@@ -570,7 +570,7 @@ bool QuicChromiumClientStream::WritevStreamData(
   for (size_t i = 0; i < buffers.size(); ++i) {
     bool is_fin = fin && (i == buffers.size() - 1);
     quic::QuicStringPiece string_data(buffers[i]->data(), lengths[i]);
-    WriteOrBufferBody(string_data, is_fin, nullptr);
+    WriteOrBufferBody(string_data, is_fin);
   }
   return !HasBufferedData();  // Was all data written?
 }

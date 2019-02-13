@@ -107,11 +107,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       delayed_ack_time_(
           QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs)),
       rtt_updated_(false),
-      acked_packets_iter_(last_ack_frame_.packets.rbegin()),
-      aggregate_acked_stream_frames_(
-          GetQuicReloadableFlag(quic_aggregate_acked_stream_frames_2)),
-      fix_mark_for_loss_retransmission_(
-          GetQuicReloadableFlag(quic_fix_mark_for_loss_retransmission)) {
+      acked_packets_iter_(last_ack_frame_.packets.rbegin()) {
   SetSendAlgorithm(congestion_control_type);
 }
 
@@ -262,8 +258,7 @@ void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
     QuicTime ack_receive_time,
     bool rtt_updated,
     QuicByteCount prior_bytes_in_flight) {
-  if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_aggregate_acked_stream_frames_2, 1, 2);
+  if (session_decides_what_to_write()) {
     unacked_packets_.NotifyAggregatedStreamFrameAcked(
         last_ack_frame_.ack_delay_time);
   }
@@ -402,8 +397,7 @@ void QuicSentPacketManager::MarkForRetransmission(
   }
 
   if (!session_decides_what_to_write()) {
-    if (fix_mark_for_loss_retransmission_ &&
-        !unacked_packets_.HasRetransmittableFrames(*transmission_info)) {
+    if (!unacked_packets_.HasRetransmittableFrames(*transmission_info)) {
       return;
     }
     if (!QuicContainsKey(pending_retransmissions_, packet_number)) {
@@ -545,15 +539,12 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   if (newest_transmission == packet_number) {
     // Try to aggregate acked stream frames if acked packet is not a
     // retransmission.
-    const bool fast_path = aggregate_acked_stream_frames_ &&
-                           session_decides_what_to_write() &&
+    const bool fast_path = session_decides_what_to_write() &&
                            info->transmission_type == NOT_RETRANSMISSION;
     if (fast_path) {
       unacked_packets_.MaybeAggregateAckedStreamFrame(*info, ack_delay_time);
     } else {
-      if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
-        QUIC_RELOADABLE_FLAG_COUNT_N(quic_aggregate_acked_stream_frames_2, 2,
-                                     2);
+      if (session_decides_what_to_write()) {
         unacked_packets_.NotifyAggregatedStreamFrameAcked(ack_delay_time);
       }
       const bool new_data_acked =
@@ -818,19 +809,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
                                     time);
     }
 
-    if (fix_mark_for_loss_retransmission_ ||
-        unacked_packets_.HasRetransmittableFrames(packet.packet_number)) {
-      if (fix_mark_for_loss_retransmission_) {
-        QUIC_RELOADABLE_FLAG_COUNT(quic_fix_mark_for_loss_retransmission);
-      }
-      MarkForRetransmission(packet.packet_number, LOSS_RETRANSMISSION);
-    } else {
-      // Since we will not retransmit this, we need to remove it from
-      // unacked_packets_.   This is either the current transmission of
-      // a packet whose previous transmission has been acked or a packet that
-      // has been TLP retransmitted.
-      unacked_packets_.RemoveFromInFlight(packet.packet_number);
-    }
+    MarkForRetransmission(packet.packet_number, LOSS_RETRANSMISSION);
   }
 }
 

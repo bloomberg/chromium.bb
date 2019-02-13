@@ -1368,9 +1368,10 @@ bool QuicSession::OnFrameAcked(const QuicFrame& frame,
   QuicStream* stream = GetStream(frame.stream_frame.stream_id);
   // Stream can already be reset when sent frame gets acked.
   if (stream != nullptr) {
+    QuicByteCount newly_acked_length = 0;
     new_stream_data_acked = stream->OnStreamFrameAcked(
         frame.stream_frame.offset, frame.stream_frame.data_length,
-        frame.stream_frame.fin, ack_delay_time);
+        frame.stream_frame.fin, ack_delay_time, &newly_acked_length);
     if (!stream->HasPendingRetransmission()) {
       streams_with_pending_retransmission_.erase(stream->id());
     }

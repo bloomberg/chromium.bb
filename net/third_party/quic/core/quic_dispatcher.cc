@@ -267,7 +267,7 @@ class ChloValidator : public ChloAlpnExtractor {
 }  // namespace
 
 QuicDispatcher::QuicDispatcher(
-    const QuicConfig& config,
+    const QuicConfig* config,
     const QuicCryptoServerConfig* crypto_config,
     QuicVersionManager* version_manager,
     std::unique_ptr<QuicConnectionHelperInterface> helper,
@@ -1199,7 +1199,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
     ChloAlpnExtractor alpn_extractor;
     if (FLAGS_quic_allow_chlo_buffering &&
         !ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
-                                config_.create_session_tag_indicators(),
+                                config_->create_session_tag_indicators(),
                                 &alpn_extractor)) {
       // Buffer non-CHLO packets.
       ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id, form,
@@ -1221,7 +1221,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
                           current_peer_address_, current_self_address_,
                           rejector.get());
   if (!ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
-                              config_.create_session_tag_indicators(),
+                              config_->create_session_tag_indicators(),
                               &validator)) {
     ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id, form, version);
     return;
@@ -1278,12 +1278,6 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   current_packet_ = current_packet.get();
   current_connection_id_ = rejector->connection_id();
   framer_.set_version(first_version);
-  if (GetQuicReloadableFlag(quic_fix_last_packet_is_ietf_quic)) {
-    if (GetLastPacketFormat() != current_packet_format) {
-      QUIC_RELOADABLE_FLAG_COUNT(quic_fix_last_packet_is_ietf_quic);
-    }
-    framer_.set_last_packet_form(current_packet_format);
-  }
 
   // Stop buffering packets on this connection
   const auto num_erased =
@@ -1380,10 +1374,6 @@ void QuicDispatcher::DeliverPacketsToSession(
 
 void QuicDispatcher::DisableFlagValidation() {
   framer_.set_validate_flags(false);
-}
-
-PacketHeaderFormat QuicDispatcher::GetLastPacketFormat() const {
-  return framer_.GetLastPacketFormat();
 }
 
 }  // namespace quic

@@ -22,7 +22,7 @@ QuicMemSliceStorageImpl::QuicMemSliceStorageImpl(
   }
   DCHECK_LT(0u, write_len);
 
-  size_t iov_offset = 0;
+  QuicByteCount iov_offset = 0;
   while (write_len > 0) {
     size_t slice_len = std::min(write_len, max_slice_len);
     auto io_buffer = base::MakeRefCounted<net::IOBuffer>(slice_len);

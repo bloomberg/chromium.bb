@@ -114,6 +114,9 @@ class QuicClientBase {
   // Migrate to a new socket (new_host, port) during an active connection.
   bool MigrateSocketWithSpecifiedPort(const QuicIpAddress& new_host, int port);
 
+  // Open a new socket to change to a new ephemeral port.
+  bool ChangeEphemeralPort();
+
   QuicSession* session();
 
   bool connected() const;

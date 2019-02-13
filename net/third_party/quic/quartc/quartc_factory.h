@@ -57,21 +57,13 @@ struct QuartcSessionConfig {
 // Factory that creates instances of QuartcSession.  Implements the
 // QuicConnectionHelperInterface used by the QuicConnections. Only one
 // QuartcFactory is expected to be created.
-class QUIC_EXPORT_PRIVATE QuartcFactory : public QuicConnectionHelperInterface {
+class QUIC_EXPORT_PRIVATE QuartcFactory {
  public:
   explicit QuartcFactory(const QuartcFactoryConfig& factory_config);
-  ~QuartcFactory() override;
 
   // Creates a new QuartcSession using the given configuration.
   std::unique_ptr<QuartcSession> CreateQuartcSession(
       const QuartcSessionConfig& quartc_session_config);
-
-  // QuicConnectionHelperInterface overrides.
-  const QuicClock* GetClock() const override;
-
-  QuicRandom* GetRandomGenerator() override;
-
-  QuicBufferAllocator* GetStreamSendBufferAllocator() override;
 
  private:
   std::unique_ptr<QuicConnection> CreateQuicConnection(
@@ -84,7 +76,9 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuicConnectionHelperInterface {
   // Used to implement the QuicConnectionHelperInterface.  Owned by the user and
   // must outlive QuartcFactory.
   const QuicClock* clock_;
-  SimpleBufferAllocator buffer_allocator_;
+
+  // Helper used by all QuicConnections.
+  std::unique_ptr<QuicConnectionHelperInterface> connection_helper_;
 };
 
 // Creates a new instance of QuartcFactory.

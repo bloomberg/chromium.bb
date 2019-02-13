@@ -433,6 +433,8 @@ MockQuicConnection::MockQuicConnection(
   ON_CALL(*this, OnError(_))
       .WillByDefault(
           Invoke(this, &PacketSavingConnection::QuicConnection_OnError));
+
+  SetSelfAddress(QuicSocketAddress(QuicIpAddress::Any4(), 5));
 }
 
 MockQuicConnection::~MockQuicConnection() {}
