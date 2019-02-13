@@ -866,6 +866,14 @@ public class Tab
         }
     }
 
+    /**
+     * @return Whether or not the loading and rendering of the page is done.
+     */
+    @VisibleForTesting
+    public boolean isLoadingAndRenderingDone() {
+        return isReady() && getProgress() >= CONSIDERED_READY_LOAD_PERCENTAGE;
+    }
+
     /** Stop the current navigation. */
     public void stopLoading() {
         if (isLoading()) {
@@ -974,6 +982,27 @@ public class Tab
     }
 
     /**
+     * Set whether or not the content layer should be using a desktop user agent for the
+     * currently loaded page.
+     * @param useDesktop     If {@code true}, use a desktop user agent.  Otherwise use a mobile one.
+     * @param reloadOnChange Reload the page if the user agent has changed.
+     */
+    public void setUseDesktopUserAgent(boolean useDesktop, boolean reloadOnChange) {
+        if (getWebContents() != null) {
+            getWebContents().getNavigationController().setUseDesktopUserAgent(
+                    useDesktop, reloadOnChange);
+        }
+    }
+
+    /**
+     * @return Whether or not the content layer is using a desktop user agent.
+     */
+    public boolean getUseDesktopUserAgent() {
+        return getWebContents() != null
+                && getWebContents().getNavigationController().getUseDesktopUserAgent();
+    }
+
+    /**
      * @return The current {@link ConnectionSecurityLevel} for the tab.
      */
     // TODO(tedchoc): Remove this and transition all clients to use LocationBarModel directly.
@@ -1015,6 +1044,14 @@ public class Tab
      */
     public void onActivityHidden() {
         hide(TabHidingType.ACTIVITY_HIDDEN);
+    }
+
+    /**
+     * @return Whether the tab is ready to display or it should be faded in as it loads.
+     */
+    public boolean shouldStall() {
+        return (isFrozen() || needsReload())
+                && !NativePageFactory.isNativePageUrl(getUrl(), isIncognito());
     }
 
     /**

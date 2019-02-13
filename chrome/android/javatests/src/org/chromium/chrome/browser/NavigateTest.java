@@ -260,18 +260,13 @@ public class NavigateTest {
 
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(
-                () -> tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
-                        true /* useDesktop */, true /* reloadOnChange */));
+                () -> tab.setUseDesktopUserAgent(true /* useDesktop */, true /* reloadOnChange */));
         ChromeTabUtils.waitForTabPageLoaded(tab, url1);
 
         DOMUtils.clickNode(tab.getWebContents(), "aboutLink");
         ChromeTabUtils.waitForTabPageLoaded(tab, url2);
         Assert.assertEquals("Request Desktop site setting should stay turned on", true,
-                mActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getWebContents()
-                        .getNavigationController()
-                        .getUseDesktopUserAgent());
+                mActivityTestRule.getActivity().getActivityTab().getUseDesktopUserAgent());
     }
 
     /**
