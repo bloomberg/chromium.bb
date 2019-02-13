@@ -62,7 +62,7 @@ namespace content {
 
 namespace {
 const Origin kFileOrigin = Origin::Create(GURL("file:///"));
-};
+}
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
 // the actual implementation that lives in the browser side.
