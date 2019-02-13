@@ -811,14 +811,19 @@ Delete Examples:
         # Good to sync.
         checkout.SyncVersion(self.options.version)
 
-      # Determine what kind of branch we will create.
+      # Determine what kind of branch we will create. If we generated the branch
+      # name, confirm with the user that it is what they wanted.
       if self.options.name:
         branch = Branch(self.options.name, checkout)
+        proceed = True
       else:
         branch = self.options.cls(checkout)
+        proceed = cros_build_lib.BooleanPrompt(
+            prompt='New branch will be named %s. Continue?' % branch.name,
+            default=False)
 
-      # Do it!
-      branch.Create(push=self.options.push, force=self.options.force)
+      if proceed:
+        branch.Create(push=self.options.push, force=self.options.force)
 
     elif self.options.subcommand == 'rename':
       checkout.SyncBranch(self.options.old)

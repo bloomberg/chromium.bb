@@ -991,12 +991,17 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.cmd = None
-    self.PatchObject(Branch, 'Create')
+    self.create = self.PatchObject(Branch, 'Create')
+    self.PatchObject(ReleaseBranch, 'Create')
     self.PatchObject(Branch, 'Rename')
     self.PatchObject(Branch, 'Delete')
     self.PatchObject(repo_util.Repository, 'Manifest',
                      return_value=self.full_manifest)
+    self.PatchObject(CrosCheckout, 'ReadVersion',
+                     return_value=VersionInfo('1.2.0'))
     self.PatchObject(CrosCheckout, 'BranchExists', return_value=False)
+    self.get_input = self.PatchObject(cros_build_lib, 'GetInput',
+                                      return_value='yes')
 
   def testCreateDiesWhenNonzeroPatchNumber(self):
     """Test create validates zero patch number."""
@@ -1012,6 +1017,17 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.assertEqual(
         branch_exists.call_args_list,
         [mock.call(mock.ANY, '.*-1\\.2\\.B$')])
+
+  def testCreateConfirmsGeneratedBranchNameNoAnswer(self):
+    """Test create confirms generated branch names with users."""
+    self.get_input = self.PatchObject(cros_build_lib, 'GetInput',
+                                      return_value='no')
+    self.RunCommandMock(['create', '--version', '1.2.0', '--factory'])
+    self.assertEqual(
+        self.get_input.call_args_list,
+        [mock.call(
+            '\nNew branch will be named factory-1.2.B. Continue? (yes/No)? ')])
+    self.assertFalse(self.create.call_count)
 
   def testCreateReleaseCommandParses(self):
     """Test `cros branch create` parses with '--release' flag."""
@@ -1456,7 +1472,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
-         '--release'])
+         '--release'],
+        input='yes')
 
     self.AssertCrosBranches(['old-branch', 'release-R12-3.B'])
     self.AssertManifestsRepaired('release-R12-3.B')
