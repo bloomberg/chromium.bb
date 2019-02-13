@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
+#import "ios/chrome/browser/ui/chrome_load_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
@@ -44,10 +45,11 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -138,9 +140,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // bookmarks.
 @property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
 
-// Object to load URLs.
-@property(nonatomic, weak) id<UrlLoader> loader;
-
 // FaviconLoader is a keyed service that uses LargeIconService to retrieve
 // favicon images.
 @property(nonatomic, assign) FaviconLoader* faviconLoader;
@@ -202,16 +201,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - Initializer
 
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState
-                    dispatcher:(id<ApplicationCommands>)dispatcher
-                  webStateList:(WebStateList*)webStateList {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                          dispatcher:(id<ApplicationCommands>)dispatcher
+                        webStateList:(WebStateList*)webStateList {
   DCHECK(browserState);
   self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState->GetOriginalChromeBrowserState();
-    _loader = loader;
     _dispatcher = dispatcher;
     _webStateList = webStateList;
 
@@ -644,7 +641,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (!self.bookmarkInteractionController) {
     self.bookmarkInteractionController = [[BookmarkInteractionController alloc]
         initWithBrowserState:self.browserState
-                      loader:self.loader
             parentController:self
                   dispatcher:self.dispatcher
                 webStateList:self.webStateList];
@@ -1033,7 +1029,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 // Saves the current position and asks the delegate to open the url, if delegate
-// is set, otherwise opens the URL using loader.
+// is set, otherwise opens the URL using URL loading service.
 - (void)dismissWithURL:(const GURL&)url {
   [self cacheIndexPathRow];
   if (self.homeDelegate) {
@@ -1063,7 +1059,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   ChromeLoadParams chromeParams(params);
-  [self.loader loadURLWithParams:chromeParams];
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->LoadUrlInCurrentTab(chromeParams);
 }
 
 - (void)addNewFolder {
@@ -1107,11 +1104,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BookmarkHomeViewController*)createControllerWithRootFolder:
     (const bookmarks::BookmarkNode*)folder {
-  BookmarkHomeViewController* controller =
-      [[BookmarkHomeViewController alloc] initWithLoader:_loader
-                                            browserState:self.browserState
-                                              dispatcher:self.dispatcher
-                                            webStateList:self.webStateList];
+  BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
+      initWithBrowserState:self.browserState
+                dispatcher:self.dispatcher
+              webStateList:self.webStateList];
   [controller setRootNode:folder];
   controller.homeDelegate = self.homeDelegate;
   return controller;

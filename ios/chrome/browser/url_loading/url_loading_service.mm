@@ -111,8 +111,6 @@ void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
   DCHECK(browser_);
   ios::ChromeBrowserState* browser_state = browser_->GetBrowserState();
 
-  notifier_->NewTabWillOpenUrl(command.URL, command.inIncognito);
-
   if (command.inIncognito != browser_state->IsOffTheRecord()) {
     // When sending an open command that switches modes, ensure the tab
     // ends up appended to the end of the model, not just next to what is
@@ -122,6 +120,11 @@ void UrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
     [delegate_ openURLInNewTabWithCommand:command];
     return;
   }
+
+  // Notify only after checking incognito match, otherwise the delegate will
+  // take of changing the mode and try again. Notifying before the checks can
+  // lead to be calling it twice, and calling 'did' below once.
+  notifier_->NewTabWillOpenUrl(command.URL, command.inIncognito);
 
   TabModel* tab_model = browser_->GetTabModel();
 

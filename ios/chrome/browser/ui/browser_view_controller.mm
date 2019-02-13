@@ -2435,7 +2435,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
   _bookmarkInteractionController = [[BookmarkInteractionController alloc]
       initWithBrowserState:_browserState
-                    loader:self
           parentController:self
                 dispatcher:self.dispatcher
               webStateList:self.tabModel.webStateList];
@@ -3180,10 +3179,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                           referrer:referrer
                                        inIncognito:strongSelf.isOffTheRecord
                                       inBackground:YES
-
                                           appendTo:kCurrentTab];
         command.originPoint = originPoint;
-        [strongSelf webPageOrderedOpen:command];
+        UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
+            ->OpenUrlInNewTab(command);
       };
       [_contextMenuCoordinator addItemWithTitle:title action:action];
       if (!_isOffTheRecord) {
@@ -3191,6 +3190,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         title = l10n_util::GetNSStringWithFixup(
             IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
         action = ^{
+          BrowserViewController* strongSelf = weakSelf;
+          if (!strongSelf)
+            return;
+
           Record(ACTION_OPEN_IN_INCOGNITO_TAB, isImage, isLink);
 
           OpenNewTabCommand* command =
@@ -3198,9 +3201,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                             referrer:referrer
                                          inIncognito:YES
                                         inBackground:NO
-
                                             appendTo:kCurrentTab];
-          [weakSelf webPageOrderedOpen:command];
+          UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
+              ->OpenUrlInNewTab(command);
         };
         [_contextMenuCoordinator addItemWithTitle:title action:action];
       }
@@ -3251,9 +3254,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // Open Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
+      BrowserViewController* strongSelf = weakSelf;
+      if (!strongSelf)
+        return;
+
       Record(ACTION_OPEN_IMAGE, isImage, isLink);
       ChromeLoadParams params(imageUrl);
-      [weakSelf loadURLWithParams:params];
+      UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
+          ->LoadUrlInCurrentTab(params);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
     // Open Image In New Tab.
@@ -3273,7 +3281,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
                                         appendTo:kCurrentTab];
       command.originPoint = originPoint;
-      [strongSelf webPageOrderedOpen:command];
+      UrlLoadingServiceFactory::GetForBrowserState(strongSelf.browserState)
+          ->OpenUrlInNewTab(command);
     };
     [_contextMenuCoordinator addItemWithTitle:title action:action];
 
@@ -3398,7 +3407,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                    atIndex:self.tabModel.count
                               inBackground:NO];
   } else {
-    [self loadURLWithParams:ChromeLoadParams(loadParams)];
+    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        ->LoadUrlInCurrentTab(ChromeLoadParams(loadParams));
   }
 }
 
@@ -3426,9 +3436,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)tabDidOpenURL:(GURL)URL
        transitionType:(ui::PageTransition)transitionType {
   // Deactivate the NTP immediately on a load to hide the NTP quickly, but
-  // after calling -LoadURLWithParams.  Otherwise, if the webState has never
-  // been visible (such as during startup with an NTP), it's possible the
-  // webView can trigger a unnecessary load for chrome://newtab.
+  // after calling UrlLoadingService::LoadUrlInCurrentTab.  Otherwise, if the
+  // webState has never been visible (such as during startup with an NTP), it's
+  // possible the webView can trigger a unnecessary load for chrome://newtab.
   if (URL.GetOrigin() != kChromeUINewTabURL) {
     WebStateList* webStateList = self.tabModel.webStateList;
     web::WebState* current_web_state = webStateList->GetActiveWebState();
@@ -4042,7 +4052,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   urlLoadingService->OpenUrlInNewTab(command);
 }
 
-
 #pragma mark - ToolbarCoordinatorDelegate (Public)
 
 - (void)locationBarDidBecomeFirstResponder {
@@ -4262,7 +4271,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                  inIncognito:NO
                                 inBackground:NO
                                     appendTo:kCurrentTab];
-  [self webPageOrderedOpen:command];
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->OpenUrlInNewTab(command);
 }
 
 - (void)showBookmarksManager {
@@ -4301,7 +4311,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/799601): Delete this once its not needed.
   const GURL memexURL("https://chrome-memex.appspot.com");
   ChromeLoadParams params(memexURL);
-  [self loadURLWithParams:params];
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->LoadUrlInCurrentTab(params);
 }
 
 - (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type {
