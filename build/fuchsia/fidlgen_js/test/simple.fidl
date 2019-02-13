@@ -100,11 +100,11 @@ struct AfterPreviousReference {
   int32 an_int;
 };
 
-interface AnotherInterface {
+protocol AnotherInterface {
   TimesTwo(int32 a) -> (int32 b);
 };
 
-interface Testola {
+protocol Testola {
   DoSomething();
 
   PrintInt(int32 num);
