@@ -13,7 +13,8 @@
         display: flex;
         flex-direction: column;
         margin: 24px auto;
-        width: var(--card-width);
+        max-width: var(--card-width);
+        min-width: 550px;
       }
 
       .separated-row {
@@ -56,6 +57,7 @@
 
       .native-settings-button {
         --paper-button-ink-color: none;
+        --hover-bg-color: var(--google-grey-refresh-100);
         border: none;
         display: flex;
         font-size: 12px;

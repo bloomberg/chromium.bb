@@ -34,9 +34,7 @@ Polymer({
     return app_management.util.getPermissionValueBool(app, permissionType);
   },
 
-  /**
-   * @private
-   */
+
   togglePermission_: function() {
     assert(this.app);
 
