@@ -6087,3 +6087,10 @@ crbug.com/930873 external/wpt/html/semantics/links/links-created-by-a-and-area-e
 # Sheriff 2019-02-12
 crbug.com/931349 [ Mac ] fast/events/popup-blocking-timers5.html [ Failure Timeout Pass ]
 crbug.com/931349 [ Mac ] media/video-played-ranges-1.html [ Failure Timeout Pass ]
+
+# Viz on Android causes issues due to synchronization of view / renderer sizes.
+crbug.com/930934 [ Android ] compositing/rendering-contexts.html [ Failure ]
+crbug.com/930934 [ Android ] paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
+crbug.com/930934 [ Android ] paint/invalidation/svg/animated-svg-as-image-transformed-offscreen.html [ Failure ]
+crbug.com/930934 [ Android ] paint/selection/selection-drag-image-in-iframe.html [ Failure ]
+crbug.com/930934 [ Android ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Failure ]
