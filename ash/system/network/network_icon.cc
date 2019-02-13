@@ -572,15 +572,7 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
   DCHECK(network);
   std::string activation_state = network->activation_state();
   if (icon_type == ICON_TYPE_LIST || icon_type == ICON_TYPE_MENU_LIST) {
-    // Show "<network>: [Connecting|Activating|Reconnecting]..."
-    // TODO(varkha): Remaining states should migrate to secondary status in the
-    // network item and no longer be part of the label.
-    // See http://crbug.com/676181 .
-    if (network->IsReconnecting()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_LIST_RECONNECTING,
-          base::UTF8ToUTF16(network->name()));
-    }
+    // Show "<network>: [Connecting|Activating]..."
     if (icon_type != ICON_TYPE_MENU_LIST && network->IsConnectingState()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
@@ -599,13 +591,7 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
           base::UTF8ToUTF16(network->name()));
     }
   } else {
-    // Show "[Connected to|Connecting to|Activating|Reconnecting to] <network>"
-    // (non-list view).
-    if (network->IsReconnecting()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_RECONNECTING,
-          base::UTF8ToUTF16(network->name()));
-    }
+    // Show "[Connected to|Connecting to|Activating] <network>" (non-list view).
     if (network->IsConnectedState()) {
       return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
                                         base::UTF8ToUTF16(network->name()));

@@ -167,10 +167,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Similar to IsConnectingOrConnected but also checks activation state.
   bool IsActive() const;
 
-  // Returns true if |last_connection_state_| is connected, and
-  // |connection_state_| is connecting.
-  bool IsReconnecting() const;
-
   // Returns true if this is a network stored in a profile.
   bool IsInProfile() const;
 

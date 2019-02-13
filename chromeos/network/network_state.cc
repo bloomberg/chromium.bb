@@ -392,10 +392,16 @@ void NetworkState::SetConnectionState(const std::string& connection_state) {
     return;
   last_connection_state_ = connection_state_;
   connection_state_ = connection_state;
-  // If connected or previously connecting, clear |connect_requested_|.
   if (StateIsConnected(connection_state_) ||
       StateIsConnecting(last_connection_state_)) {
+    // If connected or previously connecting, clear |connect_requested_|.
     connect_requested_ = false;
+  } else if (StateIsConnected(last_connection_state_) &&
+             StateIsConnecting(connection_state_)) {
+    // If transitioning from a connected state to a connecting state, set
+    // |connect_requested_| so that the UI knows the connecting state is
+    // important (i.e. not a normal auto connect).
+    connect_requested_ = true;
   }
 }
 
@@ -437,11 +443,6 @@ bool NetworkState::IsConnectingOrConnected() const {
 bool NetworkState::IsActive() const {
   return IsConnectingOrConnected() ||
          activation_state() == shill::kActivationStateActivating;
-}
-
-bool NetworkState::IsReconnecting() const {
-  return visible() && StateIsConnecting(connection_state_) &&
-         StateIsConnected(last_connection_state_);
 }
 
 bool NetworkState::IsInProfile() const {
