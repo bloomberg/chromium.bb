@@ -39,6 +39,7 @@ enum ActiveWindowStateType {
   ACTIVE_WINDOW_STATE_TYPE_SNAPPED,
   ACTIVE_WINDOW_STATE_TYPE_PINNED,
   ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED,
+  ACTIVE_WINDOW_STATE_TYPE_PIP,
   ACTIVE_WINDOW_STATE_TYPE_COUNT,
 };
 
@@ -64,13 +65,14 @@ ActiveWindowStateType GetActiveWindowState() {
       case mojom::WindowStateType::TRUSTED_PINNED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED;
         break;
+      case mojom::WindowStateType::PIP:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_PIP;
+        break;
       case mojom::WindowStateType::DEFAULT:
       case mojom::WindowStateType::NORMAL:
       case mojom::WindowStateType::MINIMIZED:
       case mojom::WindowStateType::INACTIVE:
       case mojom::WindowStateType::AUTO_POSITIONED:
-      case mojom::WindowStateType::PIP:
-        // TODO: We probably want to record PIP state.
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;
     }
@@ -101,7 +103,8 @@ bool IsUserActive() {
 // UMA statistics. Note the containers are ordered from top most visible
 // container to the lowest to allow the |GetNumVisibleWindows| method to short
 // circuit when processing a maximized or fullscreen window.
-int kVisibleWindowContainerIds[] = {kShellWindowId_AlwaysOnTopContainer,
+int kVisibleWindowContainerIds[] = {kShellWindowId_PipContainer,
+                                    kShellWindowId_AlwaysOnTopContainer,
                                     kShellWindowId_DefaultContainer};
 
 // Returns an approximate count of how many windows are currently visible in the
