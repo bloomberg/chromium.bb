@@ -1,0 +1,26 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="../i18n_setup.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-contained-shell-page">
+  <template>
+    <style include="settings-shared"></style>
+    <div id="contained-shell" class="settings-box two-line first">
+      <div class="start">
+        $i18n{containedShellPageLabel}
+        <div class="secondary" id="secondaryText">
+          $i18n{containedShellPageSubtext}
+        </div>
+      </div>
+      <div class="separator"></div>
+      <paper-button id="enable"
+          aria-label="$i18n{containedShellTurnOn}"
+          aria-describedby="secondaryText">
+        $i18n{containedShellTurnOn}
+      </paper-button>
+    </div>
+  </template>
+  <script src="contained_shell_page.js"></script>
+</dom-module>
