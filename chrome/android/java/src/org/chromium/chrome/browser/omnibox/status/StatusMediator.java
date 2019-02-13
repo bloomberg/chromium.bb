@@ -11,6 +11,7 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -71,6 +72,9 @@ class StatusMediator {
             mPageIsPreview = pageIsPreview;
             updateStatusVisibility();
             updateColorTheme();
+            if (mPageIsPreview) {
+                PreviewsUma.recordVerboseStatusTextShown(mVerboseStatusSpaceAvailable);
+            }
         }
     }
 
