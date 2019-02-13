@@ -1036,7 +1036,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CancelMethod,
     SubresourceFilterSafeBrowsingActivationThrottleTestWithCancelling,
     ::testing::Combine(
@@ -1047,12 +1047,12 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Values(content::TestNavigationThrottle::SYNCHRONOUS,
                           content::TestNavigationThrottle::ASYNCHRONOUS)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ActivationLevelTest,
     SubresourceFilterSafeBrowsingActivationThrottleParamTest,
     ::testing::ValuesIn(kActivationListTestData));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ActivationScopeTest,
     SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     ::testing::ValuesIn(kActivationScopeTestData));

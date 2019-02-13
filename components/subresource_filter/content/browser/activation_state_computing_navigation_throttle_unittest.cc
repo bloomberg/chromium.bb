@@ -642,11 +642,11 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, ExpectThreadTimers(2));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ActivationStateComputingNavigationThrottleTest,
-                        ::testing::Values(true, false));
-INSTANTIATE_TEST_CASE_P(,
-                        ActivationStateComputingThrottleSubFrameTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         ActivationStateComputingNavigationThrottleTest,
+                         ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         ActivationStateComputingThrottleSubFrameTest,
+                         ::testing::Values(true, false));
 
 }  // namespace subresource_filter

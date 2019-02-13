@@ -343,13 +343,13 @@ class AccountReconcilorMethodParamTest
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorMethodParamTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Dice_Mirror,
-                        AccountReconcilorMethodParamTest,
-                        ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(Dice_Mirror,
+                         AccountReconcilorMethodParamTest,
+                         ::testing::Values(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-                            signin::AccountConsistencyMethod::kDice,
+                             signin::AccountConsistencyMethod::kDice,
 #endif
-                            signin::AccountConsistencyMethod::kMirror));
+                             signin::AccountConsistencyMethod::kMirror));
 
 AccountReconcilorTest::AccountReconcilorTest()
     : account_consistency_(signin::AccountConsistencyMethod::kDisabled),
@@ -1035,7 +1035,7 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DiceTable,
     AccountReconcilorTestTable,
     ::testing::ValuesIn(GenerateTestCasesFromParams(kDiceParams)));
@@ -1139,7 +1139,7 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DiceTableMultilogin,
     AccountReconcilorTestDiceMultilogin,
     ::testing::ValuesIn(GenerateTestCasesFromParams(kDiceParams)));
@@ -1618,9 +1618,9 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, MigrationClearAllTokens) {
   EXPECT_TRUE(test_signin_client()->is_ready_for_dice_migration());
 }
 
-INSTANTIATE_TEST_CASE_P(TestDiceEndpoint,
-                        AccountReconcilorDiceEndpointParamTest,
-                        ::testing::ValuesIn({false, true}));
+INSTANTIATE_TEST_SUITE_P(TestDiceEndpoint,
+                         AccountReconcilorDiceEndpointParamTest,
+                         ::testing::ValuesIn({false, true}));
 
 TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
   SetAccountConsistency(signin::AccountConsistencyMethod::kDice);
@@ -1843,7 +1843,7 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DiceTableMirrorMultilogin,
     AccountReconcilorTestMirrorMultilogin,
     ::testing::ValuesIn(GenerateTestCasesFromParams(kMirrorParams)));
@@ -2837,9 +2837,9 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, DelegateTimeoutIsNotCalled) {
   EXPECT_FALSE(timer->IsRunning());
 }
 
-INSTANTIATE_TEST_CASE_P(TestMirrorEndpoint,
-                        AccountReconcilorMirrorEndpointParamTest,
-                        ::testing::ValuesIn({false, true}));
+INSTANTIATE_TEST_SUITE_P(TestMirrorEndpoint,
+                         AccountReconcilorMirrorEndpointParamTest,
+                         ::testing::ValuesIn({false, true}));
 
 TEST_F(AccountReconcilorTest, DelegateTimeoutIsNotCalledIfTimeoutIsNotReached) {
   AccountInfo account_info = ConnectProfileToAccount("user@gmail.com");

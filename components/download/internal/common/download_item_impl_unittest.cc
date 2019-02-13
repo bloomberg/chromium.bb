@@ -2300,13 +2300,13 @@ class DownloadItemDestinationUpdateRaceTest
   base::queue<base::Closure> failing_update_events_;
 };
 
-INSTANTIATE_TEST_CASE_P(Success,
-                        DownloadItemDestinationUpdateRaceTest,
-                        ::testing::ValuesIn(GenerateSuccessfulEventLists()));
+INSTANTIATE_TEST_SUITE_P(Success,
+                         DownloadItemDestinationUpdateRaceTest,
+                         ::testing::ValuesIn(GenerateSuccessfulEventLists()));
 
-INSTANTIATE_TEST_CASE_P(Failure,
-                        DownloadItemDestinationUpdateRaceTest,
-                        ::testing::ValuesIn(GenerateFailingEventLists()));
+INSTANTIATE_TEST_SUITE_P(Failure,
+                         DownloadItemDestinationUpdateRaceTest,
+                         ::testing::ValuesIn(GenerateFailingEventLists()));
 
 }  // namespace
 

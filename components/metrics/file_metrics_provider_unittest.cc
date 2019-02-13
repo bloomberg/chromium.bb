@@ -268,10 +268,9 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
 };
 
 // Run all test cases with both small and large files.
-INSTANTIATE_TEST_CASE_P(SmallAndLargeFiles,
-                        FileMetricsProviderTest,
-                        testing::Bool());
-
+INSTANTIATE_TEST_SUITE_P(SmallAndLargeFiles,
+                         FileMetricsProviderTest,
+                         testing::Bool());
 
 TEST_P(FileMetricsProviderTest, AccessMetrics) {
   ASSERT_FALSE(PathExists(metrics_file()));

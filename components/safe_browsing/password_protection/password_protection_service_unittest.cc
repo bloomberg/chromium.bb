@@ -1335,11 +1335,11 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(Regular,
-                        PasswordProtectionServiceTest,
-                        ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SBER,
-                        PasswordProtectionServiceTest,
-                        ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(Regular,
+                         PasswordProtectionServiceTest,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SBER,
+                         PasswordProtectionServiceTest,
+                         ::testing::Values(true));
 
 }  // namespace safe_browsing

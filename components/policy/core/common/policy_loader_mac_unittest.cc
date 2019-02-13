@@ -133,10 +133,9 @@ PolicyProviderTestHarness* TestHarness::Create() {
 }  // namespace
 
 // Instantiate abstract test case for basic policy reading tests.
-INSTANTIATE_TEST_CASE_P(
-    PolicyProviderMacTest,
-    ConfigurationPolicyProviderTest,
-    testing::Values(TestHarness::Create));
+INSTANTIATE_TEST_SUITE_P(PolicyProviderMacTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(TestHarness::Create));
 
 // TODO(joaodasilva): instantiate Configuration3rdPartyPolicyProviderTest too
 // once the mac loader supports 3rd party policy. http://crbug.com/108995

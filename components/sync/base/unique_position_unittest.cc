@@ -483,15 +483,15 @@ TEST_F(PositionScenariosTest, TwoClientsInsertAtEnd_B) {
   EXPECT_LT(GetLength(pos), 500U);
 }
 
-INSTANTIATE_TEST_CASE_P(MinSuffix,
-                        PositionInsertTest,
-                        ::testing::Values(std::string(kMinSuffix,
-                                                      base::size(kMinSuffix))));
-INSTANTIATE_TEST_CASE_P(MaxSuffix,
-                        PositionInsertTest,
-                        ::testing::Values(std::string(kMaxSuffix,
-                                                      base::size(kMaxSuffix))));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
+    MinSuffix,
+    PositionInsertTest,
+    ::testing::Values(std::string(kMinSuffix, base::size(kMinSuffix))));
+INSTANTIATE_TEST_SUITE_P(
+    MaxSuffix,
+    PositionInsertTest,
+    ::testing::Values(std::string(kMaxSuffix, base::size(kMaxSuffix))));
+INSTANTIATE_TEST_SUITE_P(
     NormalSuffix,
     PositionInsertTest,
     ::testing::Values(std::string(kNormalSuffix, base::size(kNormalSuffix))));

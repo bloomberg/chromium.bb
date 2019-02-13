@@ -223,9 +223,9 @@ class UrlRequestTest : public ::testing::TestWithParam<bool> {
 };
 
 const bool kDirectExecutorEnabled[]{true, false};
-INSTANTIATE_TEST_CASE_P(,
-                        UrlRequestTest,
-                        testing::ValuesIn(kDirectExecutorEnabled));
+INSTANTIATE_TEST_SUITE_P(,
+                         UrlRequestTest,
+                         testing::ValuesIn(kDirectExecutorEnabled));
 
 TEST_P(UrlRequestTest, InitChecks) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();

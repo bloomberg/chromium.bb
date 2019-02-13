@@ -297,14 +297,14 @@ using GLCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<GLRenderer>;
 TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();
 }
-INSTANTIATE_TEST_CASE_P(, GLCopyOutputScalingPixelTest, kParameters);
+INSTANTIATE_TEST_SUITE_P(, GLCopyOutputScalingPixelTest, kParameters);
 
 using SoftwareCopyOutputScalingPixelTest =
     CopyOutputScalingPixelTest<SoftwareRenderer>;
 TEST_P(SoftwareCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();
 }
-INSTANTIATE_TEST_CASE_P(, SoftwareCopyOutputScalingPixelTest, kParameters);
+INSTANTIATE_TEST_SUITE_P(, SoftwareCopyOutputScalingPixelTest, kParameters);
 
 }  // namespace
 }  // namespace viz

@@ -389,16 +389,16 @@ PolicyProviderTestHarness* RegistryTestHarness::CreateHKLM() {
 }  // namespace
 
 // Instantiate abstract test case for basic policy reading tests.
-INSTANTIATE_TEST_CASE_P(PolicyProviderWinTest,
-                        ConfigurationPolicyProviderTest,
-                        testing::Values(RegistryTestHarness::CreateHKCU,
-                                        RegistryTestHarness::CreateHKLM));
+INSTANTIATE_TEST_SUITE_P(PolicyProviderWinTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(RegistryTestHarness::CreateHKCU,
+                                         RegistryTestHarness::CreateHKLM));
 
 // Instantiate abstract test case for 3rd party policy reading tests.
-INSTANTIATE_TEST_CASE_P(ThirdPartyPolicyProviderWinTest,
-                        Configuration3rdPartyPolicyProviderTest,
-                        testing::Values(RegistryTestHarness::CreateHKCU,
-                                        RegistryTestHarness::CreateHKLM));
+INSTANTIATE_TEST_SUITE_P(ThirdPartyPolicyProviderWinTest,
+                         Configuration3rdPartyPolicyProviderTest,
+                         testing::Values(RegistryTestHarness::CreateHKCU,
+                                         RegistryTestHarness::CreateHKLM));
 
 // Test cases for windows policy provider specific functionality.
 class PolicyLoaderWinTest : public PolicyTestBase {

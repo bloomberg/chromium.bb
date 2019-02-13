@@ -191,10 +191,10 @@ TEST_P(CachedImageFetcherTest, FetchNonExistingImage) {
   Fetch("", false);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CachedImageFetcherTest,
-                        testing::Values(TestType::kImageCallback,
-                                        TestType::kImageDataCallback,
-                                        TestType::kBothCallbacks));
+INSTANTIATE_TEST_SUITE_P(,
+                         CachedImageFetcherTest,
+                         testing::Values(TestType::kImageCallback,
+                                         TestType::kImageDataCallback,
+                                         TestType::kBothCallbacks));
 
 }  // namespace ntp_snippets

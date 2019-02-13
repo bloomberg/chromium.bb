@@ -402,9 +402,9 @@ TEST_P(PrecisionShaderPixelTest, ShadersCompile) {
   TestShadersWithPrecision(GetParam());
 }
 
-INSTANTIATE_TEST_CASE_P(PrecisionShadersCompile,
-                        PrecisionShaderPixelTest,
-                        ::testing::ValuesIn(kPrecisionList));
+INSTANTIATE_TEST_SUITE_P(PrecisionShadersCompile,
+                         PrecisionShaderPixelTest,
+                         ::testing::ValuesIn(kPrecisionList));
 
 class PrecisionBlendShaderPixelTest
     : public GLRendererShaderPixelTest,
@@ -416,7 +416,7 @@ TEST_P(PrecisionBlendShaderPixelTest, ShadersCompile) {
                                    std::get<1>(GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PrecisionBlendShadersCompile,
     PrecisionBlendShaderPixelTest,
     ::testing::Combine(::testing::ValuesIn(kPrecisionList),
@@ -432,10 +432,10 @@ TEST_P(PrecisionSamplerShaderPixelTest, ShadersCompile) {
                                      std::get<1>(GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(PrecisionSamplerShadersCompile,
-                        PrecisionSamplerShaderPixelTest,
-                        ::testing::Combine(::testing::ValuesIn(kPrecisionList),
-                                           ::testing::ValuesIn(kSamplerList)));
+INSTANTIATE_TEST_SUITE_P(PrecisionSamplerShadersCompile,
+                         PrecisionSamplerShaderPixelTest,
+                         ::testing::Combine(::testing::ValuesIn(kPrecisionList),
+                                            ::testing::ValuesIn(kSamplerList)));
 
 class MaskShaderPixelTest
     : public GLRendererShaderPixelTest,
@@ -447,12 +447,12 @@ TEST_P(MaskShaderPixelTest, ShadersCompile) {
                        std::get<2>(GetParam()), std::get<3>(GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(MaskShadersCompile,
-                        MaskShaderPixelTest,
-                        ::testing::Combine(::testing::ValuesIn(kPrecisionList),
-                                           ::testing::ValuesIn(kSamplerList),
-                                           ::testing::ValuesIn(kBlendModeList),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(MaskShadersCompile,
+                         MaskShaderPixelTest,
+                         ::testing::Combine(::testing::ValuesIn(kPrecisionList),
+                                            ::testing::ValuesIn(kSamplerList),
+                                            ::testing::ValuesIn(kBlendModeList),
+                                            ::testing::Bool()));
 
 #endif
 

@@ -884,8 +884,8 @@ TEST_P(AutofillWalletSyncBridgeTest, NotifiesWhenActivelySyncing) {
   bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        AutofillWalletSyncBridgeTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         AutofillWalletSyncBridgeTest,
+                         ::testing::Values(false, true));
 
 }  // namespace autofill

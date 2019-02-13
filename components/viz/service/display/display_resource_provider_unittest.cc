@@ -442,9 +442,9 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
 };
 
-INSTANTIATE_TEST_CASE_P(DisplayResourceProviderTests,
-                        DisplayResourceProviderTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(DisplayResourceProviderTests,
+                         DisplayResourceProviderTest,
+                         ::testing::Values(false, true));
 
 TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   // TODO(penghuang): consider supporting SW mode.

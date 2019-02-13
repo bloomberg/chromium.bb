@@ -231,8 +231,8 @@ TEST_P(InterceptNavigationThrottleTest, IgnoreCallbackDeletesNavigation) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        InterceptNavigationThrottleTest,
-                        testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         InterceptNavigationThrottleTest,
+                         testing::Values(true, false));
 
 }  // namespace navigation_interception
