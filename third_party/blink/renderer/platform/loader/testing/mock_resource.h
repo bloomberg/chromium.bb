@@ -27,6 +27,8 @@ class MockCacheHandler : public CachedMetadataHandler {
 
   String Encoding() const override { return "mock encoding"; }
   bool IsServedFromCacheStorage() const override { return false; }
+  void OnMemoryDump(WebProcessMemoryDump* pmd,
+                    const String& dump_prefix) const override {}
 
  private:
   std::unique_ptr<CachedMetadataSender> send_callback_;

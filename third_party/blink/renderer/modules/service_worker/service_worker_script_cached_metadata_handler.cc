@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
 namespace blink {
 
@@ -67,6 +68,18 @@ String ServiceWorkerScriptCachedMetadataHandler::Encoding() const {
 bool ServiceWorkerScriptCachedMetadataHandler::IsServedFromCacheStorage()
     const {
   return false;
+}
+
+void ServiceWorkerScriptCachedMetadataHandler::OnMemoryDump(
+    WebProcessMemoryDump* pmd,
+    const String& dump_prefix) const {
+  if (!cached_metadata_)
+    return;
+  const String dump_name = dump_prefix + "/service_worker";
+  auto* dump = pmd->CreateMemoryAllocatorDump(dump_name);
+  dump->AddScalar("size", "bytes", cached_metadata_->SerializedData().size());
+  pmd->AddSuballocation(dump->Guid(),
+                        String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
 }  // namespace blink
