@@ -106,7 +106,10 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
-      gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
+      gfx::CreateVectorIcon(kGooglePayLogoIcon,
+                            GetNativeTheme()->SystemDarkModeEnabled()
+                                ? gfx::kGoogleGrey200
+                                : gfx::kGoogleGrey700),
       /*x=*/0, /*y=*/0, kMigrationBubbleGooglePayLogoWidth,
       kMigrationBubbleGooglePayLogoHeight);
   views::ImageView* icon_view = new views::ImageView();

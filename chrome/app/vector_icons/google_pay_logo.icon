@@ -4,8 +4,7 @@
 
 CANVAS_DIMENSIONS, 40,
 
-// Pay part.
-PATH_COLOR_ARGB, 0xFF, 0x5F, 0x63, 0x68,
+// "Pay" text.  Color is set by Chrome code at runtime depending on dark mode.
 MOVE_TO, 18.92f, 7.82f,
 R_V_LINE_TO, 4.64f,
 H_LINE_TO, 17.44f,
