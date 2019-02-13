@@ -6,6 +6,7 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_COOKIE_MUTATOR_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
@@ -32,6 +33,12 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
   void AddAccountToCookieWithToken(const std::string& account_id,
                                    const std::string& access_token,
                                    gaia::GaiaSource source) override;
+
+  void SetAccountsInCookie(
+      const std::vector<std::string>& account_ids,
+      gaia::GaiaSource source,
+      base::OnceCallback<void(const GoogleServiceAuthError& error)>
+          set_accounts_in_cookies_completed_callback) override;
 
   void TriggerCookieJarUpdate() override;
 

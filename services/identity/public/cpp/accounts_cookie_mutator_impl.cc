@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 
+#include <vector>
+
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
 namespace identity {
@@ -28,6 +30,16 @@ void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
     gaia::GaiaSource source) {
   gaia_cookie_manager_service_->AddAccountToCookieWithToken(
       account_id, access_token, source);
+}
+
+void AccountsCookieMutatorImpl::SetAccountsInCookie(
+    const std::vector<std::string>& account_ids,
+    gaia::GaiaSource source,
+    base::OnceCallback<void(const GoogleServiceAuthError& error)>
+        set_accounts_in_cookies_completed_callback) {
+  gaia_cookie_manager_service_->SetAccountsInCookie(
+      account_ids, source,
+      std::move(set_accounts_in_cookies_completed_callback));
 }
 
 void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {

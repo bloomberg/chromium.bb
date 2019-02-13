@@ -5,6 +5,7 @@
 #include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -25,13 +26,27 @@
 namespace {
 
 const char kTestUnavailableAccountId[] = "unavailable_account_id";
+const char kTestOtherUnavailableAccountId[] = "other_unavailable_account_id";
 const char kTestAccountEmail[] = "test_user@test.com";
+const char kTestOtherAccountEmail[] = "test_other_user@test.com";
 const char kTestAccountGaiaId[] = "gaia_id_for_test_user_test.com";
 const char kTestAccessToken[] = "access_token";
 const char kTestUberToken[] = "test_uber_token";
+const char kTestOAuthMultiLoginResponse[] = R"(
+    { "status": "OK",
+      "cookies":[
+        {
+          "name":"CookieName",
+          "value":"CookieValue",
+          "domain":".google.com",
+          "path":"/"
+        }
+      ]
+    })";
 
 enum class AccountsCookiesMutatorAction {
   kAddAccountToCookie,
+  kSetAccountsInCookie,
   kTriggerCookieJarUpdateNoAccounts,
   kTriggerCookieJarUpdateOneAccount,
 };
@@ -130,6 +145,15 @@ class AccountsCookieMutatorTest : public testing::Test {
                     kTestUberToken, GaiaConstants::kChromeSource))
                 .spec(),
             std::string(), net::HTTP_OK);
+        break;
+      case AccountsCookiesMutatorAction::kSetAccountsInCookie:
+        test_url_loader_factory_.AddResponse(
+            GaiaUrls::GetInstance()
+                ->oauth_multilogin_url()
+                .Resolve(base::StringPrintf("?source=%s",
+                                            GaiaConstants::kChromeSource))
+                .spec(),
+            std::string(kTestOAuthMultiLoginResponse), net::HTTP_OK);
         break;
       case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts:
         signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
@@ -264,6 +288,84 @@ TEST_F(AccountsCookieMutatorTest,
 
   accounts_cookie_mutator()->AddAccountToCookieWithToken(
       account_id, kTestAccessToken, gaia::GaiaSource::kChrome);
+
+  run_loop.Run();
+}
+
+// Test that trying to set a list of accounts in the cookie jar where none of
+// those accounts have refresh tokens in IdentityManager results in an error.
+TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllNonExistingAccounts) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kSetAccountsInCookie);
+
+  base::RunLoop run_loop;
+  std::vector<std::string> accounts_ids = {kTestUnavailableAccountId,
+                                           kTestOtherUnavailableAccountId};
+  accounts_cookie_mutator()->SetAccountsInCookie(
+      accounts_ids, gaia::GaiaSource::kChrome,
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const GoogleServiceAuthError& error) {
+            EXPECT_EQ(error.state(),
+                      GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+
+  run_loop.Run();
+}
+
+// Test that trying to set a list of accounts in the cookie jar where some of
+// those accounts have no refresh tokens in IdentityManager results in an error.
+TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kSetAccountsInCookie);
+
+  std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  base::RunLoop run_loop;
+  std::vector<std::string> accounts_ids = {account_id,
+                                           kTestUnavailableAccountId};
+  accounts_cookie_mutator()->SetAccountsInCookie(
+      accounts_ids, gaia::GaiaSource::kChrome,
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const GoogleServiceAuthError& error) {
+            EXPECT_EQ(error.state(),
+                      GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+// Test that trying to set a list of accounts in the cookie jar where all of
+// those accounts have refresh tokens in IdentityManager results in them being
+// successfully set.
+TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kSetAccountsInCookie);
+
+  std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
+  std::string other_account_id =
+      AddAcountWithRefreshToken(kTestOtherAccountEmail);
+  base::RunLoop run_loop;
+  std::vector<std::string> accounts_ids = {account_id, other_account_id};
+  accounts_cookie_mutator()->SetAccountsInCookie(
+      accounts_ids, gaia::GaiaSource::kChrome,
+      base::BindOnce(
+          [](base::OnceClosure quit_closure,
+             const GoogleServiceAuthError& error) {
+            EXPECT_EQ(error.state(), GoogleServiceAuthError::NONE);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      account_id, kTestAccessToken,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      other_account_id, kTestAccessToken,
+      base::Time::Now() + base::TimeDelta::FromHours(1));
 
   run_loop.Run();
 }
