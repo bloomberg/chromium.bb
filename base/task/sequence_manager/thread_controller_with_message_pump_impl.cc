@@ -319,7 +319,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   // third_party/catapult/tracing/tracing/extras/chrome/event_finder_utils.html
   // TODO(alexclarke): Rename this event to whatever we end up calling this
   // after the DoWork / DoDelayed work merge.
-  TRACE_EVENT0("sequence_manager", "ThreadControllerImpl::RunTask");
+  TRACE_EVENT0("toplevel", "ThreadControllerImpl::RunTask");
 
   DCHECK(main_thread_only().task_source);
   main_thread_only().do_work_running_count++;
