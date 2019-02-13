@@ -234,25 +234,18 @@ gfx::ImageSkia CreateSolidColorWallpaper(SkColor color) {
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
 bool IsShelfColoringEnabled() {
-  const bool kDefaultValue = true;
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshShelfColor)) {
-    return kDefaultValue;
-  }
-
-  const std::string switch_value =
+  const std::string explicit_switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAshShelfColor);
-  if (switch_value != switches::kAshShelfColorEnabled &&
-      switch_value != switches::kAshShelfColorDisabled) {
-    LOG(WARNING) << "Invalid '--" << switches::kAshShelfColor << "' value of '"
-                 << switch_value << "'. Defaulting to "
-                 << (kDefaultValue ? "enabled." : "disabled.");
-    return kDefaultValue;
+
+  // Always enabled, unless explicitly disabled.
+  if (explicit_switch_value == switches::kAshShelfColorDisabled) {
+    LOG(WARNING) << "Shelf coloring explicitly disabled. "
+                 << "This should only happen in tests.";
+    return false;
   }
 
-  return switch_value == switches::kAshShelfColorEnabled;
+  return true;
 }
 
 // Gets the color profiles for extracting wallpaper prominent colors.

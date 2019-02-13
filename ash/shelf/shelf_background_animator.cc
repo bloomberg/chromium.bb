@@ -273,10 +273,8 @@ void ShelfBackgroundAnimator::GetTargetValues(
       shelf_target_color = darken_wallpaper(kShelfTranslucentColorDarkenAlpha);
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      shelf_target_color = darken_wallpaper(kShelfOpaqueColorDarkenAlpha);
-      break;
     case SHELF_BACKGROUND_SPLIT_VIEW:
-      shelf_target_color = darken_wallpaper(ShelfBackgroundAnimator::kMaxAlpha);
+      shelf_target_color = darken_wallpaper(kShelfOpaqueColorDarkenAlpha);
       break;
     case SHELF_BACKGROUND_OOBE:
       shelf_target_color = SK_ColorTRANSPARENT;
