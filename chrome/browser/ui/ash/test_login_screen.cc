@@ -130,6 +130,8 @@ void TestLoginScreen::SetShowGuestButtonInOobe(bool show) {}
 
 void TestLoginScreen::SetShowParentAccessButton(bool show) {}
 
+void TestLoginScreen::SetShowParentAccessDialog(bool show) {}
+
 void TestLoginScreen::FocusLoginShelf(bool reverse) {}
 
 void TestLoginScreen::Bind(mojo::ScopedMessagePipeHandle handle) {

@@ -22,6 +22,7 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
+#include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
@@ -1051,6 +1052,19 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
     GetWidget()->GetFocusManager()->ClearFocus();
 }
 
+void LockContentsView::OnSetShowParentAccessDialog(bool show) {
+  if (!primary_big_view_)
+    return;
+
+  if (show) {
+    primary_big_view_->ShowParentAccessView();
+  } else {
+    primary_big_view_->HideParentAccessView();
+  }
+
+  Layout();
+}
+
 void LockContentsView::SetAvatarForUser(const AccountId& account_id,
                                         const mojom::UserAvatarPtr& avatar) {
   auto replace = [&](const mojom::LoginUserInfoPtr& user) {
@@ -1707,6 +1721,11 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   }
 }
 
+void LockContentsView::OnParentAccessCodeSubmitted(const std::string& code) {
+  // TODO(agawronska): Implement.
+  NOTIMPLEMENTED();
+}
+
 keyboard::KeyboardController* LockContentsView::GetKeyboardControllerForView()
     const {
   return GetWidget() ? GetKeyboardControllerForWidget(GetWidget()) : nullptr;
@@ -1769,8 +1788,17 @@ LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
   public_account_callbacks.on_public_account_tapped =
       base::BindRepeating(&LockContentsView::OnPublicAccountTapped,
                           base::Unretained(this), is_primary);
+
+  ParentAccessView::Callbacks parent_access_callbacks;
+  parent_access_callbacks.on_back =
+      base::BindRepeating(&LockContentsView::OnSetShowParentAccessDialog,
+                          base::Unretained(this), false);
+  parent_access_callbacks.on_submit = base::BindRepeating(
+      &LockContentsView::OnParentAccessCodeSubmitted, base::Unretained(this));
+
   return new LoginBigUserView(user, auth_user_callbacks,
-                              public_account_callbacks);
+                              public_account_callbacks,
+                              parent_access_callbacks);
 }
 
 LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,
