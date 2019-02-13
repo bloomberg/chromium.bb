@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import os
 import sys
 
@@ -370,7 +369,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                  presentation_mode_history)))
       valid_entry_found = True
     if not valid_entry_found:
-      logging.warning('No valid frame statistics being collected: %s',
+      self.fail('No valid frame statistics being collected: %s',
           TraceIntegrationTest._SwapChainPresentationModeListToStr(
               presentation_mode_history))
 
