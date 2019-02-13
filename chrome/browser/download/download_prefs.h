@@ -37,6 +37,9 @@ class DownloadPrefs {
     DANGEROUS_FILES = 1,
     POTENTIALLY_DANGEROUS_FILES = 2,
     ALL_FILES = 3,
+    // MALICIOUS_FILES has a stricter definition of harmful file than
+    // DANGEROUS_FILES and does not block based on file extension.
+    MALICIOUS_FILES = 4,
   };
   explicit DownloadPrefs(Profile* profile);
   ~DownloadPrefs();

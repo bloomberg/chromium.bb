@@ -1329,6 +1329,12 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
               danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
     }
 
+    case (DownloadPrefs::DownloadRestriction::MALICIOUS_FILES): {
+      return (danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+              danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
+              danger_type == download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
+    }
+
     case (DownloadPrefs::DownloadRestriction::ALL_FILES):
       return true;
 
