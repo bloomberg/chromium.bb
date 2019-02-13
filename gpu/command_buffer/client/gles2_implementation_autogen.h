@@ -883,6 +883,35 @@ void DispatchCompute(GLuint num_groups_x,
                      GLuint num_groups_y,
                      GLuint num_groups_z) override;
 
+void GetProgramInterfaceiv(GLuint program,
+                           GLenum program_interface,
+                           GLenum pname,
+                           GLint* params) override;
+
+GLuint GetProgramResourceIndex(GLuint program,
+                               GLenum program_interface,
+                               const char* name) override;
+
+void GetProgramResourceName(GLuint program,
+                            GLenum program_interface,
+                            GLuint index,
+                            GLsizei bufsize,
+                            GLsizei* length,
+                            char* name) override;
+
+void GetProgramResourceiv(GLuint program,
+                          GLenum program_interface,
+                          GLuint index,
+                          GLsizei prop_count,
+                          const GLenum* props,
+                          GLsizei bufsize,
+                          GLsizei* length,
+                          GLint* params) override;
+
+GLint GetProgramResourceLocation(GLuint program,
+                                 GLenum program_interface,
+                                 const char* name) override;
+
 void MemoryBarrierEXT(GLbitfield barriers) override;
 
 void MemoryBarrierByRegion(GLbitfield barriers) override;

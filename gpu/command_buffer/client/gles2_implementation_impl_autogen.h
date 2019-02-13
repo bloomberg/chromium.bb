@@ -3077,6 +3077,38 @@ void GLES2Implementation::DispatchCompute(GLuint num_groups_x,
   CheckGLError();
 }
 
+void GLES2Implementation::GetProgramInterfaceiv(GLuint program,
+                                                GLenum program_interface,
+                                                GLenum pname,
+                                                GLint* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetProgramInterfaceiv("
+                     << program << ", "
+                     << GLES2Util::GetStringEnum(program_interface) << ", "
+                     << GLES2Util::GetStringEnum(pname) << ", "
+                     << static_cast<const void*>(params) << ")");
+  TRACE_EVENT0("gpu", "GLES2Implementation::GetProgramInterfaceiv");
+  if (GetProgramInterfaceivHelper(program, program_interface, pname, params)) {
+    return;
+  }
+  typedef cmds::GetProgramInterfaceiv::Result Result;
+  ScopedResultPtr<Result> result = GetResultAs<Result>();
+  if (!result) {
+    return;
+  }
+  result->SetNumResults(0);
+  helper_->GetProgramInterfaceiv(program, program_interface, pname,
+                                 GetResultShmId(), result.offset());
+  WaitForCmd();
+  result->CopyResult(params);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (int32_t i = 0; i < result->GetNumResults(); ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
+    }
+  });
+  CheckGLError();
+}
 void GLES2Implementation::MemoryBarrierEXT(GLbitfield barriers) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMemoryBarrierEXT(" << barriers

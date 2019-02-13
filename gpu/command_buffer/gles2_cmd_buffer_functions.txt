@@ -271,6 +271,13 @@ GL_APICALL void         GL_APIENTRY glFramebufferParameteri (GLenumFramebufferTa
 
 GL_APICALL void         GL_APIENTRY glBindImageTexture (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 GL_APICALL void         GL_APIENTRY glDispatchCompute (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+
+GL_APICALL void         GL_APIENTRY glGetProgramInterfaceiv (GLidProgram program, GLenum program_interface, GLenum pname, GLint* params);
+GL_APICALL GLuint       GL_APIENTRY glGetProgramResourceIndex (GLidProgram program, GLenum program_interface, const char* name);
+GL_APICALL void         GL_APIENTRY glGetProgramResourceName (GLidProgram program, GLenum program_interface, GLuint index, GLsizeiNotNegative bufsize, GLsizeiOptional* length, char* name);
+GL_APICALL void         GL_APIENTRY glGetProgramResourceiv (GLidProgram program, GLenum program_interface, GLuint index, GLsizeiNotNegative prop_count, const GLenum* props, GLsizeiNotNegative bufsize, GLsizeiOptional* length, GLint* params);
+GL_APICALL GLint        GL_APIENTRY glGetProgramResourceLocation (GLidProgram program, GLenum program_interface, const char* name);
+
 GL_APICALL void         GL_APIENTRY glMemoryBarrierEXT (GLbitfield barriers);
 GL_APICALL void         GL_APIENTRY glMemoryBarrierByRegion (GLbitfield barriers);
 

@@ -1262,6 +1262,46 @@ void GL_APIENTRY GLES2DispatchCompute(GLuint num_groups_x,
   gles2::GetGLContext()->DispatchCompute(num_groups_x, num_groups_y,
                                          num_groups_z);
 }
+void GL_APIENTRY GLES2GetProgramInterfaceiv(GLuint program,
+                                            GLenum program_interface,
+                                            GLenum pname,
+                                            GLint* params) {
+  gles2::GetGLContext()->GetProgramInterfaceiv(program, program_interface,
+                                               pname, params);
+}
+GLuint GL_APIENTRY GLES2GetProgramResourceIndex(GLuint program,
+                                                GLenum program_interface,
+                                                const char* name) {
+  return gles2::GetGLContext()->GetProgramResourceIndex(
+      program, program_interface, name);
+}
+void GL_APIENTRY GLES2GetProgramResourceName(GLuint program,
+                                             GLenum program_interface,
+                                             GLuint index,
+                                             GLsizei bufsize,
+                                             GLsizei* length,
+                                             char* name) {
+  gles2::GetGLContext()->GetProgramResourceName(program, program_interface,
+                                                index, bufsize, length, name);
+}
+void GL_APIENTRY GLES2GetProgramResourceiv(GLuint program,
+                                           GLenum program_interface,
+                                           GLuint index,
+                                           GLsizei prop_count,
+                                           const GLenum* props,
+                                           GLsizei bufsize,
+                                           GLsizei* length,
+                                           GLint* params) {
+  gles2::GetGLContext()->GetProgramResourceiv(program, program_interface, index,
+                                              prop_count, props, bufsize,
+                                              length, params);
+}
+GLint GL_APIENTRY GLES2GetProgramResourceLocation(GLuint program,
+                                                  GLenum program_interface,
+                                                  const char* name) {
+  return gles2::GetGLContext()->GetProgramResourceLocation(
+      program, program_interface, name);
+}
 void GL_APIENTRY GLES2MemoryBarrierEXT(GLbitfield barriers) {
   gles2::GetGLContext()->MemoryBarrierEXT(barriers);
 }
@@ -2916,6 +2956,26 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glDispatchCompute",
         reinterpret_cast<GLES2FunctionPointer>(glDispatchCompute),
+    },
+    {
+        "glGetProgramInterfaceiv",
+        reinterpret_cast<GLES2FunctionPointer>(glGetProgramInterfaceiv),
+    },
+    {
+        "glGetProgramResourceIndex",
+        reinterpret_cast<GLES2FunctionPointer>(glGetProgramResourceIndex),
+    },
+    {
+        "glGetProgramResourceName",
+        reinterpret_cast<GLES2FunctionPointer>(glGetProgramResourceName),
+    },
+    {
+        "glGetProgramResourceiv",
+        reinterpret_cast<GLES2FunctionPointer>(glGetProgramResourceiv),
+    },
+    {
+        "glGetProgramResourceLocation",
+        reinterpret_cast<GLES2FunctionPointer>(glGetProgramResourceLocation),
     },
     {
         "glMemoryBarrierEXT",

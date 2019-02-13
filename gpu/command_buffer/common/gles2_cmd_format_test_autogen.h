@@ -4122,6 +4122,97 @@ TEST_F(GLES2FormatTest, DispatchCompute) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, GetProgramInterfaceiv) {
+  cmds::GetProgramInterfaceiv& cmd =
+      *GetBufferAs<cmds::GetProgramInterfaceiv>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<GLenum>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetProgramInterfaceiv::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.program_interface);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.pname);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.params_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetProgramResourceIndex) {
+  cmds::GetProgramResourceIndex& cmd =
+      *GetBufferAs<cmds::GetProgramResourceIndex>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetProgramResourceIndex::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.program_interface);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.index_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.index_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetProgramResourceName) {
+  cmds::GetProgramResourceName& cmd =
+      *GetBufferAs<cmds::GetProgramResourceName>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<GLuint>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15), static_cast<uint32_t>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetProgramResourceName::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.program_interface);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.index);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.result_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetProgramResourceiv) {
+  cmds::GetProgramResourceiv& cmd = *GetBufferAs<cmds::GetProgramResourceiv>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<GLuint>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15), static_cast<uint32_t>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetProgramResourceiv::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.program_interface);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.index);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.props_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.params_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(16), cmd.params_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GetProgramResourceLocation) {
+  cmds::GetProgramResourceLocation& cmd =
+      *GetBufferAs<cmds::GetProgramResourceLocation>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLenum>(12),
+              static_cast<uint32_t>(13), static_cast<uint32_t>(14),
+              static_cast<uint32_t>(15));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetProgramResourceLocation::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<GLenum>(12), cmd.program_interface);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.location_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(15), cmd.location_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, MemoryBarrierEXT) {
   cmds::MemoryBarrierEXT& cmd = *GetBufferAs<cmds::MemoryBarrierEXT>();
   void* next_cmd = cmd.Set(&cmd, static_cast<GLbitfield>(11));

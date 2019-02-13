@@ -2473,6 +2473,73 @@ void DispatchCompute(GLuint num_groups_x,
   }
 }
 
+void GetProgramInterfaceiv(GLuint program,
+                           GLenum program_interface,
+                           GLenum pname,
+                           uint32_t params_shm_id,
+                           uint32_t params_shm_offset) {
+  gles2::cmds::GetProgramInterfaceiv* c =
+      GetCmdSpace<gles2::cmds::GetProgramInterfaceiv>();
+  if (c) {
+    c->Init(program, program_interface, pname, params_shm_id,
+            params_shm_offset);
+  }
+}
+
+void GetProgramResourceIndex(GLuint program,
+                             GLenum program_interface,
+                             uint32_t name_bucket_id,
+                             uint32_t index_shm_id,
+                             uint32_t index_shm_offset) {
+  gles2::cmds::GetProgramResourceIndex* c =
+      GetCmdSpace<gles2::cmds::GetProgramResourceIndex>();
+  if (c) {
+    c->Init(program, program_interface, name_bucket_id, index_shm_id,
+            index_shm_offset);
+  }
+}
+
+void GetProgramResourceName(GLuint program,
+                            GLenum program_interface,
+                            GLuint index,
+                            uint32_t name_bucket_id,
+                            uint32_t result_shm_id,
+                            uint32_t result_shm_offset) {
+  gles2::cmds::GetProgramResourceName* c =
+      GetCmdSpace<gles2::cmds::GetProgramResourceName>();
+  if (c) {
+    c->Init(program, program_interface, index, name_bucket_id, result_shm_id,
+            result_shm_offset);
+  }
+}
+
+void GetProgramResourceiv(GLuint program,
+                          GLenum program_interface,
+                          GLuint index,
+                          uint32_t props_bucket_id,
+                          uint32_t params_shm_id,
+                          uint32_t params_shm_offset) {
+  gles2::cmds::GetProgramResourceiv* c =
+      GetCmdSpace<gles2::cmds::GetProgramResourceiv>();
+  if (c) {
+    c->Init(program, program_interface, index, props_bucket_id, params_shm_id,
+            params_shm_offset);
+  }
+}
+
+void GetProgramResourceLocation(GLuint program,
+                                GLenum program_interface,
+                                uint32_t name_bucket_id,
+                                uint32_t location_shm_id,
+                                uint32_t location_shm_offset) {
+  gles2::cmds::GetProgramResourceLocation* c =
+      GetCmdSpace<gles2::cmds::GetProgramResourceLocation>();
+  if (c) {
+    c->Init(program, program_interface, name_bucket_id, location_shm_id,
+            location_shm_offset);
+  }
+}
+
 void MemoryBarrierEXT(GLbitfield barriers) {
   gles2::cmds::MemoryBarrierEXT* c =
       GetCmdSpace<gles2::cmds::MemoryBarrierEXT>();
