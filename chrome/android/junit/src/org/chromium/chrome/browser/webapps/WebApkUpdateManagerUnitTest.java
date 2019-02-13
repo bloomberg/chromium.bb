@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowBitmap;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -572,13 +573,36 @@ public class WebApkUpdateManagerUnitTest {
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
 
-        updateManager.onGotManifestData(null, null, null);
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         assertTrue(updateManager.updateRequested());
         assertEquals(NAME, updateManager.requestedUpdateName());
 
         // Check that the {@link WebApkUpdateDataFetcher} has been destroyed. This prevents
         // {@link #onGotManifestData()} from getting called.
         assertTrue(updateManager.destroyedFetcher());
+    }
+
+    /**
+     * Test that an update is not done if:
+     * - WebAPK's code is out of date
+     * AND
+     * - WebApkUpdateManager has been destroyed.
+     */
+    @Test
+    public void testDontRequestUpdateAfterManagerDestroyed() {
+        registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(),
+                REQUEST_UPDATE_FOR_SHELL_APK_VERSION - 1);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
+
+        TestWebApkUpdateManager updateManager =
+                new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
+        updateIfNeeded(updateManager);
+        assertTrue(updateManager.updateCheckStarted());
+
+        updateManager.destroy();
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        assertFalse(updateManager.updateRequested());
     }
 
     /**
