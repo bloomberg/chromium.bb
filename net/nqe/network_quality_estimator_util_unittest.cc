@@ -72,30 +72,25 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
     EXPECT_EQ(OK, callback.WaitForResult());
   }
 
-  EXPECT_EQ(2u, mock_host_resolver.num_resolve());
+  EXPECT_EQ(2u, mock_host_resolver.num_non_local_resolves());
 
   EXPECT_FALSE(IsPrivateHost(&mock_host_resolver,
                              HostPortPair("2607:f8b0:4006:819::200e", 80)));
-  EXPECT_EQ(1u, mock_host_resolver.num_resolve_from_cache());
 
   EXPECT_TRUE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("192.168.0.1", 443)));
-  EXPECT_EQ(2u, mock_host_resolver.num_resolve_from_cache());
 
   EXPECT_FALSE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("92.168.0.1", 443)));
-  EXPECT_EQ(3u, mock_host_resolver.num_resolve_from_cache());
 
   EXPECT_TRUE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("example1.com", 443)));
-  EXPECT_EQ(4u, mock_host_resolver.num_resolve_from_cache());
 
   EXPECT_FALSE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("example2.com", 443)));
-  EXPECT_EQ(5u, mock_host_resolver.num_resolve_from_cache());
 
   // IsPrivateHost() should have queried only the resolver's cache.
-  EXPECT_EQ(2u, mock_host_resolver.num_resolve());
+  EXPECT_EQ(2u, mock_host_resolver.num_non_local_resolves());
 }
 
 // Verify that IsPrivateHost() returns false for a hostname whose DNS
@@ -118,8 +113,7 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
   // Not in DNS host cache, so should not be marked as private.
   EXPECT_FALSE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("example3.com", 443)));
-  EXPECT_EQ(0u, mock_host_resolver.num_resolve());
-  EXPECT_EQ(1u, mock_host_resolver.num_resolve_from_cache());
+  EXPECT_EQ(0u, mock_host_resolver.num_non_local_resolves());
 
   {
     // Resolve example3.com so that the resolution entry is cached.
@@ -132,14 +126,13 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
         NetLogWithSource());
     EXPECT_EQ(ERR_IO_PENDING, rv);
     EXPECT_EQ(OK, callback.WaitForResult());
-    EXPECT_EQ(1u, mock_host_resolver.num_resolve());
+    EXPECT_EQ(1u, mock_host_resolver.num_non_local_resolves());
   }
   EXPECT_TRUE(
       IsPrivateHost(&mock_host_resolver, HostPortPair("example3.com", 443)));
 
   // IsPrivateHost() should have queried only the resolver's cache.
-  EXPECT_EQ(1u, mock_host_resolver.num_resolve());
-  EXPECT_EQ(2u, mock_host_resolver.num_resolve_from_cache());
+  EXPECT_EQ(1u, mock_host_resolver.num_non_local_resolves());
 }
 
 // Verify that IsPrivateHost() returns correct results for local hosts.

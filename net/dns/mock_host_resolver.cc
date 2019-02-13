@@ -453,6 +453,7 @@ MockHostResolverBase::MockHostResolverBase(bool use_caching)
       next_request_id_(1),
       num_resolve_(0),
       num_resolve_from_cache_(0),
+      num_non_local_resolves_(0),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   rules_map_[HostResolverSource::ANY] = CreateCatchAllHostResolverProc();
   rules_map_[HostResolverSource::SYSTEM] = CreateCatchAllHostResolverProc();
@@ -478,8 +479,10 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
       request->parameters().cache_usage, &addresses, &stale_info);
   if (rv == OK && !request->parameters().is_speculative)
     request->set_address_results(addresses, std::move(stale_info));
-  if (rv != ERR_DNS_CACHE_MISS)
+  if (rv != ERR_DNS_CACHE_MISS ||
+      request->parameters().source == HostResolverSource::LOCAL_ONLY) {
     return rv;
+  }
 
   // Just like the real resolver, refuse to do anything with invalid
   // hostnames.
@@ -543,7 +546,11 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
       cache_usage ==
           HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
   if (cache_.get() && cache_allowed) {
-    HostCache::Key key(host.host(), dns_query_type, flags, source);
+    // Local-only requests search the cache for non-local-only results.
+    HostResolverSource effective_source =
+        source == HostResolverSource::LOCAL_ONLY ? HostResolverSource::ANY
+                                                 : source;
+    HostCache::Key key(host.host(), dns_query_type, flags, effective_source);
     const HostCache::Entry* entry;
     HostCache::EntryStaleness stale_info = HostCache::kNotStale;
     if (cache_usage ==
@@ -570,6 +577,7 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
                                       HostResolverSource source,
                                       AddressList* addresses) {
   DCHECK(rules_map_.find(source) != rules_map_.end());
+  ++num_non_local_resolves_;
 
   AddressList addr;
   int rv = rules_map_[source]->Resolve(host.host(), requested_address_family,
