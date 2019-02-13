@@ -1841,7 +1841,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     test_url_loader_factory_.AddResponse(
         url1.spec(), "Any content. This is irrelevant.", net::HTTP_OK);
-    RunUntilIdle();
+    content::RunAllTasksUntilIdle();
 
     // Expect that the service was asked to do an install with the right data.
     base::FilePath tmpfile_path = service.install_path();
