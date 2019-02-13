@@ -1338,8 +1338,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'qualcomm'], bug=906739)
     self.Fail('conformance2/glsl3/compare-structs-containing-arrays.html',
         ['android', 'qualcomm'], bug=906742)
-    self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
-        ['android', 'qualcomm'], bug=906743)
     self.Fail('conformance2/textures/misc/tex-new-formats.html',
         ['android', 'qualcomm'], bug=906740)
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
