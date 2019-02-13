@@ -61,6 +61,23 @@ void MockMediaSessionMojoObserver::MediaSessionActionsChanged(
   }
 }
 
+void MockMediaSessionMojoObserver::MediaSessionImagesChanged(
+    const base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>>&
+        images) {
+  session_images_ = images;
+
+  if (expected_images_of_type_.has_value()) {
+    auto type = expected_images_of_type_->first;
+    auto images = expected_images_of_type_->second;
+    auto it = session_images_->find(type);
+
+    if (it != session_images_->end() && it->second == images) {
+      run_loop_->Quit();
+      expected_images_of_type_.reset();
+    }
+  }
+}
+
 void MockMediaSessionMojoObserver::WaitForState(
     mojom::MediaSessionInfo::SessionState wanted_state) {
   if (session_info_ && session_info_->state == wanted_state)
@@ -114,6 +131,19 @@ void MockMediaSessionMojoObserver::WaitForExpectedActions(
     return;
 
   expected_actions_ = actions;
+  StartWaiting();
+}
+
+void MockMediaSessionMojoObserver::WaitForExpectedImagesOfType(
+    mojom::MediaSessionImageType type,
+    const std::vector<MediaImage>& images) {
+  if (session_images_.has_value()) {
+    auto it = session_images_->find(type);
+    if (it != session_images_->end() && it->second == images)
+      return;
+  }
+
+  expected_images_of_type_ = std::make_pair(type, images);
   StartWaiting();
 }
 

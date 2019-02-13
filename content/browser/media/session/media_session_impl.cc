@@ -35,8 +35,9 @@ namespace content {
 
 using blink::mojom::MediaSessionPlaybackState;
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
-using media_session::mojom::MediaSessionInfo;
 using media_session::mojom::MediaPlaybackState;
+using media_session::mojom::MediaSessionImageType;
+using media_session::mojom::MediaSessionInfo;
 
 namespace {
 
@@ -181,16 +182,7 @@ void MediaSessionImpl::DidFinishNavigation(
   if (services_.count(rfh))
     services_[rfh]->DidFinishNavigation();
 
-  NotifyMediaSessionMetadataChange();
-}
-
-void MediaSessionImpl::NotifyMediaSessionMetadataChange() {
-  const media_session::MediaMetadata& metadata = GetMediaMetadata();
-
-  observers_.ForAllPtrs(
-      [&metadata](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionMetadataChanged(metadata);
-      });
+  RebuildAndNotifyMetadataChanged();
 }
 
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
@@ -225,6 +217,8 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
         normal_players_.emplace(std::move(key), required_audio_focus_type);
       else
         iter->second = required_audio_focus_type;
+
+      UpdateRoutedService();
       return true;
     }
   }
@@ -247,7 +241,6 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
     iter->second = required_audio_focus_type;
 
   UpdateRoutedService();
-
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
 
@@ -622,6 +615,8 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)
+
+  RebuildAndNotifyMetadataChanged();
 }
 
 void MediaSessionImpl::Initialize() {
@@ -718,7 +713,8 @@ void MediaSessionImpl::GetMediaSessionInfo(
 void MediaSessionImpl::AddObserver(
     media_session::mojom::MediaSessionObserverPtr observer) {
   observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
-  observer->MediaSessionMetadataChanged(GetMediaMetadata());
+  observer->MediaSessionMetadataChanged(metadata_);
+  observer->MediaSessionImagesChanged(images_);
 
   std::vector<media_session::mojom::MediaSessionAction> actions(
       actions_.begin(), actions_.end());
@@ -860,18 +856,6 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
   return true;
 }
 
-media_session::MediaMetadata MediaSessionImpl::GetMediaMetadata() const {
-  media_session::MediaMetadata metadata =
-      (routed_service_ && routed_service_->metadata())
-          ? *routed_service_->metadata()
-          : media_session::MediaMetadata();
-
-  metadata.source_title = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin::Create(web_contents()->GetLastCommittedURL()));
-
-  return metadata;
-}
-
 // MediaSessionService-related methods
 
 void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
@@ -904,7 +888,7 @@ void MediaSessionImpl::OnMediaSessionMetadataChanged(
   if (service != routed_service_)
     return;
 
-  NotifyMediaSessionMetadataChange();
+  RebuildAndNotifyMetadataChanged();
 }
 
 void MediaSessionImpl::OnMediaSessionActionsChanged(
@@ -970,7 +954,7 @@ void MediaSessionImpl::UpdateRoutedService() {
 
   routed_service_ = new_service;
 
-  NotifyMediaSessionMetadataChange();
+  RebuildAndNotifyMetadataChanged();
   RebuildAndNotifyActionsChanged();
   RebuildAndNotifyMediaSessionInfoChanged();
 }
@@ -1053,6 +1037,40 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
   observers_.ForAllPtrs(
       [&actions_vec](media_session::mojom::MediaSessionObserver* observer) {
         observer->MediaSessionActionsChanged(actions_vec);
+      });
+}
+
+void MediaSessionImpl::RebuildAndNotifyMetadataChanged() {
+  media_session::MediaMetadata metadata =
+      (routed_service_ && routed_service_->metadata())
+          ? *routed_service_->metadata()
+          : media_session::MediaMetadata();
+
+  metadata.source_title = url_formatter::FormatOriginForSecurityDisplay(
+      url::Origin::Create(web_contents()->GetLastCommittedURL()));
+
+  // If we have no artwork in |images_| or the arwork has changed then we should
+  // update it with the latest artwork from the routed service.
+  auto it = images_.find(MediaSessionImageType::kArtwork);
+  bool images_changed = it == images_.end() || it->second != metadata.artwork;
+  if (images_changed)
+    images_.insert_or_assign(MediaSessionImageType::kArtwork, metadata.artwork);
+
+  bool metadata_changed = metadata_ != metadata;
+  if (metadata_changed)
+    metadata_ = metadata;
+
+  if (!images_changed && !metadata_changed)
+    return;
+
+  observers_.ForAllPtrs(
+      [this, metadata_changed,
+       images_changed](media_session::mojom::MediaSessionObserver* observer) {
+        if (metadata_changed)
+          observer->MediaSessionMetadataChanged(this->metadata_);
+
+        if (images_changed)
+          observer->MediaSessionImagesChanged(this->images_);
       });
 }
 

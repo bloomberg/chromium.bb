@@ -28,6 +28,7 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::NiceMock;
 
 using media_session::mojom::MediaSessionAction;
+using media_session::mojom::MediaSessionImageType;
 
 namespace content {
 
@@ -737,6 +738,116 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   EXPECT_EQ(nullptr, ComputeServiceForRouting());
 
   observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyObserverWithEmptyImagesWhenServiceNotPresent) {
+  StartPlayerForFrame(main_frame_);
+  EXPECT_EQ(nullptr, ComputeServiceForRouting());
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    std::vector<media_session::MediaImage> expected_images;
+    observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                         expected_images);
+  }
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyObserverWithImagesWhenServicePresent) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  std::vector<media_session::MediaImage> expected_images;
+
+  media_session::MediaImage test_image_1;
+  test_image_1.src = GURL("https://www.google.com");
+  expected_images.push_back(test_image_1);
+
+  media_session::MediaImage test_image_2;
+  test_image_2.src = GURL("https://www.example.org");
+  expected_images.push_back(test_image_2);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    std::vector<media_session::MediaImage> empty_images;
+    observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                         empty_images);
+  }
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+
+    blink::mojom::SpecMediaMetadataPtr spec_metadata(
+        blink::mojom::SpecMediaMetadata::New());
+    spec_metadata->artwork.push_back(test_image_1);
+    spec_metadata->artwork.push_back(test_image_2);
+
+    services_[main_frame_]->SetMetadata(std::move(spec_metadata));
+    observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                         expected_images);
+  }
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                         expected_images);
+  }
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    ClearPlayersForFrame(main_frame_);
+
+    std::vector<media_session::MediaImage> empty_images;
+    observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                         empty_images);
+  }
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyObserverWithImagesWhenMultipleServicesPresent) {
+  CreateServiceForFrame(sub_frame_);
+  StartPlayerForFrame(sub_frame_);
+
+  EXPECT_EQ(services_[sub_frame_].get(), ComputeServiceForRouting());
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  media_session::MediaImage test_image;
+  test_image.src = GURL("https://www.google.com");
+
+  blink::mojom::SpecMediaMetadataPtr spec_metadata(
+      blink::mojom::SpecMediaMetadata::New());
+  spec_metadata->artwork.push_back(test_image);
+  services_[sub_frame_]->SetMetadata(std::move(spec_metadata));
+
+  // Since |sub_frame_| is the routed service then we should see the artwork
+  // from that service.
+  std::vector<media_session::MediaImage> expected_images;
+  expected_images.push_back(test_image);
+  observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                       expected_images);
+
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  // Now that |main_frame_| is routed then only artwork from that frame should
+  // be used.
+  std::vector<media_session::MediaImage> empty_images;
+  observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
+                                       empty_images);
 }
 
 }  // namespace content

@@ -11,7 +11,9 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -315,9 +317,6 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT bool AddOneShotPlayer(MediaSessionPlayerObserver* observer,
                                        int player_id);
 
-  // Returns the current media metadata associated with this session.
-  media_session::MediaMetadata GetMediaMetadata() const;
-
   // MediaSessionService-related methods
 
   // Called when the routed service may have changed.
@@ -332,6 +331,10 @@ class MediaSessionImpl : public MediaSession,
 
   // Rebuilds |actions_| and notifies observers if they have changed.
   void RebuildAndNotifyActionsChanged();
+
+  // Rebuilds |metadata_| and |images_| and notifies observers if they have
+  // changed.
+  void RebuildAndNotifyMetadataChanged();
 
   // A set of actions supported by |routed_service_| and the current media
   // session.
@@ -373,6 +376,12 @@ class MediaSessionImpl : public MediaSession,
 
   // MediaSessionService-related fields
   using ServicesMap = std::map<RenderFrameHost*, MediaSessionServiceImpl*>;
+
+  // The current metadata and images associated with the current media session.
+  media_session::MediaMetadata metadata_;
+  base::flat_map<media_session::mojom::MediaSessionImageType,
+                 std::vector<media_session::MediaImage>>
+      images_;
 
   // The collection of all managed services (non-owned pointers). The services
   // are owned by RenderFrameHost and should be registered on creation and

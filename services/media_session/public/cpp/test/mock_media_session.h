@@ -5,7 +5,11 @@
 #ifndef SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_MOCK_MEDIA_SESSION_H_
 #define SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_MOCK_MEDIA_SESSION_H_
 
+#include <utility>
+#include <vector>
+
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -37,6 +41,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
       const base::Optional<MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
       const std::vector<mojom::MediaSessionAction>& actions) override;
+  void MediaSessionImagesChanged(
+      const base::flat_map<mojom::MediaSessionImageType,
+                           std::vector<MediaImage>>& images) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
@@ -48,6 +55,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void WaitForEmptyActions();
   void WaitForExpectedActions(
       const std::set<mojom::MediaSessionAction>& actions);
+
+  void WaitForExpectedImagesOfType(mojom::MediaSessionImageType type,
+                                   const std::vector<MediaImage>& images);
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -68,10 +78,16 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> session_actions_;
+  base::Optional<
+      base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>>>
+      session_images_;
 
   base::Optional<MediaMetadata> expected_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> expected_actions_;
   base::Optional<bool> expected_controllable_;
+  base::Optional<
+      std::pair<mojom::MediaSessionImageType, std::vector<MediaImage>>>
+      expected_images_of_type_;
   bool waiting_for_empty_metadata_ = false;
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;
