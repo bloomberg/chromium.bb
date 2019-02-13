@@ -540,7 +540,7 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
   dispatcher()->OnCursorMovedToRootLocation(root_location);
 }
 
-void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
+void WindowTreeHost::OnCompositingDidCommit(ui::Compositor* compositor) {
   if (!holding_pointer_moves_)
     return;
 

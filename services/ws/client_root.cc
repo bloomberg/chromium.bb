@@ -252,12 +252,6 @@ void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
       window_->GetFrameSinkId(),
       proxy_window->local_surface_id_allocation()->local_surface_id());
   client_surface_embedder_->SetSurfaceId(surface_id);
-
-  // This triggers holding events until the frame has been activated. This
-  // ensures smooth resizes.
-  if (ShouldAssignLocalSurfaceId() && window_->GetHost())
-    window_->GetHost()->compositor()->OnChildResizing();
-
   if (fallback_surface_info_) {
     client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
     fallback_surface_info_.reset();
@@ -414,8 +408,6 @@ void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
 
 void ClientRoot::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(sky): saman says the SetFallbackSurfaceInfo() should not be needed
-  // anymore.
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
   if (proxy_window->local_surface_id_allocation().has_value()) {
     DCHECK(!fallback_surface_info_);
