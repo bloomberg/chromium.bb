@@ -199,22 +199,7 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   LayoutUnit ReplacedPercentageResolutionInlineSize() const {
-    switch (static_cast<NGPercentageStorage>(
-        bitfields_.replaced_percentage_inline_storage)) {
-      case kSameAsAvailable:
-        return available_size_.inline_size;
-      case kZero:
-        return LayoutUnit();
-      case kIndefinite:
-        return NGSizeIndefinite;
-      case kRareDataPercentage:
-        DCHECK(HasRareData());
-        return rare_data_->replaced_percentage_resolution_size.inline_size;
-      default:
-        NOTREACHED();
-    }
-
-    return available_size_.inline_size;
+    return PercentageResolutionInlineSize();
   }
 
   LayoutUnit ReplacedPercentageResolutionBlockSize() const {
@@ -228,7 +213,7 @@ class CORE_EXPORT NGConstraintSpace final {
         return NGSizeIndefinite;
       case kRareDataPercentage:
         DCHECK(HasRareData());
-        return rare_data_->replaced_percentage_resolution_size.block_size;
+        return rare_data_->replaced_percentage_resolution_block_size;
       default:
         NOTREACHED();
     }
@@ -488,18 +473,11 @@ class CORE_EXPORT NGConstraintSpace final {
             other.rare_data_->percentage_resolution_size.block_size)
       return false;
 
-    if (bitfields_.replaced_percentage_inline_storage == kRareDataPercentage &&
-        other.bitfields_.replaced_percentage_inline_storage ==
-            kRareDataPercentage &&
-        rare_data_->replaced_percentage_resolution_size.inline_size !=
-            other.rare_data_->replaced_percentage_resolution_size.inline_size)
-      return false;
-
     if (bitfields_.replaced_percentage_block_storage == kRareDataPercentage &&
         other.bitfields_.replaced_percentage_block_storage ==
             kRareDataPercentage &&
-        rare_data_->replaced_percentage_resolution_size.block_size !=
-            other.rare_data_->replaced_percentage_resolution_size.block_size)
+        rare_data_->replaced_percentage_resolution_block_size !=
+            other.rare_data_->replaced_percentage_resolution_block_size)
       return false;
 
     return true;
@@ -539,7 +517,7 @@ class CORE_EXPORT NGConstraintSpace final {
     ~RareData() = default;
 
     NGLogicalSize percentage_resolution_size;
-    NGLogicalSize replaced_percentage_resolution_size;
+    LayoutUnit replaced_percentage_resolution_block_size;
 
     NGBfcOffset bfc_offset;
     NGMarginStrut margin_strut;
