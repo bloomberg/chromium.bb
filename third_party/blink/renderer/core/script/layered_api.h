@@ -17,6 +17,15 @@ namespace blink {
 // https://docs.google.com/document/d/1V-WaCZQbBcQJRSYSYBb8Y6p0DOdDpiNDSmD41ui_73s/edit
 namespace layered_api {
 
+// Returns the path part (`x`) for std:x or import:@std/x URLs.
+// For other URLs, returns a null String.
+//
+// Currently accepts both "std:x" and "import:@std/x", but
+// because the spec discussion about notation is ongoing:
+// https://github.com/tc39/proposal-javascript-standard-library/issues/12
+// TODO(hiroshige): Update the implementation once the discussion converges.
+CORE_EXPORT String GetBuiltinPath(const KURL&);
+
 // https://github.com/drufball/layered-apis/blob/master/spec.md#user-content-layered-api-fetching-url
 //
 // Currently fallback syntax is disabled and only "std:x" (not "std:x|y") is
