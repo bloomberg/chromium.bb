@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "components/offline_items_collection/core/fail_state.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_notifier.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -200,6 +201,9 @@ void DownloadUIAdapter::OnCompleted(
       observer.OnItemRemoved(item.id);
   } else {
     item.state = offline_items_collection::OfflineItemState::FAILED;
+    // Actual cause could be server or network related, but we need to pick
+    // a fail_state.
+    item.fail_state = offline_items_collection::FailState::SERVER_FAILED;
     for (auto& observer : observers_)
       observer.OnItemUpdated(item);
   }
