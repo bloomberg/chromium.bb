@@ -95,9 +95,6 @@ class CookieStoreIOS : public net::CookieStore,
                                      const net::CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetCookieListCallback callback) override;
-  void DeleteCookieAsync(const GURL& url,
-                         const std::string& cookie_name,
-                         base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(

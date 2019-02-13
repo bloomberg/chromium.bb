@@ -900,9 +900,6 @@ ACTION_P(QuitRunLoop, run_loop) {
 
 // TODO(erikwright): When the synchronous helpers 'GetCookies' etc. are removed,
 // rename these, removing the 'Action' suffix.
-ACTION_P4(DeleteCookieAction, cookie_monster, url, name, callback) {
-  cookie_monster->DeleteCookieAsync(url, name, callback->Get());
-}
 ACTION_P4(SetCookieAction, cookie_monster, url, cookie_line, callback) {
   cookie_monster->SetCookieWithOptionsAsync(url, cookie_line, CookieOptions(),
                                             callback->Get());
@@ -1131,26 +1128,6 @@ TEST_F(DeferredCookieTaskTest, DeferredSetAllCookies) {
           SetAllCookiesAction(&cookie_monster(), list, &set_cookies_callback));
   base::RunLoop loop;
   EXPECT_CALL(set_cookies_callback, Run(true)).WillOnce(QuitRunLoop(&loop));
-
-  CompleteLoading();
-  loop.Run();
-}
-
-TEST_F(DeferredCookieTaskTest, DeferredDeleteCookie) {
-  MockClosure delete_cookie_callback;
-
-  BeginWithForDomainKey(
-      http_www_foo_.domain(),
-      DeleteCookieAction(&cookie_monster(), http_www_foo_.url(), "A",
-                         &delete_cookie_callback));
-
-  WaitForLoadCall();
-
-  EXPECT_CALL(delete_cookie_callback, Run())
-      .WillOnce(DeleteCookieAction(&cookie_monster(), http_www_foo_.url(), "X",
-                                   &delete_cookie_callback));
-  base::RunLoop loop;
-  EXPECT_CALL(delete_cookie_callback, Run()).WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
   loop.Run();
@@ -1870,30 +1847,6 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
   EXPECT_EQ(1u, cookies.size());
 }
 
-TEST_F(CookieMonsterTest, DeleteCookieByName) {
-  std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, nullptr, &net_log_));
-
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A1; path=/"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A2; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A3; path=/bar"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_bar_foo_.url(), "A=A4; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_bar_.url(), "A=A5; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B1; path=/"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B2; path=/foo"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B3; path=/bar"));
-
-  DeleteCookie(cm.get(), http_www_foo_.AppendPath("foo/bar"), "A");
-
-  CookieList cookies = GetAllCookies(cm.get());
-  size_t expected_size = 6;
-  EXPECT_EQ(expected_size, cookies.size());
-  for (auto it = cookies.begin(); it != cookies.end(); ++it) {
-    EXPECT_NE("A1", it->Value());
-    EXPECT_NE("A2", it->Value());
-  }
-}
-
 // Tests importing from a persistent cookie store that contains duplicate
 // equivalent cookies. This situation should be handled by removing the
 // duplicate cookie (both from the in-memory cache, and from the backing store).
@@ -2100,10 +2053,10 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
               cookie.http_only, cookie.same_site, cookie.priority),
           cookie.url.SchemeIsCryptographic(), true /*modify_httponly*/));
     }
-    GURL del_url(input_info[INPUT_DELETE]
-                     .url.Resolve(input_info[INPUT_DELETE].path)
-                     .spec());
-    DeleteCookie(cmout.get(), del_url, input_info[INPUT_DELETE].name);
+
+    EXPECT_TRUE(FindAndDeleteCookie(cmout.get(),
+                                    input_info[INPUT_DELETE].domain,
+                                    input_info[INPUT_DELETE].name));
   }
 
   // Create a new cookie monster and make sure that everything is correct
@@ -2731,10 +2684,11 @@ TEST_F(CookieMonsterTest, PersistSessionCookies) {
   EXPECT_EQ("A", store->commands()[2].cookie.Name());
   EXPECT_EQ("C", store->commands()[2].cookie.Value());
 
-  // Delete the cookie.
-  DeleteCookie(cm.get(), http_www_foo_.url(), "A");
+  // Delete the cookie. Using .host() here since it's a host and not domain
+  // cookie.
+  EXPECT_TRUE(FindAndDeleteCookie(cm.get(), http_www_foo_.host(), "A"));
   EXPECT_EQ("", GetCookies(cm.get(), http_www_foo_.url()));
-  EXPECT_EQ(4u, store->commands().size());
+  ASSERT_EQ(4u, store->commands().size());
   EXPECT_EQ(CookieStoreCommand::REMOVE, store->commands()[3].type);
   EXPECT_EQ("A", store->commands()[3].cookie.Name());
   EXPECT_EQ("C", store->commands()[3].cookie.Value());

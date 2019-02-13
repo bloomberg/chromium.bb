@@ -109,9 +109,6 @@ class GetAllCookiesCallback {
   net::CookieList cookie_list_;
 };
 
-void IgnoreBoolean(bool ignored) {
-}
-
 void IgnoreList(const net::CookieList& ignored,
                 const net::CookieStatusList& excluded_cookies) {}
 
@@ -295,12 +292,25 @@ TEST_F(CookieStoreIOSTest, DeleteCallsHook) {
   GetCookies(base::BindOnce(&IgnoreList));
   ClearCookies();
   SetCookie("abc=def");
-  EXPECT_EQ(1U, cookies_changed_.size());
-  EXPECT_EQ(1U, cookies_removed_.size());
-  store_->DeleteCookieAsync(kTestCookieURLFooBar, "abc",
-                            base::Bind(&IgnoreBoolean, false));
+  ASSERT_EQ(1U, cookies_changed_.size());
+  ASSERT_EQ(1U, cookies_removed_.size());
+  EXPECT_EQ("abc", cookies_changed_[0].Name());
+  EXPECT_EQ("def", cookies_changed_[0].Value());
+  EXPECT_FALSE(cookies_removed_[0]);
+
+  base::RunLoop run_loop;
+  store_->DeleteAllAsync(base::BindLambdaForTesting([&](uint32_t num_deleted) {
+    EXPECT_EQ(1U, num_deleted);
+    run_loop.Quit();
+  }));
+  run_loop.Run();
   CookieStoreIOS::NotifySystemCookiesChanged();
   base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2U, cookies_changed_.size());
+  ASSERT_EQ(2U, cookies_removed_.size());
+  EXPECT_EQ("abc", cookies_changed_[1].Name());
+  EXPECT_EQ("def", cookies_changed_[1].Value());
+  EXPECT_TRUE(cookies_removed_[1]);
 }
 
 TEST_F(CookieStoreIOSTest, SameValueDoesNotCallHook) {

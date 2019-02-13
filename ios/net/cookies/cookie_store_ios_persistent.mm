@@ -98,14 +98,6 @@ void CookieStoreIOSPersistent::GetAllCookiesAsync(
   cookie_monster()->GetAllCookiesAsync(std::move(callback));
 }
 
-void CookieStoreIOSPersistent::DeleteCookieAsync(const GURL& url,
-                                                 const std::string& cookie_name,
-                                                 base::OnceClosure callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  cookie_monster()->DeleteCookieAsync(url, cookie_name,
-                                      WrapClosure(std::move(callback)));
-}
-
 void CookieStoreIOSPersistent::DeleteCanonicalCookieAsync(
     const CanonicalCookie& cookie,
     DeleteCallback callback) {

@@ -385,33 +385,6 @@ void CookieStoreIOS::GetAllCookiesAsync(GetCookieListCallback callback) {
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
-void CookieStoreIOS::DeleteCookieAsync(const GURL& url,
-                                       const std::string& cookie_name,
-                                       base::OnceClosure callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // If cookies are not allowed, a CookieStoreIOS subclass should be used
-  // instead.
-  DCHECK(SystemCookiesAllowed());
-
-  __block base::OnceClosure shared_callback = std::move(callback);
-  base::WeakPtr<SystemCookieStore> weak_system_store =
-      system_store_->GetWeakPtr();
-  system_store_->GetCookiesForURLAsync(
-      url, base::BindOnce(^(NSArray<NSHTTPCookie*>* cookies) {
-        for (NSHTTPCookie* cookie in cookies) {
-          if ([cookie.name
-                  isEqualToString:base::SysUTF8ToNSString(cookie_name)] &&
-              weak_system_store) {
-            weak_system_store->DeleteCookieAsync(
-                cookie, SystemCookieStore::SystemCookieCallback());
-          }
-        }
-        if (!shared_callback.is_null())
-          std::move(shared_callback).Run();
-      }));
-}
-
 void CookieStoreIOS::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                                 DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

@@ -168,9 +168,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetCookieListCallback callback) override;
-  void DeleteCookieAsync(const GURL& url,
-                         const std::string& cookie_name,
-                         base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -388,10 +385,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const std::string& cookie_line,
                             const CookieOptions& options,
                             SetCookiesCallback callback);
-
-  void DeleteCookie(const GURL& url,
-                    const std::string& cookie_name,
-                    base::OnceClosure callback);
 
   void DeleteCanonicalCookie(const CanonicalCookie& cookie,
                              DeleteCallback callback);
