@@ -137,15 +137,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_TITLE" desc="Title of the screen where users select an account to use. [Length: 20em] [iOS only]">
         Sign in to Chrome
       </message>
-      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_BETTER_BROWSER" desc="Description on the sign-in consent dialog to explain the benefit to sign-in. [Length: unlimited] [iOS only]">
-      Improve Chrome and its security by sending system and usage data to Google
-      </message>
-      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS" desc="Description on the sign-in consent dialog to explain the benefit to sign-in. [Length: unlimited] [iOS only]">
-      <ph name="BEGIN_LINK">BEGIN_LINK</ph>Settings<ph name="END_LINK">END_LINK</ph> can be customized anytime. Google may use content on sites you visit, browser interactions and activity to personalize Chrome and Google services like Translate, Search and ads.
-      </message>
-      <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE" desc="Title on the sign-in consent dialog to explain why sign-in can be useful for the user. [iOS only]">
-        Get Google smarts in Chrome
-      </message>
       <message name="IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance. Title case. [Length: 20em] [iOS only]">
         Copied to Chrome
       </message>

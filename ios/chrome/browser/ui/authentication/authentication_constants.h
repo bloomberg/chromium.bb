@@ -9,7 +9,6 @@
 
 // Header image sizes.
 extern const CGFloat kAuthenticationHeaderImageHeight;
-extern const CGFloat kAuthenticationHeaderImageWidth;
 
 // Font sizes
 extern const UIFontTextStyle kAuthenticationTitleFontStyle;
