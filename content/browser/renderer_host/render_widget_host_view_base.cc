@@ -556,12 +556,6 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-std::unique_ptr<SyntheticGestureTarget>
-RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
-  return std::unique_ptr<SyntheticGestureTarget>(
-      new SyntheticGestureTargetBase(host()));
-}
-
 void RenderWidgetHostViewBase::FocusedNodeTouched(
     bool editable) {
   DVLOG(1) << "FocusedNodeTouched: " << editable;

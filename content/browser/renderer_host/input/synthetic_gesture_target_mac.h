@@ -22,11 +22,26 @@ class SyntheticGestureTargetMac : public SyntheticGestureTargetBase {
   void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& event,
       const ui::LatencyInfo& latency_info) override;
+  void DispatchWebMouseWheelEventToPlatform(
+      const blink::WebMouseWheelEvent& web_wheel,
+      const ui::LatencyInfo& latency_info) override;
   void DispatchWebGestureEventToPlatform(
       const blink::WebGestureEvent& web_gesture,
       const ui::LatencyInfo& latency_info) override;
+  void DispatchWebMouseEventToPlatform(
+      const blink::WebMouseEvent& web_mouse,
+      const ui::LatencyInfo& latency_info) override;
+
+  // SyntheticGestureTarget:
+  SyntheticGestureParams::GestureSourceType
+  GetDefaultSyntheticGestureSourceType() const override;
+
+  float GetTouchSlopInDips() const override;
+  float GetSpanSlopInDips() const override;
+  float GetMinScalingSpanInDips() const override;
 
  private:
+  RenderWidgetHostViewMac* GetView() const;
   RenderWidgetHostViewCocoa* cocoa_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetMac);

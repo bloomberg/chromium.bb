@@ -123,6 +123,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
+  std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
+      override;
 
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
