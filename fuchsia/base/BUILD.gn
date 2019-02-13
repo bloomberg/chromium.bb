@@ -45,6 +45,7 @@ source_set("test_support") {
     "result_receiver.h",
   ]
   public_deps = [
+    ":modular",
     "//base",
     "//third_party/fuchsia-sdk/sdk:modular",
   ]
