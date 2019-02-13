@@ -56,14 +56,16 @@ bool LoadEGLGLES2Bindings(const base::FilePath& egl_library_path,
   base::NativeLibrary gles_library =
       base::LoadNativeLibrary(gles_library_path, &error);
   if (!gles_library) {
-    LOG(ERROR) << "Failed to load GLES library: " << error.ToString();
+    LOG(ERROR) << "Failed to load GLES library: " << gles_library_path << ": "
+               << error.ToString();
     return false;
   }
 
   base::NativeLibrary egl_library =
       base::LoadNativeLibrary(base::FilePath(egl_library_path), &error);
   if (!egl_library) {
-    LOG(ERROR) << "Failed to load EGL library: " << error.ToString();
+    LOG(ERROR) << "Failed to load EGL library: " << egl_library_path << ": "
+               << error.ToString();
     base::UnloadNativeLibrary(gles_library);
     return false;
   }
