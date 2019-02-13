@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 
 #include "base/bind.h"
@@ -619,6 +621,8 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void LeapForward(int milliseconds);
   double LastEventTimestamp();
   void BeginDragWithFiles(const std::vector<std::string>& files);
+  void BeginDragWithStringData(const std::string& data,
+                               const std::string& mime_type);
   void AddTouchPoint(double x, double y, gin::Arguments* args);
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
@@ -742,6 +746,8 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
       .SetMethod("leapForward", &EventSenderBindings::LeapForward)
       .SetMethod("lastEventTimestamp", &EventSenderBindings::LastEventTimestamp)
       .SetMethod("beginDragWithFiles", &EventSenderBindings::BeginDragWithFiles)
+      .SetMethod("beginDragWithStringData",
+                 &EventSenderBindings::BeginDragWithStringData)
       .SetMethod("addTouchPoint", &EventSenderBindings::AddTouchPoint)
       .SetMethod("gestureScrollBegin", &EventSenderBindings::GestureScrollBegin)
       .SetMethod("gestureScrollEnd", &EventSenderBindings::GestureScrollEnd)
@@ -948,6 +954,13 @@ void EventSenderBindings::BeginDragWithFiles(
     const std::vector<std::string>& files) {
   if (sender_)
     sender_->BeginDragWithFiles(files);
+}
+
+void EventSenderBindings::BeginDragWithStringData(
+    const std::string& data,
+    const std::string& mime_type) {
+  if (sender_)
+    sender_->BeginDragWithStringData(data, mime_type);
 }
 
 void EventSenderBindings::AddTouchPoint(double x,
@@ -2035,27 +2048,30 @@ void EventSender::LeapForward(int milliseconds) {
   }
 }
 
-void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
+void EventSender::BeginDragWithItems(
+    const WebVector<WebDragData::Item>& items) {
   if (!current_drag_data_.IsNull()) {
     // Nested dragging not supported, fuzzer code a likely culprit.
     // Cancel the current drag operation and throw an error.
     KeyDown("Escape", 0, DOMKeyLocationStandard);
     v8::Isolate* isolate = blink::MainThreadIsolate();
     isolate->ThrowException(v8::Exception::Error(gin::StringToV8(
-        isolate, "Nested beginDragWithFiles() not supported.")));
+        isolate,
+        "Nested beginDragWithFiles/beginDragWithStringData() not supported.")));
     return;
   }
+
   current_drag_data_.Initialize();
-  WebVector<WebString> absolute_filenames(files.size());
-  for (size_t i = 0; i < files.size(); ++i) {
-    WebDragData::Item item;
-    item.storage_type = WebDragData::Item::kStorageTypeFilename;
-    item.filename_data = delegate()->GetAbsoluteWebStringFromUTF8Path(files[i]);
-    current_drag_data_.AddItem(item);
-    absolute_filenames[i] = item.filename_data;
+  WebVector<WebString> absolute_filenames;
+  for (size_t i = 0; i < items.size(); ++i) {
+    current_drag_data_.AddItem(items[i]);
+    if (items[i].storage_type == WebDragData::Item::kStorageTypeFilename)
+      absolute_filenames.emplace_back(items[i].filename_data);
   }
-  current_drag_data_.SetFilesystemId(
-      delegate()->RegisterIsolatedFileSystem(absolute_filenames));
+  if (!absolute_filenames.empty()) {
+    current_drag_data_.SetFilesystemId(
+        delegate()->RegisterIsolatedFileSystem(absolute_filenames));
+  }
   current_drag_effects_allowed_ = blink::kWebDragOperationCopy;
 
   const WebPoint& last_pos =
@@ -2077,6 +2093,30 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   current_pointer_state_[kRawMousePointerId].current_buttons_ |=
       GetWebMouseEventModifierForButton(
           current_pointer_state_[kRawMousePointerId].pressed_button_);
+}
+
+void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
+  WebVector<WebDragData::Item> items;
+  for (size_t i = 0; i < files.size(); ++i) {
+    WebDragData::Item item;
+    item.storage_type = WebDragData::Item::kStorageTypeFilename;
+    item.filename_data = delegate()->GetAbsoluteWebStringFromUTF8Path(files[i]);
+    items.emplace_back(item);
+  }
+
+  BeginDragWithItems(items);
+}
+
+void EventSender::BeginDragWithStringData(const std::string& data,
+                                          const std::string& mime_type) {
+  WebVector<WebDragData::Item> items;
+  WebDragData::Item item;
+  item.storage_type = WebDragData::Item::kStorageTypeString;
+  item.string_data = WebString::FromUTF8(data);
+  item.string_type = WebString::FromUTF8(mime_type);
+  items.emplace_back(item);
+
+  BeginDragWithItems(items);
 }
 
 void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
