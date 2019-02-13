@@ -20,4 +20,8 @@ bool DevToolsAgentHostClient::MayAffectLocalFiles() {
   return true;
 }
 
+bool DevToolsAgentHostClient::UsesBinaryProtocol() {
+  return false;
+}
+
 }  // namespace content

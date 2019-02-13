@@ -375,4 +375,8 @@ void DevToolsPipeHandler::DispatchProtocolMessage(DevToolsAgentHost* agent_host,
 
 void DevToolsPipeHandler::AgentHostClosed(DevToolsAgentHost* agent_host) {}
 
+bool DevToolsPipeHandler::UsesBinaryProtocol() {
+  return mode_ == ProtocolMode::kCBOR;
+}
+
 }  // namespace content

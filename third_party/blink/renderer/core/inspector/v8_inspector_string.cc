@@ -59,27 +59,16 @@ std::unique_ptr<protocol::Value> StringUtil::parseJSON(const String& string) {
 }
 
 // static
-std::unique_ptr<protocol::Value> StringUtil::parseProtocolMessage(
-    const ProtocolMessage& message) {
-  return parseJSON(message.json);
-}
-
-// static
-ProtocolMessage StringUtil::toProtocolMessage(const Value& value) {
-  ProtocolMessage message;
-  message.json = value.toJSONString();
-  return message;
-}
-
-// static
-String StringUtil::jsonComponent(const ProtocolMessage& message) {
-  return message.json;
-}
-
-// static
-ProtocolMessage StringUtil::fromJsonComponent(const String& message) {
+ProtocolMessage StringUtil::jsonToMessage(const String& message) {
   ProtocolMessage result;
   result.json = message;
+  return result;
+}
+
+// static
+ProtocolMessage StringUtil::binaryToMessage(std::vector<uint8_t> message) {
+  ProtocolMessage result;
+  result.binary = std::move(message);
   return result;
 }
 

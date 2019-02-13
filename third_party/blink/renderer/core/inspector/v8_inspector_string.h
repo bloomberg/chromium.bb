@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8-inspector.h"
@@ -82,11 +83,16 @@ class CORE_EXPORT StringUtil {
     return builder.ToString();
   }
   static std::unique_ptr<protocol::Value> parseJSON(const String&);
-  static std::unique_ptr<protocol::Value> parseProtocolMessage(
-      const ProtocolMessage&);
-  static ProtocolMessage toProtocolMessage(const Value& value);
-  static String jsonComponent(const ProtocolMessage& message);
-  static ProtocolMessage fromJsonComponent(const String& message);
+  static ProtocolMessage jsonToMessage(const String& message);
+  static ProtocolMessage binaryToMessage(std::vector<uint8_t> message);
+
+  static String fromUTF8(const uint8_t* data, size_t length) {
+    return String::FromUTF8(reinterpret_cast<const char*>(data), length);
+  }
+  static void writeUTF8(const String& string, std::vector<uint8_t>* out) {
+    StringUTF8Adaptor adaptor(string);
+    out->insert(out->end(), adaptor.Data(), adaptor.Data() + adaptor.length());
+  }
 };
 
 // A read-only sequence of uninterpreted bytes with reference-counted storage.

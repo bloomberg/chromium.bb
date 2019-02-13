@@ -33,7 +33,7 @@ void UiDevToolsClient::Dispatch(const std::string& data) {
   int call_id;
   std::string method;
   std::unique_ptr<protocol::Value> protocolCommand =
-      protocol::StringUtil::parseJSON(data);
+      protocol::StringUtil::parseMessage(data, false);
   if (dispatcher_.parseCommand(protocolCommand.get(), &call_id, &method)) {
     dispatcher_.dispatch(call_id, method, std::move(protocolCommand), data);
   }
@@ -60,13 +60,13 @@ void UiDevToolsClient::sendProtocolResponse(
     int callId,
     std::unique_ptr<protocol::Serializable> message) {
   if (connected())
-    server_->SendOverWebSocket(connection_id_, message->serialize());
+    server_->SendOverWebSocket(connection_id_, message->serialize(false));
 }
 
 void UiDevToolsClient::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
   if (connected())
-    server_->SendOverWebSocket(connection_id_, message->serialize());
+    server_->SendOverWebSocket(connection_id_, message->serialize(false));
 }
 
 void UiDevToolsClient::flushProtocolNotifications() {

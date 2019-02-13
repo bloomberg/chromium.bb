@@ -276,7 +276,7 @@ void TracingHandler::OnTraceDataCollected(
   message.append(valid_trace_fragment.c_str() +
                  trace_data_buffer_state_.offset);
   message += "] } }";
-  frontend_->sendRawNotification(message);
+  frontend_->sendRawNotification(std::move(message));
 }
 
 void TracingHandler::OnTraceComplete() {

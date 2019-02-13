@@ -52,9 +52,18 @@ mojom::blink::DevToolsMessagePtr WrapMessage(
 }
 
 protocol::ProtocolMessage ToProtocolMessage(
-    const v8_inspector::StringView& string) {
+    std::unique_ptr<v8_inspector::StringBuffer> buffer,
+    bool binary) {
   protocol::ProtocolMessage message;
-  message.json = ToCoreString(string);
+  if (binary) {
+    const auto& string = buffer->string();
+    DCHECK(string.is8Bit());
+    // TODO: add StringBuffer::takeBytes().
+    message.binary = std::vector<uint8_t>(
+        string.characters8(), string.characters8() + string.length());
+  } else {
+    message.json = ToCoreString(buffer->string());
+  }
   return message;
 }
 
@@ -192,21 +201,10 @@ void DevToolsSession::DispatchProtocolCommand(
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   const String& method,
                                                   std::vector<uint8_t> data) {
-  // At this point, message is either a UTF8 string or a binary message.
-  protocol::ProtocolMessage message;
-  if (data.size()) {
-    if (data[0] == '{') {
-      // JSON format.
-      message.json = WTF::String::FromUTF8(
-          reinterpret_cast<const char*>(data.data()), data.size());
-    } else {
-      // Binary format.
-    }
-  } else {
-    message.json = g_empty_string;
-  }
+  bool binary_protocol = data.size() && data[0] == 0xD8;
+  if (binary_protocol)
+    uses_binary_protocol_ = true;
 
-  //
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
   // and get posted to main thread to this method.
@@ -222,9 +220,27 @@ void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
   agent_->client_->DebuggerTaskStarted();
   if (v8_inspector::V8InspectorSession::canDispatchMethod(
           ToV8InspectorStringView(method))) {
-    v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message.json));
+    if (binary_protocol) {
+      // Binary protocol messages are passed using 8-bit StringView.
+      v8_session_->dispatchProtocolMessage(
+          v8_inspector::StringView(data.data(), data.size()));
+    } else {
+      String message = WTF::String::FromUTF8(
+          reinterpret_cast<const char*>(data.data()), data.size());
+      v8_session_->dispatchProtocolMessage(ToV8InspectorStringView(message));
+    }
   } else {
-    inspector_backend_dispatcher_->dispatch(call_id, method, message);
+    std::unique_ptr<protocol::Value> value;
+    if (binary_protocol) {
+      value = protocol::Value::parseBinary(data.data(), data.size());
+    } else {
+      String message = WTF::String::FromUTF8(
+          reinterpret_cast<const char*>(data.data()), data.size());
+      value = protocol::StringUtil::parseJSON(message);
+    }
+    // Don't pass protocol message further - there is no passthrough.
+    inspector_backend_dispatcher_->dispatch(call_id, method, std::move(value),
+                                            protocol::ProtocolMessage());
   }
   agent_->client_->DebuggerTaskFinished();
 }
@@ -251,7 +267,7 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(call_id, message->serialize());
+  SendProtocolResponse(call_id, message->serialize(uses_binary_protocol_));
 }
 
 void DevToolsSession::fallThrough(int call_id,
@@ -267,7 +283,8 @@ void DevToolsSession::sendResponse(
   // We can potentially avoid copies if WebString would convert to utf8 right
   // from StringView, but it uses StringImpl itself, so we don't create any
   // extra copies here.
-  SendProtocolResponse(call_id, ToProtocolMessage(message->string()));
+  SendProtocolResponse(
+      call_id, ToProtocolMessage(std::move(message), uses_binary_protocol_));
 }
 
 void DevToolsSession::SendProtocolResponse(
@@ -307,13 +324,13 @@ class DevToolsSession::Notification {
       std::unique_ptr<v8_inspector::StringBuffer> notification)
       : v8_notification_(std::move(notification)) {}
 
-  mojom::blink::DevToolsMessagePtr Serialize() {
+  mojom::blink::DevToolsMessagePtr Serialize(bool binary) {
     protocol::ProtocolMessage serialized;
     if (blink_notification_) {
-      serialized = blink_notification_->serialize();
+      serialized = blink_notification_->serialize(binary);
       blink_notification_.reset();
     } else if (v8_notification_) {
-      serialized = ToProtocolMessage(v8_notification_->string());
+      serialized = ToProtocolMessage(std::move(v8_notification_), binary);
       v8_notification_.reset();
     }
     return WrapMessage(serialized);
@@ -350,8 +367,9 @@ void DevToolsSession::flushProtocolNotifications() {
   if (v8_session_)
     v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
-    host_ptr_->DispatchProtocolNotification(notification_queue_[i]->Serialize(),
-                                            session_state_.TakeUpdates());
+    host_ptr_->DispatchProtocolNotification(
+        notification_queue_[i]->Serialize(uses_binary_protocol_),
+        session_state_.TakeUpdates());
   }
   notification_queue_.clear();
 }

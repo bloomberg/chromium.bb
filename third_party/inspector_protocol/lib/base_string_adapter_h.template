@@ -87,15 +87,18 @@ class {{config.lib.export_macro}} StringUtil {
   static String builderToString(StringBuilder& builder) {
     return builder.toString();
   }
-  static std::vector<uint8_t> utf8data(const String& str) {
-    return std::vector<uint8_t>(str.begin(), str.end());
-  }
 
-  static std::unique_ptr<Value> parseJSON(const String&);
-  static std::unique_ptr<Value> parseProtocolMessage(const ProtocolMessage&);
-  static ProtocolMessage toProtocolMessage(const Value& value);
-  static String jsonComponent(const ProtocolMessage& message);
-  static ProtocolMessage fromJsonComponent(const String& message);
+  static std::unique_ptr<Value> parseMessage(const std::string& message, bool binary);
+  static ProtocolMessage jsonToMessage(String message);
+  static ProtocolMessage binaryToMessage(std::vector<uint8_t> message);
+
+  static String fromUTF8(const uint8_t* data, size_t length) {
+    return std::string(reinterpret_cast<const char*>(data), length);
+  }
+  static void writeUTF8(const String& string, std::vector<uint8_t>* out) {
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(string.data());
+    out->insert(out->end(), data, data + string.length());
+  }
 };
 
 // A read-only sequence of uninterpreted bytes with reference-counted storage.
