@@ -1,0 +1,14 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE language:en
+++IA2_ROLE_SECTION language:en
+++++ROLE_SYSTEM_STATICTEXT name='This is a very important form full of very important form related things to fill in, it is likely the most important form you will see within the next 100 milliseconds. You may think I am just rambling, but this is rambling with a purpose! We need enough content in this div to force splitting across multiple inlineTextBox-en which we can then ignore using *-DENY-NODE.' language:en
+++IA2_ROLE_FORM language:en language:en language:en language:en language:en language:en language:en language:en
+++++IA2_ROLE_PARAGRAPH language:en
+++++++ROLE_SYSTEM_STATICTEXT name='Please provide your details:' language:en
+++++IA2_ROLE_LABEL language:en
+++++++ROLE_SYSTEM_STATICTEXT name='Quack:' language:en
+++++ROLE_SYSTEM_TEXT name='Quack:' FOCUSABLE
+++++IA2_ROLE_LABEL language:en
+++++++ROLE_SYSTEM_STATICTEXT name='Moo?:' language:en
+++++ROLE_SYSTEM_RADIOBUTTON name='Mooooo!' FOCUSABLE IA2_STATE_CHECKABLE checkable:true language:en
+++++ROLE_SYSTEM_RADIOBUTTON name='Mooooo?' FOCUSABLE IA2_STATE_CHECKABLE checkable:true language:en
+++++ROLE_SYSTEM_PUSHBUTTON name='Submit' FOCUSABLE language:en

@@ -1,0 +1,15 @@
+rootWebArea language='en-US'
+++genericContainer language='en'
+++++staticText language='en' name='This is a very important form full of very important form related things to fill in, it is likely the most important form you will see within the next 100 milliseconds. You may think I am just rambling, but this is rambling with a purpose! We need enough content in this div to force splitting across multiple inlineTextBox-en which we can then ignore using *-DENY-NODE.'
+++form language='en'
+++++paragraph language='en'
+++++++staticText language='en' name='Please provide your details:'
+++++labelText language='en'
+++++++staticText language='en' name='Quack:'
+++++textField language='en' name='Quack:'
+++++++genericContainer language='en'
+++++labelText language='en'
+++++++staticText language='en' name='Moo?:'
+++++radioButton language='en' name='Mooooo!' checkedState=false
+++++radioButton language='en' name='Mooooo?' checkedState=false
+++++button language='en' name='Submit'

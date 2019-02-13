@@ -504,4 +504,8 @@ const std::string AccessibilityTreeFormatterBlink::GetDenyString() {
   return "@BLINK-DENY:";
 }
 
+const std::string AccessibilityTreeFormatterBlink::GetDenyNodeString() {
+  return "@BLINK-DENY-NODE:";
+}
+
 }  // namespace content

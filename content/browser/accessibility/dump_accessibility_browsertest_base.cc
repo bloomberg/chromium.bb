@@ -76,7 +76,8 @@ bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
 
 }  // namespace
 
-typedef AccessibilityTreeFormatter::Filter Filter;
+typedef AccessibilityTreeFormatter::PropertyFilter PropertyFilter;
+typedef AccessibilityTreeFormatter::NodeFilter NodeFilter;
 
 DumpAccessibilityTestBase::DumpAccessibilityTestBase()
     : is_blink_pass_(false),
@@ -101,9 +102,10 @@ base::string16
 DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
       CreateAccessibilityTreeFormatter());
-  std::vector<Filter> filters;
-  filters.push_back(Filter(base::ASCIIToUTF16("*"), Filter::ALLOW));
-  formatter->SetFilters(filters);
+  std::vector<PropertyFilter> property_filters;
+  property_filters.push_back(
+      PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
+  formatter->SetPropertyFilters(property_filters);
   formatter->set_show_ids(true);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       shell()->web_contents());
@@ -149,25 +151,35 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& allow_empty_str = formatter_->GetAllowEmptyString();
     const std::string& allow_str = formatter_->GetAllowString();
     const std::string& deny_str = formatter_->GetDenyString();
+    const std::string& deny_node_str = formatter_->GetDenyNodeString();
     const std::string& wait_str = "@WAIT-FOR:";
     const std::string& until_str = "@RUN-UNTIL-EVENT:";
     if (base::StartsWith(line, allow_empty_str,
                          base::CompareCase::SENSITIVE)) {
-      filters_.push_back(
-          Filter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
-                 Filter::ALLOW_EMPTY));
+      property_filters_.push_back(
+          PropertyFilter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
+                         PropertyFilter::ALLOW_EMPTY));
     } else if (base::StartsWith(line, allow_str,
                                 base::CompareCase::SENSITIVE)) {
-      filters_.push_back(Filter(base::UTF8ToUTF16(
-          line.substr(allow_str.size())),
-                                Filter::ALLOW));
+      property_filters_.push_back(
+          PropertyFilter(base::UTF8ToUTF16(line.substr(allow_str.size())),
+                         PropertyFilter::ALLOW));
     } else if (base::StartsWith(line, deny_str,
                                 base::CompareCase::SENSITIVE)) {
-      filters_.push_back(Filter(base::UTF8ToUTF16(
-          line.substr(deny_str.size())),
-                                Filter::DENY));
-    } else if (base::StartsWith(line, wait_str,
+      property_filters_.push_back(
+          PropertyFilter(base::UTF8ToUTF16(line.substr(deny_str.size())),
+                         PropertyFilter::DENY));
+    } else if (base::StartsWith(line, deny_node_str,
                                 base::CompareCase::SENSITIVE)) {
+      const auto& node_filter = line.substr(deny_node_str.size());
+      const auto& parts = base::SplitString(
+          node_filter, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      // Silently skip over parsing errors like the rest of the enclosing code.
+      if (parts.size() == 2) {
+        node_filters_.push_back(
+            NodeFilter(parts[0], base::UTF8ToUTF16(parts[1])));
+      }
+    } else if (base::StartsWith(line, wait_str, base::CompareCase::SENSITIVE)) {
       wait_for->push_back(line.substr(wait_str.size()));
     } else if (base::StartsWith(line, until_str,
                                 base::CompareCase::SENSITIVE)) {
@@ -259,8 +271,9 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   // Parse filters and other directives in the test file.
   std::vector<std::string> wait_for;
   std::vector<std::string> run_until;
-  filters_.clear();
-  AddDefaultFilters(&filters_);
+  property_filters_.clear();
+  node_filters_.clear();
+  AddDefaultFilters(&property_filters_);
   ParseHtmlForExtraDirectives(html_contents, &wait_for, &run_until);
 
   // Get the test URL.

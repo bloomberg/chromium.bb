@@ -36,6 +36,7 @@ class AccessibilityTreeFormatterAuraLinux
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
+  const std::string GetDenyNodeString() override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
 
@@ -338,6 +339,10 @@ const std::string AccessibilityTreeFormatterAuraLinux::GetAllowString() {
 
 const std::string AccessibilityTreeFormatterAuraLinux::GetDenyString() {
   return "@AURALINUX-DENY:";
+}
+
+const std::string AccessibilityTreeFormatterAuraLinux::GetDenyNodeString() {
+  return "@AURALINUX-DENY-NODE:";
 }
 
 }  // namespace content

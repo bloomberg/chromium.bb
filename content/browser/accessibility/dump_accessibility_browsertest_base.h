@@ -52,7 +52,8 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
 
   // Add the default filters that are applied to all tests.
   virtual void AddDefaultFilters(
-      std::vector<AccessibilityTreeFormatter::Filter>* filters) = 0;
+      std::vector<AccessibilityTreeFormatter::PropertyFilter>*
+          property_filters) = 0;
 
   // This gets called if the diff didn't match; the test can print
   // additional useful info.
@@ -75,10 +76,10 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   // beginning with an '@' and inside an HTML comment, that control how the
   // test is run and how the results are interpreted.
   //
-  // When the accessibility tree is dumped as text, each attribute is
-  // run through filters before being appended to the string. An "allow"
+  // When the accessibility tree is dumped as text, each node and each attribute
+  // is run through filters before being appended to the string. An "allow"
   // filter specifies attribute strings that should be dumped, and a "deny"
-  // filter specifies strings that should be suppressed. As an example,
+  // filter specifies strings or nodes that should be suppressed. As an example,
   // @MAC-ALLOW:AXSubrole=* means that the AXSubrole attribute should be
   // printed, while @MAC-ALLOW:AXSubrole=AXList* means that any subrole
   // beginning with the text "AXList" should be printed.
@@ -101,8 +102,12 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
 
   void RunTestForPlatform(const base::FilePath file_path, const char* file_dir);
 
-  // The default filters plus the filters loaded from the test file.
-  std::vector<AccessibilityTreeFormatter::Filter> filters_;
+  // The default property filters plus the property filters loaded from the test
+  // file.
+  std::vector<AccessibilityTreeFormatter::PropertyFilter> property_filters_;
+
+  // The node filters loaded from the test file.
+  std::vector<AccessibilityTreeFormatter::NodeFilter> node_filters_;
 
 #if defined(LEAK_SANITIZER) && !defined(OS_NACL)
   // http://crbug.com/568674
