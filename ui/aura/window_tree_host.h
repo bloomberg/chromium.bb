@@ -341,7 +341,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
                             const gfx::Point& host_location);
 
   // Overrided from CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
+  void OnCompositingEnded(ui::Compositor* compositor) override;
   void OnCompositingChildResizing(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 

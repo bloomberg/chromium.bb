@@ -129,7 +129,7 @@ class OverviewSessionTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-
+    Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
     shelf_view_test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_api_->SetAnimationDuration(1);
