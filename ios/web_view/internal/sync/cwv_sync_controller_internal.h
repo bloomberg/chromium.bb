@@ -22,7 +22,6 @@ namespace identity {
 class IdentityManager;
 }
 
-class ProfileOAuth2TokenService;
 class SigninErrorController;
 
 @interface CWVSyncController ()
@@ -30,7 +29,6 @@ class SigninErrorController;
 // All dependencies must out live this class.
 - (instancetype)initWithSyncService:(syncer::SyncService*)syncService
                     identityManager:(identity::IdentityManager*)identityManager
-                       tokenService:(ProfileOAuth2TokenService*)tokenService
               signinErrorController:
                   (SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;

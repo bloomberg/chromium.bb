@@ -9,9 +9,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "ios/web/public/web_thread.h"
@@ -109,7 +107,6 @@ class WebViewSyncControllerObserverBridge
 @implementation CWVSyncController {
   syncer::SyncService* _syncService;
   identity::IdentityManager* _identityManager;
-  ProfileOAuth2TokenService* _tokenService;
   SigninErrorController* _signinErrorController;
   std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
 
@@ -121,14 +118,12 @@ class WebViewSyncControllerObserverBridge
 
 - (instancetype)initWithSyncService:(syncer::SyncService*)syncService
                     identityManager:(identity::IdentityManager*)identityManager
-                       tokenService:(ProfileOAuth2TokenService*)tokenService
               signinErrorController:
                   (SigninErrorController*)signinErrorController {
   self = [super init];
   if (self) {
     _syncService = syncService;
     _identityManager = identityManager;
-    _tokenService = tokenService;
     _signinErrorController = signinErrorController;
     _observer =
         std::make_unique<ios_web_view::WebViewSyncControllerObserverBridge>(
@@ -216,13 +211,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)reloadCredentials {
-  std::string authenticatedID = _identityManager->GetPrimaryAccountId();
-  if (!authenticatedID.empty()) {
-    ProfileOAuth2TokenServiceIOSDelegate* tokenDelegate =
-        static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-            _tokenService->GetDelegate());
-    tokenDelegate->ReloadCredentials(authenticatedID);
-  }
+  _identityManager->LegacyReloadAccountsFromSystem();
 }
 
 #pragma mark - Internal Methods
