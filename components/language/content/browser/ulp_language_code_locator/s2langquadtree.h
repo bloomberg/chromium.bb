@@ -21,9 +21,15 @@ class S2LangQuadTreeNode {
   S2LangQuadTreeNode(const S2LangQuadTreeNode& other);
   ~S2LangQuadTreeNode();
 
-  // Return the language in the deepest/lowest/smallest node containing the
-  // given cell.
-  std::string Get(const S2CellId& cell) const;
+  // Return language of the leaf containing the given |cell|.
+  // Empty string if a null-leaf contains given |cell|.
+  // |level_ptr| is set to the level (see S2CellId::level) of the leaf. (-1 if
+  // |cell| matches an internal node).
+  std::string Get(const S2CellId& cell, int* level_ptr) const;
+  std::string Get(const S2CellId& cell) const {
+    int level;
+    return Get(cell, &level);
+  }
 
   // Reconstruct a S2LangQuadTree with structure given by |tree| and with
   // languages given by |languages|. |tree| represents a depth-first traversal

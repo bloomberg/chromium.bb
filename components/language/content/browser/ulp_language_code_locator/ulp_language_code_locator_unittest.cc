@@ -49,7 +49,7 @@ void ExpectLatLngHasLanguages(const UlpLanguageCodeLocator& locator,
   EXPECT_THAT(languages, ::testing::ElementsAreArray(languages_expected));
 }
 
-TEST(UlpLanguageCodeLocatorTest, QuadrantMatchLanguages) {
+TEST(UlpLanguageCodeLocatorTest, TreeLeaves) {
   std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots = GetTestTrees();
   const UlpLanguageCodeLocator locator(std::move(roots));
   const S2CellId face = S2CellId::FromFace(0);
@@ -59,4 +59,32 @@ TEST(UlpLanguageCodeLocatorTest, QuadrantMatchLanguages) {
   ExpectLatLngHasLanguages(locator, face.child(2), {"fr", "en"});
   ExpectLatLngHasLanguages(locator, face.child(3), {"en", "en"});
 }
+
+TEST(UlpLanguageCodeLocatorTest, Idempotence) {
+  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots = GetTestTrees();
+  const UlpLanguageCodeLocator locator(std::move(roots));
+  const S2CellId face = S2CellId::FromFace(0);
+
+  ExpectLatLngHasLanguages(locator, face.child(0), {"fr", "de"});
+  ExpectLatLngHasLanguages(locator, face.child(0), {"fr", "de"});
+
+  ExpectLatLngHasLanguages(locator, face.child(3), {"en", "en"});
+  ExpectLatLngHasLanguages(locator, face.child(3), {"en", "en"});
+}
+
+TEST(UlpLanguageCodeLocatorTest, TreeLeafDescendants) {
+  std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots = GetTestTrees();
+  const UlpLanguageCodeLocator locator(std::move(roots));
+  const S2CellId cell = S2CellId::FromFace(0).child(0);
+
+  ExpectLatLngHasLanguages(locator, cell, {"fr", "de"});
+
+  const int depth = 2;
+  // Check that the 4**|depth| descendants of |child| map to the same language.
+  const int level = cell.level() + depth;
+  for (S2CellId descendant = cell.child_begin(level);
+       descendant != cell.child_end(level); descendant = descendant.next())
+    ExpectLatLngHasLanguages(locator, descendant, {"fr", "de"});
+}
+
 }  // namespace language

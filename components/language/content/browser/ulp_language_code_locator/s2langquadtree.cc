@@ -12,19 +12,20 @@ S2LangQuadTreeNode::S2LangQuadTreeNode(const S2LangQuadTreeNode& other) =
     default;
 S2LangQuadTreeNode::~S2LangQuadTreeNode() = default;
 
-std::string S2LangQuadTreeNode::Get(const S2CellId& cell) const {
+std::string S2LangQuadTreeNode::Get(const S2CellId& cell,
+                                    int* level_ptr) const {
   const S2LangQuadTreeNode* node = this;
-  const std::string* language = &(node->language_);
-  for (int current_level = 1; current_level <= cell.level(); ++current_level) {
-    const S2LangQuadTreeNode* const child =
-        node->GetChild(cell.child_position(current_level));
-    if (child == nullptr)
-      break;
-    node = child;
-    if (!node->language_.empty())
-      language = &(node->language_);
+  for (int current_level = 0; current_level <= cell.level(); current_level++) {
+    if (node == nullptr || !node->language_.empty()) {
+      *level_ptr = current_level;
+      return node == nullptr ? "" : node->language_;
+    }
+
+    if (current_level < cell.level())
+      node = node->GetChild(cell.child_position(current_level + 1));
   }
-  return *language;
+  *level_ptr = -1;
+  return "";
 }
 
 const S2LangQuadTreeNode* S2LangQuadTreeNode::GetChild(
