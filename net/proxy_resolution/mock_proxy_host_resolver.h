@@ -14,7 +14,7 @@
 #include "base/callback_forward.h"
 #include "net/base/ip_address.h"
 #include "net/proxy_resolution/proxy_host_resolver.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 
 namespace net {
 
@@ -30,13 +30,13 @@ class MockProxyHostResolver : public ProxyHostResolver {
 
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolverV8::JSBindings::ResolveDnsOperation operation) override;
+      ProxyResolveDnsOperation operation) override;
 
   void SetError(const std::string& hostname,
-                ProxyResolverV8::JSBindings::ResolveDnsOperation operation);
+                ProxyResolveDnsOperation operation);
 
   void SetResult(const std::string& hostname,
-                 ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
+                 ProxyResolveDnsOperation operation,
                  std::vector<IPAddress> result);
 
   void FailAll();
@@ -44,8 +44,7 @@ class MockProxyHostResolver : public ProxyHostResolver {
   unsigned num_resolve() const { return num_resolve_; }
 
  private:
-  using ResultKey =
-      std::pair<std::string, ProxyResolverV8::JSBindings::ResolveDnsOperation>;
+  using ResultKey = std::pair<std::string, ProxyResolveDnsOperation>;
 
   class RequestImpl;
 
@@ -66,7 +65,7 @@ class HangingProxyHostResolver : public ProxyHostResolver {
 
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolverV8::JSBindings::ResolveDnsOperation operation) override;
+      ProxyResolveDnsOperation operation) override;
 
   int num_cancelled_requests() const { return num_cancelled_requests_; }
 

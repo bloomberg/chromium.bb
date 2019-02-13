@@ -11,7 +11,7 @@
 
 #include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 
 namespace net {
 
@@ -30,7 +30,7 @@ class NET_EXPORT ProxyHostResolver {
 
   virtual std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolverV8::JSBindings::ResolveDnsOperation operation) = 0;
+      ProxyResolveDnsOperation operation) = 0;
 };
 
 }  // namespace net

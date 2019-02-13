@@ -28,6 +28,7 @@
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/mock_proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
@@ -313,22 +314,22 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   host_resolver.SetResult(GetHostName(),
-                          ProxyResolverV8::JSBindings::MY_IP_ADDRESS,
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS,
                           {IPAddress(122, 133, 144, 155)});
   host_resolver.SetResult(GetHostName(),
-                          ProxyResolverV8::JSBindings::MY_IP_ADDRESS_EX,
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS_EX,
                           {IPAddress(133, 122, 100, 200)});
-  host_resolver.SetError("", ProxyResolverV8::JSBindings::DNS_RESOLVE);
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetError("", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 44)});
   IPAddress v6_local;
   ASSERT_TRUE(v6_local.AssignFromIPLiteral("::1"));
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE_EX,
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                           {v6_local, IPAddress(192, 168, 1, 1)});
-  host_resolver.SetError("host2", ProxyResolverV8::JSBindings::DNS_RESOLVE);
-  host_resolver.SetResult("host3", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetError("host2", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 33)});
-  host_resolver.SetError("host6", ProxyResolverV8::JSBindings::DNS_RESOLVE_EX);
+  host_resolver.SetError("host6", ProxyResolveDnsOperation::DNS_RESOLVE_EX);
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
       &log, &host_resolver, base::WrapUnique(error_observer), "dns.js");
@@ -393,9 +394,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 11)});
-  host_resolver.SetResult("crazy4", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("crazy4", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(133, 199, 111, 4)});
 
   std::unique_ptr<ProxyResolver> resolver =
@@ -448,13 +449,13 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous2) {
   MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 11)});
-  host_resolver.SetResult("host2", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 22)});
-  host_resolver.SetResult("host3", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 33)});
-  host_resolver.SetResult("host4", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host4", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(166, 155, 144, 44)});
 
   std::unique_ptr<ProxyResolver> resolver =
@@ -495,7 +496,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence) {
 
   for (int i = 0; i < 21; ++i) {
     host_resolver.SetResult("host" + std::to_string(i),
-                            ProxyResolverV8::JSBindings::DNS_RESOLVE,
+                            ProxyResolveDnsOperation::DNS_RESOLVE,
                             {IPAddress(166, 155, 144, 11)});
   }
 
@@ -544,11 +545,11 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence2) {
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   host_resolver.SetResult(GetHostName(),
-                          ProxyResolverV8::JSBindings::MY_IP_ADDRESS,
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS,
                           {IPAddress(122, 133, 144, 155)});
   for (int i = 0; i < 21; ++i) {
     host_resolver.SetResult("host" + std::to_string(i),
-                            ProxyResolverV8::JSBindings::DNS_RESOLVE,
+                            ProxyResolveDnsOperation::DNS_RESOLVE,
                             {IPAddress(166, 155, 144, 11)});
   }
 
@@ -584,9 +585,9 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   MockProxyHostResolver host_resolver(synchronous_host_resolver);
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(91, 13, 12, 1)});
-  host_resolver.SetResult("host2", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(91, 13, 12, 2)});
 
   std::unique_ptr<ProxyResolver> resolver =
@@ -596,9 +597,9 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   // Initialization did 2 dnsResolves.
   EXPECT_EQ(2u, host_resolver.num_resolve());
 
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(145, 88, 13, 3)});
-  host_resolver.SetResult("host2", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(137, 89, 8, 45)});
 
   TestCompletionCallback callback;
@@ -934,9 +935,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Terminate) {
   MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                           {IPAddress(182, 111, 0, 222)});
-  host_resolver.SetResult("host2", ProxyResolverV8::JSBindings::DNS_RESOLVE_EX,
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                           {IPAddress(111, 33, 44, 55)});
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
@@ -976,22 +977,22 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   // ------------------------
   MockProxyHostResolver host_resolver0;
   host_resolver0.SetResult(GetHostName(),
-                           ProxyResolverV8::JSBindings::MY_IP_ADDRESS,
+                           ProxyResolveDnsOperation::MY_IP_ADDRESS,
                            {IPAddress(122, 133, 144, 155)});
   host_resolver0.SetResult(GetHostName(),
-                           ProxyResolverV8::JSBindings::MY_IP_ADDRESS_EX,
+                           ProxyResolveDnsOperation::MY_IP_ADDRESS_EX,
                            {IPAddress(133, 122, 100, 200)});
-  host_resolver0.SetError("", ProxyResolverV8::JSBindings::DNS_RESOLVE);
-  host_resolver0.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver0.SetError("", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver0.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
                            {IPAddress(166, 155, 144, 44)});
   IPAddress v6_local;
   ASSERT_TRUE(v6_local.AssignFromIPLiteral("::1"));
-  host_resolver0.SetResult("host1", ProxyResolverV8::JSBindings::DNS_RESOLVE_EX,
+  host_resolver0.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                            {v6_local, IPAddress(192, 168, 1, 1)});
-  host_resolver0.SetError("host2", ProxyResolverV8::JSBindings::DNS_RESOLVE);
-  host_resolver0.SetResult("host3", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver0.SetError("host2", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver0.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
                            {IPAddress(166, 155, 144, 33)});
-  host_resolver0.SetError("host6", ProxyResolverV8::JSBindings::DNS_RESOLVE_EX);
+  host_resolver0.SetError("host6", ProxyResolveDnsOperation::DNS_RESOLVE_EX);
   std::unique_ptr<ProxyResolver> resolver0 =
       CreateResolver(nullptr, &host_resolver0,
                      std::make_unique<MockErrorObserver>(), "dns.js");
@@ -1014,7 +1015,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   // Setup resolver3
   // ------------------------
   MockProxyHostResolver host_resolver3;
-  host_resolver3.SetResult("foo", ProxyResolverV8::JSBindings::DNS_RESOLVE,
+  host_resolver3.SetResult("foo", ProxyResolveDnsOperation::DNS_RESOLVE,
                            {IPAddress(166, 155, 144, 33)});
   std::unique_ptr<ProxyResolver> resolver3 =
       CreateResolver(nullptr, &host_resolver3,

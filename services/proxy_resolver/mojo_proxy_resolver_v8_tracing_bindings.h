@@ -17,7 +17,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_host_resolver.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "services/proxy_resolver/host_resolver_mojo.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -62,23 +62,22 @@ class MojoProxyResolverV8TracingBindings
 
  private:
   // HostResolverMojo::Impl override.
-  void ResolveDns(
-      const std::string& hostname,
-      net::ProxyResolverV8::JSBindings::ResolveDnsOperation operation,
-      mojom::HostResolverRequestClientPtr client) override {
+  void ResolveDns(const std::string& hostname,
+                  net::ProxyResolveDnsOperation operation,
+                  mojom::HostResolverRequestClientPtr client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     net::HostPortPair host_port = net::HostPortPair(hostname, 80);
     auto info = std::make_unique<net::HostResolver::RequestInfo>(host_port);
 
     // Flag myIpAddress requests.
-    if (operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS ||
-        operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS_EX)
+    if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+        operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX)
       info->set_is_my_ip_address(true);
 
     // The non-ex flavors are limited to IPv4 results.
-    if (operation == net::ProxyResolverV8::JSBindings::MY_IP_ADDRESS ||
-        operation == net::ProxyResolverV8::JSBindings::DNS_RESOLVE) {
+    if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+        operation == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
       info->set_address_family(net::ADDRESS_FAMILY_IPV4);
     }
 

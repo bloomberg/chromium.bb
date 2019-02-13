@@ -42,30 +42,30 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   }
 
   bool ResolveDns(const std::string& host,
-                  ResolveDnsOperation op,
+                  ProxyResolveDnsOperation op,
                   std::string* output,
                   bool* terminate) override {
     *terminate = should_terminate;
 
-    if (op == MY_IP_ADDRESS) {
+    if (op == ProxyResolveDnsOperation::MY_IP_ADDRESS) {
       my_ip_address_count++;
       *output = my_ip_address_result;
       return !my_ip_address_result.empty();
     }
 
-    if (op == MY_IP_ADDRESS_EX) {
+    if (op == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX) {
       my_ip_address_ex_count++;
       *output = my_ip_address_ex_result;
       return !my_ip_address_ex_result.empty();
     }
 
-    if (op == DNS_RESOLVE) {
+    if (op == ProxyResolveDnsOperation::DNS_RESOLVE) {
       dns_resolves.push_back(host);
       *output = dns_resolve_result;
       return !dns_resolve_result.empty();
     }
 
-    if (op == DNS_RESOLVE_EX) {
+    if (op == ProxyResolveDnsOperation::DNS_RESOLVE_EX) {
       dns_resolves_ex.push_back(host);
       *output = dns_resolve_ex_result;
       return !dns_resolve_ex_result.empty();
