@@ -30,7 +30,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/network_change_notifier.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -166,7 +167,7 @@ bool CrostiniInstallerView::Accept() {
 
   // HandleError needs the |progress_bar_|, so we delay our Offline check until
   // it exists.
-  if (net::NetworkChangeNotifier::IsOffline()) {
+  if (content::GetNetworkConnectionTracker()->IsOffline()) {
     const base::string16 device_type = ui::GetChromeOSDeviceName();
     HandleError(l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
                                            device_type),

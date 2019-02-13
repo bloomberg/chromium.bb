@@ -44,14 +44,15 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/service_manager_connection.h"
 #include "dbus/message.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
-#include "net/base/network_change_notifier.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
@@ -644,7 +645,7 @@ void CrostiniManager::MaybeUpgradeCrostiniAfterChecks() {
     return;
   }
   termina_update_check_needed_ = true;
-  if (net::NetworkChangeNotifier::IsOffline()) {
+  if (content::GetNetworkConnectionTracker()->IsOffline()) {
     // Can't do a component Load with kForce when offline.
     VLOG(1) << "Not online, so can't check now for cros-termina upgrade.";
     return;
@@ -673,7 +674,7 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
       cros_component_manager
           ->GetCompatiblePath(imageloader::kTerminaComponentName)
           .empty();
-  bool is_offline = net::NetworkChangeNotifier::IsOffline();
+  bool is_offline = content::GetNetworkConnectionTracker()->IsOffline();
 
   if (major_update_required) {
     termina_update_check_needed_ = false;
