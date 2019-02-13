@@ -40,7 +40,7 @@ function TestMediaScanner() {
 
 /** @override */
 TestMediaScanner.prototype.scanDirectory = function(directory, mode) {
-  var scan = new TestScanResult(this.fileEntries);
+  const scan = new TestScanResult(this.fileEntries);
   scan.totalBytes = this.totalBytes;
   scan.scanDuration = this.scanDuration;
   this.scans_.push(scan);
@@ -49,7 +49,7 @@ TestMediaScanner.prototype.scanDirectory = function(directory, mode) {
 
 /** @override */
 TestMediaScanner.prototype.scanFiles = function(entries, mode) {
-  var scan = new TestScanResult(this.fileEntries);
+  const scan = new TestScanResult(this.fileEntries);
   scan.totalBytes = this.totalBytes;
   scan.scanDuration = this.scanDuration;
   this.scans_.push(scan);
@@ -63,7 +63,7 @@ TestMediaScanner.prototype.addObserver = function(observer) {
 
 /** @override */
 TestMediaScanner.prototype.removeObserver = function(observer) {
-  var index = this.observers.indexOf(observer);
+  const index = this.observers.indexOf(observer);
   if (index !== -1) {
     this.observers.splice(index, 1);
   } else {
@@ -83,7 +83,7 @@ TestMediaScanner.prototype.finalizeScans = function() {
  */
 TestMediaScanner.prototype.update = function() {
   assertTrue(this.scans_.length > 0);
-  var scan = this.scans_[this.scans_.length - 1];
+  const scan = this.scans_[this.scans_.length - 1];
   this.observers.forEach(
       function(observer) {
         observer(importer.ScanEvent.UPDATED, scan);
@@ -230,7 +230,7 @@ TestScanResult.prototype.whenFinal = function() {
 
 /** @override */
 TestScanResult.prototype.getStatistics = function() {
-  var duplicates = {};
+  const duplicates = {};
   duplicates[importer.Disposition.CONTENT_DUPLICATE] = 0;
   duplicates[importer.Disposition.HISTORY_DUPLICATE] = 0;
   duplicates[importer.Disposition.SCAN_DUPLICATE] = 0;

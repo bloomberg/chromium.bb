@@ -92,7 +92,7 @@ FileOperationManagerImpl.prototype.getPendingCopyTasksForTesting = function() {
  * @param {string} taskId ID of task to be canceled.
  */
 FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
-  var task = null;
+  let task = null;
 
   // If the task is not on progress, remove it immediately.
   for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
@@ -108,7 +108,7 @@ FileOperationManagerImpl.prototype.requestTaskCancel = function(taskId) {
     this.pendingCopyTasks_.splice(i, 1);
   }
 
-  for (var volumeId in this.runningCopyTasks_) {
+  for (const volumeId in this.runningCopyTasks_) {
     task = this.runningCopyTasks_[volumeId];
     if (task.taskId === taskId) {
       task.requestCancel();
@@ -147,14 +147,14 @@ FileOperationManagerImpl.prototype.filterSameDirectoryEntry = function(
     return Promise.resolve(sourceEntries);
   }
   // Utility function to concat arrays.
-  var compactArrays = function(arrays) {
+  const compactArrays = function(arrays) {
     return arrays.filter(function(element) {
       return !!element;
     });
   };
   // Call processEntry for each item of entries.
-  var processEntries = function(entries) {
-    var promises = entries.map(processFileOrDirectoryEntries);
+  const processEntries = function(entries) {
+    const promises = entries.map(processFileOrDirectoryEntries);
     return Promise.all(promises).then(compactArrays);
   };
   // Check all file entries and keeps only those need sharing operation.
@@ -222,8 +222,8 @@ FileOperationManagerImpl.prototype.paste = function(
  */
 FileOperationManagerImpl.prototype.queueCopy_ = function(
     targetDirEntry, entries, isMove, opt_taskId) {
-  var task;
-  var taskId = opt_taskId || this.generateTaskId();
+  let task;
+  const taskId = opt_taskId || this.generateTaskId();
   if (isMove) {
     // When moving between different volumes, moving is implemented as a copy
     // and delete. This is because moving between volumes is slow, and moveTo()
@@ -278,14 +278,14 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
   chrome.power.requestKeepAwake('system');
 
   // Find next task which can run at now.
-  var nextTask = null;
-  var nextTaskVolumeId = null;
-  for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
-    var task = this.pendingCopyTasks_[i];
+  let nextTask = null;
+  let nextTaskVolumeId = null;
+  for (let i = 0; i < this.pendingCopyTasks_.length; i++) {
+    const task = this.pendingCopyTasks_[i];
 
     // Fails a copy task of which it fails to get volume info. The destination
     // volume might be already unmounted.
-    var volumeInfo = this.volumeManager_.getVolumeInfo(
+    const volumeInfo = this.volumeManager_.getVolumeInfo(
         /** @type {!DirectoryEntry} */ (task.targetDirEntry));
     if (volumeInfo === null) {
       this.eventRouter_.sendProgressEvent(
@@ -315,24 +315,24 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
     return;
   }
 
-  var onTaskProgress = function(task) {
+  const onTaskProgress = function(task) {
     this.eventRouter_.sendProgressEvent(
         fileOperationUtil.EventRouter.EventType.PROGRESS,
         task.getStatus(),
         task.taskId);
   }.bind(this, nextTask);
 
-  var onEntryChanged = function(kind, entry) {
+  const onEntryChanged = function(kind, entry) {
     this.eventRouter_.sendEntryChangedEvent(kind, entry);
   }.bind(this);
 
   // Since getVolumeInfo of targetDirEntry might not be available when this
   // callback is called, bind volume id here.
-  var onTaskError = function(volumeId, err) {
-    var task = this.runningCopyTasks_[volumeId];
+  const onTaskError = function(volumeId, err) {
+    const task = this.runningCopyTasks_[volumeId];
     delete this.runningCopyTasks_[volumeId];
 
-    var reason = err.data.name === util.FileError.ABORT_ERR ?
+    const reason = err.data.name === util.FileError.ABORT_ERR ?
         fileOperationUtil.EventRouter.EventType.CANCELED :
         fileOperationUtil.EventRouter.EventType.ERROR;
     this.eventRouter_.sendProgressEvent(reason,
@@ -342,8 +342,8 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
     this.serviceAllTasks_();
   }.bind(this, nextTaskVolumeId);
 
-  var onTaskSuccess = function(volumeId) {
-    var task = this.runningCopyTasks_[volumeId];
+  const onTaskSuccess = function(volumeId) {
+    const task = this.runningCopyTasks_[volumeId];
     delete this.runningCopyTasks_[volumeId];
 
     this.eventRouter_.sendProgressEvent(
@@ -369,7 +369,7 @@ FileOperationManagerImpl.prototype.serviceAllTasks_ = function() {
  * @param {Array<Entry>} entries The entries.
  */
 FileOperationManagerImpl.prototype.deleteEntries = function(entries) {
-  var task =
+  const task =
       /** @type {!fileOperationUtil.DeleteTask} */ (Object.preventExtensions({
         entries: entries,
         taskId: this.generateTaskId(),
@@ -380,8 +380,8 @@ FileOperationManagerImpl.prototype.deleteEntries = function(entries) {
       }));
 
   // Obtains entry size and sum them up.
-  var group = new AsyncUtil.Group();
-  for (var i = 0; i < task.entries.length; i++) {
+  const group = new AsyncUtil.Group();
+  for (let i = 0; i < task.entries.length; i++) {
     group.add(function(entry, callback) {
       metadataProxy.getEntryMetadata(entry).then(
           function(metadata) {
@@ -437,11 +437,11 @@ FileOperationManagerImpl.prototype.serviceAllDeleteTasks_ = function() {
  */
 FileOperationManagerImpl.prototype.serviceDeleteTask_ = function(
     task, callback) {
-  var queue = new AsyncUtil.Queue();
+  const queue = new AsyncUtil.Queue();
 
   // Delete each entry.
-  var error = null;
-  var deleteOneEntry = function(inCallback) {
+  let error = null;
+  const deleteOneEntry = function(inCallback) {
     if (!task.entries.length || task.cancelRequested || error) {
       inCallback();
       return;
@@ -466,8 +466,8 @@ FileOperationManagerImpl.prototype.serviceDeleteTask_ = function(
 
   // Send an event and finish the async steps.
   queue.run(function(inCallback) {
-    var EventType = fileOperationUtil.EventRouter.EventType;
-    var reason;
+    const EventType = fileOperationUtil.EventRouter.EventType;
+    let reason;
     if (error) {
       reason = EventType.ERROR;
     } else if (task.cancelRequested) {
@@ -489,7 +489,7 @@ FileOperationManagerImpl.prototype.serviceDeleteTask_ = function(
  */
 FileOperationManagerImpl.prototype.zipSelection = function(
     selectionEntries, dirEntry) {
-  var zipTask = new fileOperationUtil.ZipTask(
+  const zipTask = new fileOperationUtil.ZipTask(
       this.generateTaskId(), selectionEntries, dirEntry, dirEntry);
   this.eventRouter_.sendProgressEvent(
       fileOperationUtil.EventRouter.EventType.BEGIN,

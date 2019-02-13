@@ -213,7 +213,7 @@ DeviceHandler.Notification.RENAME_FAIL = new DeviceHandler.Notification(
  * @return {string} Notification ID.
  */
 DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
-  var notificationId = this.makeId_(devicePath);
+  const notificationId = this.makeId_(devicePath);
   this.queue_.run(function(callback) {
     this.showInternal_(notificationId, opt_message || null, callback);
   }.bind(this));
@@ -226,7 +226,7 @@ DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
  * @param {string} devicePath Device path.
  */
 DeviceHandler.Notification.prototype.showOnce = function(devicePath) {
-  var notificationId = this.makeId_(devicePath);
+  const notificationId = this.makeId_(devicePath);
   this.queue_.run(function(callback) {
     chrome.notifications.getAll(function(idList) {
       if (idList.indexOf(notificationId) !== -1) {
@@ -248,7 +248,7 @@ DeviceHandler.Notification.prototype.showOnce = function(devicePath) {
  */
 DeviceHandler.Notification.prototype.showInternal_ = function(
     notificationId, message, callback) {
-  var buttons =
+  const buttons =
       this.buttonLabel ? [{title: str(this.buttonLabel)}] : undefined;
   chrome.notifications.create(
       notificationId,
@@ -368,7 +368,7 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
 };
 
 DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
-  var volume = event.volumeMetadata;
+  const volume = event.volumeMetadata;
 
   if (event.status === 'success' && event.shouldNotify) {
     if (event.eventType === 'mount') {
@@ -382,7 +382,7 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
     return;
   }
 
-  var getFirstStatus = function(event) {
+  const getFirstStatus = function(event) {
     if (event.status === 'success') {
       return DeviceHandler.MountStatus.SUCCESS;
     } else if (event.volumeMetadata.isParentDevice) {
@@ -437,7 +437,7 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
 
   // Show the notification for the current errors.
   // If there is no error, do not show/update the notification.
-  var message;
+  let message;
   switch (this.mountStatus_[volume.devicePath]) {
     case DeviceHandler.MountStatus.MULTIPART_ERROR:
       message = volume.deviceLabel ?
@@ -481,7 +481,7 @@ DeviceHandler.prototype.onMountCompletedInternal_ = function(event) {
 DeviceHandler.prototype.onMount_ = function(event) {
   // If this is remounting, which happens when resuming Chrome OS, the device
   // has already inserted to the computer. So we suppress the notification.
-  var metadata = event.volumeMetadata;
+  const metadata = event.volumeMetadata;
   volumeManagerFactory.getInstance()
       .then(
           /**
@@ -573,9 +573,9 @@ DeviceHandler.prototype.onNotificationClicked_ = function(id) {
  * @private
  */
 DeviceHandler.prototype.onNotificationClickedInternal_ = function(id) {
-  var pos = id.indexOf(':');
-  var type = id.substr(0, pos);
-  var devicePath = id.substr(pos + 1);
+  const pos = id.indexOf(':');
+  const type = id.substr(0, pos);
+  const devicePath = id.substr(pos + 1);
   if (type === 'deviceNavigation' || type === 'deviceFail') {
     chrome.notifications.clear(id, function() {});
     this.openMediaDirectory_(null, devicePath, null);
@@ -594,7 +594,7 @@ DeviceHandler.prototype.onNotificationClickedInternal_ = function(id) {
  */
 DeviceHandler.prototype.openMediaDirectory_ =
     function(volumeId, devicePath, filePath) {
-  var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
+  const event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
   event.volumeId = volumeId;
   event.devicePath = devicePath;
   event.filePath = filePath;

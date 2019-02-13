@@ -4,13 +4,13 @@
 'use strict';
 
 /** @type {!MockVolumeManager} */
-var volumeManager;
+let volumeManager;
 
 /** @type {!DeviceHandler} */
-var deviceHandler;
+let deviceHandler;
 
 /** Mock chrome APIs. */
-var mockChrome;
+let mockChrome;
 
 // Set up the test components.
 function setUp() {
@@ -51,7 +51,7 @@ function testGoodDevice(callback) {
   reportPromise(
       mockChrome.notifications.resolver.promise.then(function(notifications) {
         assertEquals(1, Object.keys(notifications).length);
-        var options = notifications['deviceNavigation:/device/path'];
+        const options = notifications['deviceNavigation:/device/path'];
         assertEquals('REMOVABLE_DEVICE_NAVIGATION_MESSAGE', options.message);
         assertTrue(options.isClickable);
       }),
@@ -59,7 +59,7 @@ function testGoodDevice(callback) {
 }
 
 function testRemovableMediaDeviceWithImportEnabled(callback) {
-  var storage = new MockChromeStorageAPI();
+  const storage = new MockChromeStorageAPI();
 
   setupFileSystem(
       VolumeManagerCommon.VolumeType.REMOVABLE,
@@ -69,7 +69,7 @@ function testRemovableMediaDeviceWithImportEnabled(callback) {
         '/DCIM/grandma.jpg'
       ]);
 
-  var resolver = new importer.Resolver();
+  const resolver = new importer.Resolver();
 
   // Handle media device navigation requests.
   deviceHandler.addEventListener(
@@ -93,7 +93,7 @@ function testRemovableMediaDeviceWithImportEnabled(callback) {
 }
 
 function testMtpMediaDeviceWithImportEnabled(callback) {
-  var storage = new MockChromeStorageAPI();
+  const storage = new MockChromeStorageAPI();
 
   setupFileSystem(
       VolumeManagerCommon.VolumeType.MTP,
@@ -103,7 +103,7 @@ function testMtpMediaDeviceWithImportEnabled(callback) {
         '/dcim/grandpa.jpg'
       ]);
 
-  var resolver = new importer.Resolver();
+  const resolver = new importer.Resolver();
 
   // Handle media device navigation requests.
   deviceHandler.addEventListener(
@@ -270,7 +270,7 @@ function testUnknownDevice(callback) {
   reportPromise(
       mockChrome.notifications.resolver.promise.then(function(notifications) {
         assertFalse(!!mockChrome.notifications.items['device:/device/path']);
-        var item = mockChrome.notifications.items['deviceFail:/device/path'];
+        const item = mockChrome.notifications.items['deviceFail:/device/path'];
         assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
         // "Format device" button should appear.
         assertEquals('DEVICE_UNKNOWN_BUTTON_LABEL', item.buttons[0].title);
@@ -295,7 +295,7 @@ function testUnknownReadonlyDevice(callback) {
   reportPromise(
       mockChrome.notifications.resolver.promise.then(function(notifications) {
         assertFalse(!!mockChrome.notifications.items['device:/device/path']);
-        var item = mockChrome.notifications.items['deviceFail:/device/path'];
+        const item = mockChrome.notifications.items['deviceFail:/device/path'];
         assertEquals('DEVICE_UNKNOWN_DEFAULT_MESSAGE', item.message);
         // "Format device" button should not appear.
         assertFalse(!!item.buttons);
@@ -373,7 +373,7 @@ function testMountPartialSuccess(callback) {
             });
           })
           .then(function() {
-            var notifications = mockChrome.notifications.items;
+            const notifications = mockChrome.notifications.items;
             assertEquals(
                 2, Object.keys(notifications).length);
             assertEquals(
@@ -579,11 +579,11 @@ function testDeviceHardUnplugged() {
 }
 
 function testNotificationClicked(callback) {
-  var devicePath = '/device/path';
-  var notificationId = 'deviceNavigation:' + devicePath;
+  const devicePath = '/device/path';
+  const notificationId = 'deviceNavigation:' + devicePath;
 
   // Add a listener for navigation-requested events.
-  var resolver = new importer.Resolver();
+  const resolver = new importer.Resolver();
   deviceHandler.addEventListener(
       DeviceHandler.VOLUME_NAVIGATION_REQUESTED, function(event) {
         resolver.resolve(event);
@@ -640,11 +640,11 @@ function testMountCompleteInIncognito() {
  */
 function setupFileSystem(volumeType, volumeId, fileNames) {
   /** @type {!MockVolumeManager}*/
-  var mockVolumeManager = volumeManager;
-  var volumeInfo = mockVolumeManager.createVolumeInfo(
+  const mockVolumeManager = volumeManager;
+  const volumeInfo = mockVolumeManager.createVolumeInfo(
       volumeType, volumeId, 'A volume known as ' + volumeId);
   assertTrue(!!volumeInfo);
-  var mockFileSystem = /** @type {!MockFileSystem} */
+  const mockFileSystem = /** @type {!MockFileSystem} */
       (volumeInfo.fileSystem);
   mockFileSystem.populate(fileNames);
   return volumeInfo;

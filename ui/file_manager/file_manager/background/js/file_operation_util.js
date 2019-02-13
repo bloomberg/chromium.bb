@@ -5,7 +5,7 @@
 /**
  * Utilities for file operations.
  */
-var fileOperationUtil = {};
+const fileOperationUtil = {};
 
 /**
  * Resolves a path to either a DirectoryEntry or a FileEntry, regardless of
@@ -54,14 +54,14 @@ fileOperationUtil.deduplicatePath = function(
   // be replaced by incremented number for retry. For example, suppose
   // |relativePath| is "file (10).txt", the second check path will be
   // "file (11).txt".
-  var match = /^(.*?)(?: \((\d+)\))?(\.[^.]*?)?$/.exec(relativePath);
-  var prefix = match[1];
-  var ext = match[3] || '';
+  const match = /^(.*?)(?: \((\d+)\))?(\.[^.]*?)?$/.exec(relativePath);
+  const prefix = match[1];
+  const ext = match[3] || '';
 
   // Check to see if the target exists.
-  var resolvePath = function(trialPath, copyNumber) {
+  const resolvePath = function(trialPath, copyNumber) {
     return fileOperationUtil.resolvePath(dirEntry, trialPath).then(function() {
-      var newTrialPath = prefix + ' (' + copyNumber + ')' + ext;
+      const newTrialPath = prefix + ' (' + copyNumber + ')' + ext;
       return resolvePath(newTrialPath, copyNumber + 1);
     }, function(error) {
       // We expect to be unable to resolve the target file, since we're
@@ -75,7 +75,7 @@ fileOperationUtil.deduplicatePath = function(
     });
   };
 
-  var promise = resolvePath(relativePath, 1).catch(function(error) {
+  const promise = resolvePath(relativePath, 1).catch(function(error) {
     if (error instanceof Error) {
       return Promise.reject(error);
     }
@@ -102,11 +102,11 @@ fileOperationUtil.deduplicatePath = function(
  */
 fileOperationUtil.resolveRecursively_ = function(
     entry, successCallback, errorCallback) {
-  var result = [];
-  var error = null;
-  var numRunningTasks = 0;
+  const result = [];
+  let error = null;
+  let numRunningTasks = 0;
 
-  var maybeInvokeCallback = function() {
+  const maybeInvokeCallback = function() {
     // If there still remain some running tasks, wait their finishing.
     if (numRunningTasks > 0) {
       return;
@@ -120,7 +120,7 @@ fileOperationUtil.resolveRecursively_ = function(
   };
 
   // The error handling can be shared.
-  var onError = function(fileError) {
+  const onError = function(fileError) {
     // If this is the first error, remember it.
     if (!error) {
       error = fileError;
@@ -129,7 +129,7 @@ fileOperationUtil.resolveRecursively_ = function(
     maybeInvokeCallback();
   };
 
-  var process = function(entry) {
+  const process = function(entry) {
     numRunningTasks++;
     result.push(entry);
     if (entry.isDirectory) {
@@ -139,7 +139,7 @@ fileOperationUtil.resolveRecursively_ = function(
       entry.size = 1;
 
       // Recursively traverse children.
-      var reader = entry.createReader();
+      const reader = entry.createReader();
       reader.readEntries(
           function processSubEntries(subEntries) {
             if (error || subEntries.length == 0) {
@@ -150,7 +150,7 @@ fileOperationUtil.resolveRecursively_ = function(
               return;
             }
 
-            for (var i = 0; i < subEntries.length; i++) {
+            for (let i = 0; i < subEntries.length; i++) {
               process(subEntries[i]);
             }
 
@@ -182,7 +182,7 @@ fileOperationUtil.resolveRecursively_ = function(
  */
 fileOperationUtil.gatherEntriesRecursively = function(entry) {
   /** @type {!Array<!Entry>} */
-  var gatheredFiles = [];
+  const gatheredFiles = [];
 
   return fileOperationUtil.findEntriesRecursively(
       entry,
@@ -234,14 +234,14 @@ fileOperationUtil.findFilesRecursively = function(entry, onResultCallback) {
 fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
   return new Promise(
       function(resolve, reject) {
-        var numRunningTasks = 0;
-        var scanError = null;
+        let numRunningTasks = 0;
+        let scanError = null;
 
         /**
          * @param  {*=} opt_error If defined immediately
          *     terminates scanning.
          */
-        var maybeSettlePromise = function(opt_error) {
+        const maybeSettlePromise = function(opt_error) {
           scanError = opt_error;
 
           if (scanError) {
@@ -258,7 +258,7 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
         };
 
         /** @param {!Entry} entry */
-        var processEntry = function(entry) {
+        const processEntry = function(entry) {
           // All scanning stops when an error is encountered.
           if (scanError) {
             return;
@@ -282,7 +282,7 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
           // Recursively traverse children.
           // reader.readEntries chunksResults resulting in the need
           // for us to call it multiple times.
-          var reader = directory.createReader();
+          const reader = directory.createReader();
           reader.readEntries(
               function processSubEntries(subEntries) {
                 if (subEntries.length === 0) {
@@ -315,9 +315,9 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
 fileOperationUtil.listEntries = function(directory, callback) {
   return new Promise(
       function(resolve, reject) {
-        var reader = directory.createReader();
+        const reader = directory.createReader();
 
-        var readEntries = function() {
+        const readEntries = function() {
           reader.readEntries (
               /** @param {!Array<!Entry>} entries */
               function(entries) {
@@ -363,13 +363,13 @@ fileOperationUtil.copyTo = function(
     successCallback, errorCallback) {
 
   /** @type {number|undefined} */
-  var copyId;
-  var pendingCallbacks = [];
+  let copyId;
+  const pendingCallbacks = [];
 
   // Makes the callback called in order they were invoked.
-  var callbackQueue = new AsyncUtil.Queue();
+  const callbackQueue = new AsyncUtil.Queue();
 
-  var onCopyProgress = function(progressCopyId, status) {
+  const onCopyProgress = function(progressCopyId, status) {
     callbackQueue.run(function(callback) {
       if (copyId === null) {
         // If the copyId is not yet available, wait for it.
@@ -464,7 +464,7 @@ fileOperationUtil.copyTo = function(
         }
 
         copyId = startCopyId;
-        for (var i = 0; i < pendingCallbacks.length; i++) {
+        for (let i = 0; i < pendingCallbacks.length; i++) {
           pendingCallbacks[i]();
         }
       });
@@ -605,7 +605,7 @@ fileOperationUtil.Task.prototype.initialize = function(callback) {
 fileOperationUtil.Task.prototype.requestCancel = function() {
   this.cancelRequested_ = true;
   if (this.cancelCallback_) {
-    var callback = this.cancelCallback_;
+    const callback = this.cancelCallback_;
     this.cancelCallback_ = null;
     callback();
   }
@@ -632,7 +632,7 @@ fileOperationUtil.Task.prototype.run = function(
  * @return {Object} Status object.
  */
 fileOperationUtil.Task.prototype.getStatus = function() {
-  var processingEntry = this.sourceEntries[this.processingSourceIndex_];
+  const processingEntry = this.sourceEntries[this.processingSourceIndex_];
   return {
     operationType: this.operationType,
     numRemainingItems: this.numRemainingItems,
@@ -648,13 +648,13 @@ fileOperationUtil.Task.prototype.getStatus = function() {
  * @private
  */
 fileOperationUtil.Task.prototype.calcProcessedBytes_ = function() {
-  var bytes = 0;
-  for (var i = 0; i < this.processingSourceIndex_ + 1; i++) {
-    var entryMap = this.processingEntries[i];
+  let bytes = 0;
+  for (let i = 0; i < this.processingSourceIndex_ + 1; i++) {
+    const entryMap = this.processingEntries[i];
     if (!entryMap) {
       break;
     }
-    for (var name in entryMap) {
+    for (const name in entryMap) {
       bytes += i < this.processingSourceIndex_ ?
           entryMap[name].size : entryMap[name].processedBytes;
     }
@@ -668,21 +668,21 @@ fileOperationUtil.Task.prototype.calcProcessedBytes_ = function() {
  * @private
  */
 fileOperationUtil.Task.prototype.calcNumRemainingItems_ = function() {
-  var numRemainingItems = 0;
+  let numRemainingItems = 0;
 
-  var resolvedEntryMap;
+  let resolvedEntryMap;
   if (this.processingEntries && this.processingEntries.length > 0) {
     resolvedEntryMap = this.processingEntries[this.processingSourceIndex_];
   }
 
   if (resolvedEntryMap) {
-    for (var key in resolvedEntryMap) {
+    for (const key in resolvedEntryMap) {
       if (resolvedEntryMap.hasOwnProperty(key) &&
           resolvedEntryMap[key].processedBytes === 0) {
         numRemainingItems++;
       }
     }
-    for (var i = this.processingSourceIndex_ + 1;
+    for (let i = this.processingSourceIndex_ + 1;
          i < this.processingEntries.length; i++) {
       numRemainingItems += Object.keys(this.processingEntries[i] || {}).length;
     }
@@ -743,17 +743,17 @@ fileOperationUtil.CopyTask.CONSECUTIVE_ERROR_LIMIT_ = 100;
  * @param {function()} callback Called when the initialize is completed.
  */
 fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
-  var group = new AsyncUtil.Group();
+  const group = new AsyncUtil.Group();
   // Correct all entries to be copied for status update.
   this.processingEntries = [];
-  for (var i = 0; i < this.sourceEntries.length; i++) {
+  for (let i = 0; i < this.sourceEntries.length; i++) {
     group.add(function(index, callback) {
       fileOperationUtil.resolveRecursively_(
           this.sourceEntries[index],
           function(resolvedEntries) {
-            var resolvedEntryMap = {};
-            for (var j = 0; j < resolvedEntries.length; ++j) {
-              var entry = resolvedEntries[j];
+            const resolvedEntryMap = {};
+            for (let j = 0; j < resolvedEntries.length; ++j) {
+              const entry = resolvedEntries[j];
               entry.processedBytes = 0;
               resolvedEntryMap[entry.toURL()] = entry;
             }
@@ -771,8 +771,8 @@ fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
   group.run(function() {
     // Fill totalBytes.
     this.totalBytes = 0;
-    for (var i = 0; i < this.processingEntries.length; i++) {
-      for (var entryURL in this.processingEntries[i]) {
+    for (let i = 0; i < this.processingEntries.length; i++) {
+      for (const entryURL in this.processingEntries[i]) {
         this.totalBytes += this.processingEntries[i][entryURL].size;
       }
     }
@@ -805,10 +805,10 @@ fileOperationUtil.CopyTask.prototype.run = function(
 
   // TODO(hidehiko): Delete after copy is the implementation of Move.
   // Migrate the part into MoveTask.run().
-  var deleteOriginals = function() {
-    var count = this.sourceEntries.length;
+  const deleteOriginals = function() {
+    let count = this.sourceEntries.length;
 
-    var onEntryDeleted = function(entry) {
+    const onEntryDeleted = function(entry) {
       entryChangedCallback(util.EntryChangedKind.DELETED, entry);
       count--;
       if (!count) {
@@ -816,13 +816,13 @@ fileOperationUtil.CopyTask.prototype.run = function(
       }
     };
 
-    var onFilesystemError = function(err) {
+    const onFilesystemError = function(err) {
       errorCallback(new fileOperationUtil.Error(
           util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     };
 
-    for (var i = 0; i < this.sourceEntries.length; i++) {
-      var entry = this.sourceEntries[i];
+    for (let i = 0; i < this.sourceEntries.length; i++) {
+      const entry = this.sourceEntries[i];
       util.removeFileOrDirectory(
           entry, onEntryDeleted.bind(null, entry), onFilesystemError);
     }
@@ -836,21 +836,21 @@ fileOperationUtil.CopyTask.prototype.run = function(
    * @param {number=} opt_size Processed bytes of the |sourceEntry|. If it is
    *     dropped, all bytes of the entry are considered to be processed.
    */
-  var updateProgress = function(index, sourceEntryUrl, opt_size) {
+  let updateProgress = function(index, sourceEntryUrl, opt_size) {
     if (!sourceEntryUrl) {
       return;
     }
 
-    var processedEntry = this.processingEntries[index][sourceEntryUrl];
+    const processedEntry = this.processingEntries[index][sourceEntryUrl];
     if (!processedEntry) {
       return;
     }
 
-    var alreadyCompleted =
+    const alreadyCompleted =
         processedEntry.processedBytes === processedEntry.size;
 
     // Accumulates newly processed bytes.
-    var size = opt_size !== undefined ? opt_size : processedEntry.size;
+    const size = opt_size !== undefined ? opt_size : processedEntry.size;
     this.processedBytes += size - processedEntry.processedBytes;
     processedEntry.processedBytes = size;
 
@@ -876,8 +876,8 @@ fileOperationUtil.CopyTask.prototype.run = function(
 
   // Number of consecutive errors. Increases while failing and resets to zero
   // when one of them succeeds.
-  var errorCount = 0;
-  var lastError;
+  let errorCount = 0;
+  let lastError;
 
   AsyncUtil.forEach(
       this.sourceEntries,
@@ -1021,9 +1021,9 @@ fileOperationUtil.MoveTask.prototype.initialize = function(callback) {
   });
 
   this.processingEntries = [];
-  for (var i = 0; i < this.sourceEntries.length; i++) {
-    var processingEntryMap = {};
-    var entry = this.sourceEntries[i];
+  for (let i = 0; i < this.sourceEntries.length; i++) {
+    const processingEntryMap = {};
+    const entry = this.sourceEntries[i];
 
     // The move should be done with updating the metadata. So here we assume
     // all the file size is 1 byte. (Avoiding 0, so that progress bar can
@@ -1150,13 +1150,13 @@ fileOperationUtil.ZipTask.prototype.__proto__ =
  * @param {function()} callback Called when the initialize is completed.
  */
 fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
-  var resolvedEntryMap = {};
-  var group = new AsyncUtil.Group();
-  for (var i = 0; i < this.sourceEntries.length; i++) {
+  const resolvedEntryMap = {};
+  const group = new AsyncUtil.Group();
+  for (let i = 0; i < this.sourceEntries.length; i++) {
     group.add(function(index, callback) {
       fileOperationUtil.resolveRecursively_(
           this.sourceEntries[index], function(entries) {
-            for (var j = 0; j < entries.length; j++) {
+            for (let j = 0; j < entries.length; j++) {
               resolvedEntryMap[entries[j].toURL()] = entries[j];
             }
             callback();
@@ -1169,7 +1169,7 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
     this.processingEntries = [resolvedEntryMap];
 
     this.totalBytes = 0;
-    for (var url in resolvedEntryMap) {
+    for (const url in resolvedEntryMap) {
       this.totalBytes += resolvedEntryMap[url].size;
     }
 
@@ -1191,10 +1191,10 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
 fileOperationUtil.ZipTask.prototype.run = function(
     entryChangedCallback, progressCallback, successCallback, errorCallback) {
   // TODO(hidehiko): we should localize the name.
-  var destName = 'Archive';
+  let destName = 'Archive';
   if (this.sourceEntries.length == 1) {
-    var entryName = this.sourceEntries[0].name;
-    var i = entryName.lastIndexOf('.');
+    const entryName = this.sourceEntries[0].name;
+    const i = entryName.lastIndexOf('.');
     destName = ((i < 0) ? entryName : entryName.substr(0, i));
   }
 
@@ -1209,8 +1209,8 @@ fileOperationUtil.ZipTask.prototype.run = function(
 
         // The number of elements in processingEntries is 1. See also
         // initialize().
-        var entries = [];
-        for (var url in this.processingEntries[0]) {
+        const entries = [];
+        for (const url in this.processingEntries[0]) {
           entries.push(this.processingEntries[0][url]);
         }
 
@@ -1286,13 +1286,13 @@ fileOperationUtil.EventRouter = class extends cr.EventTarget {
    *     should be set iff the reason is "ERROR".
    */
   sendProgressEvent(type, status, taskId, opt_error) {
-    var EventType = fileOperationUtil.EventRouter.EventType;
+    const EventType = fileOperationUtil.EventRouter.EventType;
     // Before finishing operation, dispatch pending entries-changed events.
     if (type === EventType.SUCCESS || type === EventType.CANCELED) {
       this.entryChangedEventRateLimiter_.runImmediately();
     }
 
-    var event = /** @type {FileOperationProgressEvent} */
+    const event = /** @type {FileOperationProgressEvent} */
         (new Event('copy-progress'));
     event.reason = type;
     event.status = status;
@@ -1327,8 +1327,8 @@ fileOperationUtil.EventRouter = class extends cr.EventTarget {
    * @private
    */
   dispatchEntryChangedEvent_() {
-    var deletedEntries = [];
-    var createdEntries = [];
+    const deletedEntries = [];
+    const createdEntries = [];
     for (var url in this.pendingDeletedEntries_) {
       deletedEntries.push(this.pendingDeletedEntries_[url]);
     }
@@ -1358,7 +1358,7 @@ fileOperationUtil.EventRouter = class extends cr.EventTarget {
    * @param {!Object} task Delete task related with the event.
    */
   sendDeleteEvent(reason, task) {
-    var event = /** @type {FileOperationProgressEvent} */ (new Event('delete'));
+    const event = /** @type {FileOperationProgressEvent} */ (new Event('delete'));
     event.reason = reason;
     event.taskId = task.taskId;
     event.entries = task.entries;

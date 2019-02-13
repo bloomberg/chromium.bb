@@ -5,13 +5,13 @@
 /**
  * @type {!Object}
  */
-var launcher = {};
+const launcher = {};
 
 /**
  * Type of a Files app's instance launch.
  * @enum {number}
  */
-var LaunchType = {
+const LaunchType = {
   ALWAYS_CREATE: 0,
   FOCUS_ANY_OR_CREATE: 1,
   FOCUS_SAME_OR_CREATE: 2
@@ -21,19 +21,19 @@ var LaunchType = {
  * Prefix for the file manager window ID.
  * @const {string}
  */
-var FILES_ID_PREFIX = 'files#';
+const FILES_ID_PREFIX = 'files#';
 
 /**
  * Value of the next file manager window ID.
  * @type {number}
  */
-var nextFileManagerWindowID = 0;
+let nextFileManagerWindowID = 0;
 
 /**
  * File manager window create options.
  * @const {!Object}
  */
-var FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
+const FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
   bounds: {
     left: Math.round(window.screen.availWidth * 0.1),
     top: Math.round(window.screen.availHeight * 0.1),
@@ -53,7 +53,7 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
  * Regexp matching a file manager window ID.
  * @const {!RegExp}
  */
-var FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
+const FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
 
 /**
  * Synchronous queue for asynchronous calls.
@@ -69,7 +69,7 @@ launcher.queue = new AsyncUtil.Queue();
  */
 launcher.launchFileManager = function(
     opt_appState, opt_id, opt_type, opt_callback) {
-  var type = opt_type || LaunchType.ALWAYS_CREATE;
+  const type = opt_type || LaunchType.ALWAYS_CREATE;
   opt_appState =
       /**
        * @type {(undefined|
@@ -89,7 +89,7 @@ launcher.launchFileManager = function(
           if (!key.match(FILES_ID_PATTERN)) {
             continue;
           }
-          var contentWindow = window.appWindows[key].contentWindow;
+          const contentWindow = window.appWindows[key].contentWindow;
           if (!contentWindow.appState) {
             continue;
           }
@@ -169,11 +169,11 @@ launcher.launchFileManager = function(
     // Create a new instance in case of ALWAYS_CREATE type, or as a fallback
     // for other types.
 
-    var id = opt_id || nextFileManagerWindowID;
+    const id = opt_id || nextFileManagerWindowID;
     nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
-    var appId = FILES_ID_PREFIX + id;
+    const appId = FILES_ID_PREFIX + id;
 
-    var appWindow = new AppWindowWrapper(
+    const appWindow = new AppWindowWrapper(
         'main.html',
         appId,
         FILE_MANAGER_WINDOW_CREATE_OPTIONS);

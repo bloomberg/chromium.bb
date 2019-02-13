@@ -24,10 +24,10 @@ test.util.async.openMainWindow = function(appState, callback) {
  * @return {string} Name of selected tree item.
  */
 test.util.sync.getSelectedTreeItem = function(contentWindow) {
-  var tree = contentWindow.document.querySelector('#directory-tree');
-  var items = tree.querySelectorAll('.tree-item');
-  var selected = [];
-  for (var i = 0; i < items.length; ++i) {
+  const tree = contentWindow.document.querySelector('#directory-tree');
+  const items = tree.querySelectorAll('.tree-item');
+  const selected = [];
+  for (let i = 0; i < items.length; ++i) {
     if (items[i].hasAttribute('selected')) {
       return items[i].querySelector('.label').textContent;
     }
@@ -48,11 +48,11 @@ test.util.sync.getSelectedTreeItem = function(contentWindow) {
  * @return {Array<Array<string>>} Details for each visible file row.
  */
 test.util.sync.getFileList = function(contentWindow) {
-  var table = contentWindow.document.querySelector('#detail-table');
-  var rows = table.querySelectorAll('li');
-  var fileList = [];
-  for (var j = 0; j < rows.length; ++j) {
-    var row = rows[j];
+  const table = contentWindow.document.querySelector('#detail-table');
+  const rows = table.querySelectorAll('li');
+  const fileList = [];
+  for (let j = 0; j < rows.length; ++j) {
+    const row = rows[j];
     fileList.push([
       row.querySelector('.filename-label').textContent,
       row.querySelector('.size').textContent,
@@ -71,10 +71,10 @@ test.util.sync.getFileList = function(contentWindow) {
  * @return {Array<string>} Selected file names.
  */
 test.util.sync.getSelectedFiles = function(contentWindow) {
-  var table = contentWindow.document.querySelector('#detail-table');
-  var rows = table.querySelectorAll('li');
-  var selected = [];
-  for (var i = 0; i < rows.length; ++i) {
+  const table = contentWindow.document.querySelector('#detail-table');
+  const rows = table.querySelectorAll('li');
+  const selected = [];
+  for (let i = 0; i < rows.length; ++i) {
     if (rows[i].hasAttribute('selected')) {
       selected.push(rows[i].querySelector('.filename-label').textContent);
     }
@@ -90,12 +90,12 @@ test.util.sync.getSelectedFiles = function(contentWindow) {
  * @return {boolean} True if file got selected, false otherwise.
  */
 test.util.sync.selectFile = function(contentWindow, filename) {
-  var rows = contentWindow.document.querySelectorAll('#detail-table li');
+  const rows = contentWindow.document.querySelectorAll('#detail-table li');
   test.util.sync.focus(contentWindow, '#file-list');
   test.util.sync.fakeKeyDown(
       contentWindow, '#file-list', 'Home', false, false, false);
-  for (var index = 0; index < rows.length; ++index) {
-    var selection = test.util.sync.getSelectedFiles(contentWindow);
+  for (let index = 0; index < rows.length; ++index) {
+    const selection = test.util.sync.getSelectedFiles(contentWindow);
     if (selection.length === 1 && selection[0] === filename) {
       return true;
     }
@@ -115,7 +115,7 @@ test.util.sync.selectFile = function(contentWindow, filename) {
  *     sent, false otherwise.
  */
 test.util.sync.openFile = function(contentWindow, filename) {
-  var query = '#file-list li.table-row[selected] .filename-label span';
+  const query = '#file-list li.table-row[selected] .filename-label span';
   return test.util.sync.selectFile(contentWindow, filename) &&
          test.util.sync.fakeMouseDoubleClick(contentWindow, query);
 };
@@ -192,12 +192,12 @@ test.util.async.selectInDirectoryTree = function(
  * @return {boolean} True if file got selected, false otherwise.
  */
 test.util.sync.selectFolderInTree = function(contentWindow, folderName) {
-  var items =
+  const items =
       contentWindow.document.querySelectorAll('#directory-tree .tree-item');
   test.util.sync.fakeKeyDown(
       contentWindow, '#directory-tree', 'Home', false, false, false);
-  for (var index = 0; index < items.length; ++index) {
-    var selectedTreeItemName =
+  for (let index = 0; index < items.length; ++index) {
+    const selectedTreeItemName =
         test.util.sync.getSelectedTreeItem(contentWindow);
     if (selectedTreeItemName === folderName) {
       test.util.sync.fakeKeyDown(
@@ -220,7 +220,7 @@ test.util.sync.selectFolderInTree = function(contentWindow, folderName) {
  * @return {boolean} True if folder got expanded, false otherwise.
  */
 test.util.sync.expandSelectedFolderInTree = function(contentWindow) {
-  var selectedItem = contentWindow.document.querySelector(
+  const selectedItem = contentWindow.document.querySelector(
       '#directory-tree .tree-item[selected]');
   if (!selectedItem) {
     console.error('Unexpected; no tree item currently selected.');
@@ -240,7 +240,7 @@ test.util.sync.expandSelectedFolderInTree = function(contentWindow) {
  * @return {boolean} True if folder got expanded, false otherwise.
  */
 test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
-  var selectedItem = contentWindow.document.querySelector(
+  const selectedItem = contentWindow.document.querySelector(
       '#directory-tree .tree-item[selected]');
   if (!selectedItem) {
     console.error('Unexpected; no tree item currently selected.');
@@ -293,10 +293,10 @@ test.util.sync.selectTeamDrive = function(contentWindow, teamDriveName) {
  * @return {!Array<string>} List of visible item names.
  */
 test.util.sync.getTreeItems = function(contentWindow) {
-  var items = contentWindow.document.querySelectorAll(
+  const items = contentWindow.document.querySelectorAll(
       '#directory-tree .tree-item');
-  var result = [];
-  for (var i = 0; i < items.length; i++) {
+  const result = [];
+  for (let i = 0; i < items.length; i++) {
     if (items[i].matches('.tree-children:not([expanded]) *')) {
       continue;
     }
@@ -326,7 +326,7 @@ test.util.sync.getLastVisitedURL = function(contentWindow) {
  */
 test.util.async.executeScriptInWebView = function(
     contentWindow, webViewQuery, code, callback) {
-  var webView = contentWindow.document.querySelector(webViewQuery);
+  const webView = contentWindow.document.querySelector(webViewQuery);
   webView.executeScript({code: code}, callback);
 };
 
@@ -390,12 +390,12 @@ test.util.sync.execCommand = function(contentWindow, command) {
  */
 test.util.sync.overrideInstallWebstoreItemApi =
     function(contentWindow, expectedItemId, intendedError) {
-  var setLastError = function(message) {
+  const setLastError = function(message) {
     contentWindow.chrome.runtime.lastError =
         message ? {message: message} : undefined;
   };
 
-  var installWebstoreItem = function(itemId, silentInstallation, callback) {
+  const installWebstoreItem = function(itemId, silentInstallation, callback) {
     setTimeout(function() {
       if (itemId !== expectedItemId) {
         setLastError('Invalid Chrome Web Store item ID');
@@ -423,19 +423,19 @@ test.util.sync.overrideInstallWebstoreItemApi =
  * @return {boolean} Always return true.
  */
 test.util.sync.overrideTasks = function(contentWindow, taskList) {
-  var getFileTasks = function(entries, onTasks) {
+  const getFileTasks = function(entries, onTasks) {
     // Call onTask asynchronously (same with original getFileTasks).
     setTimeout(function() {
       onTasks(taskList);
     }, 0);
   };
 
-  var executeTask = function(taskId, entry) {
+  const executeTask = function(taskId, entry) {
     test.util.executedTasks_.push(taskId);
   };
 
-  var setDefaultTask = function(taskId) {
-    for (var i = 0; i < taskList.length; i++) {
+  const setDefaultTask = function(taskId) {
+    for (let i = 0; i < taskList.length; i++) {
       taskList[i].isDefault = taskList[i].taskId === taskId;
     }
   };
@@ -468,10 +468,10 @@ test.util.sync.getExecutedTasks = function(contentWindow) {
  * @return {boolean} True if the menu is found and run.
  */
 test.util.sync.runVisitDesktopMenu = function(contentWindow, profileId) {
-  var list = contentWindow.document.querySelectorAll('.visit-desktop');
-  for (var i = 0; i < list.length; ++i) {
+  const list = contentWindow.document.querySelectorAll('.visit-desktop');
+  for (let i = 0; i < list.length; ++i) {
     if (list[i].label.indexOf(profileId) != -1) {
-      var activateEvent = contentWindow.document.createEvent('Event');
+      const activateEvent = contentWindow.document.createEvent('Event');
       activateEvent.initEvent('activate', false, false);
       list[i].dispatchEvent(activateEvent);
       return true;
@@ -495,12 +495,12 @@ test.util.sync.unload = function(contentWindow) {
  * @return {string} Path which is shown in the breadcrumb.
  */
 test.util.sync.getBreadcrumbPath = function(contentWindow) {
-  var breadcrumb = contentWindow.document.querySelector(
+  const breadcrumb = contentWindow.document.querySelector(
       '#location-breadcrumbs');
-  var paths = breadcrumb.querySelectorAll('.breadcrumb-path');
+  const paths = breadcrumb.querySelectorAll('.breadcrumb-path');
 
-  var path = '';
-  for(var i = 0; i < paths.length; i++) {
+  let path = '';
+  for(let i = 0; i < paths.length; i++) {
     path += '/' + paths[i].textContent;
   }
   return path;

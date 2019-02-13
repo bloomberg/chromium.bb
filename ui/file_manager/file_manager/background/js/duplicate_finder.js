@@ -58,15 +58,15 @@ importer.DriveDuplicateFinder.MAX_CACHED_HASHCODES_ = 10000;
 importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
   return importer.createMetadataHashcode(entry).then(function(hashcode) {
     // Cache key is the concatination of metadata hashcode and URL.
-    var cacheKey = hashcode + '|' + entry.toURL();
+    const cacheKey = hashcode + '|' + entry.toURL();
     if (this.hashCache_.hasKey(cacheKey)) {
       return this.hashCache_.get(cacheKey);
     }
 
-    var hashPromise = new Promise(
+    const hashPromise = new Promise(
         (/** @this {importer.DriveDuplicateFinder} */
         function(resolve, reject) {
-          var startTime = new Date().getTime();
+          const startTime = new Date().getTime();
           chrome.fileManagerPrivate.computeChecksum(
               entry,
               (/**
@@ -74,7 +74,7 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
                * @this {importer.DriveDuplicateFinder}
                */
               function(result) {
-                var elapsedTime = new Date().getTime() - startTime;
+                const elapsedTime = new Date().getTime() - startTime;
                 // Send the timing to GA only if it is sorta exceptionally long.
                 // A one second, CPU intensive operation, is pretty long.
                 if (elapsedTime >=
@@ -142,7 +142,7 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
   return new Promise(
       (/** @this {importer.DriveDuplicateFinder} */
       function(resolve, reject) {
-        var startTime = new Date().getTime();
+        const startTime = new Date().getTime();
         chrome.fileManagerPrivate.searchFilesByHashes(
             volumeId,
             [hash],
@@ -151,7 +151,7 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
              * @this {importer.DriveDuplicateFinder}
              */
             function(urls) {
-              var elapsedTime = new Date().getTime() - startTime;
+              const elapsedTime = new Date().getTime() - startTime;
               // Send the timing to GA only if it is sorta exceptionally long.
               if (elapsedTime >=
                   importer.DriveDuplicateFinder.SEARCH_EVENT_THRESHOLD_) {
@@ -277,7 +277,7 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
  * @return {!importer.DispositionChecker.CheckerFunction}
  */
 importer.DispositionChecker.createChecker = function(historyLoader) {
-  var checker = new importer.DispositionChecker(
+  const checker = new importer.DispositionChecker(
       historyLoader, new importer.DriveDuplicateFinder());
   return checker.getDisposition.bind(checker);
 };

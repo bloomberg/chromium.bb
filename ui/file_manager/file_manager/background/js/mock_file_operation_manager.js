@@ -83,7 +83,7 @@ MockFileOperationManager.prototype.whenPasteCalled = function() {
  * @return {string}
  */
 MockFileOperationManager.prototype.generateTaskId = function() {
-  var newTaskId = 'task' + this.generatedTaskIds.length;
+  const newTaskId = 'task' + this.generatedTaskIds.length;
   this.generatedTaskIds.push(newTaskId);
   return newTaskId;
 };

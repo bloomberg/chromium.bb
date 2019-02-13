@@ -320,7 +320,7 @@ VolumeInfoImpl.prototype.resolveDisplayRootImpl_ = function() {
     }
   }
   // For Drive, we need to resolve.
-  var displayRootURL = this.fileSystem_.root.toURL() + 'root';
+  const displayRootURL = this.fileSystem_.root.toURL() + 'root';
   return Promise
       .all([
         VolumeInfoImpl.resolveFileSystemUrl_(displayRootURL),

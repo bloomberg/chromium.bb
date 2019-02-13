@@ -9,7 +9,7 @@
  * @struct
  * @implements {ProgressCenter}
  */
-var ProgressCenterImpl = function() {
+const ProgressCenterImpl = function() {
   /**
    * Current items managed by the progress center.
    * @type {Array<!ProgressCenterItem>}
@@ -94,8 +94,8 @@ ProgressCenterImpl.Notifications_.NotificationState_ = {
  */
 ProgressCenterImpl.Notifications_.prototype.updateItem = function(
     item, newItemAcceptable) {
-  var NotificationState = ProgressCenterImpl.Notifications_.NotificationState_;
-  var newlyAdded = !(item.id in this.ids_);
+  const NotificationState = ProgressCenterImpl.Notifications_.NotificationState_;
+  const newlyAdded = !(item.id in this.ids_);
 
   // If new item is not acceptable, just return.
   if (newlyAdded && !newItemAcceptable) {
@@ -113,7 +113,7 @@ ProgressCenterImpl.Notifications_.prototype.updateItem = function(
     }
   } else {
     // This notification is no longer tracked.
-    var previousState = this.ids_[item.id];
+    const previousState = this.ids_[item.id];
     delete this.ids_[item.id];
     // Clear notifications for complete or canceled items.
     if (item.state === ProgressItemState.CANCELED ||
@@ -129,7 +129,7 @@ ProgressCenterImpl.Notifications_.prototype.updateItem = function(
 
   // Create/update the notification with the item.
   this.queue_.run(function(proceed) {
-    var params = {
+    const params = {
       title: chrome.runtime.getManifest().name,
       iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
       type: item.state === ProgressItemState.PROGRESSING ? 'progress' : 'basic',
@@ -195,7 +195,7 @@ ProgressCenterImpl.Notifications_.prototype.onClosed_ = function(id) {
  */
 ProgressCenterImpl.prototype.updateItem = function(item) {
   // Update item.
-  var index = this.getItemIndex_(item.id);
+  const index = this.getItemIndex_(item.id);
   if (item.state === ProgressItemState.PROGRESSING) {
     if (index === -1) {
       this.items_.push(item);
@@ -210,7 +210,7 @@ ProgressCenterImpl.prototype.updateItem = function(item) {
   }
 
   // Update panels.
-  for (var i = 0; i < this.panels_.length; i++) {
+  for (let i = 0; i < this.panels_.length; i++) {
     this.panels_[i].updateItem(item);
   }
 
@@ -223,7 +223,7 @@ ProgressCenterImpl.prototype.updateItem = function(item) {
  * @param {string} id Progress ID to be requested to cancel.
  */
 ProgressCenterImpl.prototype.requestCancel = function(id) {
-  var item = this.getItemById(id);
+  const item = this.getItemById(id);
   if (item && item.cancelCallback) {
     item.cancelCallback();
   }
@@ -235,7 +235,7 @@ ProgressCenterImpl.prototype.requestCancel = function(id) {
  * @private
  */
 ProgressCenterImpl.prototype.onNotificationDismissed_ = function(id) {
-  var item = this.getItemById(id);
+  const item = this.getItemById(id);
   if (item && item.state === ProgressItemState.ERROR) {
     this.dismissErrorItem_(id);
   }
@@ -254,7 +254,7 @@ ProgressCenterImpl.prototype.addPanel = function(panel) {
   this.panels_.push(panel);
 
   // Set the current items.
-  for (var i = 0; i < this.items_.length; i++) {
+  for (let i = 0; i < this.items_.length; i++) {
     panel.updateItem(this.items_[i]);
   }
 
@@ -270,7 +270,7 @@ ProgressCenterImpl.prototype.addPanel = function(panel) {
  * @param {ProgressCenterPanel} panel Panel UI.
  */
 ProgressCenterImpl.prototype.removePanel = function(panel) {
-  var index = this.panels_.indexOf(panel);
+  const index = this.panels_.indexOf(panel);
   if (index === -1) {
     return;
   }
@@ -282,7 +282,7 @@ ProgressCenterImpl.prototype.removePanel = function(panel) {
   if (this.panels_.length) {
     return;
   }
-  for (var i = 0; i < this.items_.length; i++) {
+  for (let i = 0; i < this.items_.length; i++) {
     this.notifications_.updateItem(this.items_[i], true);
   }
 };
@@ -304,7 +304,7 @@ ProgressCenterImpl.prototype.getItemById = function(id) {
  * @private
  */
 ProgressCenterImpl.prototype.getItemIndex_ = function(id) {
-  for (var i = 0; i < this.items_.length; i++) {
+  for (let i = 0; i < this.items_.length; i++) {
     if (this.items_[i].id === id) {
       return i;
     }
@@ -318,14 +318,14 @@ ProgressCenterImpl.prototype.getItemIndex_ = function(id) {
  * @private
  */
 ProgressCenterImpl.prototype.dismissErrorItem_ = function(id) {
-  var index = this.getItemIndex_(id);
+  const index = this.getItemIndex_(id);
   if (index > -1) {
     this.items_.splice(index, 1);
   }
 
   this.notifications_.dismissErrorItem(id);
 
-  for (var i = 0; i < this.panels_.length; i++) {
+  for (let i = 0; i < this.panels_.length; i++) {
     this.panels_[i].dismissErrorItem(id);
   }
 };

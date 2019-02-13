@@ -238,7 +238,7 @@ DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX = 'drive-sync-error-';
  */
 DriveSyncHandlerImpl.prototype.onDriveSyncError_ = function(event) {
   window.webkitResolveLocalFileSystemURL(event.fileUrl, function(entry) {
-    var item = new ProgressCenterItem();
+    const item = new ProgressCenterItem();
     item.type = ProgressItemType.SYNC;
     item.quiet = true;
     item.state = ProgressItemState.ERROR;
@@ -277,7 +277,7 @@ DriveSyncHandlerImpl.prototype.onDriveSyncError_ = function(event) {
  */
 DriveSyncHandlerImpl.prototype.onNotificationButtonClicked_ = function(
     notificationId, buttonIndex) {
-  var expectedId = DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_;
+  const expectedId = DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_;
   if (notificationId !== expectedId) {
     return;
   }

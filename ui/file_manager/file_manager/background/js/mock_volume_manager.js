@@ -51,7 +51,7 @@ MockVolumeManager.installMockSingleton = function(opt_singleton) {
  */
 MockVolumeManager.prototype.createVolumeInfo = function(
     type, volumeId, label, providerId) {
-  var volumeInfo = MockVolumeManager.createMockVolumeInfo(
+  const volumeInfo = MockVolumeManager.createMockVolumeInfo(
       type, volumeId, label, undefined, providerId);
   this.volumeInfoList.add(volumeInfo);
   return volumeInfo;
@@ -124,8 +124,8 @@ MockVolumeManager.prototype.whenVolumeInfoReady =
  * @return {VolumeInfo} Volume info.
  */
 MockVolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
-  for (var i = 0; i < this.volumeInfoList.length; i++) {
-    var volumeInfo = this.volumeInfoList.item(i);
+  for (let i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.profile.isCurrentProfile &&
         volumeInfo.volumeType === volumeType) {
       return volumeInfo;
@@ -153,10 +153,10 @@ MockVolumeManager.prototype.getDriveConnectionState = function() {
  */
 MockVolumeManager.createMockVolumeInfo = function(
     type, volumeId, label, devicePath, providerId) {
-  var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
+  const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
   // If there's no label set it to volumeId to make it shorter to write tests.
-  var volumeInfo = new VolumeInfoImpl(
+  const volumeInfo = new VolumeInfoImpl(
       type, volumeId, fileSystem,
       '',                                          // error
       '',                                          // deviceType

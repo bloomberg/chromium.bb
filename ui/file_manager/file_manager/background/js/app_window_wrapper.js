@@ -95,14 +95,14 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
 
   // Get similar windows, it means with the same initial url, eg. different
   // main windows of the Files app.
-  var similarWindows = window.getSimilarWindows(this.url_);
+  const similarWindows = window.getSimilarWindows(this.url_);
 
   // Restore maximized windows, to avoid hiding them to tray, which can be
   // confusing for users.
   this.queue.run(function(callback) {
-    for (var index = 0; index < similarWindows.length; index++) {
+    for (let index = 0; index < similarWindows.length; index++) {
       if (similarWindows[index].isMaximized()) {
-        var createWindowAndRemoveListener = function() {
+        const createWindowAndRemoveListener = function() {
           similarWindows[index].onRestored.removeListener(
               createWindowAndRemoveListener);
           callback();
@@ -118,11 +118,11 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
   });
 
   // Obtains the last geometry and window state (maximized or not).
-  var lastBounds;
-  var isMaximized = false;
+  let lastBounds;
+  let isMaximized = false;
   this.queue.run(function(callback) {
-    var boundsKey = AppWindowWrapper.makeGeometryKey(this.url_);
-    var maximizedKey = AppWindowWrapper.MAXIMIZED_KEY_;
+    const boundsKey = AppWindowWrapper.makeGeometryKey(this.url_);
+    const maximizedKey = AppWindowWrapper.MAXIMIZED_KEY_;
     chrome.storage.local.get([boundsKey, maximizedKey], function(preferences) {
       if (!chrome.runtime.lastError) {
         lastBounds = preferences[boundsKey];
@@ -165,37 +165,37 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
   // After creating.
   this.queue.run(function(callback) {
     // If there is another window in the same position, shift the window.
-    var makeBoundsKey = function(bounds) {
+    const makeBoundsKey = function(bounds) {
       return bounds.left + '/' + bounds.top;
     };
-    var notAvailablePositions = {};
-    for (var i = 0; i < similarWindows.length; i++) {
-      var key = makeBoundsKey(similarWindows[i].getBounds());
+    const notAvailablePositions = {};
+    for (let i = 0; i < similarWindows.length; i++) {
+      let key = makeBoundsKey(similarWindows[i].getBounds());
       notAvailablePositions[key] = true;
     }
-    var candidateBounds = this.window_.getBounds();
+    const candidateBounds = this.window_.getBounds();
     while (true) {
-      var key = makeBoundsKey(candidateBounds);
+      let key = makeBoundsKey(candidateBounds);
       if (!notAvailablePositions[key]) {
         break;
       }
       // Make the position available to avoid an infinite loop.
       notAvailablePositions[key] = false;
-      var nextLeft = candidateBounds.left + AppWindowWrapper.SHIFT_DISTANCE;
-      var nextRight = nextLeft + candidateBounds.width;
+      const nextLeft = candidateBounds.left + AppWindowWrapper.SHIFT_DISTANCE;
+      const nextRight = nextLeft + candidateBounds.width;
       candidateBounds.left = nextRight >= screen.availWidth ?
           nextRight % screen.availWidth : nextLeft;
-      var nextTop = candidateBounds.top + AppWindowWrapper.SHIFT_DISTANCE;
-      var nextBottom = nextTop + candidateBounds.height;
+      const nextTop = candidateBounds.top + AppWindowWrapper.SHIFT_DISTANCE;
+      const nextBottom = nextTop + candidateBounds.height;
       candidateBounds.top = nextBottom >= screen.availHeight ?
           nextBottom % screen.availHeight : nextTop;
     }
     this.window_.moveTo(candidateBounds.left, candidateBounds.top);
 
     // Save the properties.
-    var appWindow = this.window_;
+    const appWindow = this.window_;
     window.appWindows[this.id_] = appWindow;
-    var contentWindow = appWindow.contentWindow;
+    const contentWindow = appWindow.contentWindow;
     contentWindow.appID = this.id_;
     contentWindow.appState = this.appState_;
     contentWindow.appReopen = reopen;
@@ -222,13 +222,13 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
  */
 AppWindowWrapper.prototype.onClosed_ = function() {
   // Remember the last window state (maximized or normal).
-  var preferences = {};
+  const preferences = {};
   preferences[AppWindowWrapper.MAXIMIZED_KEY_] = this.window_.isMaximized();
   chrome.storage.local.set(preferences);
 
   // Unload the window.
-  var appWindow = this.window_;
-  var contentWindow = this.window_.contentWindow;
+  const appWindow = this.window_;
+  const contentWindow = this.window_.contentWindow;
   if (contentWindow.unload) {
     contentWindow.unload();
   }
@@ -253,7 +253,7 @@ AppWindowWrapper.prototype.onClosed_ = function() {
  */
 AppWindowWrapper.prototype.onBoundsChanged_ = function() {
   if (!this.window_.isMaximized()) {
-    var preferences = {};
+    const preferences = {};
     preferences[AppWindowWrapper.makeGeometryKey(this.url_)] =
         this.window_.getBounds();
     chrome.storage.local.set(preferences);
@@ -327,7 +327,7 @@ SingletonAppWindowWrapper.prototype.launch =
  */
 SingletonAppWindowWrapper.prototype.reopen = function(opt_callback) {
   chrome.storage.local.get(this.id_, function(items) {
-    var value = items[this.id_];
+    const value = items[this.id_];
     if (!value) {
       opt_callback && opt_callback();
       return;  // No app state persisted.

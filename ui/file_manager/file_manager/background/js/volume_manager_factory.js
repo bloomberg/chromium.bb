@@ -8,12 +8,12 @@ var volumeManagerFactory = (function() {
    * invocation of getInstance().
    * @type {VolumeManager}
    */
-  var instance = null;
+  let instance = null;
 
   /**
    * @type {Promise}
    */
-  var instancePromise = null;
+  let instancePromise = null;
 
   /**
    * Returns the VolumeManager instance asynchronously. If it has not been
