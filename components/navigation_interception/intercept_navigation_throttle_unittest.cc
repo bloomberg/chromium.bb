@@ -75,7 +75,8 @@ class InterceptNavigationThrottleTest
   static std::unique_ptr<content::NavigationThrottle> CreateThrottle(
       InterceptNavigationThrottle::CheckCallback callback,
       content::NavigationHandle* handle) {
-    return std::make_unique<InterceptNavigationThrottle>(handle, callback);
+    return std::make_unique<InterceptNavigationThrottle>(
+        handle, callback, navigation_interception::SynchronyMode::kAsync);
   }
 
   std::unique_ptr<content::TestNavigationThrottleInserter>
