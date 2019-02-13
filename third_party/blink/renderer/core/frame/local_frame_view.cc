@@ -1344,6 +1344,8 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
 }
 
 void LocalFrameView::ProcessUrlFragment(const KURL& url, bool should_scroll) {
+  // We want to create the anchor even if we don't need to scroll. This ensures
+  // all the side effects like setting CSS :target are correctly set.
   fragment_anchor_ = FragmentAnchor::TryCreate(url, should_scroll, *frame_);
 }
 
