@@ -3315,6 +3315,16 @@
     ]
   },
 
+  "SchedulerConfiguration": {
+    "os": ["chromeos"],
+    "test_policy": { "SchedulerConfiguration": "performance" },
+    "pref_mappings": [
+      { "pref": "chromeos.scheduler_configuration",
+        "local_state": true
+      }
+    ]
+  },
+
   "CloudPolicyOverridesMachinePolicy": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "CloudPolicyOverridesMachinePolicy": false },
