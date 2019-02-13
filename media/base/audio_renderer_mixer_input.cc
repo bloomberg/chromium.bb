@@ -16,6 +16,12 @@
 
 namespace media {
 
+// TODO(dalecurtis): Merge with AudioDeviceDescription::IsDefaultDevice() once
+// that file has been moved to media/base.
+bool IsDefaultDevice(const std::string& device_id) {
+  return device_id.empty() || device_id == "default";
+}
+
 AudioRendererMixerInput::AudioRendererMixerInput(
     AudioRendererMixerPool* mixer_pool,
     int owner_id,
@@ -37,6 +43,11 @@ AudioRendererMixerInput::~AudioRendererMixerInput() {
   DCHECK(!mixer_);
   if (sink_)
     sink_->Stop();
+
+  // Because GetOutputDeviceInfoAsync() and SwitchOutputDevice() both use
+  // base::RetainedRef, it should be impossible to get here with these set.
+  DCHECK(!pending_device_info_cb_);
+  DCHECK(!pending_switch_cb_);
 }
 
 void AudioRendererMixerInput::Initialize(
@@ -124,6 +135,14 @@ void AudioRendererMixerInput::GetOutputDeviceInfoAsync(
     return;
   }
 
+  if (switch_output_device_in_progress_) {
+    DCHECK(!godia_in_progress_);
+    pending_device_info_cb_ = std::move(info_cb);
+    return;
+  }
+
+  godia_in_progress_ = true;
+
   // We may have |device_info_|, but a Stop() has been called since if we don't
   // have a |sink_| or a |mixer_|, so request the information again in case it
   // has changed (which may occur due to browser side device changes).
@@ -151,10 +170,28 @@ bool AudioRendererMixerInput::CurrentThreadIsRenderingThread() {
 void AudioRendererMixerInput::SwitchOutputDevice(
     const std::string& device_id,
     OutputDeviceStatusCB callback) {
-  if (device_id == device_id_) {
+  // If a GODIA() call is in progress, defer until it's complete.
+  if (godia_in_progress_) {
+    DCHECK(!switch_output_device_in_progress_);
+
+    // Abort any previous device switch which may be pending.
+    if (pending_switch_cb_)
+      std::move(pending_switch_cb_).Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+
+    pending_device_id_ = device_id;
+    pending_switch_cb_ = std::move(callback);
+    return;
+  }
+
+  // Some pages send "default" instead of the spec compliant empty string for
+  // the default device. Short circuit these here to avoid busy work.
+  if (device_id == device_id_ ||
+      (IsDefaultDevice(device_id_) && IsDefaultDevice(device_id))) {
     std::move(callback).Run(OUTPUT_DEVICE_STATUS_OK);
     return;
   }
+
+  switch_output_device_in_progress_ = true;
 
   // Request a new sink using the new device id. This process may fail, so to
   // avoid interrupting working audio, don't set any class variables until we
@@ -200,17 +237,36 @@ void AudioRendererMixerInput::OnRenderError() {
 void AudioRendererMixerInput::OnDeviceInfoReceived(
     OutputDeviceInfoCB info_cb,
     OutputDeviceInfo device_info) {
+  DCHECK(godia_in_progress_);
+  godia_in_progress_ = false;
+
   device_info_ = device_info;
   std::move(info_cb).Run(*device_info_);
+
+  // Complete any pending SwitchOutputDevice() if needed. We don't post this to
+  // ensure we don't reorder calls relative to what the page is expecting. I.e.,
+  // if we post we could end up with Switch(1) -> Switch(2) ending on Switch(1).
+  if (!pending_switch_cb_)
+    return;
+  SwitchOutputDevice(std::move(pending_device_id_),
+                     std::move(pending_switch_cb_));
 }
 
 void AudioRendererMixerInput::OnDeviceSwitchReady(
     OutputDeviceStatusCB switch_cb,
     scoped_refptr<AudioRendererSink> sink,
     OutputDeviceInfo device_info) {
+  DCHECK(switch_output_device_in_progress_);
+  switch_output_device_in_progress_ = false;
+
   if (device_info.device_status() != OUTPUT_DEVICE_STATUS_OK) {
     sink->Stop();
     std::move(switch_cb).Run(device_info.device_status());
+
+    // Start any pending device info request.
+    if (pending_device_info_cb_)
+      GetOutputDeviceInfoAsync(std::move(pending_device_info_cb_));
+
     return;
   }
 
@@ -233,6 +289,10 @@ void AudioRendererMixerInput::OnDeviceSwitchReady(
   }
 
   std::move(switch_cb).Run(device_info.device_status());
+
+  // Start any pending device info request.
+  if (pending_device_info_cb_)
+    GetOutputDeviceInfoAsync(std::move(pending_device_info_cb_));
 }
 
 }  // namespace media
