@@ -63,6 +63,7 @@ class ToughCompositorWaitPage(ToughCompositorPage):
 class CCPosterCirclePage(ToughCompositorWaitPage):
   BASE_NAME = 'cc_poster_circle'
   URL = 'http://jsbin.com/falefice/1/quiet?CC_POSTER_CIRCLE'
+  TAGS = ToughCompositorWaitPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 # Why: JS poster circle animates/commits many layers """
@@ -120,6 +121,7 @@ class CSSOpacityPlusNLayers99(ToughCompositorWaitPage):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/tough_compositor_cases/'
          'css_opacity_plus_n_layers.html?layer_count=306&visible_layers=46')
+  TAGS = ToughCompositorWaitPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 # Why: JS driven CSS property change on 1 layer baseline """
@@ -160,6 +162,7 @@ class JSOpacityPlusNLayers99(ToughCompositorWaitPage):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/tough_compositor_cases/'
          'js_opacity_plus_n_layers.html?layer_count=306&visible_layers=46')
+  TAGS = ToughCompositorWaitPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 # Why: Painting 1 layer baseline """
@@ -336,3 +339,7 @@ class InfiniteScrollRootFixedNLayers99(InfiniteScrollRootNLayersPage):
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
   URL = ('file://../../../../chrome/test/data/perf/tough_compositor_cases/'
          'infinite_scroll_root_fixed_n_layers.html?layer_count=306')
+  TAGS = InfiniteScrollRootNLayersPage.TAGS + [
+      story_tags.REPRESENTATIVE_WIN_DESKTOP,
+      story_tags.REPRESENTATIVE_MAC_DESKTOP,
+  ]

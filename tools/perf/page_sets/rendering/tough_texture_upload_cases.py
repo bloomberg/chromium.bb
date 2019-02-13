@@ -36,6 +36,7 @@ class BackgroundColorAnimationWithGradientPage(ToughTextureUploadPage):
   BASE_NAME = 'background_color_animation_with_gradient'
   # pylint: disable=line-too-long
   URL = 'file://../tough_texture_upload_cases/background_color_animation_with_gradient.html'
+  TAGS = ToughTextureUploadPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class SmallTextureUploadsPage(ToughTextureUploadPage):

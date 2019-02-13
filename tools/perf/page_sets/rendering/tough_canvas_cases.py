@@ -52,6 +52,7 @@ class MicrosoftFishIETankPage(ToughCanvasPage):
   BASE_NAME = 'microsoft_fish_ie_tank'
   # pylint: disable=line-too-long
   URL = 'http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class MicrosoftSpeedReadingPage(ToughCanvasPage):
@@ -68,6 +69,7 @@ class Kevs3DPage(ToughCanvasPage):
 class MegiDishPage(ToughCanvasPage):
   BASE_NAME = 'megi_dish'
   URL = 'http://www.megidish.net/awjs/'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class ManInBluePage(ToughCanvasPage):
@@ -78,6 +80,7 @@ class ManInBluePage(ToughCanvasPage):
 class Mix10KPage(ToughCanvasPage):
   BASE_NAME = 'mix_10k'
   URL = 'http://mix10k.visitmix.com/Entry/Details/169'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class CraftyMindPage(ToughCanvasPage):
@@ -129,6 +132,7 @@ class MicrosoftTweetMapPage(ToughCanvasPage):
 class MicrosoftVideoCityPage(ToughCanvasPage):
   BASE_NAME = 'microsoft_video_city'
   URL = 'http://ie.microsoft.com/testdrive/Graphics/VideoCity/Default.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_WIN_DESKTOP]
 
 
 class MicrosoftAsteroidBeltPage(ToughCanvasPage):
@@ -140,6 +144,7 @@ class MicrosoftAsteroidBeltPage(ToughCanvasPage):
 class SmashCatPage(ToughCanvasPage):
   BASE_NAME = 'smash_cat'
   URL = 'http://www.smashcat.org/av/canvas_test/'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class BouncingBallsShadowPage(ToughCanvasPage):
@@ -162,6 +167,7 @@ class CanvasFontCyclerPage(ToughCanvasPage):
 class CanvasAnimationNoClearPage(ToughCanvasPage):
   BASE_NAME = 'canvas_animation_no_clear'
   URL = 'file://../tough_canvas_cases/canvas-animation-no-clear.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class CanvasToBlobPage(ToughCanvasPage):
@@ -182,6 +188,7 @@ class CanvasArcPage(ToughCanvasPage):
 class CanvasLinesPage(ToughCanvasPage):
   BASE_NAME = 'canvas_lines'
   URL = 'file://../tough_canvas_cases/rendering_throughput/canvas_lines.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class PutGetImageDataPage(ToughCanvasPage):
@@ -192,11 +199,13 @@ class PutGetImageDataPage(ToughCanvasPage):
 class FillShapesPage(ToughCanvasPage):
   BASE_NAME = 'fill_shapes'
   URL = 'file://../tough_canvas_cases/rendering_throughput/fill_shapes.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class StrokeShapesPage(ToughCanvasPage):
   BASE_NAME = 'stroke_shapes'
   URL = 'file://../tough_canvas_cases/rendering_throughput/stroke_shapes.html'
+  TAGS = ToughCanvasPage.TAGS + [story_tags.REPRESENTATIVE_MAC_DESKTOP]
 
 
 class BouncingClippedRectanglesPage(ToughCanvasPage):
