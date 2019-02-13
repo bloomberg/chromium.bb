@@ -742,9 +742,10 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetSkipServiceWorker(is_isolated_world_);
 
   if (fetch_request_data_->Keepalive()) {
-    if (!cors::IsCorsSafelistedMethod(request.HttpMethod()) ||
-        !cors::ContainsOnlyCorsSafelistedOrForbiddenHeaders(
-            request.HttpHeaderFields())) {
+    if (cors::IsCorsEnabledRequestMode(fetch_request_data_->Mode()) &&
+        (!cors::IsCorsSafelistedMethod(request.HttpMethod()) ||
+         !cors::ContainsOnlyCorsSafelistedOrForbiddenHeaders(
+             request.HttpHeaderFields()))) {
       PerformNetworkError(
           "Preflight request for request with keepalive "
           "specified is currently not supported");
