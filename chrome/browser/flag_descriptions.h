@@ -2129,6 +2129,11 @@ extern const char kUiModeTablet[];
 extern const char kUiModeClamshell[];
 extern const char kUiModeAuto[];
 
+extern const char kSchedulerConfigurationName[];
+extern const char kSchedulerConfigurationDescription[];
+extern const char kSchedulerConfigurationConservative[];
+extern const char kSchedulerConfigurationPerformance[];
+
 extern const char kUnfilteredBluetoothDevicesName[];
 extern const char kUnfilteredBluetoothDevicesDescription[];
 

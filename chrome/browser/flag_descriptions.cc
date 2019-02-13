@@ -3552,6 +3552,12 @@ const char kUiModeTablet[] = "Tablet";
 const char kUiModeClamshell[] = "Clamshell";
 const char kUiModeAuto[] = "Auto (default)";
 
+const char kSchedulerConfigurationName[] = "Scheduler Configuration";
+const char kSchedulerConfigurationDescription[] =
+    "Instructs the OS to use a specific scheduler configuration setting.";
+const char kSchedulerConfigurationConservative[] = "Conservative";
+const char kSchedulerConfigurationPerformance[] = "Performance";
+
 const char kUnfilteredBluetoothDevicesName[] = "Unfiltered Bluetooth devices";
 const char kUnfilteredBluetoothDevicesDescription[] =
     "Shows all Bluetooth devices in UI (System Tray/Settings Page.)";

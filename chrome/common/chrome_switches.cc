@@ -753,6 +753,10 @@ const char kMashServiceName[] = "mash-service-name";
 const char kShortMergeSessionTimeoutForTest[] =
     "short-merge-session-timeout-for-test";
 
+// Selects the scheduler configuration specified in the parameter.
+const char kSchedulerConfiguration[] = "scheduler-configuration";
+const char kSchedulerConfigurationConservative[] = "conservative";
+const char kSchedulerConfigurationPerformance[] = "performance";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
