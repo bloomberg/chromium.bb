@@ -403,13 +403,8 @@ void ClientTagBasedModelTypeProcessor::Put(
   DCHECK(data);
   DCHECK(!data->is_deleted());
   DCHECK(!data->non_unique_name.empty());
-
-  // Only the pseudo-USS bridge for PASSWORDS populates encrypted data.
-  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS and
-  // replace instead with a DCHECK that verifies the input is not encrypted.
-  if (!data->specifics.has_encrypted()) {
-    DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
-  }
+  DCHECK(!data->specifics.has_encrypted());
+  DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 
   if (!model_type_state_.initial_sync_done()) {
     // Ignore changes before the initial sync is done.
@@ -1121,8 +1116,6 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     // recommit only the ones whose encryption key doesn't match the one in
     // DataTypeState. Work is tracked in http://crbug.com/727874.
     RecommitAllForEncryption(already_updated, metadata_changes.get());
-    return bridge_->ApplySyncChangesWithNewEncryptionRequirements(
-        std::move(metadata_changes), std::move(entity_changes));
   }
   // Inform the bridge of the new or updated data.
   return bridge_->ApplySyncChanges(std::move(metadata_changes),

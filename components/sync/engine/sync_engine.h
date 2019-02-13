@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -58,8 +57,7 @@ class SyncEngine : public ModelTypeConfigurer {
     scoped_refptr<base::SequencedTaskRunner> sync_task_runner;
     SyncEngineHost* host = nullptr;
     std::unique_ptr<SyncBackendRegistrar> registrar;
-    std::vector<std::unique_ptr<SyncEncryptionHandler::Observer>>
-        encryption_observer_proxies;
+    std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy;
     scoped_refptr<ExtensionsActivity> extensions_activity;
     WeakHandle<JsEventHandler> event_handler;
     GURL service_url;

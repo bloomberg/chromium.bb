@@ -29,7 +29,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync/password_data_type_controller.h"
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
-#include "components/password_manager/core/browser/sync/password_syncable_service_based_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -337,14 +336,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       controllers.push_back(
           std::make_unique<password_manager::PasswordModelTypeController>(
               password_store_->CreateSyncControllerDelegate(), sync_service,
-              sync_client_->GetPasswordStateChangedCallback()));
-    } else if (base::FeatureList::IsEnabled(
-                   switches::kSyncPseudoUSSPasswords)) {
-      controllers.push_back(
-          std::make_unique<password_manager::
-                               PasswordSyncableServiceBasedModelTypeController>(
-              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              dump_stack, password_store_, sync_service, sync_client_,
               sync_client_->GetPasswordStateChangedCallback()));
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(
