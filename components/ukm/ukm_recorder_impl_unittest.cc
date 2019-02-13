@@ -75,6 +75,26 @@ class UkmRecorderImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UkmRecorderImplTest);
 };
 
+TEST_F(UkmRecorderImplTest, PageSamplingCondition) {
+  EXPECT_FALSE(impl().UkmRecorderImpl::IsSampledIn(0));
+  EXPECT_TRUE(impl().UkmRecorderImpl::IsSampledIn(1));
+
+  // Actual sampling is "random" so there's no single operation to test.
+  // Instead, sample many times and expect that some, but less than 1/2,
+  // will be sampled-in.  This is sufficient to ensure that the condition
+  // is not "dead" (always false) and has not been mistakenly reversed...
+  // without the test being flaky.
+  const int kRandomCheckCount = 1000;
+  int sampled_in_count = 0;
+  for (int i = 0; i < kRandomCheckCount; ++i) {
+    // Sample 1-in-10...
+    if (impl().UkmRecorderImpl::IsSampledIn(10))
+      sampled_in_count += 1;
+  }
+  EXPECT_LT(0, sampled_in_count);
+  EXPECT_GT(kRandomCheckCount / 2, sampled_in_count);
+}
+
 TEST_F(UkmRecorderImplTest, PageSampling) {
   SourceId page1_source =
       ConvertToSourceId(101, base::UkmSourceId::Type::NAVIGATION_ID);
