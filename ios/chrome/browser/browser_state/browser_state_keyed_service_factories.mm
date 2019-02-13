@@ -39,14 +39,11 @@
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_browser_state_info_updater_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
@@ -84,19 +81,16 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::AccountConsistencyServiceFactory::GetInstance();
   ios::AccountFetcherServiceFactory::GetInstance();
   ios::AccountReconcilorFactory::GetInstance();
-  ios::AccountTrackerServiceFactory::GetInstance();
   ios::AutocompleteClassifierFactory::GetInstance();
   ios::BookmarkModelFactory::GetInstance();
   ios::BookmarkUndoServiceFactory::GetInstance();
   ios::CookieSettingsFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
-  ios::GaiaCookieManagerServiceFactory::GetInstance();
   ios::GoogleURLTrackerFactory::GetInstance();
   ios::HistoryServiceFactory::GetInstance();
   ios::InMemoryURLIndexFactory::GetInstance();
   ios::ShortcutsBackendFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();
-  ios::SigninManagerFactory::GetInstance();
   ios::StartupTaskRunnerServiceFactory::GetInstance();
   ios::TemplateURLServiceFactory::GetInstance();
   ios::TopSitesFactory::GetInstance();
@@ -110,6 +104,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ConsentAuditorFactory::GetInstance();
   FullscreenControllerFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
+  IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
   IOSChromeContentSuggestionsServiceFactory::GetInstance();
   IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance();
   IOSChromeFaviconLoaderFactory::GetInstance();
@@ -121,7 +116,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   IOSUserEventServiceFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
   ModelTypeStoreServiceFactory::GetInstance();
-  ProfileOAuth2TokenServiceFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
   SigninBrowserStateInfoUpdaterFactory::GetInstance();

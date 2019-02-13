@@ -80,6 +80,15 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
   return instance.get();
 }
 
+// static
+void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
+  IdentityManagerFactory::GetInstance();
+  ios::AccountTrackerServiceFactory::GetInstance();
+  ios::GaiaCookieManagerServiceFactory::GetInstance();
+  ProfileOAuth2TokenServiceFactory::GetInstance();
+  ios::SigninManagerFactory::GetInstance();
+}
+
 void IdentityManagerFactory::AddObserver(
     IdentityManagerFactoryObserver* observer) {
   observer_list_.AddObserver(observer);
