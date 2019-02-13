@@ -86,6 +86,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
     public void destroy() {
         ThreadUtils.assertOnUiThread();
         mStorage.destroy();
+        mBitmapCache.destroy();
     }
 
     /**
