@@ -3493,6 +3493,12 @@
       },
     },
 
+    'gpu_win_intel_specific_telemetry_tests': {
+      'power_measurement_test': {
+        'telemetry_test_name': 'power',
+      },
+    },
+
     'gpu_win_specific_gtests': {
       'gl_tests_passthrough': {
         'test': 'gl_tests',
@@ -4814,6 +4820,18 @@
       'gpu_win_specific_gtests',
     ],
 
+    'gpu_fyi_win_intel_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+      'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+      'gpu_fyi_only_win_intel_and_nvidia_release_specific_telemetry_tests',
+      'gpu_fyi_only_win_linux_intel_nvidia_specific_telemetry_tests',
+      'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
+      'gpu_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
+      'gpu_win_intel_specific_telemetry_tests',
+    ],
+
     'gpu_fyi_win_optional_gtests': [
       'gpu_angle_end2end_tests',
       'gpu_angle_white_box_tests',
@@ -4839,6 +4857,15 @@
       'gpu_android_nexus5x_specific_gpu_fyi_and_optional_and_angle_telemetry_tests',
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
+    ],
+
+    'gpu_optional_win_intel_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_fyi_and_optional_and_win_angle_amd_win_specific_gpu_telemetry_tests',
+      'gpu_fyi_and_optional_win_and_linux_specific_telemetry_tests',
+      'gpu_fyi_optional_and_v8_desktop_release_specific_telemetry_tests',
+      'gpu_webgl_conformance_d3d9_validating_tests',
+      'gpu_win_intel_specific_telemetry_tests',
     ],
 
     'gpu_optional_win_telemetry_tests': [

@@ -2661,7 +2661,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_optional_gtests',
           'isolated_scripts': 'gpu_angle_perftests',
-          'gpu_telemetry_tests': 'gpu_optional_win_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_optional_win_intel_telemetry_tests',
         },
       },
       'Optional Win10 Release (NVIDIA)': {
@@ -2700,7 +2700,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'isolated_scripts': 'gpu_angle_perftests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
       # TODO(kbr): "Experimental" caused too-long path names pre-LUCI.
@@ -2728,7 +2728,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'isolated_scripts': 'gpu_angle_perftests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
       'Win10 FYI Release (NVIDIA)': {
