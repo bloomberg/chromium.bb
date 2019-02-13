@@ -20,6 +20,7 @@ namespace views {
 class BackToTabImageButton;
 class ControlImageButton;
 class CloseImageButton;
+class NextTrackImageButton;
 class PlaybackImageButton;
 class ResizeHandleButton;
 class SkipAdLabelButton;
@@ -50,6 +51,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetPlaybackState(PlaybackState playback_state) override;
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   void SetSkipAdButtonVisibility(bool is_visible) override;
+  void SetNextTrackButtonVisibility(bool is_visible) override;
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   ui::Layer* GetWindowBackgroundLayer() override;
@@ -77,6 +79,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetCloseControlsBounds();
   gfx::Rect GetResizeHandleControlsBounds();
   gfx::Rect GetPlayPauseControlsBounds();
+  gfx::Rect GetNextTrackControlsBounds();
   gfx::Rect GetFirstCustomControlsBounds();
   gfx::Rect GetSecondCustomControlsBounds();
 
@@ -89,6 +92,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   bool AreControlsVisible() const;
 
   views::PlaybackImageButton* play_pause_controls_view_for_testing() const;
+  views::NextTrackImageButton* next_track_controls_view_for_testing() const;
   gfx::Point back_to_tab_image_position_for_testing() const;
   views::SkipAdLabelButton* skip_ad_controls_view_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
@@ -124,7 +128,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Update the size of each controls view as the size of the window changes.
   void UpdateCustomControlsSize(views::ControlImageButton* control_button);
-  void UpdatePlayPauseControlsSize();
+  void UpdateButtonControlsSize();
 
   void CreateCustomControl(
       std::unique_ptr<views::ControlImageButton>& control_button,
@@ -144,7 +148,6 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   ui::Layer* GetControlsScrimLayer();
   ui::Layer* GetBackToTabControlsLayer();
-  ui::Layer* GetSkipAdControlsLayer();
   ui::Layer* GetCloseControlsLayer();
   ui::Layer* GetResizeHandleLayer();
   ui::Layer* GetControlsParentLayer();
@@ -203,6 +206,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
   std::unique_ptr<views::PlaybackImageButton> play_pause_controls_view_;
+  std::unique_ptr<views::NextTrackImageButton> next_track_controls_view_;
   std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
   std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;
 #if defined(OS_CHROMEOS)
@@ -219,6 +223,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Whether or not the skip ad button will be shown. This is the
   // case when Media Session "skipad" action is handled by the website.
   bool show_skip_ad_button_ = false;
+
+  // Whether or not the next track button will be shown. This is the
+  // case when Media Session "nexttrack" action is handled by the website.
+  bool show_next_track_button_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };

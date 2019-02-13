@@ -35,19 +35,17 @@ PlaybackImageButton::PlaybackImageButton(ButtonListener* listener)
 
 PlaybackImageButton::~PlaybackImageButton() = default;
 
-void PlaybackImageButton::SetButtonSize(const gfx::Size& size) {
-  SetSize(size);
-
+void PlaybackImageButton::OnBoundsChanged(const gfx::Rect&) {
   play_image_ = gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
-                                      size.width() / 2, kPlaybackIconColor);
+                                      size().width() / 2, kPlaybackIconColor);
   pause_image_ = gfx::CreateVectorIcon(vector_icons::kPauseIcon,
-                                       size.width() / 2, kPlaybackIconColor);
+                                       size().width() / 2, kPlaybackIconColor);
   replay_image_ = gfx::CreateVectorIcon(vector_icons::kReplayIcon,
-                                        size.width() / 2, kPlaybackIconColor);
+                                        size().width() / 2, kPlaybackIconColor);
 
   const gfx::ImageSkia background_image_ =
       gfx::CreateVectorIcon(kPictureInPictureControlBackgroundIcon,
-                            size.width(), kPlaybackIconBackgroundColor);
+                            size().width(), kPlaybackIconBackgroundColor);
   SetBackgroundImage(kPlaybackIconBackgroundColor, &background_image_,
                      &background_image_);
 

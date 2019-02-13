@@ -95,4 +95,8 @@ void ArcPictureInPictureWindowControllerImpl::SkipAd() {
   // Should be a no-op on ARC. This is managed on the Android side.
 }
 
+void ArcPictureInPictureWindowControllerImpl::NextTrack() {
+  // Should be a no-op on ARC. This is managed on the Android side.
+}
+
 }  // namespace arc
