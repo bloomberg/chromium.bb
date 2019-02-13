@@ -15,7 +15,6 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentStorage.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedImageLoader.java",
-    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedImageLoaderBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedJournalBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedJournalStorage.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedLifecycleBridge.java",
