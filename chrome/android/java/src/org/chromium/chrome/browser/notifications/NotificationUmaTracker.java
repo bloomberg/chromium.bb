@@ -85,8 +85,14 @@ public class NotificationUmaTracker {
         int DOWNLOAD_RESUME = 1;
         // Cancel button on user download notification.
         int DOWNLOAD_CANCEL = 2;
+        // Pause button on page download notification.
+        int DOWNLOAD_PAGE_PAUSE = 3;
+        // Resume button on page download notification.
+        int DOWNLOAD_PAGE_RESUME = 4;
+        // Cancel button on page download notification.
+        int DOWNLOAD_PAGE_CANCEL = 5;
 
-        int NUM_ENTRIES = 3;
+        int NUM_ENTRIES = 6;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
