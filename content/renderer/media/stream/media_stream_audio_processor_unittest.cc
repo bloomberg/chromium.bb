@@ -111,8 +111,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
         expected_output_buffer_size * base::TimeDelta::FromSeconds(1) /
             expected_output_sample_rate;
     for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
-      data_bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
-          data_ptr, data_bus->frames());
+      data_bus->FromInterleaved(data_ptr, data_bus->frames(), 2);
       audio_processor->PushCaptureData(*data_bus, input_capture_delay);
 
       // |audio_processor| does nothing when the audio processing is off in
