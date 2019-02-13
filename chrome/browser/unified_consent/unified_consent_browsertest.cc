@@ -83,14 +83,16 @@ IN_PROC_BROWSER_TEST_F(UnifiedConsentDisabledBrowserTest,
 
 // Tests that all service entries in the settings histogram are recorded after
 // enabling them.
-IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
-                       PRE_SettingsHistogram_AllGoogleServicesEnabled) {
+IN_PROC_BROWSER_TEST_F(
+    UnifiedConsentBrowserTest,
+    PRE_SettingsHistogram_UrlKeyedAnonymizedDataCollectionEnabled) {
   EnableSync();
-  consent_service()->EnableGoogleServices();
+  consent_service()->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 }
 
-IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
-                       SettingsHistogram_AllGoogleServicesEnabled) {
+IN_PROC_BROWSER_TEST_F(
+    UnifiedConsentBrowserTest,
+    SettingsHistogram_UrlKeyedAnonymizedDataCollectionEnabled) {
   histogram_tester_.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
       metrics::SettingsHistogramValue::kNone, 0);

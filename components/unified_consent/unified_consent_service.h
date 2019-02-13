@@ -54,10 +54,8 @@ class UnifiedConsentService : public KeyedService,
   static void RollbackIfNeeded(PrefService* user_pref_service,
                                syncer::SyncService* sync_service);
 
-  // Enables all Google services tied to unified consent.
-  // Note: Sync has to be enabled through the SyncService. It is *not* enabled
-  // in this method.
-  void EnableGoogleServices();
+  // Enables or disables URL-keyed anonymized data collection.
+  void SetUrlKeyedAnonymizedDataCollectionEnabled(bool enabled);
 
   // KeyedService:
   void Shutdown() override;

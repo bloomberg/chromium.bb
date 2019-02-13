@@ -496,7 +496,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
   switch (result) {
     case LoginUIService::CONFIGURE_SYNC_FIRST:
       if (consent_service)
-        consent_service->EnableGoogleServices();
+        consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       delegate_->ShowSyncSettings();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
@@ -504,7 +504,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
       if (sync_service)
         sync_service->GetUserSettings()->SetFirstSetupComplete();
       if (consent_service)
-        consent_service->EnableGoogleServices();
+        consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
       break;
     }
     case LoginUIService::ABORT_SIGNIN:

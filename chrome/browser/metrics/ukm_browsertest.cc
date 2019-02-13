@@ -277,7 +277,7 @@ class UkmBrowserTestBase : public SyncTest {
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile);
     if (consent_service)
-      consent_service->EnableGoogleServices();
+      consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
     return harness;
   }

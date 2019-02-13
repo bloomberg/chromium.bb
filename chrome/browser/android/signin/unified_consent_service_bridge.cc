@@ -27,15 +27,6 @@ static void JNI_UnifiedConsentServiceBridge_SetUnifiedConsentGiven(
   // TODO(crbug.com/907856): Remove.
 }
 
-static void JNI_UnifiedConsentServiceBridge_EnableGoogleServices(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& profileAndroid) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
-  auto* unifiedConsentService =
-      UnifiedConsentServiceFactory::GetForProfile(profile);
-  return unifiedConsentService->EnableGoogleServices();
-}
-
 static jboolean
 JNI_UnifiedConsentServiceBridge_IsUrlKeyedAnonymizedDataCollectionEnabled(
     JNIEnv* env,
@@ -45,17 +36,6 @@ JNI_UnifiedConsentServiceBridge_IsUrlKeyedAnonymizedDataCollectionEnabled(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
 }
 
-static void
-JNI_UnifiedConsentServiceBridge_SetUrlKeyedAnonymizedDataCollectionEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& profileAndroid,
-    const jboolean enabled) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
-  profile->GetPrefs()->SetBoolean(
-      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-      enabled);
-}
-
 static jboolean
 JNI_UnifiedConsentServiceBridge_IsUrlKeyedAnonymizedDataCollectionManaged(
     JNIEnv* env,
@@ -63,4 +43,15 @@ JNI_UnifiedConsentServiceBridge_IsUrlKeyedAnonymizedDataCollectionManaged(
   Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
   return profile->GetPrefs()->IsManagedPreference(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+}
+
+static void
+JNI_UnifiedConsentServiceBridge_SetUrlKeyedAnonymizedDataCollectionEnabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& profileAndroid,
+    const jboolean enabled) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
+  auto* unifiedConsentService =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 }

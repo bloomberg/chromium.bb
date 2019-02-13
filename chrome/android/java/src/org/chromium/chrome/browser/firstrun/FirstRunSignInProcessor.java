@@ -77,7 +77,7 @@ public final class FirstRunSignInProcessor {
             @Override
             public void onSignInComplete() {
                 if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                    UnifiedConsentServiceBridge.enableGoogleServices();
+                    UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
                 }
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {

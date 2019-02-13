@@ -301,7 +301,7 @@ enum AuthenticationState {
         UnifiedConsentServiceFactory::GetForBrowserState(_browserState);
     // |unifiedConsentService| may be null in unit tests.
     if (unifiedConsentService)
-      unifiedConsentService->EnableGoogleServices();
+      unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   }
   SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator
