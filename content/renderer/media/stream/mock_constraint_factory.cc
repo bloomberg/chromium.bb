@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
-#include "third_party/webrtc/api/media_constraints_interface.h"
 
 namespace content {
 

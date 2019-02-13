@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "third_party/webrtc/api/media_constraints_interface.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
