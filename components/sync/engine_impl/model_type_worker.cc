@@ -24,7 +24,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
@@ -328,18 +327,8 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     }
     response_data->encryption_key_name =
         specifics.password().encrypted().key_name();
-    // TODO(crbug.com/902349): Once passwords are fully migrated to USS and this
-    // feature toggle isn't needed anymore, make sure to remove the
-    // "+components/sync/driver", from "components/sync/engine_impl/DEPS"
-    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSPasswords)) {
-      data.specifics = specifics;
-    } else {
-      // Full-blown USS implementation requires the password to be decrypted at
-      // the worker.
-      if (!DecryptPasswordSpecifics(*cryptographer, specifics,
-                                    &data.specifics)) {
-        return FAILED_TO_DECRYPT;
-      }
+    if (!DecryptPasswordSpecifics(*cryptographer, specifics, &data.specifics)) {
+      return FAILED_TO_DECRYPT;
     }
     response_data->entity = data.PassToPtr();
     return SUCCESS;
@@ -586,16 +575,10 @@ void ModelTypeWorker::DecryptStoredEntities() {
         ++it;
         continue;
       }
-      if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSPasswords)) {
-        specifics = data->specifics;
-      } else {
-        // Full-blown USS implementation requires the password to be decrypted
-        // at the worker.
-        if (!DecryptPasswordSpecifics(*cryptographer_, data->specifics,
-                                      &specifics)) {
-          ++it;
-          continue;
-        }
+      if (!DecryptPasswordSpecifics(*cryptographer_, data->specifics,
+                                    &specifics)) {
+        ++it;
+        continue;
       }
     } else {
       DCHECK(data->specifics.has_encrypted());

@@ -53,9 +53,4 @@ bool DataTypeController::CalledOnValidThread() const {
   return sequence_checker_.CalledOnValidSequence();
 }
 
-std::unique_ptr<SyncEncryptionHandler::Observer>
-DataTypeController::GetEncryptionObserverProxy() {
-  return nullptr;
-}
-
 }  // namespace syncer

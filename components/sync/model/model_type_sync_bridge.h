@@ -182,15 +182,6 @@ class ModelTypeSyncBridge {
   ModelTypeChangeProcessor* change_processor();
   const ModelTypeChangeProcessor* change_processor() const;
 
-  // Similar to ApplySyncChanges(), but notifies the bridge that the processor
-  // is about to recommit all data due to encryption changes.
-  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS, which
-  // will likely make this API unnecessary.
-  virtual base::Optional<ModelError>
-  ApplySyncChangesWithNewEncryptionRequirements(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_changes);
-
  private:
   std::unique_ptr<ModelTypeChangeProcessor> change_processor_;
 };

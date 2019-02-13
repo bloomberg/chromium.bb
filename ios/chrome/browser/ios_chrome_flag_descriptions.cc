@@ -97,11 +97,6 @@ const char kSyncPseudoUSSHistoryDeleteDirectivesDescription[] =
     "Enable new USS-based codepath for sync datatype "
     "HISTORY_DELETE_DIRECTIVES.";
 
-const char kSyncPseudoUSSPasswordsName[] =
-    "Enable pseudo-USS for PASSWORDS sync.";
-const char kSyncPseudoUSSPasswordsDescription[] =
-    "Enable new USS-based codepath for sync datatype PASSWORDS (pseudo-USS).";
-
 const char kSyncPseudoUSSPreferencesName[] =
     "Enable pseudo-USS for PREFERENCES sync.";
 const char kSyncPseudoUSSPreferencesDescription[] =

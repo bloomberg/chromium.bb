@@ -76,9 +76,6 @@ extern const char kSyncPseudoUSSFaviconsDescription[];
 extern const char kSyncPseudoUSSHistoryDeleteDirectivesName[];
 extern const char kSyncPseudoUSSHistoryDeleteDirectivesDescription[];
 
-extern const char kSyncPseudoUSSPasswordsName[];
-extern const char kSyncPseudoUSSPasswordsDescription[];
-
 extern const char kSyncPseudoUSSPreferencesName[];
 extern const char kSyncPseudoUSSPreferencesDescription[];
 
