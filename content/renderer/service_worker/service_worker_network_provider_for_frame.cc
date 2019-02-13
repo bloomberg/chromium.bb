@@ -201,19 +201,6 @@ void ServiceWorkerNetworkProviderForFrame::WillSendRequest(
     request.SetFetchWindowId(context()->fetch_request_window_id());
 }
 
-blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerNetworkProviderForFrame::IsControlledByServiceWorker() {
-  if (!context())
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  return context()->IsControlledByServiceWorker();
-}
-
-int64_t ServiceWorkerNetworkProviderForFrame::ControllerServiceWorkerID() {
-  if (!context())
-    return blink::mojom::kInvalidServiceWorkerVersionId;
-  return context()->GetControllerVersionId();
-}
-
 std::unique_ptr<blink::WebURLLoader>
 ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
     const blink::WebURLRequest& request,
@@ -256,6 +243,19 @@ ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
       std::move(task_runner_handle),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           context()->GetSubresourceLoaderFactory()));
+}
+
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerNetworkProviderForFrame::IsControlledByServiceWorker() {
+  if (!context())
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  return context()->IsControlledByServiceWorker();
+}
+
+int64_t ServiceWorkerNetworkProviderForFrame::ControllerServiceWorkerID() {
+  if (!context())
+    return blink::mojom::kInvalidServiceWorkerVersionId;
+  return context()->GetControllerVersionId();
 }
 
 void ServiceWorkerNetworkProviderForFrame::DispatchNetworkQuiet() {

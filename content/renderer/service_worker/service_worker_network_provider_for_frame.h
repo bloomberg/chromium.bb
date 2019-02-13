@@ -56,13 +56,13 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
 
   // Implements WebServiceWorkerNetworkProvider.
   void WillSendRequest(blink::WebURLRequest& request) override;
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
-      override;
-  int64_t ControllerServiceWorkerID() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override;
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      override;
+  int64_t ControllerServiceWorkerID() override;
   void DispatchNetworkQuiet() override;
 
   int provider_id() const;

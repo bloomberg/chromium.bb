@@ -16,6 +16,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
 namespace content {
 
@@ -96,19 +97,6 @@ void ServiceWorkerNetworkProviderForWorker::WillSendRequest(
   request.SetExtraData(std::move(extra_data));
 }
 
-blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerNetworkProviderForWorker::IsControlledByServiceWorker() {
-  if (!context())
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  return context()->IsControlledByServiceWorker();
-}
-
-int64_t ServiceWorkerNetworkProviderForWorker::ControllerServiceWorkerID() {
-  if (!context())
-    return blink::mojom::kInvalidServiceWorkerVersionId;
-  return context()->GetControllerVersionId();
-}
-
 std::unique_ptr<blink::WebURLLoader>
 ServiceWorkerNetworkProviderForWorker::CreateURLLoader(
     const blink::WebURLRequest& request,
@@ -148,6 +136,21 @@ ServiceWorkerNetworkProviderForWorker::CreateURLLoader(
   // Otherwise go to default resource loading.
   return nullptr;
 }
+
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerNetworkProviderForWorker::IsControlledByServiceWorker() {
+  if (!context())
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  return context()->IsControlledByServiceWorker();
+}
+
+int64_t ServiceWorkerNetworkProviderForWorker::ControllerServiceWorkerID() {
+  if (!context())
+    return blink::mojom::kInvalidServiceWorkerVersionId;
+  return context()->GetControllerVersionId();
+}
+
+void ServiceWorkerNetworkProviderForWorker::DispatchNetworkQuiet() {}
 
 int ServiceWorkerNetworkProviderForWorker::provider_id() const {
   if (!context_)

@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -37,7 +38,9 @@ class FakeServiceWorkerNetworkProvider
   FakeServiceWorkerNetworkProvider() = default;
   ~FakeServiceWorkerNetworkProvider() override = default;
 
-  // Return a loader from the mock factory. In production code, this uses the
+  void WillSendRequest(blink::WebURLRequest& request) override {}
+
+  // Returns a loader from the mock factory. In production code, this uses the
   // factory provided at worker startup to load non-installed scripts via
   // ServiceWorkerScriptLoaderFactory.
   std::unique_ptr<WebURLLoader> CreateURLLoader(
@@ -46,6 +49,17 @@ class FakeServiceWorkerNetworkProvider
     return Platform::Current()->GetURLLoaderMockFactory()->CreateURLLoader(
         nullptr);
   }
+
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      override {
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  }
+
+  int64_t ControllerServiceWorkerID() override {
+    return mojom::blink::kInvalidServiceWorkerVersionId;
+  }
+
+  void DispatchNetworkQuiet() override {}
 };
 
 class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
