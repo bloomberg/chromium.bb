@@ -146,7 +146,7 @@ class LocalCardMigrationBrowserTest
 #if defined(OS_CHROMEOS)
     // In ChromeOS browser tests, the profile may already by authenticated with
     // stub account |user_manager::kStubUserEmail|.
-    AccountInfo info =
+    CoreAccountInfo info =
         IdentityManagerFactory::GetForProfile(browser()->profile())
             ->GetPrimaryAccountInfo();
     username = info.email;
