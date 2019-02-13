@@ -11,8 +11,10 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -50,9 +52,6 @@
 @interface StaticHtmlViewController ()<CRWContextMenuDelegate,
                                        WKNavigationDelegate> {
  @private
-  // The referrer that will be passed when navigating from this page.
-  web::Referrer referrer_;
-
   // The URL that will be passed to the web page when loading.
   // If the page is displaying a local HTML file, it contains the file URL to
   // the file.
@@ -80,9 +79,6 @@
 
   // The delegate of the native content.
   __weak id<CRWNativeContentDelegate> delegate_;
-
-  // The loader to navigate from the page.
-  __weak id<UrlLoader> loader_;
 }
 
 // Returns the URL of the static page to display.
@@ -135,12 +131,6 @@
 
 - (void)dealloc {
   [webView_ removeObserver:self forKeyPath:@"title"];
-}
-
-- (void)setLoader:(id<UrlLoader>)loader
-         referrer:(const web::Referrer&)referrer {
-  loader_ = loader;
-  referrer_ = referrer;
 }
 
 - (void)executeJavaScript:(NSString*)script
@@ -239,12 +229,15 @@
   if ([[request URL] isEqual:[self resourceURL]])
     return YES;
 
-  // All other navigation URLs will be loaded by our UrlLoader if one exists and
+  // All other navigation URLs will be loaded by url loading service
   // if they are issued by the main frame.
-  if (loader_ && fromMainFrame) {
+  if (fromMainFrame) {
     dispatch_async(dispatch_get_main_queue(), ^{
       ChromeLoadParams params(net::GURLWithNSURL([request URL]));
-      [loader_ loadURLWithParams:params];
+      ios::ChromeBrowserState* chrome_browser_state =
+          ios::ChromeBrowserState::FromBrowserState(browserState_);
+      UrlLoadingServiceFactory::GetForBrowserState(chrome_browser_state)
+          ->LoadUrlInCurrentTab(params);
     });
   }
   return NO;

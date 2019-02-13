@@ -27,14 +27,14 @@ class WebState;
 // chrome://offline/distillation_id/page.html
 // If |URL| contain a virtual URL in its query params, this will be returned by
 // the |OfflinePageNativeContent virtualURL| method.
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(web::BrowserState*)browserState
-                      webState:(web::WebState*)webState
-                           URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
+                            webState:(web::WebState*)webState
+                                 URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-      staticHTMLViewController:(StaticHtmlViewController*)HTMLViewController
-                           URL:(const GURL&)URL NS_UNAVAILABLE;
+- (instancetype)initWithStaticHTMLViewController:
+                    (StaticHtmlViewController*)HTMLViewController
+                                             URL:(const GURL&)URL
+    NS_UNAVAILABLE;
 
 @end
 

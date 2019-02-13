@@ -67,7 +67,6 @@
 
 @synthesize browserState = _browserState;
 @synthesize suggestionsViewController = _suggestionsViewController;
-@synthesize URLLoader = _URLLoader;
 @synthesize visible = _visible;
 @synthesize contentSuggestionsMediator = _contentSuggestionsMediator;
 @synthesize headerCollectionInteractionHandler =

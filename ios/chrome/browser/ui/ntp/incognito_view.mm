@@ -9,10 +9,10 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -117,7 +117,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 }  // namespace
 
 @implementation IncognitoView {
-  __weak id<UrlLoader> _loader;
   UIView* _containerView;
   UIStackView* _stackView;
   UILabel* _notSavedLabel;
@@ -137,12 +136,16 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   // |containerView|, the |containerView|'s |topGuide| and |bottomGuide| are
   // forced to expand, centering the views in between them.
   NSArray<NSLayoutConstraint*>* _superViewConstraints;
+
+  // The UrlLoadingService associated with this view.
+  UrlLoadingService* _urlLoadingService;  // weak
 }
 
-- (instancetype)initWithFrame:(CGRect)frame urlLoader:(id<UrlLoader>)loader {
+- (instancetype)initWithFrame:(CGRect)frame
+            urlLoadingService:(UrlLoadingService*)urlLoadingService {
   self = [super initWithFrame:frame];
   if (self) {
-    _loader = loader;
+    _urlLoadingService = urlLoadingService;
 
     self.alwaysBounceVertical = YES;
     // The bottom safe area is taken care of with the bottomUnsafeArea guides.
@@ -346,7 +349,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 // Triggers a navigation to the help page.
 - (void)learnMoreButtonPressed {
   ChromeLoadParams params(GetUrlWithLang(GURL(kLearnMoreIncognitoUrl)));
-  [_loader loadURLWithParams:params];
+  _urlLoadingService->LoadUrlInCurrentTab(params);
 }
 
 // Adds views containing the text of the incognito page to |_stackView|.

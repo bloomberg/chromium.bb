@@ -9,14 +9,15 @@
 
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 
+class UrlLoadingService;
+
 @protocol NewTabPageControllerDelegate;
-@protocol UrlLoader;
 
 @interface IncognitoViewController : UIViewController<CRWNativeContent>
 
 // Init with the given loader object. |loader| may be nil, but isn't
 // retained so it must outlive this controller.
-- (id)initWithLoader:(id<UrlLoader>)loader;
+- (id)initWithUrlLoadingService:(UrlLoadingService*)urlLoadingService;
 
 @end
 
