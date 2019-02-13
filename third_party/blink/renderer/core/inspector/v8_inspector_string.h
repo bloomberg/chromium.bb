@@ -39,6 +39,8 @@ class Value;
 
 using String = WTF::String;
 using StringBuilder = WTF::StringBuilder;
+using StringUTF8Adapter = WTF::StringUTF8Adaptor;
+
 struct ProtocolMessage {
   String json;
   std::vector<uint8_t> binary;
@@ -88,10 +90,6 @@ class CORE_EXPORT StringUtil {
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return String::FromUTF8(reinterpret_cast<const char*>(data), length);
-  }
-  static void writeUTF8(const String& string, std::vector<uint8_t>* out) {
-    StringUTF8Adaptor adaptor(string);
-    out->insert(out->end(), adaptor.Data(), adaptor.Data() + adaptor.length());
   }
 };
 

@@ -32,6 +32,16 @@ class Value;
 using String = std::string;
 using ProtocolMessage = std::string;
 
+class {{config.lib.export_macro}} StringUTF8Adapter {
+ public:
+  StringUTF8Adapter(const std::string& string) : string_(string) { }
+  const char* Data() const { return string_.data(); }
+  size_t length() const { return string_.length(); }
+
+ private:
+  const std::string& string_;
+};
+
 class {{config.lib.export_macro}} StringBuilder {
  public:
   StringBuilder();
@@ -94,10 +104,6 @@ class {{config.lib.export_macro}} StringUtil {
 
   static String fromUTF8(const uint8_t* data, size_t length) {
     return std::string(reinterpret_cast<const char*>(data), length);
-  }
-  static void writeUTF8(const String& string, std::vector<uint8_t>* out) {
-    const uint8_t* data = reinterpret_cast<const uint8_t*>(string.data());
-    out->insert(out->end(), data, data + string.length());
   }
 };
 
