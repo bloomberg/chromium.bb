@@ -32,7 +32,7 @@ namespace {
 const char kSignedInHashPrefix[] = "i";
 const char kSignedOutHashPrefix[] = "o";
 
-bool AreSame(const AccountInfo& info, const ListedAccount& account) {
+bool AreSame(const CoreAccountInfo& info, const ListedAccount& account) {
   return info.account_id == account.id;
 }
 
@@ -164,7 +164,7 @@ std::string AccountInvestigator::HashAccounts(
 
 // static
 AccountRelation AccountInvestigator::DiscernRelation(
-    const AccountInfo& info,
+    const CoreAccountInfo& info,
     const std::vector<ListedAccount>& signed_in_accounts,
     const std::vector<ListedAccount>& signed_out_accounts) {
   if (signed_in_accounts.empty() && signed_out_accounts.empty()) {
