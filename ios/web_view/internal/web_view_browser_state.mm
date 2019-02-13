@@ -40,13 +40,9 @@
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_account_fetcher_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -203,13 +199,9 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewCookieSettingsFactory::GetInstance();
   WebViewHostContentSettingsMapFactory::GetInstance();
   WebViewAccountFetcherServiceFactory::GetInstance();
-  WebViewAccountTrackerServiceFactory::GetInstance();
-  WebViewGaiaCookieManagerServiceFactory::GetInstance();
-  WebViewOAuth2TokenServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewSigninErrorControllerFactory::GetInstance();
-  WebViewSigninManagerFactory::GetInstance();
-  WebViewIdentityManagerFactory::GetInstance();
+  WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();
   WebViewProfileSyncServiceFactory::GetInstance();
