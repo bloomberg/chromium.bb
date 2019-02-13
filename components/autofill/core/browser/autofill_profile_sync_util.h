@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <string>
+// TODO(crbug.com/904390): Remove when the investigation is over.
+#include <vector>
 
 namespace syncer {
 struct EntityData;
@@ -39,6 +41,24 @@ std::string GetStorageKeyFromAutofillProfile(const AutofillProfile& entry);
 // database. Returns an empty string if |entry| is invalid.
 std::string GetStorageKeyFromAutofillProfileSpecifics(
     const sync_pb::AutofillProfileSpecifics& specifics);
+
+// TODO(crbug.com/904390): Remove when the investigation is over.
+bool IsLocalProfileEqualToServerProfile(
+    const std::vector<std::unique_ptr<AutofillProfile>>& server_profiles,
+    const AutofillProfile& local_profile,
+    const std::string& app_locale);
+
+// TODO(crbug.com/904390): Remove when the investigation is over.
+enum class AutofillProfileSyncChangeOrigin {
+  kTrulyLocal = 0,
+  kConvertedLocal = 1,
+  kIncrementalRemote = 2,
+  kInitial = 3,
+  kMaxValue = kInitial,
+};
+void ReportAutofillProfileAddOrUpdateOrigin(
+    AutofillProfileSyncChangeOrigin origin);
+void ReportAutofillProfileDeleteOrigin(AutofillProfileSyncChangeOrigin origin);
 
 }  // namespace autofill
 
