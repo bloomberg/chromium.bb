@@ -411,7 +411,7 @@ VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE = 'archive_opened';
  * file is newly mounted, or when opened a one already mounted.
  * @param {!DirectoryEntry} mountPoint The root directory of the mounted
  *     volume.
- * @return {!CustomEvent}
+ * @return {!CustomEvent<!DirectoryEntry>}
  */
 VolumeManagerCommon.createArchiveOpenedEvent = function(mountPoint) {
   return new CustomEvent(
