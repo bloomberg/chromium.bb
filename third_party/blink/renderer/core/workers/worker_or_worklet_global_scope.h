@@ -107,7 +107,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // ResourceFetcher, and have dependencies to WorkerOrWorkletGlobalScope. Plumb
   // more data to the outside ResourceFetcher to fix the behavior and reduce the
   // dependencies.
-  ResourceFetcher* CreateOutsideSettingsFetcher(FetchClientSettingsObject*);
+  ResourceFetcher* CreateOutsideSettingsFetcher(
+      const FetchClientSettingsObject&);
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
@@ -127,13 +128,12 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const Vector<CSPHeaderAndType>& headers);
   virtual void BindContentSecurityPolicyToExecutionContext();
 
-  void FetchModuleScript(
-      const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      network::mojom::FetchCredentialsMode,
-      ModuleScriptCustomFetchType,
-      ModuleTreeClient*);
+  void FetchModuleScript(const KURL& module_url_record,
+                         const FetchClientSettingsObjectSnapshot&,
+                         mojom::RequestContextType destination,
+                         network::mojom::FetchCredentialsMode,
+                         ModuleScriptCustomFetchType,
+                         ModuleTreeClient*);
 
   void TasksWerePaused() override;
   void TasksWereUnpaused() override;
@@ -142,7 +142,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
  private:
   void InitializeWebFetchContextIfNeeded();
-  ResourceFetcher* CreateFetcherInternal(FetchClientSettingsObject*);
+  ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&);
 
   bool web_fetch_context_initialized_ = false;
 

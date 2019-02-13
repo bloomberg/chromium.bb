@@ -138,7 +138,7 @@ bool ServiceWorkerGlobalScope::ShouldInstallV8Extensions() const {
 
 void ServiceWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
-    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
 

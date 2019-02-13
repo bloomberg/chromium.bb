@@ -109,7 +109,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
 
  private:
   Member<ExecutionContext> execution_context_;
-  Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;
+  Member<const FetchClientSettingsObjectImpl> fetch_client_settings_object_;
 };
 
 class BaseFetchContextTest : public testing::Test {

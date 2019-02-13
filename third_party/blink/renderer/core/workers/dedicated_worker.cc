@@ -253,7 +253,7 @@ void DedicatedWorker::Start() {
         CreateGlobalScopeCreationParams(
             script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
             network::mojom::ReferrerPolicy::kDefault),
-        options_, script_request_url_, outside_settings_object, stack_id,
+        options_, script_request_url_, *outside_settings_object, stack_id,
         String() /* source_code */);
     return;
   }
@@ -408,7 +408,7 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
         CreateGlobalScopeCreationParams(
             script_response_url,
             OffMainThreadWorkerScriptFetchOption::kDisabled, referrer_policy),
-        options_, script_response_url, outside_settings_object, stack_id,
+        options_, script_response_url, *outside_settings_object, stack_id,
         classic_script_loader_->SourceText());
     probe::scriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),

@@ -361,7 +361,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
         kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
         std::move(pending_interface_provider_));
     StartWorkerThread(std::move(creation_params), script_request_url_,
-                      String() /* source_code */, outside_settings_object);
+                      String() /* source_code */, *outside_settings_object);
     return;
   }
 
@@ -396,7 +396,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
       kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
       std::move(pending_interface_provider_));
   StartWorkerThread(std::move(creation_params), script_response_url,
-                    main_script_loader_->SourceText(), outside_settings_object);
+                    main_script_loader_->SourceText(),
+                    *outside_settings_object);
   main_script_loader_ = nullptr;
 }
 
@@ -404,7 +405,7 @@ void WebSharedWorkerImpl::StartWorkerThread(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const KURL& script_response_url,
     const String& source_code,
-    FetchClientSettingsObjectSnapshot* outside_settings_object) {
+    const FetchClientSettingsObjectSnapshot& outside_settings_object) {
   DCHECK(IsMainThread());
   reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
       this, parent_execution_context_task_runners_);
