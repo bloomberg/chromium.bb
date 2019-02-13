@@ -481,6 +481,8 @@ jumbo_component("platform") {
     "bindings/v8_throw_exception.h",
     "bindings/v8_value_cache.cc",
     "bindings/v8_value_cache.h",
+    "bindings/v8_value_or_script_wrappable_adapter.cc",
+    "bindings/v8_value_or_script_wrappable_adapter.h",
     "bindings/wrapper_type_info.cc",
     "bindings/wrapper_type_info.h",
     "content_decryption_module_result.h",

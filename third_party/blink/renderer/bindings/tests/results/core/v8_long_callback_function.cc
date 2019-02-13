@@ -27,7 +27,7 @@ const char* V8LongCallbackFunction::NameInHeapSnapshot() const {
   return "V8LongCallbackFunction";
 }
 
-v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) {
+v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, int32_t num1, int32_t num2) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateOrThrowException(
           "LongCallbackFunction",
@@ -70,7 +70,12 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
+  if (callback_this_value.IsEmpty()) {
+    // step 2. If thisArg was not given, let thisArg be undefined.
+    this_arg = v8::Undefined(GetIsolate());
+  } else {
+    this_arg = callback_this_value.V8Value(callback_relevant_script_state);
+  }
 
   // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
@@ -116,7 +121,7 @@ v8::Maybe<int32_t> V8LongCallbackFunction::Invoke(ScriptWrappable* callback_this
   }
 }
 
-v8::Maybe<int32_t> V8PersistentCallbackFunction<V8LongCallbackFunction>::Invoke(ScriptWrappable* callback_this_value, int32_t num1, int32_t num2) {
+v8::Maybe<int32_t> V8PersistentCallbackFunction<V8LongCallbackFunction>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, int32_t num1, int32_t num2) {
   return Proxy()->Invoke(
       callback_this_value, num1, num2);
 }
