@@ -203,11 +203,11 @@ TEST_P(BasicTests, WithBytes) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(BlobTransportStrategyTest,
-                        BasicTests,
-                        testing::Values(MemoryStrategy::NONE_NEEDED,
-                                        MemoryStrategy::IPC,
-                                        MemoryStrategy::SHARED_MEMORY));
+INSTANTIATE_TEST_SUITE_P(BlobTransportStrategyTest,
+                         BasicTests,
+                         testing::Values(MemoryStrategy::NONE_NEEDED,
+                                         MemoryStrategy::IPC,
+                                         MemoryStrategy::SHARED_MEMORY));
 
 class BasicErrorTests : public BlobTransportStrategyTest,
                         public testing::WithParamInterface<MemoryStrategy> {};
@@ -273,10 +273,10 @@ TEST_P(BasicErrorTests, TooManyBytesInProvider) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(BlobTransportStrategyTest,
-                        BasicErrorTests,
-                        testing::Values(MemoryStrategy::IPC,
-                                        MemoryStrategy::SHARED_MEMORY));
+INSTANTIATE_TEST_SUITE_P(BlobTransportStrategyTest,
+                         BasicErrorTests,
+                         testing::Values(MemoryStrategy::IPC,
+                                         MemoryStrategy::SHARED_MEMORY));
 
 TEST_F(BlobTransportStrategyTest, DataStreamChunksData) {
   BlobDataBuilder builder(kId);

@@ -176,9 +176,9 @@ class FileWriterImplWriteTest : public FileWriterImplTest,
   bool WriteUsingBlobs() override { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(FileWriterImplTest,
-                        FileWriterImplWriteTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(FileWriterImplTest,
+                         FileWriterImplWriteTest,
+                         ::testing::Bool());
 
 TEST_F(FileWriterImplTest, WriteInvalidBlob) {
   blink::mojom::BlobPtr blob;
