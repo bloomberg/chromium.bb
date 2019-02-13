@@ -35,6 +35,7 @@ cr.define('model_test', function() {
         dpi: {},
         mediaSize: {width_microns: 215900, height_microns: 279400},
         marginsType: 0, /* default */
+        customScaling: false,
         scaling: '100',
         isHeaderFooterEnabled: true,
         isCssBackgroundEnabled: false,
@@ -53,6 +54,7 @@ cr.define('model_test', function() {
         dpi: {horizontal_dpi: 1000, vertical_dpi: 500},
         mediaSize: {width_microns: 43180, height_microns: 21590},
         marginsType: 2, /* none */
+        customScaling: true,
         scaling: '85',
         isHeaderFooterEnabled: false,
         isCssBackgroundEnabled: true,
@@ -112,6 +114,7 @@ cr.define('model_test', function() {
           .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
           .then(() => testStickySetting('margins', 'marginsType'))
           .then(() => testStickySetting('mediaSize', 'mediaSize'))
+          .then(() => testStickySetting('customScaling', 'customScaling'))
           .then(() => testStickySetting('scaling', 'scaling'))
           .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
           .then(() => testStickySetting('vendorItems', 'vendorOptions'));
@@ -170,6 +173,7 @@ cr.define('model_test', function() {
           vertical_dpi: 100,
         },
         fitToPage: true,
+        customScaling: true,
         scaling: '90',
         duplex: false,
         cssBackground: true,

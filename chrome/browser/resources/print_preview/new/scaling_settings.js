@@ -5,11 +5,10 @@
 cr.exportPath('print_preview_new');
 
 /** @enum {number} */
-print_preview_new.ScalingState = {
-  INIT: 0,
-  VALID: 1,
-  INVALID: 2,
-  FIT_TO_PAGE: 3,
+const ScalingValue = {
+  DEFAULT: 0,
+  FIT_TO_PAGE: 1,
+  CUSTOM: 2,
 };
 
 /*
@@ -23,13 +22,10 @@ print_preview_new.ScalingState = {
 Polymer({
   is: 'print-preview-scaling-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
 
   properties: {
-    fitToPageScaling: {
-      type: Number,
-      observer: 'onFitToPageScalingSet_',
-    },
+    disabled: Boolean,
 
     /** @private {string} */
     currentValue_: {
@@ -38,83 +34,84 @@ Polymer({
     },
 
     /** @private {boolean} */
-    inputValid_: Boolean,
+    customSelected_: {
+      type: Boolean,
+      computed: 'computeCustomSelected_(selectedValue)',
+    },
 
     /** @private {boolean} */
-    hideInput_: Boolean,
+    inputValid_: Boolean,
 
-    disabled: Boolean,
-
-    /** @private {!print_preview_new.ScalingState} */
-    currentState_: {
-      type: Number,
-      value: print_preview_new.ScalingState.INIT,
-      observer: 'onStateChange_',
+    /**
+     * Mirroring the enum so that it can be used from HTML bindings.
+     * @private
+     */
+    scalingValueEnum_: {
+      type: Object,
+      value: ScalingValue,
     },
   },
 
   observers: [
     'onFitToPageSettingChange_(settings.fitToPage.value)',
     'onScalingSettingChanged_(settings.scaling.value)',
-    'onScalingValidChanged_(settings.scaling.valid)',
+    'onCustomScalingSettingChanged_(settings.customScaling.value)',
   ],
 
-  /**
-   * Timeout used to delay processing of the checkbox input.
-   * @private {?number}
-   */
-  fitToPageTimeout_: null,
-
-  /** @private {boolean} */
-  ignoreFtp_: false,
-
-  /** @private {boolean} */
-  ignoreValid_: false,
-
-  /** @private {boolean} */
-  ignoreValue_: false,
-
   /** @private {string} */
-  lastValidScaling_: '100',
+  lastValidScaling_: '',
 
-  /** @private {?boolean} */
-  lastFitToPageValue_: null,
+  onProcessSelectChange: function(value) {
+    if (value === ScalingValue.FIT_TO_PAGE.toString()) {
+      this.setSetting('fitToPage', true);
+      return;
+    }
+
+    const fitToPageAvailable = this.getSetting('fitToPage').available;
+    if (fitToPageAvailable) {
+      this.setSetting('fitToPage', false);
+    }
+    const isCustom = value === ScalingValue.CUSTOM.toString();
+    this.setSetting('customScaling', isCustom);
+    if (isCustom) {
+      this.setSetting('scaling', this.currentValue_);
+    }
+  },
+
+  /** @private */
+  updateScalingToValid_: function() {
+    if (!this.getSetting('scaling').valid) {
+      this.currentValue_ = this.lastValidScaling_;
+    } else {
+      this.lastValidScaling_ = this.currentValue_;
+    }
+  },
 
   /** @private */
   onFitToPageSettingChange_: function() {
-    if (this.ignoreFtp_ || !this.getSetting('fitToPage').available) {
+    if (!this.getSettingValue('fitToPage') ||
+        !this.getSetting('fitToPage').available) {
       return;
     }
 
-    const fitToPage = this.getSetting('fitToPage').value;
-
-    if (fitToPage) {
-      this.currentState_ = print_preview_new.ScalingState.FIT_TO_PAGE;
-      return;
-    }
-
-    this.currentState_ = this.getSetting('scaling').valid ?
-        print_preview_new.ScalingState.VALID :
-        print_preview_new.ScalingState.INVALID;
-  },
-
-  /**
-   * @return {string} The value to display for fit to page scling.
-   * @private
-   */
-  getFitToPageScalingDisplayValue_: function() {
-    return this.fitToPageScaling > 0 ? this.fitToPageScaling.toString() : '';
+    this.updateScalingToValid_();
+    this.selectedValue = ScalingValue.FIT_TO_PAGE.toString();
   },
 
   /** @private */
-  onFitToPageScalingSet_: function() {
-    if (this.currentState_ != print_preview_new.ScalingState.FIT_TO_PAGE) {
+  onCustomScalingSettingChanged_: function() {
+    if (this.getSettingValue('fitToPage') &&
+        this.getSetting('fitToPage').available) {
       return;
     }
 
-    this.ignoreValue_ = true;
-    this.currentValue_ = this.getFitToPageScalingDisplayValue_();
-    this.ignoreValue_ = false;
+    const isCustom =
+        /** @type {boolean} */ (this.getSetting('customScaling').value);
+    if (!isCustom) {
+      this.updateScalingToValid_();
+    }
+    this.selectedValue = isCustom ? ScalingValue.CUSTOM.toString() :
+                                    ScalingValue.DEFAULT.toString();
   },
 
   /**
@@ -122,25 +119,9 @@ Polymer({
    * @private
    */
   onScalingSettingChanged_: function() {
-    // Update last valid scaling and ensure input string matches.
-    this.lastValidScaling_ =
-        /** @type {string} */ (this.getSetting('scaling').value);
-    this.currentValue_ = this.lastValidScaling_;
-    this.currentState_ = print_preview_new.ScalingState.VALID;
-  },
-
-  /**
-   * Updates the state of the UI when scaling validity is set.
-   * @private
-   */
-  onScalingValidChanged_: function() {
-    if (this.ignoreValid_) {
-      return;
-    }
-
-    this.currentState_ = this.getSetting('scaling').valid ?
-        print_preview_new.ScalingState.VALID :
-        print_preview_new.ScalingState.INVALID;
+    const value = /** @type {string} */ (this.getSetting('scaling').value);
+    this.lastValidScaling_ = value;
+    this.currentValue_ = value;
   },
 
   /**
@@ -149,10 +130,6 @@ Polymer({
    * @private
    */
   onInputChanged_: function() {
-    if (this.ignoreValue_) {
-      return;
-    }
-
     if (this.currentValue_ !== '') {
       this.setSettingValid('scaling', this.inputValid_);
     }
@@ -162,84 +139,27 @@ Polymer({
     }
   },
 
-  /** @private */
-  onFitToPageChange_: function() {
-    const newValue = this.$$('#fit-to-page-checkbox').checked;
-
-    if (this.fitToPageTimeout_ !== null) {
-      clearTimeout(this.fitToPageTimeout_);
-    }
-
-    this.fitToPageTimeout_ = setTimeout(() => {
-      this.fitToPageTimeout_ = null;
-
-      if (newValue === this.lastFitToPageValue_) {
-        return;
-      }
-
-      this.lastFitToPageValue_ = newValue;
-      this.setSetting('fitToPage', newValue);
-
-      if (newValue == false) {
-        this.currentValue_ = this.lastValidScaling_;
-      } else {
-        this.currentState_ = print_preview_new.ScalingState.FIT_TO_PAGE;
-      }
-
-      // For tests only
-      this.fire('update-checkbox-setting', 'fitToPage');
-    }, 200);
+  /**
+   * @return {boolean} Whether the dropdown should be disabled.
+   * @private
+   */
+  dropdownDisabled_: function() {
+    return this.disabled && this.inputValid_;
   },
 
   /**
    * @return {boolean} Whether the input should be disabled.
    * @private
    */
-  getDisabled_: function() {
-    return this.disabled &&
-        this.currentState_ !== print_preview_new.ScalingState.INVALID;
+  inputDisabled_: function() {
+    return !this.customSelected_ || (this.disabled && this.inputValid_);
   },
 
   /**
-   * @param {!print_preview_new.ScalingState} current
-   * @param {!print_preview_new.ScalingState} previous
+   * @return {boolean} Whether the custom scaling option is selected.
    * @private
    */
-  onStateChange_: function(current, previous) {
-    if (previous == print_preview_new.ScalingState.FIT_TO_PAGE) {
-      this.ignoreFtp_ = true;
-      this.$$('#fit-to-page-checkbox').checked = false;
-      this.lastFitToPageValue_ = false;
-      if (current == print_preview_new.ScalingState.VALID) {
-        this.setSetting('fitToPage', false);
-      }
-      this.ignoreFtp_ = false;
-    }
-    if (current == print_preview_new.ScalingState.FIT_TO_PAGE) {
-      if (previous == print_preview_new.ScalingState.INVALID) {
-        this.ignoreValid_ = true;
-        this.setSettingValid('scaling', true);
-        this.ignoreValid_ = false;
-      }
-      this.$$('#fit-to-page-checkbox').checked = true;
-      this.ignoreValue_ = true;
-      this.currentValue_ = this.getFitToPageScalingDisplayValue_();
-      this.ignoreValue_ = false;
-    }
-    if (current == print_preview_new.ScalingState.VALID &&
-        previous == print_preview_new.ScalingState.INVALID &&
-        this.getSetting('fitToPage').available) {
-      this.setSetting('fitToPage', false);
-    }
-  },
-
-  /**
-   * @return {string} The label to use on the scaling input.
-   * @private
-   */
-  getScalingInputLabel_: function() {
-    return this.getSetting('fitToPage').available ?
-        '' :
-        loadTimeData.getString('scalingLabel');
+  computeCustomSelected_: function() {
+    return this.selectedValue === ScalingValue.CUSTOM.toString();
   },
 });

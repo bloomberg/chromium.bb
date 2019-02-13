@@ -83,21 +83,29 @@ cr.define('system_dialog_browsertest', function() {
       assertFalse(scalingSettings.hidden);
       nativeLayer.resetResolver('getPreview');
 
-      // Set scaling settings to a bad value
-      const scalingSettingsInput =
-          scalingSettings.$$('print-preview-number-settings-section')
-              .$.userValue.inputElement;
-      scalingSettingsInput.value = '0';
-      scalingSettingsInput.dispatchEvent(
-          new CustomEvent('input', {composed: true, bubbles: true}));
+      // Set scaling settings to custom.
+      scalingSettings.$$('.md-select').value =
+          scalingSettings.scalingValueEnum_.CUSTOM;
+      scalingSettings.$$('.md-select').dispatchEvent(new CustomEvent('change'));
+      return nativeLayer.whenCalled('getPreview')
+          .then(() => {
+            nativeLayer.resetResolver('getPreview');
+            // Set an invalid input.
+            const scalingSettingsInput =
+                scalingSettings.$$('print-preview-number-settings-section')
+                    .$.userValue.inputElement;
+            scalingSettingsInput.value = '0';
+            scalingSettingsInput.dispatchEvent(
+                new CustomEvent('input', {composed: true, bubbles: true}));
 
-      // No new preview
-      nativeLayer.whenCalled('getPreview').then(function() {
-        assertTrue(false);
-      });
+            // No new preview
+            nativeLayer.whenCalled('getPreview').then(function() {
+              assertTrue(false);
+            });
 
-      return test_util.eventToPromise('input-change', scalingSettings)
-          .then(function() {
+            return test_util.eventToPromise('input-change', scalingSettings);
+          })
+          .then(() => {
             // Expect disabled print button
             const header = page.$$('print-preview-header');
             const printButton = header.$$('.action-button');

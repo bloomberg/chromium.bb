@@ -277,7 +277,58 @@ cr.define('preview_generation_test', function() {
 
     /** Validate changing the scaling updates the preview. */
     test(assert(TestNames.Scaling), function() {
-      return testSimpleSetting('scaling', '100', '90', 'scaleFactor', 100, 90);
+      return initialize()
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(0, ticket.requestID);
+            assertEquals(100, ticket.scaleFactor);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(false, page.getSettingValue('customScaling'));
+            page.setSetting('customScaling', true);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            // No change since custom value is 100 by default.
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(1, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(true, page.getSettingValue('customScaling'));
+            page.setSetting('scaling', '90');
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            // Ticket updates with new custom value.
+            assertEquals(90, ticket.scaleFactor);
+            assertEquals(2, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('90', page.getSettingValue('scaling'));
+            assertEquals(true, page.getSettingValue('customScaling'));
+            page.setSetting('customScaling', false);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            // Back to 100 for default
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(3, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('90', page.getSettingValue('scaling'));
+            assertEquals(false, page.getSettingValue('customScaling'));
+            page.setSetting('customScaling', true);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            // Back to 90, since custom scaling value is now 90.
+            assertEquals(90, ticket.scaleFactor);
+            assertEquals(4, ticket.requestID);
+            assertEquals('90', page.getSettingValue('scaling'));
+            assertEquals(true, page.getSettingValue('customScaling'));
+          });
     });
 
     /**
