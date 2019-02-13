@@ -123,7 +123,7 @@ TEST_F(CrostiniMimeTypesServiceTest, ClearMimeTypes) {
   EXPECT_EQ("foobar/mime", service()->GetMimeType(base::FilePath("test.foobar"),
                                                   "vm 2", "container 1"));
 
-  service()->ClearMimeTypes("vm 2");
+  service()->ClearMimeTypes("vm 2", "");
 
   EXPECT_EQ("foo/mime", service()->GetMimeType(base::FilePath("test.foo"),
                                                "vm 1", "container 1"));

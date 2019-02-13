@@ -946,6 +946,67 @@ void CrostiniManager::CreateLxdContainer(std::string vm_name,
                      request.container_name(), std::move(callback)));
 }
 
+void CrostiniManager::DeleteLxdContainer(std::string vm_name,
+                                         std::string container_name,
+                                         CrostiniResultCallback callback) {
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (!GetCiceroneClient()->IsLxdContainerDeletedSignalConnected()) {
+    LOG(ERROR)
+        << "Async call to DeleteLxdContainer can't complete when signals "
+           "are not connected.";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+
+  vm_tools::cicerone::DeleteLxdContainerRequest request;
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_owner_id(owner_id_);
+  GetCiceroneClient()->DeleteLxdContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnDeleteLxdContainer,
+                     weak_ptr_factory_.GetWeakPtr(), request.vm_name(),
+                     request.container_name(), std::move(callback)));
+}
+
+void CrostiniManager::OnDeleteLxdContainer(
+    std::string vm_name,
+    std::string container_name,
+    CrostiniResultCallback callback,
+    base::Optional<vm_tools::cicerone::DeleteLxdContainerResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to delete lxd container in vm. Empty response.";
+    std::move(callback).Run(CrostiniResult::UNKNOWN_ERROR);
+    return;
+  }
+  vm_tools::cicerone::DeleteLxdContainerResponse response = reply.value();
+  if (response.status() ==
+      vm_tools::cicerone::DeleteLxdContainerResponse::DELETING) {
+    VLOG(1) << "Awaiting LxdContainerDeletedSignal for " << vm_name << ", "
+            << container_name;
+    delete_lxd_container_callbacks_.emplace(
+        std::make_tuple(vm_name, container_name), std::move(callback));
+
+  } else if (response.status() ==
+             vm_tools::cicerone::DeleteLxdContainerResponse::DOES_NOT_EXIST) {
+    RemoveLxdContainerFromPrefs(profile_, vm_name, container_name);
+    std::move(callback).Run(CrostiniResult::SUCCESS);
+
+  } else {
+    LOG(ERROR) << "Failed to delete container: " << response.failure_reason();
+    std::move(callback).Run(CrostiniResult::UNKNOWN_ERROR);
+  }
+}
+
 void CrostiniManager::StartLxdContainer(std::string vm_name,
                                         std::string container_name,
                                         CrostiniResultCallback callback) {
@@ -2143,7 +2204,37 @@ void CrostiniManager::OnLxdContainerCreated(
 }
 
 void CrostiniManager::OnLxdContainerDeleted(
-    const vm_tools::cicerone::LxdContainerDeletedSignal& signal) {}
+    const vm_tools::cicerone::LxdContainerDeletedSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+  CrostiniResult result;
+
+  switch (signal.status()) {
+    case vm_tools::cicerone::LxdContainerDeletedSignal::UNKNOWN:
+      result = CrostiniResult::UNKNOWN_ERROR;
+      break;
+    case vm_tools::cicerone::LxdContainerDeletedSignal::DELETED:
+      result = CrostiniResult::SUCCESS;
+      RemoveLxdContainerFromPrefs(profile_, signal.vm_name(),
+                                  signal.container_name());
+      break;
+    case vm_tools::cicerone::LxdContainerDeletedSignal::CANCELLED:
+    case vm_tools::cicerone::LxdContainerDeletedSignal::FAILED:
+    default:
+      result = CrostiniResult::UNKNOWN_ERROR;
+      LOG(ERROR) << "Failed to delete container (" << signal.vm_name() << ","
+                 << signal.container_name()
+                 << ") : " << signal.failure_reason();
+      break;
+  }
+  // Find the callbacks to call, then erase them from the map.
+  auto range = delete_lxd_container_callbacks_.equal_range(
+      std::make_tuple(signal.vm_name(), signal.container_name()));
+  for (auto it = range.first; it != range.second; ++it) {
+    std::move(it->second).Run(result);
+  }
+  delete_lxd_container_callbacks_.erase(range.first, range.second);
+}
 
 void CrostiniManager::OnLxdContainerDownloading(
     const vm_tools::cicerone::LxdContainerDownloadingSignal& signal) {

@@ -151,6 +151,12 @@ void AddNewLxdContainerToPrefs(Profile* profile,
                                std::string vm_name,
                                std::string container_name);
 
+// Remove a newly deleted LXD container from the kCrostiniContainers pref, and
+// deregister its apps and mime types.
+void RemoveLxdContainerFromPrefs(Profile* profile,
+                                 std::string vm_name,
+                                 std::string container_name);
+
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_

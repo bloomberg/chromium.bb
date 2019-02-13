@@ -16,6 +16,8 @@ extern const char kCrostiniRegistry[];
 extern const char kCrostiniSharedPaths[];
 extern const char kCrostiniSharedUsbDevices[];
 extern const char kCrostiniContainers[];
+extern const char kVmKey[];
+extern const char kContainerKey[];
 
 extern const char kUserCrostiniAllowedByPolicy[];
 

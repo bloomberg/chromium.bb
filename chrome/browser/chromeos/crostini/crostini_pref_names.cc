@@ -25,6 +25,8 @@ const char kCrostiniSharedPaths[] = "crostini.shared_paths";
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
 const char kCrostiniContainers[] = "crostini.containers";
+const char kVmKey[] = "vm_name";
+const char kContainerKey[] = "container_name";
 
 // A boolean preference representing a user level enterprise policy to enable
 // Crostini use.
@@ -53,8 +55,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // preference should not be accessed unless crostini is installed
   // (i.e. kCrostiniEnabled is true).
   base::Value default_container(base::Value::Type::DICTIONARY);
-  default_container.SetKey("vm_name", base::Value(kCrostiniDefaultVmName));
-  default_container.SetKey("container_name",
+  default_container.SetKey(kVmKey, base::Value(kCrostiniDefaultVmName));
+  default_container.SetKey(kContainerKey,
                            base::Value(kCrostiniDefaultContainerName));
 
   base::Value::ListStorage default_containers_list;

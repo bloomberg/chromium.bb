@@ -298,7 +298,7 @@ TEST_F(CrostiniAppModelBuilderTest, DisableCrostini) {
 
   // The uninstall flow removes all apps before setting the CrostiniEnabled pref
   // to false, so we need to do that explicitly too.
-  RegistryService()->ClearApplicationList(crostini::kCrostiniDefaultVmName);
+  RegistryService()->ClearApplicationList(crostini::kCrostiniDefaultVmName, "");
   CrostiniTestHelper::DisableCrostini(profile());
   // Root folder is left. We rely on default handling of empty folder.
   EXPECT_EQ(1u, GetModelItemCount());
