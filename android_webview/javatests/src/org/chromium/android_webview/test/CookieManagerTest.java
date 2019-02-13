@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import org.junit.After;
@@ -55,9 +56,6 @@ public class CookieManagerTest {
         mAwContents = testContainerView.getAwContents();
         mAwContents.getSettings().setJavaScriptEnabled(true);
         Assert.assertNotNull(mCookieManager);
-
-        mCookieManager.setAcceptCookie(true);
-        Assert.assertTrue(mCookieManager.acceptCookie());
     }
 
     @After
@@ -70,9 +68,34 @@ public class CookieManagerTest {
     }
 
     @Test
-    @MediumTest
+    @SmallTest
     @Feature({"AndroidWebView", "Privacy"})
-    public void testAcceptCookie() throws Throwable {
+    public void testAcceptCookie_default() throws Throwable {
+        Assert.assertTrue("Expected CookieManager to accept cookies by default",
+                mCookieManager.acceptCookie());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAcceptCookie_setterGetterFunctionality() throws Throwable {
+        mCookieManager.setAcceptCookie(false);
+        Assert.assertFalse("Expected #acceptCookie() to return false after setAcceptCookie(false)",
+                mCookieManager.acceptCookie());
+        mCookieManager.setAcceptCookie(true);
+        Assert.assertTrue("Expected #acceptCookie() to return true after setAcceptCookie(true)",
+                mCookieManager.acceptCookie());
+    }
+
+    /**
+     * @param acceptCookieValue the value passed into {@link AwCookieManager#setAcceptCookie}.
+     * @param cookieSuffix a suffix to use for the cookie name, should be unique to avoid
+     *        side-effects from other tests.
+     */
+    private void testAcceptCookieHelper(boolean acceptCookieValue, String cookieSuffix)
+            throws Throwable {
+        mCookieManager.setAcceptCookie(acceptCookieValue);
+
         TestWebServer webServer = TestWebServer.start();
         try {
             String path = "/cookie_test.html";
@@ -80,47 +103,63 @@ public class CookieManagerTest {
                     "<html><head><title>TEST!</title></head><body>HELLO!</body></html>";
             String url = webServer.setResponse(path, responseStr, null);
 
-            mCookieManager.setAcceptCookie(false);
-            Assert.assertFalse(mCookieManager.acceptCookie());
-
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            setCookieWithJavaScript("test1", "value1");
-            Assert.assertNull(mCookieManager.getCookie(url));
-
-            List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
-            responseHeaders.add(
-                    Pair.create("Set-Cookie", "header-test1=header-value1; path=" + path));
-            url = webServer.setResponse(path, responseStr, responseHeaders);
-            mActivityTestRule.loadUrlSync(
-                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            Assert.assertNull(mCookieManager.getCookie(url));
-
-            mCookieManager.setAcceptCookie(true);
-            Assert.assertTrue(mCookieManager.acceptCookie());
-
             url = webServer.setResponse(path, responseStr, null);
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            setCookieWithJavaScript("test2", "value2");
-            waitForCookie(url);
-            String cookie = mCookieManager.getCookie(url);
-            Assert.assertNotNull(cookie);
-            validateCookies(cookie, "test2");
+            final String jsCookieName = "js-test" + cookieSuffix;
+            setCookieWithJavaScript(jsCookieName, "value");
+            if (acceptCookieValue) {
+                waitForCookie(url);
+                String cookie = mCookieManager.getCookie(url);
+                String message =
+                        "WebView should set cookies from JavaScript (with setAcceptCookie enabled)";
+                Assert.assertNotNull(message, cookie);
+                validateCookies(cookie, jsCookieName);
+            } else {
+                String message =
+                        "WebView should not set cookies via JavaScript (with setAcceptCookie "
+                        + "disabled)";
+                Assert.assertNull(message, mCookieManager.getCookie(url));
+            }
 
-            responseHeaders = new ArrayList<Pair<String, String>>();
+            final List<Pair<String, String>> responseHeaders =
+                    new ArrayList<Pair<String, String>>();
+            final String headerCookieName = "header-test" + cookieSuffix;
             responseHeaders.add(
-                    Pair.create("Set-Cookie", "header-test2=header-value2 path=" + path));
+                    Pair.create("Set-Cookie", headerCookieName + "=header-value path=" + path));
             url = webServer.setResponse(path, responseStr, responseHeaders);
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
-            waitForCookie(url);
-            cookie = mCookieManager.getCookie(url);
-            Assert.assertNotNull(cookie);
-            validateCookies(cookie, "test2", "header-test2");
+            if (acceptCookieValue) {
+                waitForCookie(url);
+                String cookie = mCookieManager.getCookie(url);
+                String message =
+                        "WebView should set cookies from JavaScript (with setAcceptCookie enabled)";
+                Assert.assertNotNull(message, cookie);
+                validateCookies(cookie, jsCookieName, headerCookieName);
+            } else {
+                String message =
+                        "WebView should not set cookies from headers (with setAcceptCookie "
+                        + "disabled)";
+                Assert.assertNull(message, mCookieManager.getCookie(url));
+            }
         } finally {
             webServer.shutdown();
         }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAcceptCookie_falseWontSetCookies() throws Throwable {
+        testAcceptCookieHelper(false, "-disabled");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAcceptCookie_trueWillSetCookies() throws Throwable {
+        testAcceptCookieHelper(true, "-enabled");
     }
 
     @Test
