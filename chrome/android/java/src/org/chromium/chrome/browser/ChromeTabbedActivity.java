@@ -386,7 +386,7 @@ public class ChromeTabbedActivity
                 || TextUtils.equals(
                         componentName, MultiInstanceChromeTabbedActivity.class.getName())
                 || TextUtils.equals(componentName, ChromeTabbedActivity2.class.getName())
-                || TextUtils.equals(componentName, "com.google.android.apps.chrome.Main");
+                || TextUtils.equals(componentName, MAIN_LAUNCHER_ACTIVITY_NAME);
     }
 
     /**
