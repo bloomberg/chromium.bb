@@ -119,12 +119,17 @@ void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
 
   // Schedule a task to eventually release the decode sync token. Note that this
   // task won't run until the sequence is re-enabled when a decode completes.
+  const SyncToken discardable_handle_sync_token = SyncToken(
+      CommandBufferNamespace::GPU_IO,
+      CommandBufferIdFromChannelAndRoute(channel_->client_id(),
+                                         decode_params.raster_decoder_route_id),
+      decode_params.discardable_handle_release_count);
   channel_->scheduler()->ScheduleTask(Scheduler::Task(
       sequence_,
       base::BindOnce(&ImageDecodeAcceleratorStub::ProcessCompletedDecode,
                      base::WrapRefCounted(this), std::move(decode_params),
                      release_count),
-      std::vector<SyncToken>()));
+      {discardable_handle_sync_token} /* sync_token_fences */));
 }
 
 void ImageDecodeAcceleratorStub::ProcessCompletedDecode(

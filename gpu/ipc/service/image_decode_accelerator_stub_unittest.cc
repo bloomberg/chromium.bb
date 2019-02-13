@@ -6,12 +6,15 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -22,11 +25,14 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/context_result.h"
+#include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/mocks.h"
+#include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -130,7 +136,8 @@ const int32_t kCommandBufferRouteId =
 class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
  public:
   ImageDecodeAcceleratorStubTest()
-      : GpuChannelTestCommon(false /* use_stub_bindings */) {}
+      : GpuChannelTestCommon(false /* use_stub_bindings */),
+        weak_ptr_factory_(this) {}
   ~ImageDecodeAcceleratorStubTest() override = default;
 
   SyncPointManager* sync_point_manager() const {
@@ -217,9 +224,60 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
     channel_manager()->DestroyAllChannels();
   }
 
+  // Intended to run as a task in the GPU scheduler (in the raster sequence):
+  // registers |buffer| in the TransferBufferManager and releases the sync token
+  // corresponding to |handle_release_count|.
+  void RegisterDiscardableHandleBuffer(int32_t shm_id,
+                                       scoped_refptr<Buffer> buffer,
+                                       uint64_t handle_release_count) {
+    GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
+    CHECK(channel);
+    CommandBufferStub* command_buffer =
+        channel->LookupCommandBuffer(kCommandBufferRouteId);
+    CHECK(command_buffer);
+    command_buffer->RegisterTransferBufferForTest(shm_id, std::move(buffer));
+    command_buffer->OnFenceSyncRelease(handle_release_count);
+  }
+
+  // Creates a discardable handle and schedules a task in the GPU scheduler (in
+  // the raster sequence) to register the handle's buffer and release the sync
+  // token corresponding to |handle_release_count| (see the
+  // RegisterDiscardableHandleBuffer() method). Returns an invalid handle if the
+  // GPU channel or the command buffer doesn't exist.
+  ClientDiscardableHandle CreateDiscardableHandle(
+      uint64_t handle_release_count) {
+    GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
+    if (!channel)
+      return ClientDiscardableHandle();
+    CommandBufferStub* command_buffer =
+        channel->LookupCommandBuffer(kCommandBufferRouteId);
+    if (!command_buffer)
+      return ClientDiscardableHandle();
+    ClientDiscardableHandle handle(MakeBufferForTesting() /* buffer */,
+                                   0u /* byte_offset */,
+                                   GetNextBufferId() /* shm_id */);
+    scheduler()->ScheduleTask(Scheduler::Task(
+        command_buffer->sequence_id(),
+        base::BindOnce(
+            &ImageDecodeAcceleratorStubTest::RegisterDiscardableHandleBuffer,
+            weak_ptr_factory_.GetWeakPtr(), handle.shm_id(),
+            handle.BufferForTesting(), handle_release_count) /* closure */,
+        std::vector<SyncToken>() /* sync_token_fences */));
+    return handle;
+  }
+
+  // Sends a decode request IPC and returns a sync token that is expected to be
+  // released upon the completion of the decode. The caller is responsible for
+  // keeping track of the release count for the decode sync token
+  // (|decode_release_count|), the transfer cache entry ID
+  // (|transfer_cache_entry_id|), and the release count of the sync token that
+  // is signaled after the discardable handle's buffer has been registered in
+  // the TransferBufferManager. If the channel does not exist or the discardable
+  // handle can't be created, this function returns an empty sync token.
   SyncToken SendDecodeRequest(const gfx::Size& output_size,
-                              uint64_t release_count,
-                              uint32_t transfer_cache_entry_id) {
+                              uint64_t decode_release_count,
+                              uint32_t transfer_cache_entry_id,
+                              uint64_t handle_release_count) {
     GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
     if (!channel) {
       // It's possible that the channel was destroyed as part of an earlier
@@ -236,19 +294,13 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
         CommandBufferIdFromChannelAndRoute(
             kChannelId, static_cast<int32_t>(
                             GpuChannelReservedRoutes::kImageDecodeAccelerator)),
-        release_count);
+        decode_release_count);
 
-    // We need a buffer to make sure that the ImageDecodeAcceleratorStub can
-    // create a ServiceDiscardableHandle.
-    CommandBufferStub* command_buffer =
-        channel->LookupCommandBuffer(kCommandBufferRouteId);
-    if (!command_buffer)
+    // Create a discardable handle and schedule its buffer's registration.
+    ClientDiscardableHandle handle =
+        CreateDiscardableHandle(handle_release_count);
+    if (!handle.IsValid())
       return SyncToken();
-
-    int32_t buffer_shm_id = GetNextBufferId();
-    scoped_refptr<Buffer> handle_buffer = MakeBufferForTesting();
-    command_buffer->RegisterTransferBufferForTest(buffer_shm_id,
-                                                  std::move(handle_buffer));
 
     // Send the IPC decode request.
     GpuChannelMsg_ScheduleImageDecode_Params decode_params;
@@ -256,8 +308,9 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
     decode_params.output_size = output_size;
     decode_params.raster_decoder_route_id = kCommandBufferRouteId;
     decode_params.transfer_cache_entry_id = transfer_cache_entry_id;
-    decode_params.discardable_handle_shm_id = buffer_shm_id;
-    decode_params.discardable_handle_shm_offset = 0u;
+    decode_params.discardable_handle_shm_id = handle.shm_id();
+    decode_params.discardable_handle_shm_offset = handle.byte_offset();
+    decode_params.discardable_handle_release_count = handle_release_count;
     decode_params.target_color_space = gfx::ColorSpace();
     decode_params.needs_mips = false;
 
@@ -312,6 +365,7 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::WeakPtrFactory<ImageDecodeAcceleratorStubTest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeAcceleratorStubTest);
 };
@@ -330,11 +384,13 @@ TEST_F(ImageDecodeAcceleratorStubTest,
         .Times(1);
   }
   const SyncToken decode1_sync_token = SendDecodeRequest(
-      gfx::Size(100, 100) /* output_size */, 1u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(100, 100) /* output_size */, 1u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode1_sync_token.HasData());
   const SyncToken decode2_sync_token = SendDecodeRequest(
-      gfx::Size(200, 200) /* output_size */, 2u /* release_count */,
-      2u /* transfer_cache_entry_id */);
+      gfx::Size(200, 200) /* output_size */, 2u /* decode_release_count */,
+      2u /* transfer_cache_entry_id */, 2u /* handle_release_count */);
+  ASSERT_TRUE(decode2_sync_token.HasData());
 
   // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
@@ -378,14 +434,17 @@ TEST_F(ImageDecodeAcceleratorStubTest,
         .Times(1);
   }
   const SyncToken decode1_sync_token = SendDecodeRequest(
-      gfx::Size(100, 100) /* output_size */, 1u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(100, 100) /* output_size */, 1u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode1_sync_token.HasData());
   const SyncToken decode2_sync_token = SendDecodeRequest(
-      gfx::Size(200, 200) /* output_size */, 2u /* release_count */,
-      2u /* transfer_cache_entry_id */);
+      gfx::Size(200, 200) /* output_size */, 2u /* decode_release_count */,
+      2u /* transfer_cache_entry_id */, 2u /* handle_release_count */);
+  ASSERT_TRUE(decode2_sync_token.HasData());
   const SyncToken decode3_sync_token = SendDecodeRequest(
-      gfx::Size(300, 300) /* output_size */, 3u /* release_count */,
-      3u /* transfer_cache_entry_id */);
+      gfx::Size(300, 300) /* output_size */, 3u /* decode_release_count */,
+      3u /* transfer_cache_entry_id */, 3u /* handle_release_count */);
+  ASSERT_TRUE(decode3_sync_token.HasData());
 
   // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
@@ -425,14 +484,17 @@ TEST_F(ImageDecodeAcceleratorStubTest, FailedDecodes) {
         .Times(1);
   }
   const SyncToken decode1_sync_token = SendDecodeRequest(
-      gfx::Size(100, 100) /* output_size */, 1u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(100, 100) /* output_size */, 1u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode1_sync_token.HasData());
   const SyncToken decode2_sync_token = SendDecodeRequest(
-      gfx::Size(200, 200) /* output_size */, 2u /* release_count */,
-      2u /* transfer_cache_entry_id */);
+      gfx::Size(200, 200) /* output_size */, 2u /* decode_release_count */,
+      2u /* transfer_cache_entry_id */, 2u /* handle_release_count */);
+  ASSERT_TRUE(decode2_sync_token.HasData());
   const SyncToken decode3_sync_token = SendDecodeRequest(
-      gfx::Size(300, 300) /* output_size */, 3u /* release_count */,
-      3u /* transfer_cache_entry_id */);
+      gfx::Size(300, 300) /* output_size */, 3u /* decode_release_count */,
+      3u /* transfer_cache_entry_id */, 3u /* handle_release_count */);
+  ASSERT_TRUE(decode3_sync_token.HasData());
 
   // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
@@ -455,15 +517,18 @@ TEST_F(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   CheckTransferCacheEntries({});
 }
 
-TEST_F(ImageDecodeAcceleratorStubTest, OutOfOrderSyncTokens) {
+TEST_F(ImageDecodeAcceleratorStubTest, OutOfOrderDecodeSyncTokens) {
   EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
       .Times(1);
   const SyncToken decode1_sync_token = SendDecodeRequest(
-      gfx::Size(100, 100) /* output_size */, 2u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(100, 100) /* output_size */, 2u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode1_sync_token.HasData());
+
   const SyncToken decode2_sync_token = SendDecodeRequest(
-      gfx::Size(200, 200) /* output_size */, 1u /* release_count */,
-      2u /* transfer_cache_entry_id */);
+      gfx::Size(200, 200) /* output_size */, 1u /* decode_release_count */,
+      2u /* transfer_cache_entry_id */, 2u /* handle_release_count */);
+  ASSERT_TRUE(decode2_sync_token.HasData());
 
   // We expect the destruction of the ImageDecodeAcceleratorStub, which also
   // implies that all decode sync tokens should be released.
@@ -476,10 +541,11 @@ TEST_F(ImageDecodeAcceleratorStubTest, OutOfOrderSyncTokens) {
   CheckTransferCacheEntries({});
 }
 
-TEST_F(ImageDecodeAcceleratorStubTest, ZeroReleaseCountSyncToken) {
+TEST_F(ImageDecodeAcceleratorStubTest, ZeroReleaseCountDecodeSyncToken) {
   const SyncToken decode_sync_token = SendDecodeRequest(
-      gfx::Size(100, 100) /* output_size */, 0u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(100, 100) /* output_size */, 0u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode_sync_token.HasData());
 
   // We expect the destruction of the ImageDecodeAcceleratorStub, which also
   // implies that all decode sync tokens should be released.
@@ -493,8 +559,9 @@ TEST_F(ImageDecodeAcceleratorStubTest, ZeroReleaseCountSyncToken) {
 
 TEST_F(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
   const SyncToken decode_sync_token = SendDecodeRequest(
-      gfx::Size(0, 100) /* output_size */, 1u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(0, 100) /* output_size */, 1u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode_sync_token.HasData());
 
   // We expect the destruction of the ImageDecodeAcceleratorStub, which also
   // implies that all decode sync tokens should be released.
@@ -508,8 +575,9 @@ TEST_F(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
 
 TEST_F(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
   const SyncToken decode_sync_token = SendDecodeRequest(
-      gfx::Size(100, 0) /* output_size */, 1u /* release_count */,
-      1u /* transfer_cache_entry_id */);
+      gfx::Size(100, 0) /* output_size */, 1u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode_sync_token.HasData());
 
   // We expect the destruction of the ImageDecodeAcceleratorStub, which also
   // implies that all decode sync tokens should be released.
@@ -519,6 +587,62 @@ TEST_F(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
 
   // We expect no entries in the transfer cache.
   CheckTransferCacheEntries({});
+}
+
+// Tests that we wait for a discardable handle's buffer to be registered before
+// we attempt to process the corresponding completed decode.
+TEST_F(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
+  EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
+      .Times(1);
+
+  // First, we disable the raster sequence so that we can control when to
+  // register the discardable handle's buffer by re-enabling the sequence.
+  GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
+  ASSERT_TRUE(channel);
+  const CommandBufferStub* command_buffer =
+      channel->LookupCommandBuffer(kCommandBufferRouteId);
+  ASSERT_TRUE(command_buffer);
+  const SequenceId raster_sequence_id = command_buffer->sequence_id();
+  scheduler()->DisableSequence(raster_sequence_id);
+
+  // Now we can send the decode request. This schedules the registration of the
+  // discardable handle, but it won't actually be registered until we re-enable
+  // the raster sequence later on.
+  const SyncToken decode_sync_token = SendDecodeRequest(
+      gfx::Size(100, 100) /* output_size */, 1u /* decode_release_count */,
+      1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
+  ASSERT_TRUE(decode_sync_token.HasData());
+
+  // A decode sync token should not be released before a decode is finished.
+  RunTasksUntilIdle();
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+
+  // Even when a decode is finished, the decode sync token shouldn't be released
+  // before the discardable handle's buffer is registered.
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  RunTasksUntilIdle();
+  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+
+  // Let's make sure that the channel and the command buffer are still alive
+  // because if we didn't wait for the discardable handle's buffer to be
+  // registered, we could have caused a channel teardown.
+  ASSERT_TRUE(channel_manager()->LookupChannel(kChannelId));
+  ASSERT_TRUE(channel_manager()
+                  ->LookupChannel(kChannelId)
+                  ->LookupCommandBuffer(kCommandBufferRouteId));
+
+  // Now let's register the discardable handle's buffer by re-enabling the
+  // raster sequence. This should trigger the processing of the completed decode
+  // and the subsequent release of the decode sync token.
+  scheduler()->EnableSequence(raster_sequence_id);
+  RunTasksUntilIdle();
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+
+  // The channel should still exist at the end.
+  EXPECT_TRUE(channel_manager()->LookupChannel(kChannelId));
+
+  // Check that the decoded images are in the transfer cache.
+  CheckTransferCacheEntries({SkISize::Make(100, 100)});
 }
 
 }  // namespace gpu

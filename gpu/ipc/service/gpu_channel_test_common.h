@@ -37,6 +37,7 @@ class GpuChannelTestCommon : public testing::Test {
   ~GpuChannelTestCommon() override;
 
  protected:
+  Scheduler* scheduler() const { return scheduler_.get(); }
   GpuChannelManager* channel_manager() const { return channel_manager_.get(); }
   base::TestSimpleTaskRunner* task_runner() const { return task_runner_.get(); }
   base::TestSimpleTaskRunner* io_task_runner() const {

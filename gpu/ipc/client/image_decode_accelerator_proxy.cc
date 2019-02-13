@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/client/image_decode_accelerator_proxy.h"
 
+#include <utility>
 #include <vector>
 
 #include "gpu/command_buffer/common/constants.h"
@@ -28,6 +29,7 @@ SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
     uint32_t transfer_cache_entry_id,
     int32_t discardable_handle_shm_id,
     uint32_t discardable_handle_shm_offset,
+    uint64_t discardable_handle_release_count,
     const gfx::ColorSpace& target_color_space,
     bool needs_mips) {
   DCHECK(host_);
@@ -43,13 +45,18 @@ SyncToken ImageDecodeAcceleratorProxy::ScheduleImageDecode(
   params.transfer_cache_entry_id = transfer_cache_entry_id;
   params.discardable_handle_shm_id = discardable_handle_shm_id;
   params.discardable_handle_shm_offset = discardable_handle_shm_offset;
+  params.discardable_handle_release_count = discardable_handle_release_count;
   params.target_color_space = target_color_space;
   params.needs_mips = needs_mips;
 
   base::AutoLock lock(lock_);
-  uint64_t release_count = ++next_release_count_;
+  const uint64_t release_count = ++next_release_count_;
   // Note: we send the message under the lock to guarantee monotonicity of the
   // release counts as seen by the service.
+  // The EnsureFlush() call makes sure that the sync token corresponding to
+  // |discardable_handle_release_count| is visible to the service before
+  // processing the image decode request.
+  host_->EnsureFlush(UINT32_MAX);
   host_->Send(new GpuChannelMsg_ScheduleImageDecode(
       route_id_, std::move(params), release_count));
   return SyncToken(
