@@ -243,17 +243,6 @@ class CookieStoreTest : public testing::Test {
     return SetCookieWithOptions(cs, url, cookie_line, options);
   }
 
-  void DeleteCookie(CookieStore* cs,
-                    const GURL& url,
-                    const std::string& cookie_name) {
-    DCHECK(cs);
-    NoResultCookieCallback callback;
-    cs->DeleteCookieAsync(
-        url, cookie_name,
-        base::Bind(&NoResultCookieCallback::Run, base::Unretained(&callback)));
-    callback.WaitUntilDone();
-  }
-
   uint32_t DeleteCanonicalCookie(CookieStore* cs,
                                  const CanonicalCookie& cookie) {
     DCHECK(cs);
@@ -1602,31 +1591,6 @@ TYPED_TEST_P(CookieStoreTest, GetAllCookiesAsync) {
   ASSERT_TRUE(++it == cookies.end());
 }
 
-TYPED_TEST_P(CookieStoreTest, DeleteCookieAsync) {
-  CookieStore* cs = this->GetCookieStore();
-
-  EXPECT_TRUE(this->SetCookie(cs, this->http_www_foo_.url(), "A=A1; path=/"));
-  EXPECT_TRUE(
-      this->SetCookie(cs, this->http_www_foo_.url(), "A=A2; path=/foo"));
-  EXPECT_TRUE(
-      this->SetCookie(cs, this->http_www_foo_.url(), "A=A3; path=/bar"));
-  EXPECT_TRUE(this->SetCookie(cs, this->http_www_foo_.url(), "B=B1; path=/"));
-  EXPECT_TRUE(
-      this->SetCookie(cs, this->http_www_foo_.url(), "B=B2; path=/foo"));
-  EXPECT_TRUE(
-      this->SetCookie(cs, this->http_www_foo_.url(), "B=B3; path=/bar"));
-
-  this->DeleteCookie(cs, this->http_www_foo_.AppendPath("foo/bar"), "A");
-
-  CookieList cookies = this->GetAllCookies(cs);
-  size_t expected_size = 4;
-  EXPECT_EQ(expected_size, cookies.size());
-  for (const auto& cookie : cookies) {
-    EXPECT_NE("A1", cookie.Value());
-    EXPECT_NE("A2", cookie.Value());
-  }
-}
-
 TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
   CookieStore* cs = this->GetCookieStore();
 
@@ -1722,7 +1686,6 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            EmptyName,
                            CookieOrdering,
                            GetAllCookiesAsync,
-                           DeleteCookieAsync,
                            DeleteCanonicalCookieAsync,
                            DeleteSessionCookie);
 

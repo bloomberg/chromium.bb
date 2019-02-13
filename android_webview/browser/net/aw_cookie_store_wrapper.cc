@@ -47,12 +47,6 @@ void GetAllCookiesAsyncOnCookieThread(
   GetCookieStore()->GetAllCookiesAsync(std::move(callback));
 }
 
-void DeleteCookieAsyncOnCookieThread(const GURL& url,
-                                     const std::string& cookie_name,
-                                     base::OnceClosure callback) {
-  GetCookieStore()->DeleteCookieAsync(url, cookie_name, std::move(callback));
-}
-
 void DeleteCanonicalCookieAsyncOnCookieThread(
     const net::CanonicalCookie& cookie,
     net::CookieStore::DeleteCallback callback) {
@@ -131,15 +125,6 @@ void AwCookieStoreWrapper::GetAllCookiesAsync(GetCookieListCallback callback) {
   PostTaskToCookieStoreTaskRunner(
       base::BindOnce(&GetAllCookiesAsyncOnCookieThread,
                      CreateWrappedGetCookieListCallback(std::move(callback))));
-}
-
-void AwCookieStoreWrapper::DeleteCookieAsync(const GURL& url,
-                                             const std::string& cookie_name,
-                                             base::OnceClosure callback) {
-  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
-  PostTaskToCookieStoreTaskRunner(
-      base::BindOnce(&DeleteCookieAsyncOnCookieThread, url, cookie_name,
-                     CreateWrappedClosureCallback(std::move(callback))));
 }
 
 void AwCookieStoreWrapper::DeleteCanonicalCookieAsync(

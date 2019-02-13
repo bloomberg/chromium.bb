@@ -72,13 +72,6 @@ class DelayedCookieMonster : public CookieStore {
                                     const std::string& cookie_line,
                                     const CookieOptions& options);
 
-  virtual void DeleteCookie(const GURL& url,
-                            const std::string& cookie_name);
-
-  void DeleteCookieAsync(const GURL& url,
-                         const std::string& cookie_name,
-                         base::OnceClosure callback) override;
-
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
 

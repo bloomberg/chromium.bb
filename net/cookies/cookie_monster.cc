@@ -110,11 +110,6 @@ void MaybeRunDeleteCallback(base::WeakPtr<net::CookieMonster> cookie_monster,
     std::move(callback).Run();
 }
 
-void MaybeRunCookieCallback(base::OnceClosure callback) {
-  if (callback)
-    std::move(callback).Run();
-}
-
 template <typename T>
 void MaybeRunCookieCallback(base::OnceCallback<void(const T&)> callback,
                             const T& result) {
@@ -496,19 +491,6 @@ void CookieMonster::GetAllCookiesAsync(GetCookieListCallback callback) {
       std::move(callback)));
 }
 
-void CookieMonster::DeleteCookieAsync(const GURL& url,
-                                      const std::string& cookie_name,
-                                      base::OnceClosure callback) {
-  DoCookieCallbackForURL(
-      base::BindOnce(
-          // base::Unretained is safe as DoCookieCallbackForURL stores
-          // the callback on |*this|, so the callback will not outlive
-          // the object.
-          &CookieMonster::DeleteCookie, base::Unretained(this), url,
-          cookie_name, std::move(callback)),
-      url);
-}
-
 void CookieMonster::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                                DeleteCallback callback) {
   DoCookieCallback(base::BindOnce(
@@ -759,53 +741,6 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
   }
   SetCanonicalCookie(std::move(cc), url.SchemeIsCryptographic(),
                      !options.exclude_httponly(), std::move(callback));
-}
-
-void CookieMonster::DeleteCookie(const GURL& url,
-                                 const std::string& cookie_name,
-                                 base::OnceClosure callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!HasCookieableScheme(url)) {
-    // TODO(rdsmith): Would be good to provide a failure indication here.
-    MaybeRunCookieCallback(std::move(callback));
-    return;
-  }
-
-  CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_mode(
-      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  // Get the cookies for this host and its domain(s).
-  std::vector<CanonicalCookie*> cookie_ptrs;
-  std::vector<CanonicalCookie*> included_cookie_ptrs;
-  FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
-  FilterCookiesWithOptions(url, options, &cookie_ptrs, &included_cookie_ptrs,
-                           nullptr);
-  std::set<CanonicalCookie*> matching_cookies;
-
-  for (auto* cookie : included_cookie_ptrs) {
-    DCHECK(cookie->IsOnPath(url.path()));
-    DCHECK(cookie->IsDomainMatch(url.host()));
-    if (cookie->Name() != cookie_name)
-      continue;
-    matching_cookies.insert(cookie);
-  }
-
-  for (auto it = cookies_.begin(); it != cookies_.end();) {
-    auto curit = it;
-    ++it;
-    if (matching_cookies.find(curit->second.get()) != matching_cookies.end()) {
-      InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPLICIT);
-    }
-  }
-
-  FlushStore(base::BindOnce(&MaybeRunDeleteCallback,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            // No callback null check needed as BindOnce
-                            // is not being called and MaybeRunDeleteCallback
-                            // has its own check.
-                            std::move(callback)));
 }
 
 void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,

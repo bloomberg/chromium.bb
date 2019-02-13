@@ -162,17 +162,6 @@ bool DelayedCookieMonster::SetCookieWithOptions(
   return false;
 }
 
-void DelayedCookieMonster::DeleteCookie(const GURL& url,
-                                        const std::string& cookie_name) {
-  ADD_FAILURE();
-}
-
-void DelayedCookieMonster::DeleteCookieAsync(const GURL& url,
-                                             const std::string& cookie_name,
-                                             base::OnceClosure callback) {
-  ADD_FAILURE();
-}
-
 void DelayedCookieMonster::DeleteCanonicalCookieAsync(
     const CanonicalCookie& cookie,
     DeleteCallback callback) {
