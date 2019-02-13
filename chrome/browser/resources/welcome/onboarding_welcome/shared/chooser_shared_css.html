@@ -100,10 +100,14 @@
         margin-top: 64px;
       }
 
+      :host-context([dir=rtl]) iron-icon {
+        transform: rotate(180deg);
+      }
+
       iron-icon[icon='cr:chevron-right'] {
         height: 20px;
-        margin-left: 6px;
-        margin-right: -10px;
+        margin-inline-end: -10px;
+        margin-inline-start: 6px;
         width: 20px;
       }
     </style>
