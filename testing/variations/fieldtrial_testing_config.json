@@ -3645,7 +3645,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PredictivePrefetchingAllowedOnAllConnectionTypes",
+                    "name": "Enabled",
                     "enable_features": [
                         "PredictivePrefetchingAllowedOnAllConnectionTypes"
                     ]
