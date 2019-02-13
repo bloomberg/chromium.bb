@@ -192,7 +192,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     bool include_version,
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code) {
-  return MakeRstPacket(num, include_version, stream_id, error_code, 0);
+  return MakeRstPacket(num, include_version, stream_id, error_code, 0,
+                       /*include_stop_sending_if_v99=*/true);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
@@ -200,7 +201,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
     bool include_version,
     quic::QuicStreamId stream_id,
     quic::QuicRstStreamErrorCode error_code,
-    size_t bytes_written) {
+    size_t bytes_written,
+    bool include_stop_sending_if_v99) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
   header.destination_connection_id_length = GetDestinationConnectionIdLength();
@@ -221,7 +223,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(1, stream_id, error_code);
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (include_stop_sending_if_v99 && version_ == quic::QUIC_VERSION_99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }
@@ -327,7 +329,8 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     bool send_feedback) {
   return MakeAckAndRstPacket(num, include_version, stream_id, error_code,
                              largest_received, smallest_received, least_unacked,
-                             send_feedback, 0);
+                             send_feedback, 0,
+                             /*include_stop_sending_if_v99=*/true);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -340,7 +343,8 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     uint64_t smallest_received,
     uint64_t least_unacked,
     bool send_feedback,
-    size_t bytes_written) {
+    size_t bytes_written,
+    bool include_stop_sending_if_v99) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
   header.destination_connection_id_length = GetDestinationConnectionIdLength();
@@ -380,7 +384,7 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.
   quic::QuicStopSendingFrame stop(1, stream_id, error_code);
-  if (version_ == quic::QUIC_VERSION_99) {
+  if (version_ == quic::QUIC_VERSION_99 && include_stop_sending_if_v99) {
     frames.push_back(quic::QuicFrame(&stop));
     DVLOG(1) << "Adding frame: " << frames.back();
   }

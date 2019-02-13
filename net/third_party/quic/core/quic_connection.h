@@ -294,6 +294,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when RTT may have changed, including when an RTT is read from
   // the config.
   virtual void OnRttChanged(QuicTime::Delta rtt) const {}
+
+  // Called when a StopSendingFrame has been parsed.
+  virtual void OnStopSendingFrame(const QuicStopSendingFrame& frame) {}
 };
 
 class QUIC_EXPORT_PRIVATE QuicConnectionHelperInterface {

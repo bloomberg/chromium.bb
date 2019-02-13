@@ -172,6 +172,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
 
   using QuicSession::ActivateStream;
 
+  MOCK_METHOD1(OnStopSendingReceived, void(const QuicStopSendingFrame& frame));
+
   spdy::SpdyHeaderBlock original_request_headers_;
 };
 
@@ -673,7 +675,12 @@ TEST_P(QuicSimpleServerStreamTest,
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, 1234);
   stream_->OnStreamReset(rst_frame);
-
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    // For V99 receiving a RST_STREAM causes a 1-way close; the test requires
+    // a full close. A CloseWriteSide closes the other half of the stream.
+    // Everything should then work properly.
+    stream_->CloseWriteSide();
+  }
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
 }

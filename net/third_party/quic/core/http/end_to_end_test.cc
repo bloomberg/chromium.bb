@@ -3733,6 +3733,32 @@ TEST_P(EndToEndTest, SimpleStopSendingTest) {
   EXPECT_EQ(kStopSendingTestCode, client_stream->last_stop_sending_code());
 }
 
+TEST_P(EndToEndTest, SimpleStopSendingRstStreamTest) {
+  ASSERT_TRUE(Initialize());
+
+  // Send a request without a fin, to keep the stream open
+  SpdyHeaderBlock headers;
+  headers[":method"] = "POST";
+  headers[":path"] = "/foo";
+  headers[":scheme"] = "https";
+  headers[":authority"] = server_hostname_;
+  client_->SendMessage(headers, "", /*fin=*/false);
+  // Stream should be open
+  ASSERT_NE(nullptr, client_->latest_created_stream());
+  EXPECT_FALSE(
+      QuicStreamPeer::write_side_closed(client_->latest_created_stream()));
+  EXPECT_FALSE(
+      QuicStreamPeer::read_side_closed(client_->latest_created_stream()));
+
+  // Send a RST_STREAM+STOP_SENDING on the stream
+  // Code is not important.
+  client_->latest_created_stream()->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+  client_->WaitForResponse();
+
+  // Stream should be gone.
+  ASSERT_EQ(nullptr, client_->latest_created_stream());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

@@ -84,7 +84,8 @@ class QuicTestPacketMaker {
       bool include_version,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
-      size_t bytes_written);
+      size_t bytes_written,
+      bool include_stop_sending_if_v99);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndRequestHeadersPacket(
       uint64_t num,
@@ -117,7 +118,8 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool send_feedback,
-      size_t bytes_written);
+      size_t bytes_written,
+      bool include_stop_sending_if_v99);
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAckAndConnectionClosePacket(
       uint64_t num,
       bool include_version,

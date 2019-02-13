@@ -280,6 +280,20 @@ class QuicProxyClientSocketTest
         largest_received, smallest_received, least_unacked, kSendFeedback);
   }
 
+  std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstOnlyPacket(
+      uint64_t packet_number,
+      quic::QuicRstStreamErrorCode error_code,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
+      size_t bytes_written) {
+    return client_maker_.MakeAckAndRstPacket(
+        packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
+        largest_received, smallest_received, least_unacked, kSendFeedback,
+        bytes_written,
+        /*include_stop_sending=*/false);
+  }
+
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstPacket(
       uint64_t packet_number,
       quic::QuicRstStreamErrorCode error_code,
@@ -290,7 +304,8 @@ class QuicProxyClientSocketTest
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
         largest_received, smallest_received, least_unacked, kSendFeedback,
-        bytes_written);
+        bytes_written,
+        /*include_stop_sending_if_v99=*/true);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRstPacket(
@@ -299,7 +314,8 @@ class QuicProxyClientSocketTest
       size_t bytes_written) {
     return client_maker_.MakeRstPacket(packet_number, !kIncludeVersion,
                                        client_data_stream_id1_, error_code,
-                                       bytes_written);
+                                       bytes_written,
+                                       /*include_stop_sending_if_v99=*/true);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectRequestPacket(
@@ -386,7 +402,8 @@ class QuicProxyClientSocketTest
       size_t bytes_written) {
     return server_maker_.MakeRstPacket(packet_number, !kIncludeVersion,
                                        client_data_stream_id1_, error_code,
-                                       bytes_written);
+                                       bytes_written,
+                                       /*include_stop_sending_if_v99=*/true);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
@@ -1622,10 +1639,9 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePending) {
     mock_quic_data_.AddWrite(
         ASYNC, ConstructAckAndMultipleDataFramesPacket(
                    3, 1, 1, 1, 0, {header, quic::QuicString(kMsg2, kLen2)}));
-    mock_quic_data_.AddWrite(
-        SYNCHRONOUS,
-        ConstructAckAndRstPacket(4, quic::QUIC_RST_ACKNOWLEDGEMENT, 2, 2, 1,
-                                 header.length() + kLen2));
+    mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructAckAndRstOnlyPacket(
+                                              4, quic::QUIC_STREAM_CANCELLED, 2,
+                                              2, 1, header.length() + kLen2));
   }
 
   Initialize();
@@ -1757,10 +1773,9 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
     mock_quic_data_.AddWrite(
         ASYNC, ConstructAckAndMultipleDataFramesPacket(
                    3, 1, 1, 1, 0, {header, quic::QuicString(kMsg1, kLen1)}));
-    mock_quic_data_.AddWrite(
-        SYNCHRONOUS,
-        ConstructAckAndRstPacket(4, quic::QUIC_RST_ACKNOWLEDGEMENT, 2, 2, 1,
-                                 header.length() + kLen1));
+    mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructAckAndRstOnlyPacket(
+                                              4, quic::QUIC_STREAM_CANCELLED, 2,
+                                              2, 1, header.length() + kLen1));
   }
 
   Initialize();

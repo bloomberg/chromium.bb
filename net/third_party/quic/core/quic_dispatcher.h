@@ -91,6 +91,11 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Collects reset error code received on streams.
   void OnRstStreamReceived(const QuicRstStreamFrame& frame) override;
 
+  // QuicSession::Visitor interface implementation (via inheritance of
+  // QuicTimeWaitListManager::Visitor):
+  // Collects reset error code received on streams.
+  void OnStopSendingReceived(const QuicStopSendingFrame& frame) override;
+
   // QuicTimeWaitListManager::Visitor interface implementation
   // Called whenever the time wait list manager adds a new connection to the
   // time-wait list.

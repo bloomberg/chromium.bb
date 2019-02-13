@@ -556,6 +556,7 @@ class MockQuicConnection : public QuicConnection {
     QuicConnection::SendConnectivityProbingResponsePacket(peer_address);
   }
   MOCK_METHOD1(OnPathResponseFrame, bool(const QuicPathResponseFrame&));
+  MOCK_METHOD1(OnStopSendingFrame, bool(const QuicStopSendingFrame& frame));
 };
 
 class PacketSavingConnection : public MockQuicConnection {

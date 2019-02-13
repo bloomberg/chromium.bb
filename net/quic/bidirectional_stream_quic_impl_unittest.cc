@@ -712,7 +712,8 @@ class BidirectionalStreamQuicImplTest
       QuicTestPacketMaker* maker) {
     std::unique_ptr<quic::QuicReceivedPacket> packet(
         maker->MakeRstPacket(packet_number, include_version, stream_id_,
-                             quic::QUIC_STREAM_CANCELLED, bytes_written));
+                             quic::QUIC_STREAM_CANCELLED, bytes_written,
+                             /*include_stop_sending_if_v99=*/true));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << quic::QuicTextUtils::HexDump(packet->AsStringPiece());
     return packet;

@@ -345,6 +345,11 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // QuicStream class.
   virtual void OnStopSending(uint16_t code);
 
+  // Close the write side of the socket.  Further writes will fail.
+  // Can be called by the subclass or internally.
+  // Does not send a FIN.  May cause the stream to be closed.
+  virtual void CloseWriteSide();
+
  protected:
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume. If FIN is consumed, the write side is
@@ -361,11 +366,6 @@ class QUIC_EXPORT_PRIVATE QuicStream
   virtual QuicConsumedData WritevDataInner(size_t write_length,
                                            QuicStreamOffset offset,
                                            bool fin);
-
-  // Close the write side of the socket.  Further writes will fail.
-  // Can be called by the subclass or internally.
-  // Does not send a FIN.  May cause the stream to be closed.
-  virtual void CloseWriteSide();
 
   // Close the read side of the socket.  May cause the stream to be closed.
   // Subclasses and consumers should use StopReading to terminate reading early
