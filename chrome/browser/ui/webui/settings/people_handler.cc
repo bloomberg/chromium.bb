@@ -1068,10 +1068,6 @@ void PeopleHandler::UpdateSyncStatus() {
 }
 
 void PeopleHandler::MarkFirstSetupComplete() {
-  // Suppress the sign in promo once the user starts sync. This way the user
-  // doesn't see the sign in promo even if they sign out later on.
-  signin::SetUserSkippedPromo(profile_);
-
   syncer::SyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
   if (!service || service->GetUserSettings()->IsFirstSetupComplete())

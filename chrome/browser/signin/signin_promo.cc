@@ -29,118 +29,12 @@
 
 namespace signin {
 
-namespace {
-
-// The maximum number of times we want to show the sign in promo at startup.
-const int kSignInPromoShowAtStartupMaximum = 10;
-
-// Forces the web based signin flow when set.
-bool g_force_web_based_signin_flow = false;
-
-// Checks we want to show the sign in promo for the given brand.
-bool AllowPromoAtStartupForCurrentBrand() {
-  std::string brand;
-  google_brand::GetBrand(&brand);
-
-  if (brand.empty())
-    return true;
-
-  if (google_brand::IsInternetCafeBrandCode(brand))
-    return false;
-
-  // Enable for both organic and distribution.
-  return true;
-}
-
-// Returns true if a user has seen the sign in promo at startup previously.
-bool HasShownPromoAtStartup(Profile* profile) {
-  return profile->GetPrefs()->HasPrefPath(prefs::kSignInPromoStartupCount);
-}
-
-// Returns true if the user has previously skipped the sign in promo.
-bool HasUserSkippedPromo(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kSignInPromoUserSkipped);
-}
-
-GURL GetEmbeddedReauthURLInternal(signin_metrics::AccessPoint access_point,
-                                  signin_metrics::Reason reason,
-                                  const std::string& email) {
-  GURL url = GetEmbeddedPromoURL(access_point, reason, /*auto_close=*/true);
-  url = net::AppendQueryParameter(url, "email", email);
-  url = net::AppendQueryParameter(url, "validateEmail", "1");
-  return net::AppendQueryParameter(url, "readOnlyEmail", "1");
-}
-
-}  // namespace
-
 const char kSignInPromoQueryKeyAccessPoint[] = "access_point";
 const char kSignInPromoQueryKeyAutoClose[] = "auto_close";
-const char kSignInPromoQueryKeyContinue[] = "continue";
 const char kSignInPromoQueryKeyForceKeepData[] = "force_keep_data";
 const char kSignInPromoQueryKeyReason[] = "reason";
 const char kSignInPromoQueryKeySource[] = "source";
 const char kSigninPromoLandingURLSuccessPage[] = "success.html";
-
-bool ShouldShowPromoAtStartup(Profile* profile, bool is_new_profile) {
-  DCHECK(profile);
-
-  // Don't show if the profile is an incognito.
-  if (profile->IsOffTheRecord())
-    return false;
-
-  if (!ShouldShowPromo(profile))
-    return false;
-
-  if (!is_new_profile) {
-    if (!HasShownPromoAtStartup(profile))
-      return false;
-  }
-
-#if defined(OS_WIN)
-  // Do not show the promo on first run on Win10 and newer.
-  if (is_new_profile && base::win::GetVersion() >= base::win::VERSION_WIN10)
-    return false;
-#endif
-
-  if (HasUserSkippedPromo(profile))
-    return false;
-
-  // For Chinese users skip the sign in promo.
-  if (g_browser_process->GetApplicationLocale() == "zh-CN")
-    return false;
-
-  PrefService* prefs = profile->GetPrefs();
-  int show_count = prefs->GetInteger(prefs::kSignInPromoStartupCount);
-  if (show_count >= kSignInPromoShowAtStartupMaximum)
-    return false;
-
-  // This pref can be set in the master preferences file to allow or disallow
-  // showing the sign in promo at startup.
-  if (prefs->HasPrefPath(prefs::kSignInPromoShowOnFirstRunAllowed))
-    return prefs->GetBoolean(prefs::kSignInPromoShowOnFirstRunAllowed);
-
-  // For now don't show the promo for some brands.
-  if (!AllowPromoAtStartupForCurrentBrand())
-    return false;
-
-  // Default to show the promo for Google Chrome builds.
-#if defined(GOOGLE_CHROME_BUILD)
-  return true;
-#else
-  return false;
-#endif
-}
-
-void DidShowPromoAtStartup(Profile* profile) {
-  int show_count = profile->GetPrefs()->GetInteger(
-      prefs::kSignInPromoStartupCount);
-  show_count++;
-  profile->GetPrefs()->SetInteger(prefs::kSignInPromoStartupCount, show_count);
-}
-
-void SetUserSkippedPromo(Profile* profile) {
-  profile->GetPrefs()->SetBoolean(prefs::kSignInPromoUserSkipped, true);
-}
 
 GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
   GURL url(extensions::kGaiaAuthExtensionOrigin);
@@ -168,6 +62,7 @@ GURL GetLandingURL(signin_metrics::AccessPoint access_point) {
   return GURL(url);
 }
 
+#if !defined(OS_CHROMEOS)
 GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
                          signin_metrics::Reason reason,
                          bool auto_close) {
@@ -197,8 +92,12 @@ GURL GetEmbeddedPromoURL(signin_metrics::AccessPoint access_point,
 GURL GetEmbeddedReauthURLWithEmail(signin_metrics::AccessPoint access_point,
                                    signin_metrics::Reason reason,
                                    const std::string& email) {
-  return GetEmbeddedReauthURLInternal(access_point, reason, email);
+  GURL url = GetEmbeddedPromoURL(access_point, reason, /*auto_close=*/true);
+  url = net::AppendQueryParameter(url, "email", email);
+  url = net::AppendQueryParameter(url, "validateEmail", "1");
+  return net::AppendQueryParameter(url, "readOnlyEmail", "1");
 }
+#endif  // !defined(OS_CHROMEOS)
 
 GURL GetChromeSyncURLForDice(const std::string& email,
                              const std::string& continue_url) {
@@ -270,14 +169,8 @@ bool IsAutoCloseEnabledInEmbeddedURL(const GURL& url) {
   return false;
 }
 
-void ForceWebBasedSigninFlowForTesting(bool force) {
-  g_force_web_based_signin_flow = force;
-}
-
 void RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterIntegerPref(prefs::kSignInPromoStartupCount, 0);
-  registry->RegisterBooleanPref(prefs::kSignInPromoUserSkipped, false);
   registry->RegisterBooleanPref(prefs::kSignInPromoShowOnFirstRunAllowed, true);
   registry->RegisterBooleanPref(prefs::kSignInPromoShowNTPBubble, false);
   registry->RegisterIntegerPref(prefs::kDiceSigninUserMenuPromoCount, 0);

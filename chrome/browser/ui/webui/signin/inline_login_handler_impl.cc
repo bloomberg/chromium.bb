@@ -628,7 +628,6 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   const GURL& current_url = contents->GetURL();
 
   if (skip_for_now) {
-    signin::SetUserSkippedPromo(Profile::FromWebUI(web_ui()));
     SyncStarterCallback(false);
     return;
   }

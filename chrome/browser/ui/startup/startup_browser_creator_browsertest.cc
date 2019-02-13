@@ -1209,10 +1209,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
       embedded_test_server()->GetURL("/title1.html"));
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kRestoreOnStartup, 1);
-  // We switch off the sign-in promo too because it's behavior varies between
-  // platforms too much.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kSignInPromoUserSkipped, true);
 
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
