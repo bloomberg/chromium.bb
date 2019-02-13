@@ -128,6 +128,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
                               String* failure_reason) final {
     return KURL(base_url, module_request);
   }
+  void ClearIsAcquiringImportMaps() final {}
 
   void FetchSingle(const ModuleScriptFetchRequest& request,
                    ResourceFetcher*,

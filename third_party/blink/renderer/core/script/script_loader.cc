@@ -174,6 +174,13 @@ bool ParseAndRegisterImportMap(ScriptElementBase& element) {
       Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
   DCHECK(modulator);
 
+  if (!modulator->IsAcquiringImportMaps()) {
+    element_document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "An import map is added after module script load was triggered."));
+    return false;
+  }
+
   // TODO(crbug.com/922212): Implemenet external import maps.
   if (element.HasSourceAttribute()) {
     element_document.AddConsoleMessage(

@@ -75,6 +75,8 @@ class ModulatorImplBase : public Modulator {
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
   void RegisterImportMap(const ImportMap*) final;
+  bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
+  void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }
   ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
@@ -93,7 +95,13 @@ class ModulatorImplBase : public Modulator {
   TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;
   Member<ScriptModuleResolver> script_module_resolver_;
   Member<DynamicModuleResolver> dynamic_module_resolver_;
+
   Member<const ImportMap> import_map_;
+
+  // https://github.com/WICG/import-maps/blob/master/spec.md#when-import-maps-can-be-encountered
+  // Each realm (environment settings object) has a boolean, acquiring import
+  // maps. It is initially true. [spec text]
+  bool acquiring_import_maps_ = true;
 };
 
 }  // namespace blink

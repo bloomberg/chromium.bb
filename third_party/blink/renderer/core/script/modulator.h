@@ -168,6 +168,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   // Import maps. https://github.com/WICG/import-maps
   virtual void RegisterImportMap(const ImportMap*) = 0;
+  virtual bool IsAcquiringImportMaps() const = 0;
+  virtual void ClearIsAcquiringImportMaps() = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
   virtual ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const = 0;

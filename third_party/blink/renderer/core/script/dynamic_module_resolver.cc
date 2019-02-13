@@ -173,6 +173,14 @@ void DynamicModuleResolver::ResolveDynamically(
       << "ResolveDynamically should be called from V8 callback, within a valid "
          "context.";
 
+  // https://github.com/WICG/import-maps/blob/master/spec.md#when-import-maps-can-be-encountered
+  // Strictly, the flag should be cleared at
+  // #internal-module-script-graph-fetching-procedure, i.e. in ModuleTreeLinker,
+  // but due to https://crbug.com/928435 https://crbug.com/928564 we also clears
+  // the flag here, as import maps can be accessed earlier than specced below
+  // (in ResolveModuleSpecifier()) and we need to clear the flag before that.
+  modulator_->ClearIsAcquiringImportMaps();
+
   // <spec step="1">Let referencing script be
   // referencingScriptOrModule.[[HostDefined]].</spec>
 

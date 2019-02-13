@@ -114,6 +114,15 @@ void DummyModulator::RegisterImportMap(const ImportMap*) {
   NOTREACHED();
 }
 
+bool DummyModulator::IsAcquiringImportMaps() const {
+  NOTREACHED();
+  return true;
+}
+
+void DummyModulator::ClearIsAcquiringImportMaps() {
+  NOTREACHED();
+}
+
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
     ScriptModule) const {
   NOTREACHED();
