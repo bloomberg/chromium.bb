@@ -429,12 +429,12 @@ TEST_P(BlobBuilderFromStreamTest, ProgressEvents) {
   EXPECT_GE(progress_client.call_count, 2);
 }
 
-INSTANTIATE_TEST_CASE_P(BlobBuilderFromStreamTest,
-                        BlobBuilderFromStreamTest,
-                        ::testing::Values(LengthHintTestType::kUnknownSize,
-                                          LengthHintTestType::kCorrectSize,
-                                          LengthHintTestType::kTooLargeSize,
-                                          LengthHintTestType::kTooSmallSize));
+INSTANTIATE_TEST_SUITE_P(BlobBuilderFromStreamTest,
+                         BlobBuilderFromStreamTest,
+                         ::testing::Values(LengthHintTestType::kUnknownSize,
+                                           LengthHintTestType::kCorrectSize,
+                                           LengthHintTestType::kTooLargeSize,
+                                           LengthHintTestType::kTooSmallSize));
 
 TEST_F(BlobBuilderFromStreamTestWithDelayedLimits, LargeStream) {
   const std::string kData =
