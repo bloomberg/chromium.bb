@@ -166,13 +166,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     kDestroying,  // Destroying state, when shutting down the decoder.
   };
 
-  enum OutputRecordState {
-    kFree,         // Ready to be queued to the device.
-    kAtDevice,     // Held by device.
-    kAtProcessor,  // Held by image processor.
-    kAtClient,     // Held by client of V4L2VideoDecodeAccelerator.
-  };
-
   enum BufferId {
     kFlushBufferId = -2  // Buffer id for flush buffer, queued by FlushTask().
   };
@@ -194,7 +187,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     OutputRecord();
     OutputRecord(OutputRecord&&);
     ~OutputRecord();
-    OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
     int32_t picture_id;     // picture buffer id as returned to PictureReady().
     GLuint texture_id;
@@ -405,10 +397,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   void SendBufferToClient(size_t buffer_index,
                           int32_t bitstream_buffer_id,
                           V4L2ReadableBufferRef vda_buffer);
-
-  // Returns the number of OutputRecords whose state is |state|. This is used to
-  // compute values reported for chrome://tracing.
-  size_t GetNumOfRecordsInState(OutputRecordState state) const;
 
   //
   // Methods run on child thread.
