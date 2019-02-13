@@ -887,16 +887,13 @@ void MediaDevicesManager::ProcessRequests() {
                    false /* ignore_group_id */);
   }
 
-  requests_.erase(
-      std::remove_if(requests_.begin(), requests_.end(),
-                     [this](EnumerationRequest& request) {
-                       if (IsEnumerationRequestReady(request)) {
-                         std::move(request.callback).Run(current_snapshot_);
-                         return true;
-                       }
-                       return false;
-                     }),
-      requests_.end());
+  base::EraseIf(requests_, [this](EnumerationRequest& request) {
+    if (IsEnumerationRequestReady(request)) {
+      std::move(request.callback).Run(current_snapshot_);
+      return true;
+    }
+    return false;
+  });
 }
 
 bool MediaDevicesManager::IsEnumerationRequestReady(

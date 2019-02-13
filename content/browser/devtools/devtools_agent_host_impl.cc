@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/observer_list.h"
+#include "base/stl_util.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/browser/devtools/protocol/page.h"
@@ -174,7 +175,7 @@ void DevToolsAgentHostImpl::DetachInternal(DevToolsSession* session) {
   DCHECK_EQ(session, session_owned.get());
   // Make sure we dispose session prior to reporting it to the host.
   session->Dispose();
-  sessions_.erase(std::remove(sessions_.begin(), sessions_.end(), session));
+  base::Erase(sessions_, session);
   session_by_client_.erase(session->client());
   DetachSession(session);
   DevToolsManager* manager = DevToolsManager::GetInstance();
