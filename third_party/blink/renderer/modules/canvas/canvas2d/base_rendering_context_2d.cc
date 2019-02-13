@@ -1769,12 +1769,12 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
       CanvasColorParams(ColorParams().ColorSpace(), PixelFormat(), kNonOpaque);
   if (data_color_params.NeedsColorConversion(context_color_params) ||
       PixelFormat() == kF16CanvasPixelFormat) {
-    base::CheckedNumeric<size_t> data_length = data->Size().Area();
-    data_length *= context_color_params.BytesPerPixel();
-    if (!data_length.IsValid())
+    size_t data_length;
+    if (!base::CheckMul(data->Size().Area(),
+                        context_color_params.BytesPerPixel())
+             .AssignIfValid(&data_length))
       return;
-    std::unique_ptr<uint8_t[]> converted_pixels(
-        new uint8_t[data_length.ValueOrDie()]);
+    std::unique_ptr<uint8_t[]> converted_pixels(new uint8_t[data_length]);
     if (data->ImageDataInCanvasColorSettings(
             ColorParams().ColorSpace(), PixelFormat(), converted_pixels.get(),
             kRGBAColorType)) {
