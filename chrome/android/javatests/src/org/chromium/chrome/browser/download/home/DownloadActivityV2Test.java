@@ -87,6 +87,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, true);
         features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, true);
         features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
+        features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
         ChromeFeatureList.setTestFeatures(features);
     }
 

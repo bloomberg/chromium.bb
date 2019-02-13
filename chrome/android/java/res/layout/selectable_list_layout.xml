@@ -12,7 +12,7 @@
         android:layout_height="@dimen/toolbar_height_no_shadow"
         android:background="@color/default_primary_color" />
 
-    <FrameLayout
+    <org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout
         android:id="@+id/list_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,21 +25,27 @@
             android:clipToPadding="false"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/empty_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:drawablePadding="3dp"
-            android:textAppearance="@style/TextAppearance.BlackDisabledText1"
-            android:visibility="gone" />
+        <FrameLayout
+            android:id="@+id/empty_view_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" >
+            <TextView
+                android:id="@+id/empty_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="3dp"
+                android:visibility="gone"
+                android:textAppearance="@style/TextAppearance.BlackDisabledText1" />
+        </FrameLayout>
 
         <org.chromium.chrome.browser.widget.LoadingView
             android:id="@+id/loading_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
-    </FrameLayout>
+    </org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout>
 
     <org.chromium.chrome.browser.widget.FadingShadowView
         android:id="@+id/shadow"
