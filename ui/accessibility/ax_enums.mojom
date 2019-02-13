@@ -752,6 +752,7 @@ enum TextStyle {
   kItalic,
   kUnderline,
   kLineThrough,
+  kNone,
 };
 
 enum AriaCurrentState {
@@ -774,7 +775,7 @@ enum HasPopup {
   kTree,
   kGrid,
   kDialog,
-  kLast = kDialog,
+  kNone = kFalse
 };
 
 enum InvalidState {
@@ -892,4 +893,3 @@ enum AXTreeIDType {
   kUnknown,  // The Tree ID is unknown.
   kToken,    // Every other tree ID must have a valid unguessable token.
 };
-
