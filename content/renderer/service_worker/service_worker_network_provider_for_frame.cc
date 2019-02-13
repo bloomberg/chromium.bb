@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/service_worker/web_service_worker_network_provider_impl_for_frame.h"
+#include "content/renderer/service_worker/service_worker_network_provider_for_frame.h"
 
 #include <utility>
 
@@ -35,10 +35,10 @@ bool IsFrameSecure(blink::WebFrame* frame) {
 }
 }  // namespace
 
-class WebServiceWorkerNetworkProviderImplForFrame::NewDocumentObserver
+class ServiceWorkerNetworkProviderForFrame::NewDocumentObserver
     : public RenderFrameObserver {
  public:
-  NewDocumentObserver(WebServiceWorkerNetworkProviderImplForFrame* owner,
+  NewDocumentObserver(ServiceWorkerNetworkProviderForFrame* owner,
                       RenderFrameImpl* frame)
       : RenderFrameObserver(frame), owner_(owner) {}
 
@@ -53,7 +53,7 @@ class WebServiceWorkerNetworkProviderImplForFrame::NewDocumentObserver
       // service workers so created the network provider, but it turns out it is
       // not eligible because it is CSP sandboxed.
       web_loader->SetServiceWorkerNetworkProvider(
-          WebServiceWorkerNetworkProviderImplForFrame::CreateInvalidInstance());
+          ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance());
       // |this| and its owner are destroyed.
       return;
     }
@@ -67,12 +67,12 @@ class WebServiceWorkerNetworkProviderImplForFrame::NewDocumentObserver
   }
 
  private:
-  WebServiceWorkerNetworkProviderImplForFrame* owner_;
+  ServiceWorkerNetworkProviderForFrame* owner_;
 };
 
 // static
-std::unique_ptr<WebServiceWorkerNetworkProviderImplForFrame>
-WebServiceWorkerNetworkProviderImplForFrame::Create(
+std::unique_ptr<ServiceWorkerNetworkProviderForFrame>
+ServiceWorkerNetworkProviderForFrame::Create(
     RenderFrameImpl* frame,
     const CommitNavigationParams* commit_params,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -118,7 +118,7 @@ WebServiceWorkerNetworkProviderImplForFrame::Create(
     provider_id = ServiceWorkerProviderContext::GetNextId();
 
   auto provider =
-      base::WrapUnique(new WebServiceWorkerNetworkProviderImplForFrame(frame));
+      base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));
 
   auto host_info = blink::mojom::ServiceWorkerProviderHostInfo::New(
       provider_id, frame->GetRoutingID(),
@@ -154,25 +154,23 @@ WebServiceWorkerNetworkProviderImplForFrame::Create(
 }
 
 // static
-std::unique_ptr<WebServiceWorkerNetworkProviderImplForFrame>
-WebServiceWorkerNetworkProviderImplForFrame::CreateInvalidInstance() {
-  return base::WrapUnique(
-      new WebServiceWorkerNetworkProviderImplForFrame(nullptr));
+std::unique_ptr<ServiceWorkerNetworkProviderForFrame>
+ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance() {
+  return base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(nullptr));
 }
 
-WebServiceWorkerNetworkProviderImplForFrame::
-    WebServiceWorkerNetworkProviderImplForFrame(RenderFrameImpl* frame) {
+ServiceWorkerNetworkProviderForFrame::ServiceWorkerNetworkProviderForFrame(
+    RenderFrameImpl* frame) {
   if (frame)
     observer_ = std::make_unique<NewDocumentObserver>(this, frame);
 }
 
-WebServiceWorkerNetworkProviderImplForFrame::
-    ~WebServiceWorkerNetworkProviderImplForFrame() {
+ServiceWorkerNetworkProviderForFrame::~ServiceWorkerNetworkProviderForFrame() {
   if (context())
     context()->OnNetworkProviderDestroyed();
 }
 
-void WebServiceWorkerNetworkProviderImplForFrame::WillSendRequest(
+void ServiceWorkerNetworkProviderForFrame::WillSendRequest(
     blink::WebURLRequest& request) {
   if (!request.GetExtraData())
     request.SetExtraData(std::make_unique<RequestExtraData>());
@@ -204,21 +202,20 @@ void WebServiceWorkerNetworkProviderImplForFrame::WillSendRequest(
 }
 
 blink::mojom::ControllerServiceWorkerMode
-WebServiceWorkerNetworkProviderImplForFrame::IsControlledByServiceWorker() {
+ServiceWorkerNetworkProviderForFrame::IsControlledByServiceWorker() {
   if (!context())
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   return context()->IsControlledByServiceWorker();
 }
 
-int64_t
-WebServiceWorkerNetworkProviderImplForFrame::ControllerServiceWorkerID() {
+int64_t ServiceWorkerNetworkProviderForFrame::ControllerServiceWorkerID() {
   if (!context())
     return blink::mojom::kInvalidServiceWorkerVersionId;
   return context()->GetControllerVersionId();
 }
 
 std::unique_ptr<blink::WebURLLoader>
-WebServiceWorkerNetworkProviderImplForFrame::CreateURLLoader(
+ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
         task_runner_handle) {
@@ -261,19 +258,19 @@ WebServiceWorkerNetworkProviderImplForFrame::CreateURLLoader(
           context()->GetSubresourceLoaderFactory()));
 }
 
-void WebServiceWorkerNetworkProviderImplForFrame::DispatchNetworkQuiet() {
+void ServiceWorkerNetworkProviderForFrame::DispatchNetworkQuiet() {
   if (!context())
     return;
   context()->DispatchNetworkQuiet();
 }
 
-int WebServiceWorkerNetworkProviderImplForFrame::provider_id() const {
+int ServiceWorkerNetworkProviderForFrame::provider_id() const {
   if (!context_)
     return kInvalidServiceWorkerProviderId;
   return context_->provider_id();
 }
 
-void WebServiceWorkerNetworkProviderImplForFrame::NotifyExecutionReady() {
+void ServiceWorkerNetworkProviderForFrame::NotifyExecutionReady() {
   if (context())
     context()->NotifyExecutionReady();
 }

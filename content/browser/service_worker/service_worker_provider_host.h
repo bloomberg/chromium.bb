@@ -199,7 +199,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Analogous to Blink's Document::IsSecureContext. Because of how service
   // worker intercepts main resource requests, this check must be done
   // browser-side once the URL is known (see comments in
-  // WebServiceWorkerNetworkProviderImplForFrame::Create). This function uses
+  // ServiceWorkerNetworkProviderForFrame::Create). This function uses
   // |url_| and |is_parent_frame_secure_| to determine context security, so they
   // must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;

@@ -143,7 +143,7 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
-#include "content/renderer/service_worker/web_service_worker_network_provider_impl_for_frame.h"
+#include "content/renderer/service_worker/service_worker_network_provider_for_frame.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
@@ -3945,8 +3945,8 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
 
 scoped_refptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContext() {
-  WebServiceWorkerNetworkProviderImplForFrame* provider =
-      static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(
+  ServiceWorkerNetworkProviderForFrame* provider =
+      static_cast<ServiceWorkerNetworkProviderForFrame*>(
           frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   DCHECK(provider);
 
@@ -4023,8 +4023,8 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
   // At this point we should have non-null data source.
   if (!ChildThreadImpl::current())
     return nullptr;  // May be null in some tests.
-  WebServiceWorkerNetworkProviderImplForFrame* provider =
-      static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(
+  ServiceWorkerNetworkProviderForFrame* provider =
+      static_cast<ServiceWorkerNetworkProviderForFrame*>(
           frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   if (!provider->context()) {
     // The context can be null when the frame is sandboxed.
@@ -7417,7 +7417,7 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
-  return WebServiceWorkerNetworkProviderImplForFrame::Create(
+  return ServiceWorkerNetworkProviderForFrame::Create(
       this, commit_params, std::move(controller_service_worker_info),
       std::move(fallback_factory));
 }

@@ -28,7 +28,7 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
-#include "content/renderer/worker/web_service_worker_network_provider_impl_for_worker.h"
+#include "content/renderer/worker/service_worker_network_provider_for_worker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -118,7 +118,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
  private:
   bool CanCreateServiceWorkerURLLoader(const blink::WebURLRequest& request) {
     // TODO(horo): Unify this code path with
-    // WebServiceWorkerNetworkProviderImplForFrame::CreateURLLoader that is used
+    // ServiceWorkerNetworkProviderForFrame::CreateURLLoader that is used
     // for document cases.
 
     // We need the service worker loader factory populated in order to create

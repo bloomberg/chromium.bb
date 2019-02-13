@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/worker/web_service_worker_network_provider_impl_for_worker.h"
+#include "content/renderer/worker/service_worker_network_provider_for_worker.h"
 
 #include <utility>
 
@@ -19,8 +19,8 @@
 
 namespace content {
 
-std::unique_ptr<WebServiceWorkerNetworkProviderImplForWorker>
-WebServiceWorkerNetworkProviderImplForWorker::Create(
+std::unique_ptr<ServiceWorkerNetworkProviderForWorker>
+ServiceWorkerNetworkProviderForWorker::Create(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
         script_loader_factory_info,
@@ -28,9 +28,8 @@ WebServiceWorkerNetworkProviderImplForWorker::Create(
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
     bool is_secure_context,
     std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
-  auto provider =
-      base::WrapUnique(new WebServiceWorkerNetworkProviderImplForWorker(
-          is_secure_context, std::move(response_override)));
+  auto provider = base::WrapUnique(new ServiceWorkerNetworkProviderForWorker(
+      is_secure_context, std::move(response_override)));
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     DCHECK(info);
     provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
@@ -79,13 +78,13 @@ WebServiceWorkerNetworkProviderImplForWorker::Create(
   return provider;
 }
 
-WebServiceWorkerNetworkProviderImplForWorker::
-    ~WebServiceWorkerNetworkProviderImplForWorker() {
+ServiceWorkerNetworkProviderForWorker::
+    ~ServiceWorkerNetworkProviderForWorker() {
   if (context())
     context()->OnNetworkProviderDestroyed();
 }
 
-void WebServiceWorkerNetworkProviderImplForWorker::WillSendRequest(
+void ServiceWorkerNetworkProviderForWorker::WillSendRequest(
     blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_service_worker_provider_id(provider_id());
@@ -98,21 +97,20 @@ void WebServiceWorkerNetworkProviderImplForWorker::WillSendRequest(
 }
 
 blink::mojom::ControllerServiceWorkerMode
-WebServiceWorkerNetworkProviderImplForWorker::IsControlledByServiceWorker() {
+ServiceWorkerNetworkProviderForWorker::IsControlledByServiceWorker() {
   if (!context())
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   return context()->IsControlledByServiceWorker();
 }
 
-int64_t
-WebServiceWorkerNetworkProviderImplForWorker::ControllerServiceWorkerID() {
+int64_t ServiceWorkerNetworkProviderForWorker::ControllerServiceWorkerID() {
   if (!context())
     return blink::mojom::kInvalidServiceWorkerVersionId;
   return context()->GetControllerVersionId();
 }
 
 std::unique_ptr<blink::WebURLLoader>
-WebServiceWorkerNetworkProviderImplForWorker::CreateURLLoader(
+ServiceWorkerNetworkProviderForWorker::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
         task_runner_handle) {
@@ -151,16 +149,15 @@ WebServiceWorkerNetworkProviderImplForWorker::CreateURLLoader(
   return nullptr;
 }
 
-int WebServiceWorkerNetworkProviderImplForWorker::provider_id() const {
+int ServiceWorkerNetworkProviderForWorker::provider_id() const {
   if (!context_)
     return kInvalidServiceWorkerProviderId;
   return context_->provider_id();
 }
 
-WebServiceWorkerNetworkProviderImplForWorker::
-    WebServiceWorkerNetworkProviderImplForWorker(
-        bool is_secure_context,
-        std::unique_ptr<NavigationResponseOverrideParameters> response_override)
+ServiceWorkerNetworkProviderForWorker::ServiceWorkerNetworkProviderForWorker(
+    bool is_secure_context,
+    std::unique_ptr<NavigationResponseOverrideParameters> response_override)
     : is_secure_context_(is_secure_context),
       response_override_(std::move(response_override)) {}
 
