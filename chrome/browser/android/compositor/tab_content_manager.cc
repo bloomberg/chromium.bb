@@ -28,6 +28,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/TabContentManager_jni.h"
+#include "skia/ext/image_operations.h"
 #include "ui/android/resources/ui_resource_provider.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -338,9 +339,13 @@ void TabContentManager::TabThumbnailAvailableFromDisk(
     bool result,
     SkBitmap bitmap) {
   ScopedJavaLocalRef<jobject> j_bitmap;
-  if (!bitmap.isNull() && result)
-    j_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
-
+  if (!bitmap.isNull() && result) {
+    SkIRect dest_subset = {0, 0, bitmap.width() / 2, bitmap.width() / 2};
+    SkBitmap result_bitmap = skia::ImageOperations::Resize(
+        bitmap, skia::ImageOperations::RESIZE_BETTER, bitmap.width() / 2,
+        bitmap.height() / 2, dest_subset);
+    j_bitmap = gfx::ConvertToJavaBitmap(&result_bitmap);
+  }
   RunObjectCallbackAndroid(j_callback, j_bitmap);
 }
 
