@@ -16,11 +16,11 @@ namespace blink {
 namespace {
 
 struct HarfbuzzBlobDestroyer {
-  inline void operator()(hb_blob_t* blob) { hb_blob_destroy(blob); };
+  inline void operator()(hb_blob_t* blob) { hb_blob_destroy(blob); }
 };
 
 struct HarfbuzzFaceDestroyer {
-  inline void operator()(hb_face_t* face) { hb_face_destroy(face); };
+  inline void operator()(hb_face_t* face) { hb_face_destroy(face); }
 };
 }  // namespace
 

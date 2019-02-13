@@ -16,7 +16,7 @@ namespace blink {
 
 class WebHTTPHeaderMap::WebHTTPHeaderMapImpl {
  public:
-  explicit WebHTTPHeaderMapImpl(const HTTPHeaderMap& map) : map_(map){};
+  explicit WebHTTPHeaderMapImpl(const HTTPHeaderMap& map) : map_(map) {}
 
   explicit WebHTTPHeaderMapImpl(const net::HttpRequestHeaders* headers) {
     for (net::HttpRequestHeaders::Iterator it(*headers); it.GetNext();) {
@@ -24,7 +24,7 @@ class WebHTTPHeaderMap::WebHTTPHeaderMapImpl {
           WTF::AtomicString::FromUTF8(it.name().c_str(), it.name().length()),
           WTF::AtomicString::FromUTF8(it.value().c_str(), it.value().length()));
     }
-  };
+  }
 
   explicit WebHTTPHeaderMapImpl(const net::HttpResponseHeaders* headers) {
     size_t iter = 0;
@@ -42,16 +42,15 @@ class WebHTTPHeaderMap::WebHTTPHeaderMapImpl {
       else
         map_.Add(atomic_name, atomic_value);
     }
-  };
+  }
 
-  const HTTPHeaderMap& map() const { return map_; };
+  const HTTPHeaderMap& map() const { return map_; }
 
  private:
   HTTPHeaderMap map_;
 };
 
 WebHTTPHeaderMap::~WebHTTPHeaderMap() = default;
-;
 
 WebHTTPHeaderMap::WebHTTPHeaderMap(const HTTPHeaderMap& map) {
   implementation_ = std::make_unique<WebHTTPHeaderMapImpl>(map);

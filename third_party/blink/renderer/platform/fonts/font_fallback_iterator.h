@@ -27,7 +27,7 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
                                              scoped_refptr<FontFallbackList>,
                                              FontFallbackPriority);
 
-  bool HasNext() const { return fallback_stage_ != kOutOfLuck; };
+  bool HasNext() const { return fallback_stage_ != kOutOfLuck; }
   // Returns whether the next call to Next() needs a full hint list, or whether
   // a single character is sufficient. Intended to serve as an optimization in
   // HarfBuzzShaper to avoid spending too much time and resources collecting a

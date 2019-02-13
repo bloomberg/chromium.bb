@@ -59,6 +59,6 @@ class PLATFORM_EXPORT OpenTypeCapsSupport {
   mutable FontFormat font_format_;
 };
 
-};  // namespace blink
+}  // namespace blink
 
 #endif

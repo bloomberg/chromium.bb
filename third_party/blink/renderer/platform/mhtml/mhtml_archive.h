@@ -107,7 +107,7 @@ class PLATFORM_EXPORT MHTMLArchive final
   WTF::Time Date() const { return date_; }
 
   void Trace(blink::Visitor*);
-  blink::mojom::MHTMLLoadResult LoadResult() const { return load_result_; };
+  blink::mojom::MHTMLLoadResult LoadResult() const { return load_result_; }
 
  private:
   static MHTMLArchive* CreateArchive(const KURL&,

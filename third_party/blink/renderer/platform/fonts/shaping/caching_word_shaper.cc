@@ -160,4 +160,4 @@ GlyphData CachingWordShaper::EmphasisMarkGlyphData(
   return buffer.EmphasisMarkGlyphData(font_.font_description_);
 }
 
-};  // namespace blink
+}  // namespace blink

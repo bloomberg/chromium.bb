@@ -103,4 +103,4 @@ SkWebpEncoder::Options ImageEncoder::ComputeWebpOptions(double quality) {
 
   return options;
 }
-};
+}  // namespace blink

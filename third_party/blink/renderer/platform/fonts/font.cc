@@ -400,7 +400,7 @@ bool Font::CanShapeWordByWord() const {
     shape_word_by_word_computed_ = true;
   }
   return can_shape_word_by_word_;
-};
+}
 
 bool Font::ComputeCanShapeWordByWord() const {
   if (!GetFontDescription().GetTypesettingFeatures())
@@ -412,7 +412,7 @@ bool Font::ComputeCanShapeWordByWord() const {
   const FontPlatformData& platform_data = PrimaryFont()->PlatformData();
   TypesettingFeatures features = GetFontDescription().GetTypesettingFeatures();
   return !platform_data.HasSpaceInLigaturesOrKerning(features);
-};
+}
 
 void Font::ReportNotDefGlyph() const {
   FontSelector* fontSelector = font_fallback_list_->GetFontSelector();

@@ -21,7 +21,7 @@ namespace blink {
 // since Ragel dereferences multiple times without moving the iterator's cursor.
 class PLATFORM_EXPORT UTF16RagelIterator {
  public:
-  UTF16RagelIterator() : buffer_(nullptr), buffer_size_(0), cursor_(0){};
+  UTF16RagelIterator() : buffer_(nullptr), buffer_size_(0), cursor_(0) {}
 
   UTF16RagelIterator(const UChar* buffer,
                      unsigned buffer_size,
@@ -31,7 +31,7 @@ class PLATFORM_EXPORT UTF16RagelIterator {
         cursor_(cursor),
         cached_category_(kMaxEmojiScannerCategory) {
     UpdateCachedCategory();
-  };
+  }
 
   UTF16RagelIterator end() {
     UTF16RagelIterator ret = *this;

@@ -120,7 +120,7 @@ struct ReshapeQueueItem {
   unsigned start_index_;
   unsigned num_characters_;
   ReshapeQueueItem(ReshapeQueueItemAction action, unsigned start, unsigned num)
-      : action_(action), start_index_(start), num_characters_(num){};
+      : action_(action), start_index_(start), num_characters_(num) {}
 };
 
 template <typename T>
