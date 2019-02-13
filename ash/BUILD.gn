@@ -1702,6 +1702,7 @@ test("ash_unittests") {
     "system/message_center/session_state_notification_blocker_unittest.cc",
     "system/message_center/unified_message_center_view_unittest.cc",
     "system/message_center/unified_message_list_view_unittest.cc",
+    "system/network/active_network_icon_unittest.cc",
     "system/network/auto_connect_notifier_unittest.cc",
     "system/network/network_icon_unittest.cc",
     "system/network/sms_observer_unittest.cc",

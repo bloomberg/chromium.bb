@@ -55,18 +55,14 @@ const NetworkState* GetConnectingOrConnected(
 
 ActiveNetworkIcon::ActiveNetworkIcon() {
   // NetworkHandler may not be initialized in tests.
-  if (!chromeos::NetworkHandler::IsInitialized())
-    return;
-  network_state_handler_ =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  DCHECK(network_state_handler_);
-  network_state_handler_->AddObserver(this, FROM_HERE);
-  UpdateActiveNetworks();
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    InitializeNetworkStateHandler(
+        chromeos::NetworkHandler::Get()->network_state_handler());
+  }
 }
 
 ActiveNetworkIcon::~ActiveNetworkIcon() {
-  if (network_state_handler_)
-    network_state_handler_->RemoveObserver(this, FROM_HERE);
+  ShutdownNetworkStateHandler();
 }
 
 base::string16 ActiveNetworkIcon::GetDefaultLabel(
@@ -139,13 +135,33 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImageCellular(
       active_cellular_, icon_type, false /* show_vpn_badge */, animating);
 }
 
+void ActiveNetworkIcon::InitForTesting(
+    chromeos::NetworkStateHandler* network_state_handler) {
+  ShutdownNetworkStateHandler();
+  InitializeNetworkStateHandler(network_state_handler);
+}
+
+void ActiveNetworkIcon::InitializeNetworkStateHandler(
+    chromeos::NetworkStateHandler* handler) {
+  DCHECK(!network_state_handler_);
+  DCHECK(handler);
+  network_state_handler_ = handler;
+  network_state_handler_->AddObserver(this, FROM_HERE);
+  UpdateActiveNetworks();
+}
+
+void ActiveNetworkIcon::ShutdownNetworkStateHandler() {
+  if (!network_state_handler_)
+    return;
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
+}
+
 gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageImpl(
     const NetworkState* default_network,
     network_icon::IconType icon_type,
     bool* animating) {
   if (!default_network_)
     return GetDefaultImageForNoNetwork(icon_type, animating);
-
   // Don't show connected Ethernet in the tray unless a VPN is present.
   if (default_network->Matches(NetworkTypePattern::Ethernet()) &&
       IsTrayIcon(icon_type) && !active_vpn_) {
@@ -254,8 +270,8 @@ void ActiveNetworkIcon::ActiveNetworksChanged(
       }
       continue;
     }
-    if (network->Matches(NetworkTypePattern::Wireless()) &&
-        network->IsActive()) {
+    // Active non connected networks are connecting.
+    if (network->Matches(NetworkTypePattern::Wireless())) {
       if (!connecting_network)
         connecting_network = network;
       if (!connecting_non_cellular &&

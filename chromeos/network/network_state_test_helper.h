@@ -19,6 +19,10 @@ namespace chromeos {
 
 // Helper class for tests that use NetworkStateHandler. Handles initialization,
 // shutdown, and adds default profiles and a wifi device (but no services).
+// NOTE: This is not intended to be used with NetworkHandler::Initialize()
+// which constructs its own NetworkStateHandler instance. When testing code that
+// accesses NetworkHandler::Get() directly, use
+// NetworkHandler::Get()->network_state_handler() directly instead.
 class NetworkStateTestHelper {
  public:
   // If |use_default_devices_and_services| is false, the default devices and
@@ -40,7 +44,8 @@ class NetworkStateTestHelper {
 
   // Configures a new service using Shill properties from |shill_json_string|
   // which must include a GUID and Type. Returns the service path, or "" if the
-  // service could not be configured.
+  // service could not be configured. Note: the 'GUID' key is also used as the
+  // name of the service if no 'Name' key is provided.
   std::string ConfigureService(const std::string& shill_json_string);
 
   // Returns a string value for property |key| associated with |service_path|.
@@ -51,6 +56,12 @@ class NetworkStateTestHelper {
   void SetServiceProperty(const std::string& service_path,
                           const std::string& key,
                           const base::Value& value);
+
+  std::unique_ptr<NetworkState> CreateStandaloneNetworkState(
+      const std::string& id,
+      const std::string& type,
+      const std::string& connection_state,
+      int signal_strength);
 
   // Returns the hash used for the user profile.
   const char* UserHash();

@@ -34,8 +34,10 @@ namespace ash {
 //    a technology badge is used to represent the network.
 // ** Cellular (enabled devices only): The state of the Cellular connection if
 //    available regardless of whether it is the active network.
-// NOTE : GetSingleDefaultImage and GetDefaultLabel are tested in
-// network_icon_unittest.cc. TODO(stevenjb): Test other public methods.
+// NOTE : GetSingleDefaultImage and GetDefaultLabel are partially tested in
+// network_icon_unittest.cc, and partially in active_network_icon_unittest.cc.
+// TODO(stevenjb): Move all test coverage to active_network_icon_unittest.cc and
+// test Dual icon methods.
 class ASH_EXPORT ActiveNetworkIcon
     : public chromeos::NetworkStateHandlerObserver {
  public:
@@ -60,11 +62,12 @@ class ASH_EXPORT ActiveNetworkIcon
   gfx::ImageSkia GetDualImageCellular(network_icon::IconType icon_type,
                                       bool* animating);
 
-  int cellular_uninitialized_msg_for_test() const {
-    return cellular_uninitialized_msg_;
-  }
+  void InitForTesting(chromeos::NetworkStateHandler* network_state_handler);
 
  private:
+  void InitializeNetworkStateHandler(chromeos::NetworkStateHandler* handler);
+  void ShutdownNetworkStateHandler();
+
   gfx::ImageSkia GetDefaultImageImpl(
       const chromeos::NetworkState* default_network,
       network_icon::IconType icon_type,

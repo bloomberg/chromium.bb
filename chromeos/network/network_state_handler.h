@@ -175,7 +175,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // network. Note: O(N).
   const NetworkState* FirstNetworkByType(const NetworkTypePattern& type);
 
-  // Sets the |connect_reqyested_| property of a NetworkState for
+  // Sets the |connect_requested_| property of a NetworkState for
   // |service_path| if it exists. This is used to inform the UI that a network
   // is connecting before the state is set in Shill. If |connect_requested| is
   // true, NetworkState::IsConnectingState() will return true. This will cause

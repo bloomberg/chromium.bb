@@ -7,11 +7,16 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chromeos/network/network_state_test_helper.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -97,19 +102,35 @@ class UIProxyConfigServiceTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
-    onc::RegisterProfilePrefs(user_prefs_.registry());
-    onc::RegisterPrefs(local_state_.registry());
+    ::onc::RegisterProfilePrefs(user_prefs_.registry());
+    ::onc::RegisterPrefs(local_state_.registry());
   }
 
   void SetUp() override {
-    helper_.ConfigureService(kTestUserWifiConfig);
-    helper_.ConfigureService(kTestSharedWifiConfig);
-    helper_.ConfigureService(kTestUnconfiguredWifiConfig);
+    DBusThreadManager::Initialize();
+    NetworkHandler::Initialize();
+    ConfigureService(kTestUserWifiConfig);
+    ConfigureService(kTestSharedWifiConfig);
+    ConfigureService(kTestUnconfiguredWifiConfig);
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    NetworkHandler::Shutdown();
+    DBusThreadManager::Shutdown();
+  }
 
   ~UIProxyConfigServiceTest() override = default;
+
+  void ConfigureService(const std::string& shill_json_string) {
+    std::unique_ptr<base::DictionaryValue> shill_json_dict =
+        base::DictionaryValue::From(
+            onc::ReadDictionaryFromJson(shill_json_string));
+    ASSERT_TRUE(shill_json_dict);
+    DBusThreadManager::Get()->GetShillManagerClient()->ConfigureService(
+        *shill_json_dict, base::DoNothing(),
+        base::Bind([](const std::string& name, const std::string& msg) {}));
+    base::RunLoop().RunUntilIdle();
+  }
 
   std::unique_ptr<UIProxyConfigService> CreateServiceOffLocalState() {
     return std::make_unique<UIProxyConfigService>(nullptr, &local_state_);
@@ -125,7 +146,6 @@ class UIProxyConfigServiceTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
 };
 
 TEST_F(UIProxyConfigServiceTest, UnknownNetwork) {
