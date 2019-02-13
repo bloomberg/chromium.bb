@@ -109,7 +109,7 @@ struct TestDatabaseConnection {
         upgrade_txn_id(upgrade_txn_id),
         open_callbacks(new StrictMock<MockMojoIndexedDBCallbacks>()),
         connection_callbacks(
-            new StrictMock<MockMojoIndexedDBDatabaseCallbacks>()){};
+            new StrictMock<MockMojoIndexedDBDatabaseCallbacks>()) {}
   ~TestDatabaseConnection() {}
 
   void Open(IDBFactory* factory) {
