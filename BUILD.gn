@@ -90,7 +90,7 @@ if (current_toolchain == host_toolchain) {
       "config/config.h",
       "config/config-mac.h",
       "config/config-linux.h",
-      "config/config-win.h",
+      "config/msvc.h",
     ]
 
     configs -= configs_to_delete
