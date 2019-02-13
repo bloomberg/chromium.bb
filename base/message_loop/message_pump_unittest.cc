@@ -30,28 +30,20 @@ bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
 #else
       return true;
 #endif
-
     case MessageLoopBase::Type::TYPE_UI:
 #if defined(OS_IOS)
       // iOS uses a MessagePumpDefault for UI in unit tests, ref.
       // test_support_ios.mm::CreateMessagePumpForUIForTests().
-      return true;
-#elif defined(OS_WIN)
       return true;
 #else
       // TODO(gab): Complete migration of all UI pumps to DoSomeWork() as part
       // of crbug.com/885371.
       return false;
 #endif
-
     case MessageLoopBase::Type::TYPE_IO:
-#if defined(OS_WIN)
-      return true;
-#else
       // TODO(gab): Complete migration of all IO pumps to DoSomeWork() as part
       // of crbug.com/885371.
       return false;
-#endif
 
     case MessageLoopBase::Type::TYPE_CUSTOM:
 #if defined(OS_ANDROID)
