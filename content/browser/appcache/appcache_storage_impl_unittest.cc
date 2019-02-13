@@ -1694,7 +1694,8 @@ class AppCacheStorageImplTest : public testing::Test {
         test_case == CORRUPT_SQL_ON_INSTALL) {
       // Try to create a new appcache, the resulting update job will
       // eventually fail when it gets to disk cache initialization.
-      backend_->RegisterHost(1, kMockRenderFrameId);
+      backend_->RegisterHost(blink::mojom::AppCacheHostRequest(), 1,
+                             kMockRenderFrameId);
       AppCacheHost* host1 = backend_->GetHost(1);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
       host1->SetFirstPartyUrlForTesting(kEmptyPageUrl);
@@ -1705,7 +1706,8 @@ class AppCacheStorageImplTest : public testing::Test {
       // Try to access the existing cache manifest.
       // The URLRequestJob  will eventually fail when it gets to disk
       // cache initialization.
-      backend_->RegisterHost(2, kMockRenderFrameId);
+      backend_->RegisterHost(blink::mojom::AppCacheHostRequest(), 2,
+                             kMockRenderFrameId);
       AppCacheHost* host2 = backend_->GetHost(2);
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");

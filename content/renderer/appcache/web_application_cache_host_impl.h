@@ -56,6 +56,8 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   void GetAssociatedCacheInfo(CacheInfo* info) override;
   int GetHostID() const override;
 
+  void SelectCacheForSharedWorker(long long app_cache_id);
+
   // Set the URLLoaderFactory instance to be used for subresource requests.
   virtual void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) {}
@@ -65,6 +67,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
 
   blink::WebApplicationCacheHostClient* client_;
   blink::mojom::AppCacheBackend* backend_;
+  blink::mojom::AppCacheHostPtr backend_host_;
   int host_id_;
   blink::mojom::AppCacheStatus status_;
   blink::WebURLResponse document_response_;

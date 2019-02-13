@@ -26,23 +26,10 @@ class CONTENT_EXPORT AppCacheBackendImpl
   int process_id() const { return process_id_; }
 
   // blink::mojom::AppCacheBackend
-  void RegisterHost(int32_t host_id, int32_t render_frame_id) override;
-  void UnregisterHost(int32_t host_id) override;
-  void SetSpawningHostId(int32_t host_id, int spawning_host_id) override;
-  void SelectCache(int32_t host_id,
-                   const GURL& document_url,
-                   int64_t cache_document_was_loaded_from,
-                   const GURL& opt_manifest_url) override;
-  void SelectCacheForSharedWorker(int32_t host_id,
-                                  int64_t appcache_id) override;
-  void MarkAsForeignEntry(int32_t host_id,
-                          const GURL& document_url,
-                          int64_t cache_document_was_loaded_from) override;
-  void GetStatus(int32_t host_id, GetStatusCallback callback) override;
-  void StartUpdate(int32_t host_id, StartUpdateCallback callback) override;
-  void SwapCache(int32_t host_id, SwapCacheCallback callback) override;
-  void GetResourceList(int32_t host_id,
-                       GetResourceListCallback callback) override;
+  void RegisterHost(blink::mojom::AppCacheHostRequest host_request,
+                    int32_t host_id,
+                    int32_t render_frame_id) override;
+  void UnregisterHost(int32_t host_id);
 
   // Returns a pointer to a registered host. The backend retains ownership.
   AppCacheHost* GetHost(int host_id) {
@@ -52,12 +39,6 @@ class CONTENT_EXPORT AppCacheBackendImpl
 
   using HostMap = std::unordered_map<int, std::unique_ptr<AppCacheHost>>;
   const HostMap& hosts() { return hosts_; }
-
-  // The AppCacheHost is precreated by the AppCacheNavigationHandleCore class
-  // when a navigation is initiated. We register the host with the backend in
-  // this function and ignore registrations for this host id from the renderer.
-  void RegisterPrecreatedHost(std::unique_ptr<AppCacheHost> host,
-                              int render_frame_id);
 
   void set_frontend_for_testing(blink::mojom::AppCacheFrontend* frontend) {
     frontend_ = frontend;

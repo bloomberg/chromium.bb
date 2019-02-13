@@ -66,7 +66,6 @@ AppCacheHost::AppCacheHost(int host_id,
     : host_id_(host_id),
       process_id_(process_id),
       spawning_host_id_(blink::mojom::kAppCacheNoHostId),
-      spawning_process_id_(0),
       parent_host_id_(blink::mojom::kAppCacheNoHostId),
       parent_process_id_(0),
       pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
@@ -80,6 +79,7 @@ AppCacheHost::AppCacheHost(int host_id,
       main_resource_was_namespace_entry_(false),
       main_resource_blocked_(false),
       associated_cache_info_pending_(false),
+      binding_(this),
       weak_factory_(this) {
   service_->AddObserver(this);
 }
@@ -108,12 +108,23 @@ AppCacheHost::~AppCacheHost() {
     std::move(pending_start_update_callback_).Run(false);
 }
 
+void AppCacheHost::BindRequest(blink::mojom::AppCacheHostRequest request) {
+  binding_.Bind(std::move(request));
+  // Unretained is safe because |this| will outlive |binding_|.
+  binding_.set_connection_error_handler(
+      base::BindOnce(&AppCacheHost::Unregister, base::Unretained(this)));
+}
+
 void AppCacheHost::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
 void AppCacheHost::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void AppCacheHost::Unregister() {
+  service_->GetBackend(process_id_)->UnregisterHost(host_id_);
 }
 
 void AppCacheHost::SelectCache(const GURL& document_url,
@@ -229,7 +240,7 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
   SelectCache(document_url, blink::mojom::kAppCacheNoCacheId, GURL());
 }
 
-void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
+void AppCacheHost::GetStatus(GetStatusCallback callback) {
   if (!pending_start_update_callback_.is_null() ||
       !pending_swap_cache_callback_.is_null() ||
       !pending_get_status_callback_.is_null()) {
@@ -249,10 +260,10 @@ void AppCacheHost::GetStatusWithCallback(GetStatusCallback callback) {
 void AppCacheHost::DoPendingGetStatus() {
   DCHECK_EQ(false, pending_get_status_callback_.is_null());
 
-  std::move(pending_get_status_callback_).Run(GetStatus());
+  std::move(pending_get_status_callback_).Run(GetStatusSync());
 }
 
-void AppCacheHost::StartUpdateWithCallback(StartUpdateCallback callback) {
+void AppCacheHost::StartUpdate(StartUpdateCallback callback) {
   if (!pending_start_update_callback_.is_null() ||
       !pending_swap_cache_callback_.is_null() ||
       !pending_get_status_callback_.is_null()) {
@@ -284,7 +295,7 @@ void AppCacheHost::DoPendingStartUpdate() {
   std::move(pending_start_update_callback_).Run(success);
 }
 
-void AppCacheHost::SwapCacheWithCallback(SwapCacheCallback callback) {
+void AppCacheHost::SwapCache(SwapCacheCallback callback) {
   if (!pending_start_update_callback_.is_null() ||
       !pending_swap_cache_callback_.is_null() ||
       !pending_get_status_callback_.is_null()) {
@@ -321,14 +332,12 @@ void AppCacheHost::DoPendingSwapCache() {
   std::move(pending_swap_cache_callback_).Run(success);
 }
 
-void AppCacheHost::SetSpawningHostId(
-    int spawning_process_id, int spawning_host_id) {
-  spawning_process_id_ = spawning_process_id;
+void AppCacheHost::SetSpawningHostId(int spawning_host_id) {
   spawning_host_id_ = spawning_host_id;
 }
 
 const AppCacheHost* AppCacheHost::GetSpawningHost() const {
-  AppCacheBackendImpl* backend = service_->GetBackend(spawning_process_id_);
+  AppCacheBackendImpl* backend = service_->GetBackend(process_id_);
   return backend ? backend->GetHost(spawning_host_id_) : nullptr;
 }
 
@@ -336,6 +345,20 @@ AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
   DCHECK(is_for_dedicated_worker());
   AppCacheBackendImpl* backend = service_->GetBackend(parent_process_id_);
   return backend ? backend->GetHost(parent_host_id_) : nullptr;
+}
+
+void AppCacheHost::GetResourceList(GetResourceListCallback callback) {
+  std::vector<blink::mojom::AppCacheResourceInfo> params;
+  std::vector<blink::mojom::AppCacheResourceInfoPtr> out;
+
+  GetResourceListSync(&params);
+
+  // Box up params for output.
+  out.reserve(params.size());
+  for (auto& p : params) {
+    out.emplace_back(base::in_place, std::move(p));
+  }
+  std::move(callback).Run(std::move(out));
 }
 
 std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
@@ -367,13 +390,13 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
   return nullptr;
 }
 
-void AppCacheHost::GetResourceList(
+void AppCacheHost::GetResourceListSync(
     std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos) {
   if (associated_cache_.get() && associated_cache_->is_complete())
     associated_cache_->ToResourceInfoVector(resource_infos);
 }
 
-blink::mojom::AppCacheStatus AppCacheHost::GetStatus() {
+blink::mojom::AppCacheStatus AppCacheHost::GetStatusSync() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
   if (!cache)
@@ -527,7 +550,7 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
   if (associated_cache_info_pending_ && associated_cache_.get() &&
       associated_cache_->is_complete()) {
     blink::mojom::AppCacheInfoPtr info = CreateCacheInfo(
-        associated_cache_.get(), preferred_manifest_url_, GetStatus());
+        associated_cache_.get(), preferred_manifest_url_, GetStatusSync());
     associated_cache_info_pending_ = false;
     // In the network service world, we need to pass the URLLoaderFactory
     // instance to the renderer which it can use to request subresources.
@@ -634,7 +657,7 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
     cache->AssociateHost(this);
 
   blink::mojom::AppCacheInfoPtr info =
-      CreateCacheInfo(cache, manifest_url, GetStatus());
+      CreateCacheInfo(cache, manifest_url, GetStatusSync());
   // In the network service world, we need to pass the URLLoaderFactory
   // instance to the renderer which it can use to request subresources.
   // This ensures that they can be served out of the AppCache.

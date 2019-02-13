@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -181,7 +182,7 @@ class AppCacheHostTest : public testing::Test {
   MockFrontend mock_frontend_;
 
   // Mock callbacks we expect to receive from the 'host'
-  content::GetStatusCallback get_status_callback_;
+  blink::mojom::AppCacheHost::GetStatusCallback get_status_callback_;
 
   blink::mojom::AppCacheStatus last_status_result_;
   bool last_swap_result_;
@@ -202,18 +203,18 @@ TEST_F(AppCacheHostTest, Basic) {
   // See that the callbacks are delivered immediately
   // and respond as if there is no cache selected.
   last_status_result_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  host.GetStatusWithCallback(std::move(get_status_callback_));
+  host.GetStatus(std::move(get_status_callback_));
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED,
             last_status_result_);
 
   last_start_result_ = true;
-  host.StartUpdateWithCallback(base::BindOnce(
-      &AppCacheHostTest::StartUpdateCallback, base::Unretained(this)));
+  host.StartUpdate(base::BindOnce(&AppCacheHostTest::StartUpdateCallback,
+                                  base::Unretained(this)));
   EXPECT_FALSE(last_start_result_);
 
   last_swap_result_ = true;
-  host.SwapCacheWithCallback(base::BindOnce(
-      &AppCacheHostTest::SwapCacheCallback, base::Unretained(this)));
+  host.SwapCache(base::BindOnce(&AppCacheHostTest::SwapCacheCallback,
+                                base::Unretained(this)));
   EXPECT_FALSE(last_swap_result_);
 }
 
@@ -338,7 +339,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 
   // The callback should not occur until we finish cache selection.
   last_status_result_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  host.GetStatusWithCallback(std::move(get_status_callback_));
+  host.GetStatus(std::move(get_status_callback_));
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
             last_status_result_);
 
@@ -370,7 +371,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
   // The callback should not occur until we finish cache selection.
   last_status_result_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
-  host.GetStatusWithCallback(std::move(get_status_callback_));
+  host.GetStatus(std::move(get_status_callback_));
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE,
             last_status_result_);
 
@@ -413,7 +414,7 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   host.AssociateCompleteCache(cache1.get());
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
   EXPECT_EQ(blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE,
-            host.GetStatus());
+            host.GetStatusSync());
   // verify OnCacheSelected was called
   EXPECT_EQ(host.host_id(), mock_frontend_.last_host_id_);
   EXPECT_EQ(cache1->cache_id(), mock_frontend_.last_cache_id_);
@@ -580,19 +581,15 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
 
 TEST_F(AppCacheHostTest, SelectCacheTwice) {
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
-
-  AppCacheBackendImpl backend(&service_, kProcessIdForTest);
-  backend.set_frontend_for_testing(&mock_frontend_);
-  backend.RegisterHost(kHostIdForTest, kRenderFrameIdForTest);
-
-  blink::mojom::AppCacheBackendPtr backend_ptr;
-  mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(
-      &backend, mojo::MakeRequest(&backend_ptr));
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
+  blink::mojom::AppCacheHostPtr host_ptr;
+  host.BindRequest(mojo::MakeRequest(&host_ptr));
 
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    backend_ptr->SelectCache(kHostIdForTest, kDocAndOriginUrl,
-                             blink::mojom::kAppCacheNoCacheId, GURL());
+    host_ptr->SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                          GURL());
 
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(bad_message_observer.got_bad_message());
@@ -601,21 +598,20 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
   // Select methods should bail if cache has already been selected.
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    backend_ptr->SelectCache(kHostIdForTest, kDocAndOriginUrl,
-                             blink::mojom::kAppCacheNoCacheId, GURL());
+    host_ptr->SelectCache(kDocAndOriginUrl, blink::mojom::kAppCacheNoCacheId,
+                          GURL());
     EXPECT_EQ("ACH_SELECT_CACHE", bad_message_observer.WaitForBadMessage());
   }
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    backend_ptr->SelectCacheForSharedWorker(kHostIdForTest,
-                                            blink::mojom::kAppCacheNoCacheId);
+    host_ptr->SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId);
     EXPECT_EQ("ACH_SELECT_CACHE_FOR_SHARED_WORKER",
               bad_message_observer.WaitForBadMessage());
   }
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    backend_ptr->MarkAsForeignEntry(kHostIdForTest, kDocAndOriginUrl,
-                                    blink::mojom::kAppCacheNoCacheId);
+    host_ptr->MarkAsForeignEntry(kDocAndOriginUrl,
+                                 blink::mojom::kAppCacheNoCacheId);
     EXPECT_EQ("ACH_MARK_AS_FOREIGN_ENTRY",
               bad_message_observer.WaitForBadMessage());
   }
@@ -629,19 +625,14 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
   const int kCacheId = 22;
   const GURL kDocumentURL("http://origin/document");
   scoped_refptr<AppCache> cache = new AppCache(service_.storage(), kCacheId);
-
-  AppCacheBackendImpl backend(&service_, kProcessIdForTest);
-  backend.set_frontend_for_testing(&mock_frontend_);
-  backend.RegisterHost(kHostIdForTest, kRenderFrameIdForTest);
-
-  blink::mojom::AppCacheBackendPtr backend_ptr;
-  mojo::Binding<blink::mojom::AppCacheBackend> backend_binding(
-      &backend, mojo::MakeRequest(&backend_ptr));
+  AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    &mock_frontend_, &service_);
+  blink::mojom::AppCacheHostPtr host_ptr;
+  host.BindRequest(mojo::MakeRequest(&host_ptr));
 
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    backend_ptr->SelectCache(kHostIdForTest, kDocAndOriginUrl, kCacheId,
-                             GURL());
+    host_ptr->SelectCache(kDocAndOriginUrl, kCacheId, GURL());
 
     EXPECT_EQ("ACH_SELECT_CACHE_ID_NOT_OWNED",
               bad_message_observer.WaitForBadMessage());

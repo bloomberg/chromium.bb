@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/gurl.h"
@@ -58,16 +59,11 @@ namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
 }
 
-using GetStatusCallback =
-    base::OnceCallback<void(blink::mojom::AppCacheStatus)>;
-using StartUpdateCallback = base::OnceCallback<void(bool)>;
-using SwapCacheCallback = base::OnceCallback<void(bool)>;
-
 // Server-side representation of an application cache host.
-class CONTENT_EXPORT AppCacheHost
-    : public AppCacheStorage::Delegate,
-      public AppCacheGroup::UpdateObserver,
-      public AppCacheServiceImpl::Observer {
+class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
+                                    public AppCacheStorage::Delegate,
+                                    public AppCacheGroup::UpdateObserver,
+                                    public AppCacheServiceImpl::Observer {
  public:
   class CONTENT_EXPORT Observer {
    public:
@@ -87,27 +83,27 @@ class CONTENT_EXPORT AppCacheHost
                AppCacheServiceImpl* service);
   ~AppCacheHost() override;
 
+  void BindRequest(blink::mojom::AppCacheHostRequest request);
+
   // Adds/removes an observer, the AppCacheHost does not take
   // ownership of the observer.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Support for cache selection and scriptable method calls. These methods
-  // call mojo::ReportBadMessage if their preconditions have been broken.
+  void Unregister();
+
+  // blink::mojom::AppCacheHost
   void SelectCache(const GURL& document_url,
                    const int64_t cache_document_was_loaded_from,
-                   const GURL& manifest_url);
-  void SelectCacheForSharedWorker(int64_t appcache_id);
+                   const GURL& manifest_url) override;
+  void SelectCacheForSharedWorker(int64_t appcache_id) override;
   void MarkAsForeignEntry(const GURL& document_url,
-                          int64_t cache_document_was_loaded_from);
-  void GetStatusWithCallback(GetStatusCallback callback);
-  void StartUpdateWithCallback(StartUpdateCallback callback);
-  void SwapCacheWithCallback(SwapCacheCallback callback);
-
-  // Called prior to the main resource load. When the system contains multiple
-  // candidates for a main resource load, the appcache preferred by the host
-  // that created this host is used to break ties.
-  void SetSpawningHostId(int spawning_process_id, int spawning_host_id);
+                          int64_t cache_document_was_loaded_from) override;
+  void GetStatus(GetStatusCallback callback) override;
+  void StartUpdate(StartUpdateCallback callback) override;
+  void SwapCache(SwapCacheCallback callback) override;
+  void SetSpawningHostId(int spawning_host_id) override;
+  void GetResourceList(GetResourceListCallback callback) override;
 
   // May return NULL if the spawning host context has been closed, or if a
   // spawning host context was never identified.
@@ -128,7 +124,7 @@ class CONTENT_EXPORT AppCacheHost
       bool should_reset_appcache);
 
   // Support for devtools inspecting appcache resources.
-  void GetResourceList(
+  void GetResourceListSync(
       std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos);
 
   // Breaks any existing association between this host and a cache.
@@ -235,7 +231,7 @@ class CONTENT_EXPORT AppCacheHost
   friend class content::AppCacheRequestHandlerTest;
   friend class content::appcache_update_job_unittest::AppCacheUpdateJobTest;
 
-  blink::mojom::AppCacheStatus GetStatus();
+  blink::mojom::AppCacheStatus GetStatusSync();
   void LoadSelectedCache(int64_t cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
 
@@ -284,7 +280,6 @@ class CONTENT_EXPORT AppCacheHost
   // preferred by our creator influences which cache our main resource
   // should be loaded from.
   int spawning_host_id_;
-  int spawning_process_id_;
   GURL preferred_manifest_url_;
 
   // Hosts for dedicated workers are special cased to shunt
@@ -405,6 +400,8 @@ class CONTENT_EXPORT AppCacheHost
 
   // In the network service world points to the subresource URLLoaderFactory.
   base::WeakPtr<AppCacheSubresourceURLFactory> subresource_url_factory_;
+
+  mojo::Binding<blink::mojom::AppCacheHost> binding_;
 
   base::WeakPtrFactory<AppCacheHost> weak_factory_;
 

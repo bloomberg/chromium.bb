@@ -152,69 +152,101 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   SingletonEnv().appcache_service->CreateBackend(/*process_id=*/1,
                                                  mojo::MakeRequest(&host));
 
+  std::map<int, blink::mojom::AppCacheHostPtr> registered_hosts;
   for (const fuzzing::proto::Command& command : session.commands()) {
     switch (command.command_case()) {
       case fuzzing::proto::Command::kRegisterHost: {
         int32_t host_id = command.register_host().host_id();
-        host->RegisterHost(host_id, MSG_ROUTING_NONE);
+        host->RegisterHost(mojo::MakeRequest(&registered_hosts[host_id]),
+                           host_id, MSG_ROUTING_NONE);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {
         int32_t host_id = command.unregister_host().host_id();
-        host->UnregisterHost(host_id);
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+
+        registered_hosts.erase(host_it);
         break;
       }
       case fuzzing::proto::Command::kSelectCache: {
         int32_t host_id = command.select_cache().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         int32_t from_id = command.select_cache().from_id();
         GURL document_url = GURL(GetUrl(command.select_cache().document_url()));
         GURL opt_manifest_url =
             GURL(GetUrl(command.select_cache().opt_manifest_url()));
-        host->SelectCache(host_id, document_url, from_id, opt_manifest_url);
+
+        host_it->second->SelectCache(document_url, from_id, opt_manifest_url);
         break;
       }
       case fuzzing::proto::Command::kSetSpawningHostId: {
         int32_t host_id = command.set_spawning_host_id().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         int32_t spawning_host_id =
             command.set_spawning_host_id().spawning_host_id();
-        host->SetSpawningHostId(host_id, spawning_host_id);
+        host_it->second->SetSpawningHostId(spawning_host_id);
         break;
       }
       case fuzzing::proto::Command::kSelectCacheForSharedWorker: {
         int32_t host_id = command.select_cache_for_shared_worker().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         int64_t cache_document_was_loaded_from =
             command.select_cache_for_shared_worker()
                 .cache_document_was_loaded_from();
-        host->SelectCacheForSharedWorker(host_id,
-                                         cache_document_was_loaded_from);
+        host_it->second->SelectCacheForSharedWorker(
+            cache_document_was_loaded_from);
         break;
       }
       case fuzzing::proto::Command::kMarkAsForeignEntry: {
         int32_t host_id = command.mark_as_foreign_entry().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         GURL url(GetUrl(command.mark_as_foreign_entry().document_url()));
         int64_t cache_document_was_loaded_from =
             command.mark_as_foreign_entry().cache_document_was_loaded_from();
-        host->MarkAsForeignEntry(host_id, url, cache_document_was_loaded_from);
+        host_it->second->MarkAsForeignEntry(url,
+                                            cache_document_was_loaded_from);
         break;
       }
       case fuzzing::proto::Command::kGetStatus: {
         int32_t host_id = command.get_status().host_id();
-        host->GetStatus(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->GetStatus(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kStartUpdate: {
         int32_t host_id = command.start_update().host_id();
-        host->StartUpdate(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->StartUpdate(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kSwapCache: {
         int32_t host_id = command.swap_cache().host_id();
-        host->SwapCache(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->SwapCache(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kGetResourceList: {
         int32_t host_id = command.get_resource_list().host_id();
-        host->GetResourceList(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->GetResourceList(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kDoRequest: {
