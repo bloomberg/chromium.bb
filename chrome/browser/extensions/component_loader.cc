@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -295,94 +294,17 @@ bool ComponentLoader::Exists(const std::string& id) const {
   return false;
 }
 
-void ComponentLoader::AddChromeCameraApp() {
-#if defined(OS_CHROMEOS)
-  base::FilePath resources_path;
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddComponentFromDir(
-        resources_path.Append(extension_misc::kChromeCameraAppPath),
-        extension_misc::kChromeCameraAppId, base::RepeatingClosure());
-  }
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ComponentLoader::AddFileManagerExtension() {
-#if defined(OS_CHROMEOS)
-  AddWithNameAndDescription(
-      IDR_FILEMANAGER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("file_manager")),
-      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_NAME),
-      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_DESCRIPTION));
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ComponentLoader::AddVideoPlayerExtension() {
-#if defined(OS_CHROMEOS)
-  Add(IDR_VIDEO_PLAYER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("video_player")));
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ComponentLoader::AddAudioPlayerExtension() {
-#if defined(OS_CHROMEOS)
-  Add(IDR_AUDIO_PLAYER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("audio_player")));
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ComponentLoader::AddGalleryExtension() {
-#if defined(OS_CHROMEOS)
-  Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
-#endif
-}
-
-void ComponentLoader::AddZipArchiverExtension() {
-#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
-  base::FilePath resources_path;
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddWithNameAndDescriptionFromDir(
-        resources_path.Append(extension_misc::kZipArchiverExtensionPath),
-        extension_misc::kZipArchiverExtensionId,
-        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
-        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
-  }
-#endif  // defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
-}
-
-void ComponentLoader::AddHangoutServicesExtension() {
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+void ComponentLoader::AddHangoutServicesExtension() {
   Add(IDR_HANGOUT_SERVICES_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("hangout_services")));
-#endif
 }
-
-void ComponentLoader::AddImageLoaderExtension() {
-#if defined(OS_CHROMEOS)
-  Add(IDR_IMAGE_LOADER_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("image_loader")));
-#endif  // defined(OS_CHROMEOS)
-}
+#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 
 void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
   Add(IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("network_speech_synthesis")));
 }
-
-#if defined(OS_CHROMEOS)
-void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
-  AddComponentFromDir(
-      base::FilePath(extension_misc::kGoogleSpeechSynthesisExtensionPath),
-      extension_misc::kGoogleSpeechSynthesisExtensionId,
-      base::BindRepeating(&ComponentLoader::EnableFileSystemInGuestMode,
-                          weak_factory_.GetWeakPtr(),
-                          extension_misc::kGoogleSpeechSynthesisExtensionId));
-
-  AddComponentFromDir(
-      base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
-      extension_misc::kEspeakSpeechSynthesisExtensionId,
-      base::RepeatingClosure());
-}
-#endif
 
 void ComponentLoader::AddWithNameAndDescription(
     int manifest_resource_id,
@@ -409,20 +331,14 @@ void ComponentLoader::AddWithNameAndDescription(
   }
 }
 
-void ComponentLoader::AddChromeApp() {
 #if BUILDFLAG(ENABLE_APP_LIST)
+void ComponentLoader::AddChromeApp() {
   AddWithNameAndDescription(
       IDR_CHROME_APP_MANIFEST, base::FilePath(FILE_PATH_LITERAL("chrome_app")),
       l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME),
       l10n_util::GetStringUTF8(IDS_CHROME_SHORTCUT_DESCRIPTION));
-#endif
 }
-
-void ComponentLoader::AddKeyboardApp() {
-#if defined(OS_CHROMEOS)
-  Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
-#endif
-}
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
 
 void ComponentLoader::AddWebStoreApp() {
 #if defined(OS_CHROMEOS)
@@ -435,6 +351,59 @@ void ComponentLoader::AddWebStoreApp() {
       l10n_util::GetStringUTF8(IDS_WEBSTORE_NAME_STORE),
       l10n_util::GetStringUTF8(IDS_WEBSTORE_APP_DESCRIPTION));
 }
+
+#if defined(OS_CHROMEOS)
+void ComponentLoader::AddFileManagerExtension() {
+  AddWithNameAndDescription(
+      IDR_FILEMANAGER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("file_manager")),
+      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_NAME),
+      l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_DESCRIPTION));
+}
+
+void ComponentLoader::AddVideoPlayerExtension() {
+  Add(IDR_VIDEO_PLAYER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("video_player")));
+}
+
+void ComponentLoader::AddAudioPlayerExtension() {
+  Add(IDR_AUDIO_PLAYER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("audio_player")));
+}
+
+void ComponentLoader::AddGalleryExtension() {
+  Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
+}
+
+void ComponentLoader::AddImageLoaderExtension() {
+  Add(IDR_IMAGE_LOADER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("image_loader")));
+}
+
+void ComponentLoader::AddKeyboardApp() {
+  Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
+}
+
+void ComponentLoader::AddChromeCameraApp() {
+  base::FilePath resources_path;
+  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
+    AddComponentFromDir(
+        resources_path.Append(extension_misc::kChromeCameraAppPath),
+        extension_misc::kChromeCameraAppId, base::RepeatingClosure());
+  }
+}
+
+void ComponentLoader::AddZipArchiverExtension() {
+  base::FilePath resources_path;
+  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
+    AddWithNameAndDescriptionFromDir(
+        resources_path.Append(extension_misc::kZipArchiverExtensionPath),
+        extension_misc::kZipArchiverExtensionId,
+        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
+        l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 scoped_refptr<const Extension> ComponentLoader::CreateExtension(
     const ComponentExtensionInfo& info, std::string* utf8_error) {
@@ -474,6 +443,8 @@ void ComponentLoader::AddDefaultComponentExtensions(
     Add(IDR_CROSH_BUILTIN_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/crosh_builtin")));
   }
+
+  AddKeyboardApp();
 #else  // defined(OS_CHROMEOS)
   DCHECK(!skip_session_components);
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -485,10 +456,10 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
   if (!skip_session_components) {
     AddWebStoreApp();
+#if BUILDFLAG(ENABLE_APP_LIST)
     AddChromeApp();
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
   }
-
-  AddKeyboardApp();
 
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
 
@@ -507,11 +478,13 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
   if (skip_session_components)
     return;
 
+#if defined(OS_CHROMEOS)
   // Component extensions needed for kiosk apps.
   AddFileManagerExtension();
 
   // Add virtual keyboard.
   AddKeyboardApp();
+#endif  // defined(OS_CHROMEOS)
 
   AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode();
 
@@ -547,16 +520,22 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
   if (!skip_session_components) {
+#if defined(OS_CHROMEOS)
     AddChromeCameraApp();
     AddVideoPlayerExtension();
     AddAudioPlayerExtension();
     AddFileManagerExtension();
     AddGalleryExtension();
-    AddZipArchiverExtension();
-
-    AddHangoutServicesExtension();
     AddImageLoaderExtension();
 
+#if BUILDFLAG(ENABLE_NACL)
+    AddZipArchiverExtension();
+#endif  // BUILDFLAG(ENABLE_NACL)
+#endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+    AddHangoutServicesExtension();
+#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
     bool install_feedback = enable_background_extensions_during_testing;
 #if defined(GOOGLE_CHROME_BUILD)
     install_feedback = true;
@@ -627,7 +606,9 @@ void ComponentLoader::
     return;
   }
 
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
   AddHangoutServicesExtension();
+#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
@@ -635,25 +616,6 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
     extension_service_->
         RemoveComponentExtension(component->extension_id);
   }
-}
-
-void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
-#if defined(OS_CHROMEOS)
-  if (!IsNormalSession()) {
-    // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
-    // the extension. Some component extensions don't work without temporary
-    // file system access. Make sure temporary file system is enabled in the off
-    // the record browser context (as that is the one used in guest session).
-    content::BrowserContext* off_the_record_context =
-        ExtensionsBrowserClient::Get()->GetOffTheRecordContext(profile_);
-    GURL site = content::SiteInstance::GetSiteForURL(
-        off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
-    storage::FileSystemContext* file_system_context =
-        content::BrowserContext::GetStoragePartitionForSite(
-            off_the_record_context, site)->GetFileSystemContext();
-    file_system_context->EnableTemporaryFileSystemInIncognito();
-  }
-#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -688,6 +650,38 @@ void ComponentLoader::AddWithNameAndDescriptionFromDir(
       base::Bind(&ComponentLoader::FinishAddComponentFromDir,
                  weak_factory_.GetWeakPtr(), root_directory, extension_id,
                  name_string, description_string, base::Closure()));
+}
+
+void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
+  AddComponentFromDir(
+      base::FilePath(extension_misc::kGoogleSpeechSynthesisExtensionPath),
+      extension_misc::kGoogleSpeechSynthesisExtensionId,
+      base::BindRepeating(&ComponentLoader::EnableFileSystemInGuestMode,
+                          weak_factory_.GetWeakPtr(),
+                          extension_misc::kGoogleSpeechSynthesisExtensionId));
+
+  AddComponentFromDir(
+      base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
+      extension_misc::kEspeakSpeechSynthesisExtensionId,
+      base::RepeatingClosure());
+}
+
+void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
+  if (!IsNormalSession()) {
+    // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
+    // the extension. Some component extensions don't work without temporary
+    // file system access. Make sure temporary file system is enabled in the off
+    // the record browser context (as that is the one used in guest session).
+    content::BrowserContext* off_the_record_context =
+        ExtensionsBrowserClient::Get()->GetOffTheRecordContext(profile_);
+    GURL site = content::SiteInstance::GetSiteForURL(
+        off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
+    storage::FileSystemContext* file_system_context =
+        content::BrowserContext::GetStoragePartitionForSite(
+            off_the_record_context, site)
+            ->GetFileSystemContext();
+    file_system_context->EnableTemporaryFileSystemInIncognito();
+  }
 }
 
 void ComponentLoader::FinishAddComponentFromDir(
