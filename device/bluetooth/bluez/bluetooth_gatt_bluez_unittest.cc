@@ -170,7 +170,7 @@ class BluetoothGattBlueZTest : public testing::Test {
     properties2->connected.ReplaceValue(true);
 
     return adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kDualAddress);
-  };
+  }
 
   void BatteryServiceShouldBeComplete(BluetoothDevice* device) {
     ASSERT_TRUE(device);
