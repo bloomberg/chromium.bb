@@ -681,7 +681,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // comments surrounding their declaration.
 
   // Document base URL.
-  // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#document-base-url
+  // https://html.spec.whatwg.org/C/#document-base-url
   const KURL& BaseURL() const final;
   void SetBaseURLOverride(const KURL&);
   const KURL& BaseURLOverride() const { return base_url_override_; }
@@ -690,7 +690,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void ProcessBaseElement();
 
   // Fallback base URL.
-  // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#fallback-base-url
+  // https://html.spec.whatwg.org/C/#fallback-base-url
   KURL FallbackBaseURL() const;
 
   // Creates URL based on passed relative url and this documents base URL.
@@ -743,7 +743,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool InNoQuirksMode() const { return compatibility_mode_ == kNoQuirksMode; }
   bool InLineHeightQuirksMode() const { return !InNoQuirksMode(); }
 
-  // https://html.spec.whatwg.org/multipage/dom.html#documentreadystate
+  // https://html.spec.whatwg.org/C/#documentreadystate
   enum DocumentReadyState { kLoading, kInteractive, kComplete };
 
   void SetReadyState(DocumentReadyState);
@@ -969,7 +969,7 @@ class CORE_EXPORT Document : public ContainerNode,
   static bool HasValidNamespaceForAttributes(const QualifiedName&);
 
   // "body element" as defined by HTML5
-  // (https://html.spec.whatwg.org/multipage/dom.html#the-body-element-2).
+  // (https://html.spec.whatwg.org/C/#the-body-element-2).
   // That is, the first body or frameset child of the document element.
   HTMLElement* body() const;
 
@@ -1490,7 +1490,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(binji): See http://crbug.com/798572. This implementation shares the
   // same agent cluster ID for any one document. The proper implementation of
   // this function must follow the rules described here:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism.
+  // https://html.spec.whatwg.org/C/#integration-with-the-javascript-agent-cluster-formalism.
   //
   // Even with this simple implementation, we can prevent sharing
   // SharedArrayBuffers and WebAssembly modules with workers that happen to be

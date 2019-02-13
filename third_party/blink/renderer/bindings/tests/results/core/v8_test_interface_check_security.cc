@@ -734,7 +734,7 @@ void V8TestInterfaceCheckSecurity::CrossOriginNamedGetter(v8::Local<v8::Name> na
   }
 
   // HTML 7.2.3.3 CrossOriginGetOwnPropertyHelper ( O, P )
-  // https://html.spec.whatwg.org/multipage/browsers.html#crossorigingetownpropertyhelper-(-o,-p-)
+  // https://html.spec.whatwg.org/C/#crossorigingetownpropertyhelper-(-o,-p-)
   // step 3. If P is "then", @@toStringTag, @@hasInstance, or
   //   @@isConcatSpreadable, then return PropertyDescriptor{ [[Value]]:
   //   undefined, [[Writable]]: false, [[Enumerable]]: false,

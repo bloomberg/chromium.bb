@@ -515,7 +515,7 @@ class CORE_EXPORT HTMLMediaElement
   // Generally the presence of the loop attribute should be considered to mean
   // playback has not "ended", as "ended" and "looping" are mutually exclusive.
   // See
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#ended-playback
+  // https://html.spec.whatwg.org/C/#ended-playback
   enum class LoopCondition { kIncluded, kIgnored };
   bool EndedPlayback(LoopCondition = LoopCondition::kIncluded) const;
 

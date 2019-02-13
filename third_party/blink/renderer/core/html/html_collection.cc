@@ -336,7 +336,7 @@ Element* HTMLCollection::VirtualItemAfter(Element*) const {
   return nullptr;
 }
 
-// https://html.spec.whatwg.org/multipage/infrastructure.html#all-named-elements
+// https://html.spec.whatwg.org/C/#all-named-elements
 // The document.all collection returns only certain types of elements by name,
 // although it returns any type of element by id.
 static inline bool NameShouldBeVisibleInDocumentAll(

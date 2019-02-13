@@ -14,7 +14,7 @@
 namespace blink {
 
 // Describes what elements a custom element definition applies to.
-// https://html.spec.whatwg.org/multipage/scripting.html#custom-elements-core-concepts
+// https://html.spec.whatwg.org/C/#custom-elements-core-concepts
 //
 // There are two kinds of definitions:
 //

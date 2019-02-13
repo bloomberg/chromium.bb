@@ -871,7 +871,7 @@ CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
 }
 
 // "create an element for a token"
-// https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
+// https://html.spec.whatwg.org/C/#create-an-element-for-the-token
 Element* HTMLConstructionSite::CreateElement(
     AtomicHTMLToken* token,
     const AtomicString& namespace_uri) {

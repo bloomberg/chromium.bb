@@ -227,7 +227,7 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
 
   // Skip DOM mutation events if the modification is from parser.
   // Note that mutation observer events will still fire.
-  // Spec: https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
+  // Spec: https://html.spec.whatwg.org/C/#insert-a-character
   if (source != kUpdateFromParser && !IsInShadowTree()) {
     if (GetDocument().HasListenerType(
             Document::kDOMCharacterDataModifiedListener)) {

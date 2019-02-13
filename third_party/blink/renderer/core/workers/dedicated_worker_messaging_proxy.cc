@@ -179,7 +179,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   // "Thus, error reports propagate up to the chain of dedicated workers up to
   // the original Document, even if some of the workers along this chain have
   // been terminated and garbage collected."
-  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
+  // https://html.spec.whatwg.org/C/#runtime-script-errors-2
   ErrorEvent* event =
       ErrorEvent::Create(error_message, location->Clone(), nullptr);
   if (worker_object_->DispatchEvent(*event) !=
@@ -194,7 +194,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
 
   // The HTML spec requires to queue an error event using the DOM manipulation
   // task source.
-  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
+  // https://html.spec.whatwg.org/C/#runtime-script-errors-2
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBind(&DedicatedWorkerObjectProxy::ProcessUnhandledException,

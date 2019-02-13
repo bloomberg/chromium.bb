@@ -284,7 +284,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
                                      document.Fetcher());
 }
 
-// https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload
+// https://html.spec.whatwg.org/C/#link-type-modulepreload
 void PreloadHelper::ModulePreloadIfNeeded(
     const LinkLoadParameters& params,
     Document& document,

@@ -39,7 +39,7 @@ entries with the same primary key - *multiEntry* indexes map each element inside
 an IDB value array to an index entry.
 
 IDB *values* are [a fairly large subset of JavaScript's supported
-types](https://html.spec.whatwg.org/multipage/structured-data.html#serializable-objects).
+types](https://html.spec.whatwg.org/C/#serializable-objects).
 There are no object store-level constraints on value types, so the values in a
 store can be pretty heterogeneous. By contrast, SQL tables have schemas which
 heavily constrain the rows.

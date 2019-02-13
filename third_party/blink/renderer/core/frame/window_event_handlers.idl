@@ -27,7 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#windoweventhandlers
+// https://html.spec.whatwg.org/C/#windoweventhandlers
 
 [
     LegacyTreatAsPartialInterface,

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/canvas.html#canvasrenderingcontext2d
+// https://html.spec.whatwg.org/C/#canvasrenderingcontext2d
 
 // The spec specifies:
 //    typedef (HTMLImageElement or

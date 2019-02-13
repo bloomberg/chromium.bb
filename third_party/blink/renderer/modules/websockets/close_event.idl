@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/comms.html#the-closeevent-interfaces
+// https://html.spec.whatwg.org/C/#the-closeevent-interfaces
 
 [
     Constructor(DOMString type, optional CloseEventInit eventInitDict),

@@ -18,15 +18,15 @@ implementation is [LocalFrame].
 [Frame]: https://cs.chromium.org/src/third_party/blink/renderer/core/frame/frame.h
 [LocalFrame]: https://cs.chromium.org/src/third_party/blink/renderer/core/frame/local_frame.h
 
-### [origins](https://html.spec.whatwg.org/multipage/browsers.html#concept-origin)
+### [origins](https://html.spec.whatwg.org/C/#concept-origin)
 
 An origin corresponds to the [SecurityOrigin]. You can test for [same-origin]
 using `SecurityOrigin::canAccess` and for [same-origin domain] using
 `SecurityOrigin::isSameSchemeHostPort`.
 
 [SecurityOrigin]: https://cs.chromium.org/src/third_party/blink/renderer/platform/weborigin/security_origin.h
-[same-origin]: https://html.spec.whatwg.org/multipage/browsers.html#same-origin
-[same-origin domain]: https://html.spec.whatwg.org/multipage/browsers.html#same-origin-domain
+[same-origin]: https://html.spec.whatwg.org/C/#same-origin
+[same-origin domain]: https://html.spec.whatwg.org/C/#same-origin-domain
 
 
 ### [Window object](https://html.spec.whatwg.org/C/#window)
@@ -42,11 +42,11 @@ implementation is [LocalDOMWindow].
 The WindowProxy is part of the bindings implemented by the
 [WindowProxy class](https://cs.chromium.org/Source/bindings/core/v8/WindowProxy.h).
 
-### [canvas](https://html.spec.whatwg.org/multipage/scripting.html#the-canvas-element)
+### [canvas](https://html.spec.whatwg.org/C/#the-canvas-element)
 
 An HTML element into which drawing can be performed imperatively via
 JavaScript. Multiple
-[context types](https://html.spec.whatwg.org/multipage/scripting.html#dom-canvas-getcontext)
+[context types](https://html.spec.whatwg.org/C/#dom-canvas-getcontext)
 are supported for different use cases.
 
 The main element's sources are in [HTMLCanvasElement]. Contexts are implemented
@@ -58,7 +58,7 @@ via modules. The top-level module is [HTMLCanvasElementModule].
 
 The [2D canvas context] is implemented in [modules/canvas2d].
 
-[2D canvas context]: https://html.spec.whatwg.org/multipage/scripting.html#canvasrenderingcontext2d
+[2D canvas context]: https://html.spec.whatwg.org/C/#canvasrenderingcontext2d
 [modules/canvas2d]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/canvas2d/
 
 

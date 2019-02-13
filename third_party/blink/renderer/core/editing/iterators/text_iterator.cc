@@ -653,7 +653,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineBeforeNode(
 }
 
 static bool ShouldEmitExtraNewlineForNode(const Node* node) {
-  // https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
+  // https://html.spec.whatwg.org/C/#the-innertext-idl-attribute
   // Append two required linebreaks after a P element.
   LayoutObject* r = node->GetLayoutObject();
   if (!r || !r->IsBox())

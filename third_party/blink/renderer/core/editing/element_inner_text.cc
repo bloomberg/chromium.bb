@@ -35,7 +35,7 @@ namespace {
 
 // The implementation of Element#innerText algorithm[1].
 // [1]
-// https://html.spec.whatwg.org/multipage/dom.html#the-innertext-idl-attribute
+// https://html.spec.whatwg.org/C/#the-innertext-idl-attribute
 class ElementInnerTextCollector final {
  public:
   ElementInnerTextCollector() = default;
@@ -137,7 +137,7 @@ bool ElementInnerTextCollector::HasDisplayContentsStyle(const Node& node) {
 // Note: Just being off-screen does not mean the element is not being rendered.
 // The presence of the "hidden" attribute normally means the element is not
 // being rendered, though this might be overridden by the style sheets.
-// From https://html.spec.whatwg.org/multipage/rendering.html#being-rendered
+// From https://html.spec.whatwg.org/C/#being-rendered
 // static
 bool ElementInnerTextCollector::IsBeingRendered(const Node& node) {
   return node.GetLayoutObject();

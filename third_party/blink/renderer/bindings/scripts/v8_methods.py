@@ -434,7 +434,7 @@ def v8_value_to_local_cpp_value(interface_name, method, argument, index):
 
     # History.pushState and History.replaceState are explicitly specified as
     # serializing the value for storage. The default is to not serialize for
-    # storage. See https://html.spec.whatwg.org/multipage/browsers.html#dom-history-pushstate
+    # storage. See https://html.spec.whatwg.org/C/#dom-history-pushstate
     if idl_type.name == 'SerializedScriptValue':
         for_storage = (interface_name == 'History' and
                        method.name in ('pushState', 'replaceState'))

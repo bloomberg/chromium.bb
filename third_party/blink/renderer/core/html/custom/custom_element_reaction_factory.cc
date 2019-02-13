@@ -23,7 +23,7 @@ class CustomElementUpgradeReaction final : public CustomElementReaction {
   void Invoke(Element& element) override {
     // Don't call Upgrade() if it's already upgraded. Multiple upgrade reactions
     // could be enqueued because the state changes in step 10 of upgrades.
-    // https://html.spec.whatwg.org/multipage/scripting.html#upgrades
+    // https://html.spec.whatwg.org/C/#upgrades
     if (element.GetCustomElementState() == CustomElementState::kUndefined) {
       // Don't upgrade elements inside an invisible-static tree, unless it was
       // triggered by CustomElementRegistry::upgrade.

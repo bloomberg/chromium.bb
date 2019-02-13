@@ -46,7 +46,7 @@ class KURL;
 class ExecutionContext;
 
 // Implementation of the AbstractWorker interface defined in the WebWorker HTML
-// spec: https://html.spec.whatwg.org/multipage/workers.html#abstractworker
+// spec: https://html.spec.whatwg.org/C/#abstractworker
 class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
                                    public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);

@@ -181,7 +181,7 @@ class CORE_EXPORT HTMLImageElement final
 
  protected:
   // Controls how an image element appears in the layout. See:
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#image-request
+  // https://html.spec.whatwg.org/C/#image-request
   enum class LayoutDisposition : uint8_t {
     // Displayed as a partially or completely loaded image. Corresponds to the
     // `current request` state being: `unavailable`, `partially available`, or

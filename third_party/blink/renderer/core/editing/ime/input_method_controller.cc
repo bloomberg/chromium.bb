@@ -321,7 +321,7 @@ int ComputeAutocapitalizeFlags(const Element* element) {
 
   // We set the autocapitalization flag corresponding to the "used
   // autocapitalization hint" for the focused element:
-  // https://html.spec.whatwg.org/multipage/interaction.html#used-autocapitalization-hint
+  // https://html.spec.whatwg.org/C/#used-autocapitalization-hint
   if (auto* input = ToHTMLInputElementOrNull(*html_element)) {
     const AtomicString& input_type = input->type();
     if (input_type == input_type_names::kEmail ||

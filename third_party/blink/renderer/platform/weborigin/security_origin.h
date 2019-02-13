@@ -55,7 +55,7 @@ struct SecurityOriginHash;
 // tuple, such as the tuple origin (https, chromium.org, null, null). However,
 // there are also opaque origins which do not have a corresponding tuple.
 //
-// See also: https://html.spec.whatwg.org/multipage/origin.html#concept-origin
+// See also: https://html.spec.whatwg.org/C/#concept-origin
 class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   WTF_MAKE_NONCOPYABLE(SecurityOrigin);
 

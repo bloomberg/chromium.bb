@@ -498,7 +498,7 @@ base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
 
   // This code implements <dialog> static position spec.
   // //
-  // https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element
+  // https://html.spec.whatwg.org/C/#the-dialog-element
   HTMLDialogElement* dialog_node = ToHTMLDialogElement(dialog.GetNode());
   if (dialog_node->GetCenteringMode() == HTMLDialogElement::kNotCentered)
     return base::nullopt;

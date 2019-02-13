@@ -208,7 +208,7 @@ void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   DCHECK(IsMainThread());
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
-  // https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface
+  // https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
@@ -320,7 +320,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
 
   // Creates 'outside settings' used in the "Processing model" algorithm in the
   // HTML spec:
-  // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+  // https://html.spec.whatwg.org/C/#worker-processing-model
   //
   // TODO(nhiroki): According to the spec, the 'outside settings' should
   // correspond to the Document that called 'new SharedWorker()'. However,

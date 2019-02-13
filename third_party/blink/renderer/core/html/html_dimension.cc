@@ -187,7 +187,7 @@ static bool ParseDimensionValue(const CharacterType* current,
   return true;
 }
 
-// https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-dimension-values
+// https://html.spec.whatwg.org/C/#rules-for-parsing-dimension-values
 bool ParseDimensionValue(const String& input, HTMLDimension& dimension) {
   if (input.IsEmpty())
     return false;

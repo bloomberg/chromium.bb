@@ -74,7 +74,7 @@ class CORE_EXPORT WorkletGlobalScope
 
   const base::UnguessableToken& GetAgentClusterID() const final {
     // Currently, worklet agents have no clearly defined owner. See
-    // https://html.spec.whatwg.org/multipage/webappapis.html#integration-with-the-javascript-agent-cluster-formalism
+    // https://html.spec.whatwg.org/C/#integration-with-the-javascript-agent-cluster-formalism
     //
     // However, it is intended that a SharedArrayBuffer can be shared with a
     // worklet, e.g. the AudioWorklet. If this WorkletGlobalScope's creation

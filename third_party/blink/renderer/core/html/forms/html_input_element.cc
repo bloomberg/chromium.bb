@@ -461,7 +461,7 @@ void HTMLInputElement::UpdateType() {
 
   ValueMode new_value_mode = input_type_->GetValueMode();
 
-  // https://html.spec.whatwg.org/multipage/forms.html#input-type-change
+  // https://html.spec.whatwg.org/C/#input-type-change
   //
   // 1. If the previous state of the element's type attribute put the value IDL
   // attribute in the value mode, and the element's value is not the empty

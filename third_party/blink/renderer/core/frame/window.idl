@@ -93,7 +93,7 @@
     void queueMicrotask(VoidFunction callback);
 
     // AnimationFrameProvider mixin
-    // https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames
+    // https://html.spec.whatwg.org/C/#animation-frames
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(FrameRequestCallback callback);
     void cancelAnimationFrame(long handle);
 

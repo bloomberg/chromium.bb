@@ -60,7 +60,7 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 // ScriptLoader creates a PendingScript in ScriptLoader::PrepareScript(), and
 // a Script is created via PendingScript::GetSource() when it becomes ready.
 // When "script is ready"
-// https://html.spec.whatwg.org/multipage/scripting.html#the-script-is-ready,
+// https://html.spec.whatwg.org/C/#the-script-is-ready,
 // PendingScriptClient is notified.
 class CORE_EXPORT PendingScript
     : public GarbageCollectedFinalized<PendingScript>,
@@ -91,7 +91,7 @@ class CORE_EXPORT PendingScript
   // Returns nullptr when "script's script is null", i.e. an error occurred.
   virtual Script* GetSource(const KURL& document_url) const = 0;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#the-script-is-ready
+  // https://html.spec.whatwg.org/C/#the-script-is-ready
   virtual bool IsReady() const = 0;
   virtual bool IsExternal() const = 0;
   virtual bool WasCanceled() const = 0;
@@ -101,7 +101,7 @@ class CORE_EXPORT PendingScript
 
   // Used only for tracing, and can return a null URL.
   // TODO(hiroshige): It's preferable to return the base URL consistently
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
+  // https://html.spec.whatwg.org/C/#concept-script-base-url
   // but it requires further refactoring.
   virtual KURL UrlForTracing() const = 0;
 
@@ -129,7 +129,7 @@ class CORE_EXPORT PendingScript
     return created_during_document_write_;
   }
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
+  // https://html.spec.whatwg.org/C/#execute-the-script-block
   // The single entry point of script execution.
   // PendingScript::Dispose() is called in ExecuteScriptBlock().
   //

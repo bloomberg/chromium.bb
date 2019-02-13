@@ -1626,7 +1626,7 @@ String AXNodeObject::StringValue() const {
   // time controls, by returning their value converted to text, with the
   // exception of checkboxes and radio buttons (which would return "on"), and
   // buttons which will return their name.
-  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-value
+  // https://html.spec.whatwg.org/C/#dom-input-value
   if (const auto* input = ToHTMLInputElementOrNull(node)) {
     if (input->type() != input_type_names::kButton &&
         input->type() != input_type_names::kCheckbox &&

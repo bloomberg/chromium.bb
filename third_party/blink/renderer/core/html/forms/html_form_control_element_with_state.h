@@ -60,7 +60,7 @@ class CORE_EXPORT HTMLFormControlElementWithState
  private:
   bool ShouldForceLegacyLayout() const final { return true; }
 
-  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill-anchor-mantle
+  // https://html.spec.whatwg.org/C/#autofill-anchor-mantle
   bool IsWearingAutofillAnchorMantle() const;
 };
 

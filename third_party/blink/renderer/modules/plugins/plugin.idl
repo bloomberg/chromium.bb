@@ -18,7 +18,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#plugins-2
+// https://html.spec.whatwg.org/C/#plugins-2
 
 [
     ImplementedAs=DOMPlugin,

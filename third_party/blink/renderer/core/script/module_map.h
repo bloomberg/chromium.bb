@@ -26,7 +26,7 @@ enum class ModuleGraphLevel;
 enum class ModuleScriptCustomFetchType;
 
 // A ModuleMap implements "module map" spec.
-// https://html.spec.whatwg.org/multipage/webappapis.html#module-map
+// https://html.spec.whatwg.org/C/#module-map
 class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
                                     public NameClient {
   class Entry;
@@ -41,7 +41,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "ModuleMap"; }
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
   void FetchSingleModuleScript(
       const ModuleScriptFetchRequest&,
       ResourceFetcher* fetch_client_settings_object_fetcher,

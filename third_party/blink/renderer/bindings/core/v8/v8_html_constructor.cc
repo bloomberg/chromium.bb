@@ -21,7 +21,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
+// https://html.spec.whatwg.org/C/#html-element-constructors
 void V8HTMLConstructor::HtmlConstructor(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     const WrapperTypeInfo& wrapper_type_info,

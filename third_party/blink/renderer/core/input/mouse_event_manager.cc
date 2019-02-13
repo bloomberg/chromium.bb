@@ -1036,7 +1036,7 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
     return WebInputEventResult::kNotHandled;
 
   // We should be setting relatedTarget correctly following the spec:
-  // https://html.spec.whatwg.org/multipage/interaction.html#dragevent
+  // https://html.spec.whatwg.org/C/#dragevent
   // At the same time this should prevent exposing a node from another document.
   if (related_target &&
       related_target->GetDocument() != drag_target->GetDocument())

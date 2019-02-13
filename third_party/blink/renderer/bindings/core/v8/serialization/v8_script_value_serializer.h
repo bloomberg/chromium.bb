@@ -23,7 +23,7 @@ class File;
 class Transferables;
 
 // Serializes V8 values according to the HTML structured clone algorithm:
-// https://html.spec.whatwg.org/multipage/infrastructure.html#structured-clone
+// https://html.spec.whatwg.org/C/#structured-clone
 //
 // Supports only basic JavaScript objects and core DOM types. Support for
 // modules types is implemented in a subclass.

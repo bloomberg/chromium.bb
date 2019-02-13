@@ -21,13 +21,13 @@ namespace blink {
 
 // This is a partial interface of the "settings object" concept defined in the
 // HTML spec:
-// https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
+// https://html.spec.whatwg.org/C/#settings-object
 //
 // This is also a partial interface of the "fetch client settings object" used
 // in module script fetch. Other part of the "fetch client settings object" is
 // currently implemented by ResourceFetcher and FetchContext, and this class is
 // used together with them.
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
+// https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
 class PLATFORM_EXPORT FetchClientSettingsObject
     : public GarbageCollectedFinalized<FetchClientSettingsObject> {
  public:
@@ -35,23 +35,23 @@ class PLATFORM_EXPORT FetchClientSettingsObject
 
   // "A URL used by APIs called by scripts that use this environment settings
   // object to parse URLs."
-  // https://html.spec.whatwg.org/multipage/webappapis.html#api-base-url
+  // https://html.spec.whatwg.org/C/#api-base-url
   virtual const KURL& BaseURL() const = 0;
 
   // "An origin used in security checks."
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-origin
+  // https://html.spec.whatwg.org/C/#concept-settings-object-origin
   virtual const SecurityOrigin* GetSecurityOrigin() const = 0;
 
   // "The default referrer policy for fetches performed using this environment
   // settings object as a request client."
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-referrer-policy
+  // https://html.spec.whatwg.org/C/#concept-settings-object-referrer-policy
   virtual network::mojom::ReferrerPolicy GetReferrerPolicy() const = 0;
 
   // "referrerURL" used in the "Determine request's Referrer" algorithm:
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
   virtual const String GetOutgoingReferrer() const = 0;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#https-state
+  // https://html.spec.whatwg.org/C/#https-state
   virtual HttpsState GetHttpsState() const = 0;
 
   // Used for classic top-level scripts and importScripts().

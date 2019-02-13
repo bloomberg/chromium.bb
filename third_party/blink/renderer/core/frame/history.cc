@@ -201,7 +201,7 @@ void History::go(ScriptState* script_state,
     // We intentionally call reload() for the current frame if delta is zero.
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
-    // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
+    // https://html.spec.whatwg.org/C/#dom-history-go
     GetFrame()->Reload(WebFrameLoadType::kReload,
                        ClientRedirectPolicy::kClientRedirect);
   }

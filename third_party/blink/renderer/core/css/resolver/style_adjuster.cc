@@ -196,7 +196,7 @@ static bool DoesNotInheritTextDecoration(const ComputedStyle& style,
 // Certain elements (<a>, <font>) override text decoration colors.  "The font
 // element is expected to override the color of any text decoration that spans
 // the text of the element to the used value of the element's 'color' property."
-// (https://html.spec.whatwg.org/multipage/rendering.html#phrasing-content-3)
+// (https://html.spec.whatwg.org/C/#phrasing-content-3)
 // The <a> behavior is non-standard.
 static bool OverridesTextDecorationColors(const Element* element) {
   return element &&

@@ -14,8 +14,8 @@ class WorkerGlobalScope;
 // WorkerModuleScriptFetcher is an implementation of ModuleScriptFetcher
 // interface for WebWorkers. This implements the custom "perform the fetch" hook
 // defined in the HTML spec:
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#fetching-scripts-perform-fetch
+// https://html.spec.whatwg.org/C/#worker-processing-model
 class CORE_EXPORT WorkerModuleScriptFetcher final
     : public GarbageCollectedFinalized<WorkerModuleScriptFetcher>,
       public ModuleScriptFetcher {

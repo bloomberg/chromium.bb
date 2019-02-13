@@ -81,7 +81,7 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
   if (!doc.IsSVGDocument())
     anchor_node = FindAnchorFromFragment(fragment, doc);
 
-  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#the-indicated-part-of-the-document
+  // https://html.spec.whatwg.org/C/#the-indicated-part-of-the-document
   // 5. Let decodedFragment be the result of running UTF-8 decode without BOM
   // on fragmentBytes.
   if (!anchor_node) {

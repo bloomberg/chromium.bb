@@ -17,7 +17,7 @@ WorkerModuleTreeClient::WorkerModuleTreeClient(Modulator* modulator)
 
 // A partial implementation of the "Processing model" algorithm in the HTML
 // WebWorker spec:
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
   auto* execution_context =

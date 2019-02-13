@@ -146,7 +146,7 @@ bool IsContentDispositionAttachment(const String& content_disposition) {
   return net::HttpContentDisposition(string, std::string()).is_attachment();
 }
 
-// https://html.spec.whatwg.org/multipage/semantics.html#attr-meta-http-equiv-refresh
+// https://html.spec.whatwg.org/C/#attr-meta-http-equiv-refresh
 bool ParseHTTPRefresh(const String& refresh,
                       WTF::CharacterMatchFunctionPtr matcher,
                       double& delay,

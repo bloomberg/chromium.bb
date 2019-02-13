@@ -254,7 +254,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   if (base::FeatureList::IsEnabled(features::kOnionSoupDOMStorage)) {
     // TODO(dmurph): Don't copy session storage when features.noopener is true:
-    // https://html.spec.whatwg.org/multipage/browsers.html#copy-session-storage
+    // https://html.spec.whatwg.org/C/#copy-session-storage
     // https://crbug.com/771959
     CoreInitializer::GetInstance().CloneSessionStorage(old_page,
                                                        new_namespace_id);

@@ -82,7 +82,7 @@ class CORE_EXPORT ScriptLoader final
   static network::mojom::FetchCredentialsMode ModuleScriptCredentialsMode(
       CrossOriginAttributeValue);
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+  // https://html.spec.whatwg.org/C/#prepare-a-script
   bool PrepareScript(const TextPosition& script_start_position =
                          TextPosition::MinimumPosition(),
                      LegacyTypeSupport = kDisallowLegacyTypeInTypeAttribute);
@@ -120,16 +120,16 @@ class CORE_EXPORT ScriptLoader final
   bool IsScriptForEventSupported() const;
 
   // FetchClassicScript corresponds to Step 21.6 of
-  // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+  // https://html.spec.whatwg.org/C/#prepare-a-script
   // and must NOT be called from outside of PendingScript().
   //
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-script
+  // https://html.spec.whatwg.org/C/#fetch-a-classic-script
   void FetchClassicScript(const KURL&,
                           Document&,
                           const ScriptFetchOptions&,
                           CrossOriginAttributeValue,
                           const WTF::TextEncoding&);
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+  // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,
                              ResourceFetcher*,
                              Modulator*,
@@ -143,36 +143,36 @@ class CORE_EXPORT ScriptLoader final
 
   Member<ScriptElementBase> element_;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model
+  // https://html.spec.whatwg.org/C/#script-processing-model
   // "A script element has several associated pieces of state.":
 
   // <spec
-  // href="https://html.spec.whatwg.org/multipage/scripting.html#already-started">
+  // href="https://html.spec.whatwg.org/C/#already-started">
   // ... Initially, script elements must have this flag unset ...</spec>
   bool already_started_ = false;
 
   // <spec
-  // href="https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted">
+  // href="https://html.spec.whatwg.org/C/#parser-inserted">
   // ... Initially, script elements must have this flag unset. ...</spec>
   bool parser_inserted_ = false;
 
   // <spec
-  // href="https://html.spec.whatwg.org/multipage/scripting.html#non-blocking">
+  // href="https://html.spec.whatwg.org/C/#non-blocking">
   // ... Initially, script elements must have this flag set. ...</spec>
   bool non_blocking_ = true;
 
   // <spec
-  // href="https://html.spec.whatwg.org/multipage/scripting.html#ready-to-be-parser-executed">
+  // href="https://html.spec.whatwg.org/C/#ready-to-be-parser-executed">
   // ... Initially, script elements must have this flag unset ...</spec>
   bool ready_to_be_parser_executed_ = false;
 
   // <spec
-  // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-type">
+  // href="https://html.spec.whatwg.org/C/#concept-script-type">
   // ... It is determined when the script is prepared, ...</spec>
   mojom::ScriptType script_type_ = mojom::ScriptType::kClassic;
 
   // <spec
-  // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external">
+  // href="https://html.spec.whatwg.org/C/#concept-script-external">
   // ... It is determined when the script is prepared, ...</spec>
   bool is_external_script_ = false;
 

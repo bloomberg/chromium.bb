@@ -36,7 +36,7 @@ class WorkerClassicScriptLoader;
 class WorkerClients;
 
 // Implementation of the Worker interface defined in the WebWorker HTML spec:
-// https://html.spec.whatwg.org/multipage/workers.html#worker
+// https://html.spec.whatwg.org/C/#worker
 //
 // Confusingly, the Worker interface is for dedicated workers, so this class is
 // called DedicatedWorker. This lives on the thread that created the worker (the

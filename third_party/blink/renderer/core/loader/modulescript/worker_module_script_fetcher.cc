@@ -17,7 +17,7 @@ WorkerModuleScriptFetcher::WorkerModuleScriptFetcher(
     WorkerGlobalScope* global_scope)
     : global_scope_(global_scope) {}
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
     ResourceFetcher* fetch_client_settings_object_fetcher,
@@ -45,7 +45,7 @@ void WorkerModuleScriptFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   DCHECK(global_scope_->IsContextThread());
   ClearResource();

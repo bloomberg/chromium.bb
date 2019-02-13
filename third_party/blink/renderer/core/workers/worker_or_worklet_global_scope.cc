@@ -235,7 +235,7 @@ void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
 
 // Implementation of the "fetch a module worker script graph" algorithm in the
 // HTML spec:
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
+// https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,

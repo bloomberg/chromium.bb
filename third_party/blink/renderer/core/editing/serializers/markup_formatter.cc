@@ -314,7 +314,7 @@ void MarkupFormatter::AppendStartTagClose(StringBuilder& result,
 void MarkupFormatter::AppendAttributeAsHTML(StringBuilder& result,
                                             const Attribute& attribute,
                                             const String& value) {
-  // https://html.spec.whatwg.org/multipage/parsing.html#attribute's-serialised-name
+  // https://html.spec.whatwg.org/C/#attribute's-serialised-name
   QualifiedName prefixed_name = attribute.GetName();
   if (attribute.NamespaceURI() == xmlns_names::kNamespaceURI) {
     if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)

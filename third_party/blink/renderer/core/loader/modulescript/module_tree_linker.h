@@ -124,7 +124,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   State state_ = State::kInitial;
 
   // Correspond to _result_ in
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
+  // https://html.spec.whatwg.org/C/#internal-module-script-graph-fetching-procedure
   TraceWrapperMember<ModuleScript> result_;
 
   bool found_parse_error_ = false;

@@ -1320,7 +1320,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
   // An element is a supported interactive canvas fallback element if it is one
   // of the following:
-  // https://html.spec.whatwg.org/multipage/scripting.html#supported-interactive-canvas-fallback-element
+  // https://html.spec.whatwg.org/C/#supported-interactive-canvas-fallback-element
 
   // An a element that represents a hyperlink and that does not have any img
   // descendants.

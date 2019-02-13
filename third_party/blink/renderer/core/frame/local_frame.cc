@@ -902,7 +902,7 @@ bool LocalFrame::ShouldReuseDefaultView(
   // Since sandboxing turns the origin into an opaque origin it needs to also
   // be considered when deciding whether to reuse it.
   // Spec:
-  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#initialise-the-document-object
+  // https://html.spec.whatwg.org/C/#initialise-the-document-object
   if (csp && (csp->GetSandboxMask() & kSandboxOrigin)) {
     return false;
   }

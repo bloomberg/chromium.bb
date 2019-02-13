@@ -54,7 +54,7 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
     new_style->SetJustifyContent(StyleRef().JustifyContent());
 
     // TODO(mstensho): Inherit all properties listed here:
-    // https://html.spec.whatwg.org/multipage/rendering.html#the-fieldset-and-legend-elements
+    // https://html.spec.whatwg.org/C/#the-fieldset-and-legend-elements
 
     fieldset_content = LayoutBlock::CreateAnonymousWithParentAndDisplay(
         this, new_style->Display());

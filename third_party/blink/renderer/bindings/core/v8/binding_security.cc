@@ -385,7 +385,7 @@ bool BindingSecurity::ShouldAllowWrapperCreationOrThrowException(
     return true;
 
   // According to
-  // https://html.spec.whatwg.org/multipage/browsers.html#security-location,
+  // https://html.spec.whatwg.org/C/#security-location,
   // cross-origin script access to a few properties of Location is allowed.
   // Location already implements the necessary security checks.
   if (wrapper_type_info->Equals(V8Location::GetWrapperTypeInfo()))

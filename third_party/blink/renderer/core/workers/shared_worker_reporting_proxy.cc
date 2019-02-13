@@ -51,7 +51,7 @@ void SharedWorkerReportingProxy::ReportException(
   // spec:
   // "For shared workers, if the error is still not handled afterwards, the
   // error may be reported to a developer console."
-  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
+  // https://html.spec.whatwg.org/C/#runtime-script-errors-2
 }
 
 void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
@@ -66,7 +66,7 @@ void SharedWorkerReportingProxy::DidFetchScript() {
   DCHECK(!IsMainThread());
   // TODO(nhiroki): Change the task type to kDOMManipulation here and elsewhere
   // in this file. See the HTML spec:
-  // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model:dom-manipulation-task-source-2
+  // https://html.spec.whatwg.org/C/#worker-processing-model:dom-manipulation-task-source-2
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,

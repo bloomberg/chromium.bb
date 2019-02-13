@@ -81,7 +81,7 @@ void CustomElementReactionStack::Enqueue(Member<ElementQueue>& queue,
 void CustomElementReactionStack::EnqueueToBackupQueue(
     Element& element,
     CustomElementReaction& reaction) {
-  // https://html.spec.whatwg.org/multipage/scripting.html#backup-element-queue
+  // https://html.spec.whatwg.org/C/#backup-element-queue
 
   DCHECK(!CEReactionsScope::Current());
   DCHECK(stack_.IsEmpty());

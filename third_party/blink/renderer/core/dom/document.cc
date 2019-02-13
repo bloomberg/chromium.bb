@@ -932,7 +932,7 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
                                     CreateElementFlags flags) {
   Element* element = nullptr;
   if (qname.NamespaceURI() == html_names::xhtmlNamespaceURI) {
-    // https://html.spec.whatwg.org/multipage/dom.html#elements-in-the-dom:element-interface
+    // https://html.spec.whatwg.org/C/#elements-in-the-dom:element-interface
     element = HTMLElementFactory::Create(qname.LocalName(), *this, flags);
     if (!element) {
       // 6. If name is a valid custom element name, then return
@@ -4341,7 +4341,7 @@ network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
   // For srcdoc documents without their own policy, walk up the frame
   // tree to find the document that is either not a srcdoc or doesn't
   // have its own policy. This algorithm is defined in
-  // https://html.spec.whatwg.org/multipage/window-object.html#set-up-a-window-environment-settings-object.
+  // https://html.spec.whatwg.org/C/#set-up-a-window-environment-settings-object.
   if (!frame_ || policy != network::mojom::ReferrerPolicy::kDefault ||
       !IsSrcdocDocument()) {
     return policy;
@@ -5848,7 +5848,7 @@ KURL Document::CompleteURLWithOverride(const String& url,
 
 // static
 bool Document::ShouldInheritSecurityOriginFromOwner(const KURL& url) {
-  // https://html.spec.whatwg.org/multipage/browsers.html#origin
+  // https://html.spec.whatwg.org/C/#origin
   //
   // If a Document is the initial "about:blank" document The origin and
   // effective script origin of the Document are those it was assigned when its

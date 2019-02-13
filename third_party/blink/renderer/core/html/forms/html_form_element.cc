@@ -354,7 +354,7 @@ void HTMLFormElement::Submit(Event* event,
   if (!view || !frame || !frame->GetPage())
     return;
 
-  // https://html.spec.whatwg.org/multipage/forms.html#form-submission-algorithm
+  // https://html.spec.whatwg.org/C/#form-submission-algorithm
   // 2. If form document is not connected, has no associated browsing context,
   // or its active sandboxing flag set has its sandboxed forms browsing
   // context flag set, then abort these steps without doing anything.

@@ -200,7 +200,7 @@ HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
   return ToHTMLElement(element);
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#upgrades
+// https://html.spec.whatwg.org/C/#upgrades
 bool ScriptCustomElementDefinition::RunConstructor(Element& element) {
   if (!script_state_->ContextIsValid())
     return false;

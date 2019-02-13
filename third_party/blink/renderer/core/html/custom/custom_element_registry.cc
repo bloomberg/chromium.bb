@@ -233,7 +233,7 @@ CustomElementDefinition* CustomElementRegistry::DefineInternal(
   return definition;
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-get
+// https://html.spec.whatwg.org/C/#dom-customelementsregistry-get
 ScriptValue CustomElementRegistry::get(const AtomicString& name) {
   CustomElementDefinition* definition = DefinitionForName(name);
   if (!definition) {
@@ -244,7 +244,7 @@ ScriptValue CustomElementRegistry::get(const AtomicString& name) {
   return definition->GetConstructorForScript();
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#look-up-a-custom-element-definition
+// https://html.spec.whatwg.org/C/#look-up-a-custom-element-definition
 // At this point, what the spec calls 'is' is 'name' from desc
 CustomElementDefinition* CustomElementRegistry::DefinitionFor(
     const CustomElementDescriptor& desc) const {
@@ -310,7 +310,7 @@ void CustomElementRegistry::AddCandidate(Element& candidate) {
   set->insert(&candidate);
 }
 
-// https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-whendefined
+// https://html.spec.whatwg.org/C/#dom-customelementsregistry-whendefined
 ScriptPromise CustomElementRegistry::whenDefined(
     ScriptState* script_state,
     const AtomicString& name,
@@ -351,7 +351,7 @@ void CustomElementRegistry::CollectCandidates(
   sorter.Sorted(elements, document);
 }
 
-// https://html.spec.whatwg.org/multipage/custom-elements.html#dom-customelementregistry-upgrade
+// https://html.spec.whatwg.org/C/#dom-customelementregistry-upgrade
 void CustomElementRegistry::upgrade(Node* root) {
   DCHECK(root);
 

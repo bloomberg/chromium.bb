@@ -10,7 +10,7 @@ namespace blink {
 class HTMLFormElement;
 
 // Contains code to associate form with a form associated element
-// https://html.spec.whatwg.org/multipage/forms.html#form-associated-element
+// https://html.spec.whatwg.org/C/#form-associated-element
 class FormAssociated {
  public:
   // HTMLFormElement can be null

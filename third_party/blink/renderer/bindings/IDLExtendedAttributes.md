@@ -142,10 +142,10 @@ Undocumented: `[TreatNonObjectAsNull]`
 
 ### [CEReactions] _(m, a)_
 
-Standard: [CEReactions](https://html.spec.whatwg.org/multipage/scripting.html#cereactions)
+Standard: [CEReactions](https://html.spec.whatwg.org/C/#cereactions)
 
 Summary: `[CEReactions]` indicates that
-[custom element reactions](https://html.spec.whatwg.org/multipage/scripting.html#concept-custom-element-reaction)
+[custom element reactions](https://html.spec.whatwg.org/C/#concept-custom-element-reaction)
 are triggered for this method or attribute.
 
 Usage: `[CEReactions]` takes no arguments.
@@ -304,7 +304,7 @@ The identifier argument or identifier list argument the `[Global]` extended attr
 
 ### [HTMLConstructor]
 
-Standard: [HTMLConstructor](https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors)
+Standard: [HTMLConstructor](https://html.spec.whatwg.org/C/#html-element-constructors)
 
 Summary: HTML Elements have special constructor behavior. Interface object of given interface with the `[HTMLConstructor]` attribute will have specific behavior when called.
 
@@ -484,7 +484,7 @@ interface Window {
 
 ### [Serializable] _(i)_
 
-Standard: [Serializable](https://html.spec.whatwg.org/multipage/structured-data.html#serializable)
+Standard: [Serializable](https://html.spec.whatwg.org/C/#serializable)
 
 Summary: Serializable objects support being serialized, and later deserialized, for persistence in storage APIs or for passing with `postMessage()`.
 
@@ -498,7 +498,7 @@ This attribute has no effect on code generation and should simply be used in Bli
 
 ### [Transferable] _(i)_
 
-Standard: [Transferable](https://html.spec.whatwg.org/multipage/structured-data.html#transferable)
+Standard: [Transferable](https://html.spec.whatwg.org/C/#transferable)
 
 Summary: Transferable objects support being transferred across Realms with `postMessage()`.
 
@@ -1656,4 +1656,4 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***
 
-[CrossOriginProperties]: https://html.spec.whatwg.org/multipage/browsers.html#crossoriginproperties-(-o-)
+[CrossOriginProperties]: https://html.spec.whatwg.org/C/#crossoriginproperties-(-o-)

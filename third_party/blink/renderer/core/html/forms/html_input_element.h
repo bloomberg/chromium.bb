@@ -409,11 +409,11 @@ class CORE_EXPORT HTMLInputElement
   // The value string in |value| value mode.
   String non_attribute_value_;
   unsigned size_;
-  // https://html.spec.whatwg.org/multipage/forms.html#concept-input-value-dirty-flag
+  // https://html.spec.whatwg.org/C/#concept-input-value-dirty-flag
   unsigned has_dirty_value_ : 1;
-  // https://html.spec.whatwg.org/multipage/forms.html#concept-fe-checked
+  // https://html.spec.whatwg.org/C/#concept-fe-checked
   unsigned is_checked_ : 1;
-  // https://html.spec.whatwg.org/multipage/forms.html#concept-input-checked-dirty-flag
+  // https://html.spec.whatwg.org/C/#concept-input-checked-dirty-flag
   unsigned dirty_checkedness_ : 1;
   unsigned is_indeterminate_ : 1;
   unsigned is_activated_submit_ : 1;

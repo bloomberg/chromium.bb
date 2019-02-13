@@ -243,7 +243,7 @@ MessagePortArray* MessagePort::EntanglePorts(
 MessagePortArray* MessagePort::EntanglePorts(
     ExecutionContext& context,
     WebVector<MessagePortChannel> channels) {
-  // https://html.spec.whatwg.org/multipage/comms.html#message-ports
+  // https://html.spec.whatwg.org/C/#message-ports
   // |ports| should be an empty array, not null even when there is no ports.
   wtf_size_t count = SafeCast<wtf_size_t>(channels.size());
   MessagePortArray* port_array = MakeGarbageCollected<MessagePortArray>(count);

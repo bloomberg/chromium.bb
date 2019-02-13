@@ -181,7 +181,7 @@ bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   if (IsImageType())
     return HTMLPlugInElement::LayoutObjectIsNeeded(style);
 
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#the-embed-element
+  // https://html.spec.whatwg.org/C/#the-embed-element
   // While any of the following conditions are occurring, any plugin
   // instantiated for the element must be removed, and the embed element
   // represents nothing:
