@@ -58,6 +58,29 @@ TEST(WavAudioHandlerTest, SampleDataTest) {
   ASSERT_EQ(static_cast<size_t>(handler->data().size()), bytes_written);
 }
 
+TEST(WavAudioHandlerTest, SampleExtensibleDataTest) {
+  std::string data(kTestExtensibleAudioData, kTestExtensibleAudioDataSize);
+  auto handler = WavAudioHandler::Create(data);
+  ASSERT_TRUE(handler);
+  ASSERT_EQ(2u, handler->num_channels());
+  ASSERT_EQ(32u, handler->bits_per_sample());
+  ASSERT_EQ(48000u, handler->sample_rate());
+  ASSERT_EQ(1u, handler->total_frames());
+  ASSERT_EQ(20u, handler->GetDuration().InMicroseconds());
+
+  ASSERT_EQ(8U, handler->data().size());
+  const char kData[] = "\x01\x00\x00\x00\x01\x00\x00\x00";
+  ASSERT_EQ(base::StringPiece(kData, base::size(kData) - 1), handler->data());
+
+  std::unique_ptr<AudioBus> bus =
+      AudioBus::Create(handler->num_channels(),
+                       handler->data().size() / handler->num_channels());
+
+  size_t bytes_written = 0u;
+  ASSERT_TRUE(handler->CopyTo(bus.get(), 0, &bytes_written));
+  ASSERT_EQ(static_cast<size_t>(handler->data().size()), bytes_written);
+}
+
 TEST(WavAudioHandlerTest, TestZeroChannelsIsNotValid) {
   // Read in the sample data and modify the channel field to hold |00|00|.
   std::string data(kTestAudioData, kTestAudioDataSize);

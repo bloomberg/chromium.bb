@@ -24,6 +24,16 @@ const char kTestAudioData[] =
     "data\x04\x00\x00\x00\x01\x00\x01\x00";
 const size_t kTestAudioDataSize = base::size(kTestAudioData) - 1;
 
+// Extensible format with 48kHz rate stereo 32 bit PCM samples
+const char kTestExtensibleAudioData[] =
+    "RIFF\x44\x00\x00\x00WAVEfmt \x28\x00\x00\x00"
+    "\xfe\xff\x02\x00\x80\xbb\x00\x00\x00\x77\x01\x00\x02\x00\x20\x00"
+    "\x16\x00\x20\x00\x00\x00\x00\x00"
+    "\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    "data\x08\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00";
+const size_t kTestExtensibleAudioDataSize =
+    base::size(kTestExtensibleAudioData) - 1;
+
 class TestObserver : public AudioStreamHandler::TestObserver {
  public:
   TestObserver(const base::Closure& quit);
