@@ -5187,12 +5187,13 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   // UIResource will be copied into it.
   std::unique_ptr<base::SharedMemory> shared_memory;
   viz::SharedBitmapId shared_bitmap_id;
+  bool overlay_candidate = false;
 
   if (layer_tree_frame_sink_->context_provider()) {
     viz::ContextProvider* context_provider =
         layer_tree_frame_sink_->context_provider();
     const auto& caps = context_provider->ContextCapabilities();
-    bool overlay_candidate =
+    overlay_candidate =
         settings_.resource_settings.use_gpu_memory_buffer_resources &&
         caps.texture_storage_image &&
         viz::IsGpuMemoryBufferFormatSupported(format);
@@ -5303,7 +5304,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
                                     ->GenUnverifiedSyncToken();
 
     transferable = viz::TransferableResource::MakeGLOverlay(
-        mailbox, GL_LINEAR, texture_target, sync_token, upload_size, false);
+        mailbox, GL_LINEAR, texture_target, sync_token, upload_size,
+        overlay_candidate);
     transferable.format = format;
   } else {
     mojo::ScopedSharedBufferHandle memory_handle =
