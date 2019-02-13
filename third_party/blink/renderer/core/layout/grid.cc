@@ -17,7 +17,7 @@ namespace {
 static inline GridTrackSizingDirection OrthogonalDirection(
     GridTrackSizingDirection direction) {
   return direction == kForRows ? kForColumns : kForRows;
-};
+}
 
 }  // namespace
 

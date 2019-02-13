@@ -77,12 +77,12 @@ void SVGMatrixTearOff::CommitChange() {
     CommitChange();                                                       \
   }
 
-DEFINE_SETTER(A);
-DEFINE_SETTER(B);
-DEFINE_SETTER(C);
-DEFINE_SETTER(D);
-DEFINE_SETTER(E);
-DEFINE_SETTER(F);
+DEFINE_SETTER(A)
+DEFINE_SETTER(B)
+DEFINE_SETTER(C)
+DEFINE_SETTER(D)
+DEFINE_SETTER(E)
+DEFINE_SETTER(F)
 
 #undef DEFINE_SETTER
 

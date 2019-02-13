@@ -119,7 +119,7 @@ class FakePacketTransport : public P2PQuicPacketTransport,
   ~FakePacketTransport() override {
     // The write observer should be unset when it is destroyed.
     DCHECK(!write_observer_);
-  };
+  }
 
   // Called by QUIC for writing data to the other side. The flow for writing a
   // packet is P2PQuicTransportImpl --> quic::QuicConnection -->

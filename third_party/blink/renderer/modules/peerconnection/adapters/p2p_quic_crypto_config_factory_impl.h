@@ -21,7 +21,7 @@ class MODULES_EXPORT P2PQuicCryptoConfigFactoryImpl final
   P2PQuicCryptoConfigFactoryImpl(
       quic::QuicRandom* const random_generator);
 
-  ~P2PQuicCryptoConfigFactoryImpl() override{};
+  ~P2PQuicCryptoConfigFactoryImpl() override {}
 
   // P2PQuicCryptoConfigFactory overrides.
   //

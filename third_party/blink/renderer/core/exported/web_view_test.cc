@@ -4115,7 +4115,7 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout) {
   // This EXPECT is merely a dummy. The real test is that we don't trigger
   // asserts in debug builds.
   EXPECT_FALSE(frame_view->NeedsLayout());
-};
+}
 
 TEST_F(WebViewTest, PreferredSize) {
   std::string url = base_url_ + "specify_size.html?100px:100px";

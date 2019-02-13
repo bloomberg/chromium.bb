@@ -58,7 +58,7 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
 #endif
   }
 }
-};  // namespace
+}  // namespace
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   Document* document = Document::CreateForTest();

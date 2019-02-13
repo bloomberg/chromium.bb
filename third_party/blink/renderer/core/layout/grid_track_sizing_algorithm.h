@@ -97,8 +97,8 @@ class GridTrackSizingAlgorithm final {
   // TODO (jfernandez): We should remove any public getter for this attribute
   // and encapsulate any access in the algorithm class.
   Grid& GetMutableGrid() const { return grid_; }
-  LayoutUnit MinContentSize() const { return min_content_size_; };
-  LayoutUnit MaxContentSize() const { return max_content_size_; };
+  LayoutUnit MinContentSize() const { return min_content_size_; }
+  LayoutUnit MaxContentSize() const { return max_content_size_; }
 
   LayoutUnit BaselineOffsetForChild(const LayoutBox&, GridAxis) const;
 

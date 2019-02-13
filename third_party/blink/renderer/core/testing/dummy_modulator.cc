@@ -61,7 +61,7 @@ ScriptModuleResolver* DummyModulator::GetScriptModuleResolver() {
 base::SingleThreadTaskRunner* DummyModulator::TaskRunner() {
   NOTREACHED();
   return nullptr;
-};
+}
 
 void DummyModulator::FetchTree(const KURL&,
                                ResourceFetcher*,

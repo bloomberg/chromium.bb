@@ -92,11 +92,11 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Called when the proof verification completes. This information is used
   // for 0 RTT handshakes, which isn't relevant for our P2P handshake.
   void OnProofValid(
-      const quic::QuicCryptoClientConfig::CachedState& cached) override{};
+      const quic::QuicCryptoClientConfig::CachedState& cached) override {}
 
   // Called when proof verification become available.
   void OnProofVerifyDetailsAvailable(
-      const quic::ProofVerifyDetails& verify_details) override{};
+      const quic::ProofVerifyDetails& verify_details) override {}
 
   // quic::QuicConnectionVisitorInterface override.
   void OnConnectionClosed(quic::QuicErrorCode error,

@@ -111,16 +111,16 @@ void SessionClientBinding::Close() {
 void SessionClientBinding::OnChanged(
     device::mojom::blink::VRDisplayInfoPtr ptr) {
   display_->OnChanged(std::move(ptr), is_immersive_);
-};
+}
 void SessionClientBinding::OnExitPresent() {
   display_->OnExitPresent(is_immersive_);
-};
+}
 void SessionClientBinding::OnBlur() {
   display_->OnBlur(is_immersive_);
-};
+}
 void SessionClientBinding::OnFocus() {
   display_->OnFocus(is_immersive_);
-};
+}
 void SessionClientBinding::Trace(blink::Visitor* visitor) {
   visitor->Trace(display_);
 }

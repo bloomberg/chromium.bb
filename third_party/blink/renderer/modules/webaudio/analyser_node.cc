@@ -184,7 +184,7 @@ bool AnalyserHandler::RequiresTailProcessing() const {
 double AnalyserHandler::TailTime() const {
   return RealtimeAnalyser::kMaxFFTSize /
          static_cast<double>(Context()->sampleRate());
-};
+}
 // ----------------------------------------------------------------
 
 AnalyserNode::AnalyserNode(BaseAudioContext& context)

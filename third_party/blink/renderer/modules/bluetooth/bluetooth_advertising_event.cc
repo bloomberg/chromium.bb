@@ -62,7 +62,7 @@ const AtomicString& BluetoothAdvertisingEvent::InterfaceName() const {
 
 BluetoothDevice* BluetoothAdvertisingEvent::device() const {
   return device_;
-};
+}
 
 const String& BluetoothAdvertisingEvent::name() const {
   return name_;
