@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.util;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +17,9 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
@@ -43,6 +47,9 @@ public class AccessibilityUtil {
     // KitKat, from fall 2013. Versions older than that should be updated.
     private static final int MIN_TALKBACK_VERSION = 105;
 
+    private static Boolean sIsAccessibilityEnabled;
+    private static ActivityStateListener sActivityStateListener;
+
     private AccessibilityUtil() { }
 
     /**
@@ -51,26 +58,58 @@ public class AccessibilityUtil {
      */
     public static boolean isAccessibilityEnabled() {
         TraceEvent.begin("AccessibilityManager::isAccessibilityEnabled");
+        if (sIsAccessibilityEnabled != null) return sIsAccessibilityEnabled;
+
         AccessibilityManager manager =
                 (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.ACCESSIBILITY_SERVICE);
-        boolean retVal =
+        boolean accessibilityEnabled =
                 manager != null && manager.isEnabled() && manager.isTouchExplorationEnabled();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && manager != null
-                && manager.isEnabled() && !retVal) {
+                && manager.isEnabled() && !accessibilityEnabled) {
             List<AccessibilityServiceInfo> services = manager.getEnabledAccessibilityServiceList(
                     AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
             for (AccessibilityServiceInfo service : services) {
                 if (canPerformGestures(service)) {
-                    retVal = true;
+                    accessibilityEnabled = true;
                     break;
                 }
             }
         }
 
+        sIsAccessibilityEnabled = accessibilityEnabled;
+
+        sActivityStateListener = new ApplicationStatus.ActivityStateListener() {
+            @Override
+            public void onActivityStateChange(Activity activity, int newState) {
+                // If an activity is being resumed, it's possible the user changed accessibility
+                // settings while not in a Chrome activity. Reset the accessibility enabled state
+                // so that the next time #isAccessibilityEnabled is called the accessibility state
+                // is recalculated. Also, if all activities are destroyed, remove the activity
+                // state listener to avoid leaks.
+                if (newState == ActivityState.RESUMED
+                        || ApplicationStatus.isEveryActivityDestroyed()) {
+                    resetAccessibilityEnabled();
+                }
+            }
+        };
+        ApplicationStatus.registerStateListenerForAllActivities(sActivityStateListener);
+
         TraceEvent.end("AccessibilityManager::isAccessibilityEnabled");
-        return retVal;
+        return sIsAccessibilityEnabled;
+    }
+
+    /**
+     * Reset the static used to determine whether accessibility is enabled.
+     * TODO(twellington): Make this private and have classes that care about accessibility state
+     *                    observe this class rather than observing the AccessibilityManager
+     *                    directly.
+     */
+    public static void resetAccessibilityEnabled() {
+        ApplicationStatus.unregisterActivityStateListener(sActivityStateListener);
+        sActivityStateListener = null;
+        sIsAccessibilityEnabled = null;
     }
 
     /**
