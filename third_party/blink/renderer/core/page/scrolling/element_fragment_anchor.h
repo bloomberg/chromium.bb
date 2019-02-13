@@ -24,20 +24,21 @@ class KURL;
 // the element into view since it's position may change as a result of layouts.
 // TODO(bokan): Maybe we no longer need the repeated scrolling since that
 // should be handled by scroll-anchoring?
-class CORE_EXPORT ElementFragmentAnchor : public FragmentAnchor {
+class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
  public:
   // Parses the URL fragment and, if possible, creates and returns a fragment
   // based on an Element in the page. Returns nullptr otherwise. Produces side
   // effects related to fragment targeting in the page in either case.
-  static ElementFragmentAnchor* TryCreate(const KURL& url,
-                                          bool needs_invoke,
-                                          LocalFrame& frame);
+  static ElementFragmentAnchor* TryCreate(const KURL& url, LocalFrame& frame);
 
   ElementFragmentAnchor(Node& anchor_node, LocalFrame& frame);
   ~ElementFragmentAnchor() override = default;
 
   // Will attempt to scroll the anchor into view.
   bool Invoke() override;
+
+  // Will attempt to focus the anchor.
+  void Installed() override;
 
   // Used to let the anchor know the frame's been scrolled and so we should
   // abort keeping the fragment target in view to avoid fighting with user
@@ -65,7 +66,9 @@ class CORE_EXPORT ElementFragmentAnchor : public FragmentAnchor {
   // want the owner to continue calling Invoke(). Once this is false, calling
   // Invoke has no effect and the fragment can be disposed (unless focus is
   // still needed).
-  bool needs_invoke_ = true;
+  bool needs_invoke_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ElementFragmentAnchor);
 };
 
 }  // namespace blink

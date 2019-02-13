@@ -24,14 +24,14 @@ class KURL;
 // can implement, allowing fragments to specify different kinds of anchors.
 // Callers should use the TryCreate static method to create and return the
 // appropriate type of base class.
-class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
+class CORE_EXPORT FragmentAnchor
+    : public GarbageCollectedFinalized<FragmentAnchor> {
  public:
   // Parses the fragment string and tries to create a FragmentAnchor object of
   // the appropriate derived type. If no anchor could be created from the given
   // url, this returns nullptr. In either case, side-effects on the document
   // will be performed, for example, setting/clearing :target and svgView().
   static FragmentAnchor* TryCreate(const KURL& url,
-                                   bool needs_invoke,
                                    LocalFrame& frame);
 
   FragmentAnchor() = default;
@@ -42,6 +42,11 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // is updated to keep the element in view. If true, the anchor should be kept
   // alive and invoked again. Otherwise it may be disposed.
   virtual bool Invoke() = 0;
+
+  // This should be called when the anchor is "installed". In other words, when
+  // the caller receives the FragmentAnchor and stores it. This allows the
+  // anchor to perform some initialization.
+  virtual void Installed() = 0;
 
   virtual void DidScroll(ScrollType type) = 0;
   virtual void PerformPreRafActions() = 0;

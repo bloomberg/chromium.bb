@@ -59,7 +59,6 @@ Node* FindAnchorFromFragment(const String& fragment, Document& doc) {
 }  // namespace
 
 ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
-                                                        bool needs_invoke,
                                                         LocalFrame& frame) {
   DCHECK(frame.GetDocument());
   Document& doc = *frame.GetDocument();
@@ -106,25 +105,10 @@ ElementFragmentAnchor* ElementFragmentAnchor::TryCreate(const KURL& url,
   if (doc.IsSVGDocument() && !frame.IsMainFrame())
     return nullptr;
 
-  if (!anchor_node || !needs_invoke)
+  if (!anchor_node)
     return nullptr;
 
-  auto* anchor =
-      MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
-
-  // If rendering isn't ready yet, we'll focus and scroll as part of the
-  // document lifecycle.
-  if (doc.IsRenderingReady()) {
-    anchor->ApplyFocusIfNeeded();
-
-    // Layout needs to be clean for scrolling but if layout is needed, we'll
-    // invoke after layout is completed so no need to do it here. Note, the
-    // view may have been detached by script run during focus() call.
-    if (frame.View() && !frame.View()->NeedsLayout())
-      anchor->Invoke();
-  }
-
-  return anchor;
+  return MakeGarbageCollected<ElementFragmentAnchor>(*anchor_node, frame);
 }
 
 ElementFragmentAnchor::ElementFragmentAnchor(Node& anchor_node,
@@ -181,6 +165,17 @@ bool ElementFragmentAnchor::Invoke() {
   needs_invoke_ = !doc.IsLoadCompleted() || needs_focus_;
 
   return needs_invoke_;
+}
+
+void ElementFragmentAnchor::Installed() {
+  DCHECK(frame_->GetDocument());
+
+  // If rendering isn't ready yet, we'll focus and scroll as part of the
+  // document lifecycle.
+  if (frame_->GetDocument()->IsRenderingReady())
+    ApplyFocusIfNeeded();
+
+  needs_invoke_ = true;
 }
 
 void ElementFragmentAnchor::DidScroll(ScrollType type) {

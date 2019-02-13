@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 #include "third_party/blink/renderer/core/frame/link_highlights.h"
@@ -1346,7 +1347,17 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
 void LocalFrameView::ProcessUrlFragment(const KURL& url, bool should_scroll) {
   // We want to create the anchor even if we don't need to scroll. This ensures
   // all the side effects like setting CSS :target are correctly set.
-  fragment_anchor_ = FragmentAnchor::TryCreate(url, should_scroll, *frame_);
+  FragmentAnchor* anchor = FragmentAnchor::TryCreate(url, *frame_);
+
+  if (anchor && should_scroll) {
+    fragment_anchor_ = anchor;
+    fragment_anchor_->Installed();
+
+    // Layout needs to be clean for scrolling but if layout is needed, we'll
+    // invoke after layout is completed so no need to do it here.
+    if (!NeedsLayout())
+      InvokeFragmentAnchor();
+  }
 }
 
 void LocalFrameView::SetLayoutSize(const IntSize& size) {
@@ -1663,8 +1674,7 @@ void LocalFrameView::UpdateBaseBackgroundColorRecursively(
 }
 
 void LocalFrameView::InvokeFragmentAnchor() {
-  FragmentAnchor* fragment_anchor = fragment_anchor_;
-  if (!fragment_anchor)
+  if (!fragment_anchor_)
     return;
 
   if (!fragment_anchor_->Invoke())

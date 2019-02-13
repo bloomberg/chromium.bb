@@ -5,15 +5,20 @@
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 
 #include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
-                                          bool needs_invoke,
                                           LocalFrame& frame) {
   FragmentAnchor* anchor = nullptr;
 
-  anchor = ElementFragmentAnchor::TryCreate(url, needs_invoke, frame);
+  anchor = ElementFragmentAnchor::TryCreate(url, frame);
+  if (!anchor) {
+    if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled())
+      anchor = TextFragmentAnchor::TryCreate(url, frame);
+  }
 
   return anchor;
 }
