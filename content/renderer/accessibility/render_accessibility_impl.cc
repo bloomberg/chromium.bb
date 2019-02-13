@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
@@ -17,12 +19,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
+#include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -128,7 +130,15 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
-    ax_context_.reset(new blink::WebAXContext(document));
+    ax_context_ = std::make_unique<blink::WebAXContext>(document);
+
+    if (mode.has_mode(ui::AXMode::kLabelImages)) {
+      ax_image_annotator_ = std::make_unique<AXImageAnnotator>(this);
+      tree_source_.AddImageAnnotator(ax_image_annotator_.get());
+    } else {
+      tree_source_.RemoveImageAnnotator();
+      ax_image_annotator_.release();
+    }
 
     // It's possible that the webview has already loaded a webpage without
     // accessibility being enabled. Initialize the browser's cached
@@ -174,6 +184,14 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
   serializer_.Reset();
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
+    if (new_mode.has_mode(ui::AXMode::kLabelImages)) {
+      ax_image_annotator_ = std::make_unique<AXImageAnnotator>(this);
+      tree_source_.AddImageAnnotator(ax_image_annotator_.get());
+    } else {
+      tree_source_.RemoveImageAnnotator();
+      ax_image_annotator_.release();
+    }
+
     // If there are any events in flight, |HandleAXEvent| will refuse to process
     // our new event.
     pending_events_.clear();

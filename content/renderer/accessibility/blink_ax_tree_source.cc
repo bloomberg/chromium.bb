@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
+#include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
@@ -877,6 +878,13 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
                            static_cast<int32_t>(src.SortDirection()));
     }
+  }
+
+  if (accessibility_mode_.has_mode(ui::AXMode::kLabelImages) &&
+      dst->role == ax::mojom::Role::kImage) {
+    DCHECK(image_annotator_);
+    dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
+                            image_annotator_->GetImageAnnotation(src));
   }
 
   // The majority of the rest of this code computes attributes needed for
