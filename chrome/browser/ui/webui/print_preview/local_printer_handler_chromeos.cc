@@ -80,8 +80,9 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 
   PrinterBasicInfo basic_info = ToBasicInfo(*printer);
 
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&GetSettingsOnBlockingPool, printer->id(), basic_info,
                      PrinterSemanticCapsAndDefaults::Papers(), nullptr),
       base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
