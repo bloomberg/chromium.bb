@@ -6136,28 +6136,24 @@ void GLES2Implementation::DrawElementsInstancedANGLE(GLenum mode,
                "count less than 0.");
     return;
   }
-  if (count == 0) {
-    return;
-  }
   if (primcount < 0) {
     SetGLError(GL_INVALID_VALUE, "glDrawElementsInstancedANGLE",
                "primcount < 0");
     return;
   }
-  if (primcount == 0) {
-    return;
-  }
-  if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
-      !ValidateOffset("glDrawElementsInstancedANGLE",
-                      reinterpret_cast<GLintptr>(indices))) {
-    return;
-  }
   GLuint offset = 0;
   bool simulated = false;
-  if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
-          "glDrawElementsInstancedANGLE", this, helper_, count, type, primcount,
-          indices, &offset, &simulated)) {
-    return;
+  if (count > 0 && primcount > 0) {
+    if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
+        !ValidateOffset("glDrawElementsInstancedANGLE",
+                        reinterpret_cast<GLintptr>(indices))) {
+      return;
+    }
+    if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
+            "glDrawElementsInstancedANGLE", this, helper_, count, type,
+            primcount, indices, &offset, &simulated)) {
+      return;
+    }
   }
   helper_->DrawElementsInstancedANGLE(mode, count, type, offset, primcount);
   RestoreElementAndArrayBuffers(simulated);

@@ -88,8 +88,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=660844) # WebGL 2.0.1
     self.Fail('conformance/rendering/rendering-sampling-feedback-loop.html',
         bug=660844) # WebGL 2.0.1
-    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
-        bug=928987)
     self.Fail('conformance2/extensions/ext-float-blend.html',
         bug=930993)
 
@@ -554,8 +552,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
-    # self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
-    #     ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
