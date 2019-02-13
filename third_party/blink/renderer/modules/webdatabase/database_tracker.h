@@ -72,7 +72,7 @@ class MODULES_EXPORT DatabaseTracker {
   void AddOpenDatabase(Database*);
   void RemoveOpenDatabase(Database*);
 
-  unsigned long long GetMaxSizeForDatabase(const Database*);
+  uint64_t GetMaxSizeForDatabase(const Database*);
 
   void CloseDatabasesImmediately(const SecurityOrigin*, const String& name);
 

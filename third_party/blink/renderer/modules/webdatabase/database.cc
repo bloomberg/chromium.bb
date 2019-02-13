@@ -734,7 +734,7 @@ void Database::ResetAuthorizer() {
     database_authorizer_->Reset();
 }
 
-unsigned long long Database::MaximumSize() const {
+uint64_t Database::MaximumSize() const {
   return DatabaseTracker::Tracker().GetMaxSizeForDatabase(this);
 }
 
