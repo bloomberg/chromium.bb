@@ -48,9 +48,7 @@ struct Data {
 };
 
 Data read_file_data_or_exit(const char* name) {
-  std::ifstream file;
-
-  file.open(name, std::ios::in | std::ios::binary);
+  std::ifstream file(name, std::ios::in | std::ios::binary);
   if (!file) {
     perror(name);
     exit(1);
@@ -63,11 +61,8 @@ Data read_file_data_or_exit(const char* name) {
   if (file && data.data)
     file.read(data.data.get(), data.size);
 
-  if (!file || !data.data) {
-    perror((std::string("error reading ") + name).c_str());
-    exit(1);
-  } else if (!data.size) {
-    fprintf(stderr, "%s is empty\n", name);
+  if (!file || !data.data || !data.size) {
+    perror((std::string("failed: reading ") + name).c_str());
     exit(1);
   }
 
@@ -107,12 +102,13 @@ const char* zlib_wrapper_name(zlib_wrapper type) {
   return 0;
 }
 
+static int zlib_compression_level;
+
 void zlib_compress(
     const zlib_wrapper type,
     const char* input,
     const size_t input_size,
     std::string* output,
-    const int compression_level,
     bool resize_output = false)
 {
   if (resize_output)
@@ -122,7 +118,7 @@ void zlib_compress(
   z_stream stream;
   memset(&stream, 0, sizeof(stream));
 
-  int result = deflateInit2(&stream, compression_level, Z_DEFLATED,
+  int result = deflateInit2(&stream, zlib_compression_level, Z_DEFLATED,
       zlib_stream_wrapper_type(type), MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
   if (result != Z_OK)
     error_exit("deflateInit2 failed", result);
@@ -182,8 +178,7 @@ void verify_equal(const char* input, size_t size, std::string* output) {
   exit(3);
 }
 
-void zlib_file(const char* name, const zlib_wrapper type,
-               const int compression_level) {
+void zlib_file(const char* name, const zlib_wrapper type) {
   /*
    * Read the file data.
    */
@@ -231,15 +226,13 @@ void zlib_file(const char* name, const zlib_wrapper type,
     auto start = now();
     for (int b = 0; b < blocks; ++b)
       for (int r = 0; r < repeats; ++r)
-        zlib_compress(type, input[b], input_length[b], &compressed[b],
-                      compression_level);
+        zlib_compress(type, input[b], input_length[b], &compressed[b]);
     ctime[run] = std::chrono::duration<double>(now() - start).count();
 
     // Compress again, resizing compressed, so we don't leave junk at the
     // end of the compressed string that could confuse zlib_uncompress().
     for (int b = 0; b < blocks; ++b)
-      zlib_compress(type, input[b], input_length[b], &compressed[b],
-                    compression_level, true);
+      zlib_compress(type, input[b], input_length[b], &compressed[b], true);
 
     for (int b = 0; b < blocks; ++b)
       output[b].resize(input_length[b]);
@@ -279,59 +272,45 @@ void zlib_file(const char* name, const zlib_wrapper type,
     deflate_rate_med, deflate_rate_max, inflate_rate_med, inflate_rate_max);
 }
 
+static int argn = 1;
+
+char* get_option(int argc, char* argv[], const char* option) {
+  if (argn < argc)
+    return !strcmp(argv[argn], option) ? argv[argn++] : 0;
+  return 0;
+}
+
+bool get_compression(int argc, char* argv[], int* value) {
+  if (argn < argc)
+    *value = atoi(argv[argn++]);
+  return *value >= 1 && *value <= 9;
+}
+
+void usage_exit(const char* program) {
+  printf("usage: %s gzip|zlib|raw [--compression 1:9] files...\n", program);
+  exit(1);
+}
+
 int main(int argc, char* argv[]) {
-  zlib_wrapper type = kWrapperNONE;
-  int file_index = 3;
-  // DEFAULT is equivalent to level 6. Compression level ranges from 1 to 9,
-  // being 0 used for Z_NO_COMPRESSION.
-  int compression_level = Z_DEFAULT_COMPRESSION;
+  zlib_wrapper type;
+  if (get_option(argc, argv, "zlib"))
+    type = kWrapperZLIB;
+  else if (get_option(argc, argv, "gzip"))
+    type = kWrapperGZIP;
+  else if (get_option(argc, argv, "raw"))
+    type = kWrapperZRAW;
+  else
+    usage_exit(argv[0]);
 
-  auto help_msg_exit = [&argv] {
-    printf("usage: %s -wrapper gzip|zlib|raw -compression [0:9] files...\n", argv[0]);
-    exit(1);
-  };
+  if (!get_option(argc, argv, "--compression"))
+    zlib_compression_level = Z_DEFAULT_COMPRESSION;
+  else if (!get_compression(argc, argv, &zlib_compression_level))
+    usage_exit(argv[0]);
 
-  // If no arguments were passed, print usage and exit.
-  if (argc == 1)
-    help_msg_exit();
-
-  if (argc > 1) {
-    if (strcmp(argv[1], "-wrapper") || !(strcmp(argv[1], "-h")) ||
-        !(strcmp(argv[1], "--help")))
-      help_msg_exit();
-
-    // Got check the argument count before reading.
-    if (argc < 3)
-      help_msg_exit();
-
-    if (!strcmp(argv[2], "zlib"))
-      type = kWrapperZLIB;
-    else if (!strcmp(argv[2], "gzip"))
-      type = kWrapperGZIP;
-    else if (!strcmp(argv[2], "raw"))
-      type = kWrapperZRAW;
-    else
-      help_msg_exit();
-  }
-
-  if (argc >= 4) {
-    if (!strcmp(argv[3], "-compression")) {
-      int user_level = atoi(argv[4]);
-      if ((user_level <= 9) && (user_level >= 0)) {
-        compression_level = user_level;
-        file_index = 5;
-      } else
-        help_msg_exit();
-    }
-  }
-
-  if ((type != kWrapperNONE) && (argc > 2)) {
-    while (file_index < argc) {
-      // TODO: return a status (e.g. success | fail).
-      zlib_file(argv[file_index], type, compression_level);
-      ++file_index;
-    }
-  }
+  if (argn >= argc)
+    usage_exit(argv[0]);
+  while (argn < argc)
+    zlib_file(argv[argn++], type);
 
   return 0;
 }
