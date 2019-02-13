@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -338,6 +339,12 @@ void DemoSession::EnsureOfflineResourcesLoaded(
   if (!demo_resources_)
     demo_resources_ = std::make_unique<DemoResources>(GetDemoConfig());
   demo_resources_->EnsureLoaded(std::move(load_callback));
+}
+
+// static
+void DemoSession::RecordAppLaunchSourceIfInDemoMode(AppLaunchSource source) {
+  if (IsDeviceInDemoMode())
+    UMA_HISTOGRAM_ENUMERATION("DemoMode.AppLaunchSource", source);
 }
 
 bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {

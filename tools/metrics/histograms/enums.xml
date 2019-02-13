@@ -11050,6 +11050,13 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="Screensaver"/>
 </enum>
 
+<enum name="DemoModeAppLaunchSource">
+  <summary>Source of App Launches in Demo Mode.</summary>
+  <int value="0" label="Shelf"/>
+  <int value="1" label="App List"/>
+  <int value="2" label="Highlights App"/>
+</enum>
+
 <enum name="DemoModeIdleLogoutWarningEvent">
   <int value="0" label="Shown"/>
   <int value="1" label="Canceled"/>

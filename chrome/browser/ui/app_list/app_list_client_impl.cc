@@ -333,6 +333,10 @@ app_list::SearchController* AppListClientImpl::GetSearchControllerForTest() {
   return search_controller_.get();
 }
 
+AppListModelUpdater* AppListClientImpl::GetModelUpdaterForTest() {
+  return model_updater_;
+}
+
 void AppListClientImpl::OnTemplateURLServiceChanged() {
   DCHECK(model_updater_);
 

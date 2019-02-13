@@ -50,6 +50,22 @@ class DemoSession : public session_manager::SessionManagerObserver,
     kLast = kOffline,
   };
 
+  // Indicates the source of an app launch when in Demo mode for UMA
+  // stat reporting purposes.  Because they are used for a UMA stat,
+  // these values should not be changed or moved.
+  enum class AppLaunchSource {
+    // Logged when apps are launched from the Shelf in Demo Mode.
+    kShelf = 0,
+    // Logged when apps are launched from the App List in Demo Mode.
+    kAppList = 1,
+    // Logged by any Extension APIs used by the Highlights App to launch apps in
+    // Demo Mode.
+    kExtensionApi = 2,
+    // Add future entries above this comment, in sync with enums.xml.
+    // Update kMaxValue to the last value.
+    kMaxValue = kExtensionApi
+  };
+
   static std::string DemoConfigToString(DemoModeConfig config);
 
   // Whether the device is set up to run demo sessions.
@@ -90,6 +106,9 @@ class DemoSession : public session_manager::SessionManagerObserver,
   static bool ShouldDisplayInAppLauncher(const std::string& app_id);
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Records the launch of an app in Demo mode from the specified source.
+  static void RecordAppLaunchSourceIfInDemoMode(AppLaunchSource source);
 
   // Ensures that the load of offline demo session resources is requested.
   // |load_callback| will be run once the offline resource load finishes.

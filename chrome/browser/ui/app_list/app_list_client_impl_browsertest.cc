@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
@@ -12,10 +14,12 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -290,4 +294,67 @@ IN_PROC_BROWSER_TEST_F(AppListClientGuestModeBrowserTest, Incognito) {
 
   client->ShowAppList();
   EXPECT_EQ(browser()->profile(), client->GetCurrentAppListProfile());
+}
+
+class AppListAppLaunchTest : public extensions::ExtensionBrowserTest {
+ protected:
+  AppListAppLaunchTest() : extensions::ExtensionBrowserTest() {
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
+  }
+  ~AppListAppLaunchTest() override = default;
+
+  // InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    extensions::ExtensionBrowserTest::SetUpOnMainThread();
+
+    AppListClientImpl* app_list = AppListClientImpl::GetInstance();
+    EXPECT_TRUE(app_list != nullptr);
+
+    // Need to set the profile to get the model updater.
+    app_list->UpdateProfile();
+    model_updater_ = app_list->GetModelUpdaterForTest();
+    EXPECT_TRUE(model_updater_ != nullptr);
+  }
+
+  void LaunchChromeAppListItem(const std::string& id) {
+    model_updater_->FindItem(id)->PerformActivate(ui::EF_NONE);
+  }
+
+  // Captures histograms.
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
+
+ private:
+  AppListModelUpdater* model_updater_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListAppLaunchTest);
+};
+
+IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest,
+                       NoDemoModeAppLaunchSourceReported) {
+  EXPECT_FALSE(chromeos::DemoSession::IsDeviceInDemoMode());
+  LaunchChromeAppListItem(extension_misc::kChromeAppId);
+
+  // Should see 0 apps launched from the Launcher in the histogram when not in
+  // Demo mode.
+  histogram_tester_->ExpectTotalCount("DemoMode.AppLaunchSource", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest, DemoModeAppLaunchSourceReported) {
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(chromeos::DemoSession::IsDeviceInDemoMode());
+
+  // Should see 0 apps launched from the Launcher in the histogram at first.
+  histogram_tester_->ExpectTotalCount("DemoMode.AppLaunchSource", 0);
+
+  // Launch chrome browser from the Launcher.  The same mechanism
+  // (ChromeAppListItem) is used for all types of apps
+  // (ARC, extension, etc), so launching just the browser suffices
+  // to test all these cases.
+  LaunchChromeAppListItem(extension_misc::kChromeAppId);
+
+  // Should see 1 app launched from the Launcher in the histogram.
+  histogram_tester_->ExpectUniqueSample(
+      "DemoMode.AppLaunchSource",
+      chromeos::DemoSession::AppLaunchSource::kAppList, 1);
 }
