@@ -22,22 +22,38 @@
 
 namespace ash {
 
+// static private
+base::Optional<AshMessageCenterLockScreenController::Mode>
+    AshMessageCenterLockScreenController::overridden_mode_for_testing_;
+
 // static
 bool AshMessageCenterLockScreenController::IsEnabled() {
-  return GetMode() != Mode::HIDE;
+  auto mode = GetMode();
+  bool is_showing = (mode == Mode::SHOW || mode == Mode::HIDE_SENSITIVE);
+  // If |isAllowed()| is false, must return false;
+  DCHECK(!is_showing || IsAllowed());
+  return is_showing;
 }
 
 // static
+bool AshMessageCenterLockScreenController::IsAllowed() {
+  return GetMode() != Mode::PROHIBITED;
+}
+
+// static, private
 AshMessageCenterLockScreenController::Mode
 AshMessageCenterLockScreenController::GetMode() {
+  if (overridden_mode_for_testing_.has_value())
+    return *overridden_mode_for_testing_;
+
   if (!features::IsLockScreenNotificationsEnabled())
-    return Mode::HIDE;
+    return Mode::PROHIBITED;
 
   // User prefs may be null in some tests.
   PrefService* user_prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   if (!user_prefs)
-    return Mode::HIDE;
+    return Mode::PROHIBITED;
 
   const std::string& mode =
       user_prefs->GetString(prefs::kMessageCenterLockScreenMode);
@@ -48,6 +64,12 @@ AshMessageCenterLockScreenController::GetMode() {
     return Mode::HIDE_SENSITIVE;
 
   return Mode::HIDE;
+}
+
+// static, only for testing
+void AshMessageCenterLockScreenController::OverrideModeForTest(
+    base::Optional<AshMessageCenterLockScreenController::Mode> new_mode) {
+  overridden_mode_for_testing_ = new_mode;
 }
 
 namespace {

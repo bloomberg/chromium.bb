@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
+#include "base/optional.h"
 #include "components/account_id/account_id.h"
 #include "ui/message_center/lock_screen/lock_screen_controller.h"
 
@@ -17,15 +18,14 @@ class AshMessageCenterLockScreenController
     : public message_center::LockScreenController,
       public SessionObserver {
  public:
-  // Modes of the lock screen notification.
-  enum class Mode { HIDE, SHOW, HIDE_SENSITIVE };
-
   // Returns if the message center shows the notifications on the lock screen
   // or not. True if it shows, false if doesn't.
   static ASH_EXPORT bool IsEnabled();
 
-  // Returns the current mode of the lock screen notification.
-  static Mode GetMode();
+  // Returns if the message center on the lock screen is forcibly disabled,
+  // due to the policy or the corrupt state.
+  // When this returns true, |IsEnabled()| must return false.
+  static ASH_EXPORT bool IsAllowed();
 
   AshMessageCenterLockScreenController();
   ~AshMessageCenterLockScreenController() override;
@@ -36,6 +36,27 @@ class AshMessageCenterLockScreenController
   bool IsScreenLocked() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(UnifiedSystemTrayControllerTest,
+                           NotificationHiddenView_ModeShow);
+  FRIEND_TEST_ALL_PREFIXES(UnifiedSystemTrayControllerTest,
+                           NotificationHiddenView_ModeHide);
+  FRIEND_TEST_ALL_PREFIXES(UnifiedSystemTrayControllerTest,
+                           NotificationHiddenView_ModeHideSensitive);
+  FRIEND_TEST_ALL_PREFIXES(UnifiedSystemTrayControllerTest,
+                           NotificationHiddenView_ModeProhibited);
+
+  // Modes of the lock screen notification.
+  enum class Mode { PROHIBITED, HIDE, SHOW, HIDE_SENSITIVE };
+
+  // Returns the current mode of the lock screen notification.
+  static Mode GetMode();
+
+  // Override the current mode for tests.
+  // Exporting for test.
+  static ASH_EXPORT void OverrideModeForTest(base::Optional<Mode> new_mode);
+
+  static base::Optional<Mode> overridden_mode_for_testing_;
+
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
