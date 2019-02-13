@@ -83,7 +83,7 @@ const char* V8TestLegacyCallbackInterface::NameInHeapSnapshot() const {
   return "V8TestLegacyCallbackInterface";
 }
 
-v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* callback_this_value, Node* node) {
+v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, Node* node) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateOrThrowException(
           "TestLegacyCallbackInterface",
@@ -153,11 +153,11 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
     //   interface, or if !IsCallable(O) is false, set thisArg to O (overriding
     //   the provided value).
     this_arg = CallbackObject();
-  } else if (!callback_this_value) {
+  } else if (callback_this_value.IsEmpty()) {
     // step 2. If thisArg was not given, let thisArg be undefined.
     this_arg = v8::Undefined(GetIsolate());
   } else {
-    this_arg = ToV8(callback_this_value, callback_relevant_script_state);
+    this_arg = callback_this_value.V8Value(callback_relevant_script_state);
   }
 
   // step: Let esArgs be the result of converting args to an ECMAScript
@@ -203,7 +203,7 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
   }
 }
 
-v8::Maybe<uint16_t> V8PersistentCallbackInterface<V8TestLegacyCallbackInterface>::acceptNode(ScriptWrappable* callback_this_value, Node* node) {
+v8::Maybe<uint16_t> V8PersistentCallbackInterface<V8TestLegacyCallbackInterface>::acceptNode(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, Node* node) {
   return Proxy()->acceptNode(
       callback_this_value, node);
 }

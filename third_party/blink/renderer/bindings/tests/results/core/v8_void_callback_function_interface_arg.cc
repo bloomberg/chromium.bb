@@ -27,7 +27,7 @@ const char* V8VoidCallbackFunctionInterfaceArg::NameInHeapSnapshot() const {
   return "V8VoidCallbackFunctionInterfaceArg";
 }
 
-v8::Maybe<void> V8VoidCallbackFunctionInterfaceArg::Invoke(ScriptWrappable* callback_this_value, HTMLDivElement* divElement) {
+v8::Maybe<void> V8VoidCallbackFunctionInterfaceArg::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, HTMLDivElement* divElement) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateOrThrowException(
           "VoidCallbackFunctionInterfaceArg",
@@ -70,7 +70,12 @@ v8::Maybe<void> V8VoidCallbackFunctionInterfaceArg::Invoke(ScriptWrappable* call
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
+  if (callback_this_value.IsEmpty()) {
+    // step 2. If thisArg was not given, let thisArg be undefined.
+    this_arg = v8::Undefined(GetIsolate());
+  } else {
+    this_arg = callback_this_value.V8Value(callback_relevant_script_state);
+  }
 
   // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
@@ -103,7 +108,7 @@ v8::Maybe<void> V8VoidCallbackFunctionInterfaceArg::Invoke(ScriptWrappable* call
   return v8::JustVoid();
 }
 
-void V8VoidCallbackFunctionInterfaceArg::InvokeAndReportException(ScriptWrappable* callback_this_value, HTMLDivElement* divElement) {
+void V8VoidCallbackFunctionInterfaceArg::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, HTMLDivElement* divElement) {
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
@@ -113,12 +118,12 @@ void V8VoidCallbackFunctionInterfaceArg::InvokeAndReportException(ScriptWrappabl
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionInterfaceArg>::Invoke(ScriptWrappable* callback_this_value, HTMLDivElement* divElement) {
+v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionInterfaceArg>::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, HTMLDivElement* divElement) {
   return Proxy()->Invoke(
       callback_this_value, divElement);
 }
 
-void V8PersistentCallbackFunction<V8VoidCallbackFunctionInterfaceArg>::InvokeAndReportException(ScriptWrappable* callback_this_value, HTMLDivElement* divElement) {
+void V8PersistentCallbackFunction<V8VoidCallbackFunctionInterfaceArg>::InvokeAndReportException(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, HTMLDivElement* divElement) {
   Proxy()->InvokeAndReportException(
       callback_this_value, divElement);
 }

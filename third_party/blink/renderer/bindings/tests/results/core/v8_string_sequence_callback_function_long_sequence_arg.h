@@ -13,11 +13,10 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/platform/bindings/v8_value_or_script_wrappable_adapter.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
-
-class ScriptWrappable;
 
 class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public CallbackFunctionBase {
  public:
@@ -34,7 +33,7 @@ class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public
 
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
-  v8::Maybe<Vector<String>> Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
+  v8::Maybe<Vector<String>> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
 };
 
 template <>
@@ -49,7 +48,7 @@ class V8PersistentCallbackFunction<V8StringSequenceCallbackFunctionLongSequenceA
   // Returns a wrapper-tracing version of this callback function.
   V8CallbackFunction* ToNonV8Persistent() { return Proxy(); }
 
-  v8::Maybe<Vector<String>> Invoke(ScriptWrappable* callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
+  v8::Maybe<Vector<String>> Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const Vector<int32_t>& arg) WARN_UNUSED_RESULT;
 
  private:
   V8CallbackFunction* Proxy() {
