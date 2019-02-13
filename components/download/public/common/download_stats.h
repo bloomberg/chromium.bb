@@ -408,6 +408,8 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadHttpResponseCode(
 COMPONENTS_DOWNLOAD_EXPORT void RecordInProgressDBCount(
     InProgressDBCountTypes type);
 
+COMPONENTS_DOWNLOAD_EXPORT void RecordDuplicateInProgressDownloadIdCount(
+    int count);
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_STATS_H_

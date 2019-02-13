@@ -1278,6 +1278,10 @@ void DownloadItemImpl::SetDelegate(DownloadItemImplDelegate* delegate) {
   delegate_->Attach();
 }
 
+void DownloadItemImpl::SetDownloadId(uint32_t download_id) {
+  download_id_ = download_id;
+}
+
 // **** Download progression cascade
 
 void DownloadItemImpl::Init(bool active,

@@ -72,6 +72,12 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
       item->GetFileExternallyRemoved());
 }
 
+// For download that doesn't require full browser process, origin security check
+// is skipped as the download is either resumption or from a secure source.
+bool IgnoreOriginSecurityCheck(const GURL& url) {
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -293,9 +299,9 @@ void DownloadManagerService::ResumeDownload(
     bool is_off_the_record,
     bool has_user_gesture) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  if (is_pending_downloads_loaded_ || is_off_the_record)
+  if (is_pending_downloads_loaded_ || is_off_the_record) {
     ResumeDownloadInternal(download_guid, is_off_the_record, has_user_gesture);
-  else {
+  } else {
     EnqueueDownloadAction(download_guid,
                           DownloadActionParams(RESUME, has_user_gesture));
   }
@@ -652,7 +658,7 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
   base::android::GetDataDirectory(&data_dir);
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
       nullptr, data_dir.Append(chrome::kInitialProfile),
-      download::InProgressDownloadManager::IsOriginSecureCallback(),
+      base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
   content::GetNetworkServiceFromConnector(service_binding_.GetConnector());
   scoped_refptr<network::SharedURLLoaderFactory> factory =

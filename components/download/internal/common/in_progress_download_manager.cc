@@ -171,6 +171,28 @@ void InProgressDownloadManager::OnUrlDownloadHandlerCreated(
     url_download_handlers_.push_back(std::move(downloader));
 }
 
+bool InProgressDownloadManager::DownloadUrl(
+    std::unique_ptr<DownloadUrlParameters> params) {
+  DCHECK(!delegate_);
+  DCHECK(params->is_transient());
+
+  if (!url_loader_factory_getter_)
+    return false;
+
+  if (params->require_safety_checks())
+    return false;
+
+  if (params->file_path().empty())
+    return false;
+
+  // Start the new download, the download should be saved to the file path
+  // specifcied in the |params|.
+  BeginDownload(std::move(params), url_loader_factory_getter_,
+                true /* is_new_download */, GURL() /* site_url */,
+                GURL() /* tab_url */, GURL() /* tab_referral_url */);
+  return true;
+}
+
 void InProgressDownloadManager::BeginDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
@@ -322,6 +344,10 @@ void InProgressDownloadManager::StartDownload(
                        std::move(url_loader_factory_getter)));
   } else {
     std::string guid = info->guid;
+    if (info->is_new_download) {
+      in_progress_downloads_.push_back(std::make_unique<DownloadItemImpl>(
+          this, DownloadItem::kInvalidId, *info));
+    }
     StartDownloadWithItem(std::move(stream),
                           std::move(url_loader_factory_getter), std::move(info),
                           GetInProgressDownload(guid), false);
@@ -389,6 +415,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
 void InProgressDownloadManager::OnInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
+  std::set<uint32_t> download_ids;
+  int num_duplicates = 0;
   for (const auto& entry : *entries) {
     base::Optional<DownloadEntry> download_entry =
         CreateDownloadEntryFromDownloadDBEntry(entry);
@@ -398,10 +426,21 @@ void InProgressDownloadManager::OnInitialized(
       auto item = CreateDownloadItemImpl(this, entry);
       if (!item)
         continue;
+      uint32_t download_id = item->GetId();
+      // Remove entries with duplicate ids.
+      if (download_id != DownloadItem::kInvalidId &&
+          base::ContainsKey(download_ids, download_id)) {
+        RemoveInProgressDownload(item->GetGuid());
+        num_duplicates++;
+        continue;
+      }
       item->AddObserver(download_db_cache_.get());
       in_progress_downloads_.emplace_back(std::move(item));
+      download_ids.insert(download_id);
     }
   }
+  if (num_duplicates > 0)
+    RecordDuplicateInProgressDownloadIdCount(num_duplicates);
   if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads))
     OnAllInprogressDownloadsLoaded();
   is_initialized_ = true;
