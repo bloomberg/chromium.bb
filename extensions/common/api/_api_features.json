@@ -479,7 +479,8 @@
   },
   "storage": {
     "dependencies": ["permission:storage"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script",
+                 "extension_service_worker"]
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],

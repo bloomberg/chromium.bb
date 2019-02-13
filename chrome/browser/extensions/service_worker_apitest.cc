@@ -295,6 +295,13 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
       << message_;
 }
 
+// Tests chrome.storage APIs.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, StorageSetAndGet) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/storage"))
+      << message_;
+}
+
 // Listens for |message| from extension Service Worker early so that tests can
 // wait for the message on startup (and not miss it).
 class ServiceWorkerWithEarlyMessageListenerTest
