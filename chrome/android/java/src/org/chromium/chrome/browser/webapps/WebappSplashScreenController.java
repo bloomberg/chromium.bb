@@ -145,7 +145,7 @@ public class WebappSplashScreenController extends EmptyTabObserver {
         // Without this callback we were seeing a short flash of white between the splash screen and
         // the web content (crbug.com/734500).
         mCompositorViewHolder.getCompositorView().surfaceRedrawNeededAsync(() -> {
-            if (mDelegate != null && !mDelegate.isSplashVisible()) return;
+            if (mDelegate == null || !mDelegate.isSplashVisible()) return;
             mDelegate.hideSplash(onHiddenCallback);
         });
     }
