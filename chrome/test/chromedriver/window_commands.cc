@@ -681,9 +681,9 @@ Status ExecuteGetPageSource(Session* session,
                             std::unique_ptr<base::Value>* value,
                             Timeout* timeout) {
   const char kGetPageSource[] =
-      "function() {"
-      "  return new XMLSerializer().serializeToString(document);"
-      "}";
+      " () => document.documentElement"
+      " ? document.documentElement.outerHTML : ''";
+
   base::ListValue args;
   return web_view->CallFunction(
       session->GetCurrentFrameId(), kGetPageSource, args, value);
