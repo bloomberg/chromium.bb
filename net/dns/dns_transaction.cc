@@ -794,11 +794,13 @@ class DnsTransactionImpl : public DnsTransaction,
                      uint16_t qtype,
                      DnsTransactionFactory::CallbackType callback,
                      const NetLogWithSource& net_log,
-                     const OptRecordRdata* opt_rdata)
+                     const OptRecordRdata* opt_rdata,
+                     SecureDnsMode secure_dns_mode)
       : session_(session),
         hostname_(hostname),
         qtype_(qtype),
         opt_rdata_(opt_rdata),
+        secure_dns_mode_(secure_dns_mode),
         callback_(std::move(callback)),
         net_log_(net_log),
         qnames_initial_size_(0),
@@ -941,12 +943,17 @@ class DnsTransactionImpl : public DnsTransaction,
   }
 
   AttemptResult MakeAttempt() {
-    // Make an HTTP attempt unless we have already made more attempts
-    // than we have configured servers. Otherwise make a UDP attempt
-    // as long as we have configured nameservers.
     DnsConfig config = session_->config();
-    if (doh_attempts_ < config.dns_over_https_servers.size())
+    // In AUTOMATIC and SECURE mode, make an HTTP attempt unless we have already
+    // made more attempts than we have configured servers.
+    if (secure_dns_mode_ != SecureDnsMode::OFF &&
+        doh_attempts_ < config.dns_over_https_servers.size()) {
       return MakeHTTPAttempt(config.dns_over_https_servers);
+    }
+    // In AUTOMATIC mode, insecure attempts are allowed after HTTP attempts are
+    // exhausted. In OFF mode, only insecure attempts are allowed. It should
+    // not be possible to reach this point in SECURE mode.
+    DCHECK_NE(secure_dns_mode_, SecureDnsMode::SECURE);
     DCHECK_GT(config.nameservers.size(), 0u);
     return MakeUDPAttempt();
   }
@@ -1134,8 +1141,19 @@ class DnsTransactionImpl : public DnsTransaction,
     if (had_tcp_attempt_)
       return false;
     const DnsConfig& config = session_->config();
-    return attempts_.size() < config.attempts * config.nameservers.size() +
-                                  config.dns_over_https_servers.size();
+    unsigned insecure_attempts_possible =
+        config.attempts * config.nameservers.size();
+    unsigned secure_attempts_possible = config.dns_over_https_servers.size();
+
+    switch (secure_dns_mode_) {
+      case SecureDnsMode::SECURE:
+        return attempts_.size() < secure_attempts_possible;
+      case SecureDnsMode::AUTOMATIC:
+        return attempts_.size() <
+               secure_attempts_possible + insecure_attempts_possible;
+      case SecureDnsMode::OFF:
+        return attempts_.size() < insecure_attempts_possible;
+    }
   }
 
   // Resolves the result of a DnsAttempt until a terminal result is reached
@@ -1226,6 +1244,7 @@ class DnsTransactionImpl : public DnsTransaction,
   std::string hostname_;
   uint16_t qtype_;
   const OptRecordRdata* opt_rdata_;
+  const SecureDnsMode secure_dns_mode_;
   // Cleared in DoCallback.
   DnsTransactionFactory::CallbackType callback_;
 
@@ -1270,10 +1289,11 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
       const std::string& hostname,
       uint16_t qtype,
       CallbackType callback,
-      const NetLogWithSource& net_log) override {
-    return std::make_unique<DnsTransactionImpl>(session_.get(), hostname, qtype,
-                                                std::move(callback), net_log,
-                                                opt_rdata_.get());
+      const NetLogWithSource& net_log,
+      SecureDnsMode secure_dns_mode) override {
+    return std::make_unique<DnsTransactionImpl>(
+        session_.get(), hostname, qtype, std::move(callback), net_log,
+        opt_rdata_.get(), secure_dns_mode);
   }
 
   void AddEDNSOption(const OptRecordRdata::Opt& opt) override {

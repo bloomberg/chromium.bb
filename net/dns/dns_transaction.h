@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "net/base/request_priority.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/record_rdata.h"
 #include "url/gurl.h"
 
@@ -69,11 +70,18 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   //
   // The transaction will run |callback| upon asynchronous completion.
   // The |net_log| is used as the parent log.
+  //
+  // The |secure_dns_mode| specifies the order in which secure and/or insecure
+  // DNS lookups will be performed. In SECURE mode, only secure lookups will be
+  // perfomed. In AUTOMATIC mode, secure lookups will be performed first when
+  // possible, and insecure lookups will be performed as a fallback. In OFF
+  // mode, only insecure lookups will be performed.
   virtual std::unique_ptr<DnsTransaction> CreateTransaction(
       const std::string& hostname,
       uint16_t qtype,
       CallbackType callback,
-      const NetLogWithSource& net_log) WARN_UNUSED_RESULT = 0;
+      const NetLogWithSource& net_log,
+      SecureDnsMode secure_dns_mode) WARN_UNUSED_RESULT = 0;
 
   // The given EDNS0 option will be included in all DNS queries performed by
   // transactions from this factory.

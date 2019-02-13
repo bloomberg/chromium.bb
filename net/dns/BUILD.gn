@@ -291,6 +291,7 @@ source_set("dns_client") {
       "dns_client.h",
       "dns_response.h",
       "dns_transaction.h",
+      "dns_util.h",
       "record_parsed.h",
       "record_rdata.h",
     ]
