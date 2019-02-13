@@ -154,7 +154,12 @@ def main():
                                  os.path.join(src_path,
                                               TRANSLATION_EXPECTATIONS_PATH))
   if not screenshots:
-    print 'No screenshots found, exiting.'
+    print ("No screenshots found.\n\n"
+           "- Screenshots must be located in the correct directory.\n"
+           "  E.g. For IDS_HELLO_WORLD message in path/to/file.grd, save the "
+           "screenshot at path/to/file_grd/IDS_HELLO_WORLD.png.\n"
+           "- If you added a new, uncommitted .grd file, `git add` it so that "
+           "this script can pick up its screenshot directory.")
     exit(0)
 
   print 'Found %d updated screenshot(s): ' % len(screenshots)
