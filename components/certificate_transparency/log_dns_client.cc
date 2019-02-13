@@ -27,6 +27,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_parsed.h"
 #include "net/dns/record_rdata.h"
@@ -471,7 +472,7 @@ bool AuditProofQueryImpl::StartDnsTransaction(const std::string& qname) {
       qname, net::dns_protocol::kTypeTXT,
       base::BindOnce(&AuditProofQueryImpl::OnDnsTransactionComplete,
                      weak_ptr_factory_.GetWeakPtr()),
-      net_log_);
+      net_log_, net::SecureDnsMode::AUTOMATIC);
 
   current_dns_transaction_->Start();
   return true;

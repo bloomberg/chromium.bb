@@ -17,6 +17,7 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log_with_source.h"
 
@@ -109,7 +110,7 @@ void DnsProbeRunner::RunProbe(const base::Closure& callback) {
       kKnownGoodHostname, net::dns_protocol::kTypeA,
       base::Bind(&DnsProbeRunner::OnTransactionComplete,
                  weak_factory_.GetWeakPtr()),
-      NetLogWithSource());
+      NetLogWithSource(), net::SecureDnsMode::AUTOMATIC);
 
   transaction_->Start();
 }

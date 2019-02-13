@@ -246,7 +246,17 @@ class TestSocketFactory : public MockClientSocketFactory {
     remote_endpoints_.push_back(endpoint);
   }
 
-  std::vector<IPEndPoint> remote_endpoints_;
+  struct RemoteNameserver {
+    RemoteNameserver(IPEndPoint insecure_nameserver)
+        : insecure_nameserver(insecure_nameserver) {}
+    RemoteNameserver(DnsConfig::DnsOverHttpsServerConfig secure_nameserver)
+        : secure_nameserver(secure_nameserver) {}
+
+    base::Optional<IPEndPoint> insecure_nameserver;
+    base::Optional<DnsConfig::DnsOverHttpsServerConfig> secure_nameserver;
+  };
+
+  std::vector<RemoteNameserver> remote_endpoints_;
   bool fail_next_socket_;
 
  private:
@@ -269,6 +279,7 @@ class TransactionHelper {
                     int expected_answer_count)
       : hostname_(hostname),
         qtype_(qtype),
+        secure_dns_mode_(SecureDnsMode::AUTOMATIC),
         response_(nullptr),
         expected_answer_count_(expected_answer_count),
         cancel_in_callback_(false),
@@ -277,13 +288,19 @@ class TransactionHelper {
   // Mark that the transaction shall be destroyed immediately upon callback.
   void set_cancel_in_callback() { cancel_in_callback_ = true; }
 
+  // Set the secure DNS mode for the transaction.
+  void set_secure_dns_mode(SecureDnsMode secure_dns_mode) {
+    secure_dns_mode_ = secure_dns_mode;
+  }
+
   void StartTransaction(DnsTransactionFactory* factory) {
     EXPECT_EQ(NULL, transaction_.get());
     transaction_ = factory->CreateTransaction(
         hostname_, qtype_,
         base::Bind(&TransactionHelper::OnTransactionComplete,
                    base::Unretained(this)),
-        NetLogWithSource::Make(&net_log_, net::NetLogSourceType::NONE));
+        NetLogWithSource::Make(&net_log_, net::NetLogSourceType::NONE),
+        secure_dns_mode_);
     transaction_->SetRequestContext(&request_context_);
     transaction_->SetRequestPriority(DEFAULT_PRIORITY);
     EXPECT_EQ(hostname_, transaction_->GetHostname());
@@ -360,6 +377,7 @@ class TransactionHelper {
  private:
   std::string hostname_;
   uint16_t qtype_;
+  SecureDnsMode secure_dns_mode_;
   std::unique_ptr<DnsTransaction> transaction_;
   const DnsResponse* response_;
   int expected_answer_count_;
@@ -669,9 +687,20 @@ class DnsTransactionTestBase : public testing::Test {
   // |servers|.
   void CheckServerOrder(const unsigned* servers, size_t num_attempts) {
     ASSERT_EQ(num_attempts, socket_factory_->remote_endpoints_.size());
+    auto num_insecure_nameservers = session_->config().nameservers.size();
     for (size_t i = 0; i < num_attempts; ++i) {
-      EXPECT_EQ(socket_factory_->remote_endpoints_[i],
-                session_->config().nameservers[servers[i]]);
+      if (servers[i] < num_insecure_nameservers) {
+        // Check insecure server match.
+        EXPECT_EQ(
+            socket_factory_->remote_endpoints_[i].insecure_nameserver.value(),
+            session_->config().nameservers[servers[i]]);
+      } else {
+        // Check secure server match.
+        EXPECT_EQ(
+            socket_factory_->remote_endpoints_[i].secure_nameserver.value(),
+            session_->config()
+                .dns_over_https_servers[servers[i] - num_insecure_nameservers]);
+      }
     }
   }
 
@@ -762,6 +791,7 @@ class DnsTransactionTest : public DnsTransactionTestBase,
       if (server.use_post && request->method() == "POST") {
         if (url_base == request->url().spec()) {
           server_found = true;
+          socket_factory_->remote_endpoints_.push_back(server);
         }
       } else if (!server.use_post && request->method() == "GET") {
         std::string prefix = url_base + "?dns=";
@@ -769,6 +799,7 @@ class DnsTransactionTest : public DnsTransactionTestBase,
                                      request->url().spec().begin());
         if (mispair.first == prefix.end()) {
           server_found = true;
+          socket_factory_->remote_endpoints_.push_back(server);
         }
       }
     }
@@ -1552,6 +1583,43 @@ TEST_F(DnsTransactionTest, HttpsPostFailThenUDPFallback) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailStart));
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  unsigned kOrder0[] = {1, 0};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
+}
+
+TEST_F(DnsTransactionTest, HttpsPostFailNoUDPFallbackInSecureMode) {
+  config_.attempts = 1;
+  ConfigureNumServers(2);
+  ConfigDohServers(false /* clear_udp */, true /* use_post */, 2);
+  AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS);
+  AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::HTTPS);
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_FAILED);
+  helper0.set_secure_dns_mode(SecureDnsMode::SECURE);
+  SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailStart));
+  EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  unsigned kOrder0[] = {2, 3};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
+}
+
+TEST_F(DnsTransactionTest, NoHttpsAttemptInOffMode) {
+  config_.attempts = 2;
+  ConfigureNumServers(2);
+  ConfigDohServers(false /* clear_udp */, true /* use_post */, 2);
+  AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::UDP);
+  AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::UDP);
+  AddQueryAndErrorResponse(0, kT0HostName, kT0Qtype, ERR_CONNECTION_REFUSED,
+                           SYNCHRONOUS, Transport::UDP);
+  AddQueryAndResponse(0, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                      base::size(kT0ResponseDatagram), ASYNC, Transport::UDP);
+  TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
+  helper0.set_secure_dns_mode(SecureDnsMode::OFF);
+  EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  unsigned kOrder0[] = {0, 1, 0, 1};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
 TEST_F(DnsTransactionTest, HttpsPostFailThenUDPFailThenUDPFallback) {
@@ -1575,6 +1643,8 @@ TEST_F(DnsTransactionTest, HttpsPostFailThenUDPFailThenUDPFallback) {
   EXPECT_EQ(session_->NextGoodServerIndex(0), 1u);
   EXPECT_EQ(session_->NextGoodServerIndex(1), 1u);
   EXPECT_EQ(session_->NextGoodServerIndex(2), 2u);
+  unsigned kOrder0[] = {3, 0, 1};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
 TEST_F(DnsTransactionTest, HttpsMarkUdpBad) {
@@ -1595,6 +1665,8 @@ TEST_F(DnsTransactionTest, HttpsMarkUdpBad) {
   EXPECT_EQ(session_->NextGoodServerIndex(0), 1u);
   EXPECT_EQ(session_->NextGoodServerIndex(1), 1u);
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(2), 2u);
+  unsigned kOrder0[] = {2, 0, 1};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 
   AddQueryAndErrorResponse(1, kT1HostName, kT1Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS);
@@ -1612,6 +1684,11 @@ TEST_F(DnsTransactionTest, HttpsMarkUdpBad) {
   EXPECT_EQ(session_->NextGoodServerIndex(0), 0u);
   EXPECT_EQ(session_->NextGoodServerIndex(1), 0u);
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(2), 2u);
+  unsigned kOrder1[] = {
+      2, 0, 1, /* transaction0 */
+      2, 1, 0  /* transaction1 */
+  };
+  CheckServerOrder(kOrder1, base::size(kOrder1));
 }
 
 TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
@@ -1627,7 +1704,6 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
                            SYNCHRONOUS, Transport::HTTPS);
   AddQueryAndErrorResponse(1, kT1HostName, kT1Qtype, ERR_CONNECTION_REFUSED,
                            SYNCHRONOUS, Transport::HTTPS);
-
   AddQueryAndResponse(1, kT1HostName, kT1Qtype, kT1ResponseDatagram,
                       base::size(kT1ResponseDatagram), ASYNC, Transport::HTTPS);
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
@@ -1640,6 +1716,8 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(1), 3u);
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(2), 3u);
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(3), 3u);
+  unsigned kOrder0[] = {1, 2, 3};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));
   // Server 0 is still our only UDP server, so will be good by definition.
@@ -1651,6 +1729,11 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(1), 2u);
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(2), 2u);
   EXPECT_EQ(session_->NextGoodDnsOverHttpsServerIndex(3), 2u);
+  unsigned kOrder1[] = {
+      1, 2, 3, /* transaction0 */
+      3, 1, 2  /* transaction1 */
+  };
+  CheckServerOrder(kOrder1, base::size(kOrder1));
 }
 
 TEST_F(DnsTransactionTest, HttpsPostFailThenHTTPFallback) {
@@ -1662,6 +1745,8 @@ TEST_F(DnsTransactionTest, HttpsPostFailThenHTTPFallback) {
                       Transport::HTTPS);
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  unsigned kOrder0[] = {0, 1};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
 TEST_F(DnsTransactionTest, HttpsPostFailTwiceThenUDPFallback) {
@@ -1678,6 +1763,8 @@ TEST_F(DnsTransactionTest, HttpsPostFailTwiceThenUDPFallback) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailStart));
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  unsigned kOrder0[] = {1, 2, 0};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
 TEST_F(DnsTransactionTest, HttpsPostFailTwice) {
@@ -1692,6 +1779,8 @@ TEST_F(DnsTransactionTest, HttpsPostFailTwice) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_FAILED);
   SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailStart));
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
+  unsigned kOrder0[] = {0, 1};
+  CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
 void MakeResponseWithCookie(URLRequest* request, HttpResponseInfo* info) {

@@ -441,7 +441,8 @@ class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
       const std::string& hostname,
       uint16_t qtype,
       DnsTransactionFactory::CallbackType callback,
-      const NetLogWithSource&) override {
+      const NetLogWithSource&,
+      SecureDnsMode) override {
     std::unique_ptr<MockTransaction> transaction =
         std::make_unique<MockTransaction>(rules_, hostname, qtype,
                                           std::move(callback));
