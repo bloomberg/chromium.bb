@@ -402,7 +402,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // output buffer is |output_buffer_index| and its id is |bitstream_buffer_id|.
   bool ProcessFrame(int32_t bitstream_buffer_id, V4L2ReadableBufferRef buf);
 
-  void SendBufferToClient(size_t buffer_index, int32_t bitstream_buffer_id);
+  void SendBufferToClient(size_t buffer_index,
+                          int32_t bitstream_buffer_id,
+                          V4L2ReadableBufferRef vda_buffer);
 
   // Returns the number of OutputRecords whose state is |state|. This is used to
   // compute values reported for chrome://tracing.
@@ -480,8 +482,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // task execution should complete one buffer.  If we fall behind (due to
   // resource backpressure, etc.), we'll have to schedule more to catch up.
   int decoder_decode_buffer_tasks_scheduled_;
-  // Picture buffers held by the client.
-  int decoder_frames_at_client_;
 
   // Are we flushing?
   bool decoder_flushing_;

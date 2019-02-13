@@ -149,7 +149,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       device_(device),
       decoder_delay_bitstream_buffer_id_(-1),
       decoder_decode_buffer_tasks_scheduled_(0),
-      decoder_frames_at_client_(0),
       decoder_flushing_(false),
       decoder_cmd_supported_(false),
       flush_awaiting_last_output_buffer_(false),
@@ -1302,7 +1301,7 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
             << output_queue_->QueuedBuffersCount() << "/"
             << output_buffer_map_.size() << "] => PROCESSOR["
             << buffers_at_ip_.size() << "] => CLIENT["
-            << decoder_frames_at_client_ << "]";
+            << buffers_at_client_.size() << "]";
 
   ScheduleDecodeBufferTaskIfNeeded();
   if (resolution_change_pending)
@@ -1529,7 +1528,7 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
         return false;
       }
     } else {
-      SendBufferToClient(buf->BufferId(), bitstream_buffer_id);
+      SendBufferToClient(buf->BufferId(), bitstream_buffer_id, buf);
     }
   }
   if (buf->IsLast()) {
@@ -1542,12 +1541,6 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
       cmd.cmd = V4L2_DEC_CMD_START;
       IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_DECODER_CMD, &cmd);
     }
-  }
-
-  if (buf->GetPlaneBytesUsed(0) > 0) {
-    // Keep a reference to this buffer until the client returns it
-    DCHECK_EQ(buffers_at_client_.count(output_record.picture_id), 0u);
-    buffers_at_client_.emplace(output_record.picture_id, std::move(buf));
   }
 
   return true;
@@ -1643,7 +1636,6 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
   }
 
   output_record.state = kFree;
-  decoder_frames_at_client_--;
   // Take ownership of the EGL fence.
   if (egl_fence)
     buffers_awaiting_fence_.emplace(
@@ -1911,7 +1903,6 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   decoder_current_bitstream_buffer_.reset();
   current_input_buffer_ = V4L2WritableBufferRef();
   decoder_decode_buffer_tasks_scheduled_ = 0;
-  decoder_frames_at_client_ = 0;
   while (!decoder_input_queue_.empty())
     decoder_input_queue_.pop_front();
   decoder_flushing_ = false;
@@ -2643,22 +2634,21 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   }
 
   output_buffer_map_.clear();
-  // The client may still hold some buffers. The texture holds a reference to
-  // the buffer. It is OK to free the buffer and destroy EGLImage here.
-  decoder_frames_at_client_ = 0;
 
   return success;
 }
 
 void V4L2VideoDecodeAccelerator::SendBufferToClient(
     size_t buffer_index,
-    int32_t bitstream_buffer_id) {
+    int32_t bitstream_buffer_id,
+    V4L2ReadableBufferRef vda_buffer) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_GE(bitstream_buffer_id, 0);
   OutputRecord& output_record = output_buffer_map_[buffer_index];
 
   output_record.state = kAtClient;
-  decoder_frames_at_client_++;
+  DCHECK_EQ(buffers_at_client_.count(output_record.picture_id), 0u);
+  buffers_at_client_.emplace(output_record.picture_id, std::move(vda_buffer));
   // TODO(hubbe): Insert correct color space. http://crbug.com/647725
   const Picture picture(output_record.picture_id, bitstream_buffer_id,
                         gfx::Rect(visible_size_), gfx::ColorSpace(), false);
@@ -2772,10 +2762,11 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
             egl_image_size_, egl_image_format_fourcc_));
   }
 
-  SendBufferToClient(output_buffer_index, bitstream_buffer_id);
   // Remove our job from the IP jobs queue
   DCHECK_GT(buffers_at_ip_.size(), 0u);
   DCHECK(buffers_at_ip_.front().first == bitstream_buffer_id);
+  SendBufferToClient(output_buffer_index, bitstream_buffer_id,
+                     std::move(buffers_at_ip_.front().second));
   buffers_at_ip_.pop();
   // Flush or resolution change may be waiting image processor to finish.
   if (buffers_at_ip_.empty()) {
