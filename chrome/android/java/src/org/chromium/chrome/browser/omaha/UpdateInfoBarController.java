@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omaha;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
@@ -57,11 +56,12 @@ public class UpdateInfoBarController implements Destroyable {
     }
 
     private void restartChrome() {
-        ApplicationLifetime.terminate(true /* restart */);
+        UpdateStatusProvider.getInstance().finishInlineUpdate();
     }
 
     private void retryUpdate() {
-        // TODO(922714): Implement retry.
+        if (mActivity == null) return;
+        UpdateStatusProvider.getInstance().startInlineUpdate(mActivity);
     }
 
     private void showRestartInfobar() {

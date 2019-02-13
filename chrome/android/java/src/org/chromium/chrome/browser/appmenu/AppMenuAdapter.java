@@ -212,6 +212,8 @@ class AppMenuAdapter extends BaseAdapter {
 
                     if (!TextUtils.isEmpty(itemState.summary)) {
                         holder.summary.setText(itemState.summary);
+                    } else {
+                        holder.summary.setText("");
                     }
 
                     holder.image.setImageResource(itemState.icon);

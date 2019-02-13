@@ -74,6 +74,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private AnimatorSet mMenuItemEnterAnimator;
     private AnimatorListener mAnimationHistogramRecorder = AnimationFrameTimeHistogram
             .getAnimatorRecorder("WrenchMenu.OpeningAnimationFrameTimes");
+    private Runnable mAdapterInvalidator;
 
     /**
      * Creates and sets up the App Menu.
@@ -102,6 +103,10 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 res.getDimensionPixelSize(R.dimen.menu_negative_vertical_offset_not_top_anchored);
 
         mTempLocation = new int[2];
+
+        mAdapterInvalidator = () -> {
+            if (mAdapter != null) mAdapter.notifyDataSetChanged();
+        };
     }
 
     /**
@@ -172,6 +177,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
+        UpdateMenuItemHelper.getInstance().registerObserver(mAdapterInvalidator);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // The window layout type affects the z-index of the popup window on M+.
@@ -185,6 +191,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
 
             if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.cancel();
 
+            UpdateMenuItemHelper.getInstance().unregisterObserver(mAdapterInvalidator);
             mHandler.appMenuDismissed();
             mHandler.onMenuVisibilityChanged(false);
 
