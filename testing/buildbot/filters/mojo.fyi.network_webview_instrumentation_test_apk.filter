@@ -33,7 +33,8 @@
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
 
 # https://crbug.com/893576
--org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie
+-org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_falseWontSetCookies
+-org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_trueWillSetCookies
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
 -org.chromium.android_webview.test.CookieManagerTest.testEmbedderCanSeeRestrictedCookies
 -org.chromium.android_webview.test.CookieManagerTest.testRejectFileSchemeCookies
