@@ -78,10 +78,10 @@ class HTMLParserReentryPermit final
  private:
   HTMLParserReentryPermit();
 
-  // https://html.spec.whatwg.org/#script-nesting-level
+  // https://html.spec.whatwg.org/C/#script-nesting-level
   unsigned script_nesting_level_;
 
-  // https://html.spec.whatwg.org/#parser-pause-flag
+  // https://html.spec.whatwg.org/C/#parser-pause-flag
   bool parser_pause_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLParserReentryPermit);

@@ -48,7 +48,7 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
 
 // Implements steps 2.[5-8] of
 // <specdef
-// href="https://html.spec.whatwg.org/#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)">
+// href="https://html.spec.whatwg.org/C/#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)">
 void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
   // [nospec] Abort the steps if the browsing context is discarded.
@@ -163,7 +163,7 @@ void DynamicModuleResolver::Trace(blink::Visitor* visitor) {
 }
 
 // <specdef
-// href="https://html.spec.whatwg.org/#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)">
+// href="https://html.spec.whatwg.org/C/#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)">
 void DynamicModuleResolver::ResolveDynamically(
     const String& specifier,
     const KURL& referrer_resource_url,
@@ -222,11 +222,11 @@ void DynamicModuleResolver::ResolveDynamically(
   // <spec step="2.3">Let options be the descendant script fetch options for
   // referencing script's fetch options.</spec>
   //
-  // <spec href="https://html.spec.whatwg.org/#descendant-script-fetch-options">
-  // For any given script fetch options options, the descendant script fetch
-  // options are a new script fetch options whose items all have the same
-  // values, except for the integrity metadata, which is instead the empty
-  // string.</spec>
+  // <spec
+  // href="https://html.spec.whatwg.org/C/#descendant-script-fetch-options"> For
+  // any given script fetch options options, the descendant script fetch options
+  // are a new script fetch options whose items all have the same values, except
+  // for the integrity metadata, which is instead the empty string.</spec>
   // TODO(domfarolino): It has not yet been decided how a script's "importance"
   // should affect its dynamic imports. There is discussion at
   // https://github.com/whatwg/html/issues/3670, but for now there is no effect,

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-area-element
+// https://html.spec.whatwg.org/C/#the-area-element
 [HTMLConstructor]
 interface HTMLAreaElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString alt;
@@ -32,7 +32,7 @@ interface HTMLAreaElement : HTMLElement {
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLAreaElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLAreaElement-partial
     [CEReactions, Reflect] attribute boolean noHref;
 };
 

@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlelement
+// https://html.spec.whatwg.org/C/#htmlelement
 [HTMLConstructor]
 interface HTMLElement : Element {
     // metadata attributes
@@ -41,7 +41,7 @@ interface HTMLElement : Element {
     [Measure] attribute DOMString autocapitalize;
 
     // HTMLElement implements ElementContentEditable
-    // https://html.spec.whatwg.org/#contenteditable
+    // https://html.spec.whatwg.org/C/#contenteditable
     [CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     [ImplementedAs=isContentEditableForBinding] readonly attribute boolean isContentEditable;
     [CEReactions, Reflect, ReflectOnly=("none","text","tel","url","email","numeric","decimal","search")] attribute DOMString inputMode;

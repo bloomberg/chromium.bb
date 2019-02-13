@@ -24,7 +24,7 @@
  *
  */
 
-// https://html.spec.whatwg.org/#the-workerglobalscope-common-interface
+// https://html.spec.whatwg.org/C/#the-workerglobalscope-common-interface
 
 [
     ActiveScriptWrappable,
@@ -40,7 +40,7 @@
     // attribute EventHandler onoffline;
     // attribute EventHandler ononline;
 
-    // https://html.spec.whatwg.org/#apis-available-to-workers
+    // https://html.spec.whatwg.org/C/#apis-available-to-workers
     [RaisesException] void importScripts(ScriptURLString... urls);
     readonly attribute WorkerNavigator navigator;
 
@@ -64,7 +64,7 @@
     [ImplementedAs=isSecureContextForBindings] readonly attribute boolean isSecureContext;
 
     // WindowOrWorkerGlobalScope mixin
-    // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+    // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
     [Replaceable] readonly attribute DOMString origin;
     void queueMicrotask(VoidFunction callback);
 

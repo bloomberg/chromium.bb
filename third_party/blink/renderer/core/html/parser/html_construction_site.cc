@@ -110,7 +110,7 @@ static inline void Insert(HTMLConstructionSiteTask& task) {
   if (auto* template_element = ToHTMLTemplateElementOrNull(*task.parent))
     task.parent = template_element->content();
 
-  // https://html.spec.whatwg.org/#insert-a-foreign-element
+  // https://html.spec.whatwg.org/C/#insert-a-foreign-element
   // 3.1, (3) Push (pop) an element queue
   CEReactionsScope reactions;
   if (task.next_child)
@@ -842,7 +842,7 @@ inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
 }
 
 // "look up a custom element definition" for a token
-// https://html.spec.whatwg.org/#look-up-a-custom-element-definition
+// https://html.spec.whatwg.org/C/#look-up-a-custom-element-definition
 CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
     Document& document,
     const QualifiedName& tag_name,
@@ -1058,7 +1058,7 @@ bool HTMLConstructionSite::InQuirksMode() {
 
 // Adjusts |task| to match the "adjusted insertion location" determined by the
 // foster parenting algorithm, laid out as the substeps of step 2 of
-// https://html.spec.whatwg.org/#appropriate-place-for-inserting-a-node
+// https://html.spec.whatwg.org/C/#appropriate-place-for-inserting-a-node
 void HTMLConstructionSite::FindFosterSite(HTMLConstructionSiteTask& task) {
   // 2.1
   HTMLElementStack::ElementRecord* last_template =

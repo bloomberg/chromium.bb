@@ -25,7 +25,7 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
     Resource* resource,
     HeapVector<Member<ConsoleMessage>>* error_messages) {
   // Implements conditions in Step 7 of
-  // https://html.spec.whatwg.org/#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
 
   DCHECK(error_messages);
 

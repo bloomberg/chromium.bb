@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#client-identification
+// https://html.spec.whatwg.org/C/#client-identification
 
 [
     NoInterfaceObject, // Always used on target of 'implements'

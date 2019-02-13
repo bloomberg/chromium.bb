@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmldirectoryelement
+// https://html.spec.whatwg.org/C/#htmldirectoryelement
 [HTMLConstructor]
 interface HTMLDirectoryElement : HTMLElement {
     [CEReactions, Reflect] attribute boolean compact;

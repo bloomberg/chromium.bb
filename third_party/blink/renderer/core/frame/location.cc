@@ -291,9 +291,9 @@ void Location::SetLocation(const String& url,
     return;
 
   // Check the source browsing context's CSP to fulfill the CSP check
-  // requirement of https://html.spec.whatwg.org/#navigate for javascript URLs.
-  // Although the spec states we should perform this check on task execution,
-  // we do this prior to dispatch since the parent frame's CSP may be
+  // requirement of https://html.spec.whatwg.org/C/#navigate for javascript
+  // URLs. Although the spec states we should perform this check on task
+  // execution, we do this prior to dispatch since the parent frame's CSP may be
   // inaccessible if the target frame is out of process.
   Document* current_document = current_window->document();
   if (current_document && completed_url.ProtocolIsJavaScript() &&

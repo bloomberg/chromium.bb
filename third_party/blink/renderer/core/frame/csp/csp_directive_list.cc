@@ -1249,7 +1249,7 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
   }
 
   // Remove report-uri in meta policies, per
-  // https://html.spec.whatwg.org/#attr-meta-http-equiv-content-security-policy.
+  // https://html.spec.whatwg.org/C/#attr-meta-http-equiv-content-security-policy.
   if (header_source_ == kContentSecurityPolicyHeaderSourceMeta) {
     policy_->ReportInvalidDirectiveInMeta(name);
     return;

@@ -123,7 +123,7 @@ class CORE_EXPORT CustomElement {
   // Some existing specs have element names with hyphens in them,
   // like font-face in SVG. The custom elements spec explicitly
   // disallows these as custom element names.
-  // https://html.spec.whatwg.org/#valid-custom-element-name
+  // https://html.spec.whatwg.org/C/#valid-custom-element-name
   static bool IsHyphenatedSpecElementName(const AtomicString&);
 
   static Vector<AtomicString>& EmbedderCustomElementNames();

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-// <specdef href="https://html.spec.whatwg.org/#fetch-a-classic-script">
+// <specdef href="https://html.spec.whatwg.org/C/#fetch-a-classic-script">
 ClassicPendingScript* ClassicPendingScript::Fetch(
     const KURL& url,
     Document& element_document,
@@ -378,7 +378,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
                                not_streamed_reason);
   // The base URL for external classic script is
   //
-  // <spec href="https://html.spec.whatwg.org/#concept-script-base-url">
+  // <spec href="https://html.spec.whatwg.org/C/#concept-script-base-url">
   // ... the URL from which the script was obtained, ...</spec>
   const KURL& base_url = source_code.Url();
   return ClassicScript::Create(source_code, base_url, options_,

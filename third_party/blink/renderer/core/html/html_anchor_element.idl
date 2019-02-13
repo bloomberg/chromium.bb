@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-a-element
+// https://html.spec.whatwg.org/C/#the-a-element
 [HTMLConstructor]
 interface HTMLAnchorElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString target;
@@ -34,7 +34,7 @@ interface HTMLAnchorElement : HTMLElement {
     [CEReactions, ImplementedAs=textContent] attribute DOMString text;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLAnchorElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLAnchorElement-partial
     [CEReactions, Reflect] attribute DOMString coords;
     [CEReactions, Reflect] attribute DOMString charset;
     [CEReactions, Reflect] attribute DOMString name;

@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#worker-locations
+// https://html.spec.whatwg.org/C/#worker-locations
 
 [
     Exposed=Worker

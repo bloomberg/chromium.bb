@@ -138,7 +138,7 @@ void LinkLoader::NotifyFinished() {
     client_->LinkLoaded();
 }
 
-// https://html.spec.whatwg.org/#link-type-modulepreload
+// https://html.spec.whatwg.org/C/#link-type-modulepreload
 void LinkLoader::NotifyModuleLoadFinished(ModuleScript* module) {
   // Step 11. "If result is null, fire an event named error at the link element,
   // and return." [spec text]

@@ -43,7 +43,7 @@ class DOMTimerCoordinator {
   // Timers created during the execution of other timers, and
   // repeating timers, are throttled. Timer nesting level tracks the
   // number of linked timers or repetitions of a timer. See
-  // https://html.spec.whatwg.org/#timers
+  // https://html.spec.whatwg.org/C/#timers
   int TimerNestingLevel() { return timer_nesting_level_; }
 
   // Sets the timer nesting level. Set when a timer executes so that

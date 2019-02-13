@@ -228,7 +228,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   int webkitRequestAnimationFrame(V8FrameRequestCallback*);
   void cancelAnimationFrame(int id);
 
-  // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
+  // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
   void queueMicrotask(V8VoidFunction*);
 
   // Idle callback extensions

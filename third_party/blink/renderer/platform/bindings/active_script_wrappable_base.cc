@@ -28,7 +28,7 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     // detached, even if hasPendingActivity() returns |true|. This measure
     // avoids memory leaks and has proven not to be too eager wrt
     // garbage collection of objects belonging to discarded browser contexts
-    // ( https://html.spec.whatwg.org/#a-browsing-context-is-discarded )
+    // ( https://html.spec.whatwg.org/C/#a-browsing-context-is-discarded )
     //
     // Consequently, an implementation of hasPendingActivity() is
     // not required to take the detached state of the associated

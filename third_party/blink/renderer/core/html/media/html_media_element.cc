@@ -2354,7 +2354,7 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
   }
 
   // Per HTML spec, "The empty string ... maps to the Automatic state."
-  // https://html.spec.whatwg.org/#attr-media-preload
+  // https://html.spec.whatwg.org/C/#attr-media-preload
   if (DeprecatedEqualIgnoringCase(preload, "auto") ||
       DeprecatedEqualIgnoringCase(preload, "")) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLMediaElementPreloadAuto);

@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-ul-element
+// https://html.spec.whatwg.org/C/#the-ul-element
 [HTMLConstructor]
 interface HTMLUListElement : HTMLElement {
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLUListElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLUListElement-partial
     [CEReactions, Reflect] attribute boolean compact;
     [CEReactions, Reflect] attribute DOMString type;
 };

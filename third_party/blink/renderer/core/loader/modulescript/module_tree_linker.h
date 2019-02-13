@@ -31,16 +31,16 @@ class ModuleTreeLinkerRegistry;
 //
 // Spec links:
 // [IMSGF]
-// https://html.spec.whatwg.org/#internal-module-script-graph-fetching-procedure
+// https://html.spec.whatwg.org/C/#internal-module-script-graph-fetching-procedure
 // [FD]
-// https://html.spec.whatwg.org/#fetch-the-descendants-of-a-module-script
+// https://html.spec.whatwg.org/C/#fetch-the-descendants-of-a-module-script
 // [FDaI]
-// https://html.spec.whatwg.org/#fetch-the-descendants-of-and-instantiate-a-module-script
+// https://html.spec.whatwg.org/C/#fetch-the-descendants-of-and-instantiate-a-module-script
 // [FFPE]
-// https://html.spec.whatwg.org/#finding-the-first-parse-error
+// https://html.spec.whatwg.org/C/#finding-the-first-parse-error
 class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  public:
-  // https://html.spec.whatwg.org/#fetch-a-module-script-tree
+  // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   static void Fetch(const KURL&,
                     ResourceFetcher* fetch_client_settings_object_fetcher,
                     mojom::RequestContextType destination,

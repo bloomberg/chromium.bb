@@ -242,7 +242,7 @@ class HTMLTreeBuilder final
     DISALLOW_COPY_AND_ASSIGN(FragmentParsingContext);
   };
 
-  // https://html.spec.whatwg.org/#frameset-ok-flag
+  // https://html.spec.whatwg.org/C/#frameset-ok-flag
   bool frameset_ok_;
 #if DCHECK_IS_ON()
   bool is_attached_ = true;

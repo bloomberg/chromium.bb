@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlframesetelement
+// https://html.spec.whatwg.org/C/#htmlframesetelement
 
 // FIXME: HTMLFrameSetElement should not have [OverrideBuiltins].
 [

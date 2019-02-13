@@ -104,7 +104,7 @@ static bool TokenExitsMath(const CompactHTMLToken& token) {
 }
 
 static bool TokenExitsInSelect(const CompactHTMLToken& token) {
-  // https://html.spec.whatwg.org/#parsing-main-inselect
+  // https://html.spec.whatwg.org/C/#parsing-main-inselect
   const String& tag_name = token.Data();
   return ThreadSafeMatch(tag_name, kInputTag) ||
          ThreadSafeMatch(tag_name, kKeygenTag) ||
@@ -184,7 +184,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       } else if (!in_select_insertion_mode_) {
         // If we're in the "in select" insertion mode, all of these tags are
         // ignored, so we shouldn't change the tokenizer state:
-        // https://html.spec.whatwg.org/#parsing-main-inselect
+        // https://html.spec.whatwg.org/C/#parsing-main-inselect
         if (ThreadSafeMatch(tag_name, kPlaintextTag) &&
             !in_select_insertion_mode_) {
           tokenizer->SetState(HTMLTokenizer::kPLAINTEXTState);
@@ -205,7 +205,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       // into PLAINTEXTState, and whether '<xmp>' and others will consume
       // textual content.
       //
-      // https://html.spec.whatwg.org/#parsing-main-inselect
+      // https://html.spec.whatwg.org/C/#parsing-main-inselect
       if (ThreadSafeMatch(tag_name, kSelectTag)) {
         in_select_insertion_mode_ = true;
       } else if (in_select_insertion_mode_ && TokenExitsInSelect(token)) {

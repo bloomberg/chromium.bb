@@ -727,7 +727,7 @@ void HTMLTreeBuilder::ProcessStartTagForInBody(AtomicHTMLToken* token) {
     return;
   }
   if (token->GetName() == kInputTag) {
-    // Per spec https://html.spec.whatwg.org/#parsing-main-inbody,
+    // Per spec https://html.spec.whatwg.org/C/#parsing-main-inbody,
     // section "A start tag whose tag name is "input""
 
     Attribute* type_attribute = token->GetAttributeItem(kTypeAttr);

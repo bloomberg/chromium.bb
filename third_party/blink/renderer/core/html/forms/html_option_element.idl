@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-option-element
+// https://html.spec.whatwg.org/C/#the-option-element
 
 [
     HTMLConstructor,

@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#barprop
+// https://html.spec.whatwg.org/C/#barprop
 
 interface BarProp {
     readonly attribute boolean visible;

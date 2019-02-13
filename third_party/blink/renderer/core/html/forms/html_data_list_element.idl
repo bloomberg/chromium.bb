@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-datalist-element
+// https://html.spec.whatwg.org/C/#the-datalist-element
 [HTMLConstructor]
 interface HTMLDataListElement : HTMLElement {
     readonly attribute HTMLCollection options;

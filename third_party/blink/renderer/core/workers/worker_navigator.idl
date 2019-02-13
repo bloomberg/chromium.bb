@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-workernavigator-object
+// https://html.spec.whatwg.org/C/#the-workernavigator-object
 
 [
     Exposed=Worker

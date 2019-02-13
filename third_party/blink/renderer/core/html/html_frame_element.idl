@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlframeelement
+// https://html.spec.whatwg.org/C/#htmlframeelement
 
 [HTMLConstructor]
 interface HTMLFrameElement : HTMLElement {

@@ -692,7 +692,7 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
   if (url.ProtocolIsJavaScript()) {
     Document* origin_document = request.OriginDocument();
     // Check the CSP of the caller (the "source browsing context") if required,
-    // as per https://html.spec.whatwg.org/#javascript-protocol.
+    // as per https://html.spec.whatwg.org/C/#javascript-protocol.
     bool javascript_url_is_allowed =
         request.ShouldCheckMainWorldContentSecurityPolicy() ==
             kDoNotCheckContentSecurityPolicy ||
@@ -1538,7 +1538,7 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
 
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."
-  // https://html.spec.whatwg.org/#navigate
+  // https://html.spec.whatwg.org/C/#navigate
   frame_->GetDocument()->Abort();
   // document.onreadystatechange can fire in Abort(), which can:
   // 1) Detach this frame.

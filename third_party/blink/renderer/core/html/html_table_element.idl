@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-table-element
+// https://html.spec.whatwg.org/C/#the-table-element
 [HTMLConstructor]
 interface HTMLTableElement : HTMLElement {
     [CEReactions, RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
@@ -39,7 +39,7 @@ interface HTMLTableElement : HTMLElement {
     // void stopSorting();
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLTableElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLTableElement-partial
     [CEReactions, Reflect] attribute DOMString align;
     [CEReactions, Reflect] attribute DOMString border;
     [CEReactions, Reflect] attribute DOMString frame;

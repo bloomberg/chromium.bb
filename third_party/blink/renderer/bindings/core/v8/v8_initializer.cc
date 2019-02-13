@@ -584,7 +584,7 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
   return v8::Local<v8::Promise>::Cast(promise.V8Value());
 }
 
-// https://html.spec.whatwg.org/#hostgetimportmetaproperties
+// https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
 static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
                                         v8::Local<v8::Module> module,
                                         v8::Local<v8::Object> meta) {

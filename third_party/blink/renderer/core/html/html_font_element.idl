@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlfontelement
+// https://html.spec.whatwg.org/C/#htmlfontelement
 [HTMLConstructor]
 interface HTMLFontElement : HTMLElement {
     [CEReactions, Reflect] attribute [TreatNullAs=EmptyString] DOMString color;
