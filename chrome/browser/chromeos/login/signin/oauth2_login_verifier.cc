@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
 
 using content::BrowserThread;
 
@@ -15,12 +16,10 @@ namespace chromeos {
 
 OAuth2LoginVerifier::OAuth2LoginVerifier(
     OAuth2LoginVerifier::Delegate* delegate,
-    GaiaCookieManagerService* cookie_manager_service,
     identity::IdentityManager* identity_manager,
     const std::string& primary_account_id,
     const std::string& oauthlogin_access_token)
     : delegate_(delegate),
-      cookie_manager_service_(cookie_manager_service),
       identity_manager_(identity_manager),
       primary_account_id_(primary_account_id),
       access_token_(oauthlogin_access_token) {
@@ -49,10 +48,10 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
 void OAuth2LoginVerifier::VerifyProfileTokens() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (access_token_.empty()) {
-    cookie_manager_service_->AddAccountToCookie(
+    identity_manager_->GetAccountsCookieMutator()->AddAccountToCookie(
         primary_account_id_, gaia::GaiaSource::kOAuth2LoginVerifier);
   } else {
-    cookie_manager_service_->AddAccountToCookieWithToken(
+    identity_manager_->GetAccountsCookieMutator()->AddAccountToCookieWithToken(
         primary_account_id_, access_token_,
         gaia::GaiaSource::kOAuth2LoginVerifier);
   }

@@ -39,7 +39,6 @@ class OAuth2LoginVerifier : public identity::IdentityManager::Observer {
   };
 
   OAuth2LoginVerifier(OAuth2LoginVerifier::Delegate* delegate,
-                      GaiaCookieManagerService* cookie_manager_service,
                       identity::IdentityManager* identity_manager,
                       const std::string& primary_account_id,
                       const std::string& oauthlogin_access_token);
@@ -62,7 +61,6 @@ class OAuth2LoginVerifier : public identity::IdentityManager::Observer {
       const GoogleServiceAuthError& error) override;
 
   OAuth2LoginVerifier::Delegate* delegate_;
-  GaiaCookieManagerService* cookie_manager_service_;
   identity::IdentityManager* identity_manager_;
   const std::string primary_account_id_;
   const std::string access_token_;
