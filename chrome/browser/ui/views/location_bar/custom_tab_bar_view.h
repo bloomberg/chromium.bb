@@ -45,6 +45,7 @@ class CustomTabBarView : public views::View,
                     TabChangeType change_type) override;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
   // LocationIconView::Delegate:
