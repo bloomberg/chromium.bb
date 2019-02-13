@@ -25,9 +25,7 @@ namespace {
 
 class TestLabelManager : public LabelManager {
  public:
-  void SetLabels(const LabelVector& labels) {
-    labels_ = labels;
-  };
+  void SetLabels(const LabelVector& labels) { labels_ = labels; }
 };
 
 void CheckLabelManagerContent(LabelManager* label_manager,
