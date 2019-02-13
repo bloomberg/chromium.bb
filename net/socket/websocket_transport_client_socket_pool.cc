@@ -155,9 +155,7 @@ int WebSocketTransportClientSocketPool::RequestSocket(
                                  network_quality_estimator_, pool_net_log_,
                                  websocket_endpoint_lock_manager_),
           connect_job_delegate.get(),
-          nullptr /* http_proxy_pool_for_ssl_pool */,
-          nullptr /* transport_pool_for_http_proxy_pool */,
-          nullptr /* ssl_pool_for_http_proxy_pool */);
+          nullptr /* http_proxy_pool_for_ssl_pool */);
 
   int result = connect_job_delegate->Connect(std::move(connect_job));
 

@@ -70,39 +70,7 @@ class HttpProxyClientSocketPoolTest
       public WithScopedTaskEnvironment {
  protected:
   HttpProxyClientSocketPoolTest()
-      : transport_socket_pool_(kMaxSockets,
-                               kMaxSocketsPerGroup,
-                               &socket_factory_,
-                               session_deps_.host_resolver.get(),
-                               nullptr /* proxy_delegate */,
-                               session_deps_.cert_verifier.get(),
-                               session_deps_.channel_id_service.get(),
-                               session_deps_.transport_security_state.get(),
-                               session_deps_.cert_transparency_verifier.get(),
-                               session_deps_.ct_policy_enforcer.get(),
-                               nullptr /* ssl_client_session_cache */,
-                               std::string() /* ssl_session_cache_shard */,
-                               session_deps_.ssl_config_service.get(),
-                               nullptr /* socket_performance_watcher_factory */,
-                               nullptr /* network_quality_estimator */,
-                               nullptr /* net_log */),
-        ssl_socket_pool_(kMaxSockets,
-                         kMaxSocketsPerGroup,
-                         &socket_factory_,
-                         session_deps_.host_resolver.get(),
-                         nullptr /* proxy_delegate */,
-                         session_deps_.cert_verifier.get(),
-                         session_deps_.channel_id_service.get(),
-                         session_deps_.transport_security_state.get(),
-                         session_deps_.cert_transparency_verifier.get(),
-                         session_deps_.ct_policy_enforcer.get(),
-                         nullptr /* ssl_client_session_cache */,
-                         std::string() /* ssl_session_cache_shard */,
-                         session_deps_.ssl_config_service.get(),
-                         nullptr /* socket_performance_watcher_factory */,
-                         nullptr /* network_quality_estimator */,
-                         nullptr /* net_log */),
-        pool_(std::make_unique<TransportClientSocketPool>(
+      : pool_(std::make_unique<TransportClientSocketPool>(
             kMaxSockets,
             kMaxSocketsPerGroup,
             &socket_factory_,
@@ -118,10 +86,7 @@ class HttpProxyClientSocketPoolTest
             session_deps_.ssl_config_service.get(),
             nullptr /* socket_performance_watcher_factory */,
             &estimator_,
-            nullptr /* net_log */,
-            nullptr /* http_proxy_pool_for_ssl_pool */,
-            &transport_socket_pool_,
-            &ssl_socket_pool_)) {
+            nullptr /* net_log */)) {
     session_deps_.host_resolver->set_synchronous_mode(true);
     session_ = CreateNetworkSession();
   }
@@ -141,8 +106,7 @@ class HttpProxyClientSocketPoolTest
         std::string() /* ssl_session_cache_shard */,
         session_deps_.ssl_config_service.get(),
         nullptr /* socket_performance_watcher_factory */, &estimator_,
-        nullptr /* net_log */, nullptr /* http_proxy_pool_for_ssl_pool */,
-        &transport_socket_pool_, &ssl_socket_pool_);
+        nullptr /* net_log */);
   }
 
   void AddAuthToCache() {
@@ -240,9 +204,6 @@ class HttpProxyClientSocketPoolTest
   SpdySessionDependencies session_deps_;
 
   TestNetworkQualityEstimator estimator_;
-
-  TransportClientSocketPool transport_socket_pool_;
-  TransportClientSocketPool ssl_socket_pool_;
 
   std::unique_ptr<HttpNetworkSession> session_;
 

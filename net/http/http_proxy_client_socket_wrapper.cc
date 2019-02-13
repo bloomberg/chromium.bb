@@ -24,7 +24,6 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_connect_job.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_proxy_client_socket.h"
 #include "net/spdy/spdy_session.h"
@@ -41,8 +40,6 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     base::TimeDelta connect_timeout_duration,
     base::TimeDelta proxy_negotiation_timeout_duration,
     const CommonConnectJobParams& common_connect_job_params,
-    TransportClientSocketPool* transport_pool,
-    TransportClientSocketPool* ssl_pool,
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
     quic::QuicTransportVersion quic_version,
@@ -60,8 +57,6 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       priority_(priority),
       connect_timeout_duration_(connect_timeout_duration),
       proxy_negotiation_timeout_duration_(proxy_negotiation_timeout_duration),
-      transport_pool_(transport_pool),
-      ssl_pool_(ssl_pool),
       transport_params_(transport_params),
       ssl_params_(ssl_params),
       quic_version_(quic_version),
@@ -73,6 +68,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       common_connect_job_params_(common_connect_job_params),
       using_spdy_(false),
       is_trusted_proxy_(is_trusted_proxy),
+      has_established_connection_(false),
       quic_stream_factory_(quic_stream_factory),
       http_auth_controller_(
           tunnel ? new HttpAuthController(
@@ -107,12 +103,11 @@ HttpProxyClientSocketWrapper::~HttpProxyClientSocketWrapper() {
 
 LoadState HttpProxyClientSocketWrapper::GetConnectLoadState() const {
   switch (next_state_) {
-    case STATE_BEGIN_CONNECT:
     case STATE_TCP_CONNECT:
     case STATE_TCP_CONNECT_COMPLETE:
     case STATE_SSL_CONNECT:
     case STATE_SSL_CONNECT_COMPLETE:
-      return transport_socket_handle_->GetLoadState();
+      return nested_connect_job_->GetLoadState();
     case STATE_HTTP_PROXY_CONNECT:
     case STATE_HTTP_PROXY_CONNECT_COMPLETE:
     case STATE_SPDY_PROXY_CREATE_STREAM:
@@ -123,6 +118,7 @@ LoadState HttpProxyClientSocketWrapper::GetConnectLoadState() const {
     case STATE_RESTART_WITH_AUTH:
     case STATE_RESTART_WITH_AUTH_COMPLETE:
       return LOAD_STATE_ESTABLISHING_PROXY_TUNNEL;
+    case STATE_BEGIN_CONNECT:
     case STATE_NONE:
       // May be possible for this method to be called after an error, shouldn't
       // be called after a successful connect.
@@ -144,8 +140,8 @@ void HttpProxyClientSocketWrapper::SetPriority(RequestPriority priority) {
 
   priority_ = priority;
 
-  if (transport_socket_handle_)
-    transport_socket_handle_->SetPriority(priority);
+  if (nested_connect_job_)
+    nested_connect_job_->ChangePriority(priority);
 
   if (spdy_stream_request_)
     spdy_stream_request_->SetPriority(priority);
@@ -219,15 +215,8 @@ void HttpProxyClientSocketWrapper::Disconnect() {
   next_state_ = STATE_NONE;
   spdy_stream_request_.reset();
   quic_stream_request_.reset();
-  if (transport_socket_handle_) {
-    if (transport_socket_handle_->socket())
-      transport_socket_handle_->socket()->Disconnect();
-    transport_socket_handle_->Reset();
-    transport_socket_handle_.reset();
-  }
-
-  if (transport_socket_)
-    transport_socket_->Disconnect();
+  nested_connect_job_.reset();
+  transport_socket_.reset();
 }
 
 bool HttpProxyClientSocketWrapper::IsConnected() const {
@@ -385,6 +374,28 @@ int HttpProxyClientSocketWrapper::GetLocalAddress(IPEndPoint* address) const {
   return ERR_SOCKET_NOT_CONNECTED;
 }
 
+void HttpProxyClientSocketWrapper::OnConnectJobComplete(int result,
+                                                        ConnectJob* job) {
+  DCHECK_EQ(nested_connect_job_.get(), job);
+  DCHECK(next_state_ == STATE_TCP_CONNECT_COMPLETE ||
+         next_state_ == STATE_SSL_CONNECT_COMPLETE);
+  OnIOComplete(result);
+}
+
+bool HttpProxyClientSocketWrapper::HasEstablishedConnection() {
+  if (has_established_connection_)
+    return true;
+
+  // It's possible the nested connect job has established a connection, but
+  // hasn't completed yet (For example, an SSLConnectJob may be negotiating
+  // SSL).
+  if (nested_connect_job_) {
+    has_established_connection_ =
+        nested_connect_job_->HasEstablishedConnection();
+  }
+  return has_established_connection_;
+}
+
 ProxyServer::Scheme HttpProxyClientSocketWrapper::GetProxyServerScheme() const {
   if (quic_version_ != quic::QUIC_VERSION_UNSUPPORTED)
     return ProxyServer::SCHEME_QUIC;
@@ -477,6 +488,11 @@ int HttpProxyClientSocketWrapper::DoBeginConnect() {
   switch (GetProxyServerScheme()) {
     case ProxyServer::SCHEME_QUIC:
       next_state_ = STATE_QUIC_PROXY_CREATE_SESSION;
+      // QUIC connections are always considered to have been established.
+      // |has_established_connection_| is only used to start retries if a
+      // connection hasn't been established yet, and QUIC has its own connection
+      // establishment logic.
+      has_established_connection_ = true;
       break;
     case ProxyServer::SCHEME_HTTP:
       next_state_ = STATE_TCP_CONNECT;
@@ -492,18 +508,9 @@ int HttpProxyClientSocketWrapper::DoBeginConnect() {
 
 int HttpProxyClientSocketWrapper::DoTransportConnect() {
   next_state_ = STATE_TCP_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(
-      common_connect_job_params_.group_name,
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          transport_params_),
-      priority_, common_connect_job_params_.socket_tag,
-      common_connect_job_params_.respect_limits
-          ? ClientSocketPool::RespectLimits::ENABLED
-          : ClientSocketPool::RespectLimits::DISABLED,
-      base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
-                 base::Unretained(this)),
-      transport_pool_, net_log_);
+  nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
+      transport_params_, priority_, common_connect_job_params_, this);
+  return nested_connect_job_->Connect();
 }
 
 int HttpProxyClientSocketWrapper::DoTransportConnectComplete(int result) {
@@ -518,6 +525,8 @@ int HttpProxyClientSocketWrapper::DoTransportConnectComplete(int result) {
       return result;
     return ERR_PROXY_CONNECTION_FAILED;
   }
+
+  has_established_connection_ = true;
 
   // Reset the timer to just the length of time allowed for HttpProxy handshake
   // so that a fast TCP connection plus a slow HttpProxy failure doesn't take
@@ -544,26 +553,24 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
     }
   }
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
-  transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(
-      common_connect_job_params_.group_name,
-      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-          ssl_params_),
-      priority_, common_connect_job_params_.socket_tag,
-      common_connect_job_params_.respect_limits,
-      base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
-                 base::Unretained(this)),
-      ssl_pool_, net_log_);
+  nested_connect_job_ = std::make_unique<SSLConnectJob>(
+      priority_, common_connect_job_params_, ssl_params_,
+      nullptr /* http_proxy_pool */, this);
+  return nested_connect_job_->Connect();
 }
 
 int HttpProxyClientSocketWrapper::DoSSLConnectComplete(int result) {
   if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    DCHECK(
-        transport_socket_handle_->ssl_error_response_info().cert_request_info);
+    // Not really used to hold a socket.
+    // TODO(mmenke): Implement a better API to get this information.
+    ClientSocketHandle client_socket_handle;
+    nested_connect_job_->GetAdditionalErrorState(&client_socket_handle);
+
+    DCHECK(client_socket_handle.ssl_error_response_info().cert_request_info);
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
-    error_response_info_.reset(new HttpResponseInfo(
-        transport_socket_handle_->ssl_error_response_info()));
+    error_response_info_ = std::make_unique<HttpResponseInfo>(
+        client_socket_handle.ssl_error_response_info());
     error_response_info_->cert_request_info->is_proxy = true;
     return result;
   }
@@ -573,26 +580,24 @@ int HttpProxyClientSocketWrapper::DoSSLConnectComplete(int result) {
                                base::TimeTicks::Now() - connect_start_time_);
     // TODO(rch): allow the user to deal with proxy cert errors in the
     // same way as server cert errors.
-    transport_socket_handle_->socket()->Disconnect();
     return ERR_PROXY_CERTIFICATE_INVALID;
   }
   // A SPDY session to the proxy completed prior to resolving the proxy
   // hostname. Surface this error, and allow the delegate to retry.
   // See crbug.com/334413.
   if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
-    DCHECK(!transport_socket_handle_->socket());
+    DCHECK(!nested_connect_job_->socket());
     return ERR_SPDY_SESSION_ALREADY_EXISTS;
   }
   if (result < 0) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpProxy.ConnectLatency.Secure.Error",
                                base::TimeTicks::Now() - connect_start_time_);
-    if (transport_socket_handle_->socket())
-      transport_socket_handle_->socket()->Disconnect();
     return ERR_PROXY_CONNECTION_FAILED;
   }
 
-  negotiated_protocol_ =
-      transport_socket_handle_->socket()->GetNegotiatedProtocol();
+  has_established_connection_ = true;
+
+  negotiated_protocol_ = nested_connect_job_->socket()->GetNegotiatedProtocol();
   using_spdy_ = negotiated_protocol_ == kProtoHTTP2;
 
   // Reset the timer to just the length of time allowed for HttpProxy handshake
@@ -627,12 +632,13 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
 
   // Add a HttpProxy connection on top of the tcp socket.
   transport_socket_ =
-      transport_pool_->client_socket_factory()->CreateProxyClientSocket(
-          std::move(transport_socket_handle_), user_agent_, endpoint_,
+      common_connect_job_params_.client_socket_factory->CreateProxyClientSocket(
+          nested_connect_job_->PassSocket(), user_agent_, endpoint_,
           ProxyServer(GetProxyServerScheme(), GetDestination()),
           http_auth_controller_.get(), tunnel_, using_spdy_,
           negotiated_protocol_, common_connect_job_params_.proxy_delegate,
           ssl_params_.get() != nullptr, traffic_annotation_);
+  nested_connect_job_.reset();
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
 }
@@ -658,16 +664,14 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
           /* is_websocket = */ false, net_log_);
   // It's possible that a session to the proxy has recently been created
   if (spdy_session) {
-    if (transport_socket_handle_.get()) {
-      if (transport_socket_handle_->socket())
-        transport_socket_handle_->socket()->Disconnect();
-      transport_socket_handle_->Reset();
-    }
+    nested_connect_job_.reset();
   } else {
     // Create a session direct to the proxy itself
-    spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocketHandle(
-        key, is_trusted_proxy_, std::move(transport_socket_handle_), net_log_);
+    spdy_session = spdy_session_pool_->CreateAvailableSessionFromSocket(
+        key, is_trusted_proxy_, nested_connect_job_->PassSocket(),
+        nested_connect_job_->connect_timing(), net_log_);
     DCHECK(spdy_session);
+    nested_connect_job_.reset();
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;

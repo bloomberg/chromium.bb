@@ -126,8 +126,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   // proxies that use TCP connections.
   TransportSocketPoolMap proxy_socket_pools_;
 
-  TransportSocketPoolMap transport_socket_pools_for_http_proxies_;
-  TransportSocketPoolMap ssl_socket_pools_for_https_proxies_;
   TransportSocketPoolMap http_proxy_socket_pools_;
   TransportSocketPoolMap ssl_socket_pools_for_proxies_;
 
