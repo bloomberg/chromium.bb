@@ -1239,8 +1239,9 @@ TEST_P(ResponseValidationNativeExtensionBindingsSystemUnittest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ResponseValidationNativeExtensionBindingsSystemUnittest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ResponseValidationNativeExtensionBindingsSystemUnittest,
+    testing::Bool());
 
 }  // namespace extensions
