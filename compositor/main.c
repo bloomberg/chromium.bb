@@ -646,7 +646,9 @@ usage(int error_code)
 		"  --shell=MODULE\tShell module, defaults to desktop-shell.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
+#if defined(BUILD_XWAYLAND)
 		"  --xwayland\t\tLoad the xwayland module\n"
+#endif
 		"  --modules\t\tLoad the comma-separated list of modules\n"
 		"  --log=FILE\t\tLog to the given file\n"
 		"  -c, --config=FILE\tConfig file to load, defaults to weston.ini\n"
@@ -2876,6 +2878,14 @@ copy_command_line(int argc, char * const argv[])
 	return str;
 }
 
+#if !defined(BUILD_XWAYLAND)
+int
+wet_load_xwayland(struct weston_compositor *comp)
+{
+	return -1;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
@@ -2916,7 +2926,9 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "shell", 0, &shell },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
+#if defined(BUILD_XWAYLAND)
 		{ WESTON_OPTION_BOOLEAN, "xwayland", 0, &xwayland },
+#endif
 		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
 		{ WESTON_OPTION_STRING, "log", 0, &log },
 		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
