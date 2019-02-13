@@ -104,7 +104,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
-#import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
@@ -206,6 +205,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/page_transition_types.h"
+#import "ui/gfx/image/image_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -3318,7 +3318,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)searchByImageData:(NSData*)data atURL:(const GURL&)imageURL {
   NSData* imageData = data;
   UIImage* image = [UIImage imageWithData:data];
-  UIImage* resizedImage = ResizeImageForSearchByImage(image);
+  gfx::Image gfxImage(image);
+  UIImage* resizedImage =
+      gfx::ResizedImageForSearchByImage(gfxImage).ToUIImage();
   if (![image isEqual:resizedImage]) {
     imageData = UIImageJPEGRepresentation(resizedImage, 1.0);
   }
@@ -3326,7 +3328,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 // Performs a search with the given image data. The data should alread have
-// been scaled down in |ResizeImageForSearchByImage|.
+// been scaled down in |ResizedImageForSearchByImage|.
 - (void)searchByResizedImageData:(NSData*)data
                            atURL:(const GURL*)imageURL
                         inNewTab:(BOOL)inNewTab {
@@ -4375,7 +4377,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)searchByImage:(UIImage*)image {
-  UIImage* resizedImage = ResizeImageForSearchByImage(image);
+  gfx::Image gfxImage(image);
+  UIImage* resizedImage =
+      gfx::ResizedImageForSearchByImage(gfxImage).ToUIImage();
   NSData* data = UIImageJPEGRepresentation(resizedImage, 1.0);
   [self searchByResizedImageData:data atURL:nil inNewTab:NO];
 }

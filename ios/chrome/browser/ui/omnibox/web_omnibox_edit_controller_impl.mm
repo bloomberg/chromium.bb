@@ -37,6 +37,7 @@ void WebOmniboxEditControllerImpl::OnSetFocus() {
 
 void WebOmniboxEditControllerImpl::OnAutocompleteAccept(
     const GURL& destination_url,
+    TemplateURLRef::PostContent* post_content,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
     AutocompleteMatchType::Type match_type,
@@ -45,6 +46,7 @@ void WebOmniboxEditControllerImpl::OnAutocompleteAccept(
     transition = ui::PageTransitionFromInt(
         transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     [URLLoader_ loadGURLFromLocationBar:destination_url
+                            postContent:post_content
                              transition:transition
                             disposition:disposition];
   }

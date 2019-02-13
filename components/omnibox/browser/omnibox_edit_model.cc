@@ -835,8 +835,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   if (match.destination_url.is_valid()) {
     // This calls RevertAll again.
     base::AutoReset<bool> tmp(&in_revert_, true);
+
     controller_->OnAutocompleteAccept(
-        match.destination_url, disposition,
+        match.destination_url, match.post_content.get(), disposition,
         ui::PageTransitionFromInt(match.transition |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
         match.type, match_selection_timestamp);

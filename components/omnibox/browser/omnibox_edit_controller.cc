@@ -8,11 +8,13 @@
 
 void OmniboxEditController::OnAutocompleteAccept(
     const GURL& destination_url,
+    TemplateURLRef::PostContent* post_content,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
     AutocompleteMatchType::Type type,
     base::TimeTicks match_selection_timestamp) {
   destination_url_ = destination_url;
+  post_content_ = post_content;
   disposition_ = disposition;
   transition_ = transition;
   match_selection_timestamp_ = match_selection_timestamp;

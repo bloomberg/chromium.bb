@@ -510,6 +510,10 @@ struct AutocompleteMatch {
   // AutocompleteController to do no additional transformations.
   std::unique_ptr<TemplateURLRef::SearchTermsArgs> search_terms_args;
 
+  // Optional post content. If this is set, the request to load the destination
+  // url will pass this post content as well.
+  std::unique_ptr<TemplateURLRef::PostContent> post_content;
+
   // Information dictionary into which each provider can optionally record a
   // property and associated value and which is presented in chrome://omnibox.
   AdditionalInfo additional_info;

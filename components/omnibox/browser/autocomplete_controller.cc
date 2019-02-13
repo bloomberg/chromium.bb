@@ -264,7 +264,7 @@ AutocompleteController::AutocompleteController(
     // create a ClipboardRecentContent as above (for both Chrome and tests).
     if (ClipboardRecentContent::GetInstance()) {
       providers_.push_back(new ClipboardURLProvider(
-          provider_client_.get(), history_url_provider_,
+          provider_client_.get(), this, history_url_provider_,
           ClipboardRecentContent::GetInstance()));
     }
   }
