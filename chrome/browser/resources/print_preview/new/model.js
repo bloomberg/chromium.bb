@@ -87,6 +87,7 @@ const STICKY_SETTING_NAMES = [
   'layout',
   'margins',
   'mediaSize',
+  'customScaling',
   'scaling',
   'fitToPage',
   'vendorItems',
@@ -208,6 +209,14 @@ Polymer({
             setByPolicy: false,
             key: 'scaling',
           },
+          customScaling: {
+            value: false,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            setByPolicy: false,
+            key: 'customScaling',
+          },
           duplex: {
             value: true,
             unavailableValue: false,
@@ -326,9 +335,10 @@ Polymer({
         'settings.collate.value, settings.layout.value, settings.color.value,' +
         'settings.mediaSize.value, settings.margins.value, ' +
         'settings.customMargins.value, settings.dpi.value, ' +
-        'settings.fitToPage.value, settings.scaling.value, ' +
-        'settings.duplex.value, settings.headerFooter.value, ' +
-        'settings.cssBackground.value, settings.vendorItems.value)',
+        'settings.fitToPage.value, settings.customScaling.value, ' +
+        'settings.scaling.value, settings.duplex.value, ' +
+        'settings.headerFooter.value, settings.cssBackground.value, ' +
+        'settings.vendorItems.value)',
   ],
 
   /** @private {boolean} */
@@ -711,6 +721,11 @@ Polymer({
         const value = this.stickySettings_[setting.key];
         if (value != undefined) {
           this.setSetting(settingName, value);
+        } else if (settingName === 'customScaling') {
+          // Use the stored scaling value instead of resetting users with an
+          // older set of sticky settings.
+          this.setSetting(
+              settingName, this.stickySettings_['scaling'] !== '100');
         }
       });
     }
@@ -820,7 +835,9 @@ Polymer({
       printWithPrivet: destination.isPrivet,
       printWithExtension: destination.isExtension,
       rasterizePDF: this.getSettingValue('rasterize'),
-      scaleFactor: parseInt(this.getSettingValue('scaling'), 10),
+      scaleFactor: this.getSettingValue('customScaling') ?
+          parseInt(this.getSettingValue('scaling'), 10) :
+          100,
       pagesPerSheet: this.getSettingValue('pagesPerSheet'),
       dpiHorizontal: (dpi && 'horizontal_dpi' in dpi) ? dpi.horizontal_dpi : 0,
       dpiVertical: (dpi && 'vertical_dpi' in dpi) ? dpi.vertical_dpi : 0,

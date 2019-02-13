@@ -257,6 +257,9 @@ cr.define('invalid_settings_browsertest', function() {
 
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
+            // Set this to enable the scaling input.
+            page.setSetting('customScaling', true);
+
             page.destinationStore_.startLoadCloudDestinations();
 
             // FooDevice will be selected since it is the most recently used

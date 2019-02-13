@@ -217,6 +217,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"optionCollate", IDS_PRINT_PREVIEW_OPTION_COLLATE},
     {"optionColor", IDS_PRINT_PREVIEW_OPTION_COLOR},
     {"optionCustomPages", IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES},
+    {"optionCustomScaling", IDS_PRINT_PREVIEW_OPTION_CUSTOM_SCALING},
+    {"optionDefaultScaling", IDS_PRINT_PREVIEW_OPTION_DEFAULT_SCALING},
     {"optionFitToPage", IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE},
     {"optionHeaderFooter", IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER},
     {"optionLandscape", IDS_PRINT_PREVIEW_OPTION_LANDSCAPE},
