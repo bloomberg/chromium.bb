@@ -50,7 +50,8 @@ void FadeOutWidgetAndMaybeSlideOnExit(std::unique_ptr<views::Widget> widget,
 // The new background widget starts with |initial_opacity| and then fades in.
 // If |parent| is prvoided the return widget will be parented to that window,
 // otherwise its parent will be in kShellWindowId_WallpaperContainer of
-// |root_window|.
+// |root_window|. |accept_events| is true if the newly-created widget should
+// handle events.
 std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       ui::LayerType layer_type,
                                                       SkColor background_color,
@@ -59,7 +60,8 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       SkColor border_color,
                                                       float initial_opacity,
                                                       aura::Window* parent,
-                                                      bool stack_on_top);
+                                                      bool stack_on_top,
+                                                      bool accept_events);
 
 // Calculates the bounds of the |transformed_window|. Those bounds are a union
 // of all regular (normal and panel) windows in the |transformed_window|'s

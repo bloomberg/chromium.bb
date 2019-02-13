@@ -19,8 +19,6 @@ class Window;
 
 namespace ash {
 
-class PreEventDispatchHandler;
-
 class WallpaperView : public views::View,
                       public views::ContextMenuController,
                       TabletModeObserver {
@@ -48,8 +46,6 @@ class WallpaperView : public views::View,
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
   bool is_tablet_mode_ = false;
-
-  std::unique_ptr<PreEventDispatchHandler> pre_dispatch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };

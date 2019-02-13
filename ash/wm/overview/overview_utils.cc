@@ -186,7 +186,8 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       SkColor border_color,
                                                       float initial_opacity,
                                                       aura::Window* parent,
-                                                      bool stack_on_top) {
+                                                      bool stack_on_top,
+                                                      bool accept_events) {
   std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -194,7 +195,7 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.layer_type = layer_type;
-  params.accept_events = false;
+  params.accept_events = accept_events;
   widget->set_focus_on_creation(false);
   // Parenting in kShellWindowId_WallpaperContainer allows proper layering of
   // the shield and selection widgets. Since that container is created with
