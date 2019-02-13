@@ -175,7 +175,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   // DeviceSyncBase:
   void Shutdown() override;
 
-  void ProcessPrimaryAccountInfo(const AccountInfo& primary_account_info);
+  void ProcessPrimaryAccountInfo(const CoreAccountInfo& primary_account_info);
   void ConnectToPrefStore();
   void OnConnectedToPrefService(std::unique_ptr<PrefService> pref_service);
   void InitializeCryptAuthManagementObjects();
@@ -217,7 +217,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   std::unique_ptr<base::OneShotTimer> set_software_feature_timer_;
 
   Status status_;
-  AccountInfo primary_account_info_;
+  CoreAccountInfo primary_account_info_;
   std::unique_ptr<PrefService> pref_service_;
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PendingSetSoftwareFeatureRequest>>

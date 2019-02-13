@@ -504,13 +504,10 @@ void DeviceSyncImpl::Shutdown() {
 }
 
 void DeviceSyncImpl::ProcessPrimaryAccountInfo(
-    const AccountInfo& primary_account_info) {
-  // Note: We cannot use |primary_account_info.IsValid()| here because
-  //       IdentityTestEnvironment is buggy: https://crbug.com/830122. For now,
-  //       we simply check that the account ID is set.
-  // TODO(khorimoto): Use IsValid() once the aforementioned bug is fixed.
+    const CoreAccountInfo& primary_account_info) {
   if (primary_account_info.account_id.empty()) {
-    PA_LOG(ERROR) << "Primary account information is invalid; cannot proceed.";
+    PA_LOG(ERROR)
+        << "No primary account information available; cannot proceed.";
 
     // This situation should never occur in practice; early return here to
     // prevent test failures.
