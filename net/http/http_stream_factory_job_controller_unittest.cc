@@ -95,21 +95,6 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   }
 };
 
-class FailingHostResolver : public MockHostResolverBase {
- public:
-  FailingHostResolver() : MockHostResolverBase(false /*use_caching*/) {}
-  ~FailingHostResolver() override = default;
-
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const NetLogWithSource& net_log) override {
-    return ERR_NAME_NOT_RESOLVED;
-  }
-};
-
 // A mock HttpServerProperties that always returns false for IsInitialized().
 class MockHttpServerProperties : public HttpServerPropertiesImpl {
  public:

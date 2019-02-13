@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
@@ -50,10 +49,8 @@ TransportSocketParams::TransportSocketParams(
     bool disable_resolver_cache,
     const OnHostResolutionCallback& host_resolution_callback)
     : destination_(host_port_pair),
-      host_resolution_callback_(host_resolution_callback) {
-  if (disable_resolver_cache)
-    destination_.set_allow_cached_response(false);
-}
+      disable_resolver_cache_(disable_resolver_cache),
+      host_resolution_callback_(host_resolution_callback) {}
 
 TransportSocketParams::~TransportSocketParams() = default;
 
@@ -134,7 +131,7 @@ void TransportConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   // Also record any attempts made on either of the sockets.
   ConnectionAttempts attempts;
   if (resolve_result_ != OK) {
-    DCHECK_EQ(0u, addresses_.size());
+    DCHECK(!request_->GetAddressResults());
     attempts.push_back(ConnectionAttempt(IPEndPoint(), resolve_result_));
   }
   attempts.insert(attempts.begin(), connection_attempts_.begin(),
@@ -254,11 +251,17 @@ int TransportConnectJob::DoResolveHost() {
   next_state_ = STATE_RESOLVE_HOST_COMPLETE;
   connect_timing_.dns_start = base::TimeTicks::Now();
 
-  return host_resolver()->Resolve(
-      params_->destination(), priority(), &addresses_,
-      base::BindOnce(&TransportConnectJob::OnIOComplete,
-                     base::Unretained(this)),
-      &request_, net_log());
+  HostResolver::ResolveHostParameters parameters;
+  parameters.initial_priority = priority();
+  parameters.cache_usage =
+      params_->disable_resolver_cache()
+          ? HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED
+          : HostResolver::ResolveHostParameters::CacheUsage::ALLOWED;
+  request_ = host_resolver()->CreateRequest(params_->destination(), net_log(),
+                                            parameters);
+
+  return request_->Start(base::BindOnce(&TransportConnectJob::OnIOComplete,
+                                        base::Unretained(this)));
 }
 
 int TransportConnectJob::DoResolveHostComplete(int result) {
@@ -272,10 +275,12 @@ int TransportConnectJob::DoResolveHostComplete(int result) {
 
   if (result != OK)
     return result;
+  DCHECK(request_->GetAddressResults());
 
   // Invoke callback, and abort if it fails.
   if (!params_->host_resolution_callback().is_null()) {
-    result = params_->host_resolution_callback().Run(addresses_, net_log());
+    result = params_->host_resolution_callback().Run(
+        request_->GetAddressResults().value(), net_log());
     if (result != OK)
       return result;
   }
@@ -291,18 +296,21 @@ int TransportConnectJob::DoTransportConnect() {
   if (socket_performance_watcher_factory()) {
     socket_performance_watcher =
         socket_performance_watcher_factory()->CreateSocketPerformanceWatcher(
-            SocketPerformanceWatcherFactory::PROTOCOL_TCP, addresses_);
+            SocketPerformanceWatcherFactory::PROTOCOL_TCP,
+            request_->GetAddressResults().value());
   }
   transport_socket_ = client_socket_factory()->CreateTransportClientSocket(
-      addresses_, std::move(socket_performance_watcher), net_log().net_log(),
+      request_->GetAddressResults().value(),
+      std::move(socket_performance_watcher), net_log().net_log(),
       net_log().source());
 
   // If the list contains IPv6 and IPv4 addresses, and the first address
   // is IPv6, the IPv4 addresses will be tried as fallback addresses, per
   // "Happy Eyeballs" (RFC 6555).
   bool try_ipv6_connect_with_ipv4_fallback =
-      addresses_.front().GetFamily() == ADDRESS_FAMILY_IPV6 &&
-      !AddressListOnlyContainsIPv6(addresses_);
+      request_->GetAddressResults().value().front().GetFamily() ==
+          ADDRESS_FAMILY_IPV6 &&
+      !AddressListOnlyContainsIPv6(request_->GetAddressResults().value());
 
   transport_socket_->ApplySocketTag(socket_tag());
 
@@ -328,11 +336,12 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
       transport_socket_->AddConnectionAttempts(fallback_attempts);
     }
 
-    bool is_ipv4 = addresses_.front().GetFamily() == ADDRESS_FAMILY_IPV4;
+    bool is_ipv4 = request_->GetAddressResults().value().front().GetFamily() ==
+                   ADDRESS_FAMILY_IPV4;
     RaceResult race_result = RACE_UNKNOWN;
     if (is_ipv4)
       race_result = RACE_IPV4_SOLO;
-    else if (AddressListOnlyContainsIPv6(addresses_))
+    else if (AddressListOnlyContainsIPv6(request_->GetAddressResults().value()))
       race_result = RACE_IPV6_SOLO;
     else
       race_result = RACE_IPV6_WINS;
@@ -365,7 +374,8 @@ void TransportConnectJob::DoIPv6FallbackTransportConnect() {
   DCHECK(!fallback_transport_socket_.get());
   DCHECK(!fallback_addresses_.get());
 
-  fallback_addresses_.reset(new AddressList(addresses_));
+  fallback_addresses_.reset(
+      new AddressList(request_->GetAddressResults().value()));
   MakeAddressListStartWithIPv4(fallback_addresses_.get());
 
   // Create a |SocketPerformanceWatcher|, and pass the ownership.
