@@ -17,7 +17,7 @@ window.JSErrorCount = 0;
 /**
  * Count uncaught exceptions.
  */
-window.onerror = function(message, url) {
+window.onerror = (message, url) => {
   window.JSErrorCount++;
 };
 
