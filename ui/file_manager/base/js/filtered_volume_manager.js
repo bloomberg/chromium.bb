@@ -88,22 +88,22 @@ function FilteredVolumeManager(allowedPaths, writableOnly, opt_backgroundPage) {
   if (opt_backgroundPage) {
     this.backgroundPage_ = opt_backgroundPage;
   } else {
-    queue.run(function(callNextStep) {
+    queue.run(callNextStep => {
       chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */(
-          function(opt_backgroundPage) {
+          opt_backgroundPage => {
             this.backgroundPage_ = opt_backgroundPage;
             callNextStep();
-          }.bind(this)));
-    }.bind(this));
+          }));
+    });
   }
 
-  queue.run(function(callNextStep) {
+  queue.run(callNextStep => {
     this.backgroundPage_.volumeManagerFactory.getInstance(
-        function(volumeManager) {
+        volumeManager => {
           this.onReady_(volumeManager);
           callNextStep();
-        }.bind(this));
-  }.bind(this));
+        });
+  });
 }
 
 /**
@@ -340,11 +340,11 @@ FilteredVolumeManager.prototype.getCurrentProfileVolumeInfo =
 /** @override */
 FilteredVolumeManager.prototype.getDefaultDisplayRoot =
     function(callback) {
-  this.ensureInitialized(function() {
+  this.ensureInitialized(() => {
     const defaultVolume = this.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DOWNLOADS);
     if (defaultVolume) {
-      defaultVolume.resolveDisplayRoot(callback, function() {
+      defaultVolume.resolveDisplayRoot(callback, () => {
         // defaultVolume is DOWNLOADS and resolveDisplayRoot should succeed.
         throw new Error(
             'Unexpectedly failed to obtain the default display root.');
@@ -353,7 +353,7 @@ FilteredVolumeManager.prototype.getDefaultDisplayRoot =
       console.warn('Unexpectedly failed to obtain the default display root.');
       callback(null);
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -450,11 +450,11 @@ FilteredVolumeManager.prototype.unmount = function(
  */
 FilteredVolumeManager.prototype.configure = function(volumeInfo) {
   if (this.pendingTasks_) {
-    return new Promise(function(fulfill, reject) {
-      this.pendingTasks_.push(function() {
+    return new Promise((fulfill, reject) => {
+      this.pendingTasks_.push(() => {
         return this.volumeManager_.configure(volumeInfo).then(fulfill, reject);
-      }.bind(this));
-    }.bind(this));
+      });
+    });
   }
 
   return this.volumeManager_.configure(volumeInfo);

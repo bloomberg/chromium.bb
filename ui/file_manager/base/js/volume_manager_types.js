@@ -263,7 +263,7 @@ VolumeManagerCommon.Source = {
  * @param {VolumeManagerCommon.VolumeType} type
  * @return {boolean}
  */
-VolumeManagerCommon.VolumeType.isNative = function(type) {
+VolumeManagerCommon.VolumeType.isNative = type => {
   return type === VolumeManagerCommon.VolumeType.DOWNLOADS ||
       type === VolumeManagerCommon.VolumeType.ANDROID_FILES ||
       type === VolumeManagerCommon.VolumeType.CROSTINI ||
@@ -278,7 +278,7 @@ Object.freeze(VolumeManagerCommon.VolumeType);
  * @param {VolumeManagerCommon.RootType} rootType RootType
  * @return {VolumeManagerCommon.VolumeType}
  */
-VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
+VolumeManagerCommon.getVolumeTypeFromRootType = rootType => {
   switch (rootType) {
     case VolumeManagerCommon.RootType.DOWNLOADS:
       return VolumeManagerCommon.VolumeType.DOWNLOADS;
@@ -320,7 +320,7 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
  * @param {VolumeManagerCommon.VolumeType} volumeType .
  * @return {VolumeManagerCommon.RootType}
  */
-VolumeManagerCommon.getRootTypeFromVolumeType = function(volumeType) {
+VolumeManagerCommon.getRootTypeFromVolumeType = volumeType => {
   switch (volumeType) {
     case VolumeManagerCommon.VolumeType.ANDROID_FILES:
       return VolumeManagerCommon.RootType.ANDROID_FILES;
@@ -376,7 +376,7 @@ Object.freeze(VolumeManagerCommon.MediaViewRootType);
  * @param {string} volumeId Volume ID.
  * @return {VolumeManagerCommon.MediaViewRootType}
  */
-VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
+VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = volumeId => {
   return /** @type {VolumeManagerCommon.MediaViewRootType} */ (
       volumeId.split(':', 2)[1]);
 };
@@ -413,7 +413,7 @@ VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE = 'archive_opened';
  *     volume.
  * @return {!CustomEvent<!DirectoryEntry>}
  */
-VolumeManagerCommon.createArchiveOpenedEvent = function(mountPoint) {
+VolumeManagerCommon.createArchiveOpenedEvent = mountPoint => {
   return new CustomEvent(
       VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE,
       {detail: {mountPoint: mountPoint}});
