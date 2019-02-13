@@ -17,7 +17,7 @@ namespace test {
 namespace {
 typedef QuicBackendResponse Response;
 typedef QuicBackendResponse::ServerPushInfo ServerPushInfo;
-};  // namespace
+}  // namespace
 
 class QuicMemoryCacheBackendTest : public QuicTest {
  protected:

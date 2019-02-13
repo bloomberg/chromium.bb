@@ -338,4 +338,4 @@ void QuicTraceVisitor::PopulateTransportState(
   }
 }
 
-};  // namespace quic
+}  // namespace quic

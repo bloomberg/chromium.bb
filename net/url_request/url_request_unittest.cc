@@ -892,7 +892,6 @@ class URLRequestTest : public PlatformTest, public WithScopedTaskEnvironment {
 class CookieBlockingNetworkDelegate : public TestNetworkDelegate {
  public:
   CookieBlockingNetworkDelegate() = default;
-  ;
 
   // Adds |directory| to the access white list.
   void AddToWhitelist(const base::FilePath& directory) {
