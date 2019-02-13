@@ -593,6 +593,11 @@ class LocalNtpSource::SearchConfigurationProvider
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
 
+    if (is_google) {
+      config_data.SetBoolean("removeFakebox", base::FeatureList::IsEnabled(
+                                                  features::kRemoveNtpFakebox));
+    }
+
     // Serialize the dictionary.
     std::string js_text;
     JSONStringValueSerializer serializer(&js_text);

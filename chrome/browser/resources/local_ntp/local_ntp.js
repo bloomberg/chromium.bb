@@ -116,6 +116,7 @@ var IDS = {
   ERROR_NOTIFICATION_LINK: 'error-notice-link',
   ERROR_NOTIFICATION_MSG: 'error-notice-msg',
   FAKEBOX: 'fakebox',
+  FAKEBOX_CONTAINER: 'fakebox-container',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
@@ -1085,66 +1086,70 @@ function init() {
 
     customBackgrounds.init(showErrorNotification, hideNotification);
 
-    // Set up the fakebox (which only exists on the Google NTP).
-    ntpApiHandle.oninputstart = onInputStart;
-    ntpApiHandle.oninputcancel = onInputCancel;
+    if (configData.removeFakebox) {
+      $(IDS.FAKEBOX_CONTAINER).style.display = 'none';
+    } else {
+      // Set up the fakebox (which only exists on the Google NTP).
+      ntpApiHandle.oninputstart = onInputStart;
+      ntpApiHandle.oninputcancel = onInputCancel;
 
-    if (ntpApiHandle.isInputInProgress) {
-      onInputStart();
-    }
-
-    $(IDS.FAKEBOX_TEXT).textContent =
-        configData.translatedStrings.searchboxPlaceholder;
-
-    if (!iframesAndVoiceSearchDisabledForTesting) {
-      speech.init(
-          configData.googleBaseUrl, configData.translatedStrings,
-          $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
-    }
-
-    // Listener for updating the key capture state.
-    document.body.onmousedown = function(event) {
-      if (isFakeboxClick(event)) {
-        searchboxApiHandle.startCapturingKeyStrokes();
-      } else if (isFakeboxFocused()) {
-        searchboxApiHandle.stopCapturingKeyStrokes();
+      if (ntpApiHandle.isInputInProgress) {
+        onInputStart();
       }
-    };
-    searchboxApiHandle.onkeycapturechange = function() {
+
+      $(IDS.FAKEBOX_TEXT).textContent =
+          configData.translatedStrings.searchboxPlaceholder;
+
+      if (!iframesAndVoiceSearchDisabledForTesting) {
+        speech.init(
+            configData.googleBaseUrl, configData.translatedStrings,
+            $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
+      }
+
+      // Listener for updating the key capture state.
+      document.body.onmousedown = function(event) {
+        if (isFakeboxClick(event)) {
+          searchboxApiHandle.startCapturingKeyStrokes();
+        } else if (isFakeboxFocused()) {
+          searchboxApiHandle.stopCapturingKeyStrokes();
+        }
+      };
+      searchboxApiHandle.onkeycapturechange = function() {
+        setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+      };
+      var inputbox = $(IDS.FAKEBOX_INPUT);
+      inputbox.onpaste = function(event) {
+        event.preventDefault();
+        // Send pasted text to Omnibox.
+        var text = event.clipboardData.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+      };
+      inputbox.ondrop = function(event) {
+        event.preventDefault();
+        var text = event.dataTransfer.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+        setFakeboxDragFocus(false);
+      };
+      inputbox.ondragenter = function() {
+        setFakeboxDragFocus(true);
+      };
+      inputbox.ondragleave = function() {
+        setFakeboxDragFocus(false);
+      };
+      utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
+
+      // Update the fakebox style to match the current key capturing state.
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-    };
-    var inputbox = $(IDS.FAKEBOX_INPUT);
-    inputbox.onpaste = function(event) {
-      event.preventDefault();
-      // Send pasted text to Omnibox.
-      var text = event.clipboardData.getData('text/plain');
-      if (text) {
-        searchboxApiHandle.paste(text);
+      // Also tell the browser that we're capturing, otherwise it's possible
+      // that both fakebox and Omnibox have visible focus at the same time, see
+      // crbug.com/792850.
+      if (searchboxApiHandle.isKeyCaptureEnabled) {
+        searchboxApiHandle.startCapturingKeyStrokes();
       }
-    };
-    inputbox.ondrop = function(event) {
-      event.preventDefault();
-      var text = event.dataTransfer.getData('text/plain');
-      if (text) {
-        searchboxApiHandle.paste(text);
-      }
-      setFakeboxDragFocus(false);
-    };
-    inputbox.ondragenter = function() {
-      setFakeboxDragFocus(true);
-    };
-    inputbox.ondragleave = function() {
-      setFakeboxDragFocus(false);
-    };
-    utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
-
-    // Update the fakebox style to match the current key capturing state.
-    setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-    // Also tell the browser that we're capturing, otherwise it's possible that
-    // both fakebox and Omnibox have visible focus at the same time, see
-    // crbug.com/792850.
-    if (searchboxApiHandle.isKeyCaptureEnabled) {
-      searchboxApiHandle.startCapturingKeyStrokes();
     }
 
     doodles.init();

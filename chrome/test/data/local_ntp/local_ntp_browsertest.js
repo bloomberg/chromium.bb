@@ -48,6 +48,15 @@ test.localNtp.testDoesNotShowFakeboxIfNotGoogle = function() {
 
 
 /**
+ * Tests the fakebox is hidden if the "remove-ntp-fakebox" feature is enabled.
+ */
+test.localNtp.testDoesNotShowFakeboxIfRemoveFeatureEnabled = function() {
+  initLocalNTP(/*isGooglePage=*/ true, /*removeFakebox=*/ true);
+  assertFalse(elementIsVisible($('fakebox-container')));
+};
+
+
+/**
  * Tests that the embeddedSearch.newTabPage.mostVisited API is
  * hooked up, and provides the correct data for the tiles (i.e. only
  * IDs, no URLs).
