@@ -120,11 +120,14 @@ void AvatarToolbarButton::UpdateText() {
   const SyncState sync_state = GetSyncState();
 
   if (IsIncognito() && GetThemeProvider()) {
-    color = GetThemeProvider()->GetColor(
+    // Note that this chip does not have a highlight color.
+    const SkColor text_color = GetThemeProvider()->GetColor(
         ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-    // TODO(pbos): Remove this once the incognito chip is always enabled and
-    // triggers a menu.
-    SetTextColor(STATE_DISABLED, *color);
+    SetEnabledTextColors(text_color);
+    // TODO(pbos): Remove this call once the incognito chip always triggers a
+    // menu.
+    if (!IsIncognitoCounterActive())
+      SetTextColor(STATE_DISABLED, text_color);
   }
 
   if (IsIncognito()) {
