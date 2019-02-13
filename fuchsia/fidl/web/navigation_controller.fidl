@@ -6,7 +6,7 @@ library chromium.web;
 
 /// Provides methods for controlling and querying the navigation state
 /// of a Frame.
-interface NavigationController {
+protocol NavigationController {
   /// Tells the Frame to navigate to a |url|.
   ///
   /// |url|:    The address to navigate to.

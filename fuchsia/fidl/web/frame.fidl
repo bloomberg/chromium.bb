@@ -28,7 +28,7 @@ enum LogLevel : int32 {
   ERROR = 2;
 };
 
-interface Frame {
+protocol Frame {
   /// Creates a new view using the specified |view_token|. Caller should pass
   /// the other end of the token to CreateViewHolderCmd() to attach the new view
   /// to a the view tree.
@@ -123,7 +123,7 @@ union IncomingTransferable {
 /// and exchange Messages with the peered MessagePort in the Frame's script
 /// context. The port is destroyed when either end of the MessagePort channel
 /// is torn down.
-interface MessagePort {
+protocol MessagePort {
   /// Sends a WebMessage to the peer.
   PostMessage(WebMessage message) -> (bool success);
 

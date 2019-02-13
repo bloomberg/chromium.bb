@@ -18,7 +18,7 @@ struct ApplicationConfig {
 
 /// Service interface for working with application configurations.
 [Discoverable]
-interface ApplicationConfigManager {
+protocol ApplicationConfigManager {
   /// Returns the ApplicationConfig for the specified application Id.
   GetConfig(string id) -> (ApplicationConfig? config);
 };

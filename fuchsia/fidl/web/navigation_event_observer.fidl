@@ -15,7 +15,7 @@ struct NavigationEvent {
 
 /// Interface supplied by the embedder for receiving notifications about
 /// navigation events in a Frame.
-interface NavigationEventObserver {
+protocol NavigationEventObserver {
   /// Called when user-visible navigation state has changed since Frame
   /// creation or the last acknowledgement callback, whichever occurred later.
   /// |change| will contain all the differences in navigation state since the

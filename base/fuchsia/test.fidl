@@ -5,6 +5,6 @@
 library base.fuchsia.testfidl;
 
 [Discoverable]
-interface TestInterface {
+protocol TestInterface {
   Add(int32 a, int32 b) -> (int32 sum);
 };
