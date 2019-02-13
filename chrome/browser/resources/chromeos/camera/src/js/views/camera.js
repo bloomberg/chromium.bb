@@ -105,13 +105,6 @@ cca.views.Camera = function(model) {
   this.started_ = null;
 
   /**
-   * Promise for the current timer ticks.
-   * @type {Promise}
-   * @private
-   */
-  this.ticks_ = null;
-
-  /**
    * Timeout for a take of photo or recording.
    * @type {?number}
    * @private
@@ -208,7 +201,7 @@ cca.views.Camera.prototype.updateShutterLabel_ = function() {
   if (this.recordMode) {
     label = this.taking ? 'record_video_stop_button' : 'record_video_start_button';
   } else {
-    label = (this.taking && this.ticks_) ?
+    label = (this.taking && document.body.classList.contains('timer')) ?
         'take_photo_cancel_button' : 'take_photo_button';
   }
   this.shutterButton_.setAttribute('aria-label', chrome.i18n.getMessage(label));
@@ -238,10 +231,9 @@ cca.views.Camera.prototype.handlingKey = function(key) {
  */
 cca.views.Camera.prototype.beginTake_ = function() {
   document.body.classList.add('taking');
-  this.ticks_ = this.options_.timerTicks();
   this.updateShutterLabel_();
 
-  Promise.resolve(this.ticks_).then(() => {
+  cca.views.camera.timertick.start().then(() => {
     // Play a sound before starting to record and delay the take to avoid the
     // sound being recorded if necessary.
     var delay =
@@ -270,10 +262,7 @@ cca.views.Camera.prototype.beginTake_ = function() {
  * @private
  */
 cca.views.Camera.prototype.endTake_ = function() {
-  if (this.ticks_) {
-    this.ticks_.cancel();
-    this.ticks_ = null;
-  }
+  cca.views.camera.timertick.cancel();
   if (this.takeTimeout_) {
     clearTimeout(this.takeTimeout_);
     this.takeTimeout_ = null;
