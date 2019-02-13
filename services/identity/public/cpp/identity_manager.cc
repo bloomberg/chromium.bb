@@ -287,6 +287,13 @@ void IdentityManager::ForceTriggerOnCookieChange() {
 }
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+void IdentityManager::LegacyReloadAccountsFromSystem() {
+  token_service_->GetDelegate()->ReloadAccountsFromSystem(
+      GetPrimaryAccountId());
+}
+#endif
+
 void IdentityManager::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
