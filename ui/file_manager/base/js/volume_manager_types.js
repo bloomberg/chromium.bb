@@ -5,14 +5,14 @@
 /**
  * Namespace for common types.
  */
-var VolumeManagerCommon = {};
+const VolumeManagerCommon = {};
 
 /**
  * Paths that can be handled by the dialog opener in native code.
  * @enum {string}
  * @const
  */
-var AllowedPaths = {
+const AllowedPaths = {
   NATIVE_PATH: 'nativePath',
   NATIVE_OR_DRIVE_PATH: 'nativeOrDrivePath',
   ANY_PATH: 'anyPath',
