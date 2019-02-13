@@ -24,6 +24,7 @@ CHROME_SWARMING_PROXY_HOST_KEY = '/chrome_swarming_proxy/host'
 LUCI_LOGDOG_HOST_KEY = '/luci-logdog/host'
 LUCI_MILO_HOST_KEY = '/luci-milo/host'
 SHERIFFOMATIC_HOST_KEY = '/sheriffomatic/host'
+SERVICE_ACCOUNT_KEY = 'service_account_json'
 
 TOPOLOGY_DEFAULTS = {
     SWARMING_PROXY_HOST_KEY: 'fake_swarming_server',
@@ -31,6 +32,7 @@ TOPOLOGY_DEFAULTS = {
     LUCI_LOGDOG_HOST_KEY: 'luci-logdog.appspot.com',
     LUCI_MILO_HOST_KEY: 'luci-milo.appspot.com',
     SHERIFFOMATIC_HOST_KEY: 'sheriff-o-matic-staging.appspot.com',
+    SERVICE_ACCOUNT_KEY: '/creds/service_accounts/testing-account.json'
 }
 
 

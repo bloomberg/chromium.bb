@@ -37,6 +37,7 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
                        timeout_secs=None, io_timeout_secs=None,
                        hard_timeout_secs=None, expiration_secs=None,
                        temp_json_path=None, tags=None,
+                       service_account_json=None,
                        *args, **kwargs):
   """Run command via swarming proxy.
 
@@ -60,6 +61,7 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
                      run before this task request expires.
     temp_json_path: Where swarming client should dump the result.
     tags: Dict, representing tags to add to the swarming command.
+    service_account_json: Location of the service account json file.
   """
   with osutils.TempDir() as tempdir:
     if temp_json_path is None:
@@ -98,6 +100,9 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
     if tags is not None:
       for k, v in tags.items():
         swarming_cmd += ['--tags=%s:%s' % (k, v)]
+
+    if service_account_json:
+      swarming_cmd += ['--auth-service-account-json', service_account_json]
 
     swarming_cmd += ['--']
     swarming_cmd += cmd

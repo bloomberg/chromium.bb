@@ -1271,5 +1271,6 @@ TOPOLOGY_DICT = {
     '/sheriffomatic/host':'sheriff-o-matic.appspot.com',
     '/statsd/es_host':'104.154.79.237',
     '/statsd/host':'104.154.79.237',
-    '/swarming_proxy/host':'chromeos-proxy.appspot.com'
+    '/swarming_proxy/host':'chromeos-proxy.appspot.com',
+    'service_account_json': CHROMEOS_SERVICE_ACCOUNT,
 }
