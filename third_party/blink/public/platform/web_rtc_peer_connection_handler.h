@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
@@ -144,6 +145,13 @@ class WebRTCPeerConnectionHandler {
 
   // Returns a pointer to the underlying native PeerConnection object.
   virtual webrtc::PeerConnectionInterface* NativePeerConnection() = 0;
+
+  virtual void RunSynchronousOnceClosureOnSignalingThread(
+      base::OnceClosure closure,
+      const char* trace_event_name) = 0;
+  virtual void RunSynchronousRepeatingClosureOnSignalingThread(
+      const base::RepeatingClosure& closure,
+      const char* trace_event_name) = 0;
 };
 
 }  // namespace blink

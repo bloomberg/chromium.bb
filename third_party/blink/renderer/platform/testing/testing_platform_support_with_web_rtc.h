@@ -5,6 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -67,6 +71,12 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void Stop() override;
   WebString Id() const override;
   webrtc::PeerConnectionInterface* NativePeerConnection() override;
+  void RunSynchronousOnceClosureOnSignalingThread(
+      base::OnceClosure closure,
+      const char* trace_event_name) override;
+  void RunSynchronousRepeatingClosureOnSignalingThread(
+      const base::RepeatingClosure& closure,
+      const char* trace_event_name) override;
 
  private:
   class DummyWebRTCRtpTransceiver;
