@@ -2264,6 +2264,12 @@ void AppsGridView::ButtonPressed(views::Button* sender,
   if (strcmp(sender->GetClassName(), AppListItemView::kViewClassName))
     return;
 
+  if (contents_view_->GetAppsContainerView()
+          ->app_list_folder_view()
+          ->IsAnimationRunning()) {
+    return;
+  }
+
   // Always set the previous activated_folder_item_view_ to be visible. This
   // prevents a case where the item would remain hidden due the
   // |activated_folder_item_view_| changing during the animation. We only
