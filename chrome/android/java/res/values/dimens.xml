@@ -265,8 +265,13 @@
     <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_icon_width">28dp</dimen>
+    <dimen name="location_bar_action_icon_width">48dp</dimen>
     <dimen name="location_bar_start_icon_width">28dp</dimen>
     <dimen name="location_bar_lateral_padding">10dp</dimen>
+    <!--  When the url action container is shown, the location bar end padding is built in to its
+    actions, so the action container itself uses a negative offset to properly align with the end
+     of the location bar. -->
+    <dimen name="location_bar_url_action_offset">-10dp</dimen>
     <dimen name="location_bar_status_separator_width">1dp</dimen>
     <dimen name="location_bar_status_separator_spacer">8dp</dimen>
     <dimen name="location_bar_min_url_width">68dp</dimen>

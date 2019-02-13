@@ -606,6 +606,13 @@ public class LocationBarLayout extends FrameLayout
                     + MarginLayoutParamsCompat.getMarginStart(childLayoutParams)
                     + MarginLayoutParamsCompat.getMarginEnd(childLayoutParams);
         }
+        if (mUrlActionContainer != null && mUrlActionContainer.getVisibility() == View.VISIBLE) {
+            ViewGroup.MarginLayoutParams urlActionContainerLayoutParams =
+                    (ViewGroup.MarginLayoutParams) mUrlActionContainer.getLayoutParams();
+            urlContainerMarginEnd +=
+                    MarginLayoutParamsCompat.getMarginStart(urlActionContainerLayoutParams)
+                    + MarginLayoutParamsCompat.getMarginEnd(urlActionContainerLayoutParams);
+        }
         return urlContainerMarginEnd;
     }
 
