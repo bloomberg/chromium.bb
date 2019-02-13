@@ -359,9 +359,23 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
   void StartMigration() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kStepTimeoutInSeconds),
-                 base::BindOnce(&ArcAccountsMigration::FinishWithFailure,
-                                weak_factory_.GetWeakPtr()));
+    if (!arc_auth_service_) {
+      // ArcAuthService is not available for Secondary Profiles participating in
+      // Multi-Signin. It is started only for the Primary Profile.
+      VLOG(1) << "ArcAuthService unavailable. Aborting ARC accounts migration.";
+
+      // It is important to mark this step as a failure so that if/when this
+      // Profile signs in as a Primary Profile, this step can be retried.
+      // However, skip emitting a failure UMA stat because otherwise we will get
+      // false failure stats for all Secondary Profiles using Multi-Signin.
+      FinishWithFailure(false /* emit_uma_stats */);
+      return;
+    }
+
+    timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kStepTimeoutInSeconds),
+        base::BindOnce(&ArcAccountsMigration::FinishWithFailure,
+                       weak_factory_.GetWeakPtr(), true /* emit_uma_stats */));
     arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
     arc_session_manager->AddObserver(this);
     if (arc_session_manager->state() == arc::ArcSessionManager::State::ACTIVE) {
@@ -373,6 +387,7 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     arc::ArcSessionManager::Get()->RemoveObserver(this);
 
+    DCHECK(arc_auth_service_);
     arc_auth_service_->GetGoogleAccountsInArc(
         base::BindOnce(&ArcAccountsMigration::OnGetGoogleAccountsInArc,
                        weak_factory_.GetWeakPtr()));
@@ -395,9 +410,9 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
     Step::FinishWithSuccess();
   }
 
-  void FinishWithFailure() {
+  void FinishWithFailure(bool emit_uma_stats) {
     Reset();
-    Step::FinishWithFailure();
+    Step::FinishWithFailure(emit_uma_stats);
   }
 
   void Reset() {
