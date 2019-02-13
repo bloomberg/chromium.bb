@@ -77,6 +77,15 @@ WebViewIdentityManagerFactory* WebViewIdentityManagerFactory::GetInstance() {
   return instance.get();
 }
 
+// static
+void WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
+  WebViewIdentityManagerFactory::GetInstance();
+  WebViewAccountTrackerServiceFactory::GetInstance();
+  WebViewGaiaCookieManagerServiceFactory::GetInstance();
+  WebViewOAuth2TokenServiceFactory::GetInstance();
+  WebViewSigninManagerFactory::GetInstance();
+}
+
 std::unique_ptr<KeyedService>
 WebViewIdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {

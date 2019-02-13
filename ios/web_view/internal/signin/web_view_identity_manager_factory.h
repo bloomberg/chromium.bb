@@ -27,6 +27,10 @@ class WebViewIdentityManagerFactory : public BrowserStateKeyedServiceFactory {
   // Returns an instance of the WebViewIdentityManagerFactory singleton.
   static WebViewIdentityManagerFactory* GetInstance();
 
+  // Ensures that IdentityManagerFactory and the factories on which it depends
+  // are built.
+  static void EnsureFactoryAndDependeeFactoriesBuilt();
+
  private:
   friend class base::NoDestructor<WebViewIdentityManagerFactory>;
 
