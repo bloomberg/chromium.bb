@@ -5012,7 +5012,7 @@ gfx::Size GLES2DecoderImpl::GetBoundDrawFramebufferSize() {
   } else {
     return surface_->GetSize();
   }
-};
+}
 
 GLuint GLES2DecoderImpl::GetBoundReadFramebufferServiceId() {
   Framebuffer* framebuffer = GetBoundReadFramebuffer();

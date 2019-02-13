@@ -97,8 +97,7 @@ static void EosOnReadDone(bool* got_eos_buffer,
   EXPECT_TRUE(buffer->data());
   EXPECT_GT(buffer->data_size(), 0u);
   *got_eos_buffer = false;
-};
-
+}
 
 // Fixture class to facilitate writing tests.  Takes care of setting up the
 // FFmpeg, pipeline and filter host mocks.
