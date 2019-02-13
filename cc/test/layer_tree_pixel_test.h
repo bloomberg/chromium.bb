@@ -11,6 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/trees/clip_node.h"
+#include "cc/trees/effect_node.h"
+#include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -71,12 +75,23 @@ class LayerTreePixelTest : public LayerTreeTest {
       int border_width,
       SkColor border_color);
 
+  // Initializes the root layer and root PropertyTrees for layer list mode.
+  // In this mode, all other layers are direct children of |root_layer| and
+  // any property nodes are descendants of node id 1 in the respective trees.
+  void InitializeForLayerListMode(scoped_refptr<Layer>* root_layer,
+                                  PropertyTrees* property_trees);
+
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
   void RunPixelTest(PixelTestType type,
                     scoped_refptr<Layer> content_root,
                     const SkBitmap& expected_bitmap);
+
+  void RunPixelTestWithLayerList(PixelTestType type,
+                                 scoped_refptr<Layer> root_layer,
+                                 base::FilePath file_name,
+                                 PropertyTrees* property_trees);
 
   void RunSingleThreadedPixelTest(PixelTestType test_type,
                                   scoped_refptr<Layer> content_root,
@@ -111,6 +126,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::unique_ptr<PixelComparator> pixel_comparator_;
   PixelTestType test_type_;
   scoped_refptr<Layer> content_root_;
+  PropertyTrees* property_trees_;
   Layer* readback_target_;
   base::FilePath ref_file_;
   SkBitmap expected_bitmap_;
