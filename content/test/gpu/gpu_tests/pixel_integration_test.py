@@ -165,7 +165,8 @@ class PixelIntegrationTest(
       if page.expected_colors:
         # Use expected colors instead of ref images for validation.
         self._ValidateScreenshotSamples(
-            tab, page.name, screenshot, page.expected_colors, dpr)
+            tab, page.name, screenshot, page.expected_colors, page.tolerance,
+            dpr)
         return
       image_name = self._UrlToImageName(page.name)
       if self.GetParsedCommandLineOptions().upload_refimg_to_cloud_storage:
@@ -256,7 +257,8 @@ class PixelIntegrationTest(
       if page.expected_colors:
         # Use expected colors instead of ref images for validation.
         self._ValidateScreenshotSamplesWithSkiaGold(
-            tab, page, screenshot, page.expected_colors, dpr, build_id_args)
+            tab, page, screenshot, page.expected_colors, page.tolerance,
+            dpr, build_id_args)
         return
       image_name = self._UrlToImageName(page.name)
       is_local_run = not (parsed_options.upload_refimg_to_cloud_storage or
