@@ -547,7 +547,7 @@ bool SplitViewController::IsWindowInSplitView(
 
 void SplitViewController::OnWindowDragStarted(aura::Window* dragged_window) {
   DCHECK(dragged_window);
-  if (dragged_window == left_window_ || dragged_window == right_window_)
+  if (IsWindowInSplitView(dragged_window))
     OnSnappedWindowDetached(dragged_window);
 
   // OnSnappedWindowDetached() may end split view mode.
@@ -592,7 +592,7 @@ void SplitViewController::AddObserver(mojom::SplitViewObserverPtr observer) {
 
 void SplitViewController::OnWindowDestroyed(aura::Window* window) {
   DCHECK(IsSplitViewModeActive());
-  DCHECK(window == left_window_ || window == right_window_);
+  DCHECK(IsWindowInSplitView(window));
   auto iter = snapping_window_transformed_bounds_map_.find(window);
   if (iter != snapping_window_transformed_bounds_map_.end())
     snapping_window_transformed_bounds_map_.erase(iter);
@@ -1168,8 +1168,7 @@ void SplitViewController::OnWindowSnapped(aura::Window* window) {
 }
 
 void SplitViewController::OnSnappedWindowDetached(aura::Window* window) {
-  DCHECK(window);
-  DCHECK(window == left_window_ || window == right_window_);
+  DCHECK(IsWindowInSplitView(window));
   if (left_window_ == window) {
     StopObserving(LEFT);
   } else {
@@ -1281,7 +1280,7 @@ void SplitViewController::GetDividerOptionalPositionRatios(
 }
 
 int SplitViewController::GetWindowComponentForResize(aura::Window* window) {
-  if (window && (window == left_window_ || window == right_window_)) {
+  if (IsWindowInSplitView(window)) {
     switch (GetCurrentScreenOrientation()) {
       case OrientationLockType::kLandscapePrimary:
         return (window == left_window_) ? HTRIGHT : HTLEFT;
@@ -1302,7 +1301,7 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
     aura::Window* window,
     const gfx::Point& location_in_screen) {
   gfx::Point end_location(location_in_screen);
-  if (!window || (window != left_window_ && window != right_window_))
+  if (!IsWindowInSplitView(window))
     return end_location;
 
   const gfx::Rect bounds = (window == left_window_)
@@ -1329,7 +1328,7 @@ gfx::Point SplitViewController::GetEndDragLocationInScreen(
 }
 
 void SplitViewController::RestoreTransformIfApplicable(aura::Window* window) {
-  DCHECK(window == left_window_ || window == right_window_);
+  DCHECK(IsWindowInSplitView(window));
 
   // If the transform of the window has been changed, calculate a good starting
   // transform based on its transformed bounds before to be snapped.

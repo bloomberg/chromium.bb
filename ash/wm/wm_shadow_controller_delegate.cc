@@ -25,8 +25,7 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   if (split_view_controller &&
-      (window == split_view_controller->left_window() ||
-       window == split_view_controller->right_window())) {
+      split_view_controller->IsWindowInSplitView(window)) {
     return false;
   }
 
