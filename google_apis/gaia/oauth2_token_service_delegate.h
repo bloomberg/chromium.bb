@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
@@ -124,6 +125,13 @@ class OAuth2TokenServiceDelegate {
   // Attempts to fix the error if possible.  Returns true if the error was fixed
   // and false otherwise.
   virtual bool FixRequestErrorIfPossible();
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // Triggers platform specific implementation for Android and IOS to reload
+  // accounts from system.
+  virtual void ReloadAccountsFromSystem(const std::string& primary_account_id) {
+  }
+#endif
 
   // -----------------------------------------------------------------------
   // End of methods that are only used by ProfileOAuth2TokenService

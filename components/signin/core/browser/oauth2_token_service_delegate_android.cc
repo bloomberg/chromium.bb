@@ -490,6 +490,13 @@ void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
   }
 }
 
+void OAuth2TokenServiceDelegateAndroid::ReloadAccountsFromSystem(
+    const std::string& primary_account_id) {
+  // ValidateAccounts() effectively synchronizes the accounts in the Token
+  // Service with those present at the system level.
+  ValidateAccounts(primary_account_id, /*force_notifications=*/true);
+}
+
 std::string OAuth2TokenServiceDelegateAndroid::MapAccountIdToAccountName(
     const std::string& account_id) const {
   return account_tracker_service_->GetAccountInfo(account_id).email;

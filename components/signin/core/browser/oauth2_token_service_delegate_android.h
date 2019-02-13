@@ -74,6 +74,8 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
 
   void LoadCredentials(const std::string& primary_account_id) override;
 
+  void ReloadAccountsFromSystem(const std::string& primary_account_id) override;
+
  protected:
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,

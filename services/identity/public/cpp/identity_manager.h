@@ -394,6 +394,15 @@ class IdentityManager : public SigninManagerBase::Observer,
   void ForceTriggerOnCookieChange();
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // Reloads the accounts in the token service from the system accounts. This
+  // API calls OAuth2TokenServiceDelegate::ReloadAccountsFromSystem and it
+  // triggers platform specific implementation for Android and IOS.
+  // NOTE: In normal usage, this method SHOULD NOT be called.
+  // TODO(https://crbug.com/930094): Eliminate the need to expose this.
+  void LegacyReloadAccountsFromSystem();
+#endif
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
