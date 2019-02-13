@@ -10,9 +10,12 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.services.media_session.MediaImage;
 import org.chromium.services.media_session.MediaMetadata;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * The MediaSessionImpl Java wrapper to allow communicating with the native MediaSessionImpl object.
@@ -112,6 +115,15 @@ public class MediaSessionImpl extends MediaSession {
 
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().mediaSessionActionsChanged(actionSet);
+        }
+    }
+
+    @CalledByNative
+    private void mediaSessionArtworkChanged(MediaImage[] images) {
+        List<MediaImage> imagesList = Arrays.asList(images);
+
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().mediaSessionArtworkChanged(imagesList);
         }
     }
 

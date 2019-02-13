@@ -12,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -106,16 +107,18 @@ public final class MediaImage {
      * Create a new {@link MediaImage} from the C++ code.
      * @param src The URL of the image.
      * @param type The MIME type of the image.
-     * @param flattenedSizes The flattened array of image sizes. In native code, it is of type
-     *         `std::vector<gfx::Size>` before flattening.
+     * @param sizes The array of image sizes.
      */
     @CalledByNative
-    private static MediaImage create(String src, String type, int[] flattenedSizes) {
-        assert (flattenedSizes.length % 2) == 0;
-        List<Rect> sizes = new ArrayList<Rect>();
-        for (int i = 0; (i + 1) < flattenedSizes.length; i += 2) {
-            sizes.add(new Rect(0, 0, flattenedSizes[i], flattenedSizes[i + 1]));
-        }
-        return new MediaImage(src, type, sizes);
+    private static MediaImage create(String src, String type, Rect[] sizes) {
+        return new MediaImage(src, type, Arrays.asList(sizes));
+    }
+
+    /**
+     * Create a new {@link Rect} from the C++ code.
+     */
+    @CalledByNative
+    private static Rect createRect(int width, int height) {
+        return new Rect(0, 0, width, height);
     }
 }

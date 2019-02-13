@@ -75,9 +75,7 @@ void MediaSessionServiceImpl::SetMetadata(
   // When receiving a MediaMetadata, the browser process can't trust that it is
   // coming from a known and secure source. It must be processed accordingly.
   if (!metadata.is_null()) {
-    media_session::MediaMetadata new_metadata;
-
-    if (!MediaMetadataSanitizer::SanitizeAndConvert(metadata, &new_metadata)) {
+    if (!MediaMetadataSanitizer::CheckSanity(metadata)) {
       RenderFrameHost* rfh = GetRenderFrameHost();
       if (rfh) {
         rfh->GetProcess()->ShutdownForBadMessage(
@@ -86,7 +84,7 @@ void MediaSessionServiceImpl::SetMetadata(
       return;
     }
 
-    metadata_ = new_metadata;
+    metadata_ = std::move(metadata);
   }
 
   MediaSessionImpl* session = GetMediaSession();

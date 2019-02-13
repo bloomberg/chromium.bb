@@ -10,9 +10,6 @@ import android.text.TextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * The MediaMetadata class carries information related to a media session. It is
  * the Java counterpart of media_session::MediaMetadata.
@@ -27,9 +24,6 @@ public final class MediaMetadata {
 
     @NonNull
     private String mAlbum;
-
-    @NonNull
-    private List<MediaImage> mArtwork = new ArrayList<MediaImage>();
 
     /**
      * Returns the title associated with the media session.
@@ -50,10 +44,6 @@ public final class MediaMetadata {
      */
     public String getAlbum() {
         return mAlbum;
-    }
-
-    public List<MediaImage> getArtwork() {
-        return mArtwork;
     }
 
     /**
@@ -78,14 +68,6 @@ public final class MediaMetadata {
      */
     public void setAlbum(@NonNull String album) {
         mAlbum = album;
-    }
-
-    /**
-     * Adds an image to the MediaMetadata. This is called from the C++ code.
-     */
-    @CalledByNative
-    private void addImage(MediaImage image) {
-        mArtwork.add(image);
     }
 
     /**
@@ -116,7 +98,7 @@ public final class MediaMetadata {
 
         MediaMetadata other = (MediaMetadata) obj;
         return TextUtils.equals(mTitle, other.mTitle) && TextUtils.equals(mArtist, other.mArtist)
-                && TextUtils.equals(mAlbum, other.mAlbum) && mArtwork.equals(other.mArtwork);
+                && TextUtils.equals(mAlbum, other.mAlbum);
     }
 
     /**
@@ -128,7 +110,6 @@ public final class MediaMetadata {
         int result = mTitle.hashCode();
         result = 31 * result + mArtist.hashCode();
         result = 31 * result + mAlbum.hashCode();
-        result = 31 * result + mArtwork.hashCode();
         return result;
     }
 }

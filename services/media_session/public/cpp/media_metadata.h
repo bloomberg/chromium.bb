@@ -22,8 +22,6 @@
 
 namespace media_session {
 
-struct MediaImage;
-
 // The MediaMetadata is a structure carrying information associated to a
 // MediaSession.
 struct COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaMetadata {
@@ -49,9 +47,6 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaMetadata {
 
   // Album associated to the MediaSession.
   base::string16 album;
-
-  // Artwork associated to the MediaSession.
-  std::vector<MediaImage> artwork;
 
   // The |source_title| is a human readable title for the source of the media
   // session. This could be the name of the app or the name of the site playing

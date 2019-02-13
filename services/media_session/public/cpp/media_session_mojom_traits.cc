@@ -39,9 +39,6 @@ bool StructTraits<media_session::mojom::MediaMetadataDataView,
   if (!data.ReadAlbum(&out->album))
     return false;
 
-  if (!data.ReadArtwork(&out->artwork))
-    return false;
-
   if (!data.ReadSourceTitle(&out->source_title))
     return false;
 

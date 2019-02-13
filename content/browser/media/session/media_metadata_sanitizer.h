@@ -7,19 +7,12 @@
 
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
-namespace media_session {
-struct MediaMetadata;
-}  // namespace media_session
-
 namespace content {
 
 class MediaMetadataSanitizer {
  public:
-  // Converts |metadata| to a media_session::MediaMetadata object and returns
-  // whether it is valid.
-  static bool SanitizeAndConvert(
-      const blink::mojom::SpecMediaMetadataPtr& metadata,
-      media_session::MediaMetadata* metadata_out);
+  // Check the sanity of |metadata|.
+  static bool CheckSanity(const blink::mojom::SpecMediaMetadataPtr& metadata);
 };
 
 }  // namespace content

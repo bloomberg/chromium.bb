@@ -29,11 +29,13 @@ import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.media_session.mojom.MediaSessionAction;
+import org.chromium.services.media_session.MediaImage;
 import org.chromium.services.media_session.MediaMetadata;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -242,9 +244,6 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             @Override
             public void mediaSessionMetadataChanged(MediaMetadata metadata) {
                 mPageMetadata = metadata;
-                mMediaImageManager.downloadImage(
-                        (mPageMetadata != null) ? mPageMetadata.getArtwork() : null,
-                        MediaSessionTabHelper.this);
                 updateNotificationMetadata();
             }
 
@@ -252,6 +251,12 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             public void mediaSessionActionsChanged(Set<Integer> actions) {
                 mMediaSessionActions = actions;
                 updateNotificationActions();
+            }
+
+            @Override
+            public void mediaSessionArtworkChanged(List<MediaImage> images) {
+                mMediaImageManager.downloadImage(images, MediaSessionTabHelper.this);
+                updateNotificationMetadata();
             }
         };
     }
