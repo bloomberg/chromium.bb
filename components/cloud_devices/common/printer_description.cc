@@ -109,68 +109,71 @@ const struct ColorNames {
   ColorType id;
   const char* const json_name;
 } kColorNames[] = {
-      {STANDARD_COLOR, kTypeColorColor},
-      {STANDARD_MONOCHROME, kTypeColorMonochrome},
-      {CUSTOM_COLOR, kTypeColorCustomColor},
-      {CUSTOM_MONOCHROME, kTypeColorCustomMonochrome},
-      {AUTO_COLOR, kTypeColorAuto},
+    {ColorType::STANDARD_COLOR, kTypeColorColor},
+    {ColorType::STANDARD_MONOCHROME, kTypeColorMonochrome},
+    {ColorType::CUSTOM_COLOR, kTypeColorCustomColor},
+    {ColorType::CUSTOM_MONOCHROME, kTypeColorCustomMonochrome},
+    {ColorType::AUTO_COLOR, kTypeColorAuto},
 };
 
 const struct DuplexNames {
   DuplexType id;
   const char* const json_name;
 } kDuplexNames[] = {
-      {NO_DUPLEX, kTypeDuplexNoDuplex},
-      {LONG_EDGE, kTypeDuplexLongEdge},
-      {SHORT_EDGE, kTypeDuplexShortEdge},
+    {DuplexType::NO_DUPLEX, kTypeDuplexNoDuplex},
+    {DuplexType::LONG_EDGE, kTypeDuplexLongEdge},
+    {DuplexType::SHORT_EDGE, kTypeDuplexShortEdge},
 };
 
 const struct OrientationNames {
   OrientationType id;
   const char* const json_name;
 } kOrientationNames[] = {
-      {PORTRAIT, kTypeOrientationPortrait},
-      {LANDSCAPE, kTypeOrientationLandscape},
-      {AUTO_ORIENTATION, kTypeOrientationAuto},
+    {OrientationType::PORTRAIT, kTypeOrientationPortrait},
+    {OrientationType::LANDSCAPE, kTypeOrientationLandscape},
+    {OrientationType::AUTO_ORIENTATION, kTypeOrientationAuto},
 };
 
 const struct MarginsNames {
   MarginsType id;
   const char* const json_name;
 } kMarginsNames[] = {
-      {NO_MARGINS, kTypeMarginsBorderless},
-      {STANDARD_MARGINS, kTypeMarginsStandard},
-      {CUSTOM_MARGINS, kTypeMarginsCustom},
+    {MarginsType::NO_MARGINS, kTypeMarginsBorderless},
+    {MarginsType::STANDARD_MARGINS, kTypeMarginsStandard},
+    {MarginsType::CUSTOM_MARGINS, kTypeMarginsCustom},
 };
 
 const struct FitToPageNames {
   FitToPageType id;
   const char* const json_name;
 } kFitToPageNames[] = {
-      {NO_FITTING, kTypeFitToPageNoFitting},
-      {FIT_TO_PAGE, kTypeFitToPageFitToPage},
-      {GROW_TO_PAGE, kTypeFitToPageGrowToPage},
-      {SHRINK_TO_PAGE, kTypeFitToPageShrinkToPage},
-      {FILL_PAGE, kTypeFitToPageFillPage},
+    {FitToPageType::NO_FITTING, kTypeFitToPageNoFitting},
+    {FitToPageType::FIT_TO_PAGE, kTypeFitToPageFitToPage},
+    {FitToPageType::GROW_TO_PAGE, kTypeFitToPageGrowToPage},
+    {FitToPageType::SHRINK_TO_PAGE, kTypeFitToPageShrinkToPage},
+    {FitToPageType::FILL_PAGE, kTypeFitToPageFillPage},
 };
 
 const struct DocumentSheetBackNames {
   DocumentSheetBack id;
   const char* const json_name;
 } kDocumentSheetBackNames[] = {
-      {NORMAL, kTypeDocumentSheetBackNormal},
-      {ROTATED, kTypeDocumentSheetBackRotated},
-      {MANUAL_TUMBLE, kTypeDocumentSheetBackManualTumble},
-      {FLIPPED, kTypeDocumentSheetBackFlipped}};
+    {DocumentSheetBack::NORMAL, kTypeDocumentSheetBackNormal},
+    {DocumentSheetBack::ROTATED, kTypeDocumentSheetBackRotated},
+    {DocumentSheetBack::MANUAL_TUMBLE, kTypeDocumentSheetBackManualTumble},
+    {DocumentSheetBack::FLIPPED, kTypeDocumentSheetBackFlipped}};
 
 const int32_t kInchToUm = 25400;
 const int32_t kMmToUm = 1000;
 const int32_t kSizeTrasholdUm = 1000;
 
+// Json name of media type is constructed by removing "MediaType::" enum class
+// prefix from it.
 #define MAP_CLOUD_PRINT_MEDIA_TYPE(type, width, height, unit_um) \
   {                                                              \
-    type, #type, static_cast<int>(width* unit_um + 0.5),         \
-        static_cast<int>(height* unit_um + 0.5)                  \
+    type, &#type[strlen("MediaType::")],                         \
+        static_cast<int>(width * unit_um + 0.5),                 \
+        static_cast<int>(height * unit_um + 0.5)                 \
   }
 
 const struct MediaDefinition {
@@ -179,171 +182,189 @@ const struct MediaDefinition {
   int width_um;
   int height_um;
 } kMediaDefinitions[] = {
-      {CUSTOM_MEDIA, "CUSTOM", 0, 0},
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_INDEX_3X5, 3, 5, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_PERSONAL, 3.625f, 6.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_MONARCH, 3.875f, 7.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_NUMBER_9, 3.875f, 8.875f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_INDEX_4X6, 4, 6, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_NUMBER_10, 4.125f, 9.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_A2, 4.375f, 5.75f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_NUMBER_11, 4.5f, 10.375f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_NUMBER_12, 4.75f, 11, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_5X7, 5, 7, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_INDEX_5X8, 5, 8, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_NUMBER_14, 5, 11.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_INVOICE, 5.5f, 8.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_INDEX_4X6_EXT, 6, 8, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_6X9, 6, 9, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_C5, 6.5f, 9.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_7X9, 7, 9, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_EXECUTIVE, 7.25f, 10.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_GOVT_LETTER, 8, 10, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_GOVT_LEGAL, 8, 13, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_QUARTO, 8.5f, 10.83f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_LETTER, 8.5f, 11, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_FANFOLD_EUR, 8.5f, 12, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_LETTER_PLUS, 8.5f, 12.69f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_FOOLSCAP, 8.5f, 13, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_LEGAL, 8.5f, 14, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_SUPER_A, 8.94f, 14, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_9X11, 9, 11, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_ARCH_A, 9, 12, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_LETTER_EXTRA, 9.5f, 12, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_LEGAL_EXTRA, 9.5f, 15, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_10X11, 10, 11, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_10X13, 10, 13, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_10X14, 10, 14, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_10X15, 10, 15, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_11X12, 11, 12, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_EDP, 11, 14, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_FANFOLD_US, 11, 14.875f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_11X15, 11, 15, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_LEDGER, 11, 17, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_EUR_EDP, 12, 14, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_ARCH_B, 12, 18, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_12X19, 12, 19, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_B_PLUS, 12, 19.17f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_SUPER_B, 13, 19, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_C, 17, 22, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_ARCH_C, 18, 24, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_D, 22, 34, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_ARCH_D, 24, 36, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_ASME_F, 28, 40, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_WIDE_FORMAT, 30, 42, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_E, 34, 44, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_ARCH_E, 36, 48, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(NA_F, 44, 68, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ROC_16K, 7.75f, 10.75f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ROC_8K, 10.75f, 15.5f, kInchToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_32K, 97, 151, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_1, 102, 165, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_2, 102, 176, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_4, 110, 208, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_5, 110, 220, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_8, 120, 309, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_6, 120, 230, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_3, 125, 176, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_16K, 146, 215, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_7, 160, 230, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_JUURO_KU_KAI, 198, 275, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_PA_KAI, 267, 389, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_DAI_PA_KAI, 275, 395, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(PRC_10, 324, 458, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A10, 26, 37, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A9, 37, 52, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A8, 52, 74, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A7, 74, 105, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A6, 105, 148, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A5, 148, 210, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A5_EXTRA, 174, 235, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4, 210, 297, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4_TAB, 225, 297, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4_EXTRA, 235, 322, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3, 297, 420, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X3, 297, 630, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X4, 297, 841, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X5, 297, 1051, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X6, 297, 1261, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X7, 297, 1471, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X8, 297, 1682, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A4X9, 297, 1892, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3_EXTRA, 322, 445, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A2, 420, 594, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3X3, 420, 891, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3X4, 420, 1189, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3X5, 420, 1486, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3X6, 420, 1783, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A3X7, 420, 2080, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A1, 594, 841, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A2X3, 594, 1261, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A2X4, 594, 1682, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A2X5, 594, 2102, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A0, 841, 1189, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A1X3, 841, 1783, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A1X4, 841, 2378, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_2A0, 1189, 1682, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_A0X3, 1189, 2523, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B10, 31, 44, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B9, 44, 62, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B8, 62, 88, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B7, 88, 125, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B6, 125, 176, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B6C4, 125, 324, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B5, 176, 250, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B5_EXTRA, 201, 276, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B4, 250, 353, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B3, 353, 500, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B2, 500, 707, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B1, 707, 1000, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_B0, 1000, 1414, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C10, 28, 40, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C9, 40, 57, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C8, 57, 81, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C7, 81, 114, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C7C6, 81, 162, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C6, 114, 162, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C6C5, 114, 229, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C5, 162, 229, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C4, 229, 324, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C3, 324, 458, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C2, 458, 648, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C1, 648, 917, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_C0, 917, 1297, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_DL, 110, 220, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_RA2, 430, 610, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_SRA2, 450, 640, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_RA1, 610, 860, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_SRA1, 640, 900, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_RA0, 860, 1220, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(ISO_SRA0, 900, 1280, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B10, 32, 45, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B9, 45, 64, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B8, 64, 91, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B7, 91, 128, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B6, 128, 182, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B5, 182, 257, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B4, 257, 364, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B3, 364, 515, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B2, 515, 728, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B1, 728, 1030, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_B0, 1030, 1456, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JIS_EXEC, 216, 330, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_CHOU4, 90, 205, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_HAGAKI, 100, 148, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_YOU4, 105, 235, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_CHOU2, 111.1f, 146, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_CHOU3, 120, 235, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_OUFUKU, 148, 200, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_KAHU, 240, 322.1f, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(JPN_KAKU2, 240, 332, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_SMALL_PHOTO, 100, 150, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_ITALIAN, 110, 230, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_POSTFIX, 114, 229, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_LARGE_PHOTO, 200, 300, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_FOLIO, 210, 330, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_FOLIO_SP, 215, 315, kMmToUm),
-      MAP_CLOUD_PRINT_MEDIA_TYPE(OM_INVITE, 220, 220, kMmToUm)};
+    {MediaType::CUSTOM_MEDIA, "CUSTOM", 0, 0},
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_INDEX_3X5, 3, 5, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_PERSONAL, 3.625f, 6.5f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_MONARCH, 3.875f, 7.5f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_NUMBER_9,
+                               3.875f,
+                               8.875f,
+                               kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_INDEX_4X6, 4, 6, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_NUMBER_10,
+                               4.125f,
+                               9.5f,
+                               kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_A2, 4.375f, 5.75f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_NUMBER_11,
+                               4.5f,
+                               10.375f,
+                               kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_NUMBER_12, 4.75f, 11, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_5X7, 5, 7, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_INDEX_5X8, 5, 8, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_NUMBER_14, 5, 11.5f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_INVOICE, 5.5f, 8.5f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_INDEX_4X6_EXT, 6, 8, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_6X9, 6, 9, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_C5, 6.5f, 9.5f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_7X9, 7, 9, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_EXECUTIVE,
+                               7.25f,
+                               10.5f,
+                               kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_GOVT_LETTER, 8, 10, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_GOVT_LEGAL, 8, 13, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_QUARTO, 8.5f, 10.83f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_LETTER, 8.5f, 11, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_FANFOLD_EUR, 8.5f, 12, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_LETTER_PLUS,
+                               8.5f,
+                               12.69f,
+                               kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_FOOLSCAP, 8.5f, 13, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_LEGAL, 8.5f, 14, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_SUPER_A, 8.94f, 14, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_9X11, 9, 11, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_ARCH_A, 9, 12, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_LETTER_EXTRA, 9.5f, 12, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_LEGAL_EXTRA, 9.5f, 15, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_10X11, 10, 11, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_10X13, 10, 13, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_10X14, 10, 14, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_10X15, 10, 15, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_11X12, 11, 12, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_EDP, 11, 14, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_FANFOLD_US,
+                               11,
+                               14.875f,
+                               kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_11X15, 11, 15, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_LEDGER, 11, 17, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_EUR_EDP, 12, 14, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_ARCH_B, 12, 18, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_12X19, 12, 19, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_B_PLUS, 12, 19.17f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_SUPER_B, 13, 19, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_C, 17, 22, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_ARCH_C, 18, 24, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_D, 22, 34, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_ARCH_D, 24, 36, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_ASME_F, 28, 40, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_WIDE_FORMAT, 30, 42, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_E, 34, 44, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_ARCH_E, 36, 48, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::NA_F, 44, 68, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ROC_16K, 7.75f, 10.75f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ROC_8K, 10.75f, 15.5f, kInchToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_32K, 97, 151, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_1, 102, 165, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_2, 102, 176, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_4, 110, 208, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_5, 110, 220, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_8, 120, 309, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_6, 120, 230, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_3, 125, 176, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_16K, 146, 215, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_7, 160, 230, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_JUURO_KU_KAI, 198, 275, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_PA_KAI, 267, 389, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_DAI_PA_KAI, 275, 395, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::PRC_10, 324, 458, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A10, 26, 37, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A9, 37, 52, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A8, 52, 74, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A7, 74, 105, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A6, 105, 148, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A5, 148, 210, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A5_EXTRA, 174, 235, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4, 210, 297, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4_TAB, 225, 297, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4_EXTRA, 235, 322, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3, 297, 420, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X3, 297, 630, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X4, 297, 841, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X5, 297, 1051, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X6, 297, 1261, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X7, 297, 1471, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X8, 297, 1682, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A4X9, 297, 1892, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3_EXTRA, 322, 445, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A2, 420, 594, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3X3, 420, 891, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3X4, 420, 1189, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3X5, 420, 1486, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3X6, 420, 1783, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A3X7, 420, 2080, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A1, 594, 841, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A2X3, 594, 1261, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A2X4, 594, 1682, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A2X5, 594, 2102, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A0, 841, 1189, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A1X3, 841, 1783, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A1X4, 841, 2378, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_2A0, 1189, 1682, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_A0X3, 1189, 2523, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B10, 31, 44, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B9, 44, 62, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B8, 62, 88, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B7, 88, 125, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B6, 125, 176, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B6C4, 125, 324, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B5, 176, 250, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B5_EXTRA, 201, 276, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B4, 250, 353, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B3, 353, 500, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B2, 500, 707, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B1, 707, 1000, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_B0, 1000, 1414, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C10, 28, 40, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C9, 40, 57, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C8, 57, 81, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C7, 81, 114, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C7C6, 81, 162, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C6, 114, 162, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C6C5, 114, 229, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C5, 162, 229, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C4, 229, 324, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C3, 324, 458, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C2, 458, 648, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C1, 648, 917, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_C0, 917, 1297, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_DL, 110, 220, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_RA2, 430, 610, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_SRA2, 450, 640, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_RA1, 610, 860, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_SRA1, 640, 900, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_RA0, 860, 1220, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::ISO_SRA0, 900, 1280, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B10, 32, 45, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B9, 45, 64, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B8, 64, 91, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B7, 91, 128, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B6, 128, 182, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B5, 182, 257, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B4, 257, 364, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B3, 364, 515, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B2, 515, 728, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B1, 728, 1030, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_B0, 1030, 1456, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JIS_EXEC, 216, 330, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_CHOU4, 90, 205, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_HAGAKI, 100, 148, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_YOU4, 105, 235, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_CHOU2, 111.1f, 146, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_CHOU3, 120, 235, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_OUFUKU, 148, 200, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_KAHU, 240, 322.1f, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::JPN_KAKU2, 240, 332, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_SMALL_PHOTO, 100, 150, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_ITALIAN, 110, 230, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_POSTFIX, 114, 229, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_LARGE_PHOTO, 200, 300, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_FOLIO, 210, 330, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_FOLIO_SP, 215, 315, kMmToUm),
+    MAP_CLOUD_PRINT_MEDIA_TYPE(MediaType::OM_INVITE, 220, 220, kMmToUm)};
 #undef MAP_CLOUD_PRINT_MEDIA_TYPE
 
 const MediaDefinition& FindMediaByType(MediaType type) {
@@ -391,15 +412,13 @@ bool TypeFromString(const T& names, const std::string& type, IdType* id) {
 }  // namespace
 
 PwgRasterConfig::PwgRasterConfig()
-    : document_sheet_back(ROTATED),
+    : document_sheet_back(DocumentSheetBack::ROTATED),
       reverse_order_streaming(false),
-      rotate_all_pages(false) {
-}
+      rotate_all_pages(false) {}
 
 PwgRasterConfig::~PwgRasterConfig() {}
 
-Color::Color() : type(AUTO_COLOR) {
-}
+Color::Color() : type(ColorType::AUTO_COLOR) {}
 
 Color::Color(ColorType type) : type(type) {
 }
@@ -410,14 +429,17 @@ bool Color::operator==(const Color& other) const {
 }
 
 bool Color::IsValid() const {
-  if (type != CUSTOM_COLOR && type != CUSTOM_MONOCHROME)
+  if (type != ColorType::CUSTOM_COLOR && type != ColorType::CUSTOM_MONOCHROME)
     return true;
   return !vendor_id.empty() && !custom_display_name.empty();
 }
 
 Margins::Margins()
-    : type(STANDARD_MARGINS), top_um(0), right_um(0), bottom_um(0), left_um(0) {
-}
+    : type(MarginsType::STANDARD_MARGINS),
+      top_um(0),
+      right_um(0),
+      bottom_um(0),
+      left_um(0) {}
 
 Margins::Margins(MarginsType type,
                  int32_t top_um,
@@ -450,8 +472,10 @@ bool Dpi::operator==(const Dpi& other) const {
 }
 
 Media::Media()
-    : type(CUSTOM_MEDIA), width_um(0), height_um(0), is_continuous_feed(false) {
-}
+    : type(MediaType::CUSTOM_MEDIA),
+      width_um(0),
+      height_um(0),
+      is_continuous_feed(false) {}
 
 Media::Media(MediaType type)
     : type(type),
@@ -474,7 +498,7 @@ Media::Media(const std::string& custom_display_name,
              const std::string& vendor_id,
              int32_t width_um,
              int32_t height_um)
-    : type(CUSTOM_MEDIA),
+    : type(MediaType::CUSTOM_MEDIA),
       width_um(width_um),
       height_um(height_um),
       is_continuous_feed(width_um <= 0 || height_um <= 0),
@@ -581,10 +605,13 @@ class PwgRasterConfigTraits : public NoValueValidation,
           return false;
 
         const std::string& type = type_value.GetString();
-        if (type == kTypeDocumentSupportedTypeSRGB8)
-          option_out.document_types_supported.push_back(SRGB_8);
-        else if (type == kTypeDocumentSupportedTypeSGRAY8)
-          option_out.document_types_supported.push_back(SGRAY_8);
+        if (type == kTypeDocumentSupportedTypeSRGB8) {
+          option_out.document_types_supported.push_back(
+              PwgDocumentTypeSupported::SRGB_8);
+        } else if (type == kTypeDocumentSupportedTypeSGRAY8) {
+          option_out.document_types_supported.push_back(
+              PwgDocumentTypeSupported::SGRAY_8);
+        }
       }
     }
 
@@ -605,11 +632,11 @@ class PwgRasterConfigTraits : public NoValueValidation,
       base::Value::ListStorage supported_list;
       for (const auto& type : option.document_types_supported) {
         switch (type) {
-          case SRGB_8:
+          case PwgDocumentTypeSupported::SRGB_8:
             supported_list.push_back(
                 base::Value(kTypeDocumentSupportedTypeSRGB8));
             break;
-          case SGRAY_8:
+          case PwgDocumentTypeSupported::SGRAY_8:
             supported_list.push_back(
                 base::Value(kTypeDocumentSupportedTypeSGRAY8));
             break;
@@ -837,11 +864,12 @@ class MediaTraits : public ItemsTraits<kOptionMediaSize> {
   }
 
   static void Save(const Media& option, base::Value* dict) {
-    if (option.type != CUSTOM_MEDIA) {
+    if (option.type != MediaType::CUSTOM_MEDIA) {
       dict->SetKey(kKeyName,
                    base::Value(TypeToString(kMediaDefinitions, option.type)));
     }
-    if (!option.custom_display_name.empty() || option.type == CUSTOM_MEDIA) {
+    if (!option.custom_display_name.empty() ||
+        option.type == MediaType::CUSTOM_MEDIA) {
       dict->SetKey(kKeyCustomDisplayName,
                    base::Value(option.custom_display_name));
     }

@@ -76,28 +76,30 @@ base::Value GetPdfCapabilities(const std::string& locale) {
   using namespace cloud_devices::printer;
 
   OrientationCapability orientation;
-  orientation.AddOption(cloud_devices::printer::PORTRAIT);
-  orientation.AddOption(cloud_devices::printer::LANDSCAPE);
-  orientation.AddDefaultOption(AUTO_ORIENTATION, true);
+  orientation.AddOption(cloud_devices::printer::OrientationType::PORTRAIT);
+  orientation.AddOption(cloud_devices::printer::OrientationType::LANDSCAPE);
+  orientation.AddDefaultOption(OrientationType::AUTO_ORIENTATION, true);
   orientation.SaveTo(&description);
 
   ColorCapability color;
   {
-    Color standard_color(STANDARD_COLOR);
+    Color standard_color(ColorType::STANDARD_COLOR);
     standard_color.vendor_id = base::NumberToString(COLOR);
     color.AddDefaultOption(standard_color, true);
   }
   color.SaveTo(&description);
 
   static const cloud_devices::printer::MediaType kPdfMedia[] = {
-      ISO_A0, ISO_A1,   ISO_A2,    ISO_A3,   ISO_A4,
-      ISO_A5, NA_LEGAL, NA_LETTER, NA_LEDGER};
+      MediaType::ISO_A0,   MediaType::ISO_A1,    MediaType::ISO_A2,
+      MediaType::ISO_A3,   MediaType::ISO_A4,    MediaType::ISO_A5,
+      MediaType::NA_LEGAL, MediaType::NA_LETTER, MediaType::NA_LEDGER};
   const gfx::Size default_media_size = GetDefaultPdfMediaSizeMicrons();
   Media default_media("", "", default_media_size.width(),
                       default_media_size.height());
   if (!default_media.MatchBySize() ||
       !base::ContainsValue(kPdfMedia, default_media.type)) {
-    default_media = Media(locale == "en-US" ? NA_LETTER : ISO_A4);
+    default_media =
+        Media(locale == "en-US" ? MediaType::NA_LETTER : MediaType::ISO_A4);
   }
   MediaCapability media;
   for (const auto& pdf_media : kPdfMedia) {
