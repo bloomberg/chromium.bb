@@ -62,7 +62,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
                                                int item_id);
 
   // MenuModelDelegate:
-  void OnIconChanged(int index) override{};
+  void OnIconChanged(int index) override {}
   void OnMenuStructureChanged() override;
   void OnMenuClearingDelegate() override;
 

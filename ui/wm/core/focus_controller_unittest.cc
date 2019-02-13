@@ -1425,70 +1425,70 @@ class FocusControllerParentRemovalTest : public FocusControllerRemovalTest {
     IMPLICIT_FOCUS_CHANGE_TARGET_TESTS(TESTNAME)
 
 // - Focuses a window, verifies that focus changed.
-ALL_FOCUS_TESTS(BasicFocus);
+ALL_FOCUS_TESTS(BasicFocus)
 
 // - Activates a window, verifies that activation changed.
-TARGET_FOCUS_TESTS(BasicActivation);
+TARGET_FOCUS_TESTS(BasicActivation)
 
 // - Focuses a window, verifies that focus events were dispatched.
-ALL_FOCUS_TESTS(FocusEvents);
+ALL_FOCUS_TESTS(FocusEvents)
 
 // - Focuses or activates a window multiple times, verifies that events are only
 //   dispatched when focus/activation actually changes.
-DIRECT_FOCUS_CHANGE_TESTS(DuplicateFocusEvents);
-DIRECT_FOCUS_CHANGE_TESTS(DuplicateActivationEvents);
+DIRECT_FOCUS_CHANGE_TESTS(DuplicateFocusEvents)
+DIRECT_FOCUS_CHANGE_TESTS(DuplicateActivationEvents)
 
 // - Activates a window, verifies that activation events were dispatched.
-TARGET_FOCUS_TESTS(ActivationEvents);
+TARGET_FOCUS_TESTS(ActivationEvents)
 
 // - Attempts to active a hidden window, verifies that current window is
 //   attempted to be reactivated and the appropriate event dispatched.
-FOCUS_CONTROLLER_TEST(FocusControllerApiTest, ReactivationEvents);
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, ReactivationEvents)
 
 // - Input events/API calls shift focus between focusable windows within the
 //   active window.
-DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusWithinActiveWindow);
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusWithinActiveWindow)
 
 // - Input events/API calls to a child window of an inactive window shifts
 //   activation to the activatable parent and focuses the child.
-DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusToChildOfInactiveWindow);
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusToChildOfInactiveWindow)
 
 // - Input events/API calls to focus the parent of the focused window do not
 //   shift focus away from the child.
-DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusToParentOfFocusedWindow);
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusToParentOfFocusedWindow)
 
 // - Verifies that FocusRules determine what can be focused.
-ALL_FOCUS_TESTS(FocusRulesOverride);
+ALL_FOCUS_TESTS(FocusRulesOverride)
 
 // - Verifies that FocusRules determine what can be activated.
-TARGET_FOCUS_TESTS(ActivationRulesOverride);
+TARGET_FOCUS_TESTS(ActivationRulesOverride)
 
 // - Verifies that attempts to change focus or activation from a focus or
 //   activation change observer are ignored.
-DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivation);
-DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivationDueToHide);
-DIRECT_FOCUS_CHANGE_TESTS(NoShiftActiveOnActivation);
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivation)
+DIRECT_FOCUS_CHANGE_TESTS(ShiftFocusOnActivationDueToHide)
+DIRECT_FOCUS_CHANGE_TESTS(NoShiftActiveOnActivation)
 
-FOCUS_CONTROLLER_TEST(FocusControllerApiTest, FocusChangeDuringDrag);
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, FocusChangeDuringDrag)
 
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
-                      ChangeFocusWhenNothingFocusedAndCaptured);
+                      ChangeFocusWhenNothingFocusedAndCaptured)
 
 // See description above DontPassDeletedWindow() for details.
-FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow)
 
-FOCUS_CONTROLLER_TEST(FocusControllerApiTest, StackWindowAtTopOnActivation);
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, StackWindowAtTopOnActivation)
 
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
-                      HideFocusedWindowDuringActivationLoss);
+                      HideFocusedWindowDuringActivationLoss)
 
-FOCUS_CONTROLLER_TEST(FocusControllerApiTest, ActivateWhileActivating);
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, ActivateWhileActivating)
 
 // See description above TransientChildWindowActivationTest() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerParentHideTest,
-                      TransientChildWindowActivationTest);
+                      TransientChildWindowActivationTest)
 
 // If a mouse event was handled, it should not activate a window.
-FOCUS_CONTROLLER_TEST(FocusControllerMouseEventTest, IgnoreHandledEvent);
+FOCUS_CONTROLLER_TEST(FocusControllerMouseEventTest, IgnoreHandledEvent)
 
 }  // namespace wm

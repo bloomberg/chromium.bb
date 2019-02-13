@@ -89,7 +89,7 @@ class CORE_EXPORT ObjectPaintProperties {
   }                                                                          \
                                                                              \
  private:                                                                    \
-  scoped_refptr<type##PaintPropertyNode> variable;
+  scoped_refptr<type##PaintPropertyNode> variable
   // (End of ADD_NODE definition)
 
 #define ADD_TRANSFORM(function, variable) \
@@ -207,7 +207,7 @@ class CORE_EXPORT ObjectPaintProperties {
   //       containment. It is the deepest child of any clip tree on the contain:
   //       paint element.
   ADD_CLIP(FragmentClip, fragment_clip_);
-  ADD_CLIP(ClipPathClip, clip_path_clip_)
+  ADD_CLIP(ClipPathClip, clip_path_clip_);
   ADD_CLIP(MaskClip, mask_clip_);
   ADD_CLIP(CssClip, css_clip_);
   ADD_CLIP(CssClipFixedPosition, css_clip_fixed_position_);

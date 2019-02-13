@@ -36,7 +36,7 @@ class PictureInPictureDelegate : public WebContentsDelegate {
 class TestOverlayWindow : public OverlayWindow {
  public:
   TestOverlayWindow() = default;
-  ~TestOverlayWindow() override{};
+  ~TestOverlayWindow() override {}
 
   static std::unique_ptr<OverlayWindow> Create(
       PictureInPictureWindowController* controller) {

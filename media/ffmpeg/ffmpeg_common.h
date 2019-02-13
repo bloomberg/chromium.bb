@@ -25,7 +25,7 @@
 // Include FFmpeg header files.
 extern "C" {
 // Temporarily disable possible loss of data warning.
-MSVC_PUSH_DISABLE_WARNING(4244);
+MSVC_PUSH_DISABLE_WARNING(4244)
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
@@ -34,7 +34,7 @@ MSVC_PUSH_DISABLE_WARNING(4244);
 #include <libavutil/log.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/opt.h>
-MSVC_POP_WARNING();
+MSVC_POP_WARNING()
 }  // extern "C"
 
 namespace media {
