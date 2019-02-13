@@ -208,7 +208,7 @@ TEST_P(ContentVerifierTest, BrowserImagesShouldBeVerified) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     ContentVerifierTest,
     testing::Values(BackgroundManifestType::kNone,

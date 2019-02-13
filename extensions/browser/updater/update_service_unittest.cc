@@ -1037,13 +1037,14 @@ TEST_P(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
   EXPECT_FALSE(update_service()->CanUpdate(""));
 }
 
-INSTANTIATE_TEST_CASE_P(CanUpdateTest,
-                        UpdateServiceCanUpdateTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(CanUpdateTest,
+                         UpdateServiceCanUpdateTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(CanUpdateTest,
-                        UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    CanUpdateTest,
+    UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
+    ::testing::Bool());
 
 }  // namespace
 

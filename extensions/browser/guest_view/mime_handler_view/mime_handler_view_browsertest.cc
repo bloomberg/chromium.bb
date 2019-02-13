@@ -176,9 +176,9 @@ class MimeHandlerViewCrossProcessTest
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewCrossProcessTest);
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        MimeHandlerViewCrossProcessTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         MimeHandlerViewCrossProcessTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Embedded) {
   RunTest("test_embedded.html");

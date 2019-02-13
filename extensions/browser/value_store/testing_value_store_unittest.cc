@@ -16,9 +16,8 @@ ValueStore* Param(const base::FilePath& file_path) {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(
-    TestingValueStore,
-    ValueStoreTest,
-    testing::Values(&Param));
+INSTANTIATE_TEST_SUITE_P(TestingValueStore,
+                         ValueStoreTest,
+                         testing::Values(&Param));
 
 }  // namespace extensions

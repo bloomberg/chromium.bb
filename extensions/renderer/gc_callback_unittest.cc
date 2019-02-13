@@ -202,16 +202,16 @@ TEST_P(GCCallbackTest,
   EXPECT_EQ(has_fallback(), fallback_invoked);
 }
 
-INSTANTIATE_TEST_CASE_P(NativeCallback,
-                        GCCallbackTest,
-                        ::testing::Values(NATIVE));
-INSTANTIATE_TEST_CASE_P(JSCallback, GCCallbackTest, ::testing::Values(JS));
-INSTANTIATE_TEST_CASE_P(NativeCallbackWithNoFallback,
-                        GCCallbackTest,
-                        ::testing::Values(NATIVE_WITH_NO_FALLBACK));
-INSTANTIATE_TEST_CASE_P(JSCallbackWithNoFallback,
-                        GCCallbackTest,
-                        ::testing::Values(JS_WITH_NO_FALLBACK));
+INSTANTIATE_TEST_SUITE_P(NativeCallback,
+                         GCCallbackTest,
+                         ::testing::Values(NATIVE));
+INSTANTIATE_TEST_SUITE_P(JSCallback, GCCallbackTest, ::testing::Values(JS));
+INSTANTIATE_TEST_SUITE_P(NativeCallbackWithNoFallback,
+                         GCCallbackTest,
+                         ::testing::Values(NATIVE_WITH_NO_FALLBACK));
+INSTANTIATE_TEST_SUITE_P(JSCallbackWithNoFallback,
+                         GCCallbackTest,
+                         ::testing::Values(JS_WITH_NO_FALLBACK));
 
 }  // namespace
 }  // namespace extensions

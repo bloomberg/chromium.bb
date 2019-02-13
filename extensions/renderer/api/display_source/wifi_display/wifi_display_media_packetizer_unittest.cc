@@ -732,7 +732,7 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WiFiDisplayElementaryStreamUnitPacketizationTests,
     WiFiDisplayElementaryStreamUnitPacketizationTest,
     testing::Combine(testing::Values(123u, 180u, 0x10000u),

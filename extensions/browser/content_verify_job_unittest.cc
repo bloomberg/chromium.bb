@@ -365,11 +365,11 @@ class ContentMismatchUnittest
   DISALLOW_COPY_AND_ASSIGN(ContentMismatchUnittest);
 };
 
-INSTANTIATE_TEST_CASE_P(ContentVerifyJobUnittest,
-                        ContentMismatchUnittest,
-                        testing::Values(kNone,
-                                        kContentReadBeforeHashesReady,
-                                        kHashesReadyBeforeContentRead));
+INSTANTIATE_TEST_SUITE_P(ContentVerifyJobUnittest,
+                         ContentMismatchUnittest,
+                         testing::Values(kNone,
+                                         kContentReadBeforeHashesReady,
+                                         kHashesReadyBeforeContentRead));
 
 // Tests that content modification causes content verification failure.
 TEST_P(ContentMismatchUnittest, ContentMismatch) {
