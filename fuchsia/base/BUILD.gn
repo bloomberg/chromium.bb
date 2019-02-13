@@ -38,12 +38,15 @@ source_set("modular") {
 
 source_set("test_support") {
   testonly = true
-  public = [
+  sources = [
+    "fake_component_context.cc",
+    "fake_component_context.h",
     "fit_adapter.h",
     "result_receiver.h",
   ]
   public_deps = [
     "//base",
+    "//third_party/fuchsia-sdk/sdk:modular",
   ]
 }
 
