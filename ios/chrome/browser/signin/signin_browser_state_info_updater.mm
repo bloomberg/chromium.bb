@@ -58,7 +58,7 @@ void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
     return;
 
   if (identity_manager_->HasPrimaryAccount()) {
-    AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
+    CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
     cache->SetAuthInfoOfBrowserStateAtIndex(
         index, account_info.gaia, base::UTF8ToUTF16(account_info.email));
   } else {
