@@ -86,10 +86,10 @@ template("generate_stubs") {
                              "public_deps",
                              "visibility",
                            ])
-    if (!defined(deps)) {
-      deps = []
+    if (!defined(public_deps)) {
+      public_deps = []
     }
-    deps += [ ":${target_name}__stubs_gen" ]
+    public_deps += [ ":${target_name}__stubs_gen" ]
     sources = [
       "${target_gen_dir}/${invoker.output_name}.cc",
       "${target_gen_dir}/${invoker.output_name}.h",
