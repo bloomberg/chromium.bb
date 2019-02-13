@@ -1074,10 +1074,10 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.RunCommandMock(['rename', 'branch', 'new-branch'])
     self.AssertSynced(['--branch', 'branch'])
 
-  def testDeleteSyncsToMaster(self):
+  def testDeleteSyncsToBranch(self):
     """Test `cros branch delete` calls repo_sync_manifest to sync to branch."""
     self.RunCommandMock(['delete', 'branch'])
-    self.AssertSynced(['--branch', 'master'])
+    self.AssertSynced(['--branch', 'branch'])
 
 
 class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):

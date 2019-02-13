@@ -214,13 +214,10 @@ class CrosCheckout(object):
     self.manifest_url = manifest_url
 
   def _Sync(self, manifest_args):
-    """Run repo_sync_manifest command and return the full synced manifest.
+    """Run repo_sync_manifest command.
 
     Args:
       manifest_args: List of args for manifest group of repo_sync_manifest.
-
-    Returns:
-      The full synced manifest as a repo_manifest.Manifest.
     """
     cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts/repo_sync_manifest'),
            '--repo-root', self.root] + manifest_args
@@ -232,27 +229,21 @@ class CrosCheckout(object):
     self.manifest = repo_util.Repository(self.root).Manifest()
 
   def SyncBranch(self, branch):
-    """Sync to the given branch and return the synced manifest.
+    """Sync to the given branch.
 
     Args:
       branch: Name of branch to sync to.
-
-    Returns:
-      The synced manifest as a repo_manifest.Manifest.
     """
-    return self._Sync(['--branch', branch])
+    self._Sync(['--branch', branch])
 
   def SyncVersion(self, version):
-    """Sync to the given version and return the synced manifest.
+    """Sync to the given manifest version.
 
     Args:
       version: Version string to sync to.
-
-    Returns:
-      The synced manifest as a repo_manifest.Manifest.
     """
     site_params = config_lib.GetSiteParams()
-    return self._Sync([
+    self._Sync([
         '--manifest-versions-int',
         self.AbsolutePath(site_params.INTERNAL_MANIFEST_VERSIONS_PATH),
         '--manifest-versions-ext',
@@ -261,15 +252,12 @@ class CrosCheckout(object):
     ])
 
   def SyncFile(self, path):
-    """Sync to the given manifest file and return the synced manifest.
+    """Sync to the given manifest file.
 
     Args:
       path: Path to the manifest file.
-
-    Returns:
-      The synced manifest as a repo_manifest.Manifest.
     """
-    return self._Sync(['--manifest-file', path])
+    self._Sync(['--manifest-file', path])
 
   def ReadVersion(self, **kwargs):
     """Returns VersionInfo for the current checkout."""
@@ -363,7 +351,7 @@ class CrosCheckout(object):
 
     Args:
       project: The repo_manifest.Project in question.
-      pattern: Name pattern of the branch in question.
+      pattern: Branch name pattern to search for.
 
     Returns:
       True if a matching branch exists on the remote.
@@ -500,10 +488,10 @@ class Branch(object):
       self.checkout.RunGit(project, cmd)
 
   def _DeleteBranchesOnRemote(self, branches, dry_run=True):
-    """Deletes this branch for all projects on the remote.
+    """Push deletions of this branch for all projects.
 
     Args:
-      branches: List of ProjectBranches to delete on remote.
+      branches: List of ProjectBranches for which to push delete.
       dry_run: Whether or not to set --dry-run.
     """
     for project, branch in branches:
@@ -547,7 +535,7 @@ class Branch(object):
 
     Args:
       original: Name of the original branch.
-      push: Whether to push the new branch to remote.
+      push: Whether to push changes to remote.
       force: Whether or not to overwrite an existing branch.
     """
     new_branches = self._ProjectBranches(self.name, original=original)
@@ -582,7 +570,7 @@ class StandardBranch(Branch):
     """Determine the name for this branch.
 
     By convention, standard branch names must end with the version from which
-    they were created followed by '.B'.
+    they were created, followed by '.B'.
 
     For example:
       - A branch created from 1.0.0 must end with -1.B
@@ -601,7 +589,14 @@ class StandardBranch(Branch):
 
 
 class ReleaseBranch(StandardBranch):
-  """Represents a release branch."""
+  """Represents a release branch.
+
+  Release branches have a slightly different naming scheme. They include
+  the milestone from which they were created. Example: release-R12-1.2.B.
+
+  Additionally, creating a release branches requires updating the milestone
+  (Chrome branch) in chromeos_version.sh on master.
+  """
 
   def __init__(self, checkout):
     super(ReleaseBranch, self).__init__(
@@ -636,7 +631,7 @@ class FirmwareBranch(StandardBranch):
 
 
 class StabilizeBranch(StandardBranch):
-  """Represents a factory branch."""
+  """Represents a minibranch."""
 
   def __init__(self, checkout):
     super(StabilizeBranch, self).__init__('stabilize', checkout)
@@ -666,12 +661,12 @@ Create Examples:
   cros branch create 11030.0.0 --custom my-custom-branch
 
 Rename Examples:
-  cros branch rename release-10509.B release-10508.B
-  cros branch --force --push rename release-10509.B release-10508.B
+  cros branch rename release-R70-10509.B release-R70-10508.B
+  cros branch --force --push rename release-R70-10509.B release-R70-10508.B
 
 Delete Examples:
-  cros branch delete release-10509.B
-  cros branch --force --push delete release-10509.B
+  cros branch delete release-R70-10509.B
+  cros branch --force --push delete release-R70-10509.B
 """
 
   @classmethod
@@ -682,17 +677,15 @@ Delete Examples:
     # Common flags.
     parser.add_argument(
         '--push',
-        dest='push',
         action='store_true',
         help='Push branch modifications to remote repos. '
-        'Before setting this flag, ensure that you have the proper '
-        'permissions and that you know what you are doing. Ye be warned.')
+             'Before setting this flag, ensure that you have the proper '
+             'permissions and that you know what you are doing. Ye be warned.')
     parser.add_argument(
         '--force',
-        dest='force',
         action='store_true',
         help='Required for any remote operation that would delete an existing '
-        'branch.')
+             'branch.')
 
     sync_group = parser.add_argument_group(
         'Sync',
@@ -700,10 +693,9 @@ Delete Examples:
         'These options are primarily used for testing.')
     sync_group.add_argument(
         '--root',
-        dest='root',
         default=constants.SOURCE_ROOT,
         help='Repo root of local checkout to branch. If not specificed, this '
-        'tool will branch the checkout from which it is run.')
+             'tool will branch the checkout from which it is run.')
     sync_group.add_argument('--repo-url', help='Repo repository location.')
     sync_group.add_argument(
         '--manifest-url', help='URL of the manifest to be checked out.')
@@ -714,24 +706,19 @@ Delete Examples:
         'create', help='Create a branch from a specified maniefest version.')
 
     manifest_group = create_parser.add_argument_group(
-        'Manifest',
-        description='Which manifest should be branched?')
+        'Manifest', description='Which manifest should be branched?')
     manifest_ex_group = manifest_group.add_mutually_exclusive_group(
         required=True)
     manifest_ex_group.add_argument(
-        '--version',
-        dest='version',
-        help="Manifest version to branch off, e.g. '10509.0.0'.")
+        '--version', help="Manifest version to branch off, e.g. '10509.0.0'.")
     manifest_ex_group.add_argument(
-        '--file',
-        dest='file',
-        help='Path to manifest file to branch off.')
+        '--file', help='Path to manifest file to branch off.')
 
     type_group = create_parser.add_argument_group(
         'Branch Type',
         description='You must specify the type of the new branch. '
-        'This affects how manifest metadata is updated and how '
-        'the branch is named (if not specified manually).')
+                    'This affects how manifest metadata is updated and how '
+                    'the branch is named (if not specified manually).')
     type_ex_group = type_group.add_mutually_exclusive_group(required=True)
     type_ex_group.add_argument(
         '--release',
@@ -739,28 +726,28 @@ Delete Examples:
         action='store_const',
         const=ReleaseBranch,
         help='The new branch is a release branch. '
-        "Named as 'release-R<Milestone>-<Major Version>.B'.")
+             "Named as 'release-R<Milestone>-<Major Version>.B'.")
     type_ex_group.add_argument(
         '--factory',
         dest='cls',
         action='store_const',
         const=FactoryBranch,
         help='The new branch is a factory branch. '
-        "Named as 'factory-<Major Version>.B'.")
+             "Named as 'factory-<Major Version>.B'.")
     type_ex_group.add_argument(
         '--firmware',
         dest='cls',
         action='store_const',
         const=FirmwareBranch,
         help='The new branch is a firmware branch. '
-        "Named as 'firmware-<Major Version>.B'.")
+             "Named as 'firmware-<Major Version>.B'.")
     type_ex_group.add_argument(
         '--stabilize',
         dest='cls',
         action='store_const',
         const=StabilizeBranch,
         help='The new branch is a minibranch. '
-        "Named as 'stabilize-<Major Version>.B'.")
+             "Named as 'stabilize-<Major Version>.B'.")
     type_ex_group.add_argument(
         '--custom',
         dest='name',
@@ -834,11 +821,7 @@ Delete Examples:
           force=self.options.force)
 
     elif self.options.subcommand == 'delete':
-      # Git complains if we delete a branch that is checked out locally.
-      # For branch deletion, we work around this problem by syncing to master.
-      # This works because branch deletion does not update metadata, it just
-      # deletes branches on the remote.
-      checkout.SyncBranch('master')
+      checkout.SyncBranch(self.options.branch)
       branch = Branch(self.options.branch, checkout)
       branch.Delete(push=self.options.push, force=self.options.force)
 
