@@ -241,6 +241,12 @@ class CrostiniManager::CrostiniRestarter
 
   void CreateDiskImageAfterSizeCheck(int64_t disk_space_taken,
                                      int64_t free_disk_bytes) {
+    // Unlike other functions, this isn't called from a crostini_manager_
+    // function, so crostini_manager_ could have been deleted.
+    if (!crostini_manager_) {
+      return;
+    }
+
     int64_t disk_size_available = (free_disk_bytes * 9) / 10;
     // If there's no existing disk image, need enough space to create one.
     if (disk_space_taken == 0) {
