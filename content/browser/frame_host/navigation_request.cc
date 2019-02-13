@@ -219,15 +219,18 @@ void AddAdditionalRequestHeaders(
       }
     }
     std::string destination;
+    std::string mode = "navigate";
     switch (frame_tree_node->frame_owner_element_type()) {
       case blink::FrameOwnerElementType::kNone:
         destination = "document";
         break;
       case blink::FrameOwnerElementType::kObject:
         destination = "object";
+        mode = "no-cors";
         break;
       case blink::FrameOwnerElementType::kEmbed:
         destination = "embed";
+        mode = "no-cors";
         break;
       case blink::FrameOwnerElementType::kIframe:
       case blink::FrameOwnerElementType::kFrame:
@@ -238,6 +241,7 @@ void AddAdditionalRequestHeaders(
         destination = "nested-document";
     }
     headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
+    headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
     headers->SetHeaderIfMissing("Sec-Fetch-User",
                                 has_user_gesture ? "?T" : "?F");

@@ -90,6 +90,24 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
   return "";
 }
 
+// This maps the network::mojom::FetchRequestMode to a string that can be used
+// in a `Sec-Fetch-Mode` header.
+const char* FetchRequestModeToString(network::mojom::FetchRequestMode mode) {
+  switch (mode) {
+    case network::mojom::FetchRequestMode::kSameOrigin:
+      return "same-origin";
+    case network::mojom::FetchRequestMode::kNoCors:
+      return "no-cors";
+    case network::mojom::FetchRequestMode::kCors:
+    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
+      return "cors";
+    case network::mojom::FetchRequestMode::kNavigate:
+      return "navigate";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace
 
 void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
@@ -157,6 +175,9 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
       }
 
       request.AddHTTPHeaderField("Sec-Fetch-Dest", destination_value);
+      request.AddHTTPHeaderField(
+          "Sec-Fetch-Mode",
+          FetchRequestModeToString(request.GetFetchRequestMode()));
       request.AddHTTPHeaderField("Sec-Fetch-Site", site_value);
       request.AddHTTPHeaderField("Sec-Fetch-User", "?F");
     }
