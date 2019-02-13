@@ -1959,7 +1959,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [[PrimaryToolbarCoordinator alloc] initWithBrowserState:_browserState];
   self.primaryToolbarCoordinator = topToolbarCoordinator;
   topToolbarCoordinator.delegate = self;
-  topToolbarCoordinator.URLLoader = self;
   topToolbarCoordinator.webStateList = self.tabModel.webStateList;
   topToolbarCoordinator.dispatcher = self.dispatcher;
   topToolbarCoordinator.commandDispatcher = self.commandDispatcher;

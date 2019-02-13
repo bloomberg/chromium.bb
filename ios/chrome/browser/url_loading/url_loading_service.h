@@ -35,7 +35,7 @@ class UrlLoadingNotifier;
 
 @end
 
-// Observer used to update listeners of change of state in url loading.
+// Service used to load url in current or new tab.
 class UrlLoadingService : public KeyedService {
  public:
   UrlLoadingService(UrlLoadingNotifier* notifier);
@@ -44,13 +44,14 @@ class UrlLoadingService : public KeyedService {
   void SetBrowser(Browser* browser);
 
   // Opens a url based on |chrome_params|.
-  void LoadUrlInCurrentTab(const ChromeLoadParams& chrome_params);
+  virtual void LoadUrlInCurrentTab(const ChromeLoadParams& chrome_params);
 
   // Switches to a tab that matches |web_params| or opens in a new tab.
-  void SwitchToTab(const web::NavigationManager::WebLoadParams& web_params);
+  virtual void SwitchToTab(
+      const web::NavigationManager::WebLoadParams& web_params);
 
   // Opens a url based on |command| in a new tab.
-  void OpenUrlInNewTab(OpenNewTabCommand* command);
+  virtual void OpenUrlInNewTab(OpenNewTabCommand* command);
 
  private:
   __weak id<URLLoadingServiceDelegate> delegate_;

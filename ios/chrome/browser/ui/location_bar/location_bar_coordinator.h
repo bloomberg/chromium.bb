@@ -22,7 +22,6 @@ class WebStateList;
 @protocol LocationBarAnimatee;
 @protocol OmniboxPopupPositioner;
 @protocol ToolbarCoordinatorDelegate;
-@protocol UrlLoader;
 
 // Location bar coordinator.
 @interface LocationBarCoordinator
@@ -36,8 +35,6 @@ class WebStateList;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
-// URL loader for the location bar.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 // Delegate for this coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;

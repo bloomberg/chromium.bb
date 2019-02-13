@@ -26,6 +26,10 @@ class UrlLoadingServiceFactory : public BrowserStateKeyedServiceFactory {
 
   static UrlLoadingServiceFactory* GetInstance();
 
+  // Returns the default factory used to build TestUrlLoadingServices. Can be
+  // registered with SetTestingFactory to use test instances during testing.
+  static TestingFactory GetDefaultFactory();
+
  private:
   friend class base::NoDestructor<UrlLoadingServiceFactory>;
 

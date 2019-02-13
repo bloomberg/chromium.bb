@@ -5,6 +5,8 @@
 source_set("url_loading") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "test_url_loading_service.h",
+    "test_url_loading_service.mm",
     "url_loading_notifier.h",
     "url_loading_notifier.mm",
     "url_loading_notifier_factory.cc",

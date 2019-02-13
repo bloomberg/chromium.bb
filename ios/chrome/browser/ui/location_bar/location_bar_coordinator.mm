@@ -36,8 +36,9 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -93,7 +94,6 @@ const int kLocationAuthorizationStatusCount = 4;
 @synthesize mediator = _mediator;
 @synthesize browserState = _browserState;
 @synthesize dispatcher = _dispatcher;
-@synthesize URLLoader = _URLLoader;
 @synthesize delegate = _delegate;
 @synthesize webStateList = _webStateList;
 @synthesize omniboxPopupCoordinator = _omniboxPopupCoordinator;
@@ -250,7 +250,8 @@ const int kLocationAuthorizationStatusCount = 4;
     params.extra_headers = [combinedExtraHeaders copy];
     ChromeLoadParams chromeParams(params);
     chromeParams.disposition = disposition;
-    [self.URLLoader loadURLWithParams:chromeParams];
+    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        ->LoadUrlInCurrentTab(chromeParams);
 
     if (google_util::IsGoogleSearchUrl(url)) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -397,7 +398,8 @@ const int kLocationAuthorizationStatusCount = 4;
     params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     ChromeLoadParams chromeParams(params);
-    [self.URLLoader loadURLWithParams:chromeParams];
+    UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+        ->LoadUrlInCurrentTab(chromeParams);
   }
 }
 
