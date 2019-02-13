@@ -17,6 +17,8 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
+// TODO(crbug.com/904390): Remove when the investigation is over.
+#include "components/autofill/core/browser/autofill_profile_sync_util.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -184,6 +186,10 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_ADD,
                            CreateData(*(it.second))));
+
+    // TODO(crbug.com/904390): Remove when the investigation is over.
+    ReportAutofillProfileAddOrUpdateOrigin(
+        AutofillProfileSyncChangeOrigin::kInitial);
     profiles_map_[it.first] = it.second;
   }
 
@@ -192,6 +198,10 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_UPDATE,
                            CreateData(*(bundle.profiles_to_sync_back[i]))));
+
+    // TODO(crbug.com/904390): Remove when the investigation is over.
+    ReportAutofillProfileAddOrUpdateOrigin(
+        AutofillProfileSyncChangeOrigin::kInitial);
   }
 
   if (!new_changes.empty()) {
@@ -603,6 +613,24 @@ void AutofillProfileSyncableService::ActOnChange(
     return;
   }
 
+  // TODO(crbug.com/904390): Remove when the investigation is over.
+  const AutofillProfile* local_profile = nullptr;
+  if (change.type() == AutofillProfileChange::REMOVE) {
+    if (profiles_map_.find(change.key()) != profiles_map_.end()) {
+      local_profile = profiles_map_[change.key()];
+    }
+  } else {
+    local_profile = change.data_model();
+  }
+  bool is_converted_from_server = false;
+  // |webdata_backend_| may be null in unit-tests.
+  if (local_profile != nullptr && webdata_backend_ != nullptr) {
+    std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
+    GetAutofillTable()->GetServerProfiles(&server_profiles);
+    is_converted_from_server = IsLocalProfileEqualToServerProfile(
+        server_profiles, *local_profile, app_locale_);
+  }
+
   syncer::SyncChangeList new_changes;
   DataBundle bundle;
   switch (change.type()) {
@@ -616,6 +644,12 @@ void AutofillProfileSyncableService::ActOnChange(
       profiles_.push_back(
           std::make_unique<AutofillProfile>(*(change.data_model())));
       profiles_map_[change.data_model()->guid()] = profiles_.back().get();
+
+      // TODO(crbug.com/904390): Remove when the investigation is over.
+      ReportAutofillProfileAddOrUpdateOrigin(
+          is_converted_from_server
+              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     case AutofillProfileChange::UPDATE: {
       auto it = profiles_map_.find(change.data_model()->guid());
@@ -625,6 +659,12 @@ void AutofillProfileSyncableService::ActOnChange(
           syncer::SyncChange(FROM_HERE,
                              syncer::SyncChange::ACTION_UPDATE,
                              CreateData(*(change.data_model()))));
+
+      // TODO(crbug.com/904390): Remove when the investigation is over.
+      ReportAutofillProfileAddOrUpdateOrigin(
+          is_converted_from_server
+              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     }
     case AutofillProfileChange::REMOVE: {
@@ -636,6 +676,11 @@ void AutofillProfileSyncableService::ActOnChange(
             syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_DELETE,
                                CreateData(empty_profile)));
         profiles_map_.erase(change.key());
+        // TODO(crbug.com/904390): Remove when the investigation is over.
+        ReportAutofillProfileDeleteOrigin(
+            is_converted_from_server
+                ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+                : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       }
       break;
     }

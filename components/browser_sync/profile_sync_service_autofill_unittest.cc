@@ -144,6 +144,11 @@ class AutofillTableMock : public AutofillTable {
   MOCK_METHOD1(UpdateAutofillProfile, bool(const AutofillProfile&));   // NOLINT
   MOCK_METHOD1(AddAutofillProfile, bool(const AutofillProfile&));      // NOLINT
   MOCK_METHOD1(RemoveAutofillProfile, bool(const std::string&));       // NOLINT
+
+  // TODO(crbug.com/904390): Remove when the investigation is over.
+  MOCK_CONST_METHOD1(
+      GetServerProfiles,
+      bool(std::vector<std::unique_ptr<AutofillProfile>>*));  // NOLINT
 };
 
 MATCHER_P(MatchProfiles, profile, "") {
@@ -950,6 +955,10 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
       "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
       "Orlando", "FL", "32801", "US", "19482937549");
 
+  // TODO(crbug.com/904390): Remove when the investigation is over. This call is
+  // needed in the AutofillProfileChanged() callback.
+  EXPECT_CALL(autofill_table(), GetServerProfiles(_)).WillOnce(Return(true));
+
   AutofillProfileChange change(AutofillProfileChange::ADD, added_profile.guid(),
                                &added_profile);
   web_data_service()->OnAutofillProfileChanged(change);
@@ -988,6 +997,10 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   EXPECT_CALL(personal_data_manager(), Refresh());
   StartAutofillProfileSyncService(add_autofill.callback());
   ASSERT_TRUE(add_autofill.success());
+
+  // TODO(crbug.com/904390): Remove when the investigation is over. This call is
+  // needed in the AutofillProfileChanged() callback.
+  EXPECT_CALL(autofill_table(), GetServerProfiles(_)).WillOnce(Return(true));
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                sync_profile.guid(), nullptr);

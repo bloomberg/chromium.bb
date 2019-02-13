@@ -5,10 +5,14 @@
 #include "components/autofill/core/browser/autofill_profile_sync_util.h"
 
 #include "base/guid.h"
+// TODO(crbug.com/904390): Remove when the investigation is over.
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+// TODO(crbug.com/904390): Remove when the investigation is over.
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
@@ -233,6 +237,30 @@ std::string GetStorageKeyFromAutofillProfileSpecifics(
     return std::string();
   }
   return specifics.guid();
+}
+
+bool IsLocalProfileEqualToServerProfile(
+    const std::vector<std::unique_ptr<AutofillProfile>>& server_profiles,
+    const AutofillProfile& local_profile,
+    const std::string& app_locale) {
+  AutofillProfileComparator comparator(app_locale);
+  for (const auto& server_profile : server_profiles) {
+    // The same logic as when deciding whether to convert into a new profile in
+    // PersonalDataManager::MergeServerAddressesIntoProfiles.
+    if (comparator.AreMergeable(*server_profile, local_profile) &&
+        (!local_profile.IsVerified() || !server_profile->IsVerified())) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void ReportAutofillProfileAddOrUpdateOrigin(
+    AutofillProfileSyncChangeOrigin origin) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillProfile.AddOrUpdateOrigin", origin);
+}
+void ReportAutofillProfileDeleteOrigin(AutofillProfileSyncChangeOrigin origin) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.AutofillProfile.DeleteOrigin", origin);
 }
 
 }  // namespace autofill
