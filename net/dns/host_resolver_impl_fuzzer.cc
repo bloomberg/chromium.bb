@@ -27,11 +27,6 @@ namespace {
 const char* kHostNames[] = {"foo", "foo.com",   "a.foo.com",
                             "bar", "localhost", "localhost6"};
 
-net::AddressFamily kAddressFamilies[] = {
-    net::ADDRESS_FAMILY_UNSPECIFIED, net::ADDRESS_FAMILY_IPV4,
-    net::ADDRESS_FAMILY_IPV6,
-};
-
 class DnsRequest {
  public:
   DnsRequest(net::HostResolver* host_resolver,
@@ -133,19 +128,6 @@ class DnsRequest {
 
   // Starts the DNS request, using a fuzzed set of parameters.
   int Start() {
-    // Cache-only resolve still uses old HostResolver API.
-    if (data_provider_->ConsumeBool()) {
-      const char* hostname = data_provider_->PickValueInArray(kHostNames);
-      net::HostResolver::RequestInfo info(net::HostPortPair(hostname, 80));
-      info.set_address_family(
-          data_provider_->PickValueInArray(kAddressFamilies));
-      if (data_provider_->ConsumeBool())
-        info.set_host_resolver_flags(net::HOST_RESOLVER_CANONNAME);
-
-      return host_resolver_->ResolveFromCache(info, &address_list_,
-                                              net::NetLogWithSource());
-    }
-
     net::HostResolver::ResolveHostParameters parameters;
     parameters.dns_query_type =
         data_provider_->PickValueInArray(net::kDnsQueryTypes);
