@@ -657,9 +657,13 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
   // is used to post onPageStarted. We handle shouldOverrideUrlLoading
   // via a sync IPC.
   if (navigation_handle->IsInMainFrame()) {
+    // Use Synchronous mode for the navigation interceptor, since this class
+    // doesn't actually call into an arbitrary client, it just posts a task to
+    // call onPageStarted. shouldOverrideUrlLoading happens earlier (see
+    // ContentBrowserClient::ShouldOverrideUrlLoading).
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            navigation_handle));
+            navigation_handle, navigation_interception::SynchronyMode::kSync));
     throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
         navigation_handle, browser_context_.get()));
   }

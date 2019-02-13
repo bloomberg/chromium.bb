@@ -4116,7 +4116,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (!prerender_contents && handle->IsInMainFrame()) {
     throttles.push_back(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            handle));
+            handle, navigation_interception::SynchronyMode::kAsync));
   }
   throttles.push_back(InterceptOMADownloadNavigationThrottle::Create(handle));
 #elif BUILDFLAG(ENABLE_EXTENSIONS)

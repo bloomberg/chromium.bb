@@ -22,10 +22,12 @@ const base::Feature InterceptNavigationThrottle::kAsyncCheck{
 
 InterceptNavigationThrottle::InterceptNavigationThrottle(
     content::NavigationHandle* navigation_handle,
-    CheckCallback should_ignore_callback)
+    CheckCallback should_ignore_callback,
+    SynchronyMode async_mode)
     : content::NavigationThrottle(navigation_handle),
       should_ignore_callback_(should_ignore_callback),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      mode_(async_mode),
       weak_factory_(this) {}
 
 InterceptNavigationThrottle::~InterceptNavigationThrottle() {
@@ -112,19 +114,16 @@ void InterceptNavigationThrottle::RunCheckAsync(
 
 bool InterceptNavigationThrottle::ShouldCheckAsynchronously() const {
   // Do not apply the async optimization for:
-  // - Non-Android platforms (where the check is always fast)
+  // - Throttles in non-async mode.
   // - POST navigations, to ensure we aren't violating idempotency.
   // - Subframe navigations, which aren't observed on Android, and should be
   //   fast on other platforms.
   // - non-http/s URLs, which are more likely to be intercepted.
-#if defined(OS_ANDROID)
-  return navigation_handle()->IsInMainFrame() &&
+  return mode_ == SynchronyMode::kAsync &&
+         navigation_handle()->IsInMainFrame() &&
          !navigation_handle()->IsPost() &&
          navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS() &&
          base::FeatureList::IsEnabled(kAsyncCheck);
-#else
-  return false;
-#endif
 }
 
 NavigationParams InterceptNavigationThrottle::GetNavigationParams(

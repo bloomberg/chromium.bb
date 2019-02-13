@@ -93,7 +93,8 @@ BrowserSwitcherNavigationThrottle::MaybeCreateThrottleFor(
     return nullptr;
 
   return std::make_unique<navigation_interception::InterceptNavigationThrottle>(
-      navigation, base::BindRepeating(&MaybeLaunchAlternativeBrowser));
+      navigation, base::BindRepeating(&MaybeLaunchAlternativeBrowser),
+      navigation_interception::SynchronyMode::kSync);
 }
 
 }  // namespace browser_switcher
