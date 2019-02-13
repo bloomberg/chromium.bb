@@ -2888,6 +2888,12 @@ const char kOmniboxReverseAnswersDescription[] =
     "effect unless either the #upcoming-ui-features flag is Enabled or the "
     "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
 
+const char kOmniboxReverseTabSwitchLogicName[] =
+    "Omnibox reverse tab switch logic";
+const char kOmniboxReverseTabSwitchLogicDescription[] =
+    "Reverse the logic of suggestions that have a tab switch button: Have "
+    "them switch by default, and have the button navigate.";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
