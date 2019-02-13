@@ -133,13 +133,13 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   style_->SetBorderTopWidth(0);
 
   NGBoxStrut ltr_border_padding =
-      ComputeBorders(ltr_space_, *style_) + ComputePadding(ltr_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(ltr_space_, *style_);
   NGBoxStrut rtl_border_padding =
-      ComputeBorders(rtl_space_, *style_) + ComputePadding(rtl_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(rtl_space_, *style_);
   NGBoxStrut vlr_border_padding =
-      ComputeBorders(vlr_space_, *style_) + ComputePadding(vlr_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(vlr_space_, *style_);
   NGBoxStrut vrl_border_padding =
-      ComputeBorders(vrl_space_, *style_) + ComputePadding(vrl_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(vrl_space_, *style_);
 
   NGStaticPosition static_position{NGStaticPosition::kTopLeft,
                                    {LayoutUnit(), LayoutUnit()}};
@@ -362,11 +362,11 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   MinMaxSize minmax_60{LayoutUnit(60), LayoutUnit(60)};
 
   NGBoxStrut ltr_border_padding =
-      ComputeBorders(ltr_space_, *style_) + ComputePadding(ltr_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(ltr_space_, *style_);
   NGBoxStrut vlr_border_padding =
-      ComputeBorders(vlr_space_, *style_) + ComputePadding(vlr_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(vlr_space_, *style_);
   NGBoxStrut vrl_border_padding =
-      ComputeBorders(vrl_space_, *style_) + ComputePadding(vrl_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(vrl_space_, *style_);
 
   NGStaticPosition static_position{NGStaticPosition::kTopLeft,
                                    {LayoutUnit(), LayoutUnit()}};
@@ -513,7 +513,7 @@ TEST_F(NGAbsoluteUtilsTest, MinMax) {
   style_->SetMaxHeight(Length::Fixed(max.ToInt()));
 
   NGBoxStrut ltr_border_padding =
-      ComputeBorders(ltr_space_, *style_) + ComputePadding(ltr_space_, *style_);
+      ComputeBordersForTest(*style_) + ComputePadding(ltr_space_, *style_);
 
   NGStaticPosition static_position{NGStaticPosition::kTopLeft,
                                    {LayoutUnit(), LayoutUnit()}};

@@ -209,15 +209,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       // must be computed from Legacy algorithm
     } else {
       DCHECK(inline_cb_style);
-
-      // TODO Creating dummy constraint space just to get borders feels wrong.
-      NGConstraintSpace dummy_constraint_space =
-          NGConstraintSpaceBuilder(inline_cb_style->GetWritingMode(),
-                                   inline_cb_style->GetWritingMode(),
-                                   /* is_new_fc */ false)
-              .ToConstraintSpace();
-      NGBoxStrut inline_cb_borders =
-          ComputeBorders(dummy_constraint_space, *inline_cb_style);
+      NGBoxStrut inline_cb_borders = ComputeBordersForInline(*inline_cb_style);
 
       // The calculation below determines the size of the inline containing
       // block rect.
@@ -362,7 +354,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
           .ToConstraintSpace();
 
   NGBoxStrut border_padding =
-      ComputeBorders(descendant_constraint_space, descendant_style) +
+      ComputeBorders(descendant_constraint_space, descendant.node) +
       ComputePadding(descendant_constraint_space, descendant_style);
 
   // The block_estimate is in the descendant's writing mode.

@@ -56,7 +56,7 @@ LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
                                 const ComputedStyle* style) {
   DCHECK(style);
   NGBoxStrut margins = ComputeMarginsForSelf(space, *style);
-  NGBoxStrut borders = ComputeBorders(space, *style);
+  NGBoxStrut borders = ComputeBordersForInline(*style);
   NGBoxStrut paddings = ComputePadding(space, *style);
 
   return margins.inline_end + borders.inline_end + paddings.inline_end;
@@ -1218,7 +1218,7 @@ bool NGLineBreaker::ComputeOpenTagResult(
   if (item.ShouldCreateBoxFragment() &&
       (style.HasBorder() || style.HasPadding() ||
        (style.HasMargin() && item_result->has_edge))) {
-    item_result->borders = ComputeLineBorders(constraint_space, style);
+    item_result->borders = ComputeLineBorders(style);
     item_result->padding = ComputeLinePadding(constraint_space, style);
     if (item_result->has_edge) {
       item_result->margins = ComputeLineMarginsForSelf(constraint_space, style);
