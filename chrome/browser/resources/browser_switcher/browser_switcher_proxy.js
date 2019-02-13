@@ -11,6 +11,8 @@ cr.define('browser_switcher', function() {
      *     never resolve, because the tab closes if this succeeds.
      */
     launchAlternativeBrowserAndCloseTab(url) {}
+
+    gotoNewTabPage() {}
   }
 
   /** @implements {settings.BrowserSwitcherProxy} */
@@ -18,6 +20,11 @@ cr.define('browser_switcher', function() {
     /** @override */
     launchAlternativeBrowserAndCloseTab(url) {
       return cr.sendWithPromise('launchAlternativeBrowserAndCloseTab', url);
+    }
+
+    /** @override */
+    gotoNewTabPage() {
+      chrome.send('gotoNewTabPage');
     }
   }
 
