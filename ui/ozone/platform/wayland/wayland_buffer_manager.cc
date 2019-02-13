@@ -407,13 +407,16 @@ void WaylandBufferManager::FrameCallbackDone(void* data,
       buffer->swap_result = gfx::SwapResult::SWAP_ACK;
       buffer->wl_frame_callback.reset();
 
-      // If presentation feedback is not supported, use fake feedback and
-      // trigger the callback.
+      // If presentation feedback is not supported, use a fake feedback
       if (!self->connection_->presentation()) {
         buffer->feedback = gfx::PresentationFeedback(base::TimeTicks::Now(),
                                                      base::TimeDelta(), 0);
-        self->OnBufferSwapped(buffer);
       }
+      // If presentation feedback event either has already been fired or
+      // has not been set, trigger swap callback.
+      if (!buffer->wp_presentation_feedback)
+        self->OnBufferSwapped(buffer);
+
       return;
     }
   }
@@ -446,16 +449,20 @@ void WaylandBufferManager::FeedbackPresented(
   for (auto& item : self->buffers_) {
     Buffer* buffer = item.second.get();
     if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
-      // Frame callback must come before a feedback is presented.
-      DCHECK(!buffer->wl_frame_callback);
-
       buffer->feedback = gfx::PresentationFeedback(
           GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
           base::TimeDelta::FromNanoseconds(refresh),
           GetPresentationKindFlags(flags));
-
       buffer->wp_presentation_feedback.reset();
-      self->OnBufferSwapped(buffer);
+
+      // Some compositors not always fire PresentationFeedback and Frame
+      // events in the same order (i.e, frame callbacks coming always before
+      // feedback presented/discaded ones). So, check FrameCallbackDone has
+      // already been called at this point, if yes, trigger the swap callback.
+      // otherwise it will be triggered in the upcoming frame callback.
+      if (!buffer->wl_frame_callback)
+        self->OnBufferSwapped(buffer);
+
       return;
     }
   }
@@ -474,11 +481,17 @@ void WaylandBufferManager::FeedbackDiscarded(
     Buffer* buffer = item.second.get();
     if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
       // Frame callback must come before a feedback is presented.
-      DCHECK(!buffer->wl_frame_callback);
       buffer->feedback = gfx::PresentationFeedback::Failure();
-
       buffer->wp_presentation_feedback.reset();
-      self->OnBufferSwapped(buffer);
+
+      // Some compositors not always fire PresentationFeedback and Frame
+      // events in the same order (i.e, frame callbacks coming always before
+      // feedback presented/discaded ones). So, check FrameCallbackDone has
+      // already been called at this point, if yes, trigger the swap callback.
+      // Otherwise it will be triggered in the upcoming frame callback.
+      if (!buffer->wl_frame_callback)
+        self->OnBufferSwapped(buffer);
+
       return;
     }
   }
