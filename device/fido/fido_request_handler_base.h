@@ -186,8 +186,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   }
 
   // Set the platform authenticator for this request, if one is available.
-  // |AuthenticatorImpl| must call this method after invoking |set_oberver| even
-  // if no platform authenticator is available, in which case it passes nullptr.
+  // |AuthenticatorImpl| must call this method after invoking |set_observer|
+  // even if no platform authenticator is available, in which case it passes
+  // nullptr.
   virtual void SetPlatformAuthenticatorOrMarkUnavailable(
       base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info);
 

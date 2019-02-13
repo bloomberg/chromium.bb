@@ -129,7 +129,6 @@ TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
 
   const auto task = CreateMakeCredentialTask(device.get());
   make_credential_callback_receiver().WaitForCallback();
-  EXPECT_EQ(ProtocolVersion::kU2f, device->supported_protocol());
   EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
             make_credential_callback_receiver().status());
   EXPECT_TRUE(make_credential_callback_receiver().value());
@@ -188,7 +187,6 @@ TEST_F(FidoMakeCredentialTaskTest, TestU2fOnly) {
   EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
             make_credential_callback_receiver().status());
   EXPECT_TRUE(make_credential_callback_receiver().value());
-  EXPECT_EQ(device->supported_protocol(), ProtocolVersion::kU2f);
 }
 
 }  // namespace

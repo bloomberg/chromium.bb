@@ -45,6 +45,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
 
   void MakeCredential();
   void U2fRegister();
+  void MaybeRevertU2fFallback(
+      CtapDeviceResponseCode status,
+      base::Optional<AuthenticatorMakeCredentialResponse> response);
 
   CtapMakeCredentialRequest request_parameter_;
   std::unique_ptr<RegisterOperation> register_operation_;
