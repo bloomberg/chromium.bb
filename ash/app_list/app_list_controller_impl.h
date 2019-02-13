@@ -255,8 +255,13 @@ class ASH_EXPORT AppListControllerImpl
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
 
-  // Update the visibility of expand arrow view.
+  // Updates the visibility of expand arrow view.
   void UpdateExpandArrowVisibility();
+
+  // Get updated app list view state after dragging from shelf.
+  app_list::AppListViewState CalculateStateAfterShelfDrag(
+      const ui::GestureEvent& gesture_in_screen,
+      float launcher_above_shelf_bottom_amount) const;
 
  private:
   syncer::StringOrdinal GetOemFolderPos();

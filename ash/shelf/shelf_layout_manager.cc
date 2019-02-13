@@ -1399,42 +1399,15 @@ void ShelfLayoutManager::CompleteAppListDrag(
   }
 
   using app_list::AppListViewState;
-  AppListViewState app_list_state = AppListViewState::PEEKING;
-  if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
-      fabs(gesture_in_screen.details().velocity_y()) >
-          kAppListDragVelocityThreshold) {
-    // If the scroll sequence terminates with a fling, show the fullscreen app
-    // list if the fling was fast enough and in the correct direction, otherwise
-    // close it.
-    app_list_state = gesture_in_screen.details().velocity_y() < 0
-                         ? AppListViewState::FULLSCREEN_ALL_APPS
-                         : AppListViewState::CLOSED;
-  } else {
-    // Snap the app list to corresponding state according to the snapping
-    // thresholds.
-    if (IsTabletModeEnabled()) {
-      app_list_state = launcher_above_shelf_bottom_amount_ >
-                               kAppListDragSnapToFullscreenThreshold
-                           ? AppListViewState::FULLSCREEN_ALL_APPS
-                           : AppListViewState::CLOSED;
-    } else {
-      if (launcher_above_shelf_bottom_amount_ <=
-          kAppListDragSnapToClosedThreshold)
-        app_list_state = AppListViewState::CLOSED;
-      else if (launcher_above_shelf_bottom_amount_ <=
-               kAppListDragSnapToPeekingThreshold)
-        app_list_state = AppListViewState::PEEKING;
-      else
-        app_list_state = AppListViewState::FULLSCREEN_ALL_APPS;
-    }
-  }
+  AppListViewState app_list_state =
+      Shell::Get()->app_list_controller()->CalculateStateAfterShelfDrag(
+          gesture_in_screen, launcher_above_shelf_bottom_amount_);
 
   // Keep auto-hide shelf visible if failed to open the app list.
   base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
   if (app_list_state == AppListViewState::CLOSED)
     auto_hide_lock.emplace(shelf_);
   Shell::Get()->app_list_controller()->EndDragFromShelf(app_list_state);
-
   gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 

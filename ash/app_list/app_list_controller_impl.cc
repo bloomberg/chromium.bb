@@ -702,6 +702,15 @@ void AppListControllerImpl::UpdateExpandArrowVisibility() {
   presenter_.SetExpandArrowViewVisibility(should_show);
 }
 
+app_list::AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
+    const ui::GestureEvent& gesture_in_screen,
+    float launcher_above_shelf_bottom_amount) const {
+  if (presenter_.GetView())
+    return presenter_.GetView()->CalculateStateAfterShelfDrag(
+        gesture_in_screen, launcher_above_shelf_bottom_amount);
+  return app_list::AppListViewState::CLOSED;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods of |client_|:
 

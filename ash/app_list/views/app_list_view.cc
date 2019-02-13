@@ -69,10 +69,6 @@ constexpr int kHalfAppListHeight = 561;
 // order to transition to the next state.
 constexpr int kAppListThresholdDenominator = 3;
 
-// The velocity the app list must be dragged in order to transition to the next
-// state, measured in DIPs/event.
-constexpr int kAppListDragVelocityThreshold = 6;
-
 // The scroll offset in order to transition from PEEKING to FULLSCREEN
 constexpr int kAppListMinScrollToSwitchStates = 20;
 
@@ -736,7 +732,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
   // Change the app list state based on where the drag ended. If fling velocity
   // was over the threshold, snap to the next state in the direction of the
   // fling.
-  if (std::abs(last_fling_velocity_) >= kAppListDragVelocityThreshold) {
+  if (std::abs(last_fling_velocity_) >= kDragVelocityThreshold) {
     // If the user releases drag with velocity over the threshold, snap to
     // the next state, ignoring the drag release position.
 
@@ -1512,6 +1508,49 @@ int AppListView::GetFullscreenStateHeight() const {
   const display::Display display = GetDisplayNearestView();
   const gfx::Rect display_bounds = display.bounds();
   return display_bounds.height() - display.work_area().y() + display_bounds.y();
+}
+
+AppListViewState AppListView::CalculateStateAfterShelfDrag(
+    const ui::GestureEvent& gesture_in_screen,
+    float launcher_above_shelf_bottom_amount) const {
+  AppListViewState app_list_state = AppListViewState::PEEKING;
+  if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
+      fabs(gesture_in_screen.details().velocity_y()) > kDragVelocityThreshold) {
+    // If the scroll sequence terminates with a fling, show the fullscreen app
+    // list if the fling was fast enough and in the correct direction, otherwise
+    // close it.
+    app_list_state = gesture_in_screen.details().velocity_y() < 0
+                         ? AppListViewState::FULLSCREEN_ALL_APPS
+                         : AppListViewState::CLOSED;
+  } else {
+    // Snap the app list to corresponding state according to the snapping
+    // thresholds.
+    if (is_tablet_mode_) {
+      app_list_state =
+          launcher_above_shelf_bottom_amount > kDragSnapToFullscreenThreshold
+              ? AppListViewState::FULLSCREEN_ALL_APPS
+              : AppListViewState::CLOSED;
+    } else {
+      if (launcher_above_shelf_bottom_amount <= kDragSnapToClosedThreshold)
+        app_list_state = AppListViewState::CLOSED;
+      else if (launcher_above_shelf_bottom_amount <=
+               kDragSnapToPeekingThreshold)
+        app_list_state = AppListViewState::PEEKING;
+      else
+        app_list_state = AppListViewState::FULLSCREEN_ALL_APPS;
+    }
+  }
+
+  // Deal with the situation of dragging app list from shelf while typing in
+  // the search box.
+  if (app_list_state == AppListViewState::FULLSCREEN_ALL_APPS) {
+    ash::AppListState active_state =
+        app_list_main_view_->contents_view()->GetActiveState();
+    if (active_state == ash::AppListState::kStateSearchResults)
+      app_list_state = AppListViewState::FULLSCREEN_SEARCH;
+  }
+
+  return app_list_state;
 }
 
 void AppListView::UpdateChildViewsYPositionAndOpacity() {

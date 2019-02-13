@@ -86,6 +86,19 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // its state.
   static constexpr int kScrollIgnoreTimeMs = 500;
 
+  // The snapping threshold for dragging app list from shelf in tablet mode,
+  // measured in DIPs.
+  static constexpr int kDragSnapToFullscreenThreshold = 320;
+
+  // The snapping thresholds for dragging app list from shelf in laptop mode,
+  // measured in DIPs.
+  static constexpr int kDragSnapToClosedThreshold = 144;
+  static constexpr int kDragSnapToPeekingThreshold = 561;
+
+  // The velocity the app list must be dragged in order to transition to the
+  // next state, measured in DIPs/event.
+  static constexpr int kDragVelocityThreshold = 6;
+
   struct InitParams {
     gfx::NativeView parent = nullptr;
     int initial_apps_page = 0;
@@ -214,6 +227,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // Returns the height of app list in fullscreen state.
   int GetFullscreenStateHeight() const;
+
+  // Calculates and returns the app list view state after dragging from shelf
+  // ends.
+  AppListViewState CalculateStateAfterShelfDrag(
+      const ui::GestureEvent& gesture_in_screen,
+      float launcher_above_shelf_bottom_amount) const;
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;

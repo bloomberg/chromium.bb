@@ -57,6 +57,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // Returns app list view if one exists, or NULL otherwise.
   AppListView* GetView() { return view_; }
+  const AppListView* GetView() const { return view_; }
 
   // Show the app list window on the display with the given id. If
   // |event_time_stamp| is not 0, it means |Show()| was triggered by one of the
