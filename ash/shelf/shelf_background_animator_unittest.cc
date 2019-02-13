@@ -26,8 +26,6 @@
 namespace ash {
 namespace {
 
-static auto kMaxAlpha = ShelfBackgroundAnimator::kMaxAlpha;
-
 // A valid color value that is distinct from any final animation state values.
 // Used to check if color values are changed during animations.
 const SkColor kDummyColor = SK_ColorBLUE;
@@ -214,14 +212,6 @@ TEST_F(ShelfBackgroundAnimatorTest, MaximizedBackground) {
 
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, animator_->target_background_type());
   EXPECT_EQ(kShelfTranslucentMaximizedWindow, observer_.GetBackgroundAlpha());
-}
-
-// Verify the alpha values for the SHELF_BACKGROUND_SPLIT_VIEW state.
-TEST_F(ShelfBackgroundAnimatorTest, SplitViewBackground) {
-  PaintBackground(SHELF_BACKGROUND_SPLIT_VIEW);
-
-  EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, animator_->target_background_type());
-  EXPECT_EQ(kMaxAlpha, observer_.GetBackgroundAlpha());
 }
 
 // Verify the alpha values for the SHELF_BACKGROUND_APP_LIST state.

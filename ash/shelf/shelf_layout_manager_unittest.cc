@@ -35,8 +35,6 @@
 #include "ash/window_factory.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -2363,52 +2361,6 @@ TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   // |window| should be maximized, and the shelf background should match the
   // maximized state.
   EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
-}
-
-// Test the background color for split view mode.
-TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
-  // Split view is only enabled in tablet mode.
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  std::unique_ptr<aura::Window> window1(CreateTestWindow());
-  window1->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorCanResize |
-                           ws::mojom::kResizeBehaviorCanMaximize);
-  window1->Show();
-
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
-
-  std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  window2->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorCanResize |
-                           ws::mojom::kResizeBehaviorCanMaximize);
-  window2->Show();
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
-
-  // Should still keep SHELF_BACKGROUND_SPLIT_VIEW when both overview and
-  // splitview are active.
-  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
-  wm::GetWindowState(window1.get())->OnWMEvent(&minimize_event);
-  EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewController::RIGHT_SNAPPED);
-  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
-  EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
-
-  // Drag the divider to left to end split view mode, which will maximize the
-  // the right snapped window.
-  gfx::Point drag_point = split_view_controller->split_view_divider()
-                              ->GetDividerBoundsInScreen(false)
-                              .CenterPoint();
-  split_view_controller->StartResize(drag_point);
-  drag_point.set_x(0);
-  split_view_controller->EndResize(drag_point);
-
-  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 
