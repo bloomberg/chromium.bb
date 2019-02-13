@@ -111,8 +111,7 @@ CastWebContents* CastWebViewDefault::cast_web_contents() {
 }
 
 void CastWebViewDefault::LoadUrl(GURL url) {
-  web_contents_->GetController().LoadURL(url, content::Referrer(),
-                                         ui::PAGE_TRANSITION_TYPED, "");
+  cast_web_contents_.LoadUrl(url);
 }
 
 void CastWebViewDefault::ClosePage(const base::TimeDelta& shutdown_delay) {
