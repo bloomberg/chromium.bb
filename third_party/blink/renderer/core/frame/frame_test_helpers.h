@@ -82,8 +82,11 @@
     EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
   } while (false)
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
+namespace blink {
 class WebFrame;
 class WebLocalFrameImpl;
 struct WebNavigationParams;
@@ -91,7 +94,6 @@ class WebRemoteFrameImpl;
 class WebSettings;
 
 namespace frame_test_helpers {
-
 class TestWebFrameClient;
 class TestWebRemoteFrameClient;
 class TestWebWidgetClient;
@@ -198,6 +200,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
+  cc::AnimationHost* animation_host() { return animation_host_; }
 
   bool AnimationScheduled() { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
@@ -216,6 +219,7 @@ class TestWebWidgetClient : public WebWidgetClient {
 
  private:
   content::LayerTreeView* layer_tree_view_ = nullptr;
+  cc::AnimationHost* animation_host_ = nullptr;
   LayerTreeViewFactory layer_tree_view_factory_;
   bool animation_scheduled_ = false;
   int visually_non_empty_layout_count_ = 0;

@@ -515,7 +515,7 @@ ScrollingCoordinatorContext* LocalFrameView::GetScrollingContext() const {
   return scrolling_context_.get();
 }
 
-CompositorAnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
+cc::AnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
   if (GetScrollingContext()->GetCompositorAnimationHost())
     return GetScrollingContext()->GetCompositorAnimationHost();
 

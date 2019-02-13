@@ -83,7 +83,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
 
   // WebFrameWidgetBase overrides:
-  void SetLayerTreeView(WebLayerTreeView*) override;
+  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
   EnsureCompositorMutatorDispatcher(
@@ -92,7 +92,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
-  CompositorAnimationHost* AnimationHost() const override;
+  cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 

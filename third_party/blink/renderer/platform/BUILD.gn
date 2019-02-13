@@ -279,8 +279,6 @@ jumbo_component("platform") {
     "animation/compositor_animation_client.h",
     "animation/compositor_animation_curve.h",
     "animation/compositor_animation_delegate.h",
-    "animation/compositor_animation_host.cc",
-    "animation/compositor_animation_host.h",
     "animation/compositor_animation_timeline.cc",
     "animation/compositor_animation_timeline.h",
     "animation/compositor_filter_animation_curve.cc",
@@ -1669,7 +1667,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
 
   sources = [
     "animation/animation_translation_util_test.cc",
-    "animation/compositor_animation_host_test.cc",
     "animation/compositor_animation_test.cc",
     "animation/compositor_animation_timeline_test.cc",
     "animation/compositor_float_animation_curve_test.cc",

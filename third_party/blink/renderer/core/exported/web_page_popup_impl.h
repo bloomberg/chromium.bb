@@ -44,8 +44,6 @@ class Layer;
 }
 
 namespace blink {
-
-class CompositorAnimationHost;
 class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
@@ -81,7 +79,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  private:
   // WebWidget functions
-  void SetLayerTreeView(WebLayerTreeView*) override;
+  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics) override;
@@ -134,8 +132,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool closing_ = false;
 
   WebLayerTreeView* layer_tree_view_ = nullptr;
+  cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
   base::TimeTicks raf_aligned_input_start_time_;
   bool is_accelerated_compositing_active_ = false;
 

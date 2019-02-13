@@ -31,6 +31,7 @@
 
 #include <memory>
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -61,7 +62,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/page_popup_supplement.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -138,14 +139,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void AttachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    if (popup_->animation_host_)
-      popup_->animation_host_->AddTimeline(*timeline);
+    popup_->animation_host_->AddAnimationTimeline(
+        timeline->GetAnimationTimeline());
   }
 
   void DetachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    if (popup_->animation_host_)
-      popup_->animation_host_->RemoveTimeline(*timeline);
+    popup_->animation_host_->RemoveAnimationTimeline(
+        timeline->GetAnimationTimeline());
   }
 
   WebScreenInfo GetScreenInfo() const override {
@@ -308,7 +309,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   DCHECK_EQ(popup_client_->OwnerElement().GetDocument().ExistingAXObjectCache(),
             frame->GetDocument()->ExistingAXObjectCache());
 
-  page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
+  page_->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_, nullptr);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   popup_client_->WriteDocument(data.get());
@@ -319,13 +320,13 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   SetFocus(true);
 }
 
-void WebPagePopupImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+void WebPagePopupImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
+                                        cc::AnimationHost* animation_host) {
   // The WebWidgetClient is given |this| as its WebWidget but it is set up
   // before Initialize() is called on |this|. So we store the |layer_tree_view|
   // here, but finish setting it up in Initialize().
   layer_tree_view_ = layer_tree_view;
-  animation_host_ = std::make_unique<CompositorAnimationHost>(
-      layer_tree_view_->CompositorAnimationHost());
+  animation_host_ = animation_host;
 }
 
 void WebPagePopupImpl::PostMessageToPopup(const String& message) {

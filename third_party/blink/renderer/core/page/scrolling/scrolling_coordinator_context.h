@@ -6,12 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_CONTEXT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
+namespace blink {
 class PaintLayer;
 
 // This enscapsulates ScrollingCoordinator state for each local frame root.
@@ -23,10 +25,10 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
   virtual ~ScrollingCoordinatorContext() {}
 
   void SetAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
-  void SetAnimationHost(std::unique_ptr<CompositorAnimationHost>);
+  void SetAnimationHost(cc::AnimationHost*);
 
   CompositorAnimationTimeline* GetCompositorAnimationTimeline();
-  CompositorAnimationHost* GetCompositorAnimationHost();
+  cc::AnimationHost* GetCompositorAnimationHost();
 
   HashSet<const PaintLayer*>* GetLayersWithTouchRects();
 
@@ -50,7 +52,7 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
   HashSet<const PaintLayer*> layers_with_touch_rects_;
 
   std::unique_ptr<CompositorAnimationTimeline> animation_timeline_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  cc::AnimationHost* animation_host_ = nullptr;
 
   bool scroll_gesture_region_is_dirty_ = false;
   bool touch_event_target_rects_are_dirty_ = false;

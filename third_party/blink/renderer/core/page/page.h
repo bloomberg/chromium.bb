@@ -44,8 +44,11 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace blink {
+namespace cc {
+class AnimationHost;
+}
 
+namespace blink {
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
@@ -286,7 +289,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   void Trace(blink::Visitor*) override;
 
-  void LayerTreeViewInitialized(WebLayerTreeView&, LocalFrameView*);
+  void LayerTreeViewInitialized(WebLayerTreeView&,
+                                cc::AnimationHost&,
+                                LocalFrameView*);
   void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
 
   void WillBeDestroyed();

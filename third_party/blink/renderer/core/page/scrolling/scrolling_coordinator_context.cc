@@ -13,9 +13,8 @@ void ScrollingCoordinatorContext::SetAnimationTimeline(
   animation_timeline_ = std::move(timeline);
 }
 
-void ScrollingCoordinatorContext::SetAnimationHost(
-    std::unique_ptr<CompositorAnimationHost> host) {
-  animation_host_ = std::move(host);
+void ScrollingCoordinatorContext::SetAnimationHost(cc::AnimationHost* host) {
+  animation_host_ = host;
 }
 
 CompositorAnimationTimeline*
@@ -23,9 +22,8 @@ ScrollingCoordinatorContext::GetCompositorAnimationTimeline() {
   return animation_timeline_.get();
 }
 
-CompositorAnimationHost*
-ScrollingCoordinatorContext::GetCompositorAnimationHost() {
-  return animation_host_.get();
+cc::AnimationHost* ScrollingCoordinatorContext::GetCompositorAnimationHost() {
+  return animation_host_;
 }
 
 HashSet<const PaintLayer*>*

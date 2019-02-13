@@ -50,14 +50,13 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
+class AnimationHost;
 class Layer;
 }
 
 namespace blink {
-
 class AXObjectCache;
 class ChromeClient;
-class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class Cursor;
 class DisplayItemClient;
@@ -696,7 +695,7 @@ class CORE_EXPORT LocalFrameView final
   void ScrollableAreasDidChange();
 
   ScrollingCoordinatorContext* GetScrollingContext() const;
-  CompositorAnimationHost* GetCompositorAnimationHost() const;
+  cc::AnimationHost* GetCompositorAnimationHost() const;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
   JankTracker& GetJankTracker() { return *jank_tracker_; }

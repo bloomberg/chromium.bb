@@ -81,7 +81,6 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
@@ -154,13 +153,6 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient& client) {
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
     : WebFrameWidgetBase(client),
-      mutator_dispatcher_(nullptr),
-      layer_tree_view_(nullptr),
-      root_layer_(nullptr),
-      root_graphics_layer_(nullptr),
-      is_accelerated_compositing_active_(false),
-      suppress_next_keypress_event_(false),
-      ime_accept_events_(true),
       self_keep_alive_(this) {}
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;
@@ -985,16 +977,14 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
   return document->FocusedElement();
 }
 
-void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
+                                          cc::AnimationHost* animation_host) {
   DCHECK(Client());
   DCHECK(!mutator_dispatcher_);
   layer_tree_view_ = layer_tree_view;
-  if (Platform::Current()->IsThreadedAnimationEnabled()) {
-    animation_host_ = std::make_unique<CompositorAnimationHost>(
-        layer_tree_view_->CompositorAnimationHost());
-  }
+  animation_host_ = animation_host;
 
-  GetPage()->LayerTreeViewInitialized(*layer_tree_view_,
+  GetPage()->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
                                       LocalRootImpl()->GetFrame()->View());
 
   // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
@@ -1065,8 +1055,8 @@ WebLayerTreeView* WebFrameWidgetImpl::GetLayerTreeView() const {
   return layer_tree_view_;
 }
 
-CompositorAnimationHost* WebFrameWidgetImpl::AnimationHost() const {
-  return animation_host_.get();
+cc::AnimationHost* WebFrameWidgetImpl::AnimationHost() const {
+  return animation_host_;
 }
 
 HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(

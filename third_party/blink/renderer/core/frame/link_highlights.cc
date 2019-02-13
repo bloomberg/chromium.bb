@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/link_highlight_impl.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 
 namespace blink {
@@ -93,19 +93,19 @@ void LinkHighlights::StartHighlightAnimationIfNeeded() {
 }
 
 void LinkHighlights::LayerTreeViewInitialized(
-    WebLayerTreeView& layer_tree_view) {
+    WebLayerTreeView& layer_tree_view,
+    cc::AnimationHost& animation_host) {
+  animation_host_ = &animation_host;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
     timeline_ = CompositorAnimationTimeline::Create();
-    animation_host_ = std::make_unique<CompositorAnimationHost>(
-        layer_tree_view.CompositorAnimationHost());
-    animation_host_->AddTimeline(*timeline_);
+    animation_host_->AddAnimationTimeline(timeline_->GetAnimationTimeline());
   }
 }
 
 void LinkHighlights::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view) {
   RemoveAllHighlights();
   if (timeline_) {
-    animation_host_->RemoveTimeline(*timeline_);
+    animation_host_->RemoveAnimationTimeline(timeline_->GetAnimationTimeline());
     timeline_.reset();
   }
   animation_host_ = nullptr;

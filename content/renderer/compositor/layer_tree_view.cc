@@ -309,10 +309,6 @@ void LayerTreeView::SetNonBlinkManagedRootLayer(
   layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
 }
 
-cc::AnimationHost* LayerTreeView::CompositorAnimationHost() {
-  return animation_host_.get();
-}
-
 gfx::Size LayerTreeView::GetViewportSize() const {
   return layer_tree_host_->device_viewport_size();
 }

@@ -70,9 +70,11 @@ class LayerTreeView : public blink::WebLayerTreeView,
   ~LayerTreeView() override;
 
   // The |ukm_recorder_factory| may be null to disable recording (in tests
-  //  only).
+  // only).
   void Initialize(const cc::LayerTreeSettings& settings,
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+
+  cc::AnimationHost* animation_host() { return animation_host_.get(); }
 
   void SetVisible(bool visible);
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
@@ -131,7 +133,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  cc::AnimationHost* CompositorAnimationHost() override;
   gfx::Size GetViewportSize() const override;
   void SetBackgroundColor(SkColor color) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,

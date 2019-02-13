@@ -225,6 +225,9 @@ _CONFIG = [
             'cc::EventListenerClass',
             'cc::EventListenerProperties',
 
+            # Animation
+            'cc::AnimationHost',
+
             # Scrolling
             'cc::ScrollOffsetAnimationCurve',
             'cc::ScrollStateData',

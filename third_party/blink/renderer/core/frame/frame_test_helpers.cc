@@ -241,10 +241,11 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     widget_client = std::make_unique<TestWebWidgetClient>();
     WebFrameWidget* frame_widget =
         WebFrameWidget::CreateForChildLocalRoot(widget_client.get(), frame);
-    frame_widget->Resize(WebSize());
     // The WebWidget requires a LayerTreeView to be set, either by the
     // WebWidgetClient itself or by someone else. We do that here.
-    frame_widget->SetLayerTreeView(widget_client->layer_tree_view());
+    frame_widget->SetLayerTreeView(widget_client->layer_tree_view(),
+                                   widget_client->animation_host());
+    frame_widget->Resize(WebSize());
   }
   if (widget_client)
     client->BindWidgetClient(std::move(widget_client));
@@ -280,12 +281,13 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       CreateDefaultClientIfNeeded(widget_client, owned_widget_client);
   WebFrameWidget* frame_widget =
       WebFrameWidget::CreateForChildLocalRoot(widget_client, frame);
+  // The WebWidget requires a LayerTreeView to be set, either by the
+  // WebWidgetClient itself or by someone else. We do that here.
+  frame_widget->SetLayerTreeView(widget_client->layer_tree_view(),
+                                 widget_client->animation_host());
   // Set an initial size for subframes.
   if (frame->Parent())
     frame_widget->Resize(WebSize());
-  // The WebWidget requires a LayerTreeView to be set, either by the
-  // WebWidgetClient itself or by someone else. We do that here.
-  frame_widget->SetLayerTreeView(widget_client->layer_tree_view());
   client->BindWidgetClient(std::move(owned_widget_client));
   return frame;
 }
@@ -339,12 +341,15 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
       web_widget_client, owned_test_web_widget_client_);
+  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
+  // This happens before CreateForMainFrame as the WebFrameWidget binding to the
+  // WebLocalFrameImpl sets up animations.
+  web_view_->MainFrameWidget()->SetLayerTreeView(
+      test_web_widget_client_->layer_tree_view(),
+      test_web_widget_client_->animation_host());
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
-  web_view_->MainFrameWidget()->SetLayerTreeView(
-      test_web_widget_client_->layer_tree_view());
 
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -410,7 +415,8 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   web_view_->SetWebWidgetClient(test_web_widget_client_);
   // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
   web_view_->MainFrameWidget()->SetLayerTreeView(
-      test_web_widget_client_->layer_tree_view());
+      test_web_widget_client_->layer_tree_view(),
+      test_web_widget_client_->animation_host());
 
   return web_view_;
 }
@@ -619,6 +625,7 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
 TestWebWidgetClient::TestWebWidgetClient(
     content::LayerTreeViewDelegate* delegate) {
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
+  animation_host_ = layer_tree_view_->animation_host();
 }
 
 void TestWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {

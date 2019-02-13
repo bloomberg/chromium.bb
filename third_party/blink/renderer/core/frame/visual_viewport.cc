@@ -1087,7 +1087,7 @@ bool VisualViewport::ShouldDisableDesktopWorkarounds() const {
           constraints.minimum_scale != -1);
 }
 
-CompositorAnimationHost* VisualViewport::GetCompositorAnimationHost() const {
+cc::AnimationHost* VisualViewport::GetCompositorAnimationHost() const {
   DCHECK(GetPage().MainFrame()->IsLocalFrame());
   ScrollingCoordinator* c = GetPage().GetScrollingCoordinator();
   return c ? c->GetCompositorAnimationHost() : nullptr;

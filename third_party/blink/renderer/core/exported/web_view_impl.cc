@@ -145,7 +145,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
@@ -298,41 +297,10 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebViewImpl* opener)
     : as_view_(client),
       chrome_client_(ChromeClientImpl::Create(this)),
-      should_auto_resize_(false),
-      zoom_level_(0),
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
       maximum_zoom_level_(ZoomFactorToZoomLevel(kMaxTextSizeMultiplier)),
-      zoom_factor_for_device_scale_factor_(0.f),
-      maximum_legible_scale_(1),
-      double_tap_zoom_page_scale_factor_(0),
-      double_tap_zoom_pending_(false),
-      enable_fake_page_scale_animation_for_testing_(false),
-      fake_page_scale_animation_page_scale_factor_(0),
-      fake_page_scale_animation_use_anchor_(false),
-      compositor_device_scale_factor_override_(0),
-      suppress_next_keypress_event_(false),
-      ime_accept_events_(true),
-      dev_tools_emulator_(nullptr),
-      tabs_to_links_(false),
       does_composite_(does_composite),
-      layer_tree_view_(nullptr),
-      root_layer_(nullptr),
-      root_graphics_layer_(nullptr),
-      visual_viewport_container_layer_(nullptr),
-      matches_heuristics_for_gpu_rasterization_(false),
-      fullscreen_controller_(FullscreenController::Create(this)),
-      base_background_color_(Color::kWhite),
-      base_background_color_override_enabled_(false),
-      base_background_color_override_(Color::kTransparent),
-      background_color_override_enabled_(false),
-      background_color_override_(Color::kTransparent),
-      zoom_factor_override_(0),
-      should_dispatch_first_visually_non_empty_layout_(false),
-      should_dispatch_first_layout_after_finished_parsing_(false),
-      should_dispatch_first_layout_after_finished_loading_(false),
-      display_mode_(kWebDisplayModeBrowser),
-      elastic_overscroll_(FloatSize()),
-      mutator_dispatcher_(nullptr) {
+      fullscreen_controller_(FullscreenController::Create(this)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
   }
@@ -3257,15 +3225,14 @@ GraphicsLayer* WebViewImpl::RootGraphicsLayer() {
   return root_graphics_layer_;
 }
 
-void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
+                                   cc::AnimationHost* animation_host) {
   DCHECK(does_composite_);
   layer_tree_view_ = layer_tree_view;
-  if (Platform::Current()->IsThreadedAnimationEnabled()) {
-    animation_host_ = std::make_unique<CompositorAnimationHost>(
-        layer_tree_view_->CompositorAnimationHost());
-  }
+  animation_host_ = animation_host;
 
-  AsView().page->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
+  AsView().page->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
+                                          nullptr);
   // We don't yet have a page loaded at this point of the initialization of
   // WebViewImpl, so don't allow cc to commit any frames Blink might
   // try to create in the meantime.

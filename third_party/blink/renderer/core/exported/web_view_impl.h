@@ -74,10 +74,8 @@ class ScopedDeferMainFrameUpdate;
 }
 
 namespace blink {
-
 class AnimationWorkletMutatorDispatcherImpl;
 class BrowserControls;
-class CompositorAnimationHost;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
@@ -353,9 +351,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebSettingsImpl* SettingsImpl();
 
   WebLayerTreeView* LayerTreeView() const { return layer_tree_view_; }
-  CompositorAnimationHost* AnimationHost() const {
-    return animation_host_.get();
-  }
+  cc::AnimationHost* AnimationHost() const { return animation_host_; }
 
   BrowserControls& GetBrowserControls();
   // Called anytime browser controls layout height or content offset have
@@ -421,7 +417,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   const WidgetData& AsWidget() const { return as_widget_; }
 
   // WebWidget methods:
-  void SetLayerTreeView(WebLayerTreeView*) override;
+  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
@@ -575,7 +571,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebSize size_;
   // If true, automatically resize the layout view around its content.
-  bool should_auto_resize_;
+  bool should_auto_resize_ = false;
   // The lower bound on the size when auto-resizing.
   IntSize min_auto_size_;
   // The upper bound on the size when auto-resizing.
@@ -588,43 +584,43 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // Keeps track of the current zoom level. 0 means no zoom, positive numbers
   // mean zoom in, negative numbers mean zoom out.
-  double zoom_level_;
+  double zoom_level_ = 0.;
 
   double minimum_zoom_level_;
 
   double maximum_zoom_level_;
 
   // Additional zoom factor used to scale the content by device scale factor.
-  double zoom_factor_for_device_scale_factor_;
+  double zoom_factor_for_device_scale_factor_ = 0.;
 
   // This value, when multiplied by the font scale factor, gives the maximum
   // page scale that can result from automatic zooms.
-  float maximum_legible_scale_;
+  float maximum_legible_scale_ = 1.f;
 
   // The scale moved to by the latest double tap zoom, if any.
-  float double_tap_zoom_page_scale_factor_;
+  float double_tap_zoom_page_scale_factor_ = 0.f;
   // Have we sent a double-tap zoom and not yet heard back the scale?
-  bool double_tap_zoom_pending_;
+  bool double_tap_zoom_pending_ = false;
 
   // Used for testing purposes.
-  bool enable_fake_page_scale_animation_for_testing_;
+  bool enable_fake_page_scale_animation_for_testing_ = false;
   IntPoint fake_page_scale_animation_target_position_;
-  float fake_page_scale_animation_page_scale_factor_;
-  bool fake_page_scale_animation_use_anchor_;
+  float fake_page_scale_animation_page_scale_factor_ = 0.f;
+  bool fake_page_scale_animation_use_anchor_ = false;
 
-  float compositor_device_scale_factor_override_;
+  float compositor_device_scale_factor_override_ = 0.f;
   TransformationMatrix device_emulation_transform_;
 
   // Webkit expects keyPress events to be suppressed if the associated keyDown
   // event was handled. Safari implements this behavior by peeking out the
   // associated WM_CHAR event if the keydown was handled. We emulate
   // this behavior by setting this flag if the keyDown was handled.
-  bool suppress_next_keypress_event_;
+  bool suppress_next_keypress_event_ = false;
 
   // TODO(ekaramad): Can we remove this and make sure IME events are not called
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
-  bool ime_accept_events_;
+  bool ime_accept_events_ = true;
 
   // The popup associated with an input/select element.
   scoped_refptr<WebPagePopupImpl> page_popup_;
@@ -637,7 +633,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Persistent<DevToolsEmulator> dev_tools_emulator_;
 
   // Whether the user can press tab to focus links.
-  bool tabs_to_links_;
+  bool tabs_to_links_ = false;
 
   // If set, the (plugin) element which has mouse capture.
   Persistent<HTMLPlugInElement> mouse_capture_element_;
@@ -658,27 +654,27 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // the client return a null compositor. We should make things more consistent
   // and clear.
   const bool does_composite_;
-  WebLayerTreeView* layer_tree_view_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  WebLayerTreeView* layer_tree_view_ = nullptr;
+  cc::AnimationHost* animation_host_ = nullptr;
 
   scoped_refptr<cc::Layer> root_layer_;
-  GraphicsLayer* root_graphics_layer_;
-  GraphicsLayer* visual_viewport_container_layer_;
-  bool matches_heuristics_for_gpu_rasterization_;
+  GraphicsLayer* root_graphics_layer_ = nullptr;
+  GraphicsLayer* visual_viewport_container_layer_ = nullptr;
+  bool matches_heuristics_for_gpu_rasterization_ = false;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
-  SkColor base_background_color_;
-  bool base_background_color_override_enabled_;
-  SkColor base_background_color_override_;
-  bool background_color_override_enabled_;
-  SkColor background_color_override_;
-  float zoom_factor_override_;
+  SkColor base_background_color_ = Color::kWhite;
+  bool base_background_color_override_enabled_ = false;
+  SkColor base_background_color_override_ = Color::kTransparent;
+  bool background_color_override_enabled_ = false;
+  SkColor background_color_override_ = Color::kTransparent;
+  float zoom_factor_override_ = 0.f;
 
-  bool should_dispatch_first_visually_non_empty_layout_;
-  bool should_dispatch_first_layout_after_finished_parsing_;
-  bool should_dispatch_first_layout_after_finished_loading_;
-  WebDisplayMode display_mode_;
+  bool should_dispatch_first_visually_non_empty_layout_ = false;
+  bool should_dispatch_first_layout_after_finished_parsing_ = false;
+  bool should_dispatch_first_layout_after_finished_loading_ = false;
+  WebDisplayMode display_mode_ = kWebDisplayModeBrowser;
 
   FloatSize elastic_overscroll_;
 

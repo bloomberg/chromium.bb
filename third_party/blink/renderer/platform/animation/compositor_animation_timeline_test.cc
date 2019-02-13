@@ -9,7 +9,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/testing/compositor_test.h"
 
 namespace blink {
@@ -27,9 +26,8 @@ TEST_F(CompositorAnimationTimelineTest,
 
   std::unique_ptr<cc::AnimationHost> animation_host =
       cc::AnimationHost::CreateMainInstance();
-  CompositorAnimationHost compositor_animation_host(animation_host.get());
 
-  compositor_animation_host.AddTimeline(*timeline);
+  animation_host->AddAnimationTimeline(timeline->GetAnimationTimeline());
   EXPECT_EQ(cc_timeline->animation_host(), animation_host.get());
   EXPECT_TRUE(animation_host->GetTimelineById(cc_timeline->id()));
 

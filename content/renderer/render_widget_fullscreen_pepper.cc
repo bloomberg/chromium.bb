@@ -137,7 +137,7 @@ class PepperWidget : public WebWidget {
   virtual ~PepperWidget() {}
 
   // WebWidget API
-  void SetLayerTreeView(blink::WebLayerTreeView*) override {
+  void SetLayerTreeView(blink::WebLayerTreeView*, cc::AnimationHost*) override {
     // Does nothing, as the LayerTreeView can be accessed from the RenderWidget
     // directly.
   }
