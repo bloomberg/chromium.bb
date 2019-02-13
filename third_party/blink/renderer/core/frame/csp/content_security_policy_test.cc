@@ -68,16 +68,15 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
                           kContentSecurityPolicyHeaderSourceHTTP);
     EXPECT_EQ(test.expected_policy, csp->GetInsecureRequestPolicy());
 
-    execution_context = CreateExecutionContext();
-    execution_context->SetSecurityOrigin(secure_origin);
-    execution_context->SetURL(secure_url);
-    csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-    EXPECT_EQ(test.expected_policy,
-              execution_context->GetInsecureRequestPolicy());
+    Document* document = Document::CreateForTest();
+    document->SetSecurityOrigin(secure_origin);
+    document->SetURL(secure_url);
+    csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
+    EXPECT_EQ(test.expected_policy, document->GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
     EXPECT_EQ(expect_upgrade,
-              execution_context->InsecureNavigationsToUpgrade()->Contains(
-                  execution_context->Url().Host().Impl()->GetHash()));
+              document->InsecureNavigationsToUpgrade()->Contains(
+                  document->Url().Host().Impl()->GetHash()));
   }
 
   // Report-Only

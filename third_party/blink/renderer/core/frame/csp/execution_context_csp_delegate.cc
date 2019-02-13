@@ -75,11 +75,14 @@ void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(
     // Step 4. Insert tuple into settings’s upgrade insecure navigations set.
     // [spec text]
     Count(WebFeature::kUpgradeInsecureRequestsEnabled);
-    if (!Url().Host().IsEmpty()) {
+    // We don't add the hash if |document| is null, to prevent
+    // WorkerGlobalScope::Url() before it's ready. https://crbug.com/861564
+    // This should be safe, because the insecure navigations set is not used
+    // in non-Document contexts.
+    if (document && !Url().Host().IsEmpty()) {
       uint32_t hash = Url().Host().Impl()->GetHash();
       security_context.AddInsecureNavigationUpgrade(hash);
-      if (document)
-        document->DidEnforceInsecureNavigationsSet();
+      document->DidEnforceInsecureNavigationsSet();
     }
   }
 }
