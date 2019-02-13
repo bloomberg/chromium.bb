@@ -26,6 +26,7 @@ namespace blink {
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptFetcher;
+class ImportMap;
 class ReferrerScriptInfo;
 class ResourceFetcher;
 class ScriptModuleResolver;
@@ -164,6 +165,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                   const KURL&,
                                   const ReferrerScriptInfo&,
                                   ScriptPromiseResolver*) = 0;
+
+  // Import maps. https://github.com/WICG/import-maps
+  virtual void RegisterImportMap(const ImportMap*) = 0;
 
   // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties
   virtual ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const = 0;

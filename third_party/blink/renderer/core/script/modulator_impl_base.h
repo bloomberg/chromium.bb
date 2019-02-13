@@ -74,6 +74,7 @@ class ModulatorImplBase : public Modulator {
                           const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
+  void RegisterImportMap(const ImportMap*) final;
   ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
@@ -92,6 +93,7 @@ class ModulatorImplBase : public Modulator {
   TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;
   Member<ScriptModuleResolver> script_module_resolver_;
   Member<DynamicModuleResolver> dynamic_module_resolver_;
+  Member<const ImportMap> import_map_;
 };
 
 }  // namespace blink

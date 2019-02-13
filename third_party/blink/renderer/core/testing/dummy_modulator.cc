@@ -110,6 +110,10 @@ void DummyModulator::ResolveDynamically(const String&,
   NOTREACHED();
 }
 
+void DummyModulator::RegisterImportMap(const ImportMap*) {
+  NOTREACHED();
+}
+
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
     ScriptModule) const {
   NOTREACHED();

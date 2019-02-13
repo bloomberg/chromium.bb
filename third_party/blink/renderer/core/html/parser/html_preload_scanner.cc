@@ -613,9 +613,15 @@ class TokenPreloadScanner::StartTagScanner {
       return false;
     if (Match(tag_impl_, kScriptTag)) {
       mojom::ScriptType script_type = mojom::ScriptType::kClassic;
+      bool is_import_map = false;
       if (!ScriptLoader::IsValidScriptTypeAndLanguage(
               type_attribute_value_, language_attribute_value_,
-              ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
+              ScriptLoader::kAllowLegacyTypeInTypeAttribute, &script_type,
+              &is_import_map)) {
+        return false;
+      }
+      if (is_import_map) {
+        // External import maps are not yet supported. https://crbug.com/922212
         return false;
       }
       if (ScriptLoader::BlockForNoModule(script_type,
