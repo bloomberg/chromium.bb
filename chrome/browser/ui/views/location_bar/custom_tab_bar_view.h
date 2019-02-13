@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace gfx {
@@ -23,7 +24,7 @@ class BrowserView;
 // and a security status icon. This is visible if the hosted app window is
 // displaying a page over HTTP or if the current page is outside of the app
 // scope.
-class CustomTabBarView : public views::View,
+class CustomTabBarView : public views::AccessiblePaneView,
                          public TabStripModelObserver,
                          public LocationIconView::Delegate,
                          public views::ButtonListener {
@@ -67,6 +68,7 @@ class CustomTabBarView : public views::View,
   // Methods for testing.
   base::string16 title_for_testing() const { return last_title_; }
   base::string16 location_for_testing() const { return last_location_; }
+  views::Button* close_button_for_testing() const { return close_button_; }
 
  private:
   SkColor title_bar_color_;

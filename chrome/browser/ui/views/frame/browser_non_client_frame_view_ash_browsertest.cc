@@ -58,6 +58,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
@@ -65,6 +66,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -1087,6 +1089,27 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   EXPECT_FALSE(app_menu_button_->HasFocus());
   chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
   EXPECT_TRUE(app_menu_button_->HasFocus());
+}
+
+// Tests that the custom tab bar is focusable from the keyboard.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       CustomTabBarIsFocusable) {
+  SetUpHostedApp();
+
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
+
+  const GURL kOutOfScopeURL("http://example.org/");
+  NavigateParams nav_params(app_browser_, kOutOfScopeURL,
+                            ui::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&nav_params);
+  auto* custom_tab_bar = browser_view->toolbar()->custom_tab_bar();
+
+  chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
+  ASSERT_TRUE(app_menu_button_->HasFocus());
+
+  EXPECT_FALSE(custom_tab_bar->close_button_for_testing()->HasFocus());
+  chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
+  EXPECT_TRUE(custom_tab_bar->close_button_for_testing()->HasFocus());
 }
 
 // Tests that the focus previous pane command focuses the app menu for web app
