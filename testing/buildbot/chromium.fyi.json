@@ -4013,6 +4013,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "base_unittests"
       },
       {
@@ -4157,6 +4163,17 @@
       "all"
     ],
     "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4415,6 +4432,17 @@
       "all"
     ],
     "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "angle_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
