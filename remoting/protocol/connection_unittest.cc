@@ -465,8 +465,8 @@ class ConnectionTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Ice, ConnectionTest, ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(Webrtc, ConnectionTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(Ice, ConnectionTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(Webrtc, ConnectionTest, ::testing::Values(true));
 
 TEST_P(ConnectionTest, RejectConnection) {
   EXPECT_CALL(client_event_handler_,
