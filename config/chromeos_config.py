@@ -1724,6 +1724,8 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   )
 
   # Experimental full builder to measure impact of goma on build_packages.
+  # This builder is deliberately not marked experimental so that it is allowed
+  # to run until completion without being killed by the master-full builder.
   # crbug.com/926963
   master_config.AddSlave(
       site_config.Add(
@@ -1736,7 +1738,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
           overlays=constants.PUBLIC_OVERLAYS,
           prebuilts=False,
           build_all_with_goma=True,
-          important=False,
       ))
 
 
