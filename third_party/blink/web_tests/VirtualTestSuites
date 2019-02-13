@@ -901,6 +901,11 @@
   },
   {
     "prefix": "not-site-per-process",
+    "base": "http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
     "base": "external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },

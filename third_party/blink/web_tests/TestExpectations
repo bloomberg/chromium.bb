@@ -182,6 +182,8 @@ crbug.com/822372 http/tests/printing/cross-site-frame-scrolled.html [ Crash ]
 crbug.com/822372 http/tests/printing/cross-site-frame.html [ Crash ]
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
+crbug.com/895001 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
+crbug.com/895001 virtual/user-activation-v2/http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
 crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 # ====== Site Isolation failures until here ======
