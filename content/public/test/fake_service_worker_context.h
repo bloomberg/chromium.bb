@@ -81,12 +81,12 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
   std::vector<StartServiceWorkerAndDispatchMessageArgs>&
   start_service_worker_and_dispatch_message_calls() {
     return start_service_worker_and_dispatch_message_calls_;
-  };
+  }
 
   std::vector<StartServiceWorkerAndDispatchMessageArgs>&
   start_service_worker_and_dispatch_long_running_message_calls() {
     return start_service_worker_and_dispatch_long_running_message_calls_;
-  };
+  }
 
   const std::vector<GURL>& stop_all_service_workers_for_origin_calls() {
     return stop_all_service_workers_for_origin_calls_;
