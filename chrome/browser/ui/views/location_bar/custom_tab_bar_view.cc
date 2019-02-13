@@ -114,8 +114,11 @@ class CustomTabBarTitleOriginView : public views::View {
 
     title_label_->SetEnabledColor(foreground_color);
     title_label_->SetBackgroundColor(background_color);
+    title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+
     location_label_->SetEnabledColor(foreground_color);
-    title_label_->SetBackgroundColor(background_color);
+    location_label_->SetBackgroundColor(background_color);
+    location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
 
     AddChildView(title_label_);
     AddChildView(location_label_);
@@ -130,6 +133,18 @@ class CustomTabBarTitleOriginView : public views::View {
   void Update(base::string16 title, base::string16 location) {
     title_label_->SetText(title);
     location_label_->SetText(location);
+  }
+
+  // views::View:
+  gfx::Size GetMinimumSize() const override {
+    // As labels are not multi-line, the layout will calculate a minimum size
+    // that would fit the entire text (potentially a long url). Instead, set a
+    // minimum number of characters we want to display and elide the text if it
+    // overflows.
+    constexpr int kMinCharacters = 20;
+    return gfx::Size(
+        title_label_->font_list().GetExpectedTextWidth(kMinCharacters),
+        GetPreferredSize().height());
   }
 
  private:
@@ -216,6 +231,17 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   last_location_ = location;
 
   Layout();
+}
+
+gfx::Size CustomTabBarView::CalculatePreferredSize() const {
+  // ToolbarView::GetMinimumSize() uses the preferred size of its children, so
+  // tell it the minimum size this control will fit into (its layout will
+  // automatically have this control fill available space).
+  return gfx::Size(GetInsets().width() +
+                       title_origin_view_->GetMinimumSize().width() +
+                       close_button_->GetPreferredSize().width() +
+                       location_icon_view_->GetPreferredSize().width(),
+                   GetLayoutManager()->GetPreferredSize(this).height());
 }
 
 void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
