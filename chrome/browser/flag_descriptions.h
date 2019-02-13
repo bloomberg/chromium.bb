@@ -859,6 +859,9 @@ extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
+extern const char kOmniboxUIVerticalMarginName[];
+extern const char kOmniboxUIVerticalMarginDescription[];
+
 extern const char kOmniboxVoiceSearchAlwaysVisibleName[];
 extern const char kOmniboxVoiceSearchAlwaysVisibleDescription[];
 
