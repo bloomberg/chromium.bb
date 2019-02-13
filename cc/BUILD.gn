@@ -1,6 +1,7 @@
-# Copyright 2014 T/e Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//gpu/vulkan/features.gni")
 
 import("//cc/cc.gni")
 
@@ -548,6 +549,9 @@ cc_test_static_library("test_support") {
     "//ui/gl:test_support",
     "//ui/latency",
   ]
+  if (enable_vulkan) {
+    deps += [ "//gpu/vulkan/init" ]
+  }
   if (!is_android) {
     data_deps = [
       "//third_party/mesa_headers",

@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"
@@ -19,12 +20,19 @@
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/vulkan/buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
 
 namespace viz {
 
@@ -62,6 +70,10 @@ class SkiaOutputSurfaceImplTest : public testing::Test {
   void TearDownGpuServiceOnGpuThread();
   void SetUpGpuServiceOnGpuThread();
 
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
+#endif
+
   std::unique_ptr<base::Thread> io_thread_;
   scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
   std::unique_ptr<cc::FakeOutputSurfaceClient> output_surface_client_;
@@ -80,12 +92,31 @@ void SkiaOutputSurfaceImplTest::UnblockMainThread() {
 
 void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
   ASSERT_TRUE(gpu_thread_->task_runner()->BelongsToCurrentThread());
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  gpu::GpuPreferences gpu_preferences =
+      gpu::gles2::ParseGpuPreferences(command_line);
+  if (gpu_preferences.enable_vulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance()) {
+      LOG(FATAL) << "Failed to create and initialize Vulkan implementation.";
+    }
+#else
+    NOTREACHED();
+#endif
+  }
   gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_->task_runner(),
-      gpu::GpuFeatureInfo(), gpu::GpuPreferences(),
+      gpu::GpuFeatureInfo(), gpu_preferences,
       gpu::GPUInfo() /* gpu_info_for_hardware_gpu */,
       gpu::GpuFeatureInfo() /* gpu_feature_info_for_hardware_gpu */,
+#if BUILDFLAG(ENABLE_VULKAN)
+      vulkan_implementation_.get(),
+#else
       nullptr /* vulkan_implementation */,
+#endif
       base::DoNothing() /* exit_callback */);
 
   // Uses a null gpu_host here, because we don't want to receive any message.

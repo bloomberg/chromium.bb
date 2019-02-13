@@ -39,6 +39,7 @@
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -48,6 +49,11 @@
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
+
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
 
 namespace cc {
 
@@ -241,16 +247,35 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 
 void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   ASSERT_TRUE(gpu_thread_->task_runner()->BelongsToCurrentThread());
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  gpu::GpuPreferences gpu_preferences =
+      gpu::gles2::ParseGpuPreferences(command_line);
+  if (gpu_preferences.enable_vulkan) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance()) {
+      LOG(FATAL) << "Failed to create and initialize Vulkan implementation.";
+    }
+#else
+    NOTREACHED();
+#endif
+  }
   gpu::GpuFeatureInfo gpu_feature_info;
   // To test SkiaRenderer with DDL, we need enable OOP-R.
   gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
   gpu_service_ = std::make_unique<viz::GpuServiceImpl>(
       gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_->task_runner(),
-      gpu_feature_info, gpu::GpuPreferences(),
+      gpu_feature_info, gpu_preferences,
       gpu::GPUInfo() /* gpu_info_for_hardware_gpu */,
       gpu::GpuFeatureInfo() /* gpu_feature_info_for_hardware_gpu */,
+#if BUILDFLAG(ENABLE_VULKAN)
+      vulkan_implementation_.get(),
+#else
       nullptr /* vulkan_implementation */,
+#endif
       base::DoNothing() /* exit_callback */);
 
   // Uses a null gpu_host here, because we don't want to receive any message.
