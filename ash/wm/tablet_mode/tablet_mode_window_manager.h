@@ -97,8 +97,6 @@ class ASH_EXPORT TabletModeWindowManager
   TabletModeWindowManager();
 
  private:
-  friend class TabletModeControllerTestApi;
-
   using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;
 
   // Maximize all windows, except that a snapped active window shall become
@@ -158,10 +156,6 @@ class ASH_EXPORT TabletModeWindowManager
 
   // True if overview exit type is |kWindowDragged|.
   bool exit_overview_by_window_drag_ = false;
-
-  // True if overview is going to be started because a snapped active window
-  // from desktop mode was carried over to split view on entering tablet mode.
-  bool overview_upcoming_for_split_view_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };

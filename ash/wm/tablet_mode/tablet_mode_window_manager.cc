@@ -115,33 +115,8 @@ void TabletModeWindowManager::OnSplitViewModeEnded() {
 }
 
 void TabletModeWindowManager::OnOverviewModeStarting() {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  aura::Window* left_snapped_window = split_view_controller->left_window();
-  aura::Window* right_snapped_window = split_view_controller->right_window();
-  // Defer bounds updates for windows in overview.
-  for (auto& pair : window_state_map_) {
-    aura::Window* window = pair.first;
-    // If |overview_upcoming_for_split_view_| is true, then overview is starting
-    // because a snapped active window from desktop mode was carried over to
-    // split view on entering tablet mode. Then that window should be skipped
-    // (see https://crbug.com/926602). If |overview_upcoming_for_split_view_| is
-    // false and split view is active, then there are two snapped windows of
-    // which one is about to enter overview and therefore should not be skipped.
-    // In that case, there is no simple way to determine which of the two
-    // snapped windows will be put in overview, but fortunately, an upcoming
-    // call to OnSplitViewStateChanged() can be relied upon to set
-    // |defer_bounds_updates| to false in the window that remains snapped, and
-    // so here we can simply set |defer_bounds_updates| to true in all windows.
-    // Finally, if |overview_upcoming_for_split_view_| is false and split view
-    // is not active, then, of course, there are no snapped windows to skip.
-    if (overview_upcoming_for_split_view_ &&
-        (window == left_snapped_window || window == right_snapped_window))
-      continue;
-    SetDeferBoundsUpdates(window, /*defer_bounds_updates=*/true);
-  }
-
-  overview_upcoming_for_split_view_ = false;
+  for (auto& pair : window_state_map_)
+    SetDeferBoundsUpdates(pair.first, /*defer_bounds_updates=*/true);
 }
 
 void TabletModeWindowManager::OnOverviewModeEnding(
@@ -386,9 +361,7 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   split_view_controller->SnapWindow(windows[0], curr_win_snap_pos);
-  if (prev_win_snap_pos == SplitViewController::NONE)
-    overview_upcoming_for_split_view_ = true;
-  else
+  if (prev_win_snap_pos != SplitViewController::NONE)
     split_view_controller->SnapWindow(windows[1], prev_win_snap_pos);
 
   for (auto* window : windows)
