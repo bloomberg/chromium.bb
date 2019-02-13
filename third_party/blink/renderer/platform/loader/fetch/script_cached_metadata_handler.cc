@@ -64,6 +64,18 @@ bool ScriptCachedMetadataHandler::IsServedFromCacheStorage() const {
   return sender_->IsServedFromCacheStorage();
 }
 
+void ScriptCachedMetadataHandler::OnMemoryDump(
+    WebProcessMemoryDump* pmd,
+    const String& dump_prefix) const {
+  if (!cached_metadata_)
+    return;
+  const String dump_name = dump_prefix + "/script";
+  auto* dump = pmd->CreateMemoryAllocatorDump(dump_name);
+  dump->AddScalar("size", "bytes", cached_metadata_->SerializedData().size());
+  pmd->AddSuballocation(dump->Guid(),
+                        String(WTF::Partitions::kAllocatedObjectPoolName));
+}
+
 void ScriptCachedMetadataHandler::SendToPlatform() {
   if (cached_metadata_) {
     const Vector<uint8_t>& serialized_data = cached_metadata_->SerializedData();

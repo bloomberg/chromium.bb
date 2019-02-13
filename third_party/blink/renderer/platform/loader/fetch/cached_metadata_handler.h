@@ -17,6 +17,7 @@ namespace blink {
 
 class CachedMetadata;
 class ResourceResponse;
+class WebProcessMemoryDump;
 
 // A callback for sending the serialized data of cached metadata back to the
 // platform.
@@ -66,6 +67,10 @@ class CachedMetadataHandler
   virtual String Encoding() const = 0;
 
   virtual bool IsServedFromCacheStorage() const = 0;
+
+  // Dump cache size kept in memory.
+  virtual void OnMemoryDump(WebProcessMemoryDump* pmd,
+                            const String& dump_prefix) const = 0;
 
  protected:
   CachedMetadataHandler() = default;

@@ -41,6 +41,8 @@ class ServiceWorkerScriptCachedMetadataHandler
       uint32_t data_type_id) const override;
   String Encoding() const override;
   bool IsServedFromCacheStorage() const override;
+  void OnMemoryDump(WebProcessMemoryDump* pmd,
+                    const String& dump_prefix) const override;
 
  private:
   Member<WorkerGlobalScope> worker_global_scope_;

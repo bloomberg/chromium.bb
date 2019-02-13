@@ -917,6 +917,10 @@ void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
   overhead_dump->AddScalar("size", "bytes", OverheadSize());
   memory_dump->AddSuballocation(
       overhead_dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+
+  const String cache_name = dump_name + "/code_cache";
+  if (cache_handler_)
+    cache_handler_->OnMemoryDump(memory_dump, cache_name);
 }
 
 String Resource::GetMemoryDumpName() const {
