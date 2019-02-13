@@ -10,9 +10,6 @@ namespace chromeos {
 namespace assistant {
 namespace features {
 
-const base::Feature kAssistantFeedbackUi{"AssistantFeedbackUi",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAssistantVoiceMatch{"AssistantVoiceMatch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -58,10 +55,6 @@ bool IsClearCutLogEnabled() {
 
 bool IsDspHotwordEnabled() {
   return base::FeatureList::IsEnabled(kEnableDspHotword);
-}
-
-bool IsFeedbackUiEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantFeedbackUi);
 }
 
 bool IsInAssistantNotificationsEnabled() {
