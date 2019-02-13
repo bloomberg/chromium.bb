@@ -578,9 +578,21 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
     const ChosenObjectInfo& object,
     bool deleted,
     SkColor related_text_color) {
-  DCHECK_EQ(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
-            object.ui_info.content_settings_type);
-  const gfx::VectorIcon* icon = &vector_icons::kUsbIcon;
+  const gfx::VectorIcon* icon = &gfx::kNoneIcon;
+  switch (object.ui_info.content_settings_type) {
+    case CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA:
+      icon = &vector_icons::kUsbIcon;
+      break;
+    case CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA:
+      icon = &vector_icons::kSerialPortIcon;
+      break;
+    default:
+      // All other content settings types do not represent chosen object
+      // permissions.
+      NOTREACHED();
+      break;
+  }
+
   if (deleted) {
     return gfx::CreateVectorIconWithBadge(
         *icon, kVectorIconSize,

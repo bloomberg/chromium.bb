@@ -70,9 +70,7 @@ ChosenObjectView::ChosenObjectView(
 
   // Create the label that displays the chosen object name.
   views::Label* label = new views::Label(
-      l10n_util::GetStringFUTF16(info_->ui_info.name_string_id,
-                                 PageInfoUI::ChosenObjectToUIString(*info_)),
-      CONTEXT_BODY_TEXT_LARGE);
+      PageInfoUI::ChosenObjectToUIString(*info_), CONTEXT_BODY_TEXT_LARGE);
   icon_->SetImage(
       PageInfoUI::GetChosenObjectIcon(*info_, false, label->enabled_color()));
   layout->AddView(label);

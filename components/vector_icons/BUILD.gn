@@ -47,6 +47,7 @@ aggregate_vector_icons("components_vector_icons") {
     "replay.icon",
     "screen_share.icon",
     "search.icon",
+    "serial_port.icon",
     "usb.icon",
     "videocam.icon",
     "warning.icon",
