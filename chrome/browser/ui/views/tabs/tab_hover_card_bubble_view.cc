@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_features.h"
@@ -14,9 +15,10 @@
 #include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
@@ -29,11 +31,15 @@ constexpr base::TimeDelta kMaximumTriggerDelay =
     base::TimeDelta::FromMilliseconds(1000);
 
 // Hover card and preview image dimensions.
-constexpr int kPreferredTabHoverCardWidth = 240;
-constexpr float kTabHoverCardPreviewImageAspectRatio = 16.0f / 9.0f;
-constexpr gfx::Size kTabHoverCardPreviewImageSize = gfx::Size(
-    kPreferredTabHoverCardWidth,
-    kPreferredTabHoverCardWidth / kTabHoverCardPreviewImageAspectRatio);
+int GetPreferredTabHoverCardWidth() {
+  return TabStyle::GetStandardWidth();
+}
+
+gfx::Size GetTabHoverCardPreviewImageSize() {
+  constexpr float kTabHoverCardPreviewImageAspectRatio = 16.0f / 9.0f;
+  const int width = GetPreferredTabHoverCardWidth();
+  return gfx::Size(width, width / kTabHoverCardPreviewImageAspectRatio);
+}
 
 bool AreHoverCardImagesEnabled() {
   return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
@@ -43,8 +49,10 @@ bool AreHoverCardImagesEnabled() {
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  // We'll do all of our own layout inside the bubble, so no need to inset this
+  // view inside the client view.
+  set_margins(gfx::Insets());
+
   // Set so that when hovering over a tab in a inactive window that window will
   // not become active. Setting this to false creates the need to explicitly
   // hide the hovercard on press, touch, and keyboard events.
@@ -67,11 +75,24 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     preview_image_ = new views::ImageView();
     preview_image_->SetVisible(AreHoverCardImagesEnabled());
     preview_image_->SetHorizontalAlignment(views::ImageViewBase::LEADING);
-    constexpr gfx::Insets kPreviewImageMargins(12, 0, 0, 0);
-    preview_image_->SetProperty(views::kMarginsKey,
-                                new gfx::Insets(kPreviewImageMargins));
     AddChildView(preview_image_);
   }
+
+  views::FlexLayout* const layout =
+      SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kVertical);
+  layout->SetMainAxisAlignment(views::LayoutAlignment::kStart);
+  layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  layout->SetCollapseMargins(true);
+
+  constexpr int kOuterMargin = 12;
+  constexpr int kLineSpacing = 8;
+  title_label_->SetProperty(
+      views::kMarginsKey,
+      new gfx::Insets(kOuterMargin, kOuterMargin, kLineSpacing, kOuterMargin));
+  domain_label_->SetProperty(
+      views::kMarginsKey,
+      new gfx::Insets(kLineSpacing, kOuterMargin, kOuterMargin, kOuterMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
 }
@@ -160,22 +181,25 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
     preview_image_->SetImage(max_favicon);
     const gfx::Size favicon_size = max_favicon.size();
 
+    const gfx::Size preferred_size = GetTabHoverCardPreviewImageSize();
+
     // Scale the favicon to an appropriate size for the tab hover card.
     //
     // This is reasonably aesthetic for favicons, though it does not necessarily
     // fill up the entire width of the hover card. When we move to using
     // og:images or screenshots, we'll have to do something more sophisticated.
     if (!favicon_size.IsEmpty()) {
-      float scale = float{kTabHoverCardPreviewImageSize.height()} /
-                    float{favicon_size.height()};
-      preview_image_->SetImageSize(
-          gfx::Size(std::roundf(scale * favicon_size.width()),
-                    kTabHoverCardPreviewImageSize.height()));
+      float scale =
+          float{preferred_size.height()} / float{favicon_size.height()};
+      preview_image_->SetImageSize(gfx::Size(
+          std::roundf(scale * favicon_size.width()), preferred_size.height()));
     }
   }
 }
 
 gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
-  const gfx::Size size = BubbleDialogDelegateView::CalculatePreferredSize();
-  return gfx::Size(kPreferredTabHoverCardWidth, size.height());
+  gfx::Size preferred_size = GetLayoutManager()->GetPreferredSize(this);
+  preferred_size.set_width(GetPreferredTabHoverCardWidth());
+  DCHECK(!preferred_size.IsEmpty());
+  return preferred_size;
 }
