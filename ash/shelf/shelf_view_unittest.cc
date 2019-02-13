@@ -771,7 +771,11 @@ TEST_F(ShelfViewTest, OverflowVisibleIndex) {
 
   // Adding another shortcut should go into overflow bubble and not change
   // shelf index.
-  EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex());
+  // TODO(crbug.com/918537): Remove when "SPM" indicator is removed.
+  if (::features::IsSingleProcessMash())
+    EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex() - 1);
+  else
+    EXPECT_EQ(last_visible_index, test_api_->GetLastVisibleIndex());
 }
 
 // Adds one platform app button then adds app shortcut until overflow. Verifies
@@ -1248,7 +1252,11 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   generator->set_current_screen_location(overflow_app_location);
   generator->PressLeftButton();
   generator->MoveMouseTo(second_app_location);
-  EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
+  // TODO(crbug.com/918537): Remove when "SPM" indicator is removed.
+  if (::features::IsSingleProcessMash())
+    EXPECT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
+  else
+    EXPECT_TRUE(test_api_for_overflow.IsRippedOffFromShelf());
   generator->MoveMouseTo(overflow_app_location);
   generator->ReleaseLeftButton();
   EXPECT_FALSE(test_api_for_overflow.IsRippedOffFromShelf());
@@ -3563,7 +3571,11 @@ TEST_F(ShelfViewOverflowFocusTest, Basic) {
   EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 
-  EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
+  // TODO(crbug.com/918537): Put back when "SPM" indicator is removed.
+  if (::features::IsSingleProcessMash())
+    EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 4);
+  else
+    EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
   EXPECT_TRUE(shelf_view_->shelf_widget()->IsActive());
   EXPECT_TRUE(test_api_->GetViewAt(1)->HasFocus());
 }
@@ -3628,8 +3640,8 @@ TEST_F(ShelfViewOverflowFocusTest, ForwardCyclingWithBubbleOpen) {
       ->bubble_view()
       ->GetWidget()
       ->GetFocusManager()
-      ->SetFocusedView(
-          overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf + 3));
+      ->SetFocusedView(overflow_shelf_test_api_->GetViewAt(
+          overflow_shelf_test_api_->GetLastVisibleIndex()));
 
   // Tests that after pressing tab once more, the main shelf widget now is
   // active, and the first item on the main shelf has focus.
@@ -3649,9 +3661,9 @@ TEST_F(ShelfViewOverflowFocusTest, BackwardCyclingWithBubbleOpen) {
   EXPECT_TRUE(
       test_api_->overflow_bubble()->bubble_view()->GetWidget()->IsActive());
   const int first_index_overflow_shelf = last_item_on_main_shelf_index_ + 1;
-  EXPECT_TRUE(
-      overflow_shelf_test_api_->GetViewAt(first_index_overflow_shelf + 3)
-          ->HasFocus());
+  EXPECT_TRUE(overflow_shelf_test_api_
+                  ->GetViewAt(overflow_shelf_test_api_->GetLastVisibleIndex())
+                  ->HasFocus());
 
   // Focus the first item on the overflow shelf.
   test_api_->overflow_bubble()
