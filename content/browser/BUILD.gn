@@ -2545,13 +2545,6 @@ jumbo_source_set("browser") {
         "compositor/gpu_output_surface_mac.cc",
       ]
     }
-    if (enable_vulkan) {
-      sources += [
-        "compositor/vulkan_browser_compositor_output_surface.cc",
-        "compositor/vulkan_browser_compositor_output_surface.h",
-      ]
-      deps += [ "//gpu/vulkan/init" ]
-    }
     deps += [
       "//components/viz/service",
       "//ui/compositor",

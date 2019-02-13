@@ -80,4 +80,7 @@ const char kEnableRasterToSkImage[] = "enable-raster-to-sk-image";
 const char kEnablePassthroughRasterDecoder[] =
     "enable-passthrough-raster-decoder";
 
+// Enable Vulkan support, must also have ENABLE_VULKAN defined.
+const char kEnableVulkan[] = "enable-vulkan";
+
 }  // namespace switches

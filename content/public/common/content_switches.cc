@@ -440,9 +440,6 @@ const char kEnableViewport[]                = "enable-viewport";
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
 
-// Enable Vulkan support, must also have ENABLE_VULKAN defined.
-const char kEnableVulkan[] = "enable-vulkan";
-
 // Enable the Web Authentication Testing API.
 // https://w3c.github.io/webauthn
 const char kEnableWebAuthTestingAPI[] = "enable-web-authentication-testing-api";

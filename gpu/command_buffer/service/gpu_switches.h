@@ -38,6 +38,7 @@ GPU_EXPORT extern const char kEmulateShaderPrecision[];
 GPU_EXPORT extern const char kUseCmdDecoder[];
 GPU_EXPORT extern const char kEnableRasterToSkImage[];
 GPU_EXPORT extern const char kEnablePassthroughRasterDecoder[];
+GPU_EXPORT extern const char kEnableVulkan[];
 
 }  // namespace switches
 
