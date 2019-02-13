@@ -108,13 +108,13 @@ class QuicEndpoint : public Endpoint,
   void OnForwardProgressConfirmed() override {}
   bool OnMaxStreamIdFrame(const QuicMaxStreamIdFrame& frame) override {
     return true;
-  };
+  }
   bool OnStreamIdBlockedFrame(const QuicStreamIdBlockedFrame& frame) override {
     return true;
-  };
+  }
   bool OnStopSendingFrame(const QuicStopSendingFrame& frame) override {
     return true;
-  };
+  }
 
   // End QuicConnectionVisitorInterface implementation.
 

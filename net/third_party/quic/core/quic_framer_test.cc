@@ -1455,7 +1455,7 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
   }
   EXPECT_EQ(1u, visitor_.padding_frames_.size());
   EXPECT_EQ(5, visitor_.padding_frames_[0]->num_padding_bytes);
-};
+}
 
 TEST_P(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
   // clang-format off
@@ -1523,7 +1523,7 @@ TEST_P(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
   EXPECT_EQ(1, visitor_.version_mismatch_);
   EXPECT_EQ(1u, visitor_.padding_frames_.size());
   EXPECT_EQ(5, visitor_.padding_frames_[0]->num_padding_bytes);
-};
+}
 
 TEST_P(QuicFramerTest, PaddingFrame) {
   // clang-format off

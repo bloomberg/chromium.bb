@@ -81,7 +81,7 @@ class MockUDPSocketPosixSender : public UDPSocketPosixSender {
 #endif
 
  private:
-  ~MockUDPSocketPosixSender() override{};
+  ~MockUDPSocketPosixSender() override {}
 };
 
 class MockUDPSocketPosix : public UDPSocketPosix {

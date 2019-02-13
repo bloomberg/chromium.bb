@@ -66,7 +66,7 @@ class MockSSLConfigService : public SSLConfigService {
   SSLConfig config_;
 };
 
-};  // namespace
+}  // namespace
 
 namespace test {
 
@@ -396,4 +396,4 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Bool()));
 
 };  // namespace test
-};  // namespace net
+}  // namespace net

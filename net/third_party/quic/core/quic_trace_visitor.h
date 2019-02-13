@@ -65,6 +65,6 @@ class QuicTraceVisitor : public QuicConnectionDebugVisitor {
   const QuicTime start_time_;
 };
 
-};  // namespace quic
+}  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TRACE_VISITOR_H_

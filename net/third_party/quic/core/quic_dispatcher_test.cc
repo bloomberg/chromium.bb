@@ -72,7 +72,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   TestQuicSpdyServerSession& operator=(const TestQuicSpdyServerSession&) =
       delete;
 
-  ~TestQuicSpdyServerSession() override { delete connection(); };
+  ~TestQuicSpdyServerSession() override { delete connection(); }
 
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,

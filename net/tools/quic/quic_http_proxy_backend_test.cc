@@ -26,9 +26,9 @@ class TestQuicServerStream
 
   quic::QuicConnectionId connection_id() const override {
     return quic::test::TestConnectionId(123);
-  };
-  quic::QuicStreamId stream_id() const override { return 5; };
-  std::string peer_host() const override { return "127.0.0.1"; };
+  }
+  quic::QuicStreamId stream_id() const override { return 5; }
+  std::string peer_host() const override { return "127.0.0.1"; }
 
   void OnResponseBackendComplete(
       const quic::QuicBackendResponse* response,

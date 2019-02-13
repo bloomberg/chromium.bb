@@ -138,7 +138,7 @@ class DummyPacketWriter : public QuicPacketWriter {
     return WriteResult(WRITE_STATUS_ERROR, 0);
   }
 
-  bool IsWriteBlocked() const override { return false; };
+  bool IsWriteBlocked() const override { return false; }
 
   void SetWritable() override {}
 
