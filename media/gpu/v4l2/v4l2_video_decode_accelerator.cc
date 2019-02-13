@@ -1301,7 +1301,7 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
             << output_queue_->FreeBuffersCount() << "+"
             << output_queue_->QueuedBuffersCount() << "/"
             << output_buffer_map_.size() << "] => PROCESSOR["
-            << image_processor_bitstream_buffer_ids_.size() << "] => CLIENT["
+            << buffers_at_ip_.size() << "] => CLIENT["
             << decoder_frames_at_client_ << "]";
 
   ScheduleDecodeBufferTaskIfNeeded();
@@ -1523,7 +1523,7 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
     DVLOGF(4) << "Dequeue output buffer: dqbuf index=" << buf->BufferId()
               << " bitstream input_id=" << bitstream_buffer_id;
     if (image_processor_device_) {
-      if (!ProcessFrame(bitstream_buffer_id, buf->BufferId())) {
+      if (!ProcessFrame(bitstream_buffer_id, buf)) {
         VLOGF(1) << "Processing frame failed";
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return false;
@@ -1715,7 +1715,7 @@ void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
     DVLOGF(3) << "Some input buffers are not dequeued.";
     return;
   }
-  if (image_processor_bitstream_buffer_ids_.size() != 0) {
+  if (!buffers_at_ip_.empty()) {
     DVLOGF(3) << "Waiting for image processor to complete.";
     return;
   }
@@ -1917,6 +1917,8 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   decoder_flushing_ = false;
 
   image_processor_ = nullptr;
+  while (!buffers_at_ip_.empty())
+    buffers_at_ip_.pop();
 
   DestroyInputBuffers();
   DestroyOutputBuffers();
@@ -2029,7 +2031,7 @@ void V4L2VideoDecodeAccelerator::StartResolutionChange() {
   decoder_state_ = kChangingResolution;
   SendPictureReady();  // Send all pending PictureReady.
 
-  if (!image_processor_bitstream_buffer_ids_.empty()) {
+  if (!buffers_at_ip_.empty()) {
     VLOGF(2) << "Wait image processor to finish before destroying buffers.";
     return;
   }
@@ -2419,13 +2421,12 @@ bool V4L2VideoDecodeAccelerator::ResetImageProcessor() {
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     OutputRecord& output_record = output_buffer_map_[i];
     if (output_record.state == kAtProcessor) {
-      DCHECK_EQ(buffers_at_client_.count(output_record.picture_id), 1u);
-      buffers_at_client_.erase(output_record.picture_id);
       output_record.state = kFree;
     }
   }
-  while (!image_processor_bitstream_buffer_ids_.empty())
-    image_processor_bitstream_buffer_ids_.pop();
+
+  while (!buffers_at_ip_.empty())
+    buffers_at_ip_.pop();
 
   return true;
 }
@@ -2496,14 +2497,13 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
 }
 
 bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
-                                              int output_buffer_index) {
+                                              V4L2ReadableBufferRef buf) {
   DVLOGF(4);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
-  OutputRecord& output_record = output_buffer_map_[output_buffer_index];
+  OutputRecord& output_record = output_buffer_map_[buf->BufferId()];
   DCHECK_EQ(output_record.state, kAtDevice);
   output_record.state = kAtProcessor;
-  image_processor_bitstream_buffer_ids_.push(bitstream_buffer_id);
 
   auto layout = VideoFrameLayout::Create(
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
@@ -2526,14 +2526,18 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
     if (output_fds.empty())
       return false;
   }
+
+  // Keep reference to the IP input until the frame is processed
+  buffers_at_ip_.push(std::make_pair(bitstream_buffer_id, buf));
+
   // Unretained(this) is safe for FrameReadyCB because |decoder_thread_| is
   // owned by this V4L2VideoDecodeAccelerator and |this| must be valid when
   // FrameReadyCB is executed.
   image_processor_->Process(
-      input_frame, output_buffer_index, std::move(output_fds),
+      input_frame, buf->BufferId(), std::move(output_fds),
       base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
                      base::Unretained(this), bitstream_buffer_id,
-                     output_buffer_index));
+                     buf->BufferId()));
   return true;
 }
 
@@ -2724,15 +2728,15 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   // TODO(crbug.com/921825): Remove this workaround once reset callback is
   // implemented.
-  if (image_processor_bitstream_buffer_ids_.empty() ||
-      image_processor_bitstream_buffer_ids_.front() != bitstream_buffer_id ||
+  if (buffers_at_ip_.empty() ||
+      buffers_at_ip_.front().first != bitstream_buffer_id ||
       output_buffer_map_.empty()) {
     // This can happen if image processor is reset.
     // V4L2VideoDecodeAccelerator::Reset() makes
-    // |image_processor_bitstream_buffer_ids| empty.
+    // |buffers_at_ip_| empty.
     // During ImageProcessor::Reset(), some FrameProcessed() can have been
     // posted to |decoder_thread|. |bitsream_buffer_id| is pushed to
-    // |image_processor_bitstream_buffer_ids_| in ProcessFrame(). Although we
+    // |buffers_at_ip_| in ProcessFrame(). Although we
     // are not sure a new bitstream buffer id is pushed after Reset() and before
     // FrameProcessed(), We should skip the case of mismatch of bitstream buffer
     // id for safety.
@@ -2769,9 +2773,12 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   }
 
   SendBufferToClient(output_buffer_index, bitstream_buffer_id);
+  // Remove our job from the IP jobs queue
+  DCHECK_GT(buffers_at_ip_.size(), 0u);
+  DCHECK(buffers_at_ip_.front().first == bitstream_buffer_id);
+  buffers_at_ip_.pop();
   // Flush or resolution change may be waiting image processor to finish.
-  image_processor_bitstream_buffer_ids_.pop();
-  if (image_processor_bitstream_buffer_ids_.empty()) {
+  if (buffers_at_ip_.empty()) {
     NotifyFlushDoneIfNeeded();
     if (decoder_state_ == kChangingResolution)
       StartResolutionChange();

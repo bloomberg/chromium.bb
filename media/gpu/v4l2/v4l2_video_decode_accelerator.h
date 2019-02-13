@@ -400,7 +400,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   bool CreateImageProcessor();
   // Send a frame to the image processor to process. The index of decoder
   // output buffer is |output_buffer_index| and its id is |bitstream_buffer_id|.
-  bool ProcessFrame(int32_t bitstream_buffer_id, int output_buffer_index);
+  bool ProcessFrame(int32_t bitstream_buffer_id, V4L2ReadableBufferRef buf);
 
   void SendBufferToClient(size_t buffer_index, int32_t bitstream_buffer_id);
 
@@ -527,6 +527,8 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Buffers that have been allocated but are awaiting an ImportBuffer
   // or AssignEGLImage event.
   std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
+  // Bitstream IDs and VDA buffers currently being processed by the IP.
+  std::queue<std::pair<int32_t, V4L2ReadableBufferRef>> buffers_at_ip_;
   // Keeps decoded buffers out of the free list until the client returns them.
   std::map<int32_t, V4L2ReadableBufferRef> buffers_at_client_;
   // Queue of buffers that have been returned by the client, but which fence
@@ -593,11 +595,6 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   gfx::Size egl_image_size_;
   // Number of planes for EGLImage.
   size_t egl_image_planes_count_;
-
-  // IDs of bitstream buffers sent to image processor to process. After a
-  // buffer is processed, it will sent to render if the id is in this
-  // queue. If the id is not in this queue, the buffer will be dropped.
-  base::queue<int> image_processor_bitstream_buffer_ids_;
 
   // Input format V4L2 fourccs this class supports.
   static const uint32_t supported_input_fourccs_[];
