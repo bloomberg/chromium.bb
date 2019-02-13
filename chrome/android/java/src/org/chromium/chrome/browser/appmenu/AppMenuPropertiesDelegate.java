@@ -438,7 +438,8 @@ public class AppMenuPropertiesDelegate {
         requestMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 
-        boolean isRds = currentTab.getUseDesktopUserAgent();
+        boolean isRds =
+                currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
         // Mark the checkbox if RDS is activated on this page.
         requestMenuCheck.setChecked(isRds);
 

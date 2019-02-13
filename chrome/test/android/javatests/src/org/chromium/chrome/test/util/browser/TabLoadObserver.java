@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -95,7 +96,7 @@ public class TabLoadObserver extends EmptyTabObserver {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (!mTab.isLoadingAndRenderingDone()) {
+                if (!ChromeTabUtils.isLoadingAndRenderingDone(mTab)) {
                     updateFailureReason("load and rendering never completed");
                     return false;
                 }
