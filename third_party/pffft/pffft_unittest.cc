@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <cmath>
 
+#include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/pffft/src/fftpack.h"
 #include "third_party/pffft/src/pffft.h"
-
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 namespace pffft {
 namespace test {
@@ -68,16 +68,16 @@ void PffftValidate(int fft_size, bool complex_fft) {
     }
 
     for (k = 0; k < num_floats; ++k) {
-      ref_max = MAX(ref_max, fabs(ref[k]));
+      ref_max = std::max(ref_max, fabs(ref[k]));
     }
 
     // Pass 0: non canonical ordering of transform coefficients.
     if (pass == 0) {
       // Test forward transform, with different input / output.
-      pffft_transform(pffft_status, in, tmp, 0, PFFFT_FORWARD);
+      pffft_transform(pffft_status, in, tmp, nullptr, PFFFT_FORWARD);
       memcpy(tmp2, tmp, num_bytes);
       memcpy(tmp, in, num_bytes);
-      pffft_transform(pffft_status, tmp, tmp, 0, PFFFT_FORWARD);
+      pffft_transform(pffft_status, tmp, tmp, nullptr, PFFFT_FORWARD);
       for (k = 0; k < num_floats; ++k) {
         SCOPED_TRACE(k);
         EXPECT_EQ(tmp2[k], tmp[k]);
@@ -93,10 +93,10 @@ void PffftValidate(int fft_size, bool complex_fft) {
       pffft_zreorder(pffft_status, tmp, out, PFFFT_FORWARD);
     } else {
       // Pass 1: canonical ordering of transform coefficients.
-      pffft_transform_ordered(pffft_status, in, tmp, 0, PFFFT_FORWARD);
+      pffft_transform_ordered(pffft_status, in, tmp, nullptr, PFFFT_FORWARD);
       memcpy(tmp2, tmp, num_bytes);
       memcpy(tmp, in, num_bytes);
-      pffft_transform_ordered(pffft_status, tmp, tmp, 0, PFFFT_FORWARD);
+      pffft_transform_ordered(pffft_status, tmp, tmp, nullptr, PFFFT_FORWARD);
       for (k = 0; k < num_floats; ++k) {
         SCOPED_TRACE(k);
         EXPECT_EQ(tmp2[k], tmp[k]);
@@ -111,16 +111,18 @@ void PffftValidate(int fft_size, bool complex_fft) {
       }
 
       if (pass == 0) {
-        pffft_transform(pffft_status, tmp, out, 0, PFFFT_BACKWARD);
+        pffft_transform(pffft_status, tmp, out, nullptr, PFFFT_BACKWARD);
       } else {
-        pffft_transform_ordered(pffft_status, tmp, out, 0, PFFFT_BACKWARD);
+        pffft_transform_ordered(pffft_status, tmp, out, nullptr,
+                                PFFFT_BACKWARD);
       }
       memcpy(tmp2, out, num_bytes);
       memcpy(out, tmp, num_bytes);
       if (pass == 0) {
-        pffft_transform(pffft_status, out, out, 0, PFFFT_BACKWARD);
+        pffft_transform(pffft_status, out, out, nullptr, PFFFT_BACKWARD);
       } else {
-        pffft_transform_ordered(pffft_status, out, out, 0, PFFFT_BACKWARD);
+        pffft_transform_ordered(pffft_status, out, out, nullptr,
+                                PFFFT_BACKWARD);
       }
       for (k = 0; k < num_floats; ++k) {
         assert(tmp2[k] == out[k]);
