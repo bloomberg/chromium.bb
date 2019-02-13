@@ -305,8 +305,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
   aura::Window* source_window =
       dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
   if (!source_window || source_window == dragged_window_ ||
-      source_window == split_view_controller_->left_window() ||
-      source_window == split_view_controller_->right_window() ||
+      split_view_controller_->IsWindowInSplitView(source_window) ||
       source_window->GetProperty(ash::kIsShowingInOverviewKey)) {
     return;
   }

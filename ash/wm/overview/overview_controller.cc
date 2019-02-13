@@ -448,10 +448,8 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
     aura::Window* active_window = wm::GetActiveWindow();
     while (::wm::GetTransientParent(active_window))
       active_window = ::wm::GetTransientParent(active_window);
-    if (active_window != split_view_controller->left_window() &&
-        active_window != split_view_controller->right_window()) {
+    if (!split_view_controller->IsWindowInSplitView(active_window))
       active_window = split_view_controller->GetDefaultSnappedWindow();
-    }
     DCHECK(active_window);
     split_view_controller->EndSplitView();
     if (IsSelecting())
