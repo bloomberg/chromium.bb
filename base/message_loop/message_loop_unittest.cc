@@ -45,6 +45,7 @@
 #include "base/process/memory.h"
 #include "base/strings/string16.h"
 #include "base/win/current_module.h"
+#include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
 #endif
 
@@ -1645,6 +1646,90 @@ TEST_F(MessageLoopTest, PostDelayedTask_SharedTimer_SubPump) {
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(run_time.is_null());
+}
+
+namespace {
+
+// When this fires (per the associated WM_TIMER firing), it posts an
+// application task to quit the native loop.
+bool QuitOnSystemTimer(UINT message,
+                       WPARAM wparam,
+                       LPARAM lparam,
+                       LRESULT* result) {
+  if (message == static_cast<UINT>(WM_TIMER)) {
+    ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                            BindOnce(&::PostQuitMessage, 0));
+  }
+  return true;
+}
+
+// When this fires (per the associated WM_TIMER firing), it posts a delayed
+// application task to quit the native loop.
+bool DelayedQuitOnSystemTimer(UINT message,
+                              WPARAM wparam,
+                              LPARAM lparam,
+                              LRESULT* result) {
+  if (message == static_cast<UINT>(WM_TIMER)) {
+    ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, BindOnce(&::PostQuitMessage, 0),
+        TimeDelta::FromMilliseconds(10));
+  }
+  return true;
+}
+
+}  // namespace
+
+// This is a regression test for
+// https://crrev.com/c/1455266/9/base/message_loop/message_pump_win.cc#125
+// See below for the delayed task version.
+// TODO(alexclarke): This test never ends up calling
+// MessagePumpForUI::ScheduleWork().
+TEST_F(MessageLoopTest, DISABLED_PostImmediateTaskFromSystemPump) {
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+
+  RunLoop run_loop;
+
+  // A native message window to generate a system message which invokes
+  // QuitOnSystemTimer() when the native timer fires.
+  win::MessageWindow local_message_window;
+  local_message_window.Create(BindRepeating(&QuitOnSystemTimer));
+  ASSERT_TRUE(::SetTimer(local_message_window.hwnd(), 0, 20, nullptr));
+
+  // The first task will enter a native message loop. This test then verifies
+  // that the pump is able to run an immediate application task after the native
+  // pump went idle.
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, BindOnce(&SubPumpFunc, run_loop.QuitClosure()));
+
+  // Test success is determined by not hanging in this Run() call.
+  run_loop.Run();
+}
+
+// This is a regression test for
+// https://crrev.com/c/1455266/9/base/message_loop/message_pump_win.cc#125 This
+// is the delayed task equivalent of the above PostImmediateTaskFromSystemPump
+// test.
+// TODO(alexclarke): This test never ends up calling
+// MessagePumpForUI::ScheduleDelayedWork().
+TEST_F(MessageLoopTest, DISABLED_PostDelayedTaskFromSystemPump) {
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+
+  RunLoop run_loop;
+
+  // A native message window to generate a system message which invokes
+  // DelayedQuitOnSystemTimer() when the native timer fires.
+  win::MessageWindow local_message_window;
+  local_message_window.Create(BindRepeating(&DelayedQuitOnSystemTimer));
+  ASSERT_TRUE(::SetTimer(local_message_window.hwnd(), 0, 20, nullptr));
+
+  // The first task will enter a native message loop. This test then verifies
+  // that the pump is able to run a delayed application task after the native
+  // pump went idle.
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, BindOnce(&SubPumpFunc, run_loop.QuitClosure()));
+
+  // Test success is determined by not hanging in this Run() call.
+  run_loop.Run();
 }
 
 TEST_F(MessageLoopTest, WmQuitIsVisibleToSubPump) {
