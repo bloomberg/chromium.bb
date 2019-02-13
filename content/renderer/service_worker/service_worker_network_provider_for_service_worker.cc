@@ -15,6 +15,7 @@
 #include "ipc/ipc_message.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
@@ -80,5 +81,17 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
   }
   return nullptr;
 }
+
+blink::mojom::ControllerServiceWorkerMode
+ServiceWorkerNetworkProviderForServiceWorker::IsControlledByServiceWorker() {
+  return blink::mojom::ControllerServiceWorkerMode::kNoController;
+}
+
+int64_t
+ServiceWorkerNetworkProviderForServiceWorker::ControllerServiceWorkerID() {
+  return blink::mojom::kInvalidServiceWorkerVersionId;
+}
+
+void ServiceWorkerNetworkProviderForServiceWorker::DispatchNetworkQuiet() {}
 
 }  // namespace content
