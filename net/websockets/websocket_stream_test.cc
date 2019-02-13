@@ -389,15 +389,16 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   std::vector<MockWrite> writes_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebSocketStreamCreateTest,
-                        Values(BASIC_HANDSHAKE_STREAM));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebSocketStreamCreateTest,
+                         Values(BASIC_HANDSHAKE_STREAM));
 
 using WebSocketMultiProtocolStreamCreateTest = WebSocketStreamCreateTest;
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebSocketMultiProtocolStreamCreateTest,
-                        Values(BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebSocketMultiProtocolStreamCreateTest,
+                         Values(BASIC_HANDSHAKE_STREAM,
+                                HTTP2_HANDSHAKE_STREAM));
 
 // There are enough tests of the Sec-WebSocket-Extensions header that they
 // deserve their own test fixture.
@@ -417,9 +418,10 @@ class WebSocketStreamCreateExtensionTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebSocketStreamCreateExtensionTest,
-                        Values(BASIC_HANDSHAKE_STREAM, HTTP2_HANDSHAKE_STREAM));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebSocketStreamCreateExtensionTest,
+                         Values(BASIC_HANDSHAKE_STREAM,
+                                HTTP2_HANDSHAKE_STREAM));
 
 // Common code to construct expectations for authentication tests that receive
 // the auth challenge on one connection and then create a second connection to
@@ -498,9 +500,9 @@ class WebSocketStreamCreateBasicAuthTest : public WebSocketStreamCreateTest {
   CommonAuthTestHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebSocketStreamCreateBasicAuthTest,
-                        Values(BASIC_HANDSHAKE_STREAM));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebSocketStreamCreateBasicAuthTest,
+                         Values(BASIC_HANDSHAKE_STREAM));
 
 class WebSocketStreamCreateDigestAuthTest : public WebSocketStreamCreateTest {
  protected:
@@ -510,9 +512,9 @@ class WebSocketStreamCreateDigestAuthTest : public WebSocketStreamCreateTest {
   CommonAuthTestHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebSocketStreamCreateDigestAuthTest,
-                        Values(BASIC_HANDSHAKE_STREAM));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebSocketStreamCreateDigestAuthTest,
+                         Values(BASIC_HANDSHAKE_STREAM));
 
 const char WebSocketStreamCreateBasicAuthTest::kUnauthorizedResponse[] =
     "HTTP/1.1 401 Unauthorized\r\n"

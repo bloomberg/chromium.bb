@@ -87,9 +87,9 @@ TEST_P(SSLPlatformKeyMacTest, KeyMatches) {
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLPlatformKeyMacTest,
-                        testing::ValuesIn(kTestKeys),
-                        TestKeyToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLPlatformKeyMacTest,
+                         testing::ValuesIn(kTestKeys),
+                         TestKeyToString);
 
 }  // namespace net

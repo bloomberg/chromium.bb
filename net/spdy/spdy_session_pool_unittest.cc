@@ -1003,7 +1003,7 @@ class SpdySessionMemoryDumpTest
       public testing::WithParamInterface<
           base::trace_event::MemoryDumpLevelOfDetail> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     SpdySessionMemoryDumpTest,
     ::testing::Values(base::trace_event::MemoryDumpLevelOfDetail::DETAILED,

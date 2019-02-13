@@ -235,10 +235,10 @@ class FilterSourceStreamTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(FilterSourceStreamTests,
-                        FilterSourceStreamTest,
-                        ::testing::Values(MockSourceStream::SYNC,
-                                          MockSourceStream::ASYNC));
+INSTANTIATE_TEST_SUITE_P(FilterSourceStreamTests,
+                         FilterSourceStreamTest,
+                         ::testing::Values(MockSourceStream::SYNC,
+                                           MockSourceStream::ASYNC));
 
 // Tests that a FilterSourceStream subclass (NeedsAllInputFilterSourceStream)
 // can return 0 bytes for FilterData()s when it has not consumed EOF from the

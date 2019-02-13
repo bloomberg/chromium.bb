@@ -176,10 +176,10 @@ const FtpTestParam kTestParams[] = {
     {"dir-listing-windows-2", OK},
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        FtpDirectoryListingParserTest,
-                        testing::ValuesIn(kTestParams),
-                        TestName);
+INSTANTIATE_TEST_SUITE_P(,
+                         FtpDirectoryListingParserTest,
+                         testing::ValuesIn(kTestParams),
+                         TestName);
 
 }  // namespace
 

@@ -1733,8 +1733,8 @@ TEST_P(FtpNetworkTransactionTest, InvalidRemoteDirectory2) {
       "257 \"foo\nbar\" is your current location\r\n", ERR_INVALID_RESPONSE);
 }
 
-INSTANTIATE_TEST_CASE_P(Ftp,
-                        FtpNetworkTransactionTest,
-                        ::testing::Values(AF_INET, AF_INET6));
+INSTANTIATE_TEST_SUITE_P(Ftp,
+                         FtpNetworkTransactionTest,
+                         ::testing::Values(AF_INET, AF_INET6));
 
 }  // namespace net

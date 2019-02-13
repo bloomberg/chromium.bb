@@ -118,18 +118,18 @@ struct CookieMonsterTestTraits {
   static const int creation_time_granularity_in_ms = 0;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
-                              CookieStoreTest,
-                              CookieMonsterTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
-                              CookieStoreChangeGlobalTest,
-                              CookieMonsterTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
-                              CookieStoreChangeUrlTest,
-                              CookieMonsterTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(CookieMonster,
-                              CookieStoreChangeNamedTest,
-                              CookieMonsterTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieMonster,
+                               CookieStoreTest,
+                               CookieMonsterTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieMonster,
+                               CookieStoreChangeGlobalTest,
+                               CookieMonsterTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieMonster,
+                               CookieStoreChangeUrlTest,
+                               CookieMonsterTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieMonster,
+                               CookieStoreChangeNamedTest,
+                               CookieMonsterTestTraits);
 
 template <typename T>
 class CookieMonsterTestBase : public CookieStoreTest<T> {

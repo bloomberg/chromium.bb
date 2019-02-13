@@ -104,9 +104,9 @@ TEST_P(SSLPlatformKeyAndroidTest, Matches) {
   TestSSLPrivateKeyMatches(key.get(), key_bytes);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLPlatformKeyAndroidTest,
-                        testing::ValuesIn(kTestKeys),
-                        TestKeyToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLPlatformKeyAndroidTest,
+                         testing::ValuesIn(kTestKeys),
+                         TestKeyToString);
 
 }  // namespace net
