@@ -29,6 +29,8 @@
     <dimen name="tab_strip_and_toolbar_height">96dp</dimen>
 
     <dimen name="location_bar_icon_width">40dp</dimen>
+    <dimen name="location_bar_action_icon_width">40dp</dimen>
+    <dimen name="location_bar_url_action_offset">0dp</dimen>
     <dimen name="omnibox_suggestion_start_offset">@dimen/location_bar_icon_width</dimen>
 
     <!-- NTP dimensions -->
