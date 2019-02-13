@@ -296,7 +296,7 @@ TEST_P(FeedUserClassifierEventTest,
               Eq(rate_after_a_year));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,  // An empty prefix for the parametrized tests names (no need to
        // distinguish the only instance we make here).
     FeedUserClassifierEventTest,

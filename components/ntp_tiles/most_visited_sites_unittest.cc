@@ -1015,9 +1015,9 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(MostVisitedSitesTest,
-                        MostVisitedSitesTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(MostVisitedSitesTest,
+                         MostVisitedSitesTest,
+                         ::testing::Bool());
 
 TEST(MostVisitedSitesTest, ShouldDeduplicateDomainWithNoWwwDomain) {
   EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"www.mobile.de"},
@@ -1515,9 +1515,9 @@ TEST_P(MostVisitedSitesWithCustomLinksTest,
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(MostVisitedSitesWithCustomLinksTest,
-                        MostVisitedSitesWithCustomLinksTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithCustomLinksTest,
+                         MostVisitedSitesWithCustomLinksTest,
+                         ::testing::Bool());
 #endif
 
 class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
@@ -1675,9 +1675,9 @@ TEST_P(MostVisitedSitesWithCacheHitTest, ShouldFetchFaviconsIfEnabled) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(MostVisitedSitesWithCacheHitTest,
-                        MostVisitedSitesWithCacheHitTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithCacheHitTest,
+                         MostVisitedSitesWithCacheHitTest,
+                         ::testing::Bool());
 
 class MostVisitedSitesWithEmptyCacheTest : public MostVisitedSitesTest {
  public:
@@ -1966,9 +1966,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(MostVisitedSitesWithEmptyCacheTest,
-                        MostVisitedSitesWithEmptyCacheTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(MostVisitedSitesWithEmptyCacheTest,
+                         MostVisitedSitesWithEmptyCacheTest,
+                         ::testing::Bool());
 
 // This a test for MostVisitedSites::MergeTiles(...) method, and thus has the
 // same scope as the method itself. This tests merging popular sites with

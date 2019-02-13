@@ -216,15 +216,13 @@ void TestHarness::AddEncodedChromePolicy(NSDictionary* policy) {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(
-    PolicyProviderIOSChromePolicyTest,
-    ConfigurationPolicyProviderTest,
-    testing::Values(TestHarness::Create));
+INSTANTIATE_TEST_SUITE_P(PolicyProviderIOSChromePolicyTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(TestHarness::Create));
 
-INSTANTIATE_TEST_CASE_P(
-    PolicyProviderIOSEncodedChromePolicyTest,
-    ConfigurationPolicyProviderTest,
-    testing::Values(TestHarness::CreateWithEncodedKey));
+INSTANTIATE_TEST_SUITE_P(PolicyProviderIOSEncodedChromePolicyTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(TestHarness::CreateWithEncodedKey));
 
 TEST(PolicyProviderIOSTest, ChromePolicyOverEncodedChromePolicy) {
   // This test verifies that if the "ChromePolicy" key is present then the

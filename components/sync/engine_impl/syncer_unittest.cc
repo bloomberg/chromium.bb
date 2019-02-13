@@ -5728,9 +5728,9 @@ class MixedResult : public SyncerTest,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(ExtensionsActivity,
-                        MixedResult,
-                        testing::Range(0, 1 << TEST_PARAM_BIT_COUNT));
+INSTANTIATE_TEST_SUITE_P(ExtensionsActivity,
+                         MixedResult,
+                         testing::Range(0, 1 << TEST_PARAM_BIT_COUNT));
 
 TEST_P(MixedResult, ExtensionsActivity) {
   {

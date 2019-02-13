@@ -314,7 +314,7 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
 // Instantiate parameter sets for all possible combinations of scenarios
 // GLRendererCopier will encounter, which will cause it to follow different
 // workflows.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     GLRendererCopierPixelTest,
     testing::Combine(

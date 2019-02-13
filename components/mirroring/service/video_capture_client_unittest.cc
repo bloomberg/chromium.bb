@@ -137,8 +137,8 @@ TEST_P(VideoCaptureClientTest, Basic) {
   OnBufferReady(0, gfx::Size(320, 180));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoCaptureClientTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureClientTest,
+                         ::testing::Values(true, false));
 
 }  // namespace mirroring

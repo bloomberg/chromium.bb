@@ -1329,7 +1329,7 @@ TEST_P(GLHelperPixelReadbackTest, DISABLED_ScalePatching) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     GLHelperPixelReadbackTest,
     ::testing::Combine(

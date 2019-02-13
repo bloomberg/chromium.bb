@@ -167,16 +167,14 @@ PolicyProviderTestHarness* TestHarness::Create() {
 }  // namespace
 
 // Instantiate abstract test case for basic policy reading tests.
-INSTANTIATE_TEST_CASE_P(
-    ConfigDirPolicyLoaderTest,
-    ConfigurationPolicyProviderTest,
-    testing::Values(TestHarness::Create));
+INSTANTIATE_TEST_SUITE_P(ConfigDirPolicyLoaderTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(TestHarness::Create));
 
 // Instantiate abstract test case for 3rd party policy reading tests.
-INSTANTIATE_TEST_CASE_P(
-    ConfigDir3rdPartyPolicyLoaderTest,
-    Configuration3rdPartyPolicyProviderTest,
-    testing::Values(TestHarness::Create));
+INSTANTIATE_TEST_SUITE_P(ConfigDir3rdPartyPolicyLoaderTest,
+                         Configuration3rdPartyPolicyProviderTest,
+                         testing::Values(TestHarness::Create));
 
 // Some tests that exercise special functionality in ConfigDirPolicyLoader.
 class ConfigDirPolicyLoaderTest : public PolicyTestBase {

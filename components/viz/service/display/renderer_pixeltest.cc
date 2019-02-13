@@ -1782,7 +1782,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 }
 
 // First argument (test case prefix) is intentionally left empty.
-INSTANTIATE_TEST_CASE_P(, VideoGLRendererPixelHiLoTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, VideoGLRendererPixelHiLoTest, testing::Bool());
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -4300,14 +4300,14 @@ bool color_space_premul_values[] = {
     true, false,
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     FromColorSpace,
     ColorTransformPixelTest,
     testing::Combine(testing::ValuesIn(src_color_spaces),
                      testing::ValuesIn(intermediate_color_spaces),
                      testing::ValuesIn(color_space_premul_values)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ToColorSpace,
     ColorTransformPixelTest,
     testing::Combine(testing::ValuesIn(intermediate_color_spaces),

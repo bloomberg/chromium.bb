@@ -683,8 +683,8 @@ TEST_P(GLScalerShaderPixelTest, Export_PairwiseDeinterleave) {
   ExpectAreTheSameImage(expected_b, actual_b);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        GLScalerShaderPixelTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         GLScalerShaderPixelTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace viz

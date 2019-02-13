@@ -1208,7 +1208,7 @@ TEST_P(AutofillProfileSyncBridgeUpdatesUsageStatsTest, UpdatesUsageStats) {
   EXPECT_THAT(GetAllLocalData(), ElementsAre(WithUsageStats(merged)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillProfileSyncBridgeTest,
     AutofillProfileSyncBridgeUpdatesUsageStatsTest,
     testing::Values(

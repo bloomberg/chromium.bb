@@ -707,8 +707,8 @@ TEST_P(BidirectionalStreamTest, FailedResolution) {
   bidirectional_stream_destroy(test.stream);
 }
 
-INSTANTIATE_TEST_CASE_P(BidirectionalStreamDelayRequestHeadersUntilFlush,
-                        BidirectionalStreamTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(BidirectionalStreamDelayRequestHeadersUntilFlush,
+                         BidirectionalStreamTest,
+                         ::testing::Values(true, false));
 
 }  // namespace grpc_support

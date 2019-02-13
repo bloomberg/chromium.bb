@@ -164,9 +164,9 @@ class UpdateCheckerTest : public testing::TestWithParam<UpdateCheckTestParams> {
 };
 
 // This test is parameterized for |is_foreground and |use_JSON|.
-INSTANTIATE_TEST_CASE_P(Parameterized,
-                        UpdateCheckerTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(Parameterized,
+                         UpdateCheckerTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 UpdateCheckerTest::UpdateCheckerTest()
     : scoped_task_environment_(

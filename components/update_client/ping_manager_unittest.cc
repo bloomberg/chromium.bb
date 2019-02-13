@@ -115,7 +115,7 @@ scoped_refptr<UpdateContext> PingManagerTest::MakeMockUpdateContext() const {
 
 // This test is parameterized for using JSON or XML serialization. |true| means
 // JSON serialization is used.
-INSTANTIATE_TEST_CASE_P(Parameterized, PingManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Parameterized, PingManagerTest, testing::Bool());
 
 TEST_P(PingManagerTest, SendPing) {
   auto interceptor = std::make_unique<URLLoaderPostInterceptor>(

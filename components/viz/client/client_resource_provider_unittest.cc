@@ -80,9 +80,9 @@ class ClientResourceProviderTest : public testing::TestWithParam<bool> {
   std::unique_ptr<ClientResourceProvider> provider_;
 };
 
-INSTANTIATE_TEST_CASE_P(ClientResourceProviderTests,
-                        ClientResourceProviderTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(ClientResourceProviderTests,
+                         ClientResourceProviderTest,
+                         ::testing::Values(false, true));
 
 class MockReleaseCallback {
  public:

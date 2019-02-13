@@ -646,7 +646,7 @@ TEST_P(FrameSinkManagerOrderingParamTest, Ordering) {
     UnregisterBFS();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     FrameSinkManagerOrderingParamTestInstantiation,
     FrameSinkManagerOrderingParamTest,
     ::testing::Combine(::testing::ValuesIn(kRegisterOrderList),

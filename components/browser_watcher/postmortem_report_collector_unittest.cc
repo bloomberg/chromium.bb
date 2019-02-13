@@ -209,12 +209,12 @@ TEST_P(PostmortemReportCollectorProcessTest, ProcessStuckFile) {
   ValidateHistograms(expected_unclean, expected_system_unclean);
 }
 
-INSTANTIATE_TEST_CASE_P(WithCrashDatabase,
-                        PostmortemReportCollectorProcessTest,
-                        ::testing::Values(true));
-INSTANTIATE_TEST_CASE_P(WithoutCrashDatabase,
-                        PostmortemReportCollectorProcessTest,
-                        ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(WithCrashDatabase,
+                         PostmortemReportCollectorProcessTest,
+                         ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(WithoutCrashDatabase,
+                         PostmortemReportCollectorProcessTest,
+                         ::testing::Values(true));
 
 TEST(PostmortemReportCollectorTest, CollectEmptyFile) {
   // Create an empty file.

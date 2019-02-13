@@ -73,7 +73,7 @@ class RequestSenderTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(RequestSenderTest);
 };
 
-INSTANTIATE_TEST_CASE_P(IsForeground, RequestSenderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(IsForeground, RequestSenderTest, ::testing::Bool());
 
 RequestSenderTest::RequestSenderTest()
     : scoped_task_environment_(

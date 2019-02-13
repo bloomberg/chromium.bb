@@ -4226,8 +4226,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
-                        testing::Range(67, kCurrentDBVersion + 1));
+INSTANTIATE_TEST_SUITE_P(DirectoryBackingStore,
+                         MigrationTest,
+                         testing::Range(67, kCurrentDBVersion + 1));
 
 TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   ModelTypeSet protocol_types = ProtocolTypes();

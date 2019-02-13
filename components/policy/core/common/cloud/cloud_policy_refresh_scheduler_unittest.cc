@@ -558,8 +558,8 @@ TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(CloudPolicyRefreshSchedulerClientErrorTest,
-                        CloudPolicyRefreshSchedulerClientErrorTest,
-                        testing::ValuesIn(kClientErrorTestCases));
+INSTANTIATE_TEST_SUITE_P(CloudPolicyRefreshSchedulerClientErrorTest,
+                         CloudPolicyRefreshSchedulerClientErrorTest,
+                         testing::ValuesIn(kClientErrorTestCases));
 
 }  // namespace policy

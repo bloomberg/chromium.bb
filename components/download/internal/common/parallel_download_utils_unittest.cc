@@ -268,9 +268,9 @@ TEST_P(ParallelDownloadUtilsRecoverErrorTest,
 
 // The testing value specified offset for preceding stream. The error stream
 // offset is fixed value.
-INSTANTIATE_TEST_CASE_P(ParallelDownloadUtilsTestSuite,
-                        ParallelDownloadUtilsRecoverErrorTest,
-                        ::testing::Values(0, 20, 80));
+INSTANTIATE_TEST_SUITE_P(ParallelDownloadUtilsTestSuite,
+                         ParallelDownloadUtilsRecoverErrorTest,
+                         ::testing::Values(0, 20, 80));
 
 // Ensure the minimum slice size is correctly applied.
 TEST_F(ParallelDownloadUtilsTest, FindSlicesForRemainingContentMinSliceSize) {
