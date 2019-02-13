@@ -908,8 +908,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'no_passthrough', 'nvidia'], bug=832238)
 
     # Linux NVIDIA Quadro P400
-    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['linux', ('nvidia', 0x1cb3)], bug=830046)
+
     # Observed flaky on Swarmed bots. Some of these were directly
     # observed, some not. We can't afford any flakes on the tryservers
     # so mark them all flaky.
@@ -1357,8 +1356,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['android', 'nvidia'], bug=874620)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
         ['android', 'nvidia'], bug=905006)
-    self.Fail('conformance2/rendering/blitframebuffer-size-overflow.html',
-        ['android', 'nvidia'], bug=830046)
 
     # Conflicting expectations to test that the
     # "Expectations have no collisions" unittest works.
