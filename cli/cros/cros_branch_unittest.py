@@ -1183,6 +1183,14 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.CommitRemoteProject(repo_path, 'Add manifest files.')
     return repo_path
 
+  def DetachGitRepo(self, git_repo):
+    """Detach the git repo.
+
+    Args:
+      git_repo: Path to the repo.
+    """
+    git.RunGit(git_repo, ['checkout', '--detach'])
+
   def Snapshot(self, path):
     """Recursively copy the dir to a temporary directory.
 
@@ -1245,7 +1253,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     # Git refuses to update remote refs if they are checked out.
     # Circumvent this problem by detaching each project.
     for project in self.full_manifest.Projects():
-      git.RunGit(self.GetRemotePath(project), ['checkout', '--detach'])
+      self.DetachGitRepo(self.GetRemotePath(project))
 
     # We frequently need to check that the remotes are unchanged.
     # Take a snapshot of the remote in its current state.
@@ -1357,6 +1365,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
           os.path.join(root, fname), allow_unsupported_features=True)
       self.AssertNoDefaultRevisions(manifest)
       self.AssertProjectRevisionsMatchBranch(manifest, branch)
+    self.DetachGitRepo(root)
 
   def AssertManifestsRepaired(self, branch):
     """Assert the manifests on the given branch point to it.
@@ -1390,6 +1399,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.assertEqual(int(vinfo.build_number), expected_build)
     self.assertEqual(int(vinfo.branch_build_number), expected_branch)
     self.assertEqual(int(vinfo.patch_number), expected_patch)
+    self.DetachGitRepo(self.version_dir)
 
   def AssertNoDiff(self, left_dir, right_dir):
     """Assert no difference between the two directories.
@@ -1513,7 +1523,56 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
     self.AssertNoRemoteDiff()
 
-  # TODO(evanhernandez): Add tests for force rename.
+  def testRenameOverwrite(self):
+    """Test rename successfully force overwrites."""
+    # Create a branch to rename. This may seem like we depend on the
+    # correctness of the code under test, but in practice the branches
+    # to be renamed will be created by `cros branch` anyway.
+    cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push', '--force',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'create',
+         '--file', self.full_manifest_path,
+         '--custom', 'new-branch'])
+
+    # Assert everything is as we expect.
+    self.AssertCrosBranches(['new-branch', 'old-branch'])
+    self.AssertVersion('new-branch', 12, 3, 1, 0)
+    self.AssertVersion('old-branch', 12, 2, 1, 0)
+
+    # Oops, you big dummy. Turns out old-branch was actually what you wanted.
+    # Try force renaming it...
+    cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push', '--force',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'rename',
+         'old-branch', 'new-branch'])
+
+    self.AssertCrosBranches(['new-branch'])
+    self.AssertManifestsRepaired('new-branch')
+    self.AssertVersion('new-branch', 12, 2, 1, 0)
+
+  def testRenameOverwriteMissingForce(self):
+    """Test rename dies when it tries to overwrite without --force."""
+    result = cros_build_lib.RunCommand(
+        ['cros', 'branch',
+         '--push',
+         '--root', self.local_root,
+         '--repo-url', self.repo_url,
+         '--manifest-url', self.manifest_internal_root,
+         'rename',
+         'master', 'old-branch'],
+        error_code_ok=True,
+        capture_output=True)
+
+    self.assertIn('ERROR: Branch old-branch exists', result.error)
+    self.AssertNoRemoteDiff()
 
   def testDelete(self):
     """Test delete runs without dying."""
