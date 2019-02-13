@@ -37,6 +37,8 @@
 #include "chrome/app/chrome_content_utility_overlay_manifest.h"
 #include "chrome/app/chrome_packaged_service_manifests.h"
 #include "chrome/app/chrome_renderer_manifest.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
+#include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
@@ -5555,4 +5557,10 @@ bool ChromeContentBrowserClient::IsRendererDebugURLBlacklisted(
   using URLBlacklistState = policy::URLBlacklist::URLBlacklistState;
   URLBlacklistState blacklist_state = service->GetURLBlacklistState(url);
   return blacklist_state == URLBlacklistState::URL_IN_BLACKLIST;
+}
+
+ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  return AccessibilityLabelsServiceFactory::GetForProfile(profile)->GetAXMode();
 }

@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -943,6 +944,11 @@ bool ContentBrowserClient::IsRendererDebugURLBlacklisted(
     const GURL& url,
     BrowserContext* context) {
   return false;
+}
+
+ui::AXMode ContentBrowserClient::GetAXModeForBrowserContext(
+    BrowserContext* browser_context) {
+  return BrowserAccessibilityState::GetInstance()->GetAccessibilityMode();
 }
 
 }  // namespace content

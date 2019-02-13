@@ -30,6 +30,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
+#include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -1363,6 +1365,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
   signin_util::SigninWithCredentialProviderIfPossible(profile);
 #endif
+
+  AccessibilityLabelsServiceFactory::GetForProfile(profile)->Init();
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
