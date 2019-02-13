@@ -121,8 +121,7 @@ public class OAuthTokenConsumer {
                 }
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnTaskRunner(OAuthTokenFetcher.TASK_RUNNER);
     }
 
     private void handleErrorOnMainThread(final OAuthTokenFetcher.Callback callback,
