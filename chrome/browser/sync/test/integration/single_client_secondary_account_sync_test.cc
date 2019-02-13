@@ -38,9 +38,8 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
   ~SingleClientSecondaryAccountSyncTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    test_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpGaiaCookieManagerService(
-            &test_url_loader_factory_);
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
   }
 
   void SetUpOnMainThread() override {
@@ -55,8 +54,8 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
  private:
   base::test::ScopedFeatureList features_;
 
-  secondary_account_helper::ScopedGaiaCookieManagerServiceFactory
-      test_gaia_cookie_manager_factory_;
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientSecondaryAccountSyncTest);
 };
