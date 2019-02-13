@@ -356,13 +356,14 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   // tables on Mac. See the implementation of SkTypeface_Mac::onOpenStream.
 #if !defined(OS_MACOSX)
   int ttc_index = 0;
-  SkStreamAsset* typeface_stream = typeface->openStream(&ttc_index);
-  if (typeface_stream && typeface_stream->getMemoryBase()) {
+  std::unique_ptr<SkStreamAsset> tf_stream(typeface->openStream(&ttc_index));
+  if (tf_stream && tf_stream->getMemoryBase()) {
+    const void* tf_memory = tf_stream->getMemoryBase();
+    size_t tf_size = tf_stream->getLength();
     std::unique_ptr<hb_blob_t, void (*)(hb_blob_t*)> face_blob(
-        hb_blob_create(
-            reinterpret_cast<const char*>(typeface_stream->getMemoryBase()),
-            SafeCast<unsigned int>(typeface_stream->getLength()),
-            HB_MEMORY_MODE_READONLY, typeface_stream, DeleteTypefaceStream),
+        hb_blob_create(reinterpret_cast<const char*>(tf_memory),
+                       SafeCast<unsigned int>(tf_size), HB_MEMORY_MODE_READONLY,
+                       tf_stream.release(), DeleteTypefaceStream),
         hb_blob_destroy);
     face = hb_face_create(face_blob.get(), ttc_index);
   }
