@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omaha;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -14,6 +15,7 @@ import android.os.Looper;
 import android.os.StatFs;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -25,6 +27,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.AsyncTask.Status;
+import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
@@ -38,7 +42,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * For manually testing this functionality, see {@link UpdateConfigs}.
  */
-class UpdateStatusProvider {
+public class UpdateStatusProvider {
     /** Possible update states. */
     @IntDef({UpdateState.NONE, UpdateState.UPDATE_AVAILABLE, UpdateState.UNSUPPORTED_OS_VERSION,
             UpdateState.INLINE_UPDATE_AVAILABLE, UpdateState.INLINE_UPDATE_DOWNLOADING,
@@ -78,13 +82,36 @@ class UpdateStatusProvider {
          * the unsupported message once per version.
          */
         public String latestUnsupportedVersion;
+
+        /**
+         * Whether or not we are currently trying to simulate the update.  Used to ignore other
+         * update signals.
+         */
+        private boolean mIsSimulated;
+
+        /**
+         * Whether or not we are currently trying to simulate an inline flow.  Used to allow
+         * overriding Omaha update state, which usually supersedes inline update states.
+         */
+        private boolean mIsInlineSimulated;
+
+        UpdateStatus() {}
+
+        UpdateStatus(UpdateStatus other) {
+            updateState = other.updateState;
+            updateUrl = other.updateUrl;
+            latestVersion = other.latestVersion;
+            latestUnsupportedVersion = other.latestUnsupportedVersion;
+            mIsSimulated = other.mIsSimulated;
+        }
     }
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final ObserverList<Callback<UpdateStatus>> mObservers = new ObserverList<>();
 
-    private UpdateQuery mQuery;
-    private UpdateStatus mStatus;
+    private final InlineUpdateController mInlineController;
+    private final UpdateQuery mOmahaQuery;
+    private @Nullable UpdateStatus mStatus;
 
     /** @return Returns a singleton of {@link UpdateStatusProvider}. */
     public static UpdateStatusProvider getInstance() {
@@ -102,18 +129,14 @@ class UpdateStatusProvider {
      */
     public boolean addObserver(Callback<UpdateStatus> observer) {
         if (mObservers.hasObserver(observer)) return false;
-
         mObservers.addObserver(observer);
 
         if (mStatus != null) {
             mHandler.post(() -> observer.onResult(mStatus));
-        } else if (mQuery == null) {
-            mQuery = new UpdateQuery(status -> {
-                mStatus = status;
-                pingObservers();
-            });
-
-            mQuery.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } else {
+            if (mOmahaQuery.getStatus() == Status.PENDING) {
+                mOmahaQuery.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         }
 
         return true;
@@ -150,10 +173,51 @@ class UpdateStatusProvider {
         pingObservers();
     }
 
-    private UpdateStatusProvider() {}
+    /**
+     * Starts the inline update process, if possible.
+     * @param activity An {@link Activity} that will be used to interact with Play.
+     */
+    public void startInlineUpdate(Activity activity) {
+        if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
+        mInlineController.startUpdate(activity);
+    }
+
+    /** Finishes the inline update process, which may involve restarting the app. */
+    public void finishInlineUpdate() {
+        if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_READY) return;
+        mInlineController.completeUpdate();
+    }
+
+    private UpdateStatusProvider() {
+        mInlineController = new InlineUpdateController(this::resolveStatus);
+        mOmahaQuery = new UpdateQuery(this::resolveStatus);
+    }
 
     private void pingObservers() {
         for (Callback<UpdateStatus> observer : mObservers) observer.onResult(mStatus);
+    }
+
+    private void resolveStatus() {
+        if (mOmahaQuery.getStatus() != Status.FINISHED || mInlineController.getStatus() == null) {
+            return;
+        }
+
+        // We pull the Omaha result once as it will never change.
+        if (mStatus == null) mStatus = new UpdateStatus(mOmahaQuery.getResult());
+
+        if (!mStatus.mIsSimulated || mStatus.mIsInlineSimulated) {
+            @UpdateState
+            int inlineState = mInlineController.getStatus();
+
+            if (mStatus.updateState == UpdateState.UPDATE_AVAILABLE
+                    && inlineState != UpdateState.NONE) {
+                mStatus.updateState = inlineState;
+            } else {
+                mStatus.updateState = mOmahaQuery.getResult().updateState;
+            }
+        }
+
+        pingObservers();
     }
 
     private static final class LazyHolder {
@@ -161,11 +225,18 @@ class UpdateStatusProvider {
     }
 
     private static final class UpdateQuery extends AsyncTask<UpdateStatus> {
+        private final Handler mHandler = new Handler(Looper.getMainLooper());
         private final Context mContext = ContextUtils.getApplicationContext();
-        private final Callback<UpdateStatus> mCallback;
+        private final Runnable mCallback;
 
-        public UpdateQuery(@NonNull Callback<UpdateStatus> resultReceiver) {
+        private @Nullable UpdateStatus mStatus;
+
+        public UpdateQuery(@NonNull Runnable resultReceiver) {
             mCallback = resultReceiver;
+        }
+
+        public UpdateStatus getResult() {
+            return mStatus;
         }
 
         @Override
@@ -179,7 +250,8 @@ class UpdateStatusProvider {
         protected void onPostExecute(UpdateStatus result) {
             super.onPostExecute(result);
 
-            mCallback.onResult(result);
+            mStatus = result;
+            mHandler.post(mCallback);
         }
 
         private UpdateStatus getTestStatus() {
@@ -189,7 +261,12 @@ class UpdateStatusProvider {
 
             UpdateStatus status = new UpdateStatus();
 
+            status.mIsSimulated = true;
             status.updateState = forcedUpdateState;
+
+            // TODO(dtrainor/nyquist): If a fake inline flow is set, set the state to
+            // UPDATE_AVAILABLE here to properly get the flow kicked off and set this to true.
+            status.mIsInlineSimulated = false;
 
             // Push custom configurations for certain update states.
             switch (forcedUpdateState) {
