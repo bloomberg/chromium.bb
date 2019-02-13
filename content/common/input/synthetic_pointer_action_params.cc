@@ -12,6 +12,9 @@ SyntheticPointerActionParams::SyntheticPointerActionParams(
     PointerActionType action_type)
     : pointer_action_type_(action_type) {}
 
+SyntheticPointerActionParams::SyntheticPointerActionParams(
+    const SyntheticPointerActionParams& other) = default;
+
 SyntheticPointerActionParams::~SyntheticPointerActionParams() = default;
 
 // static

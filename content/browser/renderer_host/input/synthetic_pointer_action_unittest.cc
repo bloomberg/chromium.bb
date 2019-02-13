@@ -149,6 +149,7 @@ class MockSyntheticPointerTouchActionTarget
       rotation_angles_[num_dispatched_pointer_actions_] =
           touch_event.touches[i].rotation_angle;
       forces_[num_dispatched_pointer_actions_] = touch_event.touches[i].force;
+      timestamps_[num_dispatched_pointer_actions_] = touch_event.TimeStamp();
       num_dispatched_pointer_actions_++;
     }
   }
@@ -206,6 +207,13 @@ class MockSyntheticPointerTouchActionTarget
              << ", expected "
              << ToWebTouchPointState(param.pointer_action_type()) << ".";
     }
+
+    if (!param.timestamp().is_null() &&
+        timestamps_[index] != param.timestamp()) {
+      return testing::AssertionFailure()
+             << "Dispatched event's time stamp  was " << timestamps_[index]
+             << ", expected " << param.timestamp() << ".";
+    }
     return testing::AssertionSuccess();
   }
 
@@ -240,6 +248,7 @@ class MockSyntheticPointerTouchActionTarget
   float heights_[WebTouchEvent::kTouchesLengthCap];
   float rotation_angles_[WebTouchEvent::kTouchesLengthCap];
   float forces_[WebTouchEvent::kTouchesLengthCap];
+  base::TimeTicks timestamps_[WebTouchEvent::kTouchesLengthCap];
 };
 
 class MockSyntheticPointerMouseActionTarget
@@ -256,6 +265,7 @@ class MockSyntheticPointerMouseActionTarget
     click_count_ = mouse_event.click_count;
     modifiers_ = mouse_event.GetModifiers();
     button_ = mouse_event.button;
+    timestamp_ = mouse_event.TimeStamp();
   }
 
   testing::AssertionResult SyntheticMouseActionDispatchedCorrectly(
@@ -334,6 +344,12 @@ class MockSyntheticPointerMouseActionTarget
              << "Pointer position was " << position_.ToString()
              << ", expected " << param.position().ToString() << ".";
     }
+
+    if (!param.timestamp().is_null() && timestamp_ != param.timestamp()) {
+      return testing::AssertionFailure()
+             << "Dispatched event's time stamp  was " << timestamp_
+             << ", expected " << param.timestamp() << ".";
+    }
     return testing::AssertionSuccess();
   }
 
@@ -347,6 +363,7 @@ class MockSyntheticPointerMouseActionTarget
   int click_count_;
   int modifiers_;
   WebMouseEvent::Button button_;
+  base::TimeTicks timestamp_;
 };
 
 class MockSyntheticPointerPenActionTarget
@@ -833,6 +850,59 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionWithKey) {
   param3.set_position(gfx::PointF(139, 98));
   param3.set_button(SyntheticPointerActionParams::Button::LEFT);
   param3.set_key_modifiers(6);
+  params_.PushPointerActionParams(param3);
+  pointer_action_.reset(new SyntheticPointerAction(params_));
+
+  ForwardSyntheticPointerAction();
+  MockSyntheticPointerMouseActionTarget* pointer_mouse_target =
+      static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  std::vector<SyntheticPointerActionParams::Button> buttons;
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      param1, 0, buttons));
+
+  ForwardSyntheticPointerAction();
+  EXPECT_EQ(2, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      param2, 0, buttons));
+
+  ForwardSyntheticPointerAction();
+  EXPECT_EQ(3, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  buttons.push_back(SyntheticPointerActionParams::Button::LEFT);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      param3, 1, buttons, SyntheticPointerActionParams::Button::LEFT));
+}
+
+TEST_F(SyntheticPointerActionTest, PointerMouseActionWithTime) {
+  CreateSyntheticPointerActionTarget<MockSyntheticPointerMouseActionTarget>();
+
+  // Send a mouse move.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  SyntheticPointerActionParams param1 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+  param1.set_position(gfx::PointF(189, 62));
+  param1.set_position(gfx::PointF(189, 62));
+  param1.set_timestamp(timestamp + base::TimeDelta::FromSeconds(1));
+  params_.PushPointerActionParams(param1);
+
+  // Move the mouse while alt and control keys are pressed.
+  SyntheticPointerActionParams param2 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+  param2.set_position(gfx::PointF(139, 98));
+  param2.set_key_modifiers(6);
+  param2.set_timestamp(timestamp + base::TimeDelta::FromSeconds(2));
+  params_.PushPointerActionParams(param2);
+
+  // Send a mouse down with left button while alt and control keys are pressed.
+  SyntheticPointerActionParams param3 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::PRESS);
+  param3.set_position(gfx::PointF(139, 98));
+  param3.set_button(SyntheticPointerActionParams::Button::LEFT);
+  param3.set_key_modifiers(6);
+  param3.set_timestamp(timestamp + base::TimeDelta::FromSeconds(3));
   params_.PushPointerActionParams(param3);
   pointer_action_.reset(new SyntheticPointerAction(params_));
 
