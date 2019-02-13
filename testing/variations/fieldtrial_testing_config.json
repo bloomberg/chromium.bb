@@ -5054,6 +5054,7 @@
                     "enable_features": [
                         "DoodlesOnLocalNtp",
                         "PromosOnLocalNtp",
+                        "SearchSuggestionsOnLocalNtp",
                         "UseGoogleLocalNtp"
                     ]
                 }
