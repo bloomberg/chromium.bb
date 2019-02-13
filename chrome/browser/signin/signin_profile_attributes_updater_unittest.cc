@@ -102,16 +102,15 @@ TEST_F(SigninProfileAttributesUpdaterTest, AuthError) {
   EXPECT_FALSE(entry->IsAuthError());
 
   // Set auth error.
-  AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+  std::string account_id = identity_manager->GetPrimaryAccountId();
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager, account_info.account_id,
+      identity_manager, account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   EXPECT_TRUE(entry->IsAuthError());
 
   // Remove auth error.
   identity::UpdatePersistentErrorOfRefreshTokenForAccount(
-      identity_manager, account_info.account_id,
-      GoogleServiceAuthError::AuthErrorNone());
+      identity_manager, account_id, GoogleServiceAuthError::AuthErrorNone());
   EXPECT_FALSE(entry->IsAuthError());
 }
 
