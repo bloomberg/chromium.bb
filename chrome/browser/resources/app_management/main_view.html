@@ -54,6 +54,7 @@
 
       .notification-row {
         align-items: center;
+        cursor: pointer;
         display: inline-flex;
         justify-content: space-between;
         padding: 0 24px;
@@ -100,15 +101,14 @@
     </div>
 
     <div class="card-container">
-      <span class="notification-row">
+      <span class="notification-row" on-click="onClickNotificationSublabel_">
         <div class="notification-row-sublabel">
           <div class="header-text">
               $i18n{notifications}
           </div>
           <div id="notifications-sublabel" class="secondary-text"></div>
         </div>
-        <paper-icon-button-light class="subpage-arrow" actionable
-            on-click="onClickNotificationSublabel_">
+        <paper-icon-button-light class="subpage-arrow" actionable>
           <button></button>
         </paper-icon-button-light>
       </span>

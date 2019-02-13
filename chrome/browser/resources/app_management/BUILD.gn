@@ -22,6 +22,7 @@ if (!is_android) {
       ":metadata_view",
       ":notifications_view",
       ":permission_item",
+      ":permission_toggle",
       ":permission_view_header",
       ":pwa_permission_view",
       ":reducers",
@@ -154,7 +155,14 @@ if (!is_android) {
   js_library("permission_item") {
     deps = [
       ":fake_page_handler",
+      ":permission_toggle",
       ":store_client",
+      ":util",
+    ]
+  }
+
+  js_library("permission_toggle") {
+    deps = [
       ":util",
     ]
   }

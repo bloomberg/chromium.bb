@@ -10,6 +10,7 @@
     <style include="app-management-shared-css">
       :host {
         align-items: center;
+        cursor: pointer;
         display: flex;
         justify-content: space-between;
       }
@@ -27,7 +28,7 @@
       </template>
       <div id="permission-label">[[permissionLabel]]</div>
     </div>
-    <app-management-permission-toggle
+    <app-management-permission-toggle id="permission-toggle"
         app="[[app_]]" permission-type="[[permissionType]]">
     </app-management-permission-toggle>
   </template>

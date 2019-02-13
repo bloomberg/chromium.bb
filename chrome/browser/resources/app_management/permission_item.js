@@ -34,8 +34,23 @@ Polymer({
     icon: String,
   },
 
+  listeners: {
+    'click': 'onClick_',
+  },
+
   attached: function() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
+  },
+
+  /**
+   * @private
+   */
+  onClick_: function(e) {
+    e.preventDefault();
+
+    const /** @type {AppManagementPermissionToggleElement} */ toggle =
+        this.$['permission-toggle'];
+    toggle.togglePermission_();
   },
 });
