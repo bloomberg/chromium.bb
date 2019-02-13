@@ -191,7 +191,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
   virtual IntSize Size() const { return size_; }
-  virtual std::vector<SkISize> GetSupportedDecodeSizes() const { return {}; };
+  virtual std::vector<SkISize> GetSupportedDecodeSizes() const { return {}; }
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.
@@ -467,7 +467,7 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // This methods gets called at the end of InitFrameBuffer. Subclasses can do
   // format specific initialization, for e.g. alpha settings, here.
-  virtual void OnInitFrameBuffer(size_t){};
+  virtual void OnInitFrameBuffer(size_t) {}
 
   // Called by InitFrameBuffer to determine if it can take the bitmap of the
   // previous frame. This condition is different for GIF and WEBP.
