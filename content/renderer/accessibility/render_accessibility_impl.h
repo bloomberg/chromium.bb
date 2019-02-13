@@ -32,6 +32,8 @@ struct AXEvent;
 }
 
 namespace content {
+
+class AXImageAnnotator;
 class RenderFrameImpl;
 
 // The browser process implements native accessibility APIs, allowing
@@ -98,11 +100,11 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                      ax::mojom::Event event,
                      int action_request_id = -1);
 
- protected:
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.
   blink::WebDocument GetMainDocument();
 
+ protected:
   // Send queued events from the renderer to the browser.
   void SendPendingAccessibilityEvents();
 
@@ -144,6 +146,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // This keeps accessibility enabled as long as it lives.
   std::unique_ptr<blink::WebAXContext> ax_context_;
+
+  // Manages the automatic image annotations, if enabled.
+  std::unique_ptr<AXImageAnnotator> ax_image_annotator_;
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.

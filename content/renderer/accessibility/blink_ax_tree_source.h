@@ -18,6 +18,7 @@
 
 namespace content {
 
+class AXImageAnnotator;
 class BlinkAXTreeSource;
 class RenderFrameImpl;
 
@@ -71,6 +72,13 @@ class BlinkAXTreeSource
   void set_max_image_data_size(const gfx::Size& size) {
     max_image_data_size_ = size;
   }
+
+  // The following methods add or remove an image annotator which is used to
+  // provide automatic labels for images.
+  void AddImageAnnotator(const AXImageAnnotator* const annotator) {
+    image_annotator_ = annotator;
+  }
+  void RemoveImageAnnotator() { image_annotator_ = nullptr; }
 
   // Query or update a set of IDs for which we should load inline text boxes.
   bool ShouldLoadInlineTextBoxes(const blink::WebAXObject& obj) const;
@@ -135,6 +143,8 @@ class BlinkAXTreeSource
   int image_data_node_id_ = -1;
 
   gfx::Size max_image_data_size_;
+
+  const AXImageAnnotator* image_annotator_ = nullptr;
 
   // These are updated when calling |Freeze|.
   bool frozen_ = false;
