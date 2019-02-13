@@ -106,6 +106,7 @@ NavigationModelShortcutItem.prototype = /** @struct */ {
  * @param {!VolumeInfo} volumeInfo Volume info for the volume. Cannot be null.
  * @constructor
  * @extends {NavigationModelItem}
+ * @struct
  */
 function NavigationModelVolumeItem(label, volumeInfo) {
   NavigationModelItem.call(this, label, NavigationModelItemType.VOLUME);
@@ -724,10 +725,6 @@ NavigationListModel.prototype.orderAndNestItems_ = function() {
   for (const volume of otherVolumes) {
     this.navigationItems_.push(volume);
     volume.section = NavigationSection.REMOVABLE;
-  }
-
-  if (this.addNewServicesItem_) {
-    this.navigationItems_.push(this.addNewServicesItem_);
   }
 };
 
