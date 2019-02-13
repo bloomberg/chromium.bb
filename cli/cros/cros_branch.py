@@ -685,7 +685,8 @@ Delete Examples:
         '--force',
         action='store_true',
         help='Required for any remote operation that would delete an existing '
-             'branch.')
+             'branch. Also required when trying to branch from a perviously '
+             'branched manifest version.')
 
     sync_group = parser.add_argument_group(
         'Sync',
@@ -771,6 +772,8 @@ Delete Examples:
         self.options.root,
         repo_url=self.options.repo_url,
         manifest_url=self.options.manifest_url)
+    push = self.options.push
+    force = self.options.force
 
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
@@ -792,8 +795,10 @@ Delete Examples:
             'chromeos/manifest-internal')
         pattern = '.*-%s\\.B$' % '\\.'.join(
             str(comp) for comp in vinfo.VersionComponents() if comp)
-        if checkout.BranchExists(manifest_internal, pattern):
-          raise BranchError('Already branched %s.' % self.options.version)
+        if checkout.BranchExists(manifest_internal, pattern) and not force:
+          raise BranchError(
+              'Already branched %s. Please rerun with --force if you wish to '
+              'proceed' % self.options.version)
 
         # Good to sync.
         checkout.SyncVersion(self.options.version)
@@ -810,20 +815,17 @@ Delete Examples:
             default=False)
 
       if proceed:
-        branch.Create(push=self.options.push, force=self.options.force)
+        branch.Create(push=push, force=force)
 
     elif self.options.subcommand == 'rename':
       checkout.SyncBranch(self.options.old)
       branch = Branch(self.options.new, checkout)
-      branch.Rename(
-          self.options.old,
-          push=self.options.push,
-          force=self.options.force)
+      branch.Rename(self.options.old, push=push, force=force)
 
     elif self.options.subcommand == 'delete':
       checkout.SyncBranch(self.options.branch)
       branch = Branch(self.options.branch, checkout)
-      branch.Delete(push=self.options.push, force=self.options.force)
+      branch.Delete(push=push, force=force)
 
     else:
       raise BranchError('Unrecognized option.')

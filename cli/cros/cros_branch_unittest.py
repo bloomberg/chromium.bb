@@ -1018,6 +1018,16 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
         branch_exists.call_args_list,
         [mock.call(mock.ANY, '.*-1\\.2\\.B$')])
 
+  def testCreateWithForceDoesNotCheckVersion(self):
+    """Test create validates version has no existing branches."""
+    branch_exists = self.PatchObject(CrosCheckout, 'BranchExists',
+                                     return_value=True)
+    self.RunCommandMock(
+        ['--force', 'create', '--version', '1.2.0', '--release'])
+    self.assertEqual(
+        branch_exists.call_args_list,
+        [mock.call(mock.ANY, '.*-1\\.2\\.B$')])
+
   def testCreateConfirmsGeneratedBranchNameNoAnswer(self):
     """Test create confirms generated branch names with users."""
     self.get_input = self.PatchObject(cros_build_lib, 'GetInput',
