@@ -14,7 +14,15 @@
 
 <dom-module id="settings-google-assistant-page">
   <template>
-    <style include="settings-shared md-select"></style>
+    <style include="settings-shared md-select">
+      .text-area {
+        margin-inline-end: 24px;
+      }
+
+      select.md-select {
+        min-width: 200px;
+      }
+    </style>
     <settings-toggle-button id="googleAssistantEnable"
         class="first primary-toggle"
         pref="{{prefs.settings.voice_interaction.enabled}}"
@@ -59,7 +67,7 @@
             </template>
           </select>
         </div>
-        <template is="dom-if" if="[[voiceMatchEnabled_]]">
+        <template is="dom-if" if="[[shouldShowVoiceMatchSettings_]]">
           <div class="settings-box two-line">
             <div class="start text-area">
               <div class="label">
