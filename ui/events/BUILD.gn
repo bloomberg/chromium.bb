@@ -192,6 +192,7 @@ jumbo_component("events") {
     "event_modifiers.cc",
     "event_processor.cc",
     "event_rewriter.cc",
+    "event_rewriter_continuation.h",
     "event_source.cc",
     "event_target.cc",
     "event_utils.cc",
