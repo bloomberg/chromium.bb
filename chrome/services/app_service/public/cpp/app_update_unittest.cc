@@ -47,6 +47,9 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::OptionalBool expect_show_in_search_;
   bool expect_show_in_search_changed_;
 
+  apps::mojom::OptionalBool expect_show_in_management_;
+  bool expect_show_in_management_changed_;
+
   static constexpr uint32_t kPermissionTypeLocation = 100;
   static constexpr uint32_t kPermissionTypeNotification = 200;
 
@@ -71,6 +74,7 @@ class AppUpdateTest : public testing::Test {
     expect_is_platform_app_changed_ = false;
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
+    expect_show_in_management_changed_ = false;
   }
 
   void CheckExpects(const apps::AppUpdate& u) {
@@ -107,6 +111,9 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_show_in_search_, u.ShowInSearch());
     EXPECT_EQ(expect_show_in_search_changed_, u.ShowInSearchChanged());
+
+    EXPECT_EQ(expect_show_in_management_, u.ShowInManagement());
+    EXPECT_EQ(expect_show_in_management_changed_, u.ShowInManagementChanged());
   }
 
   void TestAppUpdate(apps::mojom::App* state, apps::mojom::App* delta) {
@@ -127,6 +134,7 @@ class AppUpdateTest : public testing::Test {
     expect_is_platform_app_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
+    expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
     ExpectNoChange();
     CheckExpects(u);
 
@@ -321,6 +329,28 @@ class AppUpdateTest : public testing::Test {
       delta->show_in_search = apps::mojom::OptionalBool::kTrue;
       expect_show_in_search_ = apps::mojom::OptionalBool::kTrue;
       expect_show_in_search_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // ShowInManagement tests.
+
+    if (state) {
+      state->show_in_management = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_management_ = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_management_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->show_in_management = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_management_ = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_management_changed_ = true;
       CheckExpects(u);
     }
 

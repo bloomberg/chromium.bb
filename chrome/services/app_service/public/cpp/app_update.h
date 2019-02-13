@@ -91,6 +91,9 @@ class AppUpdate {
   apps::mojom::OptionalBool ShowInSearch() const;
   bool ShowInSearchChanged() const;
 
+  apps::mojom::OptionalBool ShowInManagement() const;
+  bool ShowInManagementChanged() const;
+
  private:
   const apps::mojom::App* state_;
   const apps::mojom::App* delta_;

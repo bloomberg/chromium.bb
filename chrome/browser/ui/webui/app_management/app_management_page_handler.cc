@@ -95,9 +95,7 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
 
   std::vector<app_management::mojom::AppPtr> apps;
   proxy->Cache().ForEachApp([this, &apps](const apps::AppUpdate& update) {
-    // TODO(crbug.com/906508): Decide on a better way to stop
-    // built-in apps showing up on the app management page.
-    if (update.AppType() != apps::mojom::AppType::kBuiltIn) {
+    if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue) {
       apps.push_back(CreateUIAppPtr(update));
     }
   });
@@ -193,9 +191,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 }
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
-  // TODO(crbug.com/906508): Decide on a better way to stop
-  // built-in apps showing up on the app management page.
-  if (update.AppType() == apps::mojom::AppType::kBuiltIn) {
+  if (update.ShowInManagement() != apps::mojom::OptionalBool::kTrue) {
     return;
   }
 
