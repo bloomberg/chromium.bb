@@ -57,7 +57,7 @@ TEST_P(VoiceSearchNavigationsTest, CommitResetVoiceSearchExpectation) {
   EXPECT_FALSE(navigations()->IsExpectingVoiceSearch());
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticVoiceSearchNavigationsTest,
-                        VoiceSearchNavigationsTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticVoiceSearchNavigationsTest,
+                         VoiceSearchNavigationsTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));

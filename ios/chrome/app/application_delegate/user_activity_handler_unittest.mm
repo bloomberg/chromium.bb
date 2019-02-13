@@ -705,7 +705,7 @@ TEST_P(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   EXPECT_FALSE(getHandleStartupParametersHasBeenCalled());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ProgrammaticUserActivityHandlerTest,
     UserActivityHandlerTest,
     ::testing::Values(ExternalFilesLoadedInWebStateFeature::Enabled,

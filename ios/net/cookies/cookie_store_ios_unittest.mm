@@ -71,18 +71,18 @@ struct CookieStoreIOSTestTraits {
   base::MessageLoop loop_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(CookieStoreIOS,
-                              CookieStoreTest,
-                              CookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(CookieStoreIOS,
-                              CookieStoreChangeGlobalTest,
-                              CookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(CookieStoreIOS,
-                              CookieStoreChangeUrlTest,
-                              CookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(CookieStoreIOS,
-                              CookieStoreChangeNamedTest,
-                              CookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
+                               CookieStoreTest,
+                               CookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
+                               CookieStoreChangeGlobalTest,
+                               CookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
+                               CookieStoreChangeUrlTest,
+                               CookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(CookieStoreIOS,
+                               CookieStoreChangeNamedTest,
+                               CookieStoreIOSTestTraits);
 
 namespace {
 

@@ -159,7 +159,7 @@ class SystemCookieStoreTest : public PlatformTest {
   SystemCookieStoreTestDelegate delegate_;
 };
 
-TYPED_TEST_CASE_P(SystemCookieStoreTest);
+TYPED_TEST_SUITE_P(SystemCookieStoreTest);
 
 TYPED_TEST_P(SystemCookieStoreTest, SetCookieAsync) {
   if (!this->IsTestEnabled())
@@ -295,12 +295,12 @@ TYPED_TEST_P(SystemCookieStoreTest, GetCookieAcceptPolicy) {
             cookie_store->GetCookieAcceptPolicy());
 }
 
-REGISTER_TYPED_TEST_CASE_P(SystemCookieStoreTest,
-                           SetCookieAsync,
-                           GetCookiesAsync,
-                           DeleteCookiesAsync,
-                           ClearCookiesAsync,
-                           GetCookieAcceptPolicy);
+REGISTER_TYPED_TEST_SUITE_P(SystemCookieStoreTest,
+                            SetCookieAsync,
+                            GetCookiesAsync,
+                            DeleteCookiesAsync,
+                            ClearCookiesAsync,
+                            GetCookieAcceptPolicy);
 
 }  // namespace net
 

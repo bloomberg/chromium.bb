@@ -63,8 +63,8 @@ class NSHTTPSystemCookieStoreTestDelegate {
   std::unique_ptr<net::NSHTTPSystemCookieStore> store_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(NSHTTPSystemCookieStore,
-                              SystemCookieStoreTest,
-                              NSHTTPSystemCookieStoreTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(NSHTTPSystemCookieStore,
+                               SystemCookieStoreTest,
+                               NSHTTPSystemCookieStoreTestDelegate);
 
 }  // namespace net
