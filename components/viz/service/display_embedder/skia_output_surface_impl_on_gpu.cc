@@ -56,6 +56,70 @@
 #endif
 
 namespace viz {
+
+// Skia gr_context() and |context_provider_| share an underlying GLContext.
+// Each of them caches some GL state. Interleaving usage could make cached
+// state inconsistent with GL state. Using a ScopedUseContextProvider whenever
+// |context_provider_| could be accessed (e.g. processing completed queries),
+// will keep cached state consistent with driver GL state.
+class SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider {
+ public:
+  ScopedUseContextProvider(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
+                           GLuint texture_client_id)
+      : impl_on_gpu_(impl_on_gpu) {
+    if (!impl_on_gpu_->MakeCurrent()) {
+      valid_ = false;
+      return;
+    }
+
+    // GLRendererCopier uses context_provider_->ContextGL(), which caches GL
+    // state and removes state setting calls that it considers redundant. To get
+    // to a known GL state, we first set driver GL state and then make client
+    // side consistent with that.
+    auto* api = impl_on_gpu_->api_;
+    api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
+    api->glDisableFn(GL_SCISSOR_TEST);
+    api->glDisableFn(GL_STENCIL_TEST);
+    api->glDisableFn(GL_BLEND);
+    impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState(
+        texture_client_id);
+  }
+
+  ~ScopedUseContextProvider() {
+    if (valid_)
+      impl_on_gpu_->gr_context()->resetContext();
+  }
+
+  bool valid() { return valid_; }
+
+ private:
+  SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+  bool valid_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUseContextProvider);
+};
+
+// TODO(backer): Use this wrapper for GL as well.
+// Thin wrapper around gpu::VulkanSurface that allows us to easily inject
+// a fake offscreen surface for tests.
+class SkiaOutputSurfaceImplOnGpu::SurfaceWrapper {
+ public:
+  SurfaceWrapper();
+  virtual ~SurfaceWrapper();
+
+  // SkSurface that can be drawn to.
+  virtual sk_sp<SkSurface> DrawSurface() = 0;
+
+  // Changes the size of draw surface and invalidates it's contents.
+  virtual void Reshape(const gfx::Size& size) = 0;
+
+  // Presents DrawSurface.
+  virtual gpu::SwapBuffersCompleteParams SwapBuffers() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SurfaceWrapper);
+};
+
 namespace {
 
 base::AtomicSequenceNumber g_next_command_buffer_id;
@@ -214,6 +278,175 @@ class ContextCurrentTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(ContextCurrentTaskRunner);
 };
 
+#if BUILDFLAG(ENABLE_VULKAN)
+// Wrap gpu::VulkanSurface for use in Skia API. Creates a sequence of SkSurface
+// around the gpu::VulkanSurface::GetSwapChain().
+class OnScreenVulkanSurface final
+    : public SkiaOutputSurfaceImplOnGpu::SurfaceWrapper {
+ public:
+  OnScreenVulkanSurface(VulkanContextProvider* context_provider,
+                        gpu::SurfaceHandle surface_handle)
+      : context_provider_(context_provider), surface_handle_(surface_handle) {}
+
+  ~OnScreenVulkanSurface() override {
+    if (vulkan_surface_)
+      vulkan_surface_->Destroy();
+  }
+
+  // SurfaceWrapper implementation
+  sk_sp<SkSurface> DrawSurface() override { return draw_surface_; }
+
+  void Reshape(const gfx::Size& size) override {
+    if (!vulkan_surface_)
+      CreateVulkanSurface();
+
+    auto old_size = vulkan_surface_->size();
+    vulkan_surface_->SetSize(size);
+    if (vulkan_surface_->size() != old_size) {
+      // Size has been changed, we need to clear all surfaces which will be
+      // recreated later.
+      sk_surfaces_.clear();
+      sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
+    }
+
+    UpdateDrawSurface();
+  }
+
+  gpu::SwapBuffersCompleteParams SwapBuffers() override {
+    // Reshape should have been called first.
+    DCHECK(vulkan_surface_);
+    DCHECK(draw_surface_);
+
+    gpu::SwapBuffersCompleteParams params;
+    params.swap_response.swap_start = base::TimeTicks::Now();
+
+    auto backend = draw_surface_->getBackendRenderTarget(
+        SkSurface::kFlushRead_BackendHandleAccess);
+    GrVkImageInfo vk_image_info;
+    if (!backend.getVkImageInfo(&vk_image_info))
+      NOTREACHED() << "Failed to get the image info.";
+    vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
+        vk_image_info.fImageLayout);
+    params.swap_response.result = vulkan_surface_->SwapBuffers();
+    params.swap_response.swap_end = base::TimeTicks::Now();
+
+    UpdateDrawSurface();
+
+    return params;
+  }
+
+ private:
+  void CreateVulkanSurface() {
+    gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
+#if defined(OS_ANDROID)
+    accelerated_widget =
+        gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
+            surface_handle_);
+#else
+    accelerated_widget = surface_handle_;
+#endif
+    auto vulkan_surface =
+        context_provider_->GetVulkanImplementation()->CreateViewSurface(
+            accelerated_widget);
+    if (!vulkan_surface)
+      LOG(FATAL) << "Failed to create vulkan surface.";
+    if (!vulkan_surface->Initialize(context_provider_->GetDeviceQueue(),
+                                    gpu::VulkanSurface::FORMAT_RGBA_32)) {
+      LOG(FATAL) << "Failed to initialize vulkan surface.";
+    }
+    vulkan_surface_ = std::move(vulkan_surface);
+  }
+
+  void UpdateDrawSurface() {
+    DCHECK(vulkan_surface_);
+    auto* swap_chain = vulkan_surface_->GetSwapChain();
+    auto index = swap_chain->current_image();
+    auto& sk_surface = sk_surfaces_[index];
+    if (!sk_surface) {
+      SkSurfaceProps surface_props =
+          SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+      VkImage vk_image = swap_chain->GetCurrentImage();
+      VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
+      const auto surface_format = vulkan_surface_->surface_format().format;
+      DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
+             surface_format == VK_FORMAT_R8G8B8A8_UNORM);
+      GrVkImageInfo vk_image_info(vk_image, GrVkAlloc(),
+                                  VK_IMAGE_TILING_OPTIMAL, vk_image_layout,
+                                  surface_format, 1 /* level_count */);
+      GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
+                                          vulkan_surface_->size().height(),
+                                          0 /* sample_cnt */, vk_image_info);
+      auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
+                               ? kBGRA_8888_SkColorType
+                               : kRGBA_8888_SkColorType;
+      sk_surface = SkSurface::MakeFromBackendRenderTarget(
+          context_provider_->GetGrContext(), render_target,
+          kTopLeft_GrSurfaceOrigin, sk_color_type, nullptr /* color_space */,
+          &surface_props);
+      DCHECK(sk_surface);
+    } else {
+      auto backend = sk_surface->getBackendRenderTarget(
+          SkSurface::kFlushRead_BackendHandleAccess);
+      backend.setVkImageLayout(swap_chain->GetCurrentImageLayout());
+    }
+
+    draw_surface_ = sk_surface;
+  }
+
+  VulkanContextProvider* const context_provider_;
+
+  const gpu::SurfaceHandle surface_handle_;
+  std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
+
+  // SkSurfaces for swap chain images.
+  std::vector<sk_sp<SkSurface>> sk_surfaces_;
+
+  // SkSurface to be drawn to. Updated after Reshape and SwapBuffers.
+  sk_sp<SkSurface> draw_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnScreenVulkanSurface);
+};
+
+// An offscreen surface suitable for tests.
+class OffscreenVulkanSurface final
+    : public SkiaOutputSurfaceImplOnGpu::SurfaceWrapper {
+ public:
+  explicit OffscreenVulkanSurface(GrContext* gr_context)
+      : gr_context_(gr_context) {}
+  ~OffscreenVulkanSurface() override = default;
+
+  // SurfaceWrapper implementation:
+  sk_sp<SkSurface> DrawSurface() override { return draw_surface_; }
+
+  void Reshape(const gfx::Size& size) override {
+    auto image_info =
+        SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
+                          kOpaque_SkAlphaType);
+    draw_surface_ =
+        SkSurface::MakeRenderTarget(gr_context_, SkBudgeted::kNo, image_info);
+  }
+
+  gpu::SwapBuffersCompleteParams SwapBuffers() override {
+    // Reshape should have been called first.
+    DCHECK(draw_surface_);
+
+    gpu::SwapBuffersCompleteParams params;
+    params.swap_response.swap_start = base::TimeTicks::Now();
+    params.swap_response.result = gfx::SwapResult::SWAP_ACK;
+    params.swap_response.swap_end = params.swap_response.swap_start;
+
+    return params;
+  }
+
+ private:
+  GrContext* const gr_context_;
+  sk_sp<SkSurface> draw_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(OffscreenVulkanSurface);
+};
+
+#endif  // if BUILDFLAG(ENABLE_VULKAN)
+
 }  // namespace
 
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
@@ -234,33 +467,9 @@ SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
     OffscreenSurface&& offscreen_surface) = default;
 
-SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::ScopedUseContextProvider(
-    SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
-    GLuint texture_client_id)
-    : impl_on_gpu_(impl_on_gpu) {
-  if (!impl_on_gpu_->MakeCurrent()) {
-    valid_ = false;
-    return;
-  }
+SkiaOutputSurfaceImplOnGpu::SurfaceWrapper::SurfaceWrapper() = default;
 
-  // GLRendererCopier uses context_provider_->ContextGL(), which caches GL state
-  // and removes state setting calls that it considers redundant. To get to a
-  // known GL state, we first set driver GL state and then make client side
-  // consistent with that.
-  auto* api = impl_on_gpu_->api_;
-  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
-  api->glDisableFn(GL_SCISSOR_TEST);
-  api->glDisableFn(GL_STENCIL_TEST);
-  api->glDisableFn(GL_BLEND);
-  impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState(
-      texture_client_id);
-}
-
-SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::
-    ~ScopedUseContextProvider() {
-  if (valid_)
-    impl_on_gpu_->gr_context()->resetContext();
-}
+SkiaOutputSurfaceImplOnGpu::SurfaceWrapper::~SurfaceWrapper() = default;
 
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     gpu::SurfaceHandle surface_handle,
@@ -349,12 +558,6 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   MakeCurrent();
   context_provider_.reset();
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (vulkan_surface_) {
-    vulkan_surface_->Destroy();
-    vulkan_surface_ = nullptr;
-  }
-#endif
   sync_point_client_state_->Destroy();
 }
 
@@ -393,35 +596,17 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     CreateSkSurfaceForGL();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
-#if defined(OS_ANDROID)
-    accelerated_widget =
-        gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
-            surface_handle_);
-#else
-    accelerated_widget = surface_handle_;
-#endif
     if (!vulkan_surface_) {
-      auto vulkan_surface = vulkan_context_provider_->GetVulkanImplementation()
-                                ->CreateViewSurface(accelerated_widget);
-      if (!vulkan_surface)
-        LOG(FATAL) << "Failed to create vulkan surface.";
-      if (!vulkan_surface->Initialize(
-              vulkan_context_provider_->GetDeviceQueue(),
-              gpu::VulkanSurface::FORMAT_RGBA_32)) {
-        LOG(FATAL) << "Failed to initialize vulkan surface.";
+      if (surface_handle_ == gpu::kNullSurfaceHandle) {
+        vulkan_surface_ =
+            std::make_unique<OffscreenVulkanSurface>(gr_context());
+      } else {
+        vulkan_surface_ = std::make_unique<OnScreenVulkanSurface>(
+            vulkan_context_provider_, surface_handle_);
       }
-      vulkan_surface_ = std::move(vulkan_surface);
     }
-    auto old_size = vulkan_surface_->size();
-    vulkan_surface_->SetSize(size);
-    if (vulkan_surface_->size() != old_size) {
-      // Size has been changed, we need to clear all surfaces which will be
-      // recreated later.
-      sk_surfaces_.clear();
-      sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
-    }
-    CreateSkSurfaceForVulkan();
+    vulkan_surface_->Reshape(size);
+    sk_surface_ = vulkan_surface_->DrawSurface();
 #else
     NOTREACHED();
 #endif
@@ -495,28 +680,16 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     swap_end = base::TimeTicks::Now();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    swap_start = base::TimeTicks::Now();
+    DCHECK(vulkan_surface_);
     OnSwapBuffers();
-    auto backend = sk_surface_->getBackendRenderTarget(
-        SkSurface::kFlushRead_BackendHandleAccess);
-    GrVkImageInfo vk_image_info;
-    if (!backend.getVkImageInfo(&vk_image_info))
-      NOTREACHED() << "Failed to get the image info.";
-    vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
-        vk_image_info.fImageLayout);
-
-    gpu::SwapBuffersCompleteParams params;
-    params.swap_response.swap_start = base::TimeTicks::Now();
-    params.swap_response.result = vulkan_surface_->SwapBuffers();
-    auto now = base::TimeTicks::Now();
-    params.swap_response.swap_end = now;
+    auto params = vulkan_surface_->SwapBuffers();
+    sk_surface_ = vulkan_surface_->DrawSurface();
     DidSwapBuffersComplete(params);
+    buffer_presented_callback_.Run(gfx::PresentationFeedback(
+        params.swap_response.swap_end, base::TimeDelta(), 0 /* flag */));
 
-    buffer_presented_callback_.Run(
-        gfx::PresentationFeedback(now, base::TimeDelta(), 0 /* flag */));
-
-    CreateSkSurfaceForVulkan();
-    swap_end = base::TimeTicks::Now();
+    swap_start = params.swap_response.swap_start;
+    swap_end = params.swap_response.swap_end;
 #else
     NOTREACHED();
 #endif
@@ -974,42 +1147,6 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForGL() {
       gr_context(), render_target, kBottomLeft_GrSurfaceOrigin, color_type,
       color_space_.ToSkColorSpace(), &surface_props);
   DCHECK(sk_surface_);
-}
-
-void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
-#if BUILDFLAG(ENABLE_VULKAN)
-  auto* swap_chain = vulkan_surface_->GetSwapChain();
-  auto index = swap_chain->current_image();
-  auto& sk_surface = sk_surfaces_[index];
-  if (!sk_surface) {
-    SkSurfaceProps surface_props =
-        SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
-    VkImage vk_image = swap_chain->GetCurrentImage();
-    VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
-    const auto surface_format = vulkan_surface_->surface_format().format;
-    DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
-           surface_format == VK_FORMAT_R8G8B8A8_UNORM);
-    GrVkImageInfo vk_image_info(vk_image, GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
-                                vk_image_layout, surface_format,
-                                1 /* level_count */);
-    GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
-                                        vulkan_surface_->size().height(),
-                                        0 /* sample_cnt */, vk_image_info);
-    auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
-                             ? kBGRA_8888_SkColorType
-                             : kRGBA_8888_SkColorType;
-    sk_surface = SkSurface::MakeFromBackendRenderTarget(
-        gr_context(), render_target, kTopLeft_GrSurfaceOrigin, sk_color_type,
-        nullptr /* color_space */, &surface_props);
-    DCHECK(sk_surface);
-  } else {
-    auto backend = sk_surface->getBackendRenderTarget(
-        SkSurface::kFlushRead_BackendHandleAccess);
-    backend.setVkImageLayout(swap_chain->GetCurrentImageLayout());
-  }
-
-  sk_surface_ = sk_surface;
-#endif
 }
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {

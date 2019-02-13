@@ -23,4 +23,7 @@ specific_include_rules = {
   "cc_test_suite\.cc": [
     "+gpu/config",
   ],
+  "pixel_test\.cc": [
+    "+gpu/command_buffer/service/service_utils.h",
+  ],
 }

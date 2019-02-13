@@ -46,10 +46,6 @@ namespace gpu {
 class CommandBufferTaskExecutor;
 class SyncPointClientState;
 class SharedImageRepresentationSkia;
-
-#if BUILDFLAG(ENABLE_VULKAN)
-class VulkanSurface;
-#endif
 }
 
 namespace ui {
@@ -64,6 +60,7 @@ class DirectContextProvider;
 class GLRendererCopier;
 class GpuServiceImpl;
 class TextureDeleter;
+class VulkanContextProvider;
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -162,24 +159,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   bool was_context_lost() { return context_state_->context_lost(); }
 
-  // Skia gr_context() and |context_provider_| share an underlying GLContext.
-  // Each of them caches some GL state. Interleaving usage could make cached
-  // state inconsistent with GL state. Using a ScopedUseContextProvider whenever
-  // |context_provider_| could be accessed (e.g. processing completed queries),
-  // will keep cached state consistent with driver GL state.
-  class ScopedUseContextProvider {
-   public:
-    explicit ScopedUseContextProvider(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
-                                      GLuint texture_client_id);
-    ~ScopedUseContextProvider();
-    bool valid() { return valid_; }
-
-   private:
-    SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
-    bool valid_ = true;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedUseContextProvider);
-  };
+  class ScopedUseContextProvider;
+  class SurfaceWrapper;
 
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
@@ -208,7 +189,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void OnSwapBuffers();
 
   void CreateSkSurfaceForGL();
-  void CreateSkSurfaceForVulkan();
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
@@ -252,12 +232,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
-
-  // surfaces for swap chain images.
-  std::vector<sk_sp<SkSurface>> sk_surfaces_;
-#endif
+  std::unique_ptr<SurfaceWrapper> vulkan_surface_;
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.

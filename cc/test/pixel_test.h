@@ -18,6 +18,7 @@
 #include "components/viz/service/display/software_renderer.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
+#include "gpu/vulkan/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
@@ -28,6 +29,12 @@ namespace test {
 class ScopedFeatureList;
 }
 }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+namespace gpu {
+class VulkanImplementation;
+}
+#endif
 
 namespace viz {
 class CopyOutputResult;
@@ -121,6 +128,10 @@ class PixelTest : public testing::Test {
 
   std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
+#endif
 };
 
 template<typename RendererType>
