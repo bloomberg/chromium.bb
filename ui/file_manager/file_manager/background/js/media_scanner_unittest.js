@@ -6,30 +6,30 @@
  * Stub out the metrics package.
  * @type {!Object<!string, !Function>}
  */
-var metrics = {
+const metrics = {
   recordTime: function() {},
   recordValue: function() {}
 };
 
 /** @type {!importer.DefaultMediaScanner} */
-var scanner;
+let scanner;
 
 /**
  * @const {importer.ScanMode}
  */
-var scanMode = importer.ScanMode.HISTORY;
+const scanMode = importer.ScanMode.HISTORY;
 
 /** @type {!importer.TestImportHistory} */
-var importHistory;
+let importHistory;
 
 /** @type {!TestDirectoryWatcher} */
-var watcher;
+let watcher;
 
 /**
  * @type {function(!FileEntry, !importer.Destination):
  *     !Promise<!importer.Disposition>}
  */
-var dispositionChecker;
+let dispositionChecker;
 
 // Set up the test components.
 function setUp() {
@@ -65,7 +65,7 @@ function testEmptySourceList() {
 }
 
 function testIsScanning(callback) {
-  var filenames = [
+  const filenames = [
     'happy',
     'thoughts'
   ];
@@ -78,14 +78,14 @@ function testIsScanning(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                var results = scanner.scanDirectory(root, scanMode);
+                const results = scanner.scanDirectory(root, scanMode);
                 assertFalse(results.isFinal());
               }),
       callback);
 }
 
 function testObserverNotifiedOnScanFinish(callback) {
-  var filenames = [
+  const filenames = [
     'happy',
     'thoughts'
   ];
@@ -101,7 +101,7 @@ function testObserverNotifiedOnScanFinish(callback) {
             // We kick this off first so we can capture the result for
             // use in an assert. Promises ensure the scan won't finish
             // until after our function is fully processed.
-            var result = scanner.scanDirectory(root, scanMode);
+            const result = scanner.scanDirectory(root, scanMode);
             scanner.addObserver(
                 function(eventType, scanResult) {
                   assertEquals(importer.ScanEvent.FINALIZED, eventType);
@@ -118,13 +118,13 @@ function testObserverNotifiedOnScanFinish(callback) {
  * Verifies that scanFiles slurps up all specified files.
  */
 function testScanFiles(callback) {
-  var filenames = [
+  const filenames = [
     'foo',
     'foo.jpg',
     'bar.gif',
     'baz.avi'
   ];
-  var expectedFiles = [
+  const expectedFiles = [
     '/testScanFiles/foo.jpg',
     '/testScanFiles/bar.gif',
     '/testScanFiles/baz.avi'
@@ -146,7 +146,7 @@ function testScanFiles(callback) {
  * Verifies that scanFiles skips duplicated files.
  */
 function testScanFilesIgnoresPreviousImports(callback) {
-  var filenames = [
+  const filenames = [
     'oldimage1234.jpg',    // a history duplicate
     'driveimage1234.jpg',  // a content duplicate
     'foo.jpg',
@@ -166,7 +166,7 @@ function testScanFilesIgnoresPreviousImports(callback) {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
 
-  var expectedFiles = [
+  const expectedFiles = [
     '/testScanFilesIgnoresPreviousImports/foo.jpg',
     '/testScanFilesIgnoresPreviousImports/bar.gif',
     '/testScanFilesIgnoresPreviousImports/baz.avi'
@@ -188,7 +188,7 @@ function testScanFilesIgnoresPreviousImports(callback) {
  * Verifies that scanning a simple single-level directory structure works.
  */
 function testEmptyScanResults(callback) {
-  var filenames = [
+  const filenames = [
     'happy',
     'thoughts'
   ];
@@ -211,7 +211,7 @@ function testEmptyScanResults(callback) {
  * Verifies that scanning a simple single-level directory structure works.
  */
 function testSingleLevel(callback) {
-  var filenames = [
+  const filenames = [
     'foo',
     'foo.jpg',
     'bar.gif',
@@ -219,7 +219,7 @@ function testSingleLevel(callback) {
     'foo.mp3',
     'bar.txt'
   ];
-  var expectedFiles = [
+  const expectedFiles = [
     '/testSingleLevel/foo.jpg',
     '/testSingleLevel/bar.gif',
     '/testSingleLevel/baz.avi'
@@ -244,7 +244,7 @@ function testSingleLevel(callback) {
  * progress at completion.
  */
 function testProgress(callback) {
-  var filenames = [
+  const filenames = [
     'foo',
     'foo.jpg',
     'bar.gif',
@@ -252,7 +252,7 @@ function testProgress(callback) {
     'foo.mp3',
     'bar.txt'
   ];
-  var expectedFiles = [
+  const expectedFiles = [
     '/testProgress/foo.jpg',
     '/testProgress/bar.gif',
     '/testProgress/baz.avi'
@@ -279,7 +279,7 @@ function testIgnoresPreviousImports(callback) {
   importHistory.importedPaths[
       '/testIgnoresPreviousImports/oldimage1234.jpg'] =
           [importer.Destination.GOOGLE_DRIVE];
-  var filenames = [
+  const filenames = [
     'oldimage1234.jpg',    // a history duplicate
     'driveimage1234.jpg',  // a content duplicate
     'foo.jpg',
@@ -299,13 +299,13 @@ function testIgnoresPreviousImports(callback) {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
 
-  var expectedFiles = [
+  const expectedFiles = [
     '/testIgnoresPreviousImports/foo.jpg',
     '/testIgnoresPreviousImports/bar.gif',
     '/testIgnoresPreviousImports/baz.avi'
   ];
 
-  var promise =
+  const promise =
       makeTestFileSystemRoot('testIgnoresPreviousImports')
           .then(populateDir.bind(null, filenames))
           .then(
@@ -325,7 +325,7 @@ function testTracksDuplicates(callback) {
   importHistory.importedPaths[
       '/testTracksDuplicates/oldimage1234.jpg'] =
           [importer.Destination.GOOGLE_DRIVE];
-  var filenames = [
+  const filenames = [
     'oldimage1234.jpg',    // a history duplicate
     'driveimage1234.jpg',  // a content duplicate
     'driveimage9999.jpg',  // a content duplicate
@@ -348,12 +348,12 @@ function testTracksDuplicates(callback) {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
 
-  var expectedDuplicates = [
+  const expectedDuplicates = [
     '/testTracksDuplicates/driveimage1234.jpg',
     '/testTracksDuplicates/driveimage9999.jpg'
   ];
 
-  var promise =
+  const promise =
       makeTestFileSystemRoot('testTracksDuplicates')
           .then(populateDir.bind(null, filenames))
           .then(
@@ -370,7 +370,7 @@ function testTracksDuplicates(callback) {
 }
 
 function testMultiLevel(callback) {
-  var filenames = [
+  const filenames = [
     'foo.jpg',
     'bar',
     [
@@ -386,7 +386,7 @@ function testMultiLevel(callback) {
       ]
     ]
   ];
-  var expectedFiles = [
+  const expectedFiles = [
     '/testMultiLevel/foo.jpg',
     '/testMultiLevel/dir1/bar.0.jpg',
     '/testMultiLevel/dir2/bar.1.gif',
@@ -409,7 +409,7 @@ function testMultiLevel(callback) {
 }
 
 function testDedupesFilesInScanResult(callback) {
-  var filenames = [
+  const filenames = [
     'foo.jpg',
     'bar.jpg',
     [
@@ -428,7 +428,7 @@ function testDedupesFilesInScanResult(callback) {
       ]
     ]
   ];
-  var expectedFiles = [
+  const expectedFiles = [
     '/testDedupesFilesInScanResult/foo.jpg',
     '/testDedupesFilesInScanResult/bar.jpg'
   ];
@@ -452,10 +452,10 @@ function testDedupesFilesInScanResult(callback) {
  * Verifies that scanning a simple single-level directory structure works.
  */
 function testDefaultScanResult() {
-  var hashGenerator = function(file) {
+  const hashGenerator = function(file) {
     return file.toURL();
   };
-  var scan = new importer.DefaultScanResult(scanMode, hashGenerator);
+  const scan = new importer.DefaultScanResult(scanMode, hashGenerator);
 
   // 0 before we set candidate count
   assertProgress(0, scan);
@@ -472,7 +472,7 @@ function testDefaultScanResult() {
 }
 
 function testInvalidation(callback) {
-  var invalidatePromise = new Promise(function(fulfill) {
+  const invalidatePromise = new Promise(function(fulfill) {
     scanner.addObserver(fulfill);
   });
   reportPromise(
@@ -582,7 +582,7 @@ function populateDir(filenames, dir) {
                   })
                   .then(populateDir.bind(null, filename));
             } else {
-              var name = /** @type {string} */ (filename);
+              const name = /** @type {string} */ (filename);
               return new Promise(function(resolve, reject) {
                 dir.getFile(name, {create: true}, resolve, reject);
               });

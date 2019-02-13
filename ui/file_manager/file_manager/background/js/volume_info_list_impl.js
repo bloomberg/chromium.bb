@@ -35,7 +35,7 @@ VolumeInfoListImpl.prototype.removeEventListener = function(type, handler) {
 
 /** @override */
 VolumeInfoListImpl.prototype.add = function(volumeInfo) {
-  var index = this.findIndex(volumeInfo.volumeId);
+  const index = this.findIndex(volumeInfo.volumeId);
   if (index !== -1) {
     this.model_.splice(index, 1, volumeInfo);
   } else {
@@ -45,7 +45,7 @@ VolumeInfoListImpl.prototype.add = function(volumeInfo) {
 
 /** @override */
 VolumeInfoListImpl.prototype.remove = function(volumeId) {
-  var index = this.findIndex(volumeId);
+  const index = this.findIndex(volumeId);
   if (index !== -1) {
     this.model_.splice(index, 1);
   }
@@ -62,7 +62,7 @@ VolumeInfoListImpl.prototype.item = function(index) {
  * @return {number} Index of the volume.
  */
 VolumeInfoListImpl.prototype.findIndex = function(volumeId) {
-  for (var i = 0; i < this.model_.length; i++) {
+  for (let i = 0; i < this.model_.length; i++) {
     if (this.model_.item(i).volumeId === volumeId) {
       return i;
     }

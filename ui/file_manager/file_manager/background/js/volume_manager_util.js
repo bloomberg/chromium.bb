@@ -5,7 +5,7 @@
 /**
  * Utilities for volume manager implementation.
  */
-var volumeManagerUtil = {};
+const volumeManagerUtil = {};
 
 /**
  * Time in milliseconds that we wait a response for general volume operations
@@ -41,7 +41,7 @@ volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES =
  * @param {string} error Status string usually received from APIs.
  */
 volumeManagerUtil.validateError = function(error) {
-  for (var key in VolumeManagerCommon.VolumeError) {
+  for (const key in VolumeManagerCommon.VolumeError) {
     if (error === VolumeManagerCommon.VolumeError[key]) {
       return;
     }
@@ -57,7 +57,7 @@ volumeManagerUtil.validateError = function(error) {
  * @return {!Promise<!VolumeInfo>} Promise settled with the VolumeInfo instance.
  */
 volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
-  var localizedLabel;
+  let localizedLabel;
   switch (volumeMetadata.volumeType) {
     case VolumeManagerCommon.VolumeType.DOWNLOADS:
       if (util.isMyFilesVolumeEnabled()) {

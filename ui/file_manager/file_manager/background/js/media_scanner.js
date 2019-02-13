@@ -54,7 +54,7 @@ importer.DefaultMediaScanner.prototype.addObserver = function(observer) {
 
 /** @override */
 importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
-  var index = this.observers_.indexOf(observer);
+  const index = this.observers_.indexOf(observer);
   if (index > -1) {
     this.observers_.splice(index, 1);
   } else {
@@ -65,10 +65,10 @@ importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
 /** @override */
 importer.DefaultMediaScanner.prototype.scanDirectory = function(directory,
                                                                 mode) {
-  var scan = this.createScanResult_(mode);
+  const scan = this.createScanResult_(mode);
   console.info(scan.name + ': Scanning directory ' + directory.fullPath);
 
-  var watcher = this.watcherFactory_(
+  const watcher = this.watcherFactory_(
       (/** @this {importer.DefaultMediaScanner} */
       function() {
         scan.cancel();
@@ -98,12 +98,12 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
   if (entries.length === 0) {
     throw new Error('Cannot scan empty list.');
   }
-  var scan = this.createScanResult_(mode);
+  const scan = this.createScanResult_(mode);
   console.info(
       scan.name + ': Scanning fixed set of ' +
       entries.length + ' entries.');
 
-  var watcher = this.watcherFactory_(
+  const watcher = this.watcherFactory_(
       /** @this {importer.DefaultMediaScanner} */
       (function() {
         scan.cancel();
@@ -111,7 +111,7 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
       }).bind(this));
 
   scan.setCandidateCount(entries.length);
-  var scanPromises = entries.map(this.onFileEntryFound_.bind(this, scan));
+  const scanPromises = entries.map(this.onFileEntryFound_.bind(this, scan));
 
   Promise.all(scanPromises)
       .then(scan.resolve)
@@ -143,14 +143,14 @@ importer.DefaultMediaScanner.SCAN_BATCH_SIZE = 1;
 importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
     function(scan, entries) {
   scan.setCandidateCount(entries.length);
-  var handleFileEntry = this.onFileEntryFound_.bind(this, scan);
+  const handleFileEntry = this.onFileEntryFound_.bind(this, scan);
 
   /**
    * @param {number} begin The beginning offset in the list of entries
    *     to process.
    * @return {!Promise}
    */
-  var scanBatch = function(begin) {
+  const scanBatch = function(begin) {
     if (scan.canceled()) {
       console.debug(
           scan.name + ': Skipping remaining ' +
@@ -160,9 +160,9 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
     }
 
     // the second arg to slice is an exclusive end index, so we +1 batch size.
-    var end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE;
+    const end = begin + importer.DefaultMediaScanner.SCAN_BATCH_SIZE;
     console.log(scan.name + ': Processing batch ' + begin + '-' + (end - 1));
-    var batch = entries.slice(begin, end);
+    const batch = entries.slice(begin, end);
 
     return Promise.all(
         batch.map(handleFileEntry))
@@ -203,7 +203,7 @@ importer.DefaultMediaScanner.prototype.notify_ = function(event, result) {
  */
 importer.DefaultMediaScanner.prototype.crawlDirectory_ =
     function(directory, watcher) {
-  var mediaFiles = [];
+  const mediaFiles = [];
 
   return fileOperationUtil.findEntriesRecursively(
       directory,
@@ -537,7 +537,7 @@ importer.DefaultScanResult.prototype.getStatistics = function() {
  * @private
  */
 importer.DefaultScanResult.prototype.calculateProgress_ = function() {
-  var progress = (this.candidateCount_ > 0) ?
+  let progress = (this.candidateCount_ > 0) ?
       Math.floor(this.candidatesProcessed_ / this.candidateCount_ * 100) :
       0;
 
@@ -622,7 +622,7 @@ importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =
     return;
   }
   this.triggered = true;
-  for (var url in this.watchedDirectories_) {
+  for (const url in this.watchedDirectories_) {
     window.webkitResolveLocalFileSystemURL(url, function(entry) {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError.name);

@@ -308,13 +308,13 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindow_ = function(
  * @type {!string}
  * @const
  */
-var DIALOG_ID_PREFIX = 'dialog#';
+const DIALOG_ID_PREFIX = 'dialog#';
 
 /**
  * Value of the next file manager dialog ID.
  * @type {number}
  */
-var nextFileManagerDialogID = 0;
+let nextFileManagerDialogID = 0;
 
 /**
  * Registers dialog window to the background page.
@@ -322,7 +322,7 @@ var nextFileManagerDialogID = 0;
  * @param {!Window} dialogWindow Window of the dialog.
  */
 function registerDialog(dialogWindow) {
-  var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
+  const id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
   window.background.dialogs[id] = dialogWindow;
   if (window.IN_TEST) {
     dialogWindow.IN_TEST = true;
@@ -340,7 +340,7 @@ function registerDialog(dialogWindow) {
  * @private
  */
 FileBrowserBackgroundImpl.prototype.onExecute_ = function(action, details) {
-  var appState = {
+  const appState = {
     params: {action: action},
     // It is not allowed to call getParent() here, since there may be
     // no permissions to access it at this stage. Therefore we are passing
@@ -370,7 +370,7 @@ FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
       // The app just launched. Remove window state records that are not needed
       // any more.
       chrome.storage.local.get(function(items) {
-        for (var key in items) {
+        for (const key in items) {
           if (items.hasOwnProperty(key)) {
             if (key.match(FILES_ID_PATTERN)) {
               chrome.storage.local.remove(key);
@@ -387,7 +387,7 @@ FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
 };
 
 /** @const {!string} */
-var GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
+const GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
 
 /**
  * Handles a message received via chrome.runtime.sendMessageExternal.
@@ -410,14 +410,14 @@ FileBrowserBackgroundImpl.prototype.onExternalMessageReceived_ =
 FileBrowserBackgroundImpl.prototype.onRestarted_ = function() {
   // Reopen file manager windows.
   chrome.storage.local.get(function(items) {
-    for (var key in items) {
+    for (const key in items) {
       if (items.hasOwnProperty(key)) {
-        var match = key.match(FILES_ID_PATTERN);
+        const match = key.match(FILES_ID_PATTERN);
         if (match) {
           metrics.startInterval('Load.BackgroundRestart');
-          var id = Number(match[1]);
+          const id = Number(match[1]);
           try {
-            var appState = /** @type {Object} */ (JSON.parse(items[key]));
+            const appState = /** @type {Object} */ (JSON.parse(items[key]));
             launcher.launchFileManager(appState, id, undefined, function() {
               metrics.recordInterval('Load.BackgroundRestart');
             });
@@ -444,7 +444,7 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
         launcher.launchFileManager();
         return;
       }
-      var appState = {
+      const appState = {
         // Do not clone the selection url, only the current directory.
         currentDirectoryURL: window.appWindows[key].
             contentWindow.appState.currentDirectoryURL
@@ -465,7 +465,7 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
  */
 FileBrowserBackgroundImpl.prototype.findFocusedWindow_ = function() {
   return new Promise(function(fulfill, reject) {
-    for (var key in window.appWindows) {
+    for (const key in window.appWindows) {
       try {
         if (window.appWindows[key].contentWindow.isFocused()) {
           fulfill(key);
@@ -530,7 +530,7 @@ FileBrowserBackgroundImpl.prototype.initContextMenu_ = function() {
     // console as an unchecked error.
     // - [1] https://developer.chrome.com/extensions/contextMenus#method-remove
     chrome.contextMenus.remove('new-window', function() {
-      var ignore = chrome.runtime.lastError;
+      const ignore = chrome.runtime.lastError;
     });
   } catch (ignore) {
     // There is no way to detect if the context menu is already added, therefore

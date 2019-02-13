@@ -70,9 +70,9 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
  *     ID and window information.
  */
 test.util.sync.getWindows = function() {
-  var windows = {};
+  const windows = {};
   for (var id in window.appWindows) {
-    var windowWrapper = window.appWindows[id];
+    const windowWrapper = window.appWindows[id];
     windows[id] = {
       outerWidth: windowWrapper.contentWindow.outerWidth,
       outerHeight: windowWrapper.contentWindow.outerHeight
@@ -106,9 +106,9 @@ test.util.sync.closeWindow = function(appId) {
  * @return {number} Error count.
  */
 test.util.sync.getErrorCount = function() {
-  var totalCount = window.JSErrorCount;
-  for (var appId in window.appWindows) {
-    var contentWindow = window.appWindows[appId].contentWindow;
+  let totalCount = window.JSErrorCount;
+  for (const appId in window.appWindows) {
+    const contentWindow = window.appWindows[appId].contentWindow;
     if (contentWindow.JSErrorCount) {
       totalCount += contentWindow.JSErrorCount;
     }
@@ -199,7 +199,7 @@ test.util.sync.deepQueryAllElements = function(
     targetQuery = [targetQuery];
   }
 
-  var elems =
+  const elems =
       test.util.sync.deepQuerySelectorAll_(contentWindow.document, targetQuery);
   return elems.map(function(element) {
     return extractElementInfo(element, contentWindow, opt_styleNames);
@@ -218,14 +218,14 @@ test.util.sync.deepQueryAllElements = function(
  * @private
  */
 test.util.sync.deepQuerySelectorAll_ = function(root, targetQuery) {
-  var elems = Array.prototype.slice.call(root.querySelectorAll(targetQuery[0]));
-  var remaining = targetQuery.slice(1);
+  const elems = Array.prototype.slice.call(root.querySelectorAll(targetQuery[0]));
+  const remaining = targetQuery.slice(1);
   if (remaining.length === 0) {
     return elems;
   }
 
-  var res = [];
-  for (var i = 0; i < elems.length; i++) {
+  let res = [];
+  for (let i = 0; i < elems.length; i++) {
     if (elems[i].shadowRoot) {
       res = res.concat(
           test.util.sync.deepQuerySelectorAll_(elems[i].shadowRoot, remaining));
@@ -287,7 +287,7 @@ test.util.sync.getActiveElement = function(contentWindow, opt_styleNames) {
  * @param {string} text Text to be assigned.
  */
 test.util.sync.inputText = function(contentWindow, query, text) {
-  var input = contentWindow.document.querySelector(query);
+  const input = contentWindow.document.querySelector(query);
   input.value = text;
 };
 
@@ -342,11 +342,11 @@ test.util.sync.sendEvent = function(contentWindow, targetQuery, event) {
  */
 test.util.sync.fakeEvent = function(
     contentWindow, targetQuery, eventType, opt_additionalProperties) {
-  var event = new Event(
+  const event = new Event(
       eventType,
       /** @type {!EventInit} */ (opt_additionalProperties || {}));
   if (opt_additionalProperties) {
-    for (var name in opt_additionalProperties) {
+    for (const name in opt_additionalProperties) {
       event[name] = opt_additionalProperties[name];
     }
   }
@@ -538,7 +538,7 @@ test.util.sync.fakeMouseUp = function(contentWindow, targetQuery) {
  *     otherwise.
  */
 test.util.sync.focus = function(contentWindow, targetQuery) {
-  var target = contentWindow.document &&
+  const target = contentWindow.document &&
       contentWindow.document.querySelector(targetQuery);
 
   if (!target) {
@@ -583,14 +583,14 @@ test.util.sync.launcherSearchOpenResult = function(fileURL) {
  *     script.
  */
 test.util.async.getFilesUnderVolume = function(volumeType, names, callback) {
-  var displayRootPromise =
+  const displayRootPromise =
       volumeManagerFactory.getInstance().then(function(volumeManager) {
-        var volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
+        const volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
         return volumeInfo.resolveDisplayRoot();
       });
 
-  var retrievePromise = displayRootPromise.then(function(displayRoot) {
-    var filesPromise = names.map(function(name) {
+  const retrievePromise = displayRootPromise.then(function(displayRoot) {
+    const filesPromise = names.map(function(name) {
       // TODO(crbug.com/880130): Remove this conditional.
       if (volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS &&
           util.isMyFilesVolumeEnabled()) {
@@ -643,7 +643,7 @@ test.util.executeTestMessage = function(request, sendResponse) {
     throw new Error('Invalid request.');
   }
 
-  var args = request.args.slice();  // shallow copy
+  const args = request.args.slice();  // shallow copy
   if (request.appId) {
     if (window.appWindows[request.appId]) {
       args.unshift(window.appWindows[request.appId].contentWindow);

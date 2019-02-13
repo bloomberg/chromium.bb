@@ -5,13 +5,13 @@
 'use strict';
 
 /** @type {!MockFileOperationManager} */
-var fileOperationManager;
+let fileOperationManager;
 
 /** @type {!MockProgressCenter} */
-var progressCenter;
+let progressCenter;
 
 /** @type {!FileOperationHandler} */
-var fileOperationHandler;
+let fileOperationHandler;
 
 // Set up the test components.
 function setUp() {
@@ -54,7 +54,7 @@ function testCopySuccess() {
       }));
 
   // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
+  let item = progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.PROGRESSING, item.state);
   assertEquals('TASK_ID', item.id);
   assertEquals('Copying sample.txt...', item.message);
@@ -103,7 +103,7 @@ function testCopyCancel() {
       }));
 
   // Check the updated item.
-  var item = progressCenter.items['TASK_ID'];
+  let item = progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.PROGRESSING, item.state);
   assertEquals('Copying sample.txt...', item.message);
   assertEquals('copy', item.type);
@@ -156,7 +156,7 @@ function testCopyTargetExistsError() {
       }));
 
   // Check the item errored.
-  var item = progressCenter.items['TASK_ID'];
+  const item = progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('sample.txt is already exists.', item.message);
   assertEquals('copy', item.type);
@@ -186,7 +186,7 @@ function testCopyFileSystemError() {
       }));
 
   // Check the item errored.
-  var item = progressCenter.items['TASK_ID'];
+  const item = progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('Copy filesystem error: File error generic.', item.message);
   assertEquals('copy', item.type);
@@ -216,7 +216,7 @@ function testCopyUnexpectedError() {
       }));
 
   // Check the item errored.
-  var item = progressCenter.items['TASK_ID'];
+  const item = progressCenter.items['TASK_ID'];
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('Copy unexpected error: Unexpected', item.message);
   assertEquals('copy', item.type);

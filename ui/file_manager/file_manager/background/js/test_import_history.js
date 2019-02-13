@@ -73,7 +73,7 @@ importer.TestImportHistory.prototype.assertCopied =
  */
 importer.TestImportHistory.prototype.wasCopied_ =
     function(entry, destination) {
-  var path = entry.fullPath;
+  const path = entry.fullPath;
   return path in this.copiedPaths &&
       this.copiedPaths[path].indexOf(destination) > -1;
 };
@@ -81,14 +81,14 @@ importer.TestImportHistory.prototype.wasCopied_ =
 /** @override */
 importer.TestImportHistory.prototype.wasCopied =
     function(entry, destination) {
-  var path = entry.fullPath;
+  const path = entry.fullPath;
   return Promise.resolve(this.wasCopied_(entry, destination));
 };
 
 /** @override */
 importer.TestImportHistory.prototype.markCopied =
     function(entry, destination, destinationUrl) {
-  var path = entry.fullPath;
+  const path = entry.fullPath;
   if (path in this.copiedPaths) {
     this.copiedPaths[path].push(destination);
   } else {
@@ -120,7 +120,7 @@ importer.TestImportHistory.prototype.assertImported =
  */
 importer.TestImportHistory.prototype.wasImported_ =
     function(entry, destination) {
-  var path = entry.fullPath;
+  const path = entry.fullPath;
   return path in this.importedPaths &&
       this.importedPaths[path].indexOf(destination) > -1;
 };
@@ -128,14 +128,14 @@ importer.TestImportHistory.prototype.wasImported_ =
 /** @override */
 importer.TestImportHistory.prototype.wasImported =
     function(entry, destination) {
-  var path = entry.fullPath;
+  const path = entry.fullPath;
   return Promise.resolve(this.wasImported_(entry, destination));
 };
 
 /** @override */
 importer.TestImportHistory.prototype.markImported =
     function(entry, destination) {
-  var path = entry.fullPath;
+  const path = entry.fullPath;
   if (path in this.importedPaths) {
     this.importedPaths[path].push(destination);
   } else {

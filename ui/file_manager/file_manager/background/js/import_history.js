@@ -335,12 +335,12 @@ importer.PersistentImportHistory.prototype.listUnimportedUrls =
       function() {
         // TODO(smckay): Merge copy and sync records for simpler
         // unimported file discovery.
-        var unimported = [];
-        for (var key in this.copiedEntries_) {
-          var imported = this.importedEntries_[key];
-          for (var destination in this.copiedEntries_[key]) {
+        const unimported = [];
+        for (const key in this.copiedEntries_) {
+          const imported = this.importedEntries_[key];
+          for (const destination in this.copiedEntries_[key]) {
             if (!imported || imported.indexOf(destination) === -1) {
-              var url = importer.inflateAppUrl(
+              const url = importer.inflateAppUrl(
                   this.copiedEntries_[key][destination].destinationUrl);
               unimported.push(url);
             }
@@ -376,15 +376,15 @@ importer.PersistentImportHistory.prototype.markImported = function(
 /** @override */
 importer.PersistentImportHistory.prototype.markImportedByUrl =
     function(destinationUrl) {
-  var deflatedUrl = importer.deflateAppUrl(destinationUrl);
-  var key = this.copyKeyIndex_[deflatedUrl];
+  const deflatedUrl = importer.deflateAppUrl(destinationUrl);
+  const key = this.copyKeyIndex_[deflatedUrl];
   if (!!key) {
-    var copyData = this.copiedEntries_[key];
+    const copyData = this.copiedEntries_[key];
 
     // We could build an index of this as well, but it seems
     // unnecessary given the fact that there will almost always
     // be just one destination for a file (assumption).
-    for (var destination in copyData) {
+    for (const destination in copyData) {
       if (copyData[destination].destinationUrl === deflatedUrl) {
         return this.storeRecord_([
           importer.RecordType_.IMPORT,
@@ -393,7 +393,7 @@ importer.PersistentImportHistory.prototype.markImportedByUrl =
             .then(
                 (/** @this {importer.PersistentImportHistory} */
                 function() {
-                  var sourceUrl = importer.inflateAppUrl(
+                  const sourceUrl = importer.inflateAppUrl(
                       copyData[destination].sourceUrl);
                   // Here we try to create an Entry for the source URL.
                   // This will allow observers to update the UI if the
@@ -436,7 +436,7 @@ importer.PersistentImportHistory.prototype.addObserver =
 /** @override */
 importer.PersistentImportHistory.prototype.removeObserver =
     function(observer) {
-  var index = this.observers_.indexOf(observer);
+  const index = this.observers_.indexOf(observer);
   if (index > -1) {
     this.observers_.splice(index, 1);
   } else {
@@ -527,8 +527,8 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
                 * @this {importer.SynchronizedHistoryLoader}
                 */
                function(fileEntries) {
-                 var storage = new importer.FileBasedRecordStorage(fileEntries);
-                 var history = new importer.PersistentImportHistory(
+                 const storage = new importer.FileBasedRecordStorage(fileEntries);
+                 const history = new importer.PersistentImportHistory(
                      importer.createMetadataHashcode, storage);
                  new importer.DriveSyncWatcher(history);
                  history.whenReady().then(
@@ -623,7 +623,7 @@ importer.FileBasedRecordStorage.prototype.write = function(record) {
  */
 importer.FileBasedRecordStorage.prototype.writeRecord_ =
     function(record, writer) {
-  var blob = new Blob(
+  const blob = new Blob(
       [JSON.stringify(record) + ',\n'],
       {type: 'text/plain; charset=UTF-8'});
 
@@ -651,7 +651,7 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
            * @this {importer.FileBasedRecordStorage}
            */
           function(ignored) {
-            var filePromises = this.inputFiles_.map(
+            const filePromises = this.inputFiles_.map(
                 /**
                  * @param {!importer.PromisingFileEntry} entry
                  * @this {importer.FileBasedRecordStorage}
@@ -667,7 +667,7 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
            * @this {importer.FileBasedRecordStorage}
            */
           function(files) {
-            var contentPromises = files.map(
+            const contentPromises = files.map(
                 this.readFileAsText_.bind(this));
             return Promise.all(contentPromises);
           }).bind(this),
@@ -685,7 +685,7 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
            * @this {importer.FileBasedRecordStorage}
            */
           function(fileContents) {
-            var parsePromises = fileContents.map(
+            const parsePromises = fileContents.map(
                 this.parse_.bind(this));
             return Promise.all(parsePromises);
           }).bind(this))
@@ -711,7 +711,7 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
 importer.FileBasedRecordStorage.prototype.readFileAsText_ = function(file) {
   return new Promise(
       function(resolve, reject) {
-        var reader = new FileReader();
+        const reader = new FileReader();
 
         reader.onloadend = function() {
           if (reader.error) {
@@ -751,7 +751,7 @@ importer.FileBasedRecordStorage.prototype.parse_ = function(text) {
     //   2) Surround the whole string in brackets.
     // NOTE: JSON.parse is WAY faster than parsing this
     // ourselves in javascript.
-    var json = '[' + text.substring(0, text.length - 2) + ']';
+    const json = '[' + text.substring(0, text.length - 2) + ']';
     return /** @type {!Array<!Array<*>>} */ (JSON.parse(json));
   }
 };
@@ -906,7 +906,7 @@ importer.DriveSyncWatcher.prototype.getSyncStatus_ = function(url) {
                       if (chrome.runtime.lastError) {
                         reject(chrome.runtime.lastError);
                       } else {
-                        var data = propertiesList[0];
+                        const data = propertiesList[0];
                         resolve(!data['dirty']);
                       }
                     }).bind(this));
@@ -993,7 +993,7 @@ importer.createMetadataHashcode = function(fileEntry) {
                      } else if (!('size' in metadata)) {
                        reject('File entry missing "size" field.');
                      } else {
-                       var secondsSinceEpoch = importer.toSecondsFromEpoch(
+                       const secondsSinceEpoch = importer.toSecondsFromEpoch(
                            metadata.modificationTime);
                        resolve(secondsSinceEpoch + '_' + metadata.size);
                      }

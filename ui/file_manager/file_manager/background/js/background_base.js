@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @typedef {function(!Array<string>):!Promise} */
-var LaunchHandler;
+let LaunchHandler;
 
 /**
  * Root class of the background page.
@@ -55,7 +55,7 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
     // before resolveIsolatedEntries().
     return volumeManagerFactory.getInstance();
   }).then(function() {
-    var isolatedEntries = launchData.items.map(function(item) {
+    const isolatedEntries = launchData.items.map(function(item) {
       return item.entry;
     });
 
@@ -66,7 +66,7 @@ BackgroundBase.prototype.onLaunched_ = function(launchData) {
     chrome.fileManagerPrivate.resolveIsolatedEntries(
         isolatedEntries,
         function(externalEntries) {
-          var urls = util.entriesToURLs(externalEntries);
+          const urls = util.entriesToURLs(externalEntries);
           if (this.launchHandler_) {
             this.launchHandler_(urls);
           }

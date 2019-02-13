@@ -63,7 +63,7 @@ importer.MediaImportHandler.IMPORTS_TAG_VALUE = 'media';
 importer.MediaImportHandler.prototype.importFromScanResult = function(
     scanResult, destination, directoryPromise) {
 
-  var task = new importer.MediaImportHandler.ImportTask(
+  const task = new importer.MediaImportHandler.ImportTask(
       this.generateTaskId_(), this.historyLoader_, scanResult, directoryPromise,
       destination, this.getDisposition_);
 
@@ -98,9 +98,9 @@ importer.MediaImportHandler.prototype.generateTaskId_ = function() {
  */
 importer.MediaImportHandler.prototype.onTaskProgress_ =
     function(task, updateType) {
-  var UpdateType = importer.TaskQueue.UpdateType;
+  const UpdateType = importer.TaskQueue.UpdateType;
 
-  var item = this.progressCenter_.getItemById(task.taskId);
+  let item = this.progressCenter_.getItemById(task.taskId);
   if (!item) {
     item = new ProgressCenterItem();
     item.id = task.taskId;
@@ -133,9 +133,9 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
       } else {
         // Otherwise, finish progress bar.
         // Display all errors.
-        var errorIdCounter = 0;
+        let errorIdCounter = 0;
         task.failedEntries.forEach(function(entry) {
-          var errorItem = new ProgressCenterItem();
+          const errorItem = new ProgressCenterItem();
           errorItem.id = task.taskId_ + '-' + (errorIdCounter++);
           errorItem.type = ProgressItemType.COPY;
           errorItem.quiet = true;
@@ -196,7 +196,7 @@ importer.MediaImportHandler.prototype.onFileImported_ =
   }
   // Update info must exist for ENTRY_CHANGED notifications.
   console.assert(updateInfo && updateInfo.destination);
-  var info =
+  const info =
       /** @type {!importer.MediaImportHandler.ImportTask.EntryChangedInfo} */ (
           updateInfo);
 
@@ -383,7 +383,7 @@ importer.MediaImportHandler.ImportTask.prototype.requestCancel = function() {
   if (this.cancelCallback_) {
     // Reset the callback before calling it, as the callback might do anything
     // (including calling #requestCancel again).
-    var cancelCallback = this.cancelCallback_;
+    const cancelCallback = this.cancelCallback_;
     this.cancelCallback_ = null;
     cancelCallback();
   }
@@ -391,7 +391,7 @@ importer.MediaImportHandler.ImportTask.prototype.requestCancel = function() {
 
 /** @private */
 importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
-  var stats = this.scanResult_.getStatistics();
+  const stats = this.scanResult_.getStatistics();
   this.remainingFilesCount_ = stats.newFileCount;
   this.totalBytes_ = stats.sizeBytes;
 
@@ -406,7 +406,7 @@ importer.MediaImportHandler.ImportTask.prototype.initialize_ = function() {
  */
 importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
     function() {
-  var resolver = new importer.Resolver();
+  const resolver = new importer.Resolver();
   this.directoryPromise_.then(function(destinationDirectory) {
     AsyncUtil.forEach(
         this.importEntries_, this.importOne_.bind(this, destinationDirectory),
@@ -498,9 +498,9 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ = function(
 importer.MediaImportHandler.ImportTask.prototype.copy_ =
     function(entry, destinationDirectory) {
   // A count of the current number of processed bytes for this entry.
-  var currentBytes = 0;
+  let currentBytes = 0;
 
-  var resolver = new importer.Resolver();
+  const resolver = new importer.Resolver();
 
   /**
    * Updates the task when the copy code reports progress.
@@ -508,7 +508,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
    * @param {number} processedBytes
    * @this {importer.MediaImportHandler.ImportTask}
    */
-  var onProgress = function(sourceUrl, processedBytes) {
+  const onProgress = function(sourceUrl, processedBytes) {
     // Update the running total, then send a progress update.
     this.processedBytes_ -= currentBytes;
     this.processedBytes_ += processedBytes;
@@ -522,7 +522,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
    * @param {Entry} destinationEntry
    * @this {importer.MediaImportHandler.ImportTask}
    */
-  var onEntryChanged = function(sourceUrl, destinationEntry) {
+  const onEntryChanged = function(sourceUrl, destinationEntry) {
     this.processedBytes_ -= currentBytes;
     this.processedBytes_ += entry.size;
     destinationEntry.size = entry.size;
@@ -539,7 +539,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
    * @param {Entry} destinationEntry The new destination entry.
    * @this {importer.MediaImportHandler.ImportTask}
    */
-  var onComplete = function(destinationEntry) {
+  const onComplete = function(destinationEntry) {
     this.cancelCallback_ = null;
     this.markAsCopied_(entry, /** @type {!FileEntry} */ (destinationEntry));
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
@@ -547,7 +547,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
   };
 
   /** @this {importer.MediaImportHandler.ImportTask} */
-  var onError = function(error) {
+  const onError = function(error) {
     this.cancelCallback_ = null;
     if (error.name === util.FileError.ABORT_ERR) {
       // Task cancellations result in the error callback being triggered with an
@@ -631,7 +631,7 @@ importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
 importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ =
     function() {
 
-  var scanStats = this.scanResult_.getStatistics();
+  const scanStats = this.scanResult_.getStatistics();
 
   metrics.recordMediumCount(
       'MediaImport.ImportMB', Math.floor(this.processedBytes_ / (1024 * 1024)));
@@ -647,7 +647,7 @@ importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ =
 
   // Finally we want to report on the number of duplicates
   // that were identified during scanning.
-  var totalDeduped = 0;
+  let totalDeduped = 0;
   // The scan is run without content duplicate check.
   // Instead, report the number of duplicated files found at import.
   assert(scanStats.duplicates[importer.Disposition.CONTENT_DUPLICATE] === 0);
@@ -656,7 +656,7 @@ importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ =
 
   Object.keys(scanStats.duplicates).forEach(
       function(disposition) {
-        var count = scanStats.duplicates[
+        const count = scanStats.duplicates[
             /** @type {!importer.Disposition} */ (disposition)];
         totalDeduped += count;
       }, this);

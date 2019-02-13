@@ -68,7 +68,7 @@ LauncherSearch.prototype.onPreferencesChanged_ = function() {
  */
 LauncherSearch.prototype.initializeEventListeners_ = function(
     isDriveEnabled, isSearchSuggestEnabled) {
-  var launcherSearchEnabled = isDriveEnabled && isSearchSuggestEnabled;
+  const launcherSearchEnabled = isDriveEnabled && isSearchSuggestEnabled;
 
   // If this.enabled_ === launcherSearchEnabled, we don't need to change
   // anything here.
@@ -170,7 +170,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
         // If the file is not directory, try to execute default task.
         chrome.fileManagerPrivate.getFileTasks([entry], function(tasks) {
           // Select default task.
-          var defaultTask = null;
+          let defaultTask = null;
           for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
             if (task.isDefault) {
@@ -235,7 +235,7 @@ LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
  * @private
  */
 LauncherSearch.prototype.queryDriveEntries_ = function(queryId, query, limit) {
-  var param = {query: query, types: 'ALL', maxResults: limit};
+  const param = {query: query, types: 'ALL', maxResults: limit};
   return new Promise((resolve, reject) => {
     chrome.fileManagerPrivate.searchDriveMetadata(param, function(results) {
       resolve(results.map(result => result.entry));
@@ -275,7 +275,7 @@ LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
  */
 LauncherSearch.prototype.getDownloadsEntry_ = function() {
   return volumeManagerFactory.getInstance().then((volumeManager) => {
-    var downloadsVolumeInfo = volumeManager.getCurrentProfileVolumeInfo(
+    const downloadsVolumeInfo = volumeManager.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DOWNLOADS);
     return downloadsVolumeInfo.resolveDisplayRoot();
   });
@@ -345,18 +345,18 @@ LauncherSearch.prototype.createSearchResult_ = function(entry) {
   // TODO(yawano): Use filetype_folder_shared.png for a shared
   //     folder.
   // TODO(yawano): Add archive launcher filetype icon.
-  var icon = FileType.getIcon(entry);
+  let icon = FileType.getIcon(entry);
   if (icon === 'UNKNOWN' || icon === 'archive') {
     icon = 'generic';
   }
 
-  var useHighDpiIcon = window.devicePixelRatio > 1.0;
-  var iconUrl = chrome.runtime.getURL(
+  const useHighDpiIcon = window.devicePixelRatio > 1.0;
+  const iconUrl = chrome.runtime.getURL(
       'foreground/images/launcher_filetypes/' + (useHighDpiIcon ? '2x/' : '') +
       'launcher_filetype_' + icon + '.png');
 
   // Hide extensions for hosted files.
-  var title = FileType.isHosted(entry) ?
+  const title = FileType.isHosted(entry) ?
       entry.name.substr(
           0, entry.name.length - FileType.getExtension(entry).length) :
       entry.name;

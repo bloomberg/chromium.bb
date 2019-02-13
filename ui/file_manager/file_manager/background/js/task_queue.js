@@ -103,7 +103,7 @@ importer.TaskQueue.prototype.onTaskUpdate_ = function(task, updateType) {
   });
 
   // If the task update is a terminal one, move on to the next task.
-  var UpdateType = importer.TaskQueue.UpdateType;
+  const UpdateType = importer.TaskQueue.UpdateType;
   if (updateType === UpdateType.COMPLETE ||
       updateType === UpdateType.CANCELED) {
     // Assumption: the currently running task is at the head of the queue.
@@ -139,7 +139,7 @@ importer.TaskQueue.prototype.runPending_ = function() {
     }
   }
 
-  var nextTask = this.tasks_[0];
+  const nextTask = this.tasks_[0];
   nextTask.run();
 };
 
