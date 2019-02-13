@@ -136,6 +136,35 @@ base::Value LocaleStringsProtoToDictionary(
   return result;
 }
 
+// Construct a registration based on the given App proto.
+// |name| should be |app.name()| in Dictionary form.
+base::Value AppPrefRegistrationFromApp(
+    const vm_tools::apps::App& app,
+    base::Value name,
+    const vm_tools::apps::ApplicationList& app_list) {
+  base::Value pref_registration(base::Value::Type::DICTIONARY);
+  pref_registration.SetKey(kAppDesktopFileIdKey,
+                           base::Value(app.desktop_file_id()));
+  pref_registration.SetKey(kAppVmNameKey, base::Value(app_list.vm_name()));
+  pref_registration.SetKey(kAppContainerNameKey,
+                           base::Value(app_list.container_name()));
+  pref_registration.SetKey(kAppNameKey, std::move(name));
+  pref_registration.SetKey(kAppCommentKey, ProtoToDictionary(app.comment()));
+  pref_registration.SetKey(kAppExecutableFileNameKey,
+                           base::Value(app.executable_file_name()));
+  pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
+  pref_registration.SetKey(kAppKeywordsKey,
+                           LocaleStringsProtoToDictionary(app.keywords()));
+  pref_registration.SetKey(kAppNoDisplayKey, base::Value(app.no_display()));
+  pref_registration.SetKey(kAppStartupWMClassKey,
+                           base::Value(app.startup_wm_class()));
+  pref_registration.SetKey(kAppStartupNotifyKey,
+                           base::Value(app.startup_notify()));
+  pref_registration.SetKey(kAppPackageIdKey, base::Value(app.package_id()));
+
+  return pref_registration;
+}
+
 // This is the companion to CrostiniRegistryService::SetCurrentTime().
 base::Time GetTime(const base::Value& pref, const char* key) {
   if (!pref.is_dict())
@@ -727,26 +756,8 @@ void CrostiniRegistryService::UpdateApplicationList(
           app.desktop_file_id(), app_list.vm_name(), app_list.container_name());
       new_app_ids.insert(app_id);
 
-      base::Value pref_registration(base::Value::Type::DICTIONARY);
-      pref_registration.SetKey(kAppDesktopFileIdKey,
-                               base::Value(app.desktop_file_id()));
-      pref_registration.SetKey(kAppVmNameKey, base::Value(app_list.vm_name()));
-      pref_registration.SetKey(kAppContainerNameKey,
-                               base::Value(app_list.container_name()));
-      pref_registration.SetKey(kAppNameKey, std::move(name));
-      pref_registration.SetKey(kAppCommentKey,
-                               ProtoToDictionary(app.comment()));
-      pref_registration.SetKey(kAppExecutableFileNameKey,
-                               base::Value(app.executable_file_name()));
-      pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
-      pref_registration.SetKey(kAppKeywordsKey,
-                               LocaleStringsProtoToDictionary(app.keywords()));
-      pref_registration.SetKey(kAppNoDisplayKey, base::Value(app.no_display()));
-      pref_registration.SetKey(kAppStartupWMClassKey,
-                               base::Value(app.startup_wm_class()));
-      pref_registration.SetKey(kAppStartupNotifyKey,
-                               base::Value(app.startup_notify()));
-      pref_registration.SetKey(kAppPackageIdKey, base::Value(app.package_id()));
+      base::Value pref_registration =
+          AppPrefRegistrationFromApp(app, std::move(name), app_list);
 
       base::Value* old_app = apps->FindKey(app_id);
       if (old_app && EqualsExcludingTimestamps(pref_registration, *old_app))
