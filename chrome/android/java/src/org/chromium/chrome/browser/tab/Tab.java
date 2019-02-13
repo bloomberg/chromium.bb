@@ -72,7 +72,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
-import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -106,9 +105,6 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
-import org.chromium.printing.PrintManagerDelegateImpl;
-import org.chromium.printing.PrintingController;
-import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -816,25 +812,6 @@ public class Tab
                     referrer != null ? referrer.getPolicy() : 0,
                     isIncognito());
         }
-    }
-
-    /**
-     * Prints the current page.
-     *
-     * @return Whether the printing process is started successfully.
-     **/
-    public boolean print(int renderProcessId, int renderFrameId) {
-        assert mNativeTabAndroid != 0;
-        return nativePrint(mNativeTabAndroid, renderProcessId, renderFrameId);
-    }
-
-    @CalledByNative
-    public void setPendingPrint(int renderProcessId, int renderFrameId) {
-        PrintingController printingController = PrintingControllerImpl.getInstance();
-        if (printingController == null) return;
-
-        printingController.setPendingPrint(new TabPrinter(this),
-                new PrintManagerDelegateImpl(getActivity()), renderProcessId, renderFrameId);
     }
 
     /**
@@ -2921,8 +2898,6 @@ public class Tab
             long intentReceivedTimestamp);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
-    private native boolean nativePrint(
-            long nativeTabAndroid, int renderProcessId, int renderFrameId);
     private native Bitmap nativeGetFavicon(long nativeTabAndroid);
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
     private native void nativeUpdateBrowserControlsState(

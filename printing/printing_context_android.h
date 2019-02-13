@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "printing/printing_context.h"
 
+namespace ui {
+class WindowAndroid;
+}
+
 namespace printing {
 
 class MetafilePlayer;
@@ -28,6 +32,12 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   // the PDF has |page_count| pages. Non-positive |page_count| indicates
   // failure.
   static void PdfWritingDone(int page_count);
+
+  static void SetPendingPrint(
+      ui::WindowAndroid* window,
+      const base::android::ScopedJavaLocalRef<jobject>& printable,
+      int render_process_id,
+      int render_frame_id);
 
   // Called from Java, when printing settings from the user are ready or the
   // printing operation is canceled.
