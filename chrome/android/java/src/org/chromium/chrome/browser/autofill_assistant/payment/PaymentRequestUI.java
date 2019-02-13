@@ -352,6 +352,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
+        // Always show separator at the top.
+        mPaymentContainer.setEdgeVisibility(
+                FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
+
         if (mRequestContactDetails) {
             mPaymentContainerLayout.addView(mContactDetailsSection,
                     new LinearLayout.LayoutParams(
@@ -373,6 +377,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
+        PaymentRequestSection sections[] =
+                new PaymentRequestSection[] {mOrderSummarySection, mShippingAddressSection,
+                        mShippingOptionSection, mContactDetailsSection, mPaymentMethodSection};
+        for (int i = 0; i < sections.length; i++) {
+            clearLeftRightPadding(sections[i]);
+        }
+
+        // Always expand separators to make them align with the rest of the UI.
+        for (int i = 0; i < mSectionSeparators.size(); i++) {
+            mSectionSeparators.get(i).expand();
+        }
+
         mRequestView.addOnLayoutChangeListener(new PeekingAnimator());
 
         // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
@@ -380,6 +396,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         // Force the initial appearance of edit chevrons next to all sections.
         updateSectionVisibility();
+    }
+
+    private void clearLeftRightPadding(PaymentRequestSection section) {
+        section.setPadding(
+                /*left=*/0, section.getPaddingTop(), /*right=*/0, section.getPaddingBottom());
     }
 
     /**
@@ -731,14 +752,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             // Container now takes the full height of the screen, animating towards it.
             mRequestView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
             mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(true));
-
-            // New separators appear at the top and bottom of the list.
-            mPaymentContainer.setEdgeVisibility(
-                    FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
-            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, -1));
-
-            // Expand all the dividers.
-            for (int i = 0; i < mSectionSeparators.size(); i++) mSectionSeparators.get(i).expand();
             mPaymentContainerLayout.requestLayout();
 
             // Disable all but the first button.
