@@ -45,7 +45,7 @@ class PaymentResponseHelperTest : public testing::Test,
   // PaymentRequestState::Delegate:
   void OnPaymentResponseReady(mojom::PaymentResponsePtr response) override {
     payment_response_ = std::move(response);
-  };
+  }
 
   // Convenience method to create a PaymentRequestSpec with specified |details|
   // and |method_data|.
