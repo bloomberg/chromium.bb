@@ -142,7 +142,7 @@ class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
  private:
   explicit HbFontCacheEntry(hb_font_t* font)
       : hb_font_(HbFontUniquePtr(font)),
-        hb_font_data_(std::make_unique<HarfBuzzFontData>()){};
+        hb_font_data_(std::make_unique<HarfBuzzFontData>()) {}
 
   HbFontUniquePtr hb_font_;
   std::unique_ptr<HarfBuzzFontData> hb_font_data_;

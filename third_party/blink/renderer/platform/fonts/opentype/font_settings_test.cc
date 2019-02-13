@@ -44,7 +44,7 @@ TEST(FontSettingsTest, HashTest) {
   CHECK_NE(one_axis_a->GetHash(), two_axes_different_value->GetHash());
   CHECK_NE(empty_variation_settings->GetHash(), one_axis_a->GetHash());
   CHECK_EQ(empty_variation_settings->GetHash(), 0u);
-};
+}
 
 TEST(FontSettingsTest, ToString) {
   {

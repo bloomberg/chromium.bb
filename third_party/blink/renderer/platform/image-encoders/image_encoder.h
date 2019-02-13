@@ -88,6 +88,6 @@ class PLATFORM_EXPORT ImageEncoder {
   VectorWStream dst_;
   std::unique_ptr<SkEncoder> encoder_;
 };
-};
+}  // namespace blink
 
 #endif

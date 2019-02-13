@@ -42,7 +42,7 @@ String GetDataResourceAsASCIIString(const char* resource) {
 
 String GetResourceAsString(int resource_id) {
   return String::FromUTF8(GetResourceById(resource_id).c_str());
-};
+}
 
 String UncompressResourceAsString(int resource_id) {
   std::string uncompressed;

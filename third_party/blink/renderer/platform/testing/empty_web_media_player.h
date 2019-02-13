@@ -53,7 +53,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   bool WouldTaintOrigin() const override { return false; }
   double MediaTimeForTimeValue(double time_value) const override {
     return time_value;
-  };
+  }
   unsigned DecodedFrameCount() const override { return 0; }
   unsigned DroppedFrameCount() const override { return 0; }
   uint64_t AudioDecodedByteCount() const override { return 0; }
