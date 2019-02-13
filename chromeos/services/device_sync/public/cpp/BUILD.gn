@@ -4,11 +4,14 @@
 
 source_set("cpp") {
   sources = [
+    "client_app_metadata_provider.h",
     "cryptauth_device_id_provider.h",
     "device_sync_client.cc",
     "device_sync_client.h",
     "device_sync_client_impl.cc",
     "device_sync_client_impl.h",
+    "gcm_constants.cc",
+    "gcm_constants.h",
     "gcm_device_info_provider.h",
   ]
 

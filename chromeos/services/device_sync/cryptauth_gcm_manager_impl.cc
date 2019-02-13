@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/pref_names.h"
+#include "chromeos/services/device_sync/public/cpp/gcm_constants.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/prefs/pref_service.h"
 
@@ -17,12 +18,6 @@ namespace chromeos {
 namespace device_sync {
 
 namespace {
-
-// The GCM app id identifies the client.
-const char kCryptAuthGCMAppId[] = "com.google.chrome.cryptauth";
-
-// The GCM sender id identifies the CryptAuth server.
-const char kCryptAuthGCMSenderId[] = "381449029288";
 
 // The 'registrationTickleType' key-value pair is present in GCM push
 // messages. The values correspond to a server-side enum.
@@ -69,17 +64,17 @@ CryptAuthGCMManagerImpl::CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
       weak_ptr_factory_(this) {}
 
 CryptAuthGCMManagerImpl::~CryptAuthGCMManagerImpl() {
-  if (gcm_driver_->GetAppHandler(kCryptAuthGCMAppId) == this)
-    gcm_driver_->RemoveAppHandler(kCryptAuthGCMAppId);
+  if (gcm_driver_->GetAppHandler(kCryptAuthGcmAppId) == this)
+    gcm_driver_->RemoveAppHandler(kCryptAuthGcmAppId);
 }
 
 void CryptAuthGCMManagerImpl::StartListening() {
-  if (gcm_driver_->GetAppHandler(kCryptAuthGCMAppId) == this) {
+  if (gcm_driver_->GetAppHandler(kCryptAuthGcmAppId) == this) {
     PA_LOG(VERBOSE) << "GCM app handler already added";
     return;
   }
 
-  gcm_driver_->AddAppHandler(kCryptAuthGCMAppId, this);
+  gcm_driver_->AddAppHandler(kCryptAuthGcmAppId, this);
 }
 
 void CryptAuthGCMManagerImpl::RegisterWithGCM() {
@@ -91,9 +86,9 @@ void CryptAuthGCMManagerImpl::RegisterWithGCM() {
   PA_LOG(VERBOSE) << "Beginning GCM registration...";
   registration_in_progress_ = true;
 
-  std::vector<std::string> sender_ids(1, kCryptAuthGCMSenderId);
+  std::vector<std::string> sender_ids(1, kCryptAuthGcmSenderId);
   gcm_driver_->Register(
-      kCryptAuthGCMAppId, sender_ids,
+      kCryptAuthGcmAppId, sender_ids,
       base::Bind(&CryptAuthGCMManagerImpl::OnRegistrationCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
 }
