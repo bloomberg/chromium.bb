@@ -30881,6 +30881,7 @@ from previous Chrome versions.
   <int value="-1729926412" label="enable-webusb-notifications"/>
   <int value="-1727530898" label="LookalikeUrlNavigationSuggestionsUI:enabled"/>
   <int value="-1725507605" label="enable-web-midi"/>
+  <int value="-1722208902" label="CCTModuleCustomRequestHeader:disabled"/>
   <int value="-1720653947" label="WebRtcHybridAgc:disabled"/>
   <int value="-1719833926" label="disable-answers-in-suggest"/>
   <int value="-1716654100" label="tab-capture-downscale-quality"/>
@@ -32192,6 +32193,7 @@ from previous Chrome versions.
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
   <int value="557200974" label="WebSocketHandshakeReuseConnection:disabled"/>
+  <int value="557915559" label="CCTModuleCustomRequestHeader:enabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
   <int value="564522013" label="Av1Decoder:disabled"/>
