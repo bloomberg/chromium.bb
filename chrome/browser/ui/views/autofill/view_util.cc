@@ -63,7 +63,10 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
-      gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
+      gfx::CreateVectorIcon(kGooglePayLogoIcon,
+                            GetNativeTheme()->SystemDarkModeEnabled()
+                                ? gfx::kGoogleGrey200
+                                : gfx::kGoogleGrey700),
       /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
   auto* icon_view = new views::ImageView();
   icon_view->SetImage(&image);
