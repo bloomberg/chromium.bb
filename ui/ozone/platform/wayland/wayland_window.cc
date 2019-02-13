@@ -189,7 +189,7 @@ void WaylandWindow::CreateXdgSurface() {
   }
 }
 
-void WaylandWindow::CreateTooltipSubSurface() {
+void WaylandWindow::CreateAndShowTooltipSubSurface() {
   // Since Aura does not not provide a reference parent window, needed by
   // Wayland, we get the current focused window to place and show the tooltips.
   parent_window_ = connection_->GetCurrentFocusedWindow();
@@ -203,11 +203,14 @@ void WaylandWindow::CreateTooltipSubSurface() {
     return;
   }
 
-  wl_subcompositor* subcompositor = connection_->subcompositor();
-  DCHECK(subcompositor);
-  tooltip_subsurface_.reset(wl_subcompositor_get_subsurface(
-      subcompositor, surface_.get(), parent_window_->surface()));
+  if (!tooltip_subsurface_) {
+    wl_subcompositor* subcompositor = connection_->subcompositor();
+    DCHECK(subcompositor);
+    tooltip_subsurface_.reset(wl_subcompositor_get_subsurface(
+        subcompositor, surface_.get(), parent_window_->surface()));
+  }
 
+  DCHECK(tooltip_subsurface_);
   wl_subsurface_set_position(tooltip_subsurface_.get(), bounds_.x(),
                              bounds_.y());
   wl_subsurface_set_desync(tooltip_subsurface_.get());
@@ -256,11 +259,12 @@ void WaylandWindow::Show() {
 
   if (xdg_surface_)
     return;
+
   if (is_tooltip_) {
-    if (!tooltip_subsurface_)
-      CreateTooltipSubSurface();
+    CreateAndShowTooltipSubSurface();
     return;
   }
+
   if (!xdg_popup_) {
     CreateXdgPopup();
     connection_->ScheduleFlush();
@@ -272,14 +276,12 @@ void WaylandWindow::Hide() {
     parent_window_ = nullptr;
     wl_surface_attach(surface_.get(), NULL, 0, 0);
     wl_surface_commit(surface_.get());
-    // Tooltip subsurface must be reset only after the buffer is detached.
-    // Otherwise, gnome shell, for example, can end up with a broken event
-    // pipe.
-    tooltip_subsurface_.reset();
     return;
   }
+
   if (child_window_)
     child_window_->Hide();
+
   if (xdg_popup_) {
     parent_window_->set_child_window(nullptr);
     xdg_popup_.reset();
@@ -671,8 +673,8 @@ void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
   const uint32_t entered_output_id =
       connection_->wayland_output_manager()->GetIdForOutput(output);
   DCHECK_NE(entered_output_id, 0u);
-  auto entered_output_id_it = entered_outputs_ids_.insert(entered_output_id);
-  DCHECK(entered_output_id_it.second);
+  auto result = entered_outputs_ids_.insert(entered_output_id);
+  DCHECK(result.first != entered_outputs_ids_.end());
 }
 
 void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {

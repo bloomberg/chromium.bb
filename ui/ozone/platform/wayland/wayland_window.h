@@ -156,8 +156,9 @@ class WaylandWindow : public PlatformWindow,
   void CreateXdgPopup();
   // Creates a surface window, which is visible as a main window.
   void CreateXdgSurface();
-  // Creates a subsurface window, to host tooltip's content.
-  void CreateTooltipSubSurface();
+  // Creates (if necessary) and show subsurface window, to host
+  // tooltip's content.
+  void CreateAndShowTooltipSubSurface();
 
   // Gets a parent window for this window.
   WaylandWindow* GetParentWindow(gfx::AcceleratedWidget parent_widget);
