@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change.h"
@@ -224,11 +225,10 @@ class InputMethodPreferencesTest : public PreferencesTest {
     PreferencesTest::SetUp();
 
     // Initialize pref members.
-    preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
+    preferred_languages_.Init(language::prefs::kPreferredLanguages,
                               pref_service_);
     preferred_languages_syncable_.Init(
-        prefs::kLanguagePreferredLanguagesSyncable,
-        pref_service_);
+        language::prefs::kPreferredLanguagesSyncable, pref_service_);
     preload_engines_.Init(prefs::kLanguagePreloadEngines, pref_service_);
     preload_engines_syncable_.Init(prefs::kLanguagePreloadEnginesSyncable,
                                    pref_service_);
@@ -364,7 +364,7 @@ TEST_F(InputMethodPreferencesTest, TestOobeAndSync) {
   // Create some values to come from the server.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable, base::Value("ru,fi")));
+      language::prefs::kPreferredLanguagesSyncable, base::Value("ru,fi")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable, base::Value("xkb:se::swe")));
   sync_data_list.push_back(CreatePrefSyncData(
@@ -404,7 +404,7 @@ TEST_F(InputMethodPreferencesTest, TestOobeAndSync) {
   syncer::SyncChangeList change_list;
   change_list.push_back(syncer::SyncChange(
       FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
-      CreatePrefSyncData(prefs::kLanguagePreferredLanguagesSyncable,
+      CreatePrefSyncData(language::prefs::kPreferredLanguagesSyncable,
                          base::Value("de"))));
   change_list.push_back(syncer::SyncChange(
       FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
@@ -449,7 +449,7 @@ TEST_F(InputMethodPreferencesTest, TestLogIn) {
   // Create some values to come from the server.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguages, base::Value("ru,fi")));
+      language::prefs::kPreferredLanguages, base::Value("ru,fi")));
   sync_data_list.push_back(
       CreatePrefSyncData(prefs::kLanguagePreloadEngines,
                          base::Value(ToInputMethodIds("xkb:ru::rus"))));
@@ -489,7 +489,7 @@ TEST_F(InputMethodPreferencesTest, TestLogInLegacy) {
   // Sync. Since this is an existing profile, the local values shouldn't change.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable, base::Value("ru,fi")));
+      language::prefs::kPreferredLanguagesSyncable, base::Value("ru,fi")));
   sync_data_list.push_back(
       CreatePrefSyncData(prefs::kLanguagePreloadEnginesSyncable,
                          base::Value(ToInputMethodIds("xkb:ru::rus"))));
@@ -543,7 +543,7 @@ TEST_F(InputMethodPreferencesTest, MergeStressTest) {
   // Create some tricky values to come from the server.
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguagePreferredLanguagesSyncable,
+      CreatePrefSyncData(language::prefs::kPreferredLanguagesSyncable,
                          base::Value("ar,fi,es,de,ar")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable,
@@ -595,7 +595,7 @@ TEST_F(InputMethodPreferencesTest, MergeInvalidValues) {
       ToInputMethodIds("xkb:jp::jpn"));
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguagePreferredLanguagesSyncable,
+      CreatePrefSyncData(language::prefs::kPreferredLanguagesSyncable,
                          base::Value("klingon,en-US")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable, base::Value(preload_engines)));
@@ -635,7 +635,7 @@ TEST_F(InputMethodPreferencesTest, MergeAfterSyncing) {
       "xkb:ru::rus,xkb:xy::xyz," + ToInputMethodIds("xkb:jp::jpn"));
   syncer::SyncDataList sync_data_list;
   sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguagePreferredLanguagesSyncable, base::Value("en-US")));
+      language::prefs::kPreferredLanguagesSyncable, base::Value("en-US")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable, base::Value(preload_engines)));
   sync_data_list.push_back(CreatePrefSyncData(

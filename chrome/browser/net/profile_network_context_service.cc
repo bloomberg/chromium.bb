@@ -29,6 +29,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -101,7 +102,7 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       base::Bind(&ProfileNetworkContextService::DisableQuicIfNotAllowed,
                  base::Unretained(this)));
   pref_accept_language_.Init(
-      prefs::kAcceptLanguages, profile_prefs,
+      language::prefs::kAcceptLanguages, profile_prefs,
       base::BindRepeating(&ProfileNetworkContextService::UpdateAcceptLanguage,
                           base::Unretained(this)));
   enable_referrers_.Init(

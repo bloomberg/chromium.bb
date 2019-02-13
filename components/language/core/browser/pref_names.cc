@@ -7,6 +7,16 @@
 namespace language {
 namespace prefs {
 
+// The value to use for Accept-Languages HTTP header when making an HTTP
+// request.
+const char kAcceptLanguages[] = "intl.accept_languages";
+
+// A string pref (comma-separated list) set to the preferred language IDs
+// (ex. "en-US,fr,ko").
+const char kPreferredLanguages[] = "settings.language.preferred_languages";
+const char kPreferredLanguagesSyncable[] =
+    "settings.language.preferred_languages_syncable";
+
 // The JSON representation of the user's language profile. Used as an input to
 // the user language model (i.e. for determining which languages a user
 // understands).

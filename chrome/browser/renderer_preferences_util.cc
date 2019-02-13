@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/renderer_preferences_util.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
@@ -79,7 +80,8 @@ namespace renderer_preferences_util {
 void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
                               Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
-  prefs->accept_languages = pref_service->GetString(prefs::kAcceptLanguages);
+  prefs->accept_languages =
+      pref_service->GetString(language::prefs::kAcceptLanguages);
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);

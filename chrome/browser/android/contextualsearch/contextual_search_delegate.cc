@@ -23,9 +23,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/language_model_manager.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -413,7 +413,7 @@ std::string ContextualSearchDelegate::GetTargetLanguage() {
 std::string ContextualSearchDelegate::GetAcceptLanguages() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   PrefService* pref_service = profile->GetPrefs();
-  return pref_service->GetString(prefs::kAcceptLanguages);
+  return pref_service->GetString(language::prefs::kAcceptLanguages);
 }
 
 // Decodes the given response from the search term resolution request and sets

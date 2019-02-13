@@ -613,7 +613,7 @@ void GetLocaleAndPreferredLanguages(const Profile* profile,
   // conflict with another item in the list, then these will be dedupped (the
   // first one is taken) in ARC.
   *out_preferred_languages =
-      profile->GetPrefs()->GetString(::prefs::kLanguagePreferredLanguages);
+      profile->GetPrefs()->GetString(::language::prefs::kPreferredLanguages);
 }
 
 Intent::Intent() = default;

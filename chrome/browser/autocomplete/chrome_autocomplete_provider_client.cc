@@ -33,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -200,7 +201,7 @@ ChromeAutocompleteProviderClient::GetKeywordExtensionsDelegate(
 }
 
 std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {
-  return profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  return profile_->GetPrefs()->GetString(language::prefs::kAcceptLanguages);
 }
 
 std::string

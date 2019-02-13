@@ -41,6 +41,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -1018,7 +1019,8 @@ static void JNI_PrefServiceBridge_ResetAcceptLanguages(
 
   PrefServiceBridge::PrependToAcceptLanguagesIfNecessary(locale_string,
                                                          &accept_languages);
-  GetPrefService()->SetString(prefs::kAcceptLanguages, accept_languages);
+  GetPrefService()->SetString(language::prefs::kAcceptLanguages,
+                              accept_languages);
 }
 
 // Sends all information about the different versions to Java.

@@ -40,6 +40,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/google/core/common/google_util.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -1537,8 +1538,8 @@ class ErrorPageForIDNTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     // Clear AcceptLanguages to force punycode decoding.
-    browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
-                                                std::string());
+    browser()->profile()->GetPrefs()->SetString(
+        language::prefs::kAcceptLanguages, std::string());
   }
 };
 

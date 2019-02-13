@@ -48,8 +48,8 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/vr_web_contents_observer.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -961,7 +961,7 @@ void VrShell::SetVoiceSearchActive(bool active) {
         this, ui_,
         content::BrowserContext::GetDefaultStoragePartition(profile)
             ->GetURLLoaderFactoryForBrowserProcessIOThread(),
-        profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
+        profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages),
         profile_locale));
   }
   if (active) {

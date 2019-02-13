@@ -397,6 +397,7 @@ test("components_unittests") {
 repack("components_tests_pak") {
   sources = [
     "$root_gen_dir/components/components_resources.pak",
+    "$root_gen_dir/components/strings/components_locale_settings_en-US.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
   ]
 

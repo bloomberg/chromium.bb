@@ -26,8 +26,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/constants.mojom.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
@@ -140,7 +140,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   }
 
   void SetAcceptLanguages(const std::string& accept_languages) {
-    prefs_->SetString(prefs::kAcceptLanguages, accept_languages);
+    prefs_->SetString(language::prefs::kAcceptLanguages, accept_languages);
   }
 
   bool GetEnableSpellcheckState(bool initial_state = false) {

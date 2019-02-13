@@ -8,7 +8,11 @@
 namespace language {
 namespace prefs {
 
-// TODO(martis): Add accept language preference here.
+extern const char kAcceptLanguages[];
+
+extern const char kPreferredLanguages[];
+extern const char kPreferredLanguagesSyncable[];
+
 extern const char kUserLanguageProfile[];
 
 // The application locale.

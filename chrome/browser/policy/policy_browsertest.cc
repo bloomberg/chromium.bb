@@ -1274,7 +1274,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
 
   // Set locale and preferred languages to "en-US".
   prefs->SetString(language::prefs::kApplicationLocale, "en-US");
-  prefs->SetString(prefs::kLanguagePreferredLanguages, "en-US");
+  prefs->SetString(language::prefs::kPreferredLanguages, "en-US");
 
   // Set policy to only allow "fr" as locale.
   std::unique_ptr<base::DictionaryValue> policy =
@@ -1314,7 +1314,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
 
   // Verifiy that the enforced locale is added into the list of
   // preferred languages.
-  EXPECT_EQ("fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
+  EXPECT_EQ("fr", prefs->GetString(language::prefs::kPreferredLanguages));
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {

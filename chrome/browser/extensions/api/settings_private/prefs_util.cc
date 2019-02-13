@@ -398,7 +398,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Misc.
   (*s_whitelist)[::prefs::kUse24HourClock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kLanguagePreferredLanguages] =
+  (*s_whitelist)[::language::prefs::kPreferredLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)[ash::prefs::kTapDraggingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -520,7 +520,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
 #else
-  (*s_whitelist)[::prefs::kAcceptLanguages] =
+  (*s_whitelist)[::language::prefs::kAcceptLanguages] =
       settings_api::PrefType::PREF_TYPE_STRING;
 
   // System settings.
