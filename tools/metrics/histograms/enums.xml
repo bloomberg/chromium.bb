@@ -15433,6 +15433,7 @@ Called by update_net_error_codes.py.-->
   <int value="519" label="BrowserSwitcherKeepLastChromeTab"/>
   <int value="520" label="DeviceRebootAfterArcSession"/>
   <int value="521" label="ForceNetworkInProcess"/>
+  <int value="522" label="SchedulerConfiguration"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
