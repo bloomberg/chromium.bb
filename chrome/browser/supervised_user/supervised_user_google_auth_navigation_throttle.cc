@@ -135,7 +135,7 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+    CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
     ReauthenticateChildAccount(
         web_contents, account_info.email,
         base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::
