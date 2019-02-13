@@ -399,6 +399,11 @@ class SequenceManagerTestWithCustomInitialization
 };
 
 INSTANTIATE_TEST_SUITE_P(,
+                         SequenceManagerTest,
+                         testing::Values(TestType::kUseMockTaskRunner,
+                                         TestType::kUseMessagePump));
+
+INSTANTIATE_TEST_SUITE_P(,
                          SequenceManagerTestWithMessageLoop,
                          testing::Values(TestType::kUseMessageLoop,
                                          TestType::kUseMessagePump));
