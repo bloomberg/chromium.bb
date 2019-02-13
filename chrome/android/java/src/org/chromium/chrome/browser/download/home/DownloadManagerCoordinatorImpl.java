@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download.home;
 import android.app.Activity;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -21,6 +20,7 @@ import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.snackbars.DeleteUndoCoordinator;
 import org.chromium.chrome.browser.download.home.toolbar.ToolbarCoordinator;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.download.DownloadPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,10 +42,11 @@ class DownloadManagerCoordinatorImpl
 
     private final ToolbarCoordinator mToolbarCoordinator;
     private final SelectionDelegate<ListItem> mSelectionDelegate;
+    private SelectionDelegate.SelectionObserver<ListItem> mNavigationCanceller;
 
     private final Activity mActivity;
 
-    private ViewGroup mMainView;
+    private HistoryNavigationLayout mMainView;
 
     private boolean mMuteFilterChanges;
 
@@ -71,7 +72,7 @@ class DownloadManagerCoordinatorImpl
      * TODO(crbug.com/880468) : Investigate if it is better to do in XML.
      */
     private void initializeView() {
-        mMainView = new FrameLayout(mActivity);
+        mMainView = new HistoryNavigationLayout(mActivity);
         mMainView.setBackgroundColor(ApiCompatibilityUtils.getColor(
                 mActivity.getResources(), R.color.modern_primary_color));
 
@@ -81,6 +82,10 @@ class DownloadManagerCoordinatorImpl
                 mActivity.getResources().getDimensionPixelOffset(R.dimen.toolbar_height_no_shadow),
                 0, 0);
         mMainView.addView(mListCoordinator.getView(), listParams);
+        mNavigationCanceller = (selectedItems) -> {
+            if (!selectedItems.isEmpty()) mMainView.release();
+        };
+        mSelectionDelegate.addObserver(mNavigationCanceller);
 
         FrameLayout.LayoutParams toolbarParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -110,6 +115,7 @@ class DownloadManagerCoordinatorImpl
         mDeleteCoordinator.destroy();
         mListCoordinator.destroy();
         mToolbarCoordinator.destroy();
+        mSelectionDelegate.removeObserver(mNavigationCanceller);
     }
 
     @Override

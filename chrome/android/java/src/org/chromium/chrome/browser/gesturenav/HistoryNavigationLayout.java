@@ -59,8 +59,6 @@ public class HistoryNavigationLayout extends FrameLayout {
         if (context instanceof ChromeActivity) {
             mTabProvider = ((ChromeActivity) context).getActivityTabProvider();
             mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-        } else {
-            throw new IllegalStateException("This native page should be under ChromeActivity");
         }
     }
 
@@ -161,9 +159,21 @@ public class HistoryNavigationLayout extends FrameLayout {
     /**
      * Reset navigation UI in action.
      */
-    public void reset() {
-        cancelStopNavigatingRunnable();
-        if (mSideSlideLayout != null) mSideSlideLayout.reset();
+    private void reset() {
+        if (mSideSlideLayout != null) {
+            cancelStopNavigatingRunnable();
+            mSideSlideLayout.reset();
+        }
+    }
+
+    /**
+     * Cancel navigation UI with animation effect.
+     */
+    public void release() {
+        if (mSideSlideLayout != null) {
+            cancelStopNavigatingRunnable();
+            mSideSlideLayout.release(false);
+        }
     }
 
     private void cancelStopNavigatingRunnable() {
