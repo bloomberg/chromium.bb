@@ -351,11 +351,7 @@ Guide](https://google.github.io/styleguide/jsguide.html) as well as
     * DO: `Object<T>`
     * DON'T: `Object<string, T>`
 
-### Events
 
-* Use Polymer's `on-tap` for click events instead of `on-click`
-    * `on-tap` handlers should use `stopPropagation()` to prevent parents from
-      handling the event where appropriate.
 
 <div class="note">
 Calling <code>stopPropagation()</code> from an <code>on-tap</code> handler will
@@ -383,6 +379,10 @@ Also see the [Google Polymer Style Guide](http://go/polymer-style).
 * Use `this.foo` instead of `newFoo` arguments in observers when possible.
   This makes changing the type of `this.foo` easier (as the `@type` is
   duplicated in less places, i.e. `@param`).
+
+* Use native `on-click` for click events instead of `on-tap`. 'tap' is a
+  synthetic event provided by Polymer for backward compatibility with some
+  browsers and is not needed by Chrome.
 
 ```js
 properties: {
