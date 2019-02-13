@@ -478,6 +478,18 @@
   </if>
 
   <if expr="chromeos">
+    <!-- Contained Shell page. Note that this experience is currently a prototype and is not shown
+         to end users at this point.
+         TODO(922687): Change these strings to the final ones when our internal repo is ready.-->
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_TITLE" desc="The title of Contained Shell section." translateable="false">
+      Contained Shell (Dev)
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_LABEL" desc="The text associated with the contained shell section setting." translateable="false">
+      Contained Shell
+    </message>
+    <message name="IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT" desc="The subtext associated with the contained shell section setting." translateable="false">
+      Enables the Contained Shell for the next sign in.
+    </message>
     <!-- Crostini Page -->
     <message name="IDS_SETTINGS_CROSTINI_TITLE" desc="The title of Crostini section.">
       Linux (Beta)

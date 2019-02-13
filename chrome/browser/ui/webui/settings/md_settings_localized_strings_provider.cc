@@ -476,6 +476,17 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
+void AddContainedShellStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      {"containedShellPageTitle", IDS_SETTINGS_CONTAINED_SHELL_TITLE},
+      {"containedShellPageLabel", IDS_SETTINGS_CONTAINED_SHELL_LABEL},
+      {"containedShellPageSubtext", IDS_SETTINGS_CONTAINED_SHELL_SUBTEXT},
+      {"containedShellTurnOn", IDS_SETTINGS_TURN_ON},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
+}
+
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"androidAppsPageTitle", arc::IsPlayStoreAvailable()
@@ -2809,6 +2820,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_CHROMEOS)
   AddCrostiniStrings(html_source);
+  AddContainedShellStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);

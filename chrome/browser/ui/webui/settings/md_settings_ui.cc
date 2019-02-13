@@ -327,6 +327,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 
+  html_source->AddBoolean(
+      "showContainedShell",
+      base::FeatureList::IsEnabled(ash::features::kContainedShell));
+
   html_source->AddBoolean("showCrostini",
                           crostini::IsCrostiniUIAllowedForProfile(
                               profile, false /* check_policy */));
