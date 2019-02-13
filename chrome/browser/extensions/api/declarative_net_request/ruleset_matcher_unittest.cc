@@ -150,10 +150,10 @@ TEST_P(RulesetMatcherTest, FailedVerification) {
                                                   expected_checksum, &matcher));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        RulesetMatcherTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         RulesetMatcherTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
 
 }  // namespace
 }  // namespace declarative_net_request

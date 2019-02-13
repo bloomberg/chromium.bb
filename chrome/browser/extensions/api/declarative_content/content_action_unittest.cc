@@ -191,7 +191,7 @@ TEST_P(ParameterizedDeclarativeContentActionTest, ShowAction) {
   EXPECT_FALSE(action->GetIsVisible(tab_id));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ParameterizedDeclarativeContentActionTest,
     testing::Values(ExtensionBuilder::ActionType::BROWSER_ACTION,

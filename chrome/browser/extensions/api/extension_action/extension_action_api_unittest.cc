@@ -101,10 +101,10 @@ TEST_P(ExtensionActionAPIUnitTest, MultiIcons) {
   EXPECT_EQ("icon38.png", icons.Get(38, ExtensionIconSet::MATCH_EXACTLY));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ExtensionActionAPIUnitTest,
-                        testing::Values(TestActionType::kBrowser,
-                                        TestActionType::kPage));
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionActionAPIUnitTest,
+                         testing::Values(TestActionType::kBrowser,
+                                         TestActionType::kPage));
 
 }  // namespace
 }  // namespace extensions

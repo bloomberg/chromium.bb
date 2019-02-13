@@ -160,9 +160,9 @@ IN_PROC_BROWSER_TEST_P(BrowserEncodingTest, TestEncodingAliasMapping) {
                 GetEncoding());
 }
 
-INSTANTIATE_TEST_CASE_P(EncodingAliases,
-                        BrowserEncodingTest,
-                        testing::ValuesIn(kEncodingTestDatas));
+INSTANTIATE_TEST_SUITE_P(EncodingAliases,
+                         BrowserEncodingTest,
+                         testing::ValuesIn(kEncodingTestDatas));
 
 // The following encodings are excluded from the auto-detection test because
 // it's a known issue that the current encoding detector does not detect them:

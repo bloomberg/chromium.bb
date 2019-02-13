@@ -3476,10 +3476,10 @@ IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
             registry->rules_cache_delegate_for_testing()->type());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebViewChannelTest,
-                        testing::Values(version_info::Channel::UNKNOWN,
-                                        version_info::Channel::STABLE));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebViewChannelTest,
+                         testing::Values(version_info::Channel::UNKNOWN,
+                                         version_info::Channel::STABLE));
 
 // This test verifies that webview.contentWindow works inside an iframe.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebViewInsideFrame) {
@@ -3916,9 +3916,9 @@ class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
 // Create two test instances, one where the guest body is scrollable and the
 // other where the body is not scrollable: fast-path scrolling will generate
 // different ack results in between these two cases.
-INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
-                        WebViewGuestScrollTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WebViewScrollBubbling,
+                         WebViewGuestScrollTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest, TestGuestWheelScrollsBubble) {
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
@@ -4081,9 +4081,9 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   guest_frame_observer.WaitForScrollOffset(default_offset);
 }
 
-INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
-                        WebViewGuestScrollTouchTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WebViewScrollBubbling,
+                         WebViewGuestScrollTouchTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
                        TestGuestGestureScrollsBubble) {

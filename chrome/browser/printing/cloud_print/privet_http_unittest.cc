@@ -427,7 +427,7 @@ class PrivetInfoTest : public PrivetHTTPTest {
   StrictMock<MockJSONCallback> info_callback_;
 };
 
-INSTANTIATE_TEST_CASE_P(PrivetTests, PrivetInfoTest, ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(PrivetTests, PrivetInfoTest, ValuesIn(kTestParams));
 
 TEST_P(PrivetInfoTest, SuccessfulInfo) {
   info_operation_->Start();
@@ -461,7 +461,9 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   PrivetURLLoader::RetryImmediatelyForTest retry_immediately_;
 };
 
-INSTANTIATE_TEST_CASE_P(PrivetTests, PrivetRegisterTest, ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(PrivetTests,
+                         PrivetRegisterTest,
+                         ValuesIn(kTestParams));
 
 TEST_P(PrivetRegisterTest, RegisterSuccessSimple) {
   register_operation_->Start();
@@ -577,9 +579,9 @@ class PrivetCapabilitiesTest : public PrivetHTTPTest {
   StrictMock<MockJSONCallback> capabilities_callback_;
 };
 
-INSTANTIATE_TEST_CASE_P(PrivetTests,
-                        PrivetCapabilitiesTest,
-                        ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(PrivetTests,
+                         PrivetCapabilitiesTest,
+                         ValuesIn(kTestParams));
 
 TEST_P(PrivetCapabilitiesTest, SuccessfulCapabilities) {
   capabilities_operation_->Start();
@@ -695,9 +697,9 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
       run_tasks_immediately_for_local_print_;
 };
 
-INSTANTIATE_TEST_CASE_P(PrivetTests,
-                        PrivetLocalPrintTest,
-                        ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(PrivetTests,
+                         PrivetLocalPrintTest,
+                         ValuesIn(kTestParams));
 
 TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrint) {
   local_print_operation_->SetUsername("sample@gmail.com");

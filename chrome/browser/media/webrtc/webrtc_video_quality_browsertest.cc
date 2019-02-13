@@ -339,10 +339,9 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   base::ScopedTempDir temp_working_dir_;
 };
 
-INSTANTIATE_TEST_CASE_P(
-    WebRtcVideoQualityBrowserTests,
-    WebRtcVideoQualityBrowserTest,
-    testing::ValuesIn(kVideoConfigurations));
+INSTANTIATE_TEST_SUITE_P(WebRtcVideoQualityBrowserTests,
+                         WebRtcVideoQualityBrowserTest,
+                         testing::ValuesIn(kVideoConfigurations));
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp8) {

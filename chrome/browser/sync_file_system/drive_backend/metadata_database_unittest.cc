@@ -638,9 +638,9 @@ class MetadataDatabaseTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseTest);
 };
 
-INSTANTIATE_TEST_CASE_P(MetadataDatabaseTestWithIndexesOnDisk,
-                        MetadataDatabaseTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(MetadataDatabaseTestWithIndexesOnDisk,
+                         MetadataDatabaseTest,
+                         ::testing::Values(true, false));
 
 TEST_P(MetadataDatabaseTest, InitializationTest_Empty) {
   EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());

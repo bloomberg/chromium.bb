@@ -216,10 +216,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetMediaDevicesBrowserTest,
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX) || \
     defined(OS_WIN)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(, WebRtcGetMediaDevicesBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, WebRtcGetMediaDevicesBrowserTest, ::testing::Bool());
 #else
 // Platforms where the out of process audio service is not supported
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcGetMediaDevicesBrowserTest,
-                        ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcGetMediaDevicesBrowserTest,
+                         ::testing::Values(false));
 #endif

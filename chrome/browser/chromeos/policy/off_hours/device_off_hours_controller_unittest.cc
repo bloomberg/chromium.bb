@@ -388,7 +388,7 @@ TEST_P(DeviceOffHoursControllerUpdateTest, CheckUpdateOffHoursPolicy) {
             is_off_hours_expected());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestCases,
     DeviceOffHoursControllerUpdateTest,
     testing::Values(

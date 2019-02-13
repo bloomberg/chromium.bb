@@ -1149,10 +1149,10 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Test,
-                        PeopleHandlerDiceUnifiedConsentTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(Test,
+                         PeopleHandlerDiceUnifiedConsentTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace settings

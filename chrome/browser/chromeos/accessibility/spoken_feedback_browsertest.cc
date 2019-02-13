@@ -313,9 +313,10 @@ class SpokenFeedbackTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(TestAsNormalAndGuestUser,
-                        SpokenFeedbackTest,
-                        ::testing::Values(kTestAsNormalUser, kTestAsGuestUser));
+INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
+                         SpokenFeedbackTest,
+                         ::testing::Values(kTestAsNormalUser,
+                                           kTestAsGuestUser));
 
 // TODO(tommi): Flakily hitting HasOneRef DCHECK in
 // AudioOutputResampler::Shutdown, see crbug.com/630031.

@@ -2702,24 +2702,24 @@ TEST_P(ArcDefaultAppForManagedUserTest, DefaultAppsForManagedUser) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ArcAppModelBuilderTest,
-                        ::testing::ValuesIn(kUnmanagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcDefaultAppTest,
-                        ::testing::ValuesIn(kUnmanagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcAppLauncherForDefaulAppTest,
-                        ::testing::ValuesIn(kUnmanagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcDefaultAppForManagedUserTest,
-                        ::testing::ValuesIn(kManagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcPlayStoreAppTest,
-                        ::testing::ValuesIn(kUnmanagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcAppModelBuilderRecreate,
-                        ::testing::ValuesIn(kUnmanagedArcStates));
-INSTANTIATE_TEST_CASE_P(,
-                        ArcAppModelIconTest,
-                        ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcAppModelBuilderTest,
+                         ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcDefaultAppTest,
+                         ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcAppLauncherForDefaulAppTest,
+                         ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcDefaultAppForManagedUserTest,
+                         ::testing::ValuesIn(kManagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcPlayStoreAppTest,
+                         ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcAppModelBuilderRecreate,
+                         ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcAppModelIconTest,
+                         ::testing::ValuesIn(kUnmanagedArcStates));

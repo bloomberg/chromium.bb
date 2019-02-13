@@ -64,7 +64,7 @@ TEST_P(InstallLimiterTest, ShouldDeferInstall) {
                                                   kRandomExtensionId));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DemoModeConfig,
     InstallLimiterTest,
     ::testing::Values(chromeos::DemoSession::DemoModeConfig::kNone,

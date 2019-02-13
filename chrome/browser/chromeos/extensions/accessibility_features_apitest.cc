@@ -163,9 +163,9 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(AccessibilityFeatureaApiTestInstantiatePermission,
-                        AccessibilityFeaturesApiTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(AccessibilityFeatureaApiTestInstantiatePermission,
+                         AccessibilityFeaturesApiTest,
+                         testing::Bool());
 
 // Tests that an extension with read permission can read accessibility features
 // state, while an extension that doesn't have the permission cannot.

@@ -123,19 +123,19 @@ class SecureOriginWhitelistBrowsertest
   policy::MockConfigurationPolicyProvider provider_;
 };
 
-INSTANTIATE_TEST_CASE_P(SecureOriginWhitelistBrowsertest,
-                        SecureOriginWhitelistBrowsertest,
-                        testing::Values(TestVariant::kNone,
-                                        TestVariant::kCommandline,
+INSTANTIATE_TEST_SUITE_P(SecureOriginWhitelistBrowsertest,
+                         SecureOriginWhitelistBrowsertest,
+                         testing::Values(TestVariant::kNone,
+                                         TestVariant::kCommandline,
 // The legacy policy isn't defined on ChromeOS or Android, so skip tests that
 // use it on those platforms.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-                                        TestVariant::kPolicyOld,
-                                        TestVariant::kPolicyOldAndNew,
+                                         TestVariant::kPolicyOld,
+                                         TestVariant::kPolicyOldAndNew,
 #endif
-                                        TestVariant::kPolicy,
-                                        TestVariant::kPolicy2,
-                                        TestVariant::kPolicy3));
+                                         TestVariant::kPolicy,
+                                         TestVariant::kPolicy2,
+                                         TestVariant::kPolicy3));
 
 IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
   GURL url = embedded_test_server()->GetURL(

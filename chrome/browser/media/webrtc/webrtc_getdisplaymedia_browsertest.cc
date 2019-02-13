@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetDisplayMediaBrowserTestWithFakeUI,
   EXPECT_EQ(result, base::StringPrintf("%d", kMaxFrameRate));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     WebRtcGetDisplayMediaBrowserTestWithFakeUI,
     testing::Values(TestConfig{"monitor", "true", "never", false},

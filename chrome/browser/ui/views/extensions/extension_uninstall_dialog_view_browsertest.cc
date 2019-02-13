@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_FROM_WEBSTORE);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ParameterizedExtensionUninstallDialogViewBrowserTest,
     testing::Values(extensions::UNINSTALL_REASON_USER_INITIATED,

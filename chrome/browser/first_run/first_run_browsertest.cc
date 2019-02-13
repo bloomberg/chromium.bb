@@ -267,14 +267,13 @@ IN_PROC_BROWSER_TEST_P(FirstRunMasterPrefsWithTrackedPreferences,
   EXPECT_TRUE(default_homepage_is_ntp);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     FirstRunMasterPrefsWithTrackedPreferencesInstance,
     FirstRunMasterPrefsWithTrackedPreferences,
     testing::Values(
         chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
-        chrome_prefs::internals::
-            kSettingsEnforcementGroupEnforceAlwaysWithDSE,
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlwaysWithDSE,
         chrome_prefs::internals::
             kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
 

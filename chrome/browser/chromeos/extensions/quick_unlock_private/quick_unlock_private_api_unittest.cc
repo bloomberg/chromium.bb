@@ -754,8 +754,8 @@ TEST_P(QuickUnlockPrivateUnitTest, GetCredentialRequirements) {
   CheckGetCredentialRequirements(1, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(StorageProviders,
-                        QuickUnlockPrivateUnitTest,
-                        ::testing::Values(TestType::kPrefs,
-                                          TestType::kCryptohome));
+INSTANTIATE_TEST_SUITE_P(StorageProviders,
+                         QuickUnlockPrivateUnitTest,
+                         ::testing::Values(TestType::kPrefs,
+                                           TestType::kCryptohome));
 }  // namespace chromeos

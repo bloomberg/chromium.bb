@@ -251,47 +251,47 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, FixReauth) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(SigninUtilWinBrowserTest1,
-                        SigninUtilWinBrowserTest,
-                        testing::Values(SigninUtilWinBrowserTestParams(
-                            /*is_first_run=*/false,
-                            /*gaia_id=*/base::string16(),
-                            /*email=*/base::string16(),
-                            /*refresh_token=*/std::string(),
-                            /*expect_is_started=*/false)));
+INSTANTIATE_TEST_SUITE_P(SigninUtilWinBrowserTest1,
+                         SigninUtilWinBrowserTest,
+                         testing::Values(SigninUtilWinBrowserTestParams(
+                             /*is_first_run=*/false,
+                             /*gaia_id=*/base::string16(),
+                             /*email=*/base::string16(),
+                             /*refresh_token=*/std::string(),
+                             /*expect_is_started=*/false)));
 
-INSTANTIATE_TEST_CASE_P(SigninUtilWinBrowserTest2,
-                        SigninUtilWinBrowserTest,
-                        testing::Values(SigninUtilWinBrowserTestParams(
-                            /*is_first_run=*/true,
-                            /*gaia_id=*/base::string16(),
-                            /*email=*/base::string16(),
-                            /*refresh_token=*/std::string(),
-                            /*expect_is_started=*/false)));
+INSTANTIATE_TEST_SUITE_P(SigninUtilWinBrowserTest2,
+                         SigninUtilWinBrowserTest,
+                         testing::Values(SigninUtilWinBrowserTestParams(
+                             /*is_first_run=*/true,
+                             /*gaia_id=*/base::string16(),
+                             /*email=*/base::string16(),
+                             /*refresh_token=*/std::string(),
+                             /*expect_is_started=*/false)));
 
-INSTANTIATE_TEST_CASE_P(SigninUtilWinBrowserTest3,
-                        SigninUtilWinBrowserTest,
-                        testing::Values(SigninUtilWinBrowserTestParams(
-                            /*is_first_run=*/true,
-                            /*gaia_id=*/L"gaia-123456",
-                            /*email=*/base::string16(),
-                            /*refresh_token=*/std::string(),
-                            /*expect_is_started=*/false)));
+INSTANTIATE_TEST_SUITE_P(SigninUtilWinBrowserTest3,
+                         SigninUtilWinBrowserTest,
+                         testing::Values(SigninUtilWinBrowserTestParams(
+                             /*is_first_run=*/true,
+                             /*gaia_id=*/L"gaia-123456",
+                             /*email=*/base::string16(),
+                             /*refresh_token=*/std::string(),
+                             /*expect_is_started=*/false)));
 
-INSTANTIATE_TEST_CASE_P(SigninUtilWinBrowserTest4,
-                        SigninUtilWinBrowserTest,
-                        testing::Values(SigninUtilWinBrowserTestParams(
-                            /*is_first_run=*/true,
-                            /*gaia_id=*/L"gaia-123456",
-                            /*email=*/L"foo@gmail.com",
-                            /*refresh_token=*/std::string(),
-                            /*expect_is_started=*/false)));
+INSTANTIATE_TEST_SUITE_P(SigninUtilWinBrowserTest4,
+                         SigninUtilWinBrowserTest,
+                         testing::Values(SigninUtilWinBrowserTestParams(
+                             /*is_first_run=*/true,
+                             /*gaia_id=*/L"gaia-123456",
+                             /*email=*/L"foo@gmail.com",
+                             /*refresh_token=*/std::string(),
+                             /*expect_is_started=*/false)));
 
-INSTANTIATE_TEST_CASE_P(SigninUtilWinBrowserTest5,
-                        SigninUtilWinBrowserTest,
-                        testing::Values(SigninUtilWinBrowserTestParams(
-                            /*is_first_run=*/true,
-                            /*gaia_id=*/L"gaia-123456",
-                            /*email=*/L"foo@gmail.com",
-                            /*refresh_token=*/"lst-123456",
-                            /*expect_is_started=*/true)));
+INSTANTIATE_TEST_SUITE_P(SigninUtilWinBrowserTest5,
+                         SigninUtilWinBrowserTest,
+                         testing::Values(SigninUtilWinBrowserTestParams(
+                             /*is_first_run=*/true,
+                             /*gaia_id=*/L"gaia-123456",
+                             /*email=*/L"foo@gmail.com",
+                             /*refresh_token=*/"lst-123456",
+                             /*expect_is_started=*/true)));

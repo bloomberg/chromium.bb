@@ -166,9 +166,9 @@ TEST_P(ProcessDiceHeaderDelegateImplTestEnableSync, EnableSync) {
   EXPECT_FALSE(show_error_called_);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ProcessDiceHeaderDelegateImplTestEnableSync,
-                        ::testing::ValuesIn(kEnableSyncTestCases));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ProcessDiceHeaderDelegateImplTestEnableSync,
+                         ::testing::ValuesIn(kEnableSyncTestCases));
 
 TestConfiguration kHandleTokenExchangeFailureTestCases[] = {
     // clang-format off
@@ -210,7 +210,7 @@ TEST_P(ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
   EXPECT_EQ(expected_url, web_contents()->GetVisibleURL());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
     ::testing::ValuesIn(kHandleTokenExchangeFailureTestCases));

@@ -258,9 +258,9 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, TitleLocalization) {
             action->GetTitle(ExtensionAction::kDefaultTabId));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MultiActionAPITest,
-                        testing::Values(TestActionType::kBrowser,
-                                        TestActionType::kPage));
+INSTANTIATE_TEST_SUITE_P(,
+                         MultiActionAPITest,
+                         testing::Values(TestActionType::kBrowser,
+                                         TestActionType::kPage));
 
 }  // namespace extensions

@@ -124,9 +124,9 @@ IN_PROC_BROWSER_TEST_P(ChromeOriginTrialsDisabledFeaturesTest,
   EXPECT_EQ(GetParam().expected_switch, actual);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeOriginTrialsDisabledFeaturesTest,
-                        ::testing::ValuesIn(kDisabledFeaturesTests));
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeOriginTrialsDisabledFeaturesTest,
+                         ::testing::ValuesIn(kDisabledFeaturesTests));
 
 // Tests to verify that disabled tokens are correctly read from prefs and
 // added to the command line
@@ -148,8 +148,8 @@ IN_PROC_BROWSER_TEST_P(ChromeOriginTrialsDisabledTokensTest,
   EXPECT_EQ(GetParam().expected_switch, actual);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeOriginTrialsDisabledTokensTest,
-                        ::testing::ValuesIn(kDisabledTokensTests));
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeOriginTrialsDisabledTokensTest,
+                         ::testing::ValuesIn(kDisabledTokensTests));
 
 }  // namespace

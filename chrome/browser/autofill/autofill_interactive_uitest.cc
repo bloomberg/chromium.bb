@@ -3466,13 +3466,13 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 }
 
-INSTANTIATE_TEST_CASE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AutofillCompanyInteractiveTest, testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillDynamicFormInteractiveTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillDynamicFormInteractiveTest,
+                         testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AutofillRestrictUnownedFieldsTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutofillRestrictUnownedFieldsTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace autofill

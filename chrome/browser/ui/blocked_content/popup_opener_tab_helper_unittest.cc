@@ -408,9 +408,9 @@ class BlockTabUnderIncognitoTest : public BlockTabUnderTest,
   DISALLOW_COPY_AND_ASSIGN(BlockTabUnderIncognitoTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        BlockTabUnderIncognitoTest,
-                        testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         BlockTabUnderIncognitoTest,
+                         testing::Values(true, false));
 
 TEST_F(BlockTabUnderTest, SimpleTabUnder_IsBlocked) {
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));

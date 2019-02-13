@@ -725,15 +725,15 @@ IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(,
-                        CastV2PerformanceTest,
-                        testing::Values(k24fps,
-                                        k30fps,
-                                        k60fps,
-                                        k30fps | kProxyWifi,
-                                        k30fps | kProxyBad,
-                                        k30fps | kSlowClock,
-                                        k30fps | kFastClock,
-                                        k30fps | kProxyWifi | kAutoThrottling,
-                                        k30fps | kProxySlow | kAutoThrottling,
-                                        k30fps | kProxyBad | kAutoThrottling));
+INSTANTIATE_TEST_SUITE_P(,
+                         CastV2PerformanceTest,
+                         testing::Values(k24fps,
+                                         k30fps,
+                                         k60fps,
+                                         k30fps | kProxyWifi,
+                                         k30fps | kProxyBad,
+                                         k30fps | kSlowClock,
+                                         k30fps | kFastClock,
+                                         k30fps | kProxyWifi | kAutoThrottling,
+                                         k30fps | kProxySlow | kAutoThrottling,
+                                         k30fps | kProxyBad | kAutoThrottling));

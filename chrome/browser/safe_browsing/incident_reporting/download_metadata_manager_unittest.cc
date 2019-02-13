@@ -381,7 +381,7 @@ TEST_P(GetDetailsTest, GetDownloadDetails) {
   ShutdownDownloadManager();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DownloadMetadataManager,
     GetDetailsTest,
     testing::Combine(
@@ -520,7 +520,7 @@ TEST_P(SetRequestTest, SetRequest) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DownloadMetadataManager,
     SetRequestTest,
     testing::Combine(testing::Values("absent", "this", "other", "unknown"),

@@ -416,9 +416,9 @@ TEST_P(ResetStatesTest, PerformReset) {
   EXPECT_EQ(reset_callbacks_, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(SettingsResetPromptModel,
-                        ResetStatesTest,
-                        Combine(Bool(), Bool(), Bool()));
+INSTANTIATE_TEST_SUITE_P(SettingsResetPromptModel,
+                         ResetStatesTest,
+                         Combine(Bool(), Bool(), Bool()));
 
 }  // namespace
 }  // namespace safe_browsing

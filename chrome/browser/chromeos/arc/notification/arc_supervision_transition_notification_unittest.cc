@@ -58,7 +58,7 @@ class ArcSupervisionTransitionNotificationTest
   DISALLOW_COPY_AND_ASSIGN(ArcSupervisionTransitionNotificationTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ArcSupervisionTransitionNotificationTest,
     ::testing::Values(ArcSupervisionTransition::NO_TRANSITION,

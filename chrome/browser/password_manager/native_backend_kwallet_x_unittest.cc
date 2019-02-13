@@ -1119,10 +1119,11 @@ TEST_P(NativeBackendKWalletTest, GetAllLogins) {
               UnorderedElementsAre(Pointee(form_google_), Pointee(form_isc_)));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        NativeBackendKWalletTest,
-                        ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
-                                          base::nix::DESKTOP_ENVIRONMENT_KDE5));
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    NativeBackendKWalletTest,
+    ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
+                      base::nix::DESKTOP_ENVIRONMENT_KDE5));
 
 // TODO(mdm): add more basic tests here at some point.
 // (For example tests for storing >1 password per realm pickle.)

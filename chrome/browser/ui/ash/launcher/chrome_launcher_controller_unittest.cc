@@ -4120,9 +4120,9 @@ class ChromeLauncherControllerPlayStoreAvailabilityTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPlayStoreAvailabilityTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerPlayStoreAvailabilityTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeLauncherControllerPlayStoreAvailabilityTest,
+                         ::testing::Bool());
 
 }  // namespace
 

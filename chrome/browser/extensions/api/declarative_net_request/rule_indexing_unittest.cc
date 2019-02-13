@@ -555,10 +555,10 @@ TEST_P(RuleIndexingTest, ExtensionWithIndexedRuleset) {
   LoadAndExpectSuccess(1 /* rules count */);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        RuleIndexingTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         RuleIndexingTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
 
 }  // namespace
 }  // namespace declarative_net_request

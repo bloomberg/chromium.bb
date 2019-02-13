@@ -107,7 +107,7 @@ class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceUnitTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestCases,
     SpellcheckServiceUnitTest,
     testing::Values(

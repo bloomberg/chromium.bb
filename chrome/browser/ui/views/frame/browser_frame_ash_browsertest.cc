@@ -125,6 +125,6 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
       << (is_test_app ? "for app window" : "for tabbed browser window");
 }
 
-INSTANTIATE_TEST_CASE_P(BrowserTestTabbedOrApp,
-                        BrowserTestParam,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(BrowserTestTabbedOrApp,
+                         BrowserTestParam,
+                         testing::Bool());

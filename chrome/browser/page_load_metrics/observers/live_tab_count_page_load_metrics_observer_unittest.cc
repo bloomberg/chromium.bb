@@ -120,10 +120,10 @@ TEST_P(LiveTabCountPageLoadMetricsObserverTest, LoadTabs100) {
   EXPECT_EQ(bucket, live_tab_count_metrics::kNumLiveTabCountBuckets - 1);
 }
 
-INSTANTIATE_TEST_CASE_P(Foreground,
-                        LiveTabCountPageLoadMetricsObserverTest,
-                        testing::Values(TabState::kForeground));
+INSTANTIATE_TEST_SUITE_P(Foreground,
+                         LiveTabCountPageLoadMetricsObserverTest,
+                         testing::Values(TabState::kForeground));
 
-INSTANTIATE_TEST_CASE_P(Background,
-                        LiveTabCountPageLoadMetricsObserverTest,
-                        testing::Values(TabState::kBackground));
+INSTANTIATE_TEST_SUITE_P(Background,
+                         LiveTabCountPageLoadMetricsObserverTest,
+                         testing::Values(TabState::kBackground));

@@ -2375,23 +2375,23 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestResourceTypeBrowserTest, Test2) {
             {"block_none.com", kNone}});
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        DeclarativeNetRequestBrowserTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         DeclarativeNetRequestBrowserTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
 
-INSTANTIATE_TEST_CASE_P(,
-                        DeclarativeNetRequestHostPermissionsBrowserTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
-INSTANTIATE_TEST_CASE_P(,
-                        DeclarativeNetRequestResourceTypeBrowserTest,
-                        ::testing::Values(ExtensionLoadType::PACKED,
-                                          ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         DeclarativeNetRequestHostPermissionsBrowserTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         DeclarativeNetRequestResourceTypeBrowserTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
 
-INSTANTIATE_TEST_CASE_P(,
-                        DeclarativeNetRequestBrowserTest_Packed,
-                        ::testing::Values(ExtensionLoadType::PACKED));
+INSTANTIATE_TEST_SUITE_P(,
+                         DeclarativeNetRequestBrowserTest_Packed,
+                         ::testing::Values(ExtensionLoadType::PACKED));
 
 }  // namespace
 }  // namespace declarative_net_request

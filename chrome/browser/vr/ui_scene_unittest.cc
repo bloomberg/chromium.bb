@@ -295,8 +295,8 @@ const std::vector<AlignmentTestCase> alignment_test_cases = {
     {RIGHT, TOP, LEFT, BOTTOM, 3, 3},
 };
 
-INSTANTIATE_TEST_CASE_P(AlignmentTestCases,
-                        AlignmentTest,
-                        ::testing::ValuesIn(alignment_test_cases));
+INSTANTIATE_TEST_SUITE_P(AlignmentTestCases,
+                         AlignmentTest,
+                         ::testing::ValuesIn(alignment_test_cases));
 
 }  // namespace vr
