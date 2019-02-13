@@ -982,6 +982,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Get the size (in pixels) of the currently bound frame buffer (either FBO
   // or regular back buffer).
   gfx::Size GetBoundReadFramebufferSize();
+  gfx::Size GetBoundDrawFramebufferSize();
 
   // Get the service side ID for the bound read framebuffer.
   // If it's back buffer, 0 is returned.
@@ -5002,6 +5003,17 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFramebufferSize() {
   }
 }
 
+gfx::Size GLES2DecoderImpl::GetBoundDrawFramebufferSize() {
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
+  if (framebuffer) {
+    return framebuffer->GetFramebufferValidSize();
+  } else if (offscreen_target_frame_buffer_.get()) {
+    return offscreen_size_;
+  } else {
+    return surface_->GetSize();
+  }
+};
+
 GLuint GLES2DecoderImpl::GetBoundReadFramebufferServiceId() {
   Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (framebuffer) {
@@ -8702,7 +8714,21 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   const char* func_name = "glBlitFramebufferCHROMIUM";
   DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
 
-  if (!CheckBoundFramebufferValid(func_name)) {
+  if (!CheckFramebufferValid(GetBoundDrawFramebuffer(),
+                             GetDrawFramebufferTarget(),
+                             GL_INVALID_FRAMEBUFFER_OPERATION, func_name)) {
+    return;
+  }
+
+  // We need to get this before checking if the read framebuffer is valid.
+  // Checking the read framebuffer may clear attachments which would mark the
+  // draw framebuffer as incomplete. Framebuffer::GetFramebufferValidSize()
+  // requires the framebuffer to be complete.
+  gfx::Size draw_size = GetBoundDrawFramebufferSize();
+
+  if (!CheckFramebufferValid(GetBoundReadFramebuffer(),
+                             GetReadFramebufferTarget(),
+                             GL_INVALID_FRAMEBUFFER_OPERATION, func_name)) {
     return;
   }
 
@@ -8919,52 +8945,161 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
 
   if (workarounds().adjust_src_dst_region_for_blitframebuffer) {
     gfx::Size read_size = GetBoundReadFramebufferSize();
-    gfx::Rect src_bounds(0, 0, read_size.width(), read_size.height());
     GLint src_x = srcX1 > srcX0 ? srcX0 : srcX1;
     GLint src_y = srcY1 > srcY0 ? srcY0 : srcY1;
-    GLuint src_width = 0, src_height = 0;
-    if (!src_width_temp.Abs().AssignIfValid(&src_width))
-      src_width = 0;
-    if (!src_height_temp.Abs().AssignIfValid(&src_height))
-      src_height = 0;
+    unsigned int src_width = base::checked_cast<unsigned int>(
+        src_width_temp.Abs().ValueOrDefault(0));
+    unsigned int src_height = base::checked_cast<unsigned int>(
+        src_height_temp.Abs().ValueOrDefault(0));
 
+    GLint dst_x = dstX1 > dstX0 ? dstX0 : dstX1;
+    GLint dst_y = dstY1 > dstY0 ? dstY0 : dstY1;
+    unsigned int dst_width = base::checked_cast<unsigned int>(
+        dst_width_temp.Abs().ValueOrDefault(0));
+    unsigned int dst_height = base::checked_cast<unsigned int>(
+        dst_height_temp.Abs().ValueOrDefault(0));
+
+    if (dst_width == 0 || src_width == 0 || dst_height == 0 ||
+        src_height == 0) {
+      return;
+    }
+
+    gfx::Rect src_bounds(0, 0, read_size.width(), read_size.height());
     gfx::Rect src_region(src_x, src_y, src_width, src_height);
-    if (!src_bounds.Contains(src_region) &&
-        (src_width != 0) && (src_height != 0)) {
-      // If pixels lying outside the read framebuffer, adjust src region
-      // and dst region to appropriate in-bounds regions respectively.
-      src_bounds.Intersect(src_region);
-      GLuint src_real_width = src_bounds.width();
-      GLuint src_real_height = src_bounds.height();
-      GLuint xoffset = src_bounds.x() - src_x;
-      GLuint yoffset = src_bounds.y() - src_y;
-      // if X/Y is reversed, use the top/right out-of-bounds region for mapping
-      // to dst region, instead of left/bottom out-of-bounds region for mapping.
-      if (((srcX1 > srcX0) && (dstX1 < dstX0)) ||
-          ((srcX1 < srcX0) && (dstX1 > dstX0))) {
-        xoffset = src_x + src_width - src_bounds.x() - src_bounds.width();
-      }
-      if (((srcY1 > srcY0) && (dstY1 < dstY0)) ||
-          ((srcY1 < srcY0) && (dstY1 > dstY0))) {
-        yoffset = src_y + src_height - src_bounds.y() - src_bounds.height();
+
+    gfx::Rect dst_bounds(0, 0, draw_size.width(), draw_size.height());
+    gfx::Rect dst_region(dst_x, dst_y, dst_width, dst_height);
+
+    if (gfx::IntersectRects(dst_bounds, dst_region).IsEmpty()) {
+      return;
+    }
+
+    bool x_flipped = ((srcX1 > srcX0) && (dstX1 < dstX0)) ||
+                     ((srcX1 < srcX0) && (dstX1 > dstX0));
+    bool y_flipped = ((srcY1 > srcY0) && (dstY1 < dstY0)) ||
+                     ((srcY1 < srcY0) && (dstY1 > dstY0));
+
+    if (!dst_bounds.Contains(dst_region)) {
+      // dst_region is not within dst_bounds. We want to adjust it to a
+      // reasonable size. This is done by halving the dst_region until it is at
+      // most twice the size of the framebuffer. We cut it in half instead
+      // of arbitrarily shrinking it to fit so that we don't end up with
+      // non-power-of-two scale factors which could mess up pixel interpolation.
+      // Naively clipping the dst rect and then proportionally sizing the
+      // src rect yields incorrect results.
+
+      unsigned int dst_x_halvings = 0;
+      unsigned int dst_y_halvings = 0;
+      int dst_origin_x = dst_x;
+      int dst_origin_y = dst_y;
+
+      int dst_clipped_width = dst_region.width();
+      while (dst_clipped_width > 2 * dst_bounds.width()) {
+        dst_clipped_width = dst_clipped_width >> 1;
+        dst_x_halvings++;
       }
 
-      GLint dst_x = dstX1 > dstX0 ? dstX0 : dstX1;
-      GLint dst_y = dstY1 > dstY0 ? dstY0 : dstY1;
-      base::CheckedNumeric<GLint> dst_width_temp = dstX1;
-      dst_width_temp -= dstX0;
-      base::CheckedNumeric<GLint> dst_height_temp = dstY1;
-      dst_height_temp -= dstY0;
-      GLuint dst_width = 0, dst_height = 0;
-      if (!dst_width_temp.IsValid() || !dst_height_temp.IsValid()) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
-                           "the width or height of dst region overflow");
+      int dst_clipped_height = dst_region.height();
+      while (dst_clipped_height > 2 * dst_bounds.height()) {
+        dst_clipped_height = dst_clipped_height >> 1;
+        dst_y_halvings++;
+      }
+
+      // Before this block, we check that the two rectangles intersect.
+      // Now, compute the location of a new region origin such that we use the
+      // scaled dimensions but the new region has the same intersection as the
+      // original region.
+
+      int left = dst_region.x();
+      int right = dst_region.right();
+      int top = dst_region.y();
+      int bottom = dst_region.bottom();
+
+      if (left >= 0 && left < dst_bounds.width()) {
+        // Left edge is in-bounds
+        dst_origin_x = dst_x;
+      } else if (right > 0 && right <= dst_bounds.width()) {
+        // Right edge is in-bounds
+        dst_origin_x = right - dst_clipped_width;
+      } else {
+        // Region completely spans bounds
+        dst_origin_x = dst_x;
+      }
+
+      if (top >= 0 && top < dst_bounds.height()) {
+        // Top edge is in-bounds
+        dst_origin_y = dst_y;
+      } else if (bottom > 0 && bottom <= dst_bounds.height()) {
+        // Bottom edge is in-bounds
+        dst_origin_y = bottom - dst_clipped_height;
+      } else {
+        // Region completely spans bounds
+        dst_origin_y = dst_y;
+      }
+
+      dst_region.SetRect(dst_origin_x, dst_origin_y, dst_clipped_width,
+                         dst_clipped_height);
+
+      // Offsets from the bottom left corner of the original region to
+      // the bottom left corner of the clipped region.
+      // This value (after it is scaled) is the respective offset we will apply
+      // to the src origin.
+      base::CheckedNumeric<unsigned int> checked_xoffset(dst_region.x() -
+                                                         dst_x);
+      base::CheckedNumeric<unsigned int> checked_yoffset(dst_region.y() -
+                                                         dst_y);
+
+      // if X/Y is reversed, use the top/right out-of-bounds region to compute
+      // the origin offset instead of the left/bottom out-of-bounds region
+      if (x_flipped) {
+        checked_xoffset = (dst_x + dst_width - dst_region.right());
+      }
+      if (y_flipped) {
+        checked_yoffset = (dst_y + dst_height - dst_region.bottom());
+      }
+
+      // These offsets should never overflow.
+      unsigned int xoffset, yoffset;
+      if (!checked_xoffset.AssignIfValid(&xoffset) ||
+          !checked_yoffset.AssignIfValid(&yoffset)) {
+        NOTREACHED();
+        LOCAL_SET_GL_ERROR(
+            GL_INVALID_VALUE, func_name,
+            "the width or height of src or dst region overflowed");
         return;
       }
-      if (!dst_width_temp.Abs().AssignIfValid(&dst_width))
-        dst_width = 0;
-      if (!dst_height_temp.Abs().AssignIfValid(&dst_height))
-        dst_height = 0;
+
+      // Adjust the src region by the same factor
+      src_region.SetRect(src_x + (xoffset >> dst_x_halvings),
+                         src_y + (yoffset >> dst_y_halvings),
+                         src_region.width() >> dst_x_halvings,
+                         src_region.height() >> dst_y_halvings);
+
+      // If the src was scaled to 0, set it to 1 so the src is non-empty.
+      if (src_region.width() == 0) {
+        src_region.set_width(1);
+      }
+      if (src_region.height() == 0) {
+        src_region.set_height(1);
+      }
+    }
+
+    if (!src_bounds.Contains(src_region)) {
+      // If pixels lying outside the read framebuffer, adjust src region
+      // and dst region to appropriate in-bounds regions respectively.
+      src_region.Intersect(src_bounds);
+      GLuint src_real_width = src_region.width();
+      GLuint src_real_height = src_region.height();
+      GLuint xoffset = src_region.x() - src_x;
+      GLuint yoffset = src_region.y() - src_y;
+      // if X/Y is reversed, use the top/right out-of-bounds region for mapping
+      // to dst region, instead of left/bottom out-of-bounds region for mapping.
+      if (x_flipped) {
+        xoffset = src_x + src_width - src_region.x() - src_region.width();
+      }
+      if (y_flipped) {
+        yoffset = src_y + src_height - src_region.y() - src_region.height();
+      }
 
       GLfloat dst_mapping_width =
           static_cast<GLfloat>(src_real_width) * dst_width / src_width;
@@ -8985,21 +9120,22 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       GLuint dst_mapping_y1 =
           std::round(dst_y + dst_mapping_yoffset + dst_mapping_height);
 
-      // adjust the src region and dst region to fit the read framebuffer
-      srcX0 = srcX0 < srcX1 ?
-          src_bounds.x() : src_bounds.x() + src_bounds.width();
-      srcY0 = srcY0 < srcY1 ?
-          src_bounds.y() : src_bounds.y() + src_bounds.height();
-      srcX1 = srcX0 < srcX1 ?
-          src_bounds.x() + src_bounds.width() : src_bounds.x();
-      srcY1 = srcY0 < srcY1 ?
-          src_bounds.y() + src_bounds.height() : src_bounds.y();
-
-      dstX0 = dstX0 < dstX1 ? dst_mapping_x0 : dst_mapping_x1;
-      dstY0 = dstY0 < dstY1 ? dst_mapping_y0 : dst_mapping_y1;
-      dstX1 = dstX0 < dstX1 ? dst_mapping_x1 : dst_mapping_x0;
-      dstY1 = dstY0 < dstY1 ? dst_mapping_y1 : dst_mapping_y0;
+      dst_region.SetRect(dst_mapping_x0, dst_mapping_y0,
+                         dst_mapping_x1 - dst_mapping_x0,
+                         dst_mapping_y1 - dst_mapping_y0);
     }
+
+    // Set the src and dst endpoints. If they were previously flipped,
+    // set them as flipped.
+    srcX0 = srcX0 < srcX1 ? src_region.x() : src_region.right();
+    srcY0 = srcY0 < srcY1 ? src_region.y() : src_region.bottom();
+    srcX1 = srcX0 < srcX1 ? src_region.right() : src_region.x();
+    srcY1 = srcY0 < srcY1 ? src_region.bottom() : src_region.y();
+
+    dstX0 = dstX0 < dstX1 ? dst_region.x() : dst_region.right();
+    dstY0 = dstY0 < dstY1 ? dst_region.y() : dst_region.bottom();
+    dstX1 = dstX0 < dstX1 ? dst_region.right() : dst_region.x();
+    dstY1 = dstY0 < dstY1 ? dst_region.bottom() : dst_region.y();
   }
 
   bool enable_srgb =

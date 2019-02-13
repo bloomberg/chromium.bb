@@ -1953,7 +1953,7 @@
     },
     {
       "id": 197,
-      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Mac",
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Mac",
       "cr_bugs": [644740],
       "os": {
         "type": "macosx"
@@ -1964,7 +1964,7 @@
     },
     {
       "id": 198,
-      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Linux Intel",
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Linux Intel",
       "cr_bugs": [664740],
       "os": {
         "type": "linux"
@@ -1976,7 +1976,7 @@
     },
     {
       "id": 199,
-      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Linux AMD",
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Linux AMD",
       "cr_bugs": [664740],
       "os": {
         "type": "linux"
@@ -3122,6 +3122,30 @@
       "gl_renderer": "Adreno \\(TM\\) .*",
       "features": [
         "round_down_uniform_bind_buffer_range_size"
+      ]
+    },
+    {
+      "id": 291,
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Linux NVIDIA",
+      "cr_bugs": [830046],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
+      ]
+    },
+    {
+      "id": 292,
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Android NVIDIA",
+      "cr_bugs": [830046],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
       ]
     }
   ]
