@@ -7,10 +7,12 @@
 #include <objbase.h>
 #include <shobjidl.h>
 #include <wrl/client.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/browser_process.h"
@@ -48,7 +50,9 @@ static const SkRRect kOverlayIconClip =
 //
 // Docs for TaskbarList::SetOverlayIcon() say it does nothing if the HWND is not
 // valid.
-void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
+void SetOverlayIcon(HWND hwnd,
+                    std::unique_ptr<SkBitmap> bitmap,
+                    const std::string& alt_text) {
   Microsoft::WRL::ComPtr<ITaskbarList3> taskbar;
   HRESULT result = ::CoCreateInstance(
       CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));
@@ -91,20 +95,23 @@ void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
     if (!icon.is_valid())
       return;
   }
-  taskbar->SetOverlayIcon(hwnd, icon.get(), L"");
+  taskbar->SetOverlayIcon(hwnd, icon.get(), base::UTF8ToWide(alt_text).c_str());
 }
 
-void PostSetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
+void PostSetOverlayIcon(HWND hwnd,
+                        std::unique_ptr<SkBitmap> bitmap,
+                        const std::string& alt_text) {
   base::CreateCOMSTATaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&SetOverlayIcon, hwnd, base::Passed(&bitmap)));
+      ->PostTask(FROM_HERE, base::BindOnce(&SetOverlayIcon, hwnd,
+                                           base::Passed(&bitmap), alt_text));
 }
 
 }  // namespace
 
 void DrawTaskbarDecorationString(gfx::NativeWindow window,
-                                 const std::string& content) {
+                                 const std::string& content,
+                                 const std::string& alt_text) {
   HWND hwnd = views::HWNDForNativeWindow(window);
 
   // This is the color used by the Windows 10 Badge API, for platform
@@ -152,7 +159,7 @@ void DrawTaskbarDecorationString(gfx::NativeWindow window,
                         kRadius - bounds.height() / 2 - bounds.y(), font,
                         paint);
 
-  PostSetOverlayIcon(hwnd, std::move(badge));
+  PostSetOverlayIcon(hwnd, std::move(badge), alt_text);
 }
 
 void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
@@ -171,7 +178,7 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
         new SkBitmap(profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
   }
 
-  PostSetOverlayIcon(hwnd, std::move(bitmap));
+  PostSetOverlayIcon(hwnd, std::move(bitmap), "");
 }
 
 void UpdateTaskbarDecoration(Profile* profile, gfx::NativeWindow window) {
