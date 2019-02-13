@@ -260,17 +260,17 @@ CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
                                             NGLayoutInputNode child);
 
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
-                                      const ComputedStyle&);
-
-CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
                                       const NGLayoutInputNode);
 
+CORE_EXPORT NGBoxStrut ComputeBordersForInline(const ComputedStyle& style);
+
 inline NGLineBoxStrut ComputeLineBorders(
-    const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  return NGLineBoxStrut(ComputeBorders(constraint_space, style),
+  return NGLineBoxStrut(ComputeBordersForInline(style),
                         style.IsFlippedLinesWritingMode());
 }
+
+CORE_EXPORT NGBoxStrut ComputeBordersForTest(const ComputedStyle& style);
 
 CORE_EXPORT NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace&,
                                                const NGLayoutInputNode);

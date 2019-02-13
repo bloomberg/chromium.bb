@@ -46,7 +46,7 @@ class NGLengthUtilsTest : public testing::Test {
       LengthResolvePhase phase = LengthResolvePhase::kLayout,
       const base::Optional<MinMaxSize>& sizes = base::nullopt) {
     NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
-    NGBoxStrut border_padding = ComputeBorders(constraint_space, *style_) +
+    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
     return ::blink::ResolveInlineLength(
@@ -59,7 +59,7 @@ class NGLengthUtilsTest : public testing::Test {
       LengthResolvePhase phase = LengthResolvePhase::kLayout,
       LayoutUnit content_size = LayoutUnit()) {
     NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
-    NGBoxStrut border_padding = ComputeBorders(constraint_space, *style_) +
+    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
     return ::blink::ResolveBlockLength(constraint_space, *style_,
@@ -70,7 +70,7 @@ class NGLengthUtilsTest : public testing::Test {
   LayoutUnit ComputeBlockSizeForFragment(
       NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300),
       LayoutUnit content_size = LayoutUnit()) {
-    NGBoxStrut border_padding = ComputeBorders(constraint_space, *style_) +
+    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
     return ::blink::ComputeBlockSizeForFragment(constraint_space, *style_,
@@ -95,7 +95,7 @@ class NGLengthUtilsTestWithNode : public NGLayoutTest {
     body->SetPreferredLogicalWidthsDirty();
     NGBlockNode node(body);
 
-    NGBoxStrut border_padding = ComputeBorders(constraint_space, *style_) +
+    NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
     return ::blink::ComputeInlineSizeForFragment(constraint_space, node,
                                                  border_padding, &sizes);
@@ -438,9 +438,7 @@ TEST_F(NGLengthUtilsTest, testBorders) {
   style_->SetBorderLeftStyle(EBorderStyle::kSolid);
   style_->SetWritingMode(WritingMode::kVerticalLr);
 
-  NGConstraintSpace constraint_space = ConstructConstraintSpace(200, 300);
-
-  NGBoxStrut borders = ComputeBorders(constraint_space, *style_);
+  NGBoxStrut borders = ComputeBordersForTest(*style_);
 
   EXPECT_EQ(LayoutUnit(4), borders.block_start);
   EXPECT_EQ(LayoutUnit(3), borders.inline_end);

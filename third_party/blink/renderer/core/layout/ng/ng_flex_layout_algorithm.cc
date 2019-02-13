@@ -25,7 +25,7 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(NGBlockNode node,
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)),
       border_scrollbar_padding_(
           CalculateBorderScrollbarPadding(ConstraintSpace(), Node())),
-      borders_(ComputeBorders(ConstraintSpace(), Style())),
+      borders_(ComputeBorders(ConstraintSpace(), Node())),
       padding_(ComputePadding(ConstraintSpace(), Style())),
       border_padding_(borders_ + padding_),
       is_column_(Style().IsColumnFlexDirection()) {
@@ -85,7 +85,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
             .ToConstraintSpace();
 
     NGBoxStrut border_padding_in_child_writing_mode =
-        ComputeBorders(child_space, child_style) +
+        ComputeBorders(child_space, child) +
         ComputePadding(child_space, child_style);
     NGPhysicalBoxStrut physical_border_padding(
         border_padding_in_child_writing_mode.ConvertToPhysical(

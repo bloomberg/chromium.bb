@@ -460,7 +460,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                                /* is_new_fc */ false)
           .ToConstraintSpace();
   NGBoxStrut border_padding =
-      ComputeBorders(space, child_style) + ComputePadding(space, child_style);
+      ComputeBorders(space, child) + ComputePadding(space, child_style);
 
   MinMaxSize sizes = ComputeMinAndMaxContentContribution(
       parent_writing_mode, child_style, border_padding, minmax);
@@ -590,7 +590,7 @@ NGLogicalSize ComputeReplacedSize(
   const ComputedStyle& style = node.Style();
 
   NGBoxStrut border_padding =
-      ComputeBorders(space, style) + ComputePadding(space, style);
+      ComputeBorders(space, node) + ComputePadding(space, style);
   LayoutUnit inline_min = ResolveInlineLength(
       space, style, border_padding, child_minmax, style.LogicalMinWidth(),
       LengthResolveType::kMinSize, LengthResolvePhase::kLayout);
@@ -924,13 +924,9 @@ NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
   return margins;
 }
 
-NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
-                          const ComputedStyle& style) {
-  // If we are producing an anonymous fragment (e.g. a column) we shouldn't
-  // have any borders.
-  if (constraint_space.IsAnonymous())
-    return NGBoxStrut();
+namespace {
 
+NGBoxStrut ComputeBordersInternal(const ComputedStyle& style) {
   NGBoxStrut borders;
   borders.inline_start = LayoutUnit(style.BorderStartWidth());
   borders.inline_end = LayoutUnit(style.BorderEndWidth());
@@ -938,6 +934,8 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   borders.block_end = LayoutUnit(style.BorderAfterWidth());
   return borders;
 }
+
+}  // namespace
 
 NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
                           const NGLayoutInputNode node) {
@@ -947,12 +945,22 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
 
-  if (node.GetLayoutBox()->IsTableCell()) {
-    LayoutBox* box = node.GetLayoutBox();
+  // If we are a table cell we just access the values set by the parent table
+  // layout as border may be collapsed etc.
+  if (node.IsTableCell()) {
+    const LayoutBox* box = node.GetLayoutBox();
     return NGBoxStrut(box->BorderStart(), box->BorderEnd(), box->BorderBefore(),
                       box->BorderAfter());
   }
-  return ComputeBorders(constraint_space, node.Style());
+  return ComputeBordersInternal(node.Style());
+}
+
+NGBoxStrut ComputeBordersForInline(const ComputedStyle& style) {
+  return ComputeBordersInternal(style);
+}
+
+NGBoxStrut ComputeBordersForTest(const ComputedStyle& style) {
+  return ComputeBordersInternal(style);
 }
 
 NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace& constraint_space,

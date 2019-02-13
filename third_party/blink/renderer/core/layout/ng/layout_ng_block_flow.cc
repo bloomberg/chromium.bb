@@ -74,7 +74,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // layout. Override sizes are padding box size, not border box, so we must add
   // borders and scrollbars to compensate.
   NGBoxStrut borders_and_scrollbars =
-      ComputeBorders(constraint_space, *container_style) +
+      ComputeBorders(constraint_space, container_node) +
       NGBlockNode(container).GetScrollbarSizes();
 
   // Calculate the border-box size of the object that's the containing block of
@@ -104,7 +104,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   container_builder.SetInlineSize(container_border_box_logical_width);
   container_builder.SetBlockSize(container_border_box_logical_height);
   container_builder.SetBorders(
-      ComputeBorders(constraint_space, *container_style));
+      ComputeBorders(constraint_space, container_node));
   container_builder.SetPadding(
       ComputePadding(constraint_space, *container_style));
 

@@ -40,7 +40,7 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // with the actual fieldset contents. Since scrollbars are handled by the
   // anonymous child box, and since padding is inside the scrollport, padding
   // also needs to be handled by the anonymous child.
-  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Style());
+  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
   NGBoxStrut border_padding = borders + padding;
   NGLogicalSize border_box_size =
@@ -163,7 +163,7 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
     sizes.Encompass(content_minmax);
   }
 
-  sizes += ComputeBorders(ConstraintSpace(), node_.Style()).InlineSum();
+  sizes += ComputeBorders(ConstraintSpace(), node_).InlineSum();
   return sizes;
 }
 
