@@ -31,6 +31,8 @@ class UlpLanguageCodeLocator : public LanguageCodeLocator {
 
  private:
   std::vector<std::unique_ptr<S2LangQuadTreeNode>> roots_;
+  struct CellLanguagePair;
+  mutable std::vector<CellLanguagePair> cache_;
   DISALLOW_COPY_AND_ASSIGN(UlpLanguageCodeLocator);
 };
 }  // namespace language
