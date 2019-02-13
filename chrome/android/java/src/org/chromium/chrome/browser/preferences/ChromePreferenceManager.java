@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
 import java.util.Collections;
@@ -554,7 +555,9 @@ public class ChromePreferenceManager {
      * @return The value of the preference.
      */
     public int readInt(String key) {
-        return mSharedPreferences.getInt(key, 0);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return mSharedPreferences.getInt(key, 0);
+        }
     }
 
     /**
@@ -589,7 +592,9 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public long readLong(String key, long defaultValue) {
-        return mSharedPreferences.getLong(key, defaultValue);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return mSharedPreferences.getLong(key, defaultValue);
+        }
     }
 
     /**
@@ -612,7 +617,9 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public boolean readBoolean(String key, boolean defaultValue) {
-        return mSharedPreferences.getBoolean(key, defaultValue);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return mSharedPreferences.getBoolean(key, defaultValue);
+        }
     }
 
     /**
@@ -635,7 +642,9 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public String readString(String key, @Nullable String defaultValue) {
-        return mSharedPreferences.getString(key, defaultValue);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return mSharedPreferences.getString(key, defaultValue);
+        }
     }
 
     /**

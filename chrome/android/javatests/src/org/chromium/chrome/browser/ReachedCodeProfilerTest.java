@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.ReachedCodeProfiler;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -105,10 +104,8 @@ public final class ReachedCodeProfilerTest {
     }
 
     private boolean getReachedCodeProfilerSharedPreference() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            return ChromePreferenceManager.getInstance().readBoolean(
-                    REACHED_CODE_PROFILER_ENABLED_KEY, false);
-        }
+        return ChromePreferenceManager.getInstance().readBoolean(
+                REACHED_CODE_PROFILER_ENABLED_KEY, false);
     }
 
     private void setReachedCodeProfilerSharedPreference(boolean value) {

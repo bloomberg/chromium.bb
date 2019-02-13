@@ -17,7 +17,6 @@ import android.speech.RecognizerIntent;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -232,10 +231,8 @@ public class FeatureUtilities {
         if (sIsHomePageButtonForceEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsHomePageButtonForceEnabled = prefManager.readBoolean(
-                        ChromePreferenceManager.HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, false);
-            }
+            sIsHomePageButtonForceEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, false);
         }
         return sIsHomePageButtonForceEnabled;
     }
@@ -265,10 +262,8 @@ public class FeatureUtilities {
         if (sShouldInflateToolbarOnBackgroundThread == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sShouldInflateToolbarOnBackgroundThread = prefManager.readBoolean(
-                        ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY, false);
-            }
+            sShouldInflateToolbarOnBackgroundThread = prefManager.readBoolean(
+                    ChromePreferenceManager.INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY, false);
         }
         return sShouldInflateToolbarOnBackgroundThread;
     }
@@ -281,10 +276,8 @@ public class FeatureUtilities {
         if (sDownloadAutoResumptionEnabledInNative == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sDownloadAutoResumptionEnabledInNative = prefManager.readBoolean(
-                        ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY, true);
-            }
+            sDownloadAutoResumptionEnabledInNative = prefManager.readBoolean(
+                    ChromePreferenceManager.DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY, true);
         }
         return sDownloadAutoResumptionEnabledInNative;
     }
@@ -306,10 +299,8 @@ public class FeatureUtilities {
         if (sIsHomepageTileEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsHomepageTileEnabled = prefManager.readBoolean(
-                        ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY, false);
-            }
+            sIsHomepageTileEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY, false);
         }
         return sIsHomepageTileEnabled;
     }
@@ -341,10 +332,8 @@ public class FeatureUtilities {
         if (sIsNewTabPageButtonEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsNewTabPageButtonEnabled = prefManager.readBoolean(
-                        ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, false);
-            }
+            sIsNewTabPageButtonEnabled =
+                    prefManager.readBoolean(ChromePreferenceManager.NTP_BUTTON_ENABLED_KEY, false);
         }
         return sIsNewTabPageButtonEnabled;
     }
@@ -376,10 +365,8 @@ public class FeatureUtilities {
         if (sIsBottomToolbarEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsBottomToolbarEnabled = prefManager.readBoolean(
-                        ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY, false);
-            }
+            sIsBottomToolbarEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.BOTTOM_TOOLBAR_ENABLED_KEY, false);
         }
         return sIsBottomToolbarEnabled
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
@@ -404,10 +391,8 @@ public class FeatureUtilities {
         if (sIsNightModeAvailable == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsNightModeAvailable = prefManager.readBoolean(
-                        ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY, false);
-            }
+            sIsNightModeAvailable = prefManager.readBoolean(
+                    ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY, false);
         }
         return sIsNightModeAvailable;
     }
@@ -451,11 +436,8 @@ public class FeatureUtilities {
         if (sIsSoleEnabled == null) {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
-            // Allow disk access for preferences while Sole is in experimentation.
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsSoleEnabled = prefManager.readBoolean(
-                        ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, true);
-            }
+            sIsSoleEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.SOLE_INTEGRATION_ENABLED_KEY, true);
         }
         return sIsSoleEnabled;
     }
