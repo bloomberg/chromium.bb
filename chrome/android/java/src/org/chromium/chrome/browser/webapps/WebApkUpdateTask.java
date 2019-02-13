@@ -55,8 +55,8 @@ public class WebApkUpdateTask extends NativeBackgroundTask {
             Context context, TaskParameters taskParameters, final TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.WEBAPK_UPDATE_JOB_ID;
 
-        WebApkUpdateManager updateManager = new WebApkUpdateManager(mStorageToUpdate);
-        updateManager.updateWhileNotRunning(() -> callback.taskFinished(mMoreToUpdate));
+        WebApkUpdateManager.updateWhileNotRunning(
+                mStorageToUpdate, () -> callback.taskFinished(mMoreToUpdate));
     }
 
     @Override

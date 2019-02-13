@@ -251,6 +251,7 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_iid_java",
     "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -417,7 +418,10 @@ android_library("chrome_java") {
   # can provide their own implementations.
   jar_excluded_patterns = [ "*/AppHooksImpl.class" ]
 
-  annotation_processor_deps = [ "//third_party/android_deps:dagger_processor" ]
+  annotation_processor_deps = [
+    "//base/android/jni_generator:jni_processor",
+    "//third_party/android_deps:dagger_processor",
+  ]
 }
 
 android_library("bundle_canary_java") {
