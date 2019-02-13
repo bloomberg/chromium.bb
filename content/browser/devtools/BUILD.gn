@@ -4,6 +4,7 @@
 
 import("//third_party/brotli/brotli.gni")
 import("//third_party/inspector_protocol/inspector_protocol.gni")
+import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
 group("resources") {
@@ -118,5 +119,11 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/tethering.h",
     "protocol/tracing.cc",
     "protocol/tracing.h",
+  ]
+}
+
+proto_library("devtools_background_services_proto") {
+  sources = [
+    "devtools_background_services.proto",
   ]
 }

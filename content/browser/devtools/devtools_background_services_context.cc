@@ -4,15 +4,126 @@
 
 #include "content/browser/devtools/devtools_background_services_context.h"
 
+#include <algorithm>
+
+#include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
+#include "url/origin.h"
+
 namespace content {
+
+namespace {
+
+std::string CreateEntryKeyPrefix(devtools::proto::BackgroundService service) {
+  DCHECK_NE(service, devtools::proto::BackgroundService::UNKNOWN);
+  return "devtools_background_services_" + base::NumberToString(service) + "_";
+}
+
+std::string CreateEntryKey(devtools::proto::BackgroundService service) {
+  return CreateEntryKeyPrefix(service) + base::GenerateGUID();
+}
+
+void DidLogServiceEvent(blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(rayankans): Log errors to UMA.
+}
+
+}  // namespace
 
 DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : browser_context_(browser_context),
-      service_worker_context_(std::move(service_worker_context)) {}
+      service_worker_context_(std::move(service_worker_context)),
+      weak_ptr_factory_(this) {}
 
 DevToolsBackgroundServicesContext::~DevToolsBackgroundServicesContext() =
     default;
+
+void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEvents(
+    devtools::proto::BackgroundService service,
+    GetLoggedBackgroundServiceEventsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
+      CreateEntryKeyPrefix(service),
+      base::BindOnce(&DevToolsBackgroundServicesContext::DidGetUserData,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void DevToolsBackgroundServicesContext::DidGetUserData(
+    GetLoggedBackgroundServiceEventsCallback callback,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
+    blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::vector<devtools::proto::BackgroundServiceState> service_states;
+
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    // TODO(rayankans): Log errors to UMA.
+    std::move(callback).Run(service_states);
+    return;
+  }
+
+  service_states.reserve(user_data.size());
+  for (const auto& data : user_data) {
+    devtools::proto::BackgroundServiceState service_state;
+    if (!service_state.ParseFromString(data.second)) {
+      // TODO(rayankans): Log errors to UMA.
+      std::move(callback).Run({});
+      return;
+    }
+    DCHECK_EQ(data.first, service_state.service_worker_registration_id());
+    service_states.push_back(std::move(service_state));
+  }
+
+  std::sort(service_states.begin(), service_states.end(),
+            [](const auto& state1, const auto& state2) {
+              return state1.timestamp() < state2.timestamp();
+            });
+  std::move(callback).Run(std::move(service_states));
+}
+
+void DevToolsBackgroundServicesContext::LogTestBackgroundServiceEvent(
+    uint64_t service_worker_registration_id,
+    const url::Origin& origin,
+    devtools::proto::TestBackgroundServiceEvent event) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!should_record_)
+    return;
+
+  devtools::proto::BackgroundServiceState service_state;
+  service_state.set_background_service(
+      devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+  *service_state.mutable_test_event() = std::move(event);
+
+  LogBackgroundServiceState(service_worker_registration_id, origin,
+                            std::move(service_state));
+}
+
+void DevToolsBackgroundServicesContext::LogBackgroundServiceState(
+    uint64_t service_worker_registration_id,
+    const url::Origin& origin,
+    devtools::proto::BackgroundServiceState service_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(should_record_);
+
+  // Add common metadata.
+  service_state.set_timestamp(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  service_state.set_origin(origin.GetURL().spec());
+  service_state.set_service_worker_registration_id(
+      service_worker_registration_id);
+
+  service_worker_context_->StoreRegistrationUserData(
+      service_worker_registration_id, origin.GetURL(),
+      {{CreateEntryKey(service_state.background_service()),
+        service_state.SerializeAsString()}},
+      base::BindOnce(&DidLogServiceEvent));
+}
 
 }  // namespace content
