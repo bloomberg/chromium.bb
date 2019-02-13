@@ -168,6 +168,7 @@
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -2982,7 +2983,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (BOOL)displaySignInNotification:(UIViewController*)viewController
                         fromTabId:(NSString*)tabId {
   // Check if the call comes from currently visible tab.
-  if ([tabId isEqual:self.tabModel.currentTab.tabId]) {
+  NSString* visibleTabId =
+      TabIdTabHelper::FromWebState(self.tabModel.currentTab.webState)->tab_id();
+  if ([tabId isEqual:visibleTabId]) {
     [self addChildViewController:viewController];
     [self.view addSubview:viewController.view];
     [viewController didMoveToParentViewController:self];
@@ -4531,7 +4534,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [_paymentRequestManager stopTrackingWebState:tab.webState];
 
-  [[UpgradeCenter sharedInstance] tabWillClose:tab.tabId];
+  [[UpgradeCenter sharedInstance]
+      tabWillClose:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
   if ([model count] == 1) {  // About to remove the last tab.
     [_paymentRequestManager setActiveWebState:nullptr];
   }

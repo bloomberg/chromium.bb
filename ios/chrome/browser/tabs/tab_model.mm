@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/tabs/tab_model_web_state_list_delegate.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
@@ -730,8 +731,10 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)willResignActive:(NSNotification*)notify {
   if (self.webUsageEnabled && self.currentTab) {
+    NSString* tabId =
+        TabIdTabHelper::FromWebState(self.currentTab.webState)->tab_id();
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
-        willBeSavedGreyWhenBackgrounding:self.currentTab.tabId];
+        willBeSavedGreyWhenBackgrounding:tabId];
   }
 }
 
@@ -754,8 +757,11 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   // Write out a grey version of the current website to disk.
   if (self.webUsageEnabled && self.currentTab) {
+    NSString* tabId =
+        TabIdTabHelper::FromWebState(self.currentTab.webState)->tab_id();
+
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
-        saveGreyInBackgroundForSessionID:self.currentTab.tabId];
+        saveGreyInBackgroundForSessionID:tabId];
   }
 }
 

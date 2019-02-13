@@ -278,7 +278,8 @@ NSString* const kTabUrlKey = @"url";
       XCallbackFromRequestURL:requestURL
                     originURL:originURL
                        tabURL:self.webState->GetLastCommittedURL()
-                        tabID:self.tabId];
+                        tabID:TabIdTabHelper::FromWebState(self.webState)
+                                  ->tab_id()];
 }
 
 #pragma mark - CRWWebStateObserver protocol
