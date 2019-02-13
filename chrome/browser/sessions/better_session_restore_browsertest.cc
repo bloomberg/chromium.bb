@@ -552,8 +552,15 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 
 // Check that cookies are cleared on a wrench menu quit only if cookies are set
 // to current session only, regardless of whether background mode is enabled.
+// Flaky on Windows and Linux: https://crbug.com/931777
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_CookiesClearedOnCloseAllBrowsers \
+  DISABLED_CookiesClearedOnCloseAllBrowsers
+#else
+#define MAYBE_CookiesClearedOnCloseAllBrowsers CookiesClearedOnCloseAllBrowsers
+#endif
 IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       CookiesClearedOnCloseAllBrowsers) {
+                       MAYBE_CookiesClearedOnCloseAllBrowsers) {
   StoreDataWithPage("cookies.html");
   // Normally cookies are restored.
   Browser* new_browser = QuitBrowserAndRestore(browser(), true);
