@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
 
@@ -335,13 +334,8 @@ public class InstantAppsHandler {
 
     /** @return Whether Chrome is the default browser on the device. */
     private boolean isChromeDefaultHandler(Context context) {
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ChromePreferenceManager.getInstance().readBoolean(
-                    ChromePreferenceManager.CHROME_DEFAULT_BROWSER, false);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        return ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.CHROME_DEFAULT_BROWSER, false);
     }
 
     /**

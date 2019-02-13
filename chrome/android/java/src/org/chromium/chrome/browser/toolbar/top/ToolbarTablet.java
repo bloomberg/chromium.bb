@@ -19,7 +19,6 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NavigationPopup;
@@ -661,9 +660,7 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     private boolean isAccessibilityTabSwitcherPreferenceEnabled() {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-            return ChromePreferenceManager.getInstance().readBoolean(
-                    ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true);
-        }
+        return ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER, true);
     }
 }
