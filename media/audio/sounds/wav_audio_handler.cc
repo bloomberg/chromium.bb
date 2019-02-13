@@ -31,15 +31,19 @@ const size_t kChunkHeaderSize = 8;
 
 // The minimum size of 'fmt' chunk.
 const size_t kFmtChunkMinimumSize = 16;
+const size_t kFmtChunkExtensibleMinimumSize = 40;
 
 // The offsets of 'fmt' fields.
 const size_t kAudioFormatOffset = 0;
 const size_t kChannelOffset = 2;
 const size_t kSampleRateOffset = 4;
 const size_t kBitsPerSampleOffset = 14;
+const size_t kValidBitsPerSampleOffset = 18;
+const size_t kSubFormatOffset = 24;
 
 // Some constants for audio format.
 const int kAudioFormatPCM = 1;
+const int kAudioFormatExtensible = 0xfffe;
 
 // A convenience struct for passing WAV parameters around. AudioParameters is
 // too heavyweight for this. Keep this class internal to this implementation.
@@ -48,11 +52,15 @@ struct WavAudioParameters {
   uint16_t num_channels;
   uint32_t sample_rate;
   uint16_t bits_per_sample;
+  uint16_t valid_bits_per_sample;
+  bool is_extensible;
 };
 
 bool ParamsAreValid(const WavAudioParameters& params) {
   return (params.audio_format == kAudioFormatPCM && params.num_channels != 0u &&
-          params.sample_rate != 0u && params.bits_per_sample != 0u);
+          params.sample_rate != 0u && params.bits_per_sample != 0u &&
+          (!params.is_extensible ||
+           params.valid_bits_per_sample == params.bits_per_sample));
 }
 
 // Reads an integer from |data| with |offset|.
@@ -82,6 +90,20 @@ bool ParseFmtChunk(const base::StringPiece data, WavAudioParameters* params) {
   params->num_channels = ReadInt<uint16_t>(data, kChannelOffset);
   params->sample_rate = ReadInt<uint32_t>(data, kSampleRateOffset);
   params->bits_per_sample = ReadInt<uint16_t>(data, kBitsPerSampleOffset);
+
+  if (params->audio_format == kAudioFormatExtensible) {
+    if (data.size() < kFmtChunkExtensibleMinimumSize) {
+      LOG(ERROR) << "Data size " << data.size() << " is too short.";
+      return false;
+    }
+
+    params->is_extensible = true;
+    params->audio_format = ReadInt<uint16_t>(data, kSubFormatOffset);
+    params->valid_bits_per_sample =
+        ReadInt<uint16_t>(data, kValidBitsPerSampleOffset);
+  } else {
+    params->is_extensible = false;
+  }
   return true;
 }
 
@@ -150,7 +172,10 @@ bool ParseWavData(const base::StringPiece wav_data,
     LOG(ERROR) << "Format is invalid. "
                << "num_channels: " << params_out->num_channels << " "
                << "sample_rate: " << params_out->sample_rate << " "
-               << "bits_per_sample: " << params_out->bits_per_sample;
+               << "bits_per_sample: " << params_out->bits_per_sample << " "
+               << "valid_bits_per_sample: " << params_out->valid_bits_per_sample
+               << " "
+               << "is_extensible: " << params_out->is_extensible;
     return false;
   }
   return true;
