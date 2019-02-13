@@ -10,26 +10,35 @@
 #include "base/callback.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
-    : crx_installer_(CrxInstaller::CreateSilent(
-          ExtensionSystem::Get(profile)->extension_service())) {}
+    : profile_(profile) {}
 
 BookmarkAppInstallFinalizer::~BookmarkAppInstallFinalizer() = default;
 
-void BookmarkAppInstallFinalizer::Install(
-    const WebApplicationInfo& web_app_info,
-    ResultCallback callback) {
+void BookmarkAppInstallFinalizer::FinalizeInstall(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    InstallFinalizedCallback callback) {
+  if (!crx_installer_) {
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(profile_)->extension_service();
+    DCHECK(extension_service);
+    crx_installer_ = CrxInstaller::CreateSilent(extension_service);
+  }
+
   crx_installer_->set_installer_callback(base::BindOnce(
       &BookmarkAppInstallFinalizer::OnInstall, weak_ptr_factory_.GetWeakPtr(),
-      std::move(callback), web_app_info.app_url));
-  crx_installer_->InstallWebApp(web_app_info);
+      std::move(callback), web_app_info->app_url));
+  crx_installer_->InstallWebApp(*web_app_info);
 }
 
 void BookmarkAppInstallFinalizer::SetCrxInstallerForTesting(
@@ -38,11 +47,12 @@ void BookmarkAppInstallFinalizer::SetCrxInstallerForTesting(
 }
 
 void BookmarkAppInstallFinalizer::OnInstall(
-    ResultCallback callback,
+    InstallFinalizedCallback callback,
     const GURL& app_url,
     const base::Optional<CrxInstallError>& error) {
   if (error) {
-    std::move(callback).Run(std::string());
+    std::move(callback).Run(web_app::AppId(),
+                            web_app::InstallResultCode::kFailedUnknownReason);
     return;
   }
 
@@ -50,7 +60,8 @@ void BookmarkAppInstallFinalizer::OnInstall(
   DCHECK(installed_extension);
   DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(installed_extension), app_url);
 
-  std::move(callback).Run(installed_extension->id());
+  std::move(callback).Run(installed_extension->id(),
+                          web_app::InstallResultCode::kSuccess);
 }
 
 }  // namespace extensions

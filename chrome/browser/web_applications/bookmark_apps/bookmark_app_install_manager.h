@@ -15,7 +15,7 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
   BookmarkAppInstallManager();
   ~BookmarkAppInstallManager() override;
 
-  // InstallManager interface implementation.
+  // InstallManager:
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebApp(content::WebContents* web_contents,
                      bool force_shortcut_app,
