@@ -167,11 +167,6 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
   if (attribute_namespace == xmlns_names::kNamespaceURI) {
     if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
       candidate_prefix = g_xmlns_atom;
-  } else if (attribute_namespace == xml_names::kNamespaceURI) {
-    // TODO(tkent): Remove this block when we implement 'retrieving a
-    // preferred prefix string'.
-    if (!candidate_prefix)
-      candidate_prefix = g_xml_atom;
   } else {
     // TODO(tkent): Remove this block. The standard and Firefox don't
     // have this behavior.
