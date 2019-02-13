@@ -53,14 +53,12 @@ enum ShelfBackgroundType {
   // The default transparent background.
   SHELF_BACKGROUND_DEFAULT,
 
-  // The background when a window is maximized.
+  // The background when a window is maximized or two windows are maximized
+  // for a split view.
   SHELF_BACKGROUND_MAXIMIZED,
 
   // The background when fullscreen app list is visible.
   SHELF_BACKGROUND_APP_LIST,
-
-  // The background when split view mode is active.
-  SHELF_BACKGROUND_SPLIT_VIEW,
 
   // The background when OOBE is active.
   SHELF_BACKGROUND_OOBE,

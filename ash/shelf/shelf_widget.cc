@@ -240,9 +240,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin),
       -shelf->SelectValueForShelfAlignment(safety_margin, 0, 0));
 
-  // Show rounded corners except in maximized and split modes.
-  if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
-      background_type == SHELF_BACKGROUND_SPLIT_VIEW) {
+  // Show rounded corners except in maximized (which includes split view) mode.
+  if (background_type == SHELF_BACKGROUND_MAXIMIZED) {
     mask_ = nullptr;
     opaque_background_.SetMaskLayer(nullptr);
   } else {
