@@ -23,7 +23,6 @@
 #include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
 #include "media/webrtc/webrtc_switches.h"
-#include "third_party/webrtc/api/media_constraints_interface.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 
 namespace content {
