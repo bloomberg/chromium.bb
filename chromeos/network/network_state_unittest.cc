@@ -251,19 +251,27 @@ TEST_F(NetworkStateTest, ConnectionState) {
   EXPECT_TRUE(network_state_.IsConnectingState());
   EXPECT_TRUE(network_state_.IsConnectingOrConnected());
   EXPECT_TRUE(network_state_.IsActive());
-  EXPECT_FALSE(network_state_.IsReconnecting());
+  // State change to configuration from idle should not set connect_requested
+  // unless explicitly set by the UI.
+  EXPECT_FALSE(network_state_.connect_requested());
 
   network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateOnline);
   EXPECT_TRUE(network_state_.IsConnectedState());
   EXPECT_TRUE(network_state_.IsConnectingOrConnected());
   EXPECT_TRUE(network_state_.IsActive());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 
   network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateConfiguration);
   EXPECT_TRUE(network_state_.IsConnectingState());
-  EXPECT_TRUE(network_state_.IsReconnecting());
+  // State change to configuration from a connected state should set
+  // connect_requested.
+  EXPECT_TRUE(network_state_.connect_requested());
+
+  network_state_.SetConnectionState(shill::kStateOnline);
+  EXPECT_TRUE(network_state_.IsConnectedState());
+  // State change to connected should clear connect_requested.
+  EXPECT_FALSE(network_state_.connect_requested());
 
   network_state_.SetConnectionState(shill::kStateIdle);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
@@ -302,17 +310,14 @@ TEST_F(NetworkStateTest, ConnectionStateNotVisible) {
   network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectingState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 
   network_state_.SetConnectionState(shill::kStateOnline);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectedState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 
   network_state_.SetConnectionState(shill::kStateConfiguration);
   EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
   EXPECT_FALSE(network_state_.IsConnectingState());
-  EXPECT_FALSE(network_state_.IsReconnecting());
 }
 
 TEST_F(NetworkStateTest, TetherProperties) {

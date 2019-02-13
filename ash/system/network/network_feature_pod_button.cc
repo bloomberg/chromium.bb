@@ -39,12 +39,10 @@ const NetworkState* GetCurrentNetwork() {
       state_handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
   const NetworkState* connecting_network =
       state_handler->ConnectingNetworkByType(NetworkTypePattern::Wireless());
-  // If we are connecting to a network, and there is either no connected
-  // network, or the connection was user requested, or shill triggered a
-  // reconnection, use the connecting network.
+  // If connecting to a network, and there is either no connected network or
+  // the connection was user requested, use the connecting network.
   if (connecting_network &&
-      (!connected_network || connecting_network->IsReconnecting() ||
-       connecting_network->connect_requested())) {
+      (!connected_network || connecting_network->connect_requested())) {
     return connecting_network;
   }
 
@@ -121,7 +119,7 @@ void NetworkFeaturePodButton::Update() {
 
   SetLabel(network_name);
 
-  if (network->IsReconnecting() || network->IsConnectingState()) {
+  if (network->IsConnectingState()) {
     SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_SUBLABEL));
     SetTooltipState(l10n_util::GetStringFUTF16(

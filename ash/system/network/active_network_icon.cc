@@ -41,11 +41,9 @@ const NetworkState* GetConnectingOrConnected(
     const NetworkState* connecting_network,
     const NetworkState* connected_network) {
   if (connecting_network &&
-      (!connected_network || connecting_network->IsReconnecting() ||
-       connecting_network->connect_requested())) {
-    // If we are connecting to a network, and there is either no connected
-    // network, or the connection was user requested, or shill triggered a
-    // reconnection, use the connecting network.
+      (!connected_network || connecting_network->connect_requested())) {
+    // If connecting to a network, and there is either no connected network or
+    // the connection was user requested, use the connecting network.
     return connecting_network;
   }
   return connected_network;
