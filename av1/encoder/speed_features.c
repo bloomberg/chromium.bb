@@ -697,6 +697,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->prune_ref_frame_for_rect_partitions = 0;
   sf->prune_ref_mode_for_partitions = 0;
   sf->auto_min_max_partition_size = NOT_IN_USE;
+  sf->auto_min_max_partition_based_on_simple_motion = 0;
   sf->rd_auto_partition_min_limit = BLOCK_4X4;
   sf->default_max_partition_size = BLOCK_LARGEST;
   sf->default_min_partition_size = BLOCK_4X4;
