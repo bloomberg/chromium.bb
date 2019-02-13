@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "net/cookies/cookie_util.h"
@@ -37,7 +38,11 @@ class SessionDataDeleter
   friend class base::RefCountedThreadSafe<SessionDataDeleter>;
   ~SessionDataDeleter();
 
-  bool OriginMatcher(const GURL& origin, storage::SpecialStoragePolicy* policy);
+  // Deletes the local storage described by |usages| for origins which are
+  // session-only.
+  void ClearSessionOnlyLocalStorage(
+      content::StoragePartition* storage_partition,
+      const std::vector<content::StorageUsageInfo>& usages);
 
   // Takes the result of a CookieManager::GetAllCookies() method, and
   // initiates deletion of all cookies that are session only by the
@@ -61,16 +66,10 @@ SessionDataDeleter::SessionDataDeleter(
 
 void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
   if (storage_policy_.get() && storage_policy_->HasSessionOnlyOrigins()) {
-    // Cookies are not origin scoped, so they are handled separately.
-    const uint32_t removal_mask =
-        content::StoragePartition::REMOVE_DATA_MASK_ALL &
-        ~content::StoragePartition::REMOVE_DATA_MASK_COOKIES;
-    storage_partition->ClearData(
-        removal_mask, content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-        base::BindRepeating(&SessionDataDeleter::OriginMatcher, this),
-        /*cookie_deletion_filter=*/nullptr,
-        /*perform_storage_cleanup=*/false, base::Time(), base::Time::Max(),
-        base::DoNothing());
+    storage_partition->GetDOMStorageContext()->GetLocalStorageUsage(
+        base::Bind(&SessionDataDeleter::ClearSessionOnlyLocalStorage,
+                   this,
+                   storage_partition));
   }
 
   storage_partition->GetNetworkContext()->GetCookieManager(
@@ -104,12 +103,6 @@ void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
   // side of the pipe is closed, so all deletion requested will still occur.
 }
 
-bool SessionDataDeleter::OriginMatcher(const GURL& origin,
-                                       storage::SpecialStoragePolicy* policy) {
-  return policy->IsStorageSessionOnly(origin) &&
-         !policy->IsStorageProtected(origin);
-}
-
 void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
     const std::vector<net::CanonicalCookie>& cookies) {
   auto delete_cookie_predicate =
@@ -126,6 +119,20 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
 }
 
 SessionDataDeleter::~SessionDataDeleter() {}
+
+void SessionDataDeleter::ClearSessionOnlyLocalStorage(
+    content::StoragePartition* storage_partition,
+    const std::vector<content::StorageUsageInfo>& usages) {
+  DCHECK(storage_policy_.get());
+  DCHECK(storage_policy_->HasSessionOnlyOrigins());
+  for (size_t i = 0; i < usages.size(); ++i) {
+    const content::StorageUsageInfo& usage = usages[i];
+    if (!storage_policy_->IsStorageSessionOnly(usage.origin.GetURL()))
+      continue;
+    storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
+        usage.origin, base::DoNothing());
+  }
+}
 
 }  // namespace
 
