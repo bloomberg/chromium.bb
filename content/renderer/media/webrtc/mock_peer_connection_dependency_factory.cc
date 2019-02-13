@@ -37,7 +37,7 @@ static typename V::iterator FindTrack(V* vector,
     }
   }
   return it;
-};
+}
 
 MockWebRtcAudioSource::MockWebRtcAudioSource(bool is_remote)
     : is_remote_(is_remote) {}
