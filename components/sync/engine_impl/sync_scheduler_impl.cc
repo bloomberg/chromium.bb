@@ -116,8 +116,6 @@ ClearParams::~ClearParams() {}
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncer threads involved.
 
-#define SLOG(severity) LOG(severity) << name_ << ": "
-
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
 #define SDVLOG_LOC(from_here, verbose_level) \
@@ -226,7 +224,8 @@ void SyncSchedulerImpl::Start(Mode mode, base::Time last_poll_time) {
 
     // Update our current time before checking IsRetryRequired().
     nudge_tracker_.SetSyncCycleStartTime(TimeTicks::Now());
-    if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY)) {
+    if (nudge_tracker_.IsSyncRequired(GetEnabledAndUnblockedTypes()) &&
+        CanRunNudgeJobNow(NORMAL_PRIORITY)) {
       TrySyncCycleJob();
     }
   }
@@ -466,16 +465,21 @@ void SyncSchedulerImpl::DoNudgeSyncCycleJob(JobPriority priority) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(CanRunNudgeJobNow(priority));
 
+  ModelTypeSet types = GetEnabledAndUnblockedTypes();
   DVLOG(2) << "Will run normal mode sync cycle with types "
-           << ModelTypeSetToString(GetEnabledAndUnblockedTypes());
+           << ModelTypeSetToString(types);
   SyncCycle cycle(cycle_context_, this);
-  bool success = syncer_->NormalSyncShare(GetEnabledAndUnblockedTypes(),
-                                          &nudge_tracker_, &cycle);
+  bool success = syncer_->NormalSyncShare(types, &nudge_tracker_, &cycle);
 
   if (success) {
     // That cycle took care of any outstanding work we had.
     SDVLOG(2) << "Nudge succeeded.";
-    nudge_tracker_.RecordSuccessfulSyncCycle();
+    // Note that some types might have become blocked (throttled) during the
+    // cycle. NudgeTracker knows of that, and won't clear any "outstanding work"
+    // flags for these types.
+    // TODO(crbug.com/930074): Consider renaming this method to
+    // RecordSuccessfulSyncCycleIfNotBlocked.
+    nudge_tracker_.RecordSuccessfulSyncCycle(types);
     HandleSuccess();
 
     // If this was a canary, we may need to restart the poll timer (the poll
@@ -736,7 +740,7 @@ void SyncSchedulerImpl::TrySyncCycleJobImpl() {
       DoClearServerDataSyncCycleJob(priority);
     }
   } else if (CanRunNudgeJobNow(priority)) {
-    if (nudge_tracker_.IsSyncRequired()) {
+    if (nudge_tracker_.IsSyncRequired(GetEnabledAndUnblockedTypes())) {
       SDVLOG(2) << "Found pending nudge job";
       DoNudgeSyncCycleJob(priority);
     } else if (((TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
@@ -786,10 +790,12 @@ void SyncSchedulerImpl::OnTypesUnblocked() {
 
   // Maybe this is a good time to run a nudge job.  Let's try it.
   // If not a good time, reschedule a new run.
-  if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY))
+  if (nudge_tracker_.IsSyncRequired(GetEnabledAndUnblockedTypes()) &&
+      CanRunNudgeJobNow(NORMAL_PRIORITY)) {
     TrySyncCycleJob();
-  else
+  } else {
     RestartWaiting();
+  }
 }
 
 void SyncSchedulerImpl::PerformDelayedNudge() {
@@ -985,7 +991,6 @@ bool SyncSchedulerImpl::IsEarlierThanCurrentPendingJob(const TimeDelta& delay) {
 
 #undef SDVLOG_LOC
 #undef SDVLOG
-#undef SLOG
 #undef ENUM_CASE
 
 }  // namespace syncer

@@ -44,6 +44,7 @@ using testing::Invoke;
 using testing::Lt;
 using testing::Mock;
 using testing::Return;
+using testing::SaveArg;
 using testing::WithArg;
 using testing::WithArgs;
 using testing::WithoutArgs;
@@ -129,6 +130,8 @@ class SyncSchedulerImplTest : public testing::Test {
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         UssMigrator(), &cancelation_signal_);
+    model_type_registry_->RegisterDirectoryType(HISTORY_DELETE_DIRECTIVES,
+                                                GROUP_UI);
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
     model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
     model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_DB);
@@ -145,6 +148,10 @@ class SyncSchedulerImplTest : public testing::Test {
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     RebuildScheduler();
+  }
+
+  void UnregisterDataType(ModelType type) {
+    model_type_registry_->UnregisterDirectoryType(type);
   }
 
   void RebuildScheduler() {
@@ -392,6 +399,33 @@ TEST_F(SyncSchedulerImplTest, Nudge) {
                       RecordSyncShare(&times2, true)));
   scheduler()->ScheduleLocalNudge(model_types, FROM_HERE);
   RunLoop();
+}
+
+TEST_F(SyncSchedulerImplTest, NudgeForDisabledType) {
+  ModelTypeSet model_types{THEMES, HISTORY_DELETE_DIRECTIVES};
+
+  StartSyncScheduler(base::Time());
+  scheduler()->ScheduleLocalNudge(model_types, FROM_HERE);
+
+  // The user enables a custom passphrase at this point, so
+  // HISTORY_DELETE_DIRECTIVES gets disabled.
+  UnregisterDataType(HISTORY_DELETE_DIRECTIVES);
+  ASSERT_FALSE(context()->GetEnabledTypes().Has(HISTORY_DELETE_DIRECTIVES));
+
+  // The resulting sync cycle should ask only for the remaining types.
+  SyncShareTimes times;
+  NudgeTracker* nudge_tracker = nullptr;
+  EXPECT_CALL(*syncer(), NormalSyncShare(context()->GetEnabledTypes(), _, _))
+      .WillOnce(DoAll(SaveArg<1>(&nudge_tracker),
+                      Invoke(test_util::SimulateNormalSuccess),
+                      RecordSyncShare(&times, true)));
+  RunLoop();
+
+  // Now no sync is required for the enabled types.
+  ASSERT_FALSE(nudge_tracker->IsSyncRequired(context()->GetEnabledTypes()));
+  // ...but HISTORY_DELETE_DIRECTIVES is not enabled, so its earlier nudge is
+  // still there.
+  EXPECT_TRUE(nudge_tracker->IsSyncRequired({HISTORY_DELETE_DIRECTIVES}));
 }
 
 // Make sure a regular config command is scheduled fine in the absence of any

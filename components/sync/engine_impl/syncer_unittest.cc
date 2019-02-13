@@ -521,10 +521,10 @@ class SyncerTest : public testing::Test,
   void ConfigureNoGetUpdatesRequired() {
     context_->set_server_enabled_pre_commit_update_avoidance(true);
     nudge_tracker_.OnInvalidationsEnabled();
-    nudge_tracker_.RecordSuccessfulSyncCycle();
+    nudge_tracker_.RecordSuccessfulSyncCycle(ProtocolTypes());
 
     ASSERT_FALSE(context_->ShouldFetchUpdatesBeforeCommit());
-    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+    ASSERT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -3180,18 +3180,18 @@ TEST_F(SyncerTest, SendDebugInfoEventsOnGetUpdates_PostFailsDontDrop) {
 TEST_F(SyncerTest, CommitFailureWithConflict) {
   ConfigureNoGetUpdatesRequired();
   CreateUnsyncedDirectory("X", "id_X");
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
 
   EXPECT_TRUE(SyncShareNudge());
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
 
   CreateUnsyncedDirectory("Y", "id_Y");
   mock_server_->set_conflict_n_commits(1);
   EXPECT_FALSE(SyncShareNudge());
-  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
 
-  nudge_tracker_.RecordSuccessfulSyncCycle();
-  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle(ProtocolTypes());
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
 }
 
 // Tests that sending debug info events on Commit works.
