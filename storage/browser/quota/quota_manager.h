@@ -21,8 +21,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "storage/browser/quota/quota_callbacks.h"
@@ -107,7 +109,7 @@ struct UsageInfo {
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,
-      public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
+      public base::RefCountedDeleteOnSequence<QuotaManager> {
  public:
   using UsageAndQuotaCallback = base::OnceCallback<
       void(blink::mojom::QuotaStatusCode, int64_t usage, int64_t quota)>;
@@ -178,6 +180,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void NotifyOriginInUse(const url::Origin& origin);
   void NotifyOriginNoLongerInUse(const url::Origin& origin);
   bool IsOriginInUse(const url::Origin& origin) const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return base::ContainsKey(origins_in_use_, origin);
   }
 
@@ -263,7 +266,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
  private:
   friend class base::DeleteHelper<QuotaManager>;
-  friend class base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter>;
+  friend class base::RefCountedDeleteOnSequence<QuotaManager>;
   friend class content::QuotaManagerTest;
   friend class content::StorageMonitorTest;
   friend class content::MockQuotaManager;
@@ -423,7 +426,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   const bool is_incognito_;
   const base::FilePath profile_path_;
 
-  scoped_refptr<QuotaManagerProxy> proxy_;
+  // proxy_ can be accessed by any thread so it must be thread-safe
+  const scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;
   bool eviction_disabled_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
@@ -477,15 +481,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   std::unique_ptr<StorageMonitor> storage_monitor_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<QuotaManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
-};
-
-struct QuotaManagerDeleter {
-  static void Destruct(const QuotaManager* manager) {
-    manager->DeleteOnCorrectThread();
-  }
 };
 
 }  // namespace storage
