@@ -98,7 +98,6 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
     ~JobRecord();
     scoped_refptr<VideoFrame> input_frame;
     int output_buffer_index;
-    scoped_refptr<VideoFrame> output_frame;
     std::vector<base::ScopedFD> output_dmabuf_fds;
     FrameReadyCB ready_cb;
   };

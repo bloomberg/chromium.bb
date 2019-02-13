@@ -379,43 +379,27 @@ bool V4L2ImageProcessor::ProcessInternal(
     FrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
 
+  auto job_record = std::make_unique<JobRecord>();
+  job_record->input_frame = frame;
+  job_record->output_buffer_index = output_buffer_index;
+  job_record->ready_cb = std::move(cb);
+
   switch (output_memory_type_) {
     case V4L2_MEMORY_MMAP:
       if (!output_dmabuf_fds.empty()) {
         VLOGF(1) << "output_dmabuf_fds must be empty for MMAP output mode";
         return false;
       }
-      output_dmabuf_fds =
-          DuplicateFDs(output_buffer_map_[output_buffer_index].dmabuf_fds);
       break;
 
     case V4L2_MEMORY_DMABUF:
+      job_record->output_dmabuf_fds = std::move(output_dmabuf_fds);
       break;
 
     default:
       NOTREACHED();
       return false;
   }
-
-  if (output_dmabuf_fds.size() != output_layout_.num_buffers()) {
-    VLOGF(1) << "wrong number of output fds. Expected "
-             << output_layout_.num_buffers() << ", actual "
-             << output_dmabuf_fds.size();
-    return false;
-  }
-
-  std::unique_ptr<JobRecord> job_record(new JobRecord());
-  job_record->input_frame = frame;
-  job_record->output_buffer_index = output_buffer_index;
-  job_record->ready_cb = std::move(cb);
-
-  // Create the output frame
-  job_record->output_frame = VideoFrame::WrapExternalDmabufs(
-      output_layout_, gfx::Rect(output_visible_size_), output_visible_size_,
-      std::move(output_dmabuf_fds), job_record->input_frame->timestamp());
-
-  if (!job_record->output_frame)
-    return false;
 
   // Since device_thread_ is owned by this class. base::Unretained(this) and the
   // raw pointer of that task runner are safe.
@@ -773,9 +757,43 @@ void V4L2ImageProcessor::Dequeue() {
     std::unique_ptr<JobRecord> job_record = std::move(running_jobs_.front());
     running_jobs_.pop();
 
+    std::vector<base::ScopedFD> output_dmabuf_fds;
+    switch (output_memory_type_) {
+      case V4L2_MEMORY_MMAP:
+        output_dmabuf_fds =
+            DuplicateFDs(output_buffer_map_[dqbuf.index].dmabuf_fds);
+        break;
+
+      case V4L2_MEMORY_DMABUF:
+        output_dmabuf_fds = std::move(job_record->output_dmabuf_fds);
+        break;
+
+      default:
+        NOTREACHED();
+        return;
+    }
+
+    if (output_dmabuf_fds.size() != output_layout_.num_buffers()) {
+      VLOGF(1) << "wrong number of output fds. Expected "
+               << output_layout_.num_buffers() << ", actual "
+               << output_dmabuf_fds.size();
+      return;
+    }
+
+    // Create the output frame
+    auto output_frame = VideoFrame::WrapExternalDmabufs(
+        output_layout_, gfx::Rect(output_visible_size_), output_visible_size_,
+        std::move(output_dmabuf_fds), job_record->input_frame->timestamp());
+
+    if (!output_frame) {
+      DVLOGF(1) << "Error creating output frame!";
+      NotifyError();
+      return;
+    }
+
     DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
 
-    std::move(job_record->ready_cb).Run(std::move(job_record->output_frame));
+    std::move(job_record->ready_cb).Run(std::move(output_frame));
   }
 }
 
@@ -831,7 +849,7 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
   qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   qbuf.memory = output_memory_type_;
   if (output_memory_type_ == V4L2_MEMORY_DMABUF) {
-    auto& fds = job_record->output_frame->DmabufFds();
+    auto& fds = job_record->output_dmabuf_fds;
     if (fds.size() != output_layout_.num_buffers()) {
       VLOGF(1) << "Invalid number of FDs in output record";
       return false;
