@@ -141,9 +141,9 @@ void InitGyroscopeSensorData(SensorPathsLinux* data) {
       SensorTraits<SensorType::GYROSCOPE>::kDefaultFrequency);
 }
 
-// TODO(maksims): Verify magnitometer works correctly on a chromebook when
+// TODO(maksims): Verify magnetometer works correctly on a chromebook when
 // I get one with that sensor onboard.
-void InitMagnitometerSensorData(SensorPathsLinux* data) {
+void InitMagnetometerSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names_x{"in_magn_x_raw"};
   std::vector<std::string> file_names_y{"in_magn_y_raw"};
   std::vector<std::string> file_names_z{"in_magn_z_raw"};
@@ -186,7 +186,7 @@ bool InitSensorData(SensorType type, SensorPathsLinux* data) {
       InitGyroscopeSensorData(data);
       break;
     case SensorType::MAGNETOMETER:
-      InitMagnitometerSensorData(data);
+      InitMagnetometerSensorData(data);
       break;
     default:
       return false;
