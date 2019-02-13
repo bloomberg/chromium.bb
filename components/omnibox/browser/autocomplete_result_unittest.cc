@@ -1092,6 +1092,14 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
     EXPECT_TRUE(EqualClassifications(result.match_at(i)->contents_class,
                                      cases[i].after_contents_class));
   }
+  // Run twice and make sure that it doesn't re-prepend ellipsis.
+  result.InlineTailPrefixes();
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    EXPECT_EQ(result.match_at(i)->contents,
+              base::UTF8ToUTF16(cases[i].after_contents));
+    EXPECT_TRUE(EqualClassifications(result.match_at(i)->contents_class,
+                                     cases[i].after_contents_class));
+  }
 }
 
 TEST_F(AutocompleteResultTest, ConvertsOpenTabsCorrectly) {
