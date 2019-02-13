@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -54,8 +56,11 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/channel_info.h"
@@ -107,6 +112,8 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/views/widget/widget.h"
 
 using PolicyFetchResult = policy::PreSigninPolicyFetcher::PolicyFetchResult;
@@ -116,6 +123,11 @@ namespace apu = arc::policy_util;
 namespace chromeos {
 
 namespace {
+
+const char kAutoLaunchNotificationId[] =
+    "chrome://managed_guest_session/auto_launch";
+
+const char kAutoLaunchNotifierId[] = "ash.managed_guest_session-auto_launch";
 
 // Enum types for Login.PasswordChangeFlow.
 // Don't change the existing values and update LoginPasswordChangeFlow in
@@ -956,10 +968,54 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   }
   ClearRecordedNames();
 
+  if (public_session_auto_login_account_id_.is_valid() &&
+      public_session_auto_login_account_id_ == user_context.GetAccountId() &&
+      last_login_attempt_was_auto_login_) {
+    const std::string& user_id = user_context.GetAccountId().GetUserEmail();
+    policy::DeviceLocalAccountPolicyBroker* broker =
+        g_browser_process->platform_part()
+            ->browser_policy_connector_chromeos()
+            ->GetDeviceLocalAccountPolicyService()
+            ->GetBrokerForUser(user_id);
+    if (ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker))
+      ShowAutoLaunchManagedGuestSessionNotification();
+  }
   if (is_enterprise_managed) {
     enterprise_user_session_metrics::RecordSignInEvent(
         user_context, last_login_attempt_was_auto_login_);
   }
+}
+
+void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DCHECK(connector->IsEnterpriseManaged());
+  std::string device_domain = connector->GetEnterpriseDisplayDomain();
+  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
+    device_domain = connector->GetRealm();
+  const base::string16 title =
+      l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
+  const base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_AUTO_LAUNCH_NOTIFICATION_MESSAGE, base::UTF8ToUTF16(device_domain));
+  auto delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating([](base::Optional<int> button_index) {
+            DCHECK(button_index);
+            SystemTrayClient::Get()->ShowEnterpriseInfo();
+          }));
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kAutoLaunchNotificationId,
+          title, message, base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kAutoLaunchNotifierId),
+          message_center::RichNotificationData(), std::move(delegate),
+          ash::kAutoLaunchManagedGuestSessionIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->SetSystemPriority();
+  notification->set_pinned(true);
+  SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile,

@@ -204,6 +204,9 @@ class ExistingUserController
   // Shows "enable developer features" screen.
   void ShowEnableDebuggingScreen();
 
+  // Shows privacy notification in case of auto lunch managed guest session.
+  void ShowAutoLaunchManagedGuestSessionNotification();
+
   // Shows kiosk feature enable screen.
   void ShowKioskEnableScreen();
 
