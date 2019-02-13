@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -51,6 +52,13 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
       devtools::proto::BackgroundService service,
       GetLoggedBackgroundServiceEventsCallback callback);
 
+  // Enables recording mode for |service|. This is capped at 3 days in case
+  // developers forget to switch it off.
+  void StartRecording(devtools::proto::BackgroundService service);
+
+  // Disables recording mode for |service|.
+  void StopRecording(devtools::proto::BackgroundService service);
+
  private:
   friend class DevToolsBackgroundServicesContextTest;
   friend class base::RefCountedThreadSafe<DevToolsBackgroundServicesContext>;
@@ -76,8 +84,10 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
   BrowserContext* browser_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
-  // TODO(rayankans): Get this value from profile prefs.
-  bool should_record_ = false;
+  // Maps from the background service to the time up until the events can be
+  // recorded.
+  base::flat_map<devtools::proto::BackgroundService, base::Time>
+      expiration_times_;
 
   base::WeakPtrFactory<DevToolsBackgroundServicesContext> weak_ptr_factory_;
 

@@ -8,8 +8,12 @@
 
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "url/origin.h"
 
 namespace content {
@@ -30,6 +34,16 @@ void DidLogServiceEvent(blink::ServiceWorkerStatusCode status) {
   // TODO(rayankans): Log errors to UMA.
 }
 
+void UpdateDevToolsBackgroundServiceExpiration(
+    BrowserContext* browser_context,
+    devtools::proto::BackgroundService service,
+    base::Time expiration_time) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
+      browser_context, service, expiration_time);
+}
+
 }  // namespace
 
 DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
@@ -37,10 +51,52 @@ DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : browser_context_(browser_context),
       service_worker_context_(std::move(service_worker_context)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto expiration_times =
+      GetContentClient()->browser()->GetDevToolsBackgroundServiceExpirations(
+          browser_context_);
+
+  for (const auto& expiration_time : expiration_times) {
+    DCHECK(devtools::proto::BackgroundService_IsValid(expiration_time.first));
+    expiration_times_.emplace(
+        static_cast<devtools::proto::BackgroundService>(expiration_time.first),
+        expiration_time.second);
+  }
+}
 
 DevToolsBackgroundServicesContext::~DevToolsBackgroundServicesContext() =
     default;
+
+void DevToolsBackgroundServicesContext::StartRecording(
+    devtools::proto::BackgroundService service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(expiration_times_[service].is_null());
+
+  // TODO(rayankans): Make the time delay finch configurable.
+  base::Time expiration_time = base::Time::Now() + base::TimeDelta::FromDays(3);
+  expiration_times_[service] = expiration_time;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&UpdateDevToolsBackgroundServiceExpiration,
+                     browser_context_, service, expiration_time));
+}
+
+void DevToolsBackgroundServicesContext::StopRecording(
+    devtools::proto::BackgroundService service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(!expiration_times_[service].is_null());
+  expiration_times_.erase(service);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&UpdateDevToolsBackgroundServiceExpiration,
+                     browser_context_, service, base::Time()));
+}
 
 void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEvents(
     devtools::proto::BackgroundService service,
@@ -92,12 +148,12 @@ void DevToolsBackgroundServicesContext::LogTestBackgroundServiceEvent(
     devtools::proto::TestBackgroundServiceEvent event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!should_record_)
+  auto service = devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE;
+  if (expiration_times_[service].is_null())
     return;
 
   devtools::proto::BackgroundServiceState service_state;
-  service_state.set_background_service(
-      devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+  service_state.set_background_service(service);
   *service_state.mutable_test_event() = std::move(event);
 
   LogBackgroundServiceState(service_worker_registration_id, origin,
@@ -110,7 +166,7 @@ void DevToolsBackgroundServicesContext::LogBackgroundServiceState(
     devtools::proto::BackgroundServiceState service_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  DCHECK(should_record_);
+  DCHECK(!expiration_times_[service_state.background_service()].is_null());
 
   // Add common metadata.
   service_state.set_timestamp(

@@ -15,9 +15,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -877,6 +879,20 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
   // It's valid to return nullptr.
   virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate();
+
+  // Stores the new expiration time up until which events related to |service|
+  // can still be logged. |service| is the int value of the
+  // DevToolsBackgroundService enum. |expiration_time| can be null, denoting
+  // that nothing should be recorded any more.
+  virtual void UpdateDevToolsBackgroundServiceExpiration(
+      BrowserContext* browser_context,
+      int service,
+      base::Time expiration_time);
+
+  // Returns a mapping from a background service to the time up until which
+  // recording the background service's events is still allowed.
+  virtual base::flat_map<int, base::Time>
+  GetDevToolsBackgroundServiceExpirations(BrowserContext* browser_context);
 
   // Creates a new TracingDelegate. The caller owns the returned value.
   // It's valid to return nullptr.

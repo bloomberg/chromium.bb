@@ -572,6 +572,17 @@ DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
   return nullptr;
 }
 
+void ContentBrowserClient::UpdateDevToolsBackgroundServiceExpiration(
+    BrowserContext* browser_context,
+    int service,
+    base::Time expiration_time) {}
+
+base::flat_map<int, base::Time>
+ContentBrowserClient::GetDevToolsBackgroundServiceExpirations(
+    BrowserContext* browser_context) {
+  return {};
+}
+
 TracingDelegate* ContentBrowserClient::GetTracingDelegate() {
   return nullptr;
 }

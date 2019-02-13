@@ -7,10 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "content/browser/devtools/devtools_background_services.pb.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +20,27 @@
 
 namespace content {
 namespace {
+
+class TestBrowserClient : public ContentBrowserClient {
+ public:
+  TestBrowserClient() {}
+  ~TestBrowserClient() override {}
+
+  void UpdateDevToolsBackgroundServiceExpiration(
+      BrowserContext* browser_context,
+      int service,
+      base::Time expiration_time) override {
+    exp_dict_[service] = expiration_time;
+  }
+
+  base::flat_map<int, base::Time> GetDevToolsBackgroundServiceExpirations(
+      BrowserContext* browser_context) override {
+    return exp_dict_;
+  }
+
+ private:
+  base::flat_map<int, base::Time> exp_dict_;
+};
 
 void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                               base::OnceClosure quit_closure,
@@ -70,13 +93,25 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
     ASSERT_NE(service_worker_registration_id_,
               blink::mojom::kInvalidServiceWorkerRegistrationId);
 
+    browser_client_ = std::make_unique<TestBrowserClient>();
+    SetBrowserClientForTesting(browser_client_.get());
+
+    SimulateBrowserRestart();
+  }
+
+ protected:
+  void SimulateBrowserRestart() {
     // Create |context_|.
     context_ = base::MakeRefCounted<DevToolsBackgroundServicesContext>(
         &browser_context_, embedded_worker_test_helper_.context_wrapper());
     ASSERT_TRUE(context_);
   }
 
- protected:
+  base::Time GetExpirationTime() {
+    return context_->expiration_times_
+        [devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE];
+  }
+
   std::vector<devtools::proto::BackgroundServiceState>
   GetLoggedBackgroundServiceEvents() {
     std::vector<devtools::proto::BackgroundServiceState> feature_states;
@@ -99,7 +134,21 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
                                             origin_, std::move(event));
   }
 
-  void ToggleRecordingModeOn() { context_->should_record_ = true; }
+  void StartRecording() {
+    context_->StartRecording(
+        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+
+    // Wait for the messages to propagate to the browser client.
+    thread_bundle_.RunUntilIdle();
+  }
+
+  void StopRecording() {
+    context_->StopRecording(
+        devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
+
+    // Wait for the messages to propagate to the browser client.
+    thread_bundle_.RunUntilIdle();
+  }
 
   TestBrowserThreadBundle thread_bundle_;  // Must be first member.
   url::Origin origin_ = url::Origin::Create(GURL("https://example.com"));
@@ -156,6 +205,7 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
   TestBrowserContext browser_context_;
   scoped_refptr<DevToolsBackgroundServicesContext> context_;
   scoped_refptr<ServiceWorkerRegistration> service_worker_registration_;
+  std::unique_ptr<ContentBrowserClient> browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsBackgroundServicesContextTest);
 };
@@ -174,7 +224,7 @@ TEST_F(DevToolsBackgroundServicesContextTest,
 }
 
 TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedFeatures) {
-  ToggleRecordingModeOn();
+  StartRecording();
 
   // "Log" some events and wait for them to finish.
   LogTestBackgroundServiceEvent("f1");
@@ -197,6 +247,39 @@ TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedFeatures) {
   EXPECT_EQ(feature_events[1].test_event().value(), "f2");
 
   EXPECT_LE(feature_events[0].timestamp(), feature_events[1].timestamp());
+}
+
+TEST_F(DevToolsBackgroundServicesContextTest, StopRecording) {
+  StartRecording();
+  // Initially there are no entries.
+  EXPECT_TRUE(GetLoggedBackgroundServiceEvents().empty());
+
+  // "Log" some events and wait for them to finish.
+  LogTestBackgroundServiceEvent("f1");
+  StopRecording();
+  LogTestBackgroundServiceEvent("f2");
+
+  // Check the values.
+  ASSERT_EQ(GetLoggedBackgroundServiceEvents().size(), 1u);
+}
+
+TEST_F(DevToolsBackgroundServicesContextTest, DelegateExpirationTimes) {
+  // Initially expiration time is null.
+  EXPECT_TRUE(GetExpirationTime().is_null());
+
+  // Toggle Recording mode, and now this should be non-null.
+  StartRecording();
+  EXPECT_FALSE(GetExpirationTime().is_null());
+
+  // The value should still be  there on browser restarts.
+  SimulateBrowserRestart();
+  EXPECT_FALSE(GetExpirationTime().is_null());
+
+  // Stopping Recording mode should clear the value.
+  StopRecording();
+  EXPECT_TRUE(GetExpirationTime().is_null());
+  SimulateBrowserRestart();
+  EXPECT_TRUE(GetExpirationTime().is_null());
 }
 
 }  // namespace content
