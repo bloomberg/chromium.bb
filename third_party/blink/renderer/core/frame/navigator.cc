@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/frame/navigator.h"
 
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -70,6 +71,14 @@ String Navigator::userAgent() const {
     return String();
 
   return GetFrame()->Loader().UserAgent();
+}
+
+UserAgentMetadata Navigator::GetUserAgentMetadata() const {
+  // If the frame is already detached it no longer has a meaningful useragent.
+  if (!GetFrame() || !GetFrame()->GetPage())
+    return blink::UserAgentMetadata();
+
+  return GetFrame()->Loader().UserAgentMetadata();
 }
 
 bool Navigator::cookieEnabled() const {

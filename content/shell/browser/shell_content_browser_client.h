@@ -23,6 +23,7 @@ class ShellBrowserContext;
 class ShellBrowserMainParts;
 
 std::string GetShellUserAgent();
+blink::UserAgentMetadata GetShellUserAgentMetadata();
 
 class ShellContentBrowserClient : public ContentBrowserClient {
  public:
@@ -88,6 +89,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       LoginAuthRequiredCallback auth_required_callback) override;
 
   std::string GetUserAgent() const override;
+  blink::UserAgentMetadata GetUserAgentMetadata() const override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

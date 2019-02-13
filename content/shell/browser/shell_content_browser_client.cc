@@ -61,6 +61,7 @@
 #include "services/test/echo/public/cpp/manifest.h"
 #include "services/test/echo/public/mojom/echo.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -233,6 +234,20 @@ std::string GetShellUserAgent() {
   if (command_line->HasSwitch(switches::kUseMobileUserAgent))
     product += " Mobile";
   return BuildUserAgentFromProduct(product);
+}
+
+blink::UserAgentMetadata GetShellUserAgentMetadata() {
+  blink::UserAgentMetadata metadata;
+
+  metadata.brand = "content_shell";
+  metadata.version = CONTENT_SHELL_VERSION;
+  metadata.platform = BuildOSCpuInfo(false);
+
+  // TODO(mkwst): Split these out from BuildOSCpuInfo().
+  metadata.architecture = "";
+  metadata.model = "";
+
+  return metadata;
 }
 
 ShellContentBrowserClient* ShellContentBrowserClient::Get() {
@@ -490,6 +505,11 @@ scoped_refptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
 
 std::string ShellContentBrowserClient::GetUserAgent() const {
   return GetShellUserAgent();
+}
+
+blink::UserAgentMetadata ShellContentBrowserClient::GetUserAgentMetadata()
+    const {
+  return GetShellUserAgentMetadata();
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

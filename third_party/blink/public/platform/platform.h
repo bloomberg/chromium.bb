@@ -47,6 +47,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
@@ -376,6 +377,12 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns the User-Agent string.
   virtual WebString UserAgent() { return WebString(); }
+
+  // Returns the User Agent metadata. This will replace `UserAgent()` if we
+  // end up shipping https://github.com/WICG/ua-client-hints.
+  virtual blink::UserAgentMetadata UserAgentMetadata() {
+    return blink::UserAgentMetadata();
+  }
 
   // A suggestion to cache this metadata in association with this URL.
   virtual void CacheMetadata(blink::mojom::CodeCacheType cache_type,

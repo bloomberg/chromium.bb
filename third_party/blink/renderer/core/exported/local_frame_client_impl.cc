@@ -795,6 +795,13 @@ String LocalFrameClientImpl::UserAgent() {
   return user_agent_;
 }
 
+blink::UserAgentMetadata LocalFrameClientImpl::UserAgentMetadata() {
+  // TODO(mkwst): Support devtools override.
+  if (user_agent_metadata_.brand.empty())
+    user_agent_metadata_ = Platform::Current()->UserAgentMetadata();
+  return user_agent_metadata_;
+}
+
 String LocalFrameClientImpl::DoNotTrackValue() {
   WebString do_not_track = web_frame_->Client()->DoNotTrackValue();
   if (!do_not_track.IsEmpty())

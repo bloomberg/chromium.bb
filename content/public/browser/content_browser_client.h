@@ -50,6 +50,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
 #include "third_party/blink/public/platform/web_feature.mojom-forward.h"
 #include "third_party/blink/public/web/window_features.mojom-forward.h"
@@ -1445,6 +1446,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the user agent.  Content may cache this value.
   virtual std::string GetUserAgent() const;
+
+  // Returns user agent metadata. Content may cache this value.
+  virtual blink::UserAgentMetadata GetUserAgentMetadata() const;
 
   // Returns whether |origin| should be considered a integral component similar
   // to native code, and as such whether its log messages should be recorded.

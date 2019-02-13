@@ -4828,6 +4828,7 @@ interface Navigator
     method getBattery
     method getGamepads
     method getInstalledRelatedApps
+    method getUserAgent
     method getUserMedia
     method getVRDisplays
     method getWakeLock

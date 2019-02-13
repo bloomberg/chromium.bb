@@ -391,6 +391,14 @@ blink::WebString RendererBlinkPlatformImpl::UserAgent() {
   return render_thread->GetUserAgent();
 }
 
+blink::UserAgentMetadata RendererBlinkPlatformImpl::UserAgentMetadata() {
+  auto* render_thread = RenderThreadImpl::current();
+  // RenderThreadImpl is null in some tests.
+  if (!render_thread)
+    return blink::UserAgentMetadata();
+  return render_thread->GetUserAgentMetadata();
+}
+
 void RendererBlinkPlatformImpl::CacheMetadata(
     blink::mojom::CodeCacheType cache_type,
     const blink::WebURL& url,
