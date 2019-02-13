@@ -1203,6 +1203,17 @@ bool ChildProcessSecurityPolicyImpl::CanDeleteFileSystemFile(
                                          DELETE_FILE_GRANT);
 }
 
+bool ChildProcessSecurityPolicyImpl::CanAccessDataForWebSocket(
+    int child_id,
+    const GURL& url) {
+  DCHECK(url.SchemeIsWSOrWSS());
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr(url.SchemeIs(url::kWssScheme) ? url::kHttpsScheme
+                                                            : url::kHttpScheme);
+  GURL url_to_check = url.ReplaceComponents(replace_scheme);
+  return CanAccessDataForOrigin(child_id, url_to_check);
+}
+
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 
