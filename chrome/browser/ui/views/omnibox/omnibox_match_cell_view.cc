@@ -68,6 +68,17 @@ int HorizontalPadding() {
 gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
   int vertical_margin =
       is_two_line ? kTwoLineRowMarginHeight : kOneLineRowMarginHeight;
+
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin)) {
+    // If the vertical margin experiment is on, we purposely set both the
+    // one-line and two-line suggestions to have the same vertical margin.
+    //
+    // There is no vertical margin value we could set to make the new answer
+    // style look anything similar to the pre-Refresh style, but setting them to
+    // be the same looks reasonable, and is a sane place to start experimenting.
+    vertical_margin = OmniboxFieldTrial::GetSuggestionVerticalMargin();
+  }
+
   return gfx::Insets(vertical_margin, kMarginLeft, vertical_margin,
                      OmniboxMatchCellView::kMarginRight);
 }
