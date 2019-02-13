@@ -20,6 +20,8 @@ namespace {
 
 const char kContentLocationHeader[] = "Content-Location";
 
+const int kDownloadTimeoutSeconds = 30;
+
 }  // namespace
 
 namespace image_fetcher {
@@ -91,6 +93,9 @@ void ImageDataFetcher::FetchImageData(
   // For compatibility in error handling. This is a little wasteful since the
   // body will get thrown out anyway, though.
   loader->SetAllowHttpErrorResults(true);
+
+  loader->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(kDownloadTimeoutSeconds));
 
   if (max_download_bytes_.has_value()) {
     loader->DownloadToString(
