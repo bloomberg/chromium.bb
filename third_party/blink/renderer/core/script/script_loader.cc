@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
+#include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -164,6 +165,34 @@ bool IsValidClassicScriptTypeAndLanguage(
   return false;
 }
 
+// Returns true on success.
+bool ParseAndRegisterImportMap(ScriptElementBase& element) {
+  Document& element_document = element.GetDocument();
+  Document* context_document = element_document.ContextDocument();
+  DCHECK(context_document);
+  Modulator* modulator =
+      Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
+  DCHECK(modulator);
+
+  // TODO(crbug.com/922212): Implemenet external import maps.
+  if (element.HasSourceAttribute()) {
+    element_document.AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
+                               "External import maps are not yet supported."));
+    return false;
+  }
+
+  KURL base_url = element_document.BaseURL();
+  ImportMap* import_map =
+      ImportMap::Create(element.TextFromChildren(), base_url, element_document);
+
+  if (!import_map)
+    return false;
+
+  modulator->RegisterImportMap(import_map);
+  return true;
+}
+
 }  // namespace
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
@@ -171,14 +200,18 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     const String& type,
     const String& language,
     LegacyTypeSupport support_legacy_types,
-    mojom::ScriptType& out_script_type) {
+    mojom::ScriptType* out_script_type,
+    bool* out_is_import_map) {
   if (IsValidClassicScriptTypeAndLanguage(type, language,
                                           support_legacy_types)) {
     // <spec step="7">... If the script block's type string is a JavaScript MIME
     // type essence match, the script's type is "classic". ...</spec>
     //
     // TODO(hiroshige): Annotate and/or cleanup this step.
-    out_script_type = mojom::ScriptType::kClassic;
+    if (out_script_type)
+      *out_script_type = mojom::ScriptType::kClassic;
+    if (out_is_import_map)
+      *out_is_import_map = false;
     return true;
   }
 
@@ -186,7 +219,16 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     // <spec step="7">... If the script block's type string is an ASCII
     // case-insensitive match for the string "module", the script's type is
     // "module". ...</spec>
-    out_script_type = mojom::ScriptType::kModule;
+    if (out_script_type)
+      *out_script_type = mojom::ScriptType::kModule;
+    if (out_is_import_map)
+      *out_is_import_map = false;
+    return true;
+  }
+
+  if (RuntimeEnabledFeatures::LayeredAPIEnabled() && type == "importmap") {
+    if (out_is_import_map)
+      *out_is_import_map = true;
     return true;
   }
 
@@ -277,13 +319,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!element_->IsConnected())
     return false;
 
+  bool is_import_map = false;
+
   // <spec step="7">... Determine the script's type as follows: ...</spec>
   //
   // |script_type_| is set here.
-
-  if (!IsValidScriptTypeAndLanguage(element_->TypeAttributeValue(),
-                                    element_->LanguageAttributeValue(),
-                                    support_legacy_types, script_type_)) {
+  if (!IsValidScriptTypeAndLanguage(
+          element_->TypeAttributeValue(), element_->LanguageAttributeValue(),
+          support_legacy_types, &script_type_, &is_import_map)) {
     return false;
   }
 
@@ -332,6 +375,17 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // 13.
   if (!IsScriptForEventSupported())
     return false;
+
+  // Process the import map.
+  if (is_import_map) {
+    if (!ParseAndRegisterImportMap(*element_)) {
+      element_document.GetTaskRunner(TaskType::kDOMManipulation)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
+                               WrapPersistent(element_.Get())));
+    }
+    return false;
+  }
 
   // This FeaturePolicy is still in the process of being added to the spec.
   if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),

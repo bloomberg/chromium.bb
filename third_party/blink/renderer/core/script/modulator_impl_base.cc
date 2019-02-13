@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
-#include "third_party/blink/renderer/core/script/layered_api.h"
+#include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
@@ -123,6 +123,37 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
     return KURL();
   }
 
+  // If |logger| is non-null, outputs detailed logs.
+  // The detailed log should be useful for debugging particular import maps
+  // errors, but should be supressed (i.e. |logger| should be null) in normal
+  // cases.
+
+  base::Optional<KURL> mapped_url;
+  if (import_map_) {
+    String import_map_debug_message;
+    mapped_url =
+        import_map_->Resolve(parsed_specifier, &import_map_debug_message);
+
+    // Output the resolution log. This is too verbose to be always shown, but
+    // will be helpful for Web developers (and also Chromium developers) for
+    // debugging import maps.
+    LOG(INFO) << import_map_debug_message;
+
+    if (mapped_url) {
+      KURL url = *mapped_url;
+      if (!url.IsValid()) {
+        if (failure_reason)
+          *failure_reason = import_map_debug_message;
+        return KURL();
+      }
+      return url;
+    }
+  }
+
+  // The specifier is not mapped by import maps, either because
+  // - There are no import maps, or
+  // - The import map doesn't have an entry for |parsed_specifier|.
+
   switch (parsed_specifier.GetType()) {
     case ParsedSpecifier::Type::kInvalid:
       NOTREACHED();
@@ -147,6 +178,25 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
     case ParsedSpecifier::Type::kURL:
       return parsed_specifier.GetUrl();
   }
+}
+
+void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map) {
+  if (import_map_) {
+    // Only one import map is allowed.
+    // TODO(crbug.com/927119): Implement merging.
+    GetExecutionContext()->AddErrorMessage(
+        ConsoleLogger::Source::kOther,
+        "Multiple import maps are not yet supported. https://crbug.com/927119");
+    return;
+  }
+
+  if (!RuntimeEnabledFeatures::LayeredAPIEnabled()) {
+    GetExecutionContext()->AddErrorMessage(
+        ConsoleLogger::Source::kOther,
+        "Import maps are disabled when LayeredAPI is disabled.");
+    return;
+  }
+  import_map_ = import_map;
 }
 
 bool ModulatorImplBase::HasValidContext() {
@@ -279,6 +329,7 @@ void ModulatorImplBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(tree_linker_registry_);
   visitor->Trace(script_module_resolver_);
   visitor->Trace(dynamic_module_resolver_);
+  visitor->Trace(import_map_);
 
   Modulator::Trace(visitor);
 }

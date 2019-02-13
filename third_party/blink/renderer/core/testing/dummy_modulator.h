@@ -56,6 +56,7 @@ class DummyModulator : public Modulator {
                           const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
+  void RegisterImportMap(const ImportMap*) override;
   ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;

@@ -71,11 +71,18 @@ class CORE_EXPORT ScriptLoader final
     kDisallowLegacyTypeInTypeAttribute,
     kAllowLegacyTypeInTypeAttribute
   };
+
+  // |out_is_import_map| is set separately from |out_script_type| in order
+  // to avoid adding import maps as a mojom::ScriptType enum, because import
+  // maps are processed quite differently from classic/module scripts.
+  //
+  // TODO(hiroshige, kouhei): Make the method signature simpler.
   static bool IsValidScriptTypeAndLanguage(
       const String& type_attribute_value,
       const String& language_attribute_value,
       LegacyTypeSupport support_legacy_types,
-      mojom::ScriptType& out_script_type);
+      mojom::ScriptType* out_script_type = nullptr,
+      bool* out_is_import_map = nullptr);
 
   static bool BlockForNoModule(mojom::ScriptType, bool nomodule);
 
