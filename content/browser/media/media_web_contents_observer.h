@@ -12,6 +12,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/media_session_controllers_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -92,6 +93,13 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     audible_metrics_ = audible_metrics;
   }
 
+#if defined(OS_ANDROID)
+  // Called by the WebContents when a tab has been closed but may still be
+  // available for "undo" -- indicates that all media players (even audio only
+  // players typically allowed background audio) bound to this WebContents must
+  // be suspended.
+  void SuspendAllMediaPlayers();
+#endif  // defined(OS_ANDROID)
  protected:
   MediaSessionControllersManager* session_controllers_manager() {
     return &session_controllers_manager_;

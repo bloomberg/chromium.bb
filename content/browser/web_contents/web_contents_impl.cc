@@ -170,7 +170,6 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/java_interfaces_impl.h"
-#include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #else  // !OS_ANDROID
@@ -592,6 +591,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
               browser_context)),
       audio_stream_monitor_(this),
       bluetooth_connected_device_count_(0),
+      media_web_contents_observer_(
+          std::make_unique<MediaWebContentsObserver>(this)),
       media_device_group_id_salt_base_(
           BrowserContext::CreateRandomMediaDeviceIDSalt()),
 #if !defined(OS_ANDROID)
@@ -604,11 +605,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
                  base::Unretained(this)));
-#if defined(OS_ANDROID)
-  media_web_contents_observer_.reset(new MediaWebContentsObserverAndroid(this));
-#else
-  media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
-#endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif

@@ -26,7 +26,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
-#include "content/browser/media/android/media_web_contents_observer_android.h"
+#include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -426,8 +426,7 @@ void WebContentsAndroid::SetImportance(
 void WebContentsAndroid::SuspendAllMediaPlayers(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj) {
-  MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
-      ->SuspendAllMediaPlayers();
+  web_contents_->media_web_contents_observer()->SuspendAllMediaPlayers();
 }
 
 void WebContentsAndroid::SetAudioMuted(JNIEnv* env,
