@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
@@ -86,28 +85,17 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up possible button.
   if (match.ShouldShowButton()) {
-    if (match.pedal) {
-      const OmniboxPedal::LabelStrings& strings =
-          match.pedal->GetLabelStrings();
+    if (!OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
       suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-          popup_contents_view_, this, strings.hint, strings.hint_short,
-          omnibox::kPedalIcon);
+          popup_contents_view_, this,
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
+          omnibox::kSwitchIcon);
     } else {
-      if (!OmniboxFieldTrial::IsTabSwitchLogicReversed()) {
-        suggestion_tab_switch_button_ =
-            std::make_unique<OmniboxTabSwitchButton>(
-                popup_contents_view_, this,
-                l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
-                l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT),
-                omnibox::kSwitchIcon);
-      } else {
-        suggestion_tab_switch_button_ =
-            std::make_unique<OmniboxTabSwitchButton>(
-                // TODO(krb): Make official strings when we accept the feature.
-                popup_contents_view_, this,
-                base::ASCIIToUTF16("Open in this tab"),
-                base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon);
-      }
+      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+          // TODO(krb): Make official strings when we accept the feature.
+          popup_contents_view_, this, base::ASCIIToUTF16("Open in this tab"),
+          base::ASCIIToUTF16("Open"), omnibox::kSwitchIcon);
     }
 
     suggestion_tab_switch_button_->set_owned_by_client();

@@ -109,18 +109,6 @@ class OmniboxPedal {
   // For navigation Pedals, returns the destination URL.
   const GURL& GetNavigationUrl() const;
 
-  // These Should* methods can likely be eliminated when Pedal
-  // suggestion mode is firmly established.
-
-  // When a suggestion is selected by user, it may be via button press or
-  // normal click/keypress.  This method tells whether the mode of selection
-  // taken should result in execution of the suggestion's Pedal.
-  virtual bool ShouldExecute(bool button_pressed) const;
-
-  // Some Pedals (or all, depending on mode) may be presented with a side
-  // button; this method returns true if this Pedal presents a button.
-  virtual bool ShouldPresentButton() const;
-
   // Takes the action associated with this Pedal.  Non-navigation
   // Pedals must override the default, but Navigation Pedals don't need to.
   virtual void Execute(ExecutionContext& context) const;

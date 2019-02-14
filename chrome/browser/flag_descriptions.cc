@@ -2856,10 +2856,8 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
 
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =
-    "Enable omnibox Pedal suggestions using either a side button in suggestion "
-    "or a dedicated suggestion item beneath the triggering line item.  Omnibox "
-    "Pedals accelerate actions within Chrome by detecting user intent and "
-    "offering direct access to the end goal.";
+    "Enable omnibox Pedal suggestions to accelerate actions within Chrome by "
+    "detecting user intent and offering direct access to the end goal.";
 
 const char kOmniboxReverseAnswersName[] = "Omnibox reverse answers";
 const char kOmniboxReverseAnswersDescription[] =

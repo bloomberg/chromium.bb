@@ -534,8 +534,7 @@ void AutocompleteController::UpdateResult(
        i != providers_.end(); ++i)
     result_.AppendMatches(input_, (*i)->matches());
 
-  if (OmniboxFieldTrial::GetPedalSuggestionMode() ==
-      OmniboxFieldTrial::PedalSuggestionMode::DEDICATED)
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled())
     result_.AppendDedicatedPedalMatches(provider_client_.get(), input_);
 
   // Sort the matches and trim to a small number of "best" matches.
@@ -543,10 +542,6 @@ void AutocompleteController::UpdateResult(
 
   if (OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled())
     result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
-
-  if (OmniboxFieldTrial::GetPedalSuggestionMode() ==
-      OmniboxFieldTrial::PedalSuggestionMode::IN_SUGGESTION)
-    result_.ConvertInSuggestionPedalMatches(provider_client_.get());
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
   // valid against the current input.

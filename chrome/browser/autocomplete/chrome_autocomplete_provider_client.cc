@@ -93,8 +93,7 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
                   ProfileSyncServiceFactory::GetSyncServiceForProfile(
                       profile_))),
       storage_partition_(nullptr) {
-  if (OmniboxFieldTrial::GetPedalSuggestionMode() !=
-      OmniboxFieldTrial::PedalSuggestionMode::NONE)
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled())
     pedal_provider_ = std::make_unique<OmniboxPedalProvider>(*this);
 }
 
@@ -173,8 +172,7 @@ ChromeAutocompleteProviderClient::GetDocumentSuggestionsService(
 OmniboxPedalProvider* ChromeAutocompleteProviderClient::GetPedalProvider()
     const {
   // If Pedals are disabled, we should never get here to use the provider.
-  DCHECK_NE(OmniboxFieldTrial::GetPedalSuggestionMode(),
-            OmniboxFieldTrial::PedalSuggestionMode::NONE);
+  DCHECK(OmniboxFieldTrial::IsPedalSuggestionsEnabled());
   DCHECK(pedal_provider_);
   return pedal_provider_.get();
 }

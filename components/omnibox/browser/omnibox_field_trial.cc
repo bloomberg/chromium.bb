@@ -137,21 +137,9 @@ const base::Feature kOmniboxReverseTabSwitchLogic{
 const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable Pedal suggestions as either in-suggestion side button
-// or dedicated suggestion beneath triggering suggestion.
+// Feature used to enable Pedal suggestions.
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-constexpr base::FeatureParam<OmniboxFieldTrial::PedalSuggestionMode>::Option
-    kPedalSuggestionModeOptions[] = {
-        {OmniboxFieldTrial::PedalSuggestionMode::IN_SUGGESTION,
-         "in_suggestion"},
-        {OmniboxFieldTrial::PedalSuggestionMode::DEDICATED, "dedicated"},
-};
-constexpr base::FeatureParam<OmniboxFieldTrial::PedalSuggestionMode>
-    pedal_suggestion_mode{&kOmniboxPedalSuggestions,
-                          OmniboxFieldTrial::kPedalSuggestionModeParam,
-                          OmniboxFieldTrial::PedalSuggestionMode::DEDICATED,
-                          &kPedalSuggestionModeOptions};
 
 // Feature used to show a context menu for suggestions when the user
 // right-clicks a suggestion in the omnibox dropdown. It's currently disabled
@@ -827,13 +815,8 @@ bool OmniboxFieldTrial::IsTabSwitchLogicReversed() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseTabSwitchLogic);
 }
 
-OmniboxFieldTrial::PedalSuggestionMode
-OmniboxFieldTrial::GetPedalSuggestionMode() {
-  // Disabled case is handled specially, as no parameter values are specified.
-  if (!base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions)) {
-    return PedalSuggestionMode::NONE;
-  }
-  return omnibox::pedal_suggestion_mode.Get();
+bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {
@@ -930,8 +913,6 @@ const char
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
     "UIMaxAutocompleteMatches";
 const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
-const char OmniboxFieldTrial::kPedalSuggestionModeParam[] =
-    "PedalSuggestionMode";
 
 const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName[] =
     "treatment";
