@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "media/base/media_switches.h"
+#include "ui/compositor/layer.h"
 
 namespace content {
 
@@ -126,6 +127,17 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
   DCHECK(window_);
 
   DCHECK(surface_id.is_valid());
+
+  // TODO(https://crbug.com/925346): We also want to unregister the page that
+  // used to embed the video as its parent.
+  ui::Compositor* compositor = window_->GetLayer()->GetCompositor();
+  if (!surface_id_.is_valid()) {
+    compositor->AddChildFrameSink(surface_id.frame_sink_id());
+  } else if (surface_id_.frame_sink_id() != surface_id.frame_sink_id()) {
+    compositor->RemoveChildFrameSink(surface_id_.frame_sink_id());
+    compositor->AddChildFrameSink(surface_id.frame_sink_id());
+  }
+
   surface_id_ = surface_id;
 
   // Update the media player id in step with the video surface id. If the
@@ -305,6 +317,11 @@ void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video,
     bool should_reset_pip_player) {
+  if (window_ && surface_id_.is_valid()) {
+    window_->GetLayer()->GetCompositor()->RemoveChildFrameSink(
+        surface_id_.frame_sink_id());
+  }
+
   if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
@@ -332,10 +349,9 @@ void PictureInPictureWindowControllerImpl::CloseInternal(
   if (initiator_->IsBeingDestroyed())
     return;
 
-  surface_id_ = viz::SurfaceId();
-
   initiator_->SetHasPictureInPictureVideo(false);
   OnLeavingPictureInPicture(should_pause_video, should_reset_pip_player);
+  surface_id_ = viz::SurfaceId();
 }
 
 void PictureInPictureWindowControllerImpl::EnsureWindow() {

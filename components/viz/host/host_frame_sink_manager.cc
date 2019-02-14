@@ -223,7 +223,6 @@ bool HostFrameSinkManager::RegisterFrameSinkHierarchy(
                                                   child_frame_sink_id);
 
   FrameSinkData& child_data = frame_sink_data_map_[child_frame_sink_id];
-  DCHECK(child_data.IsFrameSinkRegistered());
   DCHECK(!base::ContainsValue(child_data.parents, parent_frame_sink_id));
   child_data.parents.push_back(parent_frame_sink_id);
 
