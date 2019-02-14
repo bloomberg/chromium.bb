@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/dwrite_font_file_util_win.h"
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
@@ -393,15 +394,19 @@ void DWriteFontProxyImpl::MapCharacters(
 
 void DWriteFontProxyImpl::GetUniqueNameLookupTable(
     GetUniqueNameLookupTableCallback callback) {
+  DCHECK(base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
   InitializeDirectWrite();
   callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), base::ReadOnlySharedMemoryRegion());
 
+  // ScheduleBuildFontUniqueNameTable() is called early in browser startup
+  // before EnsureFontUniqueNameTable() can be called. See
+  // BrowserMainLoop::BrowserThreadsStarted().
   if (!DWriteFontLookupTableBuilder::GetInstance()->EnsureFontUniqueNameTable())
     return;
 
   std::move(callback).Run(
-      DWriteFontLookupTableBuilder::GetInstance()->DuplicatedMemoryRegion());
+      DWriteFontLookupTableBuilder::GetInstance()->DuplicateMemoryRegion());
 }
 
 void DWriteFontProxyImpl::InitializeDirectWrite() {

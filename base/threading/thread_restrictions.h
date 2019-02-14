@@ -133,6 +133,7 @@ class BrowserShutdownProfileDumper;
 class BrowserTestBase;
 class CategorizedWorkerPool;
 class DesktopCaptureDevice;
+class DWriteFontLookupTableBuilder;
 class GpuProcessTransportFactory;
 class NestedMessagePumpAndroid;
 class SandboxHostLinux;
@@ -374,6 +375,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
+  friend class content::DWriteFontLookupTableBuilder;
   friend class content::ServiceWorkerContextClient;
   friend class content::SessionStorageDatabase;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;

@@ -188,6 +188,7 @@
 #include <shellapi.h>
 
 #include "base/memory/memory_pressure_monitor_win.h"
+#include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
 #include "net/base/winsock_init.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/screen_win.h"
@@ -1439,6 +1440,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (!parsed_command_line_.HasSwitch(
           switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
     GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
+  }
+
+  if (base::FeatureList::IsEnabled(features::kFontSrcLocalMatching)) {
+    content::DWriteFontLookupTableBuilder::GetInstance()
+        ->ScheduleBuildFontUniqueNameTable();
   }
 #endif
 
