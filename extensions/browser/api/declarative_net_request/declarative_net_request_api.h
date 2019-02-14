@@ -96,6 +96,60 @@ class DeclarativeNetRequestGetAllowedPagesFunction
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetAllowedPagesFunction);
 };
 
+class DeclarativeNetRequestAddDynamicRulesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestAddDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addDynamicRules",
+                             DECLARATIVENETREQUEST_ADDDYNAMICRULES);
+
+ protected:
+  ~DeclarativeNetRequestAddDynamicRulesFunction() override;
+
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAddDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestRemoveDynamicRulesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestRemoveDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeDynamicRules",
+                             DECLARATIVENETREQUEST_REMOVEDYNAMICRULES);
+
+ protected:
+  ~DeclarativeNetRequestRemoveDynamicRulesFunction() override;
+
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestRemoveDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestGetDynamicRulesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestGetDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getDynamicRules",
+                             DECLARATIVENETREQUEST_GETDYNAMICRULES);
+
+ protected:
+  ~DeclarativeNetRequestGetDynamicRulesFunction() override;
+
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetDynamicRulesFunction);
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_DECLARATIVE_NET_REQUEST_API_H_

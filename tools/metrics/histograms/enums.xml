@@ -17895,6 +17895,9 @@ Called by update_net_error_codes.py.-->
   <int value="1315" label="PASSWORDSPRIVATE_CHANGESAVEDPASSWORD"/>
   <int value="1316" label="AUTOTESTPRIVATE_SETWHITELISTEDPREF"/>
   <int value="1317" label="SAFEBROWSINGPRIVATE_GETREFERRERCHAIN"/>
+  <int value="1318" label="DECLARATIVENETREQUEST_ADDDYNAMICRULES"/>
+  <int value="1319" label="DECLARATIVENETREQUEST_REMOVEDYNAMICRULES"/>
+  <int value="1320" label="DECLARATIVENETREQUEST_GETDYNAMICRULES"/>
 </enum>
 
 <enum name="ExtensionIconState">

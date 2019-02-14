@@ -25,8 +25,13 @@ namespace extensions {
 
 namespace {
 
+namespace dnr_api = api::declarative_net_request;
+
 // Returns true if the given |extension| has a registered ruleset. If it
 // doesn't, returns false and populates |error|.
+// TODO(crbug.com/931967): Using HasRegisteredRuleset for PreRunValidation means
+// that the extension function will fail if the ruleset for the extension is
+// currently being indexed. Fix this.
 bool HasRegisteredRuleset(content::BrowserContext* context,
                           const ExtensionId& extension_id,
                           std::string* error) {
@@ -87,11 +92,10 @@ DeclarativeNetRequestUpdateAllowedPagesFunction::UpdateAllowedPages(
       break;
   }
 
-  if (static_cast<int>(new_set.size()) >
-      api::declarative_net_request::MAX_NUMBER_OF_ALLOWED_PAGES) {
+  if (static_cast<int>(new_set.size()) > dnr_api::MAX_NUMBER_OF_ALLOWED_PAGES) {
     return RespondNow(Error(base::StringPrintf(
         "The number of allowed page patterns can't exceed %d",
-        api::declarative_net_request::MAX_NUMBER_OF_ALLOWED_PAGES)));
+        dnr_api::MAX_NUMBER_OF_ALLOWED_PAGES)));
   }
 
   // Persist |new_set| as part of preferences.
@@ -130,7 +134,7 @@ DeclarativeNetRequestAddAllowedPagesFunction::
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestAddAllowedPagesFunction::Run() {
-  using Params = api::declarative_net_request::AddAllowedPages::Params;
+  using Params = dnr_api::AddAllowedPages::Params;
 
   base::string16 error;
   std::unique_ptr<Params> params(Params::Create(*args_, &error));
@@ -149,7 +153,7 @@ DeclarativeNetRequestRemoveAllowedPagesFunction::
 
 ExtensionFunction::ResponseAction
 DeclarativeNetRequestRemoveAllowedPagesFunction::Run() {
-  using Params = api::declarative_net_request::AddAllowedPages::Params;
+  using Params = dnr_api::AddAllowedPages::Params;
 
   base::string16 error;
   std::unique_ptr<Params> params(Params::Create(*args_, &error));
@@ -177,9 +181,59 @@ DeclarativeNetRequestGetAllowedPagesFunction::Run() {
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
   URLPatternSet current_set = prefs->GetDNRAllowedPages(extension_id());
 
-  return RespondNow(ArgumentList(
-      api::declarative_net_request::GetAllowedPages::Results::Create(
-          *current_set.ToStringVector())));
+  return RespondNow(ArgumentList(dnr_api::GetAllowedPages::Results::Create(
+      *current_set.ToStringVector())));
+}
+
+DeclarativeNetRequestAddDynamicRulesFunction::
+    DeclarativeNetRequestAddDynamicRulesFunction() = default;
+DeclarativeNetRequestAddDynamicRulesFunction::
+    ~DeclarativeNetRequestAddDynamicRulesFunction() = default;
+
+bool DeclarativeNetRequestAddDynamicRulesFunction::PreRunValidation(
+    std::string* error) {
+  return UIThreadExtensionFunction::PreRunValidation(error) &&
+         HasRegisteredRuleset(browser_context(), extension_id(), error);
+}
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestAddDynamicRulesFunction::Run() {
+  // TODO(crbug.com/930961): Implement this.
+  return RespondNow(Error("Not implemented"));
+}
+
+DeclarativeNetRequestRemoveDynamicRulesFunction::
+    DeclarativeNetRequestRemoveDynamicRulesFunction() = default;
+DeclarativeNetRequestRemoveDynamicRulesFunction::
+    ~DeclarativeNetRequestRemoveDynamicRulesFunction() = default;
+
+bool DeclarativeNetRequestRemoveDynamicRulesFunction::PreRunValidation(
+    std::string* error) {
+  return UIThreadExtensionFunction::PreRunValidation(error) &&
+         HasRegisteredRuleset(browser_context(), extension_id(), error);
+}
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestRemoveDynamicRulesFunction::Run() {
+  // TODO(crbug.com/930961): Implement this.
+  return RespondNow(Error("Not implemented"));
+}
+
+DeclarativeNetRequestGetDynamicRulesFunction::
+    DeclarativeNetRequestGetDynamicRulesFunction() = default;
+DeclarativeNetRequestGetDynamicRulesFunction::
+    ~DeclarativeNetRequestGetDynamicRulesFunction() = default;
+
+bool DeclarativeNetRequestGetDynamicRulesFunction::PreRunValidation(
+    std::string* error) {
+  return UIThreadExtensionFunction::PreRunValidation(error) &&
+         HasRegisteredRuleset(browser_context(), extension_id(), error);
+}
+
+ExtensionFunction::ResponseAction
+DeclarativeNetRequestGetDynamicRulesFunction::Run() {
+  // TODO(crbug.com/930961): Implement this.
+  return RespondNow(Error("Not implemented"));
 }
 
 }  // namespace extensions
