@@ -134,7 +134,7 @@ class Executive(object):
 
             command = ['taskkill.exe', '/f', '/t', '/pid', pid]
             # taskkill will exit 128 if the process is not found. We should log.
-            self.run_command(command, error_handler=self.ignore_error)
+            self.run_command(command, error_handler=self.log_error)
             return
 
         try:
@@ -142,7 +142,7 @@ class Executive(object):
             os.waitpid(pid, os.WNOHANG)
         except OSError as error:
             if error.errno == errno.ESRCH:
-                # The process does not exist.
+                _log.debug("PID %s does not exist.", pid)
                 return
             if error.errno == errno.ECHILD:
                 # Can't wait on a non-child process, but the kill worked.
@@ -264,6 +264,10 @@ class Executive(object):
     @staticmethod
     def ignore_error(error):
         pass
+
+    @staticmethod
+    def log_error(error):
+        _log.debug(error)
 
     def _compute_stdin(self, user_input):
         """Returns (stdin, string_to_communicate)"""
