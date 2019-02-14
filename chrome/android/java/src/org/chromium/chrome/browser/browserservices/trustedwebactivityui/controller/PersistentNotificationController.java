@@ -59,7 +59,7 @@ public class PersistentNotificationController implements StartStopWithNativeObse
         if (state == null) {
             return;
         }
-        if (state.status == TrustedWebActivityVerifier.VERIFICATION_FAILURE) {
+        if (state.status == TrustedWebActivityVerifier.VerificationStatus.FAILURE) {
             return; // Keep showing the notification despite we've left the verified origin
         }
         if (state.origin.equals(mLastVerifiedOrigin)) {
