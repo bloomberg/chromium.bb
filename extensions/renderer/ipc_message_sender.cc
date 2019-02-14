@@ -176,6 +176,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
       }
       case MessageTarget::TAB: {
         DCHECK(extension);
+        DCHECK_NE(script_context->context_type(),
+                  Feature::CONTENT_SCRIPT_CONTEXT);
         ExtensionMsg_TabTargetConnectionInfo info;
         info.tab_id = *target.tab_id;
         info.frame_id = *target.frame_id;
