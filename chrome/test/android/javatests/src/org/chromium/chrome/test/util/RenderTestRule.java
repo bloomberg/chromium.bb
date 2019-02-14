@@ -78,9 +78,6 @@ public class RenderTestRule extends TestWatcher {
     // TODO(peconn): Add "Nexus_5X-23" once it's run on CQ - https://crbug.com/731759.
     private static final String[] RENDER_TEST_MODEL_SDK_PAIRS = {"Nexus_5-19"};
 
-    /** How many pixels can be different in an image before counting the images as different. */
-    private static final int PIXEL_DIFF_THRESHOLD = 0;
-
     private enum ComparisonResult { MATCH, MISMATCH, GOLDEN_NOT_FOUND }
 
     // State for a test class.
@@ -95,6 +92,9 @@ public class RenderTestRule extends TestWatcher {
 
     /** Parameterized tests have a prefix inserted at the front of the test description. */
     private String mVariantPrefix;
+
+    // How much a channel must differ when comparing pixels in order to be considered different.
+    private int mPixelDiffThreshold;
 
     /**
      * An exception thrown after a Render Test if images do not match the goldens or goldens are
@@ -273,6 +273,15 @@ public class RenderTestRule extends TestWatcher {
     }
 
     /**
+     * Sets the threshold that a pixel must differ by when comparing channels in order to be
+     * considered different.
+     */
+    public void setPixelDiffThreshold(int threshold) {
+        assert threshold >= 0;
+        mPixelDiffThreshold = threshold;
+    }
+
+    /**
      * Creates an image name combining the image description with details about the device
      * (eg model, current orientation).
      *
@@ -337,8 +346,7 @@ public class RenderTestRule extends TestWatcher {
      * @return A pair of ComparisonResult and Bitmap. If the ComparisonResult is MISMATCH or MATCH,
      *         the Bitmap will be a generated pixel-by-pixel difference.
      */
-    private static Pair<ComparisonResult, Bitmap> compareBitmapToGolden(
-            Bitmap render, Bitmap golden) {
+    private Pair<ComparisonResult, Bitmap> compareBitmapToGolden(Bitmap render, Bitmap golden) {
         if (golden == null) return Pair.create(ComparisonResult.GOLDEN_NOT_FOUND, null);
         // This comparison is much, much faster than doing a pixel-by-pixel comparison, so try this
         // first and only fall back to the pixel comparison if it fails.
@@ -352,10 +360,11 @@ public class RenderTestRule extends TestWatcher {
         int minWidth = Math.min(render.getWidth(), golden.getWidth());
         int minHeight = Math.min(render.getHeight(), golden.getHeight());
 
-        int diffPixelsCount = comparePixels(render, golden, diff, 0, 0, minWidth, 0, minHeight)
+        int diffPixelsCount =
+                comparePixels(render, golden, diff, mPixelDiffThreshold, 0, minWidth, 0, minHeight)
                 + compareSizes(diff, minWidth, maxWidth, minHeight, maxHeight);
 
-        if (diffPixelsCount > PIXEL_DIFF_THRESHOLD) {
+        if (diffPixelsCount > 0) {
             return Pair.create(ComparisonResult.MISMATCH, diff);
         }
         return Pair.create(ComparisonResult.MATCH, diff);
