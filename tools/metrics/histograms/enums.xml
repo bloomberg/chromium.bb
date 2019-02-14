@@ -21569,6 +21569,7 @@ Called by update_net_error_codes.py.-->
   <int value="2785" label="V8UserActivation_HasBeenActive_AttributeGetter"/>
   <int value="2786" label="V8UserActivation_IsActive_AttributeGetter"/>
   <int value="2787" label="TextEncoderEncodeInto"/>
+  <int value="2788" label="InvalidBasicCardMethodData"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
