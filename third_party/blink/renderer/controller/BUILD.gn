@@ -69,7 +69,7 @@ jumbo_component("controller") {
   configs += blink_symbols_config
 }
 
-group("blink_unittests_data") {
+group("webkit_unit_tests_data") {
   data = [
     "../core/testing/data/",
     "../core/paint/test_data/",
@@ -78,13 +78,13 @@ group("blink_unittests_data") {
   ]
 }
 
-test("blink_unittests") {
+test("webkit_unit_tests") {
   deps = [
-    ":blink_unittests_sources",
+    ":webkit_unit_tests_sources",
   ]
 
   data_deps = [
-    ":blink_unittests_data",
+    ":webkit_unit_tests_data",
     "//content/shell:pak",
   ]
 
@@ -128,7 +128,7 @@ jumbo_source_set("blink_perf_tests_sources") {
   ]
 }
 
-jumbo_source_set("blink_unittests_sources") {
+jumbo_source_set("webkit_unit_tests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true

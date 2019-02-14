@@ -3840,18 +3840,17 @@
     'machines': {
       'android_chromium_compile': {
         'additional_compile_targets': [
-          'blink_unittests',
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
           'content_unittests',
           'jingle_unittests',
           'remoting_unittests',
+          'webkit_unit_tests',
         ],
       },
       'linux_chromium_compile': {
         'additional_compile_targets': [
-          'blink_unittests',
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
@@ -3859,11 +3858,11 @@
           'jingle_unittests',
           'remoting_unittests',
           'remoting/webapp:webapp',
+          'webkit_unit_tests',
         ],
       },
       'mac_chromium_compile': {
         'additional_compile_targets': [
-          'blink_unittests',
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
@@ -3871,11 +3870,11 @@
           'jingle_unittests',
           'remoting_unittests',
           'remoting/webapp:webapp',
+          'webkit_unit_tests',
         ],
       },
       'win_chromium_compile': {
         'additional_compile_targets': [
-          'blink_unittests',
           'browser_tests',
           'capture_unittests',
           'content_browsertests',
@@ -3883,6 +3882,7 @@
           'jingle_unittests',
           'remoting_unittests',
           'remoting/webapp:webapp',
+          'webkit_unit_tests',
         ],
       },
     },

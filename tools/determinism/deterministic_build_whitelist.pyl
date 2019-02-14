@@ -60,7 +60,6 @@
     'blink_heap_unittests',
     'blink_platform_perftests',
     'blink_platform_unittests',
-    'blink_unittests',
     'bluetooth_metrics_hash',
     'browser_tests',
     'cacheinvalidation_unittests',
@@ -173,6 +172,7 @@
     'views_examples_with_content_exe',
     'views_unittests',
     'viz_benchmark',
+    'webkit_unit_tests',
     'wtf_unittests',
   ],
 

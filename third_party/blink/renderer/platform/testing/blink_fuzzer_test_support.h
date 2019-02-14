@@ -8,7 +8,7 @@
 namespace blink {
 
 // Instantiating BlinkFuzzerTestSupport will spin up an environment similar to
-// blink_unittests. It should be statically initialized and leaked in fuzzers.
+// webkit_unit_tests. It should be statically initialized and leaked in fuzzers.
 class BlinkFuzzerTestSupport {
  public:
   // Use this constructor in LLVMFuzzerTestOneInput.
