@@ -21,7 +21,6 @@ TELEMETRY_EXPERIMENTAL_TEST_SUITES = [
 STABLE_TEST_SUITES = [
     'android_webview_unittests',
     'base_unittests',
-    'blink_unittests',
     'breakpad_unittests',
     'cc_unittests',
     'components_unittests',
@@ -43,6 +42,7 @@ STABLE_TEST_SUITES = [
     'ui_base_unittests',
     'ui_touch_selection_unittests',
     'unit_tests_apk',
+    'webkit_unit_tests',
 ]
 
 # Tests fail in component=shared_library build, which is required for ASan.

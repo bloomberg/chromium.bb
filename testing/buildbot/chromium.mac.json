@@ -110,19 +110,6 @@
         "test": "blink_platform_unittests"
       },
       {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.10"
-            }
-          ]
-        },
-        "test": "blink_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -980,13 +967,9 @@
             }
           ]
         },
-        "test": "wtf_unittests"
-      }
-    ],
-    "isolated_scripts": [
+        "test": "webkit_unit_tests"
+      },
       {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -995,8 +978,11 @@
               "os": "Mac-10.10"
             }
           ]
-        }
-      },
+        },
+        "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
       {
         "args": [
           "--test-type=integration"
@@ -1152,7 +1138,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -1170,6 +1156,19 @@
             }
           ],
           "shards": 12
+        }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10"
+            }
+          ]
         }
       }
     ]
@@ -1273,19 +1272,6 @@
         "test": "blink_platform_unittests"
       },
       {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11"
-            }
-          ]
-        },
-        "test": "blink_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2143,13 +2129,9 @@
             }
           ]
         },
-        "test": "wtf_unittests"
-      }
-    ],
-    "isolated_scripts": [
+        "test": "webkit_unit_tests"
+      },
       {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2158,8 +2140,11 @@
               "os": "Mac-10.11"
             }
           ]
-        }
-      },
+        },
+        "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
       {
         "args": [
           "--test-type=integration"
@@ -2315,7 +2300,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -2333,6 +2318,19 @@
             }
           ],
           "shards": 12
+        }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11"
+            }
+          ]
         }
       }
     ]
@@ -2434,19 +2432,6 @@
           ]
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ]
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -3389,13 +3374,9 @@
             }
           ]
         },
-        "test": "wtf_unittests"
-      }
-    ],
-    "isolated_scripts": [
+        "test": "webkit_unit_tests"
+      },
       {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3404,8 +3385,11 @@
               "os": "Mac-10.12.6"
             }
           ]
-        }
-      },
+        },
+        "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
       {
         "args": [
           "--test-type=integration"
@@ -3561,7 +3545,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -3579,6 +3563,19 @@
             }
           ],
           "shards": 12
+        }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
         }
       }
     ]
@@ -3680,19 +3677,6 @@
           ]
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13"
-            }
-          ]
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -4552,13 +4536,9 @@
             }
           ]
         },
-        "test": "wtf_unittests"
-      }
-    ],
-    "isolated_scripts": [
+        "test": "webkit_unit_tests"
+      },
       {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4567,8 +4547,11 @@
               "os": "Mac-10.13"
             }
           ]
-        }
-      },
+        },
+        "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
       {
         "args": [
           "--test-type=integration"
@@ -4705,7 +4688,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -4724,6 +4707,19 @@
           ],
           "shards": 12
         }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13"
+            }
+          ]
+        }
       }
     ],
     "scripts": [
@@ -4734,7 +4730,7 @@
       },
       {
         "name": "webkit_lint",
-        "script": "blink_lint_expectations.py",
+        "script": "webkit_lint.py",
         "swarming": {}
       }
     ]
@@ -4836,19 +4832,6 @@
           ]
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13"
-            }
-          ]
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -5708,13 +5691,9 @@
             }
           ]
         },
-        "test": "wtf_unittests"
-      }
-    ],
-    "isolated_scripts": [
+        "test": "webkit_unit_tests"
+      },
       {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5723,8 +5702,11 @@
               "os": "Mac-10.13"
             }
           ]
-        }
-      },
+        },
+        "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
@@ -5837,7 +5819,7 @@
           "--num-retries=3",
           "--debug"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -5856,6 +5838,19 @@
           ],
           "shards": 12
         }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13"
+            }
+          ]
+        }
       }
     ]
   },
@@ -5865,7 +5860,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"

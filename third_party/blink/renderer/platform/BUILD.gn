@@ -2105,7 +2105,7 @@ blink_text_codec_fuzzer("WINDOWS_1252") {
 
 # NOTE: These are legacy unit tests and tests that require a Platform
 # object. Do not add more unless the test requires a Platform object.
-# These tests are a part of the blink_unittests binary.
+# These tests are a part of the webkit_unit_tests binary.
 jumbo_source_set("unit_tests") {
   testonly = true
   visibility = []

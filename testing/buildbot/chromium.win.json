@@ -7,7 +7,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -83,13 +83,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -695,6 +688,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "wm_unittests"
       },
       {
@@ -711,13 +710,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       {
         "args": [
           "--test-type=integration"
@@ -820,6 +812,13 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "views_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -946,19 +945,6 @@
           ]
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -2099,6 +2085,18 @@
             }
           ]
         },
+        "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "wm_unittests"
       },
       {
@@ -2252,19 +2250,6 @@
           ]
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -3321,6 +3306,18 @@
             }
           ]
         },
+        "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "wm_unittests"
       },
       {
@@ -3349,19 +3346,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ]
-        }
-      },
       {
         "experiment_percentage": 100,
         "isolate_name": "content_shell_crash_test",
@@ -3462,6 +3446,19 @@
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "views_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -3595,13 +3592,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -4154,6 +4144,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "wm_unittests"
       },
       {
@@ -4170,13 +4166,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       {
         "args": [
           "--test-type=integration"
@@ -4287,7 +4276,7 @@
         "args": [
           "--num-retries=3"
         ],
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -4300,12 +4289,19 @@
           "can_use_on_swarming_builders": true,
           "shards": 12
         }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
       }
     ],
     "scripts": [
       {
         "name": "webkit_lint",
-        "script": "blink_lint_expectations.py"
+        "script": "webkit_lint.py"
       }
     ]
   },
@@ -4364,13 +4360,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -4977,6 +4966,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "wm_unittests"
       },
       {
@@ -4993,13 +4988,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "isolate_name": "blink_python_tests",
-        "name": "blink_python_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        }
-      },
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
@@ -5093,7 +5081,7 @@
           "60000"
         ],
         "experiment_percentage": 100,
-        "isolate_name": "blink_web_tests_exparchive",
+        "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"
@@ -5110,6 +5098,13 @@
             }
           ],
           "shards": 12
+        }
+      },
+      {
+        "isolate_name": "webkit_python_tests",
+        "name": "webkit_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
         }
       }
     ]

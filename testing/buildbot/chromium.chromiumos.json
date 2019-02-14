@@ -481,13 +481,6 @@
         "test": "blink_platform_unittests"
       },
       {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1086,6 +1079,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "wm_unittests"
       },
       {
@@ -1176,13 +1175,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "blink_platform_unittests"
-      },
-      {
-        "name": "webkit_unit_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_unittests"
       },
       {
         "swarming": {
@@ -1783,6 +1775,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "wayland_client_perftests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "webkit_unit_tests"
       },
       {
         "swarming": {
