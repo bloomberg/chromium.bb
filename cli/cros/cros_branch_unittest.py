@@ -277,72 +277,85 @@ class ManifestTestCase(cros_test_lib.TestCase):
   provides convenience methods for reading from those manifests.
   """
 
-  def NameFor(self, pid):
+  def NameFor(self, pid, manifest=None):
     """Return the test project's name.
 
     Args:
       pid: The test project ID (e.g. 'chromiumos-overlay').
+      manifest: The repo_manifest.Manifest to read from.
+          Uses full_manifest if None.
 
     Returns:
       Name of the project, e.g. 'chromeos/manifest-internal'.
     """
-    return self.ProjectFor(pid).name
+    return self.ProjectFor(pid, manifest).name
 
-  def PathFor(self, pid):
+  def PathFor(self, pid, manifest=None):
     """Return the test project's path.
 
     Args:
       pid: The test project ID (e.g. 'chromiumos-overlay').
+      manifest: The repo_manifest.Manifest to read from.
+          Uses full_manifest if None.
 
     Returns:
       Path to the project, always of the form '<test path>/<project ID>'.
     """
-    return self.ProjectFor(pid).Path()
+    return self.ProjectFor(pid, manifest).Path()
 
-  def PathListRegexFor(self, pid):
+  def PathListRegexFor(self, pid, manifest=None):
     """Return the test project's path as a ListRegex.
 
     Args:
       pid: The test project ID (e.g. 'chromiumos-overlay').
+      manifest: The repo_manifest.Manifest to read from.
+          Uses full_manifest if None.
 
     Returns:
       partial_mock.ListRegex for project path.
     """
-    return partial_mock.ListRegex('.*/%s' % self.PathFor(pid))
+    return partial_mock.ListRegex('.*/%s' % self.PathFor(pid, manifest))
 
-  def RevisionFor(self, pid):
+  def RevisionFor(self, pid, manifest=None):
     """Return the test project's revision.
 
     Args:
       pid: The test project ID (e.g. 'chromiumos-overlay')
+      manifest: The repo_manifest.Manifest to read from.
+          Uses full_manifest if None.
 
     Returns:
       Reivision for the project, always of form 'refs/heads/<project ID>'.
     """
-    return self.ProjectFor(pid).Revision()
+    return self.ProjectFor(pid, manifest).Revision()
 
-  def RemoteFor(self, pid):
+  def RemoteFor(self, pid, manifest=None):
     """Return the test project's remote name.
 
     Args:
       pid: The test project ID (e.g. 'chromiumos-overlay')
+      manifest: The repo_manifest.Manifest to read from.
+          Uses full_manifest if None.
 
     Returns:
       Remote name for the project, e.g. 'cros'.
     """
-    return self.ProjectFor(pid).Remote().GitName()
+    return self.ProjectFor(pid, manifest).Remote().GitName()
 
-  def ProjectFor(self, pid):
+  def ProjectFor(self, pid, manifest=None):
     """Return the test project's repo_manifest.Project.
 
     Args:
       pid: The test project ID (e.g. 'chromiumos-overlay')
+      manifest: The repo_manifest.Manifest to read from.
+          Uses full_manifest if None.
 
     Returns:
       Corresponding repo_manifest.Project.
     """
+    manifest = manifest or self.full_manifest
     # Project paths always end with the project ID, so use that as key.
-    match = [p for p in self.full_manifest.Projects() if p.Path().endswith(pid)]
+    match = [p for p in manifest.Projects() if p.Path().endswith(pid)]
     assert len(match) == 1
     return match[0]
 
@@ -1111,6 +1124,17 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(path)
     return path
 
+  def CreateSnapshotDir(self, path):
+    """Create the directory that will contain the snapshot for the given path.
+
+    Args:
+      path: Path to directory to snapshot.
+
+    Returns:
+      Absolute path to new snapshot directory.
+    """
+    return self.CreateTempDir('%s-snapshot' % os.path.basename(path))
+
   def GetRemotePath(self, project):
     """Get the path to the remote project repo.
 
@@ -1121,6 +1145,18 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
       Absolute path to remote project repository.
     """
     return os.path.join(project.Remote().fetch, project.name)
+
+  def GetSnapshotPath(self, project):
+    """Create a path to contain a snapshot of the given path.
+
+    Args:
+      project: repo_manifest.Project to get snapshot path for.
+
+    Returns:
+      Absolute path to the project snapshot.
+    """
+    return os.path.join(
+        self.CreateSnapshotDir(project.Remote().fetch), project.name)
 
   def CommitRemoteProject(self, git_repo, message):
     """Run `git commit -a` in the given repo.
@@ -1226,7 +1262,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     Returns:
       Path to the snapshot root.
     """
-    snapshot = self.CreateTempDir('%-snapshot' % os.path.basename(path))
+    snapshot = self.CreateSnapshotDir(path)
     osutils.EmptyDir(snapshot)
     osutils.CopyDirContents(path, snapshot)
     return snapshot
@@ -1299,6 +1335,68 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
   def tearDown(self):
     osutils.EmptyDir(self.tempdir)
+
+  def AssertProjectBranchUnchanged(self, pid, branch):
+    """Assert the project branch has not changed since the last snapshot.
+
+    Args:
+      pid: Project ID.
+      branch: Name of the branch on the project.
+    """
+    proj = self.ProjectFor(pid)
+    expected = git.GetGitRepoRevision(self.GetSnapshotPath(proj), branch=branch)
+    actual = git.GetGitRepoRevision(self.GetRemotePath(proj), branch=branch)
+    self.assertEqual(actual, expected)
+
+  def AssertProjectBranchMatchesManifest(self, pid, branch, manifest):
+    """Assert project branch has the manifest revision as an ancestor.
+
+    The expected ancestor revision is read from the snapshot to guarantee
+    there is not git corruption.
+
+    Args:
+      pid: The project ID.
+      branch: The project branch to validate.
+      manifest: The manifest containing the expected project branch point.
+    """
+    project = self.ProjectFor(pid, manifest)
+
+    snapshot_path = self.GetSnapshotPath(project)
+    ancestor = git.GetGitRepoRevision(snapshot_path, branch=project.Revision())
+
+    remote_path = self.GetRemotePath(project)
+    descendent = git.GetGitRepoRevision(remote_path, branch=branch)
+
+    self.assertTrue(git.IsReachable(remote_path, ancestor, descendent))
+
+  def AssertCrosBranchMatchesManifest(self, branch, manifest):
+    """Assert the chromiumos branch originated from the manifest.
+
+    This involves validating that each project branch has as its ancestor
+    the revision specified in the manifest. The pre-branch snapshot serves
+    as the ground truth.
+
+    For pinned and TOT projects, this function asserts that the pinned
+    and master branches were not touched.
+
+    Args:
+      branch: Name of the chromiumos branch.
+      manifest: repo_manifest.Manifest with which project branch revisions
+          should align.
+    """
+    for pid in SINGLE_CHECKOUT_PROJECTS:
+      self.AssertProjectBranchMatchesManifest(pid, branch, manifest)
+
+    for pid in MULTI_CHECKOUT_PROJECTS:
+      self.AssertProjectBranchMatchesManifest(
+          pid, '%s-%s' % (branch, pid), manifest)
+
+    for pid in PINNED_PROJECTS:
+      self.AssertProjectBranchUnchanged(pid, 'master')
+      self.AssertProjectBranchUnchanged(pid, pid)
+
+    for pid in TOT_PROJECTS:
+      self.AssertProjectBranchUnchanged(pid, 'master')
 
   def AssertProjectBranches(self, pid, branches):
     """Assert project has the expected remote branches.
@@ -1457,6 +1555,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--custom', 'new-branch'])
 
     self.AssertCrosBranches(['old-branch', 'new-branch'])
+    self.AssertCrosBranchMatchesManifest('new-branch', self.full_manifest)
     self.AssertManifestsRepaired('new-branch')
     self.AssertVersion('new-branch', 12, 3, 1, 0)
 
@@ -1487,6 +1586,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         input='yes')
 
     self.AssertCrosBranches(['old-branch', 'release-R12-3.B'])
+    self.AssertCrosBranchMatchesManifest('release-R12-3.B', self.full_manifest)
     self.AssertManifestsRepaired('release-R12-3.B')
     self.AssertVersion('release-R12-3.B', 12, 3, 1, 0)
     self.AssertVersion('master', 13, 4, 0, 0)
@@ -1504,6 +1604,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--custom', 'old-branch'])
 
     self.AssertCrosBranches(['old-branch'])
+    self.AssertCrosBranchMatchesManifest('old-branch', self.full_manifest)
     self.AssertManifestsRepaired('old-branch')
     self.AssertVersion('old-branch', 12, 3, 1, 0)
 
@@ -1521,7 +1622,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         error_code_ok=True,
         capture_output=True)
 
-    self.assertIn('ERROR: Branch old-branch exists', result.error)
+    self.assertIn('Branch old-branch exists', result.error)
     self.AssertNoRemoteDiff()
 
   def testCreateExistingVersion(self):
@@ -1557,6 +1658,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          'old-branch', 'new-branch'])
 
     self.AssertCrosBranches(['new-branch'])
+    self.AssertCrosBranchMatchesManifest(
+        'new-branch', self.full_branched_manifest)
     self.AssertManifestsRepaired('new-branch')
     self.AssertVersion('new-branch', 12, 2, 1, 0)
 
@@ -1589,6 +1692,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
     # Assert everything is as we expect.
     self.AssertCrosBranches(['new-branch', 'old-branch'])
+    self.AssertCrosBranchMatchesManifest('new-branch', self.full_manifest)
     self.AssertVersion('new-branch', 12, 3, 1, 0)
     self.AssertVersion('old-branch', 12, 2, 1, 0)
 
@@ -1604,6 +1708,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          'old-branch', 'new-branch'])
 
     self.AssertCrosBranches(['new-branch'])
+    self.AssertCrosBranchMatchesManifest(
+        'new-branch', self.full_branched_manifest)
     self.AssertManifestsRepaired('new-branch')
     self.AssertVersion('new-branch', 12, 2, 1, 0)
 
@@ -1620,7 +1726,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         error_code_ok=True,
         capture_output=True)
 
-    self.assertIn('ERROR: Branch old-branch exists', result.error)
+    self.assertIn('Branch old-branch exists', result.error)
     self.AssertNoRemoteDiff()
 
   def testDelete(self):
