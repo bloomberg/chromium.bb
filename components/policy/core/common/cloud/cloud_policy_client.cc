@@ -72,9 +72,9 @@ LicenseType TranslateLicenseType(em::LicenseType type) {
 
 void ExtractLicenseMap(const em::CheckDeviceLicenseResponse& license_response,
                        CloudPolicyClient::LicenseMap& licenses) {
-  for (int i = 0; i < license_response.license_availability_size(); i++) {
+  for (int i = 0; i < license_response.license_availabilities_size(); i++) {
     const em::LicenseAvailability& license =
-        license_response.license_availability(i);
+        license_response.license_availabilities(i);
     if (!license.has_license_type() || !license.has_available_licenses())
       continue;
     auto license_type = TranslateLicenseType(license.license_type());
@@ -383,7 +383,7 @@ void CloudPolicyClient::FetchPolicy() {
   // Build policy fetch requests.
   em::DevicePolicyRequest* policy_request = request->mutable_policy_request();
   for (const auto& type_to_fetch : types_to_fetch_) {
-    em::PolicyFetchRequest* fetch_request = policy_request->add_request();
+    em::PolicyFetchRequest* fetch_request = policy_request->add_requests();
     fetch_request->set_policy_type(type_to_fetch.first);
     if (!type_to_fetch.second.empty())
       fetch_request->set_settings_entity_id(type_to_fetch.second);
@@ -416,7 +416,7 @@ void CloudPolicyClient::FetchPolicy() {
              state_keys_to_upload_.begin());
          key != state_keys_to_upload_.end();
          ++key) {
-      key_update_request->add_server_backed_state_key(*key);
+      key_update_request->add_server_backed_state_keys(*key);
     }
   }
 
@@ -487,7 +487,7 @@ void CloudPolicyClient::FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth,
       mutable_service_api_access_request();
   request->set_oauth2_client_id(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
+  request->add_auth_scopes(GaiaConstants::kAnyApiOAuth2Scope);
   request->set_device_type(em::DeviceServiceApiAccessRequest::CHROME_OS);
 
   policy_fetch_request_job_->Start(base::AdaptCallbackForRepeating(
@@ -924,7 +924,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS) {
     if (!response.has_policy_response() ||
-        response.policy_response().response_size() == 0) {
+        response.policy_response().responses_size() == 0) {
       LOG(WARNING) << "Empty policy response.";
       status = DM_STATUS_RESPONSE_DECODING_ERROR;
     }
@@ -935,8 +935,8 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     const em::DevicePolicyResponse& policy_response =
         response.policy_response();
     responses_.clear();
-    for (int i = 0; i < policy_response.response_size(); ++i) {
-      const em::PolicyFetchResponse& response = policy_response.response(i);
+    for (int i = 0; i < policy_response.responses_size(); ++i) {
+      const em::PolicyFetchResponse& response = policy_response.responses(i);
       em::PolicyData policy_data;
       if (!policy_data.ParseFromString(response.policy_data()) ||
           !policy_data.IsInitialized() ||

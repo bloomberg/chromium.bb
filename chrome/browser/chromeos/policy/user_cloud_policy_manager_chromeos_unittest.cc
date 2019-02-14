@@ -194,7 +194,7 @@ class UserCloudPolicyManagerChromeOSTest
     policy_data_.set_device_id("id987");
     policy_data_.set_username("user@example.com");
     em::PolicyFetchResponse* policy_response =
-        policy_blob_.mutable_policy_response()->add_response();
+        policy_blob_.mutable_policy_response()->add_responses();
     ASSERT_TRUE(policy_data_.SerializeToString(
         policy_response->mutable_policy_data()));
 

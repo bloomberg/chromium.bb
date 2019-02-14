@@ -73,7 +73,7 @@ TEST_F(SingleAppInstallEventLogTest, SerializeEmpty) {
 
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  EXPECT_EQ(0, report_.log_size());
+  EXPECT_EQ(0, report_.logs_size());
 }
 
 // Add a log entry. Verify that the entry is serialized correctly.
@@ -87,11 +87,11 @@ TEST_F(SingleAppInstallEventLogTest, AddAndSerialize) {
 
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(1, report_.log_size());
+  ASSERT_EQ(1, report_.logs_size());
   std::string original_event;
   event.SerializeToString(&original_event);
   std::string log_event;
-  report_.log(0).SerializeToString(&log_event);
+  report_.logs(0).SerializeToString(&log_event);
   EXPECT_EQ(original_event, log_event);
 }
 
@@ -109,9 +109,9 @@ TEST_F(SingleAppInstallEventLogTest, SerializeAndClear) {
 
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(10, report_.log_size());
+  ASSERT_EQ(10, report_.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i, report_.log(i).timestamp());
+    EXPECT_EQ(i, report_.logs(i).timestamp());
   }
 
   log_->ClearSerialized();
@@ -121,7 +121,7 @@ TEST_F(SingleAppInstallEventLogTest, SerializeAndClear) {
   report_.Clear();
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  EXPECT_EQ(0, report_.log_size());
+  EXPECT_EQ(0, report_.logs_size());
 }
 
 // Add 10 log entries. Serialize the log. Add 10 more log entries. Clear the
@@ -151,9 +151,9 @@ TEST_F(SingleAppInstallEventLogTest, SerializeAddAndClear) {
 
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(10, report_.log_size());
+  ASSERT_EQ(10, report_.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i + 10, report_.log(i).timestamp());
+    EXPECT_EQ(i + 10, report_.logs(i).timestamp());
   }
 }
 
@@ -173,9 +173,9 @@ TEST_F(SingleAppInstallEventLogTest, OverflowSerializeAndClear) {
 
   log_->Serialize(&report_);
   VerifyHeader(true /* incomplete */);
-  ASSERT_EQ(kLogCapacity, report_.log_size());
+  ASSERT_EQ(kLogCapacity, report_.logs_size());
   for (int i = 0; i < kLogCapacity; ++i) {
-    EXPECT_EQ(i + 1, report_.log(i).timestamp());
+    EXPECT_EQ(i + 1, report_.logs(i).timestamp());
   }
 
   log_->ClearSerialized();
@@ -185,7 +185,7 @@ TEST_F(SingleAppInstallEventLogTest, OverflowSerializeAndClear) {
   report_.Clear();
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  EXPECT_EQ(0, report_.log_size());
+  EXPECT_EQ(0, report_.logs_size());
 }
 
 // Add more entries than the log has capacity for. Serialize the log. Add one
@@ -215,8 +215,8 @@ TEST_F(SingleAppInstallEventLogTest, OverflowSerializeAddAndClear) {
   report_.Clear();
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(1, report_.log_size());
-  EXPECT_EQ(kLogCapacity + 1, report_.log(0).timestamp());
+  ASSERT_EQ(1, report_.logs_size());
+  EXPECT_EQ(kLogCapacity + 1, report_.logs(0).timestamp());
 }
 
 // Add more entries than the log has capacity for. Serialize the log. Add
@@ -249,9 +249,9 @@ TEST_F(SingleAppInstallEventLogTest, OverflowSerializeFillAndClear) {
   report_.Clear();
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(kLogCapacity, report_.log_size());
+  ASSERT_EQ(kLogCapacity, report_.logs_size());
   for (int i = 0; i < kLogCapacity; ++i) {
-    EXPECT_EQ(i + kLogCapacity, report_.log(i).timestamp());
+    EXPECT_EQ(i + kLogCapacity, report_.logs(i).timestamp());
   }
 }
 
@@ -285,9 +285,9 @@ TEST_F(SingleAppInstallEventLogTest, OverflowSerializeOverflowAndClear) {
   report_.Clear();
   log_->Serialize(&report_);
   VerifyHeader(true /* incomplete */);
-  ASSERT_EQ(kLogCapacity, report_.log_size());
+  ASSERT_EQ(kLogCapacity, report_.logs_size());
   for (int i = 0; i < kLogCapacity; ++i) {
-    EXPECT_EQ(i + kLogCapacity + 1, report_.log(i).timestamp());
+    EXPECT_EQ(i + kLogCapacity + 1, report_.logs(i).timestamp());
   }
 }
 
@@ -318,8 +318,8 @@ TEST_F(SingleAppInstallEventLogTest, FailStore) {
 
   log_->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(1, report_.log_size());
-  EXPECT_EQ(0, report_.log(0).timestamp());
+  ASSERT_EQ(1, report_.logs_size());
+  EXPECT_EQ(0, report_.logs(0).timestamp());
 }
 
 // Store an empty log. Load the log. Verify that that the log contents are
@@ -339,7 +339,7 @@ TEST_F(SingleAppInstallEventLogTest, StoreEmptyAndLoad) {
 
   log->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(0, report_.log_size());
+  ASSERT_EQ(0, report_.logs_size());
 }
 
 // Populate and store a log. Load the log. Verify that that the log contents are
@@ -366,9 +366,9 @@ TEST_F(SingleAppInstallEventLogTest, StoreAndLoad) {
 
   log->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(10, report_.log_size());
+  ASSERT_EQ(10, report_.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i, report_.log(i).timestamp());
+    EXPECT_EQ(i, report_.logs(i).timestamp());
   }
 }
 
@@ -429,9 +429,9 @@ TEST_F(SingleAppInstallEventLogTest, SerializeStoreLoadAndClear) {
   report_.Clear();
   log->Serialize(&report_);
   VerifyHeader(false /* incomplete */);
-  ASSERT_EQ(10, report_.log_size());
+  ASSERT_EQ(10, report_.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i, report_.log(i).timestamp());
+    EXPECT_EQ(i, report_.logs(i).timestamp());
   }
 }
 
@@ -471,9 +471,9 @@ TEST_F(SingleAppInstallEventLogTest, LoadTruncated) {
   report_.Clear();
   log->Serialize(&report_);
   VerifyHeader(true /* incomplete */);
-  ASSERT_EQ(10, report_.log_size());
+  ASSERT_EQ(10, report_.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i, report_.log(i).timestamp());
+    EXPECT_EQ(i, report_.logs(i).timestamp());
   }
 }
 

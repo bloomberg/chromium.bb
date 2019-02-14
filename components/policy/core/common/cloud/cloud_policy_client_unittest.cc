@@ -164,13 +164,14 @@ class CloudPolicyClientTest : public testing::Test {
         cert_based_register_request->mutable_signed_request());
 
     em::PolicyFetchRequest* policy_fetch_request =
-        policy_request_.mutable_policy_request()->add_request();
+        policy_request_.mutable_policy_request()->add_requests();
     policy_fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
     policy_fetch_request->set_signature_type(em::PolicyFetchRequest::SHA1_RSA);
     policy_fetch_request->set_verification_key_hash(kPolicyVerificationKeyHash);
     policy_fetch_request->set_device_dm_token(kDeviceDMToken);
-    policy_response_.mutable_policy_response()->add_response()->set_policy_data(
-        CreatePolicyData("fake-policy-data"));
+    policy_response_.mutable_policy_response()
+        ->add_responses()
+        ->set_policy_data(CreatePolicyData("fake-policy-data"));
 
     registration_response_.mutable_register_response()->
         set_device_management_token(kDMToken);
@@ -251,12 +252,12 @@ class CloudPolicyClientTest : public testing::Test {
     device_license_response->set_license_selection_mode(
         em::CheckDeviceLicenseResponse_LicenseSelectionMode_USER_SELECTION);
     em::LicenseAvailability* license_one =
-        device_license_response->add_license_availability();
+        device_license_response->add_license_availabilities();
     license_one->mutable_license_type()->set_license_type(
         em::LicenseType_LicenseTypeEnum_CDM_PERPETUAL);
     license_one->set_available_licenses(10);
     em::LicenseAvailability* license_two =
-        device_license_response->add_license_availability();
+        device_license_response->add_license_availabilities();
     license_two->mutable_license_type()->set_license_type(
         em::LicenseType_LicenseTypeEnum_KIOSK);
     license_two->set_available_licenses(0);
@@ -553,7 +554,7 @@ class CloudPolicyClientTest : public testing::Test {
   void CheckPolicyResponse() {
     ASSERT_TRUE(client_->GetPolicyFor(policy_type_, std::string()));
     EXPECT_THAT(*client_->GetPolicyFor(policy_type_, std::string()),
-                MatchProto(policy_response_.policy_response().response(0)));
+                MatchProto(policy_response_.policy_response().responses(0)));
   }
 
   std::string CreatePolicyData(const std::string& policy_value) {
@@ -848,8 +849,8 @@ TEST_F(CloudPolicyClientTest, PolicyUpdate) {
   client_->FetchPolicy();
   CheckPolicyResponse();
 
-  policy_response_.mutable_policy_response()->clear_response();
-  policy_response_.mutable_policy_response()->add_response()->set_policy_data(
+  policy_response_.mutable_policy_response()->clear_responses();
+  policy_response_.mutable_policy_response()->add_responses()->set_policy_data(
       CreatePolicyData("updated-fake-policy-data"));
   ExpectPolicyFetch(kDMToken);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
@@ -866,7 +867,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
   client_->set_last_policy_timestamp(timestamp);
   client_->set_public_key_version(42);
   em::PolicyFetchRequest* policy_fetch_request =
-      policy_request_.mutable_policy_request()->mutable_request(0);
+      policy_request_.mutable_policy_request()->mutable_requests(0);
   policy_fetch_request->set_timestamp(timestamp.ToJavaTime());
   policy_fetch_request->set_public_key_version(42);
 
@@ -883,7 +884,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidation) {
   client_->SetInvalidationInfo(12345, "12345");
   EXPECT_EQ(previous_version, client_->fetched_invalidation_version());
   em::PolicyFetchRequest* policy_fetch_request =
-      policy_request_.mutable_policy_request()->mutable_request(0);
+      policy_request_.mutable_policy_request()->mutable_requests(0);
   policy_fetch_request->set_invalidation_version(12345);
   policy_fetch_request->set_invalidation_payload("12345");
 
@@ -936,9 +937,9 @@ TEST_F(CloudPolicyClientTest, BadPolicyResponse) {
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
   EXPECT_EQ(DM_STATUS_RESPONSE_DECODING_ERROR, client_->status());
 
-  policy_response_.mutable_policy_response()->add_response()->set_policy_data(
+  policy_response_.mutable_policy_response()->add_responses()->set_policy_data(
       CreatePolicyData("fake-policy-data"));
-  policy_response_.mutable_policy_response()->add_response()->set_policy_data(
+  policy_response_.mutable_policy_response()->add_responses()->set_policy_data(
       CreatePolicyData("excess-fake-policy-data"));
   ExpectPolicyFetch(kDMToken);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
@@ -1016,7 +1017,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
                                           std::string());
   // Copy the user policy fetch request.
   expected_responses[key].CopyFrom(
-      policy_response_.policy_response().response(0));
+      policy_response_.policy_response().responses(0));
   expected_namespaces.insert(key);
   key.first = dm_protocol::kChromeExtensionPolicyType;
   expected_namespaces.insert(key);
@@ -1026,7 +1027,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
     policy_data.set_policy_type(key.first);
     policy_data.set_settings_entity_id(key.second);
     expected_responses[key].set_policy_data(policy_data.SerializeAsString());
-    policy_response_.mutable_policy_response()->add_response()->CopyFrom(
+    policy_response_.mutable_policy_response()->add_responses()->CopyFrom(
         expected_responses[key]);
   }
 
@@ -1047,9 +1048,9 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
   ASSERT_TRUE(policy_request_.has_policy_request());
   const em::DevicePolicyRequest& policy_request =
       policy_request_.policy_request();
-  ASSERT_EQ(2, policy_request.request_size());
-  for (int i = 0; i < policy_request.request_size(); ++i) {
-    const em::PolicyFetchRequest& fetch_request = policy_request.request(i);
+  ASSERT_EQ(2, policy_request.requests_size());
+  for (int i = 0; i < policy_request.requests_size(); ++i) {
+    const em::PolicyFetchRequest& fetch_request = policy_request.requests(i);
     ASSERT_TRUE(fetch_request.has_policy_type());
     EXPECT_FALSE(fetch_request.has_settings_entity_id());
     std::pair<std::string, std::string> key(fetch_request.policy_type(),
@@ -1481,7 +1482,7 @@ TEST_F(CloudPolicyClientTest, UploadAppInstallReportSupersedesPending) {
   // Starting another app push-install report upload should cancel the pending
   // one.
   request.mutable_app_install_report_request()
-      ->add_app_install_report()
+      ->add_app_install_reports()
       ->set_package(kPackageName);
   ExpectUploadAppInstallReport(request, &async_job);
   EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
