@@ -672,3 +672,85 @@ testcase.checkPlayFilesContextMenu = function() {
 testcase.checkLinuxFilesContextMenu = function() {
   return checkMyFilesRootItemContextMenu('Linux files');
 };
+
+/**
+ * Checks the unmount command is visible on the roots context menu for a
+ * specified removable directory entry.
+ */
+async function checkUnmountRootsContextMenu(entryLabel) {
+  // Query the element by label, and wait for the contextmenu attribute which
+  // shows the menu has been set up.
+  const query = `#directory-tree [entry-label="${entryLabel}"][contextmenu]`;
+
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount removable volumes.
+  await sendTestMessage({name: 'mountFakePartitions'});
+
+  // Wait for removable volume to appear in the directory tree.
+  const removable = await remoteCall.waitForElement(appId, query);
+
+  // Right-click on the removable volume.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, [query]));
+
+  // Wait for the context menu to appear.
+  await remoteCall.waitForElement(appId, '#roots-context-menu:not([hidden])');
+
+  // Check the unmount command is visible in the context menu.
+  const commandQuery =
+      '#roots-context-menu:not([hidden]) [command="#unmount"]:not([hidden])';
+  await remoteCall.waitForElement(appId, commandQuery);
+}
+
+/**
+ * Checks that the unmount command is shown in the context menu for a removable
+ * root with child partitions.
+ */
+testcase.checkRemovableRootContextMenu = async function() {
+  return checkUnmountRootsContextMenu('PARTITION_DRIVE_LABEL');
+};
+
+/**
+ * Checks that the unmount command is shown in the context menu for a USB.
+ */
+testcase.checkUsbContextMenu = async function() {
+  return checkUnmountRootsContextMenu('singleUSB');
+};
+
+/**
+ * Checks the roots context menu does not appear for a removable partition,
+ * The directory tree context menu should be visible and display the new-folder
+ * command.
+ */
+testcase.checkPartitionContextMenu = async function() {
+  // Query the element by label, and wait for the contextmenu attribute which
+  // shows the menu has been set up.
+  const partitionQuery = '#directory-tree .tree-children ' +
+      '[entry-label="partition-1"][contextmenu] ' +
+      '[volume-type-icon="removable"]';
+
+  // Open Files app on local downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Mount removable volumes.
+  await sendTestMessage({name: 'mountFakePartitions'});
+
+  // Wait for partition-1 to appear in the directory tree.
+  const removable = await remoteCall.waitForElement(appId, partitionQuery);
+
+  // Right-click on the partition.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, [partitionQuery]));
+
+  // Check the root context menu is hidden so there is no option to eject.
+  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
+
+  // Check the command to create a new-folder is visible from the directory
+  // tree context menu.
+  await remoteCall.waitForElement(
+      appId,
+      '#directory-tree-context-menu:not([hidden]) ' +
+          '[command="#new-folder"]:not([hidden])');
+};

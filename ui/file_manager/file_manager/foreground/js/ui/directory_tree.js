@@ -677,6 +677,15 @@ DirectoryItem.prototype.setupEjectButton_ = function(rowElement) {
   ejectButton.appendChild(ripple);
 };
 
+/**
+ * Set up the context menu for directory items.
+ * @param {!cr.ui.Menu} menu Menu to be set.
+ * @private
+ */
+DirectoryItem.prototype.setContextMenu_ = function(menu) {
+  cr.ui.contextMenuHandler.setContextMenu(this, menu);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // SubDirectoryItem
 
@@ -732,7 +741,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
 
   // Sets up context menu of the item.
   if (tree.contextMenuForSubitems) {
-    cr.ui.contextMenuHandler.setContextMenu(item, tree.contextMenuForSubitems);
+    item.setContextMenu_(tree.contextMenuForSubitems);
   }
 
   // Populates children now if needed.
@@ -819,6 +828,12 @@ function EntryListItem(rootType, modelItem, tree) {
   }
   icon.classList.add('item-icon');
   icon.setAttribute('root-type-icon', rootType);
+
+  // Sets up context menu of the item.
+  if (tree.contextMenuForRootItems) {
+    item.setContextMenu_(tree.contextMenuForRootItems);
+  }
+
   return item;
 }
 
@@ -1007,15 +1022,6 @@ VolumeItem.prototype = {
   get modelItem() {
     return this.modelItem_;
   }
-};
-
-/**
- * Sets the context menu for volume items.
- * @param {!cr.ui.Menu} menu Menu to be set.
- * @private
- */
-VolumeItem.prototype.setContextMenu_ = function(menu) {
-  cr.ui.contextMenuHandler.setContextMenu(this, menu);
 };
 
 /**
