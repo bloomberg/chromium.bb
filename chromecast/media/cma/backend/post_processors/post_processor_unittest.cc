@@ -307,9 +307,9 @@ void TestPassthrough(AudioPostProcessor* pp, int sample_rate) {
 PostProcessorTest::PostProcessorTest() : sample_rate_(GetParam()) {}
 PostProcessorTest::~PostProcessorTest() = default;
 
-INSTANTIATE_TEST_CASE_P(SampleRates,
-                        PostProcessorTest,
-                        ::testing::Values(44100, 48000));
+INSTANTIATE_TEST_SUITE_P(SampleRates,
+                         PostProcessorTest,
+                         ::testing::Values(44100, 48000));
 
 }  // namespace post_processor_test
 }  // namespace media

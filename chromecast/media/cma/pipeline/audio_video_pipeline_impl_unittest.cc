@@ -361,7 +361,7 @@ TEST_P(AudioVideoPipelineImplTest, FullCycle) {
 };
 
 // Test all three types of pipeline: audio-only, video-only, audio-video.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MediaPipelineImplTests,
     AudioVideoPipelineImplTest,
     ::testing::Values(AudioVideoTuple(true, false),   // Audio only.
