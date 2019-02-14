@@ -202,6 +202,7 @@ class AdsPageLoadMetricsObserver
 
   size_t page_bytes_ = 0u;
   size_t page_network_bytes_ = 0u;
+  size_t page_same_origin_bytes_ = 0u;
   bool committed_ = false;
 
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,

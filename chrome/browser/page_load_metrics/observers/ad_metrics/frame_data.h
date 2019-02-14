@@ -9,6 +9,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/origin.h"
 
 // Store information received for a frame on the page. FrameData is meant
 // to represent a frame along with it's entire subtree.
@@ -87,6 +88,8 @@ class FrameData {
 
   size_t frame_network_bytes() const { return frame_network_bytes_; }
 
+  size_t same_origin_bytes() const { return same_origin_bytes_; }
+
   UserActivationStatus user_activation_status() const {
     return user_activation_status_;
   }
@@ -108,6 +111,9 @@ class FrameData {
   // Total bytes used to load resources on the page, including headers.
   size_t frame_bytes_;
   size_t frame_network_bytes_;
+
+  // The number of bytes that are same origin to the root ad frame.
+  size_t same_origin_bytes_;
   const FrameTreeNodeId frame_tree_node_id_;
   OriginStatus origin_status_;
   bool frame_navigated_;
@@ -115,6 +121,7 @@ class FrameData {
   bool is_display_none_;
   FrameVisibility visibility_;
   gfx::Size frame_size_;
+  url::Origin origin_;
 
   // Indicates whether or not this frame would have triggered a size
   // intervention.

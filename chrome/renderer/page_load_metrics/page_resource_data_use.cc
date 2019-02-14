@@ -44,6 +44,7 @@ void PageResourceDataUse::DidStartResponse(
   is_primary_frame_resource_ =
       resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
       resource_type == content::RESOURCE_TYPE_SUB_FRAME;
+  origin_ = url::Origin::Create(response_url);
 }
 
 void PageResourceDataUse::DidReceiveTransferSizeUpdate(
@@ -105,6 +106,7 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->is_secure_scheme = is_secure_scheme_;
   resource_data_update->proxy_used = proxy_used_;
   resource_data_update->is_primary_frame_resource = is_primary_frame_resource_;
+  resource_data_update->origin = origin_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics

@@ -111,6 +111,7 @@ AdsPageLoadMetricsObserver::OnStart(
   // filtering isn't enabled.
   if (observer_manager)
     subresource_observer_.Add(observer_manager);
+  web_contents_ = navigation_handle->GetWebContents();
   return CONTINUE_OBSERVING;
 }
 
@@ -121,7 +122,6 @@ AdsPageLoadMetricsObserver::OnCommit(
   DCHECK(ad_frames_data_.empty());
 
   committed_ = true;
-  web_contents_ = navigation_handle->GetWebContents();
 
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] = nullptr;
@@ -424,11 +424,19 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
   }
 
+  bool is_same_origin_to_main_frame =
+      web_contents_->GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
+          resource->origin);
   // |delta_bytes| only includes bytes used by the network.
   page_bytes_ += resource->delta_bytes;
   page_network_bytes_ += resource->delta_bytes;
-  if (resource->is_complete && resource->was_fetched_via_cache)
+  if (is_same_origin_to_main_frame)
+    page_same_origin_bytes_ += resource->delta_bytes;
+  if (resource->is_complete && resource->was_fetched_via_cache) {
     page_bytes_ += resource->encoded_body_length;
+    if (is_same_origin_to_main_frame)
+      page_same_origin_bytes_ += resource->encoded_body_length;
+  }
 
   // Determine if the frame (or its ancestor) is an ad, if so attribute the
   // bytes to the highest ad ancestor.
@@ -437,8 +445,8 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
   ancestor_data->ProcessResourceLoadInFrame(resource);
 
-  if (web_contents_ && ancestor_data->size_intervention_status() ==
-                           FrameData::FrameSizeInterventionStatus::kTriggered) {
+  if (ancestor_data->size_intervention_status() ==
+      FrameData::FrameSizeInterventionStatus::kTriggered) {
     RecordSingleFeatureUsage(
         web_contents_->GetMainFrame(),
         blink::mojom::WebFeature::kAdFrameSizeIntervention);
@@ -660,10 +668,16 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
                   visibility, ad_frame_data.frame_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Network", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.frame_network_bytes());
+    ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.SameOrigin", PAGE_BYTES_HISTOGRAM,
+                  visibility, ad_frame_data.same_origin_bytes());
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.PercentNetwork",
                   UMA_HISTOGRAM_PERCENTAGE, visibility,
                   ad_frame_data.frame_network_bytes() * 100 /
                       ad_frame_data.frame_bytes());
+    ADS_HISTOGRAM(
+        "Bytes.AdFrames.PerFrame.PercentSameOrigin", UMA_HISTOGRAM_PERCENTAGE,
+        visibility,
+        ad_frame_data.same_origin_bytes() * 100 / ad_frame_data.frame_bytes());
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.origin_status());
@@ -688,6 +702,18 @@ void AdsPageLoadMetricsObserver::RecordHistogramsForAdTagging(
                 page_bytes_);
   ADS_HISTOGRAM("Bytes.FullPage.Network", PAGE_BYTES_HISTOGRAM, visibility,
                 page_network_bytes_);
+
+  // Only record same origin totals for the AnyVisibility suffix as these
+  // numbers do not change for different visibility types.
+  if (visibility == FrameData::FrameVisibility::kAnyVisibility) {
+    ADS_HISTOGRAM("Bytes.FullPage.SameOrigin", PAGE_BYTES_HISTOGRAM, visibility,
+                  page_same_origin_bytes_);
+    if (page_bytes_) {
+      ADS_HISTOGRAM("Bytes.FullPage.PercentSameOrigin",
+                    UMA_HISTOGRAM_PERCENTAGE, visibility,
+                    page_same_origin_bytes_ * 100 / page_bytes_);
+    }
+  }
 
   if (page_bytes_) {
     ADS_HISTOGRAM("Bytes.FullPage.Total.PercentAds", UMA_HISTOGRAM_PERCENTAGE,
