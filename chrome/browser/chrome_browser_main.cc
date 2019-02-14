@@ -137,7 +137,6 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/expired_histogram_util.h"
-#include "components/metrics/legacy_call_stack_profile_builder.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
@@ -1891,11 +1890,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
   browser_process_->StartTearDown();
 #endif  // defined(OS_ANDROID)
-}
-
-void ChromeBrowserMainParts::PreShutdown() {
-  metrics::LegacyCallStackProfileBuilder::SetProcessMilestone(
-      metrics::LegacyCallStackProfileBuilder::SHUTDOWN_START);
 }
 
 void ChromeBrowserMainParts::PostDestroyThreads() {

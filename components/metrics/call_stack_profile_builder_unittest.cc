@@ -33,6 +33,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
   TestingCallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
       const WorkIdRecorder* work_id_recorder = nullptr,
+      const MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~TestingCallStackProfileBuilder() override;
@@ -51,9 +52,11 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     const WorkIdRecorder* work_id_recorder,
+    const MetadataRecorder* metadata_recorder,
     base::OnceClosure completed_callback)
     : CallStackProfileBuilder(profile_params,
                               work_id_recorder,
+                              metadata_recorder,
                               std::move(completed_callback)) {}
 
 TestingCallStackProfileBuilder::~TestingCallStackProfileBuilder() = default;
@@ -71,7 +74,7 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   EXPECT_CALL(mock_closure, Run()).Times(1);
 
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
-      kProfileParams, nullptr, mock_closure.Get());
+      kProfileParams, nullptr, nullptr, mock_closure.Get());
 
 #if defined(OS_WIN)
   uint64_t module_md5 = 0x46C3E4166659AC02ULL;
@@ -404,6 +407,54 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
   EXPECT_TRUE(profile.stack_sample(2).continued_work());
   EXPECT_FALSE(profile.stack_sample(3).has_continued_work());
   EXPECT_TRUE(profile.stack_sample(4).continued_work());
+}
+
+TEST(CallStackProfileBuilderTest, MetadataRecorder) {
+  class TestMetadataRecorder : public MetadataRecorder {
+   public:
+    std::pair<uint64_t, int64_t> GetHashAndValue() const override {
+      return std::make_pair(0x5A105E8B9D40E132ull, current_value);
+    }
+    int64_t current_value;
+  };
+
+  TestMetadataRecorder metadata_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, nullptr, &metadata_recorder);
+
+#if defined(OS_WIN)
+  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
+#else
+  base::FilePath module_path("/some/path/to/chrome");
+#endif
+
+  Module module = {0x1000, "1", module_path};
+  Frame frame = {0x1000 + 0x10, module};
+
+  metadata_recorder.current_value = 5;
+  profile_builder->OnSampleCompleted({frame});
+  metadata_recorder.current_value = 8;
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(2, profile.stack_sample_size());
+  EXPECT_EQ(1, profile.stack_sample(0).metadata_size());
+  EXPECT_EQ(1, profile.stack_sample(1).metadata_size());
+
+  ASSERT_EQ(1, profile.metadata_name_hash_size());
+  EXPECT_EQ(0x5A105E8B9D40E132ull, profile.metadata_name_hash(0));
+
+  EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
+  EXPECT_EQ(5, profile.stack_sample(0).metadata(0).value());
+  EXPECT_EQ(0, profile.stack_sample(1).metadata(0).name_hash_index());
+  EXPECT_EQ(8, profile.stack_sample(1).metadata(0).value());
 }
 
 }  // namespace metrics

@@ -5,6 +5,9 @@
 #ifndef CHROME_COMMON_HEAP_PROFILER_CONTROLLER_H_
 #define CHROME_COMMON_HEAP_PROFILER_CONTROLLER_H_
 
+#include <utility>
+
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 
 namespace base {
@@ -21,8 +24,8 @@ class HeapProfilerController {
   // Starts periodic heap snapshot collection.
   void StartIfEnabled();
 
-  void SetTaskRunnerForTest(base::TaskRunner* task_runner) {
-    task_runner_for_test_ = task_runner;
+  void SetTaskRunnerForTest(scoped_refptr<base::TaskRunner> task_runner) {
+    task_runner_ = std::move(task_runner);
   }
 
  private:
@@ -31,8 +34,8 @@ class HeapProfilerController {
   void RetrieveAndSendSnapshot();
 
   bool started_ = false;
-  base::TaskRunner* task_runner_for_test_ = nullptr;
-  base::WeakPtrFactory<HeapProfilerController> weak_factory_;
+  scoped_refptr<base::TaskRunner> task_runner_;
+  base::WeakPtrFactory<HeapProfilerController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HeapProfilerController);
 };
