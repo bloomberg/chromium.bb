@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -305,9 +304,8 @@ public class VrBrowserNativeUiTest {
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // For whatever reason, the laser has a lot of random noise (not visible to an actual user)
         // when the keyboard is present on certain OS/hardware configurations (currently known to
-        // happen on Pixel XL w/ N). So, point the controller off to the right so the laser isn't
-        // visible.
-        NativeUiUtils.hoverElement(UserFriendlyElementName.OMNIBOX_TEXT_FIELD, new PointF(3f, 0f));
+        // happen on Pixel XL w/ N). So, allow pixels to differ by a small amount without failing.
+        mRenderTestRule.setPixelDiffThreshold(5);
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "keyboard_visible_browser_ui", mRenderTestRule);
         // Regression test for https://crbug.com/874671
@@ -330,9 +328,10 @@ public class VrBrowserNativeUiTest {
     @Test
     @LargeTest
     @Feature({"Browser", "RenderTest"})
-    @DisabledTest(message = "https://crbug.com/930296")
     public void testOverflowMenuAppears()
             throws InterruptedException, TimeoutException, IOException {
+        // TODO(https://crbug.com/930840): Remove this when the weird gradient behavior is fixed.
+        mRenderTestRule.setPixelDiffThreshold(2);
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.OVERFLOW_MENU, new PointF());
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
