@@ -1521,21 +1521,6 @@
             ]
         }
     ],
-    "DetectingHeavyPages": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DetectingHeavyPages"
-                    ]
-                }
-            ]
-        }
-    ],
     "DirectCompositionPreferNV12Overlays": [
         {
             "platforms": [
