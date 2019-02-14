@@ -61,6 +61,14 @@ bool MigrateFromDownloadsToMyFiles(Profile* profile,
                                    const base::FilePath& old_path,
                                    base::FilePath* new_path);
 
+// Convers |old_path| in /special/drive-<hash> to |new_path| in
+// /media/fuse/drivefs-<id>. Returns true if path is changed else
+// returns false if |old_path| was not inside Drive, and |new_path| is
+// undefined.
+bool MigrateToDriveFs(Profile* profile,
+                      const base::FilePath& old_path,
+                      base::FilePath* new_path);
+
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
 

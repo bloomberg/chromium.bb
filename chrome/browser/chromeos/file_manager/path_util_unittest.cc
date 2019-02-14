@@ -238,6 +238,21 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
             "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
             "Computers/My Other Computer/bar"));
 
+    EXPECT_EQ("Google Drive \u203a My Drive \u203a foo",
+              GetPathDisplayTextForSettings(
+                  &profile2, "/special/drive-0123456789abcdef/root/foo"));
+    EXPECT_EQ(
+        "Google Drive \u203a Team Drives \u203a A Team Drive \u203a foo",
+        GetPathDisplayTextForSettings(
+            &profile2,
+            "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
+
+    EXPECT_EQ(
+        "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
+        GetPathDisplayTextForSettings(
+            &profile2,
+            "/special/drive-0123456789abcdef/Computers/My Other Computer/bar"));
+
     TestingProfile guest_profile(base::FilePath("/home/chronos/guest"));
     guest_profile.SetGuestSession(true);
     guest_profile.set_profile_name("$guest");
@@ -368,6 +383,49 @@ TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   EXPECT_FALSE(MigratePathFromOldFormat(
       profile_.get(), DownloadPrefs::GetDefaultDownloadDirectory(),
       FilePath::FromUTF8Unsafe("/home/chronos/user/dl"), &path));
+}
+
+TEST_F(FileManagerPathUtilTest, MigrateToDriveFs) {
+  base::FilePath home("/home/chronos/u-0123456789abcdef");
+  base::FilePath other("/some/other/path");
+  base::FilePath old_drive("/special/drive-0123456789abcdef");
+  base::FilePath my_drive = old_drive.Append("root");
+  base::FilePath file_in_my_drive = old_drive.Append("root").Append("file.txt");
+
+  // DriveFS disabled, no changes.
+  base::FilePath result;
+  {
+    drive::DriveIntegrationServiceFactory::GetForProfile(profile_.get())
+        ->SetEnabled(true);
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(chromeos::features::kDriveFs);
+    EXPECT_FALSE(MigrateToDriveFs(profile_.get(), other, &result));
+    EXPECT_FALSE(MigrateToDriveFs(profile_.get(), my_drive, &result));
+  }
+  // MyFilesVolume enabled, migrate paths under Downloads.
+  {
+    TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
+    chromeos::FakeChromeUserManager user_manager;
+    user_manager.AddUser(
+        AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345"));
+    PrefService* prefs = profile2.GetPrefs();
+    prefs->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+    drive::DriveIntegrationServiceFactory::GetForProfile(&profile2)->SetEnabled(
+        true);
+
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(chromeos::features::kDriveFs);
+    EXPECT_FALSE(MigrateToDriveFs(&profile2, other, &result));
+    EXPECT_TRUE(MigrateToDriveFs(&profile2, my_drive, &result));
+    EXPECT_EQ(base::FilePath(
+                  "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root"),
+              result);
+    EXPECT_TRUE(MigrateToDriveFs(&profile2, file_in_my_drive, &result));
+    EXPECT_EQ(
+        base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+                       "root/file.txt"),
+        result);
+  }
 }
 
 TEST_F(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
