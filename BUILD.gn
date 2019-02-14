@@ -6,30 +6,30 @@ import("//common-mk/proto_library.gni")
 
 group("all") {
   deps = [
-    ":system_api-protos",
-    ":system_api-power_manager-protos",
-    ":system_api-power_manager-goprotos",
-    ":system_api-cryptohome-protos",
     ":system_api-authpolicy-protos",
     ":system_api-biod-protos",
-    ":system_api-login_manager-protos",
-    ":system_api-login_manager-goprotos",
-    ":system_api-chaps-protos",
-    ":system_api-metrics_event-protos",
-    ":system_api-metrics_event-goprotos",
-    ":system_api-plugin_vm_service-protos",
-    ":system_api-smbprovider-protos",
-    ":system_api-vm_cicerone-protos",
-    ":system_api-vm_cicerone-goprotos",
-    ":system_api-vm_concierge-protos",
-    ":system_api-vm_concierge-goprotos",
-    ":system_api-vm_applications-protos",
-    ":system_api-seneschal-protos",
-    ":system_api-oobe_config-protos",
-    ":system_api-runtime_probe-protos",
-    ":system_api-update_engine-protos",
     ":system_api-bootlockbox-protos",
+    ":system_api-chaps-protos",
+    ":system_api-cryptohome-protos",
     ":system_api-dlcservice-protos",
+    ":system_api-login_manager-goprotos",
+    ":system_api-login_manager-protos",
+    ":system_api-metrics_event-goprotos",
+    ":system_api-metrics_event-protos",
+    ":system_api-oobe_config-protos",
+    ":system_api-plugin_vm_service-protos",
+    ":system_api-power_manager-goprotos",
+    ":system_api-power_manager-protos",
+    ":system_api-protos",
+    ":system_api-runtime_probe-protos",
+    ":system_api-seneschal-protos",
+    ":system_api-smbprovider-protos",
+    ":system_api-update_engine-protos",
+    ":system_api-vm_applications-protos",
+    ":system_api-vm_cicerone-goprotos",
+    ":system_api-vm_cicerone-protos",
+    ":system_api-vm_concierge-goprotos",
+    ":system_api-vm_concierge-protos",
     ":system_api-vm_plugin_dispatcher-protos",
   ]
 }
@@ -91,7 +91,7 @@ proto_library("system_api-authpolicy-protos") {
   proto_in_dir = "dbus/authpolicy"
   proto_out_dir = "include/authpolicy/proto_bindings"
   sources = [
-    "${proto_in_dir}/active_directory_info.proto"
+    "${proto_in_dir}/active_directory_info.proto",
   ]
   standalone = true
 }
@@ -131,6 +131,7 @@ proto_library("system_api-chaps-protos") {
     "${proto_in_dir}/ck_structs.proto",
   ]
   standalone = true
+
   # system_api-chaps-protos" is used by a shared_library
   # object, so we need to build it with "-fPIC" instead of "-fPIE".
   use_pic = true
@@ -236,7 +237,7 @@ proto_library("system_api-runtime_probe-protos") {
   proto_in_dir = "dbus/runtime_probe"
   proto_out_dir = "include/runtime_probe/proto_bindings"
   sources = [
-    "${proto_in_dir}/runtime_probe.proto"
+    "${proto_in_dir}/runtime_probe.proto",
   ]
   standalone = true
 }
