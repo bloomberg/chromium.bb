@@ -36,10 +36,11 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void SetCrxInstallerForTesting(scoped_refptr<CrxInstaller> crx_installer);
 
  private:
-  void OnInstall(InstallFinalizedCallback callback,
-                 const GURL& app_url,
-                 const base::Optional<CrxInstallError>& error);
+  void OnExtensionInstalled(InstallFinalizedCallback callback,
+                            const GURL& app_url,
+                            const base::Optional<CrxInstallError>& error);
 
+  std::unique_ptr<WebApplicationInfo> web_app_info_;
   scoped_refptr<CrxInstaller> crx_installer_;
   Profile* profile_;
 
