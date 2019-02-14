@@ -175,9 +175,8 @@ void GpuHost::CreateFrameSinkManager(
 }
 
 void GpuHost::Shutdown() {
-  gpu_host_impl_.reset();
-
   gpu_clients_.clear();
+  gpu_host_impl_.reset();
 }
 
 void GpuHost::Add(mojom::GpuRequest request) {
