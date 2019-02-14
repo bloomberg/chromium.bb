@@ -47,8 +47,9 @@
 
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
-  AccountInfo info = IdentityManagerFactory::GetForBrowserState(browser_state)
-                         ->GetPrimaryAccountInfo();
+  CoreAccountInfo info =
+      IdentityManagerFactory::GetForBrowserState(browser_state)
+          ->GetPrimaryAccountInfo();
 
   GREYAssertEqual(base::SysNSStringToUTF8(identity.gaiaID), info.gaia,
                   @"Unexpected Gaia ID of the signed in user [expected = "
