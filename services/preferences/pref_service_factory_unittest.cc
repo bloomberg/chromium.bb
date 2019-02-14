@@ -689,9 +689,9 @@ TEST_P(IncognitoPrefServiceFactoryTest, MultipleClients) {
   EXPECT_EQ(kUpdatedValue, pref_service2->GetInteger(kKey));
 }
 
-INSTANTIATE_TEST_CASE_P(UnderlayOrOverlayPref,
-                        IncognitoPrefServiceFactoryTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(UnderlayOrOverlayPref,
+                         IncognitoPrefServiceFactoryTest,
+                         testing::Bool());
 
 }  // namespace
 }  // namespace prefs
