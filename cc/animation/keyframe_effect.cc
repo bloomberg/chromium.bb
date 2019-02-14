@@ -174,7 +174,7 @@ void KeyframeEffect::RemoveFromTicking() {
   // Resetting last_tick_time_ here ensures that calling ::UpdateState
   // before ::Animate doesn't start a keyframe model.
   last_tick_time_ = base::TimeTicks();
-  animation_->KeyframeModelRemovedFromTicking();
+  animation_->RemoveFromTicking();
 }
 
 void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,

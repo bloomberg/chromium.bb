@@ -100,7 +100,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   virtual void Tick(base::TimeTicks monotonic_time);
 
   void AddToTicking();
-  void KeyframeModelRemovedFromTicking();
+  void RemoveFromTicking();
 
   // AnimationDelegate routing.
   void NotifyKeyframeModelStarted(const AnimationEvent& event);
