@@ -70,7 +70,14 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
 
   source->AddLocalizedString("description",
                              IDS_ABOUT_BROWSER_SWITCH_DESCRIPTION);
-  source->AddLocalizedString("opening", IDS_ABOUT_BROWSER_SWITCH_OPENING);
+  source->AddLocalizedString("errorTitle",
+                             IDS_ABOUT_BROWSER_SWITCH_ERROR_TITLE);
+  source->AddLocalizedString("genericError",
+                             IDS_ABOUT_BROWSER_SWITCH_GENERIC_ERROR);
+  source->AddLocalizedString("openingTitle",
+                             IDS_ABOUT_BROWSER_SWITCH_OPENING_TITLE);
+  source->AddLocalizedString("protocolError",
+                             IDS_ABOUT_BROWSER_SWITCH_PROTOCOL_ERROR);
   source->AddLocalizedString("title", IDS_ABOUT_BROWSER_SWITCH_TITLE);
 
   source->AddResourcePath("app.html", IDR_BROWSER_SWITCHER_APP_HTML);
@@ -83,6 +90,7 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
                           IDR_BROWSER_SWITCHER_BROWSER_SWITCHER_PROXY_JS);
 
   source->SetDefaultResource(IDR_BROWSER_SWITCHER_BROWSER_SWITCH_HTML);
+  source->SetJsonPath("strings.js");
   source->UseGzip();
 
   return source;
