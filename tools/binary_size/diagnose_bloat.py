@@ -178,8 +178,7 @@ class ResourceSizesDiff(BaseDiff):
     """Generates diff lines for the specified sections (defaults to all)."""
     section_lines = collections.defaultdict(list)
     for section_name, section_results in self._diff.iteritems():
-      section_no_target = re.sub(r'^.*_', '', section_name)
-      if not include_sections or section_no_target in include_sections:
+      if not include_sections or section_name in include_sections:
         subsection_lines = []
         section_sum = 0
         units = ''
@@ -189,14 +188,14 @@ class ResourceSizesDiff(BaseDiff):
             continue
           section_sum += value
           subsection_lines.append('{:>+14,} {} {}'.format(value, units, name))
-        section_header = section_no_target
-        if section_no_target in ResourceSizesDiff._AGGREGATE_SECTIONS:
+        section_header = section_name
+        if section_name in ResourceSizesDiff._AGGREGATE_SECTIONS:
           section_header += ' ({:+,} {})'.format(section_sum, units)
         section_header += ':'
         # Omit sections with empty subsections.
         if subsection_lines:
-          section_lines[section_no_target].append(section_header)
-          section_lines[section_no_target].extend(subsection_lines)
+          section_lines[section_name].append(section_header)
+          section_lines[section_name].extend(subsection_lines)
     if not section_lines:
       return ['Empty ' + self.name]
     ret = []
@@ -208,7 +207,13 @@ class ResourceSizesDiff(BaseDiff):
     chartjson_file = os.path.join(archive_dir, self._filename)
     with open(chartjson_file) as f:
       chartjson = json.load(f)
-    return chartjson['charts']
+    charts = chartjson['charts']
+    # Older versions of resource_sizes.py prefixed the apk onto section names.
+    ret = {}
+    for section, section_dict in charts.iteritems():
+      section_no_target = re.sub(r'^.*_', '', section)
+      ret[section_no_target] = section_dict
+    return ret
 
 
 class _BuildHelper(object):
