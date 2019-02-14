@@ -3689,6 +3689,21 @@
             ]
         }
     ],
+    "PreviewsDisallowedOnReloads": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "PreviewsDisallowedOnReloads",
+                    "enable_features": [
+                        "PreviewsDisallowedOnReloads"
+                    ]
+                }
+            ]
+        }
+    ],
     "PreviewsNoScript": [
         {
             "platforms": [
