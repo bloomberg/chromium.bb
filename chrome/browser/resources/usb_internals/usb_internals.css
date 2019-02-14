@@ -3,6 +3,7 @@
  * found in the LICENSE file.
  */
 
+/* Devices Tab */
 table.styled-table {
   border-collapse: collapse;
 }
@@ -11,12 +12,12 @@ table.styled-table,
 .styled-table th,
 .styled-table td {
   border: 1px solid #777;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-inline-end: 4px;
+  padding-inline-start: 4px;
 }
 
 .styled-table th {
-  text-align: left;
+  text-align: start;
 }
 
 .page-section {
