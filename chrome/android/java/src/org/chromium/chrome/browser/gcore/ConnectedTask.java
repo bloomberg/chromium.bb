@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.gcore;
 
+import android.text.format.DateUtils;
+
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.RemovableInRelease;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for tasks which connects to Google Play Services using given GoogleApiClient,
@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit;
 public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements Runnable {
     private static final String TAG = "GCore";
 
-    public static final long CONNECTION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(5);
-    public static final long CONNECTION_RETRY_TIME_MS = TimeUnit.SECONDS.toMillis(10);
+    public static final long CONNECTION_TIMEOUT_MS = DateUtils.SECOND_IN_MILLIS * 5;
+    public static final long CONNECTION_RETRY_TIME_MS = DateUtils.SECOND_IN_MILLIS * 10;
     public static final int RETRY_NUMBER_LIMIT = 5;
 
     private final T mClient;

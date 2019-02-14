@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import org.chromium.base.TimeUtils;
+
 /**
  * Heuristic for Tap suppression after a recent scroll action.
  * Handles logging of results seen and activation.
@@ -25,8 +27,8 @@ public class RecentScrollTapSuppression extends ContextualSearchHeuristic {
     RecentScrollTapSuppression(ContextualSearchSelectionController selectionController) {
         long recentScrollTimeNs = selectionController.getLastScrollTime();
         if (recentScrollTimeNs > 0) {
-            mDurationSinceRecentScrollMs =
-                    (int) ((System.nanoTime() - recentScrollTimeNs) / NANOSECONDS_IN_A_MILLISECOND);
+            mDurationSinceRecentScrollMs = (int) ((System.nanoTime() - recentScrollTimeNs)
+                    / TimeUtils.NANOSECONDS_PER_MILLISECOND);
         } else {
             mDurationSinceRecentScrollMs = 0;
         }

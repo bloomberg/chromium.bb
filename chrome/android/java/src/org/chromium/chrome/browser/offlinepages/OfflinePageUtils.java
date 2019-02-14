@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class holding static util functions for offline pages.
@@ -338,9 +337,7 @@ public class OfflinePageUtils {
             return;
         }
         RecordHistogram.recordLongTimesHistogram(
-                "OfflinePages.Wakeup.DelayTime",
-                delayInMilliseconds,
-                TimeUnit.MILLISECONDS);
+                "OfflinePages.Wakeup.DelayTime", delayInMilliseconds);
     }
 
     /**

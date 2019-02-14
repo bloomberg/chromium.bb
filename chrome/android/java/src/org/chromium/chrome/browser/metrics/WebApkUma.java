@@ -12,6 +12,7 @@ import android.os.StatFs;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -148,7 +149,7 @@ public class WebApkUma {
      */
     public static void recordShellApkLaunchToSplashscreenVisible(long durationMs) {
         RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs, TimeUnit.MILLISECONDS);
+                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs);
     }
 
     /**
@@ -157,7 +158,7 @@ public class WebApkUma {
      */
     public static void recordShellApkLaunchToSplashscreenHidden(long durationMs) {
         RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN, durationMs, TimeUnit.MILLISECONDS);
+                HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN, durationMs);
     }
 
     /** Records whether a WebAPK has permission to display notifications. */
@@ -197,7 +198,7 @@ public class WebApkUma {
             @WebApkInfo.WebApkDistributor int distributor, long duration) {
         RecordHistogram.recordLongTimesHistogram(
                 "WebApk.Session.TotalDuration2." + getWebApkDistributorUmaSuffix(distributor),
-                duration, TimeUnit.MILLISECONDS);
+                duration);
     }
 
     /** Records the current Shell APK version. */
@@ -271,7 +272,7 @@ public class WebApkUma {
      */
     public static void recordLaunchInterval(long intervalMs) {
         RecordHistogram.recordCustomCountHistogram("WebApk.LaunchInterval2",
-                (int) TimeUnit.MILLISECONDS.toMinutes(intervalMs), 30,
+                (int) (DateUtils.MINUTE_IN_MILLIS * intervalMs), 30,
                 (int) TimeUnit.DAYS.toMinutes(90), 50);
     }
 

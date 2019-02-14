@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.IntDef;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
@@ -27,17 +28,11 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Records the behavior metrics after an ACTION_MAIN intent is received.
  */
 public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStateListener {
-    private static final long BACKGROUND_TIME_24_HOUR_MS = 86400000;
-    private static final long BACKGROUND_TIME_12_HOUR_MS = 43200000;
-    private static final long BACKGROUND_TIME_6_HOUR_MS = 21600000;
-    private static final long BACKGROUND_TIME_1_HOUR_MS = 3600000;
-
     static final long TIMEOUT_DURATION_MS = 10000;
 
     @IntDef({MainIntentActionType.CONTINUATION, MainIntentActionType.FOCUS_OMNIBOX,
@@ -115,13 +110,13 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
 
         RecordUserAction.record("MobileStartup.MainIntentReceived");
 
-        if (backgroundDurationMs >= BACKGROUND_TIME_24_HOUR_MS) {
+        if (backgroundDurationMs >= DateUtils.HOUR_IN_MILLIS * 24) {
             RecordUserAction.record("MobileStartup.MainIntentReceived.After24Hours");
-        } else if (backgroundDurationMs >= BACKGROUND_TIME_12_HOUR_MS) {
+        } else if (backgroundDurationMs >= DateUtils.HOUR_IN_MILLIS * 12) {
             RecordUserAction.record("MobileStartup.MainIntentReceived.After12Hours");
-        } else if (backgroundDurationMs >= BACKGROUND_TIME_6_HOUR_MS) {
+        } else if (backgroundDurationMs >= DateUtils.HOUR_IN_MILLIS * 6) {
             RecordUserAction.record("MobileStartup.MainIntentReceived.After6Hours");
-        } else if (backgroundDurationMs >= BACKGROUND_TIME_1_HOUR_MS) {
+        } else if (backgroundDurationMs >= DateUtils.HOUR_IN_MILLIS) {
             RecordUserAction.record("MobileStartup.MainIntentReceived.After1Hour");
         }
 
@@ -229,11 +224,9 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
         mLastMainIntentBehavior = behavior;
         String histogramName = getHistogramNameForBehavior(behavior);
         if (histogramName != null) {
-            RecordHistogram.recordCustomCountHistogram(
-                    histogramName,
-                    (int) TimeUnit.MINUTES.convert(mBackgroundDurationMs, TimeUnit.MILLISECONDS),
-                    DURATION_HISTOGRAM_MIN,
-                    DURATION_HISTOGRAM_MAX,
+            RecordHistogram.recordCustomCountHistogram(histogramName,
+                    (int) (mBackgroundDurationMs / DateUtils.MINUTE_IN_MILLIS),
+                    DURATION_HISTOGRAM_MIN, DURATION_HISTOGRAM_MAX,
                     DURATION_HISTOGRAM_BUCKET_COUNT);
         } else {
             assert false : String.format(Locale.getDefault(), "Invalid behavior: %d", behavior);
@@ -257,7 +250,7 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
         long timestamp = pref.getLong(LAUNCH_TIMESTAMP_PREF, 0);
         int count = pref.getInt(LAUNCH_COUNT_PREF, 0);
 
-        if (current - timestamp > BACKGROUND_TIME_24_HOUR_MS) {
+        if (current - timestamp > DateUtils.DAY_IN_MILLIS) {
             // Log count if it's not first launch of Chrome.
             if (timestamp != 0) {
                 RecordHistogram.recordCountHistogram("MobileStartup.DailyLaunchCount", count);

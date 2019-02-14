@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.download.service;
 
 import android.os.Bundle;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
@@ -14,8 +16,6 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.download.DownloadTaskType;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * A background task scheduler that schedules various types of jobs with the system with certain
@@ -27,9 +27,6 @@ public class DownloadTaskScheduler {
     public static final String EXTRA_OPTIMAL_BATTERY_PERCENTAGE =
             "extra_optimal_battery_percentage";
     public static final String EXTRA_TASK_TYPE = "extra_task_type";
-    static final long TWELVE_HOURS_IN_SECONDS = TimeUnit.HOURS.toSeconds(12);
-    static final long FIVE_MINUTES_IN_SECONDS = TimeUnit.MINUTES.toSeconds(5);
-    static final long ONE_DAY_IN_SECONDS = TimeUnit.DAYS.toSeconds(1);
 
     @CalledByNative
     private static void scheduleTask(@DownloadTaskType int taskType,
@@ -43,8 +40,8 @@ public class DownloadTaskScheduler {
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(getTaskId(taskType), DownloadBackgroundTask.class,
-                                TimeUnit.SECONDS.toMillis(windowStartTimeSeconds),
-                                TimeUnit.SECONDS.toMillis(windowEndTimeSeconds))
+                                DateUtils.SECOND_IN_MILLIS * windowStartTimeSeconds,
+                                DateUtils.SECOND_IN_MILLIS * windowEndTimeSeconds)
                         .setRequiredNetworkType(
                                 getRequiredNetworkType(taskType, requiresUnmeteredNetwork))
                         .setRequiresCharging(requiresCharging)
@@ -66,12 +63,12 @@ public class DownloadTaskScheduler {
      * services upgrade etc. This will schedule the tasks in future with least restrictive criteria.
      */
     public static void rescheduleAllTasks() {
-        scheduleTask(DownloadTaskType.DOWNLOAD_TASK, false, false, 0, FIVE_MINUTES_IN_SECONDS,
-                2 * FIVE_MINUTES_IN_SECONDS);
-        scheduleTask(DownloadTaskType.CLEANUP_TASK, false, false, 0, TWELVE_HOURS_IN_SECONDS,
-                2 * TWELVE_HOURS_IN_SECONDS);
+        scheduleTask(DownloadTaskType.DOWNLOAD_TASK, false, false, 0,
+                TimeUtils.SECONDS_PER_MINUTE * 5, TimeUtils.SECONDS_PER_MINUTE * 10);
+        scheduleTask(DownloadTaskType.CLEANUP_TASK, false, false, 0,
+                TimeUtils.SECONDS_PER_HOUR * 12, TimeUtils.SECONDS_PER_HOUR * 24);
         scheduleTask(DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK, false, false, 0,
-                FIVE_MINUTES_IN_SECONDS, ONE_DAY_IN_SECONDS);
+                TimeUtils.SECONDS_PER_MINUTE * 5, TimeUtils.SECONDS_PER_DAY);
     }
 
     private static int getTaskId(@DownloadTaskType int taskType) {

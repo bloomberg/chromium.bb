@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.invalidation;
 
+import android.text.format.DateUtils;
+
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper;
 import org.chromium.chrome.browser.profiles.Profile;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class responsible for managing registration for invalidations for noisy sync
@@ -27,7 +27,7 @@ public class SessionsInvalidationManager implements ApplicationStatus.Applicatio
      * measured by the NewTabPage.RecentTabsPage.TimeVisibleAndroid UMA metric.
      */
     static final int REGISTER_FOR_SESSION_SYNC_INVALIDATIONS_DELAY_MS =
-            (int) TimeUnit.SECONDS.toMillis(20);
+            (int) DateUtils.SECOND_IN_MILLIS * 20;
 
     /**
      * The amount of time after the RecentTabsPage is closed to unregister for session sync
@@ -35,7 +35,7 @@ public class SessionsInvalidationManager implements ApplicationStatus.Applicatio
      * visits the RecentTabsPage a lot.
      */
     static final int UNREGISTER_FOR_SESSION_SYNC_INVALIDATIONS_DELAY_MS =
-            (int) TimeUnit.HOURS.toMillis(1);
+            (int) DateUtils.HOUR_IN_MILLIS;
 
     /**
      * Used to schedule tasks to enable and disable session sync invalidations.

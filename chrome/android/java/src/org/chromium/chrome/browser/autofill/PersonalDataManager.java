@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.content.Context;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -20,7 +21,6 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Android wrapper of the PersonalDataManager which provides access from the Java
@@ -991,7 +991,7 @@ public class PersonalDataManager {
      * @return The sub-key request timeout in milliseconds.
      */
     public static long getRequestTimeoutMS() {
-        return TimeUnit.SECONDS.toMillis(sRequestTimeoutSeconds);
+        return DateUtils.SECOND_IN_MILLIS * sRequestTimeoutSeconds;
     }
 
     private native long nativeInit();

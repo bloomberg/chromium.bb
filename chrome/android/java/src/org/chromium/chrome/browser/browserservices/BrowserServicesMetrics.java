@@ -12,7 +12,6 @@ import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class to contain metrics recording constants and behaviour for Browser Services.
@@ -80,8 +79,7 @@ public class BrowserServicesMetrics {
         @Override
         public void close() {
             // Use {@link CachedMetrics} so this can be called before native is loaded.
-            new CachedMetrics.MediumTimesHistogramSample(mMetric, TimeUnit.MILLISECONDS)
-                    .record(now() - mStart);
+            new CachedMetrics.MediumTimesHistogramSample(mMetric).record(now() - mStart);
         }
     }
 

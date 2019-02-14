@@ -42,7 +42,6 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The URL text entry view for the Omnibox.
@@ -60,14 +59,11 @@ public class UrlBar extends AutocompleteEditText {
             new CachedMetrics.ActionEvent("Omnibox.LongPress.Share");
 
     private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_COPY =
-            new CachedMetrics.TimesHistogramSample(
-                    "Omnibox.TimeUntilFirst.Copy", TimeUnit.MILLISECONDS);
+            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Copy");
     private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_CUT =
-            new CachedMetrics.TimesHistogramSample(
-                    "Omnibox.TimeUntilFirst.Cut", TimeUnit.MILLISECONDS);
+            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Cut");
     private static final CachedMetrics.TimesHistogramSample TIME_UNTIL_SHARE =
-            new CachedMetrics.TimesHistogramSample(
-                    "Omnibox.TimeUntilFirst.Share", TimeUnit.MILLISECONDS);
+            new CachedMetrics.TimesHistogramSample("Omnibox.TimeUntilFirst.Share");
 
     @IntDef({OmniboxAction.CUT, OmniboxAction.COPY, OmniboxAction.SHARE})
     @Retention(RetentionPolicy.SOURCE)

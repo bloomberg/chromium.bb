@@ -39,7 +39,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Provides methods for building the X-Geo HTTP header, which provides device location to a server
@@ -683,7 +682,7 @@ public class GeolocationHeader {
         String name = getTimeListeningHistogramEnum(locationSource, locationAttached);
         if (name == null) return;
         RecordHistogram.recordCustomTimesHistogram(
-                name, duration, 1, TIME_LISTENING_HISTOGRAM_MAX_MILLIS, TimeUnit.MILLISECONDS, 50);
+                name, duration, 1, TIME_LISTENING_HISTOGRAM_MAX_MILLIS, 50);
     }
 
     /** Records a data point for one of the GeolocationHeader.LocationAge* histograms. */

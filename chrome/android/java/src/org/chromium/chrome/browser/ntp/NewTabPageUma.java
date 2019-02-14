@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
+import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -24,7 +25,6 @@ import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
@@ -273,12 +273,10 @@ public final class NewTabPageUma {
                 - IntentHandler.getTimestampFromIntent(activity.getIntent());
         if (activity.hadWarmStart()) {
             RecordHistogram.recordMediumTimesHistogram(
-                    "NewTabPage.SearchAvailableLoadTime2.WarmStart", timeFromIntent,
-                    TimeUnit.MILLISECONDS);
+                    "NewTabPage.SearchAvailableLoadTime2.WarmStart", timeFromIntent);
         } else {
             RecordHistogram.recordMediumTimesHistogram(
-                    "NewTabPage.SearchAvailableLoadTime2.ColdStart", timeFromIntent,
-                    TimeUnit.MILLISECONDS);
+                    "NewTabPage.SearchAvailableLoadTime2.ColdStart", timeFromIntent);
         }
     }
 
@@ -347,10 +345,10 @@ public final class NewTabPageUma {
         view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
-                long timeToFirstDrawMs =
-                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - constructedTimeNs);
+                long timeToFirstDrawMs = (System.nanoTime() - constructedTimeNs)
+                        / TimeUtils.NANOSECONDS_PER_MILLISECOND;
                 RecordHistogram.recordTimesHistogram(
-                        "NewTabPage.TimeToFirstDraw2", timeToFirstDrawMs, TimeUnit.MILLISECONDS);
+                        "NewTabPage.TimeToFirstDraw2", timeToFirstDrawMs);
                 view.getViewTreeObserver().removeOnPreDrawListener(this);
                 return true;
             }

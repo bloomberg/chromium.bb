@@ -13,8 +13,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
-import java.util.concurrent.TimeUnit;
-
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
 /**
@@ -111,7 +109,7 @@ public class LogoDelegateImpl implements LogoView.Delegate {
                     if (mShouldRecordLoadTime) {
                         long loadTime = System.currentTimeMillis() - loadTimeStart;
                         RecordHistogram.recordMediumTimesHistogram(
-                                LOGO_SHOWN_TIME_UMA_NAME, loadTime, TimeUnit.MILLISECONDS);
+                                LOGO_SHOWN_TIME_UMA_NAME, loadTime);
                         // Only record the load time once per NTP, for the first logo we got,
                         // whether that came from cache or not.
                         mShouldRecordLoadTime = false;

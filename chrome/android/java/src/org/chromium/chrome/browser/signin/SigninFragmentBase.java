@@ -50,7 +50,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment implements sign-in screen with account picker and descriptions of signin-related
@@ -471,7 +470,7 @@ public abstract class SigninFragmentBase
 
     private static void recordAccountTrackerServiceSeedingTime(long seedingStartTime) {
         RecordHistogram.recordTimesHistogram("Signin.AndroidAccountSigninViewSeedingTime",
-                SystemClock.elapsedRealtime() - seedingStartTime, TimeUnit.MILLISECONDS);
+                SystemClock.elapsedRealtime() - seedingStartTime);
     }
 
     /**
@@ -701,7 +700,6 @@ public abstract class SigninFragmentBase
         mGmsIsUpdatingDialog.dismiss();
         mGmsIsUpdatingDialog = null;
         RecordHistogram.recordTimesHistogram("Signin.AndroidGmsUpdatingDialogShownTime",
-                SystemClock.elapsedRealtime() - mGmsIsUpdatingDialogShowTime,
-                TimeUnit.MILLISECONDS);
+                SystemClock.elapsedRealtime() - mGmsIsUpdatingDialogShowTime);
     }
 }

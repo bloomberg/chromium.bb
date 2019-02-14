@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -71,7 +70,7 @@ public class TrustedWebActivityUmaRecorder {
     }
 
     private void recordDuration(long durationMs, String histogramName) {
-        RecordHistogram.recordTimesHistogram(histogramName, durationMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram(histogramName, durationMs);
     }
 
     /**

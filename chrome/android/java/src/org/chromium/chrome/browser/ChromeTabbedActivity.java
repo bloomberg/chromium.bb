@@ -22,6 +22,7 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
@@ -165,7 +166,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
@@ -956,8 +956,8 @@ public class ChromeTabbedActivity
                 ContextUtils.getAppSharedPreferences().getLong(LAST_BACKGROUNDED_TIME_MS_PREF, -1);
         if (lastBackgroundedTimeMs == -1) return false;
 
-        long backgroundDurationMinutes = TimeUnit.MINUTES.convert(
-                System.currentTimeMillis() - lastBackgroundedTimeMs, TimeUnit.MILLISECONDS);
+        long backgroundDurationMinutes =
+                (System.currentTimeMillis() - lastBackgroundedTimeMs) / DateUtils.MINUTE_IN_MILLIS;
 
         if (backgroundDurationMinutes < ntpLaunchDelayInMins) {
             Log.i(TAG, "Not launching NTP due to inactivity, background time: %d, launch delay: %d",
@@ -1660,7 +1660,7 @@ public class ChromeTabbedActivity
     protected void recordIntentToCreationTime(long timeMs) {
         super.recordIntentToCreationTime(timeMs);
         RecordHistogram.recordCustomTimesHistogram("MobileStartup.IntentToCreationTime.TabbedMode",
-                timeMs, 1, TimeUnit.SECONDS.toMillis(30), TimeUnit.MILLISECONDS, 50);
+                timeMs, 1, DateUtils.SECOND_IN_MILLIS * 30, 50);
     }
 
     @Override

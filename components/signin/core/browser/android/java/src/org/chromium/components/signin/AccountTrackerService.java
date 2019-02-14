@@ -17,7 +17,6 @@ import org.chromium.base.task.AsyncTask;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Android wrapper of AccountTrackerService which provides access from the java layer.
@@ -145,8 +144,7 @@ public class AccountTrackerService {
                     }
 
                     RecordHistogram.recordTimesHistogram("Signin.AndroidGetAccountIdsTime",
-                            SystemClock.elapsedRealtime() - seedingStartTime,
-                            TimeUnit.MILLISECONDS);
+                            SystemClock.elapsedRealtime() - seedingStartTime);
 
                     return accountIdNameMap;
                 }

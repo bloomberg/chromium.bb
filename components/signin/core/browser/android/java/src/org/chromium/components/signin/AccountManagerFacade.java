@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -89,8 +88,7 @@ public class AccountManagerFacade {
             new AtomicReference<>();
     private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
     private final CachedMetrics.TimesHistogramSample mPopulateAccountCacheWaitingTimeHistogram =
-            new CachedMetrics.TimesHistogramSample(
-                    "Signin.AndroidPopulateAccountCacheWaitingTime", TimeUnit.MILLISECONDS);
+            new CachedMetrics.TimesHistogramSample("Signin.AndroidPopulateAccountCacheWaitingTime");
 
     private final ArrayList<Runnable> mCallbacksWaitingForCachePopulation = new ArrayList<>();
 

@@ -25,8 +25,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * An Activity used to display WebContents on devices that don't support touch.
  */
@@ -158,7 +156,7 @@ public class NoTouchActivity extends SingleTabActivity {
         outState.putInt(BUNDLE_TAB_ID, tab.getId());
         TabState.saveState(outState, tab.getState());
         RecordHistogram.recordTimesHistogram("Android.StrictMode.NoTouchActivitySaveState",
-                SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+                SystemClock.elapsedRealtime() - time);
     }
 
     @Override

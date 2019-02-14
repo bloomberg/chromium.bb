@@ -28,7 +28,6 @@ import org.chromium.chrome.R;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
@@ -111,7 +110,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             long time = SystemClock.elapsedRealtime();
             formattedTime = DateFormat.getTimeFormat(mContext).format(new Date());
             RecordHistogram.recordTimesHistogram("Android.StrictMode.NotificationUIBuildTime",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+                    SystemClock.elapsedRealtime() - time);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

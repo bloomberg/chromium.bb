@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -71,9 +72,8 @@ public class TracingController {
     private static final String TEMP_FILE_EXT = ".json.gz";
     private static final String TRACE_MIMETYPE = "application/gzip";
 
-    // Delete shared trace files after 1 hour.
-    private static final long DELETE_AFTER_SHARE_TIMEOUT_MILLIS = 60 * 60 * 1000;
-    private static final long UPDATE_BUFFER_USAGE_INTERVAL_MILLIS = 1000;
+    private static final long DELETE_AFTER_SHARE_TIMEOUT_MILLIS = DateUtils.HOUR_IN_MILLIS;
+    private static final long UPDATE_BUFFER_USAGE_INTERVAL_MILLIS = DateUtils.SECOND_IN_MILLIS;
 
     // Non-translated strings:
     private static final String MSG_ERROR_TOAST =

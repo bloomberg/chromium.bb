@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class to communicate with the {@link DecoderService}.
@@ -240,14 +239,14 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         DecoderServiceParams params = getRequests().get(filePath);
         if (params != null) {
             long endRpcCall = SystemClock.elapsedRealtime();
-            RecordHistogram.recordTimesHistogram("Android.PhotoPicker.RequestProcessTime",
-                    endRpcCall - params.mTimestamp, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram(
+                    "Android.PhotoPicker.RequestProcessTime", endRpcCall - params.mTimestamp);
 
             params.mCallback.imageDecodedCallback(filePath, bitmap);
 
             if (decodeTime != -1 && bitmap != null) {
                 RecordHistogram.recordTimesHistogram(
-                        "Android.PhotoPicker.ImageDecodeTime", decodeTime, TimeUnit.MILLISECONDS);
+                        "Android.PhotoPicker.ImageDecodeTime", decodeTime);
 
                 int sizeInKB = bitmap.getByteCount() / ConversionUtils.BYTES_PER_KILOBYTE;
                 RecordHistogram.recordCustomCountHistogram(

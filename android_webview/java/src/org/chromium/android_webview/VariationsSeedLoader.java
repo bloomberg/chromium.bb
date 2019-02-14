@@ -232,8 +232,8 @@ public class VariationsSeedLoader {
                 return mRunnable.get(SEED_LOAD_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
             } finally {
                 long end = SystemClock.elapsedRealtime();
-                TimesHistogramSample histogram = new TimesHistogramSample(
-                        "Variations.SeedLoadBlockingTime", TimeUnit.MILLISECONDS);
+                TimesHistogramSample histogram =
+                        new TimesHistogramSample("Variations.SeedLoadBlockingTime");
                 histogram.record(end - start);
             }
         } catch (TimeoutException e) {

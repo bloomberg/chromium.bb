@@ -21,6 +21,7 @@ import android.support.customtabs.CustomTabsService.Relation;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.PostMessageServiceConnection;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.SparseBooleanArray;
 
 import org.chromium.base.ContextUtils;
@@ -47,7 +48,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /** Manages the clients' state for Custom Tabs. This class is threadsafe. */
 class ClientManager {
@@ -403,7 +403,7 @@ class ClientManager {
             RequestThrottler.getForUid(ContextUtils.getApplicationContext(), params.uid)
                     .registerSuccess(params.mPredictedUrl);
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
-                    elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
+                    elapsedTimeMs, 1, DateUtils.MINUTE_IN_MILLIS * 3, 100);
         }
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WarmupStateOnLaunch",
                 getWarmupState(session), CalledWarmup.NUM_ENTRIES);

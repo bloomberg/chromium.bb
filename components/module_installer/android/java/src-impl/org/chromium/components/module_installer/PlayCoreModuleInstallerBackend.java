@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Backend that uses the Play Core SDK to download a module from Play and install it subsequently.
@@ -132,7 +131,7 @@ import java.util.concurrent.TimeUnit;
                         moduleInfo.second ? "CachedInstallDuration" : "UncachedInstallDuration";
                 RecordHistogram.recordLongTimesHistogram(
                         "Android.FeatureModules." + histogramSubname + "." + name,
-                        installDurationMs, TimeUnit.MILLISECONDS);
+                        installDurationMs);
             }
         }
         onFinished(success, moduleNames);

@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -66,7 +67,6 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Provides functionality when the user interacts with the NTP.
@@ -222,8 +222,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
 
             long loadTimeMs = (System.nanoTime() - mConstructedTimeNs) / 1000000;
-            RecordHistogram.recordTimesHistogram(
-                    "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram("Tab.NewTabOnload", loadTimeMs);
             mIsLoaded = true;
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
@@ -257,8 +256,8 @@ public class NewTabPage
 
             if (windowDisposition != WindowOpenDisposition.NEW_WINDOW) {
                 RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
-                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - mLastShownTimeNs),
-                        TimeUnit.MILLISECONDS);
+                        (System.nanoTime() - mLastShownTimeNs)
+                                / TimeUtils.NANOSECONDS_PER_MILLISECOND);
             }
         }
     }
@@ -549,8 +548,7 @@ public class NewTabPage
     /** Records UMA for the NTP being hidden and the time spent on it. */
     private void recordNTPHidden() {
         RecordHistogram.recordMediumTimesHistogram("NewTabPage.TimeSpent",
-                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - mLastShownTimeNs),
-                TimeUnit.MILLISECONDS);
+                (System.nanoTime() - mLastShownTimeNs) / TimeUtils.NANOSECONDS_PER_MILLISECOND);
         SuggestionsMetrics.recordSurfaceHidden();
     }
 

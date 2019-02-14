@@ -27,8 +27,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.util.ViewUtils;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * The native recent tabs page. Lists recently closed tabs, open windows and tabs from the user's
  * synced devices, and snapshot documents sent from Chrome to Mobile in an expandable list view.
@@ -129,7 +127,7 @@ public class RecentTabsPage
             mRecentTabsManager.recordRecentTabMetrics();
         } else {
             RecordHistogram.recordLongTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",
-                    SystemClock.elapsedRealtime() - mForegroundTimeMs, TimeUnit.MILLISECONDS);
+                    SystemClock.elapsedRealtime() - mForegroundTimeMs);
         }
     }
 

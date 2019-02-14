@@ -14,7 +14,6 @@ import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of RecordHistogram which does not rely on native and still enables testing of
@@ -56,8 +55,8 @@ public class ShadowRecordHistogram {
     }
 
     @Implementation
-    public static void recordLongTimesHistogram100(String name, long duration, TimeUnit timeUnit) {
-        Pair<String, Integer> key = Pair.create(name, (int) timeUnit.toMillis(duration));
+    public static void recordLongTimesHistogram100(String name, long durationMs) {
+        Pair<String, Integer> key = Pair.create(name, (int) durationMs);
         incrementSampleCount(key);
     }
 

@@ -28,8 +28,6 @@ import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Utility class for external authentication tools.
  *
@@ -44,8 +42,8 @@ public class ExternalAuthUtils {
 
     private final SparseHistogramSample mConnectionResultHistogramSample =
             new SparseHistogramSample("GooglePlayServices.ConnectionResult");
-    private final TimesHistogramSample mRegistrationTimeHistogramSample = new TimesHistogramSample(
-            "Android.StrictMode.CheckGooglePlayServicesTime", TimeUnit.MILLISECONDS);
+    private final TimesHistogramSample mRegistrationTimeHistogramSample =
+            new TimesHistogramSample("Android.StrictMode.CheckGooglePlayServicesTime");
 
     /**
      * Returns the singleton instance of ExternalAuthUtils, creating it if needed.

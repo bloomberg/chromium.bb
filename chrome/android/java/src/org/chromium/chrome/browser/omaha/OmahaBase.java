@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.IntDef;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -28,7 +29,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Keeps tabs on the current state of Chrome, tracking if and when a request should be sent to the
@@ -101,10 +101,10 @@ public class OmahaBase {
             "org.chromium.chrome.browser.omaha.ACTION_REGISTER_REQUEST";
 
     // Delays between events.
-    static final long MS_POST_BASE_DELAY = TimeUnit.HOURS.toMillis(1);
-    static final long MS_POST_MAX_DELAY = TimeUnit.HOURS.toMillis(5);
-    static final long MS_BETWEEN_REQUESTS = TimeUnit.HOURS.toMillis(5);
-    static final int MS_CONNECTION_TIMEOUT = (int) TimeUnit.MINUTES.toMillis(1);
+    static final long MS_POST_BASE_DELAY = DateUtils.HOUR_IN_MILLIS;
+    static final long MS_POST_MAX_DELAY = DateUtils.HOUR_IN_MILLIS * 5;
+    static final long MS_BETWEEN_REQUESTS = DateUtils.HOUR_IN_MILLIS * 5;
+    static final int MS_CONNECTION_TIMEOUT = (int) DateUtils.MINUTE_IN_MILLIS;
 
     // Strings indicating how the Chrome APK arrived on the user's device. These values MUST NOT
     // be changed without updating the corresponding Omaha server strings.

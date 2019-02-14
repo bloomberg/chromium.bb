@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Records metrics related to custom tabs dynamic modules.
@@ -124,32 +123,27 @@ public final class ModuleMetrics {
 
     public static void recordCreateActivityDelegateTime(long startTime) {
         RecordHistogram.recordMediumTimesHistogram(
-                "CustomTabs.DynamicModule.CreateActivityDelegateTime", now() - startTime,
-                TimeUnit.MILLISECONDS);
+                "CustomTabs.DynamicModule.CreateActivityDelegateTime", now() - startTime);
     }
 
     public static void recordCreatePackageContextTime(long startTime) {
         RecordHistogram.recordMediumTimesHistogram(
-                "CustomTabs.DynamicModule.CreatePackageContextTime", now() - startTime,
-                TimeUnit.MILLISECONDS);
+                "CustomTabs.DynamicModule.CreatePackageContextTime", now() - startTime);
     }
 
     public static void recordLoadClassTime(long startTime) {
         RecordHistogram.recordMediumTimesHistogram(
-                "CustomTabs.DynamicModule.EntryPointLoadClassTime", now() - startTime,
-                TimeUnit.MILLISECONDS);
+                "CustomTabs.DynamicModule.EntryPointLoadClassTime", now() - startTime);
     }
 
     public static void recordEntryPointNewInstanceTime(long startTime) {
         RecordHistogram.recordMediumTimesHistogram(
-                "CustomTabs.DynamicModule.EntryPointNewInstanceTime", now() - startTime,
-                TimeUnit.MILLISECONDS);
+                "CustomTabs.DynamicModule.EntryPointNewInstanceTime", now() - startTime);
     }
 
     public static void recordEntryPointInitTime(long startTime) {
         RecordHistogram.recordMediumTimesHistogram(
-                "CustomTabs.DynamicModule.EntryPointInitTime", now() - startTime,
-                TimeUnit.MILLISECONDS);
+                "CustomTabs.DynamicModule.EntryPointInitTime", now() - startTime);
     }
 
     /**

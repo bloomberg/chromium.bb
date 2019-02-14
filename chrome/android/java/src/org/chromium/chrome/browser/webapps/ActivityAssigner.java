@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Before Lollipop, the only way to create multiple retargetable instances of the same Activity
@@ -280,7 +279,7 @@ public class ActivityAssigner {
             final int numSavedEntries = prefs.getInt(mPrefNumSavedEntries, 0);
             try {
                 RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappSharedPrefs",
-                        SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+                        SystemClock.elapsedRealtime() - time);
             } catch (UnsatisfiedLinkError error) {
                 // Intentionally ignored - it's ok to miss recording the metric occasionally.
             }

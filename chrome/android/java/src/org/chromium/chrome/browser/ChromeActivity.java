@@ -186,7 +186,6 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link AsyncInitializationActivity} that builds and manages a {@link CompositorViewHolder}
@@ -1158,8 +1157,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (mToolbarManager != null) {
                 RecordHistogram.recordTimesHistogram(
                         "MobileStartup.ToolbarInflationTime." + simpleName,
-                        mInflateInitialLayoutEndMs - mInflateInitialLayoutBeginMs,
-                        TimeUnit.MILLISECONDS);
+                        mInflateInitialLayoutEndMs - mInflateInitialLayoutBeginMs);
                 mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
             }
 
@@ -1224,8 +1222,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @CallSuper
     protected void recordIntentToCreationTime(long timeMs) {
-        RecordHistogram.recordTimesHistogram(
-                "MobileStartup.IntentToCreationTime", timeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime", timeMs);
     }
 
     @Override

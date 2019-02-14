@@ -30,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Fetches the variations seed before the actual first run of Chrome.
@@ -200,14 +199,14 @@ public class VariationsSeedFetcher {
 
     private void recordSeedFetchTime(long timeDeltaMillis) {
         Log.i(TAG, "Fetched first run seed in " + timeDeltaMillis + " ms");
-        TimesHistogramSample histogram = new TimesHistogramSample(
-                "Variations.FirstRun.SeedFetchTime", TimeUnit.MILLISECONDS);
+        TimesHistogramSample histogram =
+                new TimesHistogramSample("Variations.FirstRun.SeedFetchTime");
         histogram.record(timeDeltaMillis);
     }
 
     private void recordSeedConnectTime(long timeDeltaMillis) {
-        TimesHistogramSample histogram = new TimesHistogramSample(
-                "Variations.FirstRun.SeedConnectTime", TimeUnit.MILLISECONDS);
+        TimesHistogramSample histogram =
+                new TimesHistogramSample("Variations.FirstRun.SeedConnectTime");
         histogram.record(timeDeltaMillis);
     }
 

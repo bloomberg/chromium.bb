@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
@@ -52,7 +53,7 @@ public class OfflineBackgroundTask extends NativeBackgroundTask {
         // has a chance to reschedule base on remaining work.
         BackgroundScheduler.getInstance().scheduleBackup(
                 TaskExtrasPacker.unpackTriggerConditionsFromBundle(taskParameters.getExtras()),
-                BackgroundScheduler.FIVE_MINUTES_IN_MILLISECONDS);
+                DateUtils.MINUTE_IN_MILLIS * 5);
     }
 
     @Override

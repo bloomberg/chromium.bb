@@ -96,7 +96,7 @@ import org.chromium.content_public.browser.WebContents;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
@@ -200,7 +200,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         super.recordIntentToCreationTime(timeMs);
 
         RecordHistogram.recordTimesHistogram(
-                "MobileStartup.IntentToCreationTime.CustomTabs", timeMs, TimeUnit.MILLISECONDS);
+                "MobileStartup.IntentToCreationTime.CustomTabs", timeMs);
     }
 
     @Override

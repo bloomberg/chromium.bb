@@ -68,7 +68,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
@@ -373,8 +372,8 @@ public class WebappActivity extends SingleTabActivity {
         try {
             long time = SystemClock.elapsedRealtime();
             TabState.saveState(tabFile, getActivityTab().getState(), false);
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappSaveState",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram(
+                    "Android.StrictMode.WebappSaveState", SystemClock.elapsedRealtime() - time);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -497,8 +496,7 @@ public class WebappActivity extends SingleTabActivity {
     protected void recordIntentToCreationTime(long timeMs) {
         super.recordIntentToCreationTime(timeMs);
 
-        RecordHistogram.recordTimesHistogram(
-                "MobileStartup.IntentToCreationTime.WebApp", timeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime.WebApp", timeMs);
     }
 
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {

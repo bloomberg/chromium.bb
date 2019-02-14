@@ -16,8 +16,6 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Tracks the first navigation and first contentful paint events for a tab within an activity during
  * startup.
@@ -138,7 +136,7 @@ public class ActivityTabStartupMetricsTracker {
             mFirstCommitTimeMs = SystemClock.uptimeMillis() - mActivityStartTimeMs;
             RecordHistogram.recordMediumTimesHistogram(
                     "Startup.Android.Cold.TimeToFirstNavigationCommit" + mHistogramSuffix,
-                    mFirstCommitTimeMs, TimeUnit.MILLISECONDS);
+                    mFirstCommitTimeMs);
         }
         mShouldTrackStartupMetrics = false;
     }
@@ -156,7 +154,7 @@ public class ActivityTabStartupMetricsTracker {
         if (UmaUtils.hasComeToForeground() && !UmaUtils.hasComeToBackground()) {
             RecordHistogram.recordMediumTimesHistogram(
                     "Startup.Android.Cold.TimeToFirstContentfulPaint" + mHistogramSuffix,
-                    firstContentfulPaintMs - mActivityStartTimeMs, TimeUnit.MILLISECONDS);
+                    firstContentfulPaintMs - mActivityStartTimeMs);
         }
         // This is the last event we track, so destroy this tracker and remove observers.
         destroy();

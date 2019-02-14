@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.tab.Tab;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /** Shows and hides splash screen. */
 public class WebappSplashScreenController extends EmptyTabObserver {
@@ -156,8 +155,8 @@ public class WebappSplashScreenController extends EmptyTabObserver {
                 HISTOGRAM_SPLASHSCREEN_HIDES, reason, SplashHidesReason.NUM_ENTRIES);
 
         assert mSplashShownTimestamp != 0;
-        RecordHistogram.recordMediumTimesHistogram(HISTOGRAM_SPLASHSCREEN_DURATION,
-                splashHiddenTimestamp - mSplashShownTimestamp, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordMediumTimesHistogram(
+                HISTOGRAM_SPLASHSCREEN_DURATION, splashHiddenTimestamp - mSplashShownTimestamp);
     }
 
     /**

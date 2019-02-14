@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Handler for application level tasks to be completed on deferred startup.
@@ -86,16 +85,13 @@ public class DeferredStartupHandler {
 
     private void recordDeferredStartupStats() {
         RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration", mDeferredStartupDuration,
-                TimeUnit.MILLISECONDS);
+                "UMA.Debug.EnableCrashUpload.DeferredStartUpDuration", mDeferredStartupDuration);
         RecordHistogram.recordLongTimesHistogram(
-                "UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration", mMaxTaskDuration,
-                TimeUnit.MILLISECONDS);
+                "UMA.Debug.EnableCrashUpload.DeferredStartUpMaxTaskDuration", mMaxTaskDuration);
         if (UmaUtils.hasComeToForeground()) {
             RecordHistogram.recordLongTimesHistogram(
                     "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
-                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTicks(),
-                    TimeUnit.MILLISECONDS);
+                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTicks());
         }
     }
 

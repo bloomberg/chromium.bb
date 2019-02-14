@@ -72,8 +72,8 @@ public class AwAutofillUMA {
     private static final int NUM_OF_BUCKETS = 50;
 
     private static void recordTimesHistogram(String name, long durationMillis) {
-        RecordHistogram.recordCustomTimesHistogram(name, durationMillis, MIN_TIME_MILLIS,
-                MAX_TIME_MILLIS, TimeUnit.MILLISECONDS, NUM_OF_BUCKETS);
+        RecordHistogram.recordCustomTimesHistogram(
+                name, durationMillis, MIN_TIME_MILLIS, MAX_TIME_MILLIS, NUM_OF_BUCKETS);
     }
 
     private static class SessionRecorder {
