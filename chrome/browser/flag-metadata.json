@@ -89,7 +89,7 @@
   },
   {
     "name": "allow-sxg-certs-without-extension",
-    // "owners": [ "your-team" ],
+    "owners": [ "//content/browser/web_package/OWNERS" ],
     "expiry_milestone": 76
   },
   {
