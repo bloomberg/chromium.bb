@@ -34,7 +34,6 @@ namespace {
 // These constants are used to inject the state of the Media Router action
 // that would be inferred in the production code.
 constexpr bool kInToolbar = true;
-constexpr bool kInOverflowMenu = false;
 constexpr bool kShownByPolicy = true;
 constexpr bool kShownByUser = false;
 
@@ -274,30 +273,6 @@ TEST_F(MediaRouterContextualMenuUnitTest, ActionShownByPolicy) {
   // The checkbox item "Always show icon" should not be shown.
   EXPECT_FALSE(HasCommandId(menu.menu_model(),
                             IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION));
-}
-
-TEST_F(MediaRouterContextualMenuUnitTest, HideActionInOverflowItem) {
-  MediaRouterContextualMenu menu(browser(), kInToolbar, kShownByUser,
-                                 &observer_);
-
-  // When the action icon is in the toolbar, this menu item should say "Hide
-  // in Chrome menu".
-  const base::string16& menu_item_label = menu.menu_model()->GetLabelAt(
-      menu.menu_model()->GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR));
-  EXPECT_EQ(menu_item_label,
-            l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU));
-}
-
-TEST_F(MediaRouterContextualMenuUnitTest, ShowActionInToolbarItem) {
-  MediaRouterContextualMenu menu(browser(), kInOverflowMenu, kShownByUser,
-                                 &observer_);
-
-  // When the action icon is in the overflow menu, this menu item should say
-  // "Show in toolbar".
-  const base::string16& menu_item_label = menu.menu_model()->GetLabelAt(
-      menu.menu_model()->GetIndexOfCommandId(IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR));
-  EXPECT_EQ(menu_item_label,
-            l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR));
 }
 
 TEST_F(MediaRouterContextualMenuUnitTest, NotifyActionController) {

@@ -27,6 +27,8 @@ class MediaRouterActionController : public media_router::IssuesObserver,
  public:
   class Observer {
    public:
+    virtual ~Observer() = default;
+
     virtual void ShowIcon() = 0;
     virtual void HideIcon() = 0;
     // TODO(https://crbug.com/872392): Use the common code path to show and hide

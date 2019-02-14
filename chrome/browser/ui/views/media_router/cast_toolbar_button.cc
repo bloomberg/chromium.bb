@@ -26,6 +26,12 @@ namespace media_router {
 
 // static
 std::unique_ptr<CastToolbarButton> CastToolbarButton::Create(Browser* browser) {
+  // These objects may be null in tests.
+  if (!MediaRouterUIService::Get(browser->profile()) ||
+      !MediaRouterFactory::GetApiForBrowserContext(browser->profile())) {
+    return nullptr;
+  }
+
   std::unique_ptr<MediaRouterContextualMenu> context_menu =
       MediaRouterContextualMenu::CreateForToolbar(
           browser,
