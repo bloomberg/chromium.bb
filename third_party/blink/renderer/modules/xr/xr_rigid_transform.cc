@@ -19,6 +19,9 @@ XRRigidTransform::XRRigidTransform(
 XRRigidTransform::XRRigidTransform(
     std::unique_ptr<TransformationMatrix> transformationMatrix)
     : matrix_(std::move(transformationMatrix)) {
+  if (!matrix_) {
+    matrix_ = TransformationMatrix::Create();
+  }
   DecomposeMatrix();
 }
 
