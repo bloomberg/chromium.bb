@@ -5,8 +5,11 @@
 #include "chromecast/browser/cast_browser_context.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -16,21 +19,26 @@
 #include "chromecast/browser/cast_permission_manager.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 
 namespace chromecast {
 namespace shell {
 
 namespace {
 const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
-}
+}  // namespace
 
-class CastBrowserContext::CastResourceContext :
-    public content::ResourceContext {
+using content::CorsOriginPatternSetter;
+
+class CastBrowserContext::CastResourceContext
+    : public content::ResourceContext {
  public:
   CastResourceContext() {}
   ~CastResourceContext() override {}
@@ -42,17 +50,17 @@ class CastBrowserContext::CastResourceContext :
 CastBrowserContext::CastBrowserContext(
     URLRequestContextFactory* url_request_context_factory)
     : url_request_context_factory_(url_request_context_factory),
-      resource_context_(new CastResourceContext) {
+      resource_context_(new CastResourceContext),
+      shared_cors_origin_access_list_(
+          content::SharedCorsOriginAccessList::Create()) {
   InitWhileIOAllowed();
 }
 
 CastBrowserContext::~CastBrowserContext() {
   BrowserContext::NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
-  content::BrowserThread::DeleteSoon(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      resource_context_.release());
+  content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
+                                     resource_context_.release());
 }
 
 void CastBrowserContext::InitWhileIOAllowed() {
@@ -171,8 +179,44 @@ net::URLRequestContextGetter* CastBrowserContext::CreateMediaRequestContext() {
 
 net::URLRequestContextGetter*
 CastBrowserContext::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path, bool in_memory) {
+    const base::FilePath& partition_path,
+    bool in_memory) {
   return nullptr;
+}
+
+void CastBrowserContext::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    shared_cors_origin_access_list_->SetForOrigin(
+        source_origin, std::move(allow_patterns), std::move(block_patterns),
+        std::move(closure));
+  } else {
+    auto barrier_closure = BarrierClosure(2, std::move(closure));
+
+    // Keep profile storage partitions' NetworkContexts synchronized.
+    auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+        source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+        CorsOriginPatternSetter::ClonePatterns(block_patterns),
+        barrier_closure);
+    ForEachStoragePartition(
+        this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                                  base::RetainedRef(profile_setter.get())));
+
+    // Keep the per-profile access list up to date so that we can use this to
+    // restore NetworkContext settings at anytime, e.g. on restarting the
+    // network service.
+    shared_cors_origin_access_list_->SetForOrigin(
+        source_origin, std::move(allow_patterns), std::move(block_patterns),
+        barrier_closure);
+  }
+}
+
+const content::SharedCorsOriginAccessList*
+CastBrowserContext::GetSharedCorsOriginAccessList() const {
+  return shared_cors_origin_access_list_.get();
 }
 
 }  // namespace shell
