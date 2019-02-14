@@ -110,9 +110,11 @@ void EventBasedStatusReportingService::UsageTimeLimitWarning() {
 void EventBasedStatusReportingService::RequestStatusReport(
     StatusReportEvent event) {
   VLOG(1) << StatusReportEventToString(event);
-  ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
-      ->RequestImmediateStatusReport();
-  LogStatusReportEventUMA(event);
+  bool was_scheduled =
+      ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+          ->RequestImmediateStatusReport();
+  if (was_scheduled)
+    LogStatusReportEventUMA(event);
 }
 
 void EventBasedStatusReportingService::LogStatusReportEventUMA(

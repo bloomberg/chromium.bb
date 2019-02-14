@@ -34,7 +34,10 @@ class ConsumerStatusReportingService : public KeyedService {
  public:
   explicit ConsumerStatusReportingService(content::BrowserContext* context);
   ~ConsumerStatusReportingService() override;
-  virtual void RequestImmediateStatusReport();
+
+  // Returns true if the status report has been scheduled. Otherwise, returns
+  // false.
+  virtual bool RequestImmediateStatusReport();
 
   // Get the child's usage time so far today.
   base::TimeDelta GetChildScreenTime() const;
