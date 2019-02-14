@@ -33,6 +33,7 @@ class Transform;
 namespace viz {
 class ClientResourceProvider;
 class ContextProvider;
+class RasterContextProvider;
 class RenderPass;
 class SharedBitmapReporter;
 }  // namespace viz
@@ -79,6 +80,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   // compositing |shared_bitmap_reporter| should be provided. If there is a
   // non-null |context_provider| we assume GPU compositing.
   VideoResourceUpdater(viz::ContextProvider* context_provider,
+                       viz::RasterContextProvider* raster_context_provider,
                        viz::SharedBitmapReporter* shared_bitmap_reporter,
                        viz::ClientResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
@@ -131,7 +133,9 @@ class MEDIA_EXPORT VideoResourceUpdater
     gfx::Size size_in_pixels;
   };
 
-  bool software_compositor() const { return context_provider_ == nullptr; }
+  bool software_compositor() const {
+    return context_provider_ == nullptr && raster_context_provider_ == nullptr;
+  }
 
   // Obtain a resource of the right format by either recycling an
   // unreferenced but appropriately formatted resource, or by
@@ -183,6 +187,7 @@ class MEDIA_EXPORT VideoResourceUpdater
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   viz::ContextProvider* const context_provider_;
+  viz::RasterContextProvider* const raster_context_provider_;
   viz::SharedBitmapReporter* const shared_bitmap_reporter_;
   viz::ClientResourceProvider* const resource_provider_;
   const bool use_stream_video_draw_quad_;

@@ -110,7 +110,7 @@ class FrameFetchContext : public media::ResourceFetchContext {
 // establishing a GPUChannelHost, which must be done on the main thread.
 void PostContextProviderToCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<viz::ContextProvider> unwanted_context_provider,
+    scoped_refptr<viz::RasterContextProvider> unwanted_context_provider,
     blink::WebSubmitterConfigurationCallback set_context_provider_callback) {
   // |unwanted_context_provider| needs to be destroyed on the current thread.
   // Therefore, post a reply-callback that retains a reference to it, so that it
@@ -118,7 +118,8 @@ void PostContextProviderToCallback(
   main_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
-          [](scoped_refptr<viz::ContextProvider> unwanted_context_provider,
+          [](scoped_refptr<viz::RasterContextProvider>
+                 unwanted_context_provider,
              blink::WebSubmitterConfigurationCallback cb) {
             auto* rti = content::RenderThreadImpl::current();
             auto context_provider = rti->GetVideoFrameCompositorContextProvider(
@@ -128,9 +129,9 @@ void PostContextProviderToCallback(
           },
           unwanted_context_provider,
           media::BindToCurrentLoop(std::move(set_context_provider_callback))),
-      base::BindOnce(
-          [](scoped_refptr<viz::ContextProvider> unwanted_context_provider) {},
-          unwanted_context_provider));
+      base::BindOnce([](scoped_refptr<viz::RasterContextProvider>
+                            unwanted_context_provider) {},
+                     unwanted_context_provider));
 }
 
 }  // namespace

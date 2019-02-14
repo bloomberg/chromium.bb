@@ -86,7 +86,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // requested.
   void OnReceivedContextProvider(
       bool use_gpu_compositing,
-      scoped_refptr<viz::ContextProvider> context_provider);
+      scoped_refptr<viz::RasterContextProvider> context_provider);
 
   // Starts submission and calls UpdateSubmissionState(); which may submit.
   void StartSubmitting();
@@ -124,7 +124,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       scoped_refptr<media::VideoFrame> video_frame);
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
-  scoped_refptr<viz::ContextProvider> context_provider_;
+  scoped_refptr<viz::RasterContextProvider> context_provider_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojom::blink::SurfaceEmbedderPtr surface_embedder_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
