@@ -617,14 +617,11 @@ def _ConfigOutDirAndToolsPrefix(out_dir):
 
 
 def _Analyze(apk_path, chartjson, args):
-  metric_prefix = os.path.basename(args.input) + '_'
-  metric_prefix = metric_prefix.replace('.minimal.apks', '.apk')
 
-  def report_func(title, *args):
+  def report_func(*args):
     # Do not add any new metrics without also documenting them in:
     # //docs/speed/binary_size/metrics.md.
-    title = metric_prefix + title
-    perf_tests_results_helper.ReportPerfResult(chartjson, title, *args)
+    perf_tests_results_helper.ReportPerfResult(chartjson, *args)
 
   out_dir, tool_prefix = _ConfigOutDirAndToolsPrefix(args.out_dir)
   is_bundle = args.input.endswith('.apks')
