@@ -4,11 +4,13 @@
 
 import unittest
 
+from telemetry import decorators
 from test_results import analysis
 from test_results import frames
 
 
 class TestAnalysis(unittest.TestCase):
+  @decorators.Disabled('chromeos')  # crbug.com/921762
   def testFilterBy(self):
     builders = frames.pandas.DataFrame.from_records([
       ['chromium.perf', 'my-mac-bot', 'common_tests'],

@@ -10,10 +10,12 @@ import unittest
 
 import mock
 
+from telemetry import decorators
 from test_results import frames
 
 
 class TestDataFrames(unittest.TestCase):
+  @decorators.Disabled('chromeos')  # crbug.com/921762
   def testBuildersDataFrame(self):
     sample_data = {
         'masters': [
@@ -107,6 +109,7 @@ class TestDataFrames(unittest.TestCase):
     self.assertItemsEqual(
         list(frames._IterTestResults(tests_dict)), expected)
 
+  @decorators.Disabled('chromeos')  # crbug.com/921762
   def testTestResultsDataFrame(self):
     data = {
         'android-bot': {
@@ -151,6 +154,7 @@ class TestDataFrames(unittest.TestCase):
     self.assertEqual(len(selection), 1)
     self.assertTrue(selection.iloc[0]['result'], 'N')
 
+  @decorators.Disabled('chromeos')  # crbug.com/921762
   def testTestResultsDataFrame_empty(self):
     data = {
         'android-bot': {
@@ -177,6 +181,7 @@ class TestDataFrames(unittest.TestCase):
     with self.assertRaises(AssertionError):
       frames.TestResultsDataFrame(data)
 
+  @decorators.Disabled('chromeos')  # crbug.com/921762
   def testGetWithCache(self):
     def make_frame_1():
       # test_2 was failing.
