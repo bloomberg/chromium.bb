@@ -134,16 +134,11 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
 
   EXPECT_EQ("steps(1, start)",
             ParseTimingFunction("step-start", exception_state)->ToString());
-  EXPECT_EQ("steps(1, middle)",
-            ParseTimingFunction("step-middle", exception_state)->ToString());
   EXPECT_EQ("steps(1)",
             ParseTimingFunction("step-end", exception_state)->ToString());
   EXPECT_EQ(
       "steps(3, start)",
       ParseTimingFunction("steps(3, start)", exception_state)->ToString());
-  EXPECT_EQ(
-      "steps(3, middle)",
-      ParseTimingFunction("steps(3, middle)", exception_state)->ToString());
   EXPECT_EQ("steps(3)",
             ParseTimingFunction("steps(3, end)", exception_state)->ToString());
   EXPECT_EQ("steps(3)",

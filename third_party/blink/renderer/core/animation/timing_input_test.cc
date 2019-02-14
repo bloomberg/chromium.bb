@@ -380,12 +380,6 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction) {
            .timing_function);
   EXPECT_TRUE(success);
   EXPECT_EQ(
-      *StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::MIDDLE),
-      *ApplyTimingInputString(scope.GetIsolate(), "easing", "step-middle",
-                              success)
-           .timing_function);
-  EXPECT_TRUE(success);
-  EXPECT_EQ(
       *StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::END),
       *ApplyTimingInputString(scope.GetIsolate(), "easing", "step-end", success)
            .timing_function);
@@ -400,12 +394,6 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction) {
       *ApplyTimingInputString(scope.GetIsolate(), "easing", "steps(3, start)",
                               success)
            .timing_function);
-  EXPECT_TRUE(success);
-  EXPECT_EQ(*StepsTimingFunction::Create(
-                5, StepsTimingFunction::StepPosition::MIDDLE),
-            *ApplyTimingInputString(scope.GetIsolate(), "easing",
-                                    "steps(5, middle)", success)
-                 .timing_function);
   EXPECT_TRUE(success);
   EXPECT_EQ(
       *StepsTimingFunction::Create(5, StepsTimingFunction::StepPosition::END),

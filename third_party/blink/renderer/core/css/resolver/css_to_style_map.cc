@@ -411,9 +411,7 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
 }
 
 scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
-    const CSSValue& value,
-    bool allow_step_middle,
-    Document* document) {
+    const CSSValue& value) {
   // FIXME: We should probably only call into this function with a valid
   // single timing function value which isn't initial or inherit. We can
   // currently get into here with initial since the parser expands unset
@@ -439,17 +437,6 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
       case CSSValueStepStart:
         return StepsTimingFunction::Preset(
             StepsTimingFunction::StepPosition::START);
-      case CSSValueStepMiddle:
-        if (allow_step_middle) {
-          DCHECK(document);
-          if (document) {
-            Deprecation::CountDeprecation(
-                *document, WebFeature::kDeprecatedTimingFunctionStepMiddle);
-          }
-          return StepsTimingFunction::Preset(
-              StepsTimingFunction::StepPosition::MIDDLE);
-        }
-        return CSSTimingData::InitialTimingFunction();
       case CSSValueStepEnd:
         return StepsTimingFunction::Preset(
             StepsTimingFunction::StepPosition::END);
@@ -479,17 +466,6 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
 
   const cssvalue::CSSStepsTimingFunctionValue& steps_timing_function =
       cssvalue::ToCSSStepsTimingFunctionValue(value);
-  if (steps_timing_function.GetStepPosition() ==
-      StepsTimingFunction::StepPosition::MIDDLE) {
-    if (!allow_step_middle) {
-      return CSSTimingData::InitialTimingFunction();
-    }
-    DCHECK(document);
-    if (document) {
-      Deprecation::CountDeprecation(
-          *document, WebFeature::kDeprecatedTimingFunctionStepMiddle);
-    }
-  }
   return StepsTimingFunction::Create(steps_timing_function.NumberOfSteps(),
                                      steps_timing_function.GetStepPosition());
 }

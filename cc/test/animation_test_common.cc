@@ -285,7 +285,7 @@ int AddOpacityStepsToAnimation(Animation* animation,
       KeyframedFloatAnimationCurve::Create());
 
   std::unique_ptr<TimingFunction> func = StepsTimingFunction::Create(
-      num_steps, StepsTimingFunction::StepPosition::MIDDLE);
+      num_steps, StepsTimingFunction::StepPosition::START);
   if (duration > 0.0)
     curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), start_opacity,
                                              std::move(func)));

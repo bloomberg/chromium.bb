@@ -110,8 +110,6 @@ float StepsTimingFunction::GetStepsStartOffset() const {
   switch (step_position_) {
     case StepPosition::START:
       return 1;
-    case StepPosition::MIDDLE:
-      return 0.5;
     case StepPosition::END:
       return 0;
     default:

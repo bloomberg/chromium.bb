@@ -264,8 +264,7 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
     exception_state.ThrowTypeError("Easing may not be set to a list of values");
     return nullptr;
   }
-  return CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0), true,
-                                                   document);
+  return CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0));
 }
 
 String AnimationInputHelpers::PropertyHandleToKeyframeAttribute(

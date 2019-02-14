@@ -449,12 +449,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "\"supportedNetworks\" field",
               kM64, "5725727580225536")};
 
-    case WebFeature::kDeprecatedTimingFunctionStepMiddle:
-      return {
-          "DeprecatedTimingFunctionStepMiddle", kM62,
-          WillBeRemoved("The step timing function with step position 'middle'",
-                        kM62, "5189363944128512")};
-
     case WebFeature::kHTMLImports:
       return {"DeprecatedHTMLImports", kM73,
               ReplacedWillBeRemoved("HTML Imports", "ES modules", kM73,

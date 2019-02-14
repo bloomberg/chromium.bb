@@ -780,7 +780,6 @@
     "ease-out",
     "ease-in-out",
     "step-start",
-    "step-middle",
     "step-end",
     "steps",
     "frames",
