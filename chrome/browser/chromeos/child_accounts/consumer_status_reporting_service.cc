@@ -97,8 +97,8 @@ void ConsumerStatusReportingService::CreateStatusUploaderIfNeeded(
       base::ThreadTaskRunnerHandle::Get(), kStatusUploadFrequency);
 }
 
-void ConsumerStatusReportingService::RequestImmediateStatusReport() {
-  status_uploader_->ScheduleNextStatusUploadImmediately();
+bool ConsumerStatusReportingService::RequestImmediateStatusReport() {
+  return status_uploader_->ScheduleNextStatusUploadImmediately();
 }
 
 base::TimeDelta ConsumerStatusReportingService::GetChildScreenTime() const {

@@ -41,7 +41,11 @@ class TestingConsumerStatusReportingService
       : ConsumerStatusReportingService(context) {}
   ~TestingConsumerStatusReportingService() override = default;
 
-  void RequestImmediateStatusReport() override { performed_status_reports_++; }
+  bool RequestImmediateStatusReport() override {
+    performed_status_reports_++;
+    return true;
+  }
+
   int performed_status_reports() const { return performed_status_reports_; }
 
  private:
