@@ -6,6 +6,7 @@ module page_load_metrics.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/platform/web_feature.mojom";
+import "url/mojom/origin.mojom";
 
 // TimeDeltas below relative to navigation start.
 struct DocumentTiming {
@@ -224,6 +225,9 @@ struct ResourceDataUpdate {
 
   // Whether this resource was fetched via proxy.
   bool proxy_used;
+
+  // The origin of this resource.
+  url.mojom.Origin origin;
 };
 
 // Metrics about how the page rendered during the browsing session.

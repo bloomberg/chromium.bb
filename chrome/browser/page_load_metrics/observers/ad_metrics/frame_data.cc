@@ -20,6 +20,7 @@ const int kMinimumVisibleFrameArea = 25;
 FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
     : frame_bytes_(0u),
       frame_network_bytes_(0u),
+      same_origin_bytes_(0u),
       frame_tree_node_id_(frame_tree_node_id),
       origin_status_(OriginStatus::kUnknown),
       frame_navigated_(false),
@@ -47,16 +48,26 @@ void FrameData::UpdateForNavigation(content::RenderFrameHost* render_frame_host,
           render_frame_host, !frame_navigated /* use_parent_origin */)
           ? OriginStatus::kSame
           : OriginStatus::kCross;
+
+  origin_ = frame_navigated
+                ? render_frame_host->GetLastCommittedOrigin()
+                : render_frame_host->GetParent()->GetLastCommittedOrigin();
 }
 
 void FrameData::ProcessResourceLoadInFrame(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
+  bool is_same_origin = origin_.IsSameOriginWith(resource->origin);
   frame_bytes_ += resource->delta_bytes;
   frame_network_bytes_ += resource->delta_bytes;
+  if (is_same_origin)
+    same_origin_bytes_ += resource->delta_bytes;
 
   // Report cached resource body bytes to overall frame bytes.
-  if (resource->is_complete && resource->was_fetched_via_cache)
+  if (resource->is_complete && resource->was_fetched_via_cache) {
     frame_bytes_ += resource->encoded_body_length;
+    if (is_same_origin)
+      same_origin_bytes_ += resource->encoded_body_length;
+  }
 
   if (frame_bytes_ > kFrameSizeInterventionByteThreshold &&
       user_activation_status_ == UserActivationStatus::kNoActivation) {

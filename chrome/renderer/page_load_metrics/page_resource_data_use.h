@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -77,6 +78,8 @@ class PageResourceDataUse {
   bool is_secure_scheme_;
   bool proxy_used_;
   bool is_primary_frame_resource_ = false;
+
+  url::Origin origin_;
 
   std::string mime_type_;
 
