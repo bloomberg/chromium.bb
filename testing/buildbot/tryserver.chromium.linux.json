@@ -68,6 +68,14 @@
       },
       {
         "isolate_coverage_data": true,
+        "name": "webkit_unit_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_unittests"
+      },
+      {
+        "isolate_coverage_data": true,
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -675,13 +683,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "webkit_unit_tests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "wm_unittests"
       },
       {
@@ -700,7 +701,7 @@
           "--num-retries=3"
         ],
         "isolate_coverage_data": true,
-        "isolate_name": "webkit_layout_tests_exparchive",
+        "isolate_name": "blink_web_tests_exparchive",
         "name": "webkit_layout_tests",
         "results_handler": "layout tests",
         "swarming": {

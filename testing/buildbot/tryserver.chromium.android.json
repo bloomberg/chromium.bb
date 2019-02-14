@@ -60,6 +60,7 @@
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "webkit_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -87,7 +88,7 @@
             }
           ]
         },
-        "test": "webkit_unit_tests"
+        "test": "blink_unittests"
       }
     ],
     "isolated_scripts": [
@@ -99,7 +100,7 @@
           "--disable-breakpad",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
-        "isolate_name": "webkit_layout_tests_exparchive",
+        "isolate_name": "blink_web_tests_exparchive",
         "merge": {
           "args": [
             "--verbose"

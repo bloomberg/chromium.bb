@@ -1946,7 +1946,7 @@
       },
       {
         "name": "webkit_lint",
-        "script": "webkit_lint.py",
+        "script": "blink_lint_expectations.py",
         "swarming": {}
       }
     ]
@@ -2655,7 +2655,7 @@
       },
       {
         "name": "webkit_lint",
-        "script": "webkit_lint.py",
+        "script": "blink_lint_expectations.py",
         "swarming": {}
       }
     ]

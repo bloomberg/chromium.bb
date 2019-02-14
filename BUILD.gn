@@ -171,7 +171,7 @@ group("gn_all") {
       "//net:net_perftests",
       "//third_party/angle/src/tests:angle_end2end_tests",
       "//third_party/angle/src/tests:angle_unittests",
-      "//third_party/blink/renderer/controller:webkit_unit_tests",
+      "//third_party/blink/renderer/controller:blink_unittests",
       "//third_party/blink/renderer/platform/wtf:wtf_unittests",
       "//ui/gl:gl_unittests",
       "//url/ipc:url_ipc_unittests",
@@ -920,17 +920,17 @@ if (!is_ios) {
     testonly = true
 
     deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
       "//third_party/blink/public:all_blink",
     ]
   }
 
-  # Layout tests runner
+  # Web tests runner
   # third_party/blink/tools/run_web_tests.py
-  group("run_webkit_tests") {
+  group("run_web_tests") {
     testonly = true
     deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
     ]
   }
 
@@ -960,21 +960,21 @@ if (!is_ios) {
   # The _exparchive at the end of the name indicates to the isolate recipe
   # that the isolate should be archived separately using the `exparchive`
   # command, rather than as part of the normal `batcharchive` command.
-  group("webkit_layout_tests_exparchive") {
+  group("blink_web_tests_exparchive") {
     testonly = true
     deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
     ]
     data_deps = [
-      ":webkit_layout_tests",
+      ":blink_web_tests",
     ]
   }
 
-  # This target contains only a small subset of the layout tests,
+  # This target contains only a small subset of the web tests,
   # and is useful for testing with the regular isolate mechanism.
-  # To run the full layout test suite you need to use
-  # :webkit_layout_tests_exparchive, above, instead.
-  generated_script_test("webkit_layout_tests") {
+  # To run the full web test suite you need to use
+  # :blink_web_tests_exparchive, above, instead.
+  generated_script_test("blink_web_tests") {
     generator_script =
         "//testing/scripts/generators/gen_run_web_tests_script.py"
     extra_args = []
@@ -1101,7 +1101,7 @@ if (!is_ios) {
     ]
   }
 
-  group("webkit_python_tests") {
+  group("blink_python_tests") {
     data = [
       "//build/android/",
       "//components/crash/content/tools/generate_breakpad_symbols.py",

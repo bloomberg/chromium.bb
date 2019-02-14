@@ -59,12 +59,12 @@ jumbo_source_set("unit_tests") {
 
 jumbo_source_set("test_support") {
   # This target defines test files for platform:test_support that
-  # blink_platform_unittests and webkit_unit_tests can use.
+  # blink_platform_unittests and blink_unittests can use.
   visibility = [ "//third_party/blink/renderer/platform:test_support" ]
   testonly = true
 
   # Source files that can be called from blink_platform_unittests and
-  # webkit_unit_tests.
+  # blink_unittests.
   sources = [
     "testing/fake_blob.cc",
     "testing/fake_blob.h",
