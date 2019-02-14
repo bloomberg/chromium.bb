@@ -350,12 +350,10 @@ void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*) {
   }
 }
 
-void InspectorEmulationAgent::WillSendRequest(
+void InspectorEmulationAgent::PrepareRequest(
     ExecutionContext* execution_context,
-    unsigned long identifier,
     DocumentLoader* loader,
     ResourceRequest& request,
-    const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
     ResourceType resource_type) {
   if (!accept_language_override_.Get().IsEmpty() &&

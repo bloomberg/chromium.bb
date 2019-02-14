@@ -99,7 +99,7 @@
         "applyAcceptLanguageOverride",
         "applyUserAgentOverride",
         "frameStartedLoading",
-        "willSendRequest",
+        "prepareRequest",
       ]
     },
     InspectorLayerTreeAgent: {
@@ -137,6 +137,7 @@
         "frameClearedScheduledNavigation",
         "frameScheduledNavigation",
         "markResourceAsCached",
+        "prepareRequest",
         "scriptImported",
         "shouldBlockRequest",
         "shouldBypassServiceWorker",

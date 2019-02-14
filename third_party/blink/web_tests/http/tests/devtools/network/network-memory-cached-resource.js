@@ -8,36 +8,30 @@
   await TestRunner.showPanel('network');
   await TestRunner.navigatePromise(`resources/memory-cached-resource.html`);
 
-  var finished = false;
-  TestRunner.NetworkAgent.setCacheDisabled(true).then(step1);
-
-  function findResource(url, status, cached) {
-    return NetworkTestRunner.networkRequests().find(
-        request => url.test(request.url()) && (status === request.statusCode) && (cached === request.cached()));
+  function waitOnResource(url, status, cached) {
+    return new Promise(resolve => {
+      const eventName = SDK.NetworkManager.Events.RequestFinished;
+      function onRequestFinished(event) {
+        const request = event.data;
+        if (url.test(request.url()) && status === request.statusCode && cached === request.cached()) {
+          TestRunner.networkManager.removeEventListener(eventName, onRequestFinished);
+          resolve(request);
+        }
+      }
+      TestRunner.networkManager.addEventListener(eventName, onRequestFinished);
+    });
   }
 
-  function step1() {
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
-    TestRunner.reloadPage(step2);
-  }
+  await TestRunner.NetworkAgent.setCacheDisabled(true);
+  await TestRunner.reloadPage();
+  await waitOnResource(/abe\.png/, 200, false);
+  TestRunner.addResult('An uncached resource is found.');
 
-  function step2() {
-    TestRunner.addIframe('memory-cached-resource.html');
-  }
+  await TestRunner.NetworkAgent.setCacheDisabled(false);
+  const cached = waitOnResource(/abe\.png/, 200, true);
+  await TestRunner.addIframe('memory-cached-resource.html');
+  await cached;
+  TestRunner.addResult('A cached resource is found.');
 
-  function onRequest() {
-    if (!finished && findResource(/abe\.png/, 200, false) && findResource(/abe\.png/, 200, true)) {
-      finished = true;
-      TestRunner.addResult('Memory-cached resource found.');
-      step3();
-    }
-  }
-
-  function step3() {
-    TestRunner.NetworkAgent.setCacheDisabled(false).then(step4);
-  }
-
-  function step4() {
-    TestRunner.completeTest();
-  }
+  TestRunner.completeTest();
 })();

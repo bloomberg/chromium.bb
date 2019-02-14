@@ -86,7 +86,7 @@ class CORE_EXPORT InspectorTraceEvents
   void WillSendRequest(ExecutionContext*,
                        unsigned long identifier,
                        DocumentLoader*,
-                       ResourceRequest&,
+                       const ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
