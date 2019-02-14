@@ -512,6 +512,8 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
                   0xFF);
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW, bg_color);
+  border->SetCornerRadius(
+      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH));
   SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
   SetBorder(std::move(border));
 

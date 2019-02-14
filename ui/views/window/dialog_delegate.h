@@ -110,6 +110,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // LayoutProvider's snapping.
   virtual bool ShouldSnapFrameWidth() const;
 
+  // Returns whether the dialog should have round corners
+  virtual bool ShouldHaveRoundCorners() const;
+
   // Overridden from WidgetDelegate:
   View* GetInitiallyFocusedView() override;
   DialogDelegate* AsDialogDelegate() override;
