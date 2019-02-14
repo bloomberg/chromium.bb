@@ -127,8 +127,9 @@ class NotificationPlatformBridgeMacTest : public BrowserWithTestWindowTest {
 
   NSMutableDictionary* BuildDefaultNotificationResponse() {
     return [NSMutableDictionary
-        dictionaryWithDictionary:[NotificationResponseBuilder
-                                     buildDictionary:BuildNotification()]];
+        dictionaryWithDictionary:
+            [NotificationResponseBuilder
+                buildActivatedDictionary:BuildNotification()]];
   }
 
   NSUserNotificationCenter* notification_center() {
