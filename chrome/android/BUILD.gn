@@ -1507,12 +1507,6 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_apk") {
   is_modern = true
 }
 
-chrome_public_apk_or_module_tmpl("chrome_public_base_bundle_module") {
-  target_type = "android_app_bundle_module"
-  is_base_module = true
-  module_name = "ChromePublicBase"
-}
-
 chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
   target_type = "android_app_bundle_module"
   module_name = "ChromeModernPublicBase"
@@ -1872,22 +1866,6 @@ if (modularize_vr) {
     version_name = chrome_version_name
     uncompress_shared_libraries = chromium_linker_supported
   }
-}
-
-# Chrome Android application bundles.
-android_app_bundle("chrome_public_bundle") {
-  bundle_name = "ChromePublic"
-  base_module_target = ":chrome_public_base_bundle_module"
-  command_line_flags_file = "chrome-command-line"
-  if (!is_java_debug) {
-    proguard_enabled = true
-  }
-
-  # Signing is very slow, only do that for official builds.
-  sign_bundle = is_official_build
-
-  enable_language_splits = enable_chrome_language_splits
-  compress_shared_libraries = true
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
