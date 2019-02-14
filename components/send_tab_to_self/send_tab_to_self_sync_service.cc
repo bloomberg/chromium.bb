@@ -16,7 +16,7 @@ namespace send_tab_to_self {
 
 SendTabToSelfSyncService::SendTabToSelfSyncService(
     version_info::Channel channel,
-    const syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
   bridge_ = std::make_unique<send_tab_to_self::SendTabToSelfBridge>(
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::SEND_TAB_TO_SELF,

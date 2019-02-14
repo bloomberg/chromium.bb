@@ -24,15 +24,24 @@ namespace send_tab_to_self {
 
 SendTabToSelfBridge::SendTabToSelfBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-    const syncer::LocalDeviceInfoProvider* device_info_provider,
+    syncer::LocalDeviceInfoProvider* local_device_info_provider,
     base::Clock* clock)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      local_device_info_provider_(device_info_provider),
+      local_device_info_provider_(local_device_info_provider),
       clock_(clock) {
-  DCHECK(device_info_provider);
+  DCHECK(local_device_info_provider);
   DCHECK(clock_);
-  auto batch = std::make_unique<syncer::MetadataBatch>();
-  this->change_processor()->ModelReadyToSync(std::move(batch));
+
+  if (local_device_info_provider->GetLocalDeviceInfo()) {
+    OnDeviceProviderInitialized();
+  } else {
+    device_subscription_ =
+        local_device_info_provider->RegisterOnInitializedCallback(
+            base::BindRepeating(
+                &SendTabToSelfBridge::OnDeviceProviderInitialized,
+                base::Unretained(this)));
+  }
+
   // TODO(jeffreycohen): Create a local store and read meta data from it.
 }
 
@@ -160,18 +169,13 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   std::string guid = base::GenerateGUID();
 
-  // TODO(jeffreycohen) Handle the fact that local device info may not be
-  // guaranteed in production code as it may take some time to get initialized.
-  DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
-
   // Assure that we don't have a guid collision.
   DCHECK_EQ(GetEntryByGUID(guid), nullptr);
   std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
-  std::string device_name =
-      local_device_info_provider_->GetLocalDeviceInfo()->client_name();
 
   auto entry = std::make_unique<SendTabToSelfEntry>(
-      guid, url, trimmed_title, clock_->Now(), navigation_time, device_name);
+      guid, url, trimmed_title, clock_->Now(), navigation_time,
+      local_device_name_);
 
   syncer::InMemoryMetadataChangeList metadata_change_list;
 
@@ -228,6 +232,16 @@ void SendTabToSelfBridge::NotifySendTabToSelfEntryDeleted(
   for (SendTabToSelfModelObserver& observer : observers_) {
     observer.SendTabToSelfEntriesRemoved(guids);
   }
+}
+
+void SendTabToSelfBridge::OnDeviceProviderInitialized() {
+  device_subscription_.reset();
+  local_device_name_ =
+      local_device_info_provider_->GetLocalDeviceInfo()->client_name();
+
+  auto batch = std::make_unique<syncer::MetadataBatch>();
+
+  this->change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 }  // namespace send_tab_to_self
