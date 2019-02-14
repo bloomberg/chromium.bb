@@ -208,8 +208,8 @@ void UsageStatsBridge::OnGetEventsDone(ScopedJavaGlobalRef<jobject> callback,
   JNIEnv* env = AttachCurrentThread();
 
   if (!isSuccess(error)) {
-    RunObjectCallbackAndroid(
-        callback, ToJavaArrayOfByteArray(env, std::vector<std::string>()));
+    Java_UsageStatsBridge_createEventListAndRunCallback(
+        env, ToJavaArrayOfByteArray(env, std::vector<std::string>()), callback);
     return;
   }
 
@@ -253,8 +253,9 @@ void UsageStatsBridge::OnGetAllTokenMappingsDone(
   JNIEnv* env = AttachCurrentThread();
 
   if (!isSuccess(error)) {
-    RunObjectCallbackAndroid(
-        callback, ToJavaArrayOfStrings(env, std::vector<std::string>()));
+    Java_UsageStatsBridge_createMapAndRunCallback(
+        env, ToJavaArrayOfStrings(env, std::vector<std::string>()),
+        ToJavaArrayOfStrings(env, std::vector<std::string>()), callback);
     return;
   }
 
