@@ -343,9 +343,9 @@ typedef struct AV1Common {
 
   // For encoder, we have a two-level mapping from reference frame type to the
   // corresponding buffer in the buffer pool:
-  // * 'remapped_ref_idx[i - 1]' maps reference type ‘i’ (range: LAST_FRAME ...
-  // EXTREF_FRAME) to a remapped index ‘j’ (in range: 0 ... REF_FRAMES - 1)
-  // * Later, 'cm->ref_frame_map[j]' maps the remapped index ‘j’ to a pointer to
+  // * 'remapped_ref_idx[i - 1]' maps reference type 'i' (range: LAST_FRAME ...
+  // EXTREF_FRAME) to a remapped index 'j' (in range: 0 ... REF_FRAMES - 1)
+  // * Later, 'cm->ref_frame_map[j]' maps the remapped index 'j' to a pointer to
   // the reference counted buffer structure RefCntBuffer, taken from the buffer
   // pool cm->buffer_pool->frame_bufs.
   //
@@ -364,10 +364,10 @@ typedef struct AV1Common {
   struct scale_factors ref_scale_factors[REF_FRAMES];
 
   // For decoder, ref_frame_map[i] maps reference type 'i' to a pointer to
-  // the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
+  // the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
   // For encoder, ref_frame_map[j] (where j = remapped_ref_idx[i]) maps
   // remapped reference index 'j' (that is, original reference type 'i') to
-  // a pointer to the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
+  // a pointer to the buffer in the buffer pool 'cm->buffer_pool.frame_bufs'.
   RefCntBuffer *ref_frame_map[REF_FRAMES];
 
   // Prepare ref_frame_map for the next frame.
