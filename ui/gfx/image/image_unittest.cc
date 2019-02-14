@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -573,6 +575,72 @@ TEST_F(ImageTest, MoveAssign) {
 
   EXPECT_EQ(0U, image1.RepresentationCount());
   EXPECT_EQ(1U, image2.RepresentationCount());
+}
+
+TEST_F(ImageTest, Copy_PreservesRepresentation) {
+  const gfx::Size kSize1x(25, 25);
+  const gfx::Size kSize2x(50, 50);
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(
+      gfx::ImagePNGRep(gt::CreatePNGBytes(kSize1x.width()), 1.0f));
+  image_png_reps.push_back(
+      gfx::ImagePNGRep(gt::CreatePNGBytes(kSize2x.width()), 2.0f));
+  gfx::Image image(image_png_reps);
+
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  EXPECT_EQ(kSize1x, image_skia.size());
+  SkISize size = image_skia.GetRepresentation(2.0f).GetBitmap().dimensions();
+  EXPECT_EQ(kSize2x, gfx::Size(size.fWidth, size.fHeight));
+
+  gfx::Image image2(image);
+  gfx::ImageSkia image_skia2 = image2.AsImageSkia();
+  EXPECT_EQ(kSize1x, image_skia2.size());
+  size = image_skia2.GetRepresentation(2.0f).GetBitmap().dimensions();
+  EXPECT_EQ(kSize2x, gfx::Size(size.fWidth, size.fHeight));
+
+  EXPECT_TRUE(image_skia.BackedBySameObjectAs(image_skia2));
+}
+
+TEST_F(ImageTest, Copy_PreventsDuplication) {
+  const gfx::Size kSize1x(25, 25);
+  const gfx::Size kSize2x(50, 50);
+  std::vector<gfx::ImagePNGRep> image_png_reps;
+  image_png_reps.push_back(
+      gfx::ImagePNGRep(gt::CreatePNGBytes(kSize1x.width()), 1.0f));
+  image_png_reps.push_back(
+      gfx::ImagePNGRep(gt::CreatePNGBytes(kSize2x.width()), 2.0f));
+  gfx::Image image(image_png_reps);
+
+  gfx::Image image2(image);
+
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  EXPECT_EQ(kSize1x, image_skia.size());
+  SkISize size = image_skia.GetRepresentation(2.0f).GetBitmap().dimensions();
+  EXPECT_EQ(kSize2x, gfx::Size(size.fWidth, size.fHeight));
+
+  gfx::ImageSkia image_skia2 = image2.AsImageSkia();
+  EXPECT_EQ(kSize1x, image_skia2.size());
+  size = image_skia2.GetRepresentation(2.0f).GetBitmap().dimensions();
+  EXPECT_EQ(kSize2x, gfx::Size(size.fWidth, size.fHeight));
+
+  EXPECT_TRUE(image_skia.BackedBySameObjectAs(image_skia2));
+}
+
+TEST_F(ImageTest, Copy_PreservesBackingStore) {
+  const gfx::Size kSize1x(25, 25);
+
+  gfx::Image image(gt::CreateImageSkia(kSize1x.width(), kSize1x.height()));
+  gfx::Image image2 = gfx::Image::CreateFrom1xBitmap(image.AsBitmap());
+
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  gfx::ImageSkia image_skia2 = image2.AsImageSkia();
+
+  // Because we haven't copied the image representation (scale info, etc.) the
+  // new Skia image isn't backed by the same object, but it should still contain
+  // the same bitmap data.
+  EXPECT_FALSE(image_skia2.BackedBySameObjectAs(image_skia));
+  EXPECT_EQ(image_skia.bitmap()->getPixels(),
+            image_skia2.bitmap()->getPixels());
 }
 
 TEST_F(ImageTest, MultiResolutionImageSkia) {
