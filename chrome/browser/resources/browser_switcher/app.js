@@ -6,8 +6,16 @@
 
 (function() {
 
+/** @enum {string} */
+const LaunchError = {
+  GENERIC_ERROR: 'genericError',
+  PROTOCOL_ERROR: 'protocolError',
+};
+
 Polymer({
   is: 'browser-switcher-app',
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /**
@@ -19,6 +27,15 @@ Polymer({
       value: function() {
         return (new URLSearchParams(window.location.search)).get('url') || '';
       },
+    },
+
+    /**
+     * Error message, or empty string if no error has occurred (yet).
+     * @private
+     */
+    error_: {
+      type: String,
+      value: '',
     },
   },
 
@@ -39,6 +56,7 @@ Polymer({
     const anchor = document.createElement('a');
     anchor.href = this.url_;
     if (!/^(file|http|https):$/.test(anchor.protocol)) {
+      this.error_ = LaunchError.PROTOCOL_ERROR;
       return;
     }
 
@@ -46,7 +64,38 @@ Polymer({
     // immediately re-trigger LBS.
     history.pushState({}, '', '/?done=true');
 
-    proxy.launchAlternativeBrowserAndCloseTab(this.url_);
+    proxy.launchAlternativeBrowserAndCloseTab(this.url_).catch(() => {
+      this.error_ = LaunchError.GENERIC_ERROR;
+    });
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeTitle_: function() {
+    if (this.error_) {
+      return this.i18n('errorTitle');
+    }
+    return this.i18n('openingTitle');
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeDescription_: function() {
+    if (this.error_) {
+      return this.i18n(this.error_, getUrlHostname(this.url_));
+    }
+    return this.i18n('description');
   },
 });
+
+function getUrlHostname(url) {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  // Return entire url if parsing failed (which means the URL is bogus).
+  return anchor.hostname || url;
+}
 })();

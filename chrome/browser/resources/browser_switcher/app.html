@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="browser_switcher_proxy.html">
 
@@ -35,8 +36,8 @@
       }
     </style>
 
-    <h1>$i18n{opening}</h1>
-    <p>$i18n{description}</p>
+    <h1>[[computeTitle_(error_)]]</h1>
+    <p inner-h-t-m-l="[[computeDescription_(url_, error_)]]"></p>
   </template>
   <script src="app.js"></script>
 </dom-module>
