@@ -23,6 +23,12 @@ GLOutputSurfaceOzone::GLOutputSurfaceOzone(
                                  internal_format,
                                  display::DisplaySnapshot::PrimaryFormat()) {}
 
-GLOutputSurfaceOzone::~GLOutputSurfaceOzone() {}
+GLOutputSurfaceOzone::~GLOutputSurfaceOzone() = default;
+
+OverlayCandidateValidator* GLOutputSurfaceOzone::GetOverlayCandidateValidator()
+    const {
+  // TODO(crbug.com/930173): Implement overlay functionality.
+  return nullptr;
+}
 
 }  // namespace viz
