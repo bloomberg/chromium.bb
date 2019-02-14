@@ -69,7 +69,7 @@ jumbo_component("controller") {
   configs += blink_symbols_config
 }
 
-group("webkit_unit_tests_data") {
+group("blink_unittests_data") {
   data = [
     "../core/testing/data/",
     "../core/paint/test_data/",
@@ -78,13 +78,22 @@ group("webkit_unit_tests_data") {
   ]
 }
 
-test("webkit_unit_tests") {
+# Old name of blink_unittests.
+# TODO(tkent): Remove this after removing external dependency.
+group("webkit_unit_tests") {
+  testonly = true
   deps = [
-    ":webkit_unit_tests_sources",
+    ":blink_unittests",
+  ]
+}
+
+test("blink_unittests") {
+  deps = [
+    ":blink_unittests_sources",
   ]
 
   data_deps = [
-    ":webkit_unit_tests_data",
+    ":blink_unittests_data",
     "//content/shell:pak",
   ]
 
@@ -128,7 +137,7 @@ jumbo_source_set("blink_perf_tests_sources") {
   ]
 }
 
-jumbo_source_set("webkit_unit_tests_sources") {
+jumbo_source_set("blink_unittests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true

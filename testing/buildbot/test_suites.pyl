@@ -547,7 +547,9 @@
 
     'chromium_android_webkit_gtests': {
       'blink_heap_unittests': {},
-      'webkit_unit_tests': {},
+      'webkit_unit_tests': {
+        'test': 'blink_unittests',
+      },
     },
 
     'chromium_browser_tests': {
@@ -2279,7 +2281,7 @@
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw',
           '--num-retries=3',
         ],
-        'isolate_name': 'webkit_layout_tests_exparchive',
+        'isolate_name': 'blink_web_tests_exparchive',
         'results_handler': 'layout tests',
         'swarming': {
           'shards': 12,
@@ -2357,6 +2359,7 @@
       'ui_touch_selection_unittests': {},
       'url_unittests': {},
       'webkit_unit_tests': {
+        'test': 'blink_unittests',
         'android_swarming': {
           'shards': 2,
         },
@@ -2423,7 +2426,7 @@
         'script': 'headless_python_unittests.py',
       },
       'webkit_lint': {
-        'script': 'webkit_lint.py',
+        'script': 'blink_lint_expectations.py',
       },
     },
 
@@ -2432,13 +2435,13 @@
         'script': 'check_static_initializers.py',
       },
       'webkit_lint': {
-        'script': 'webkit_lint.py',
+        'script': 'blink_lint_expectations.py',
       },
     },
 
     'chromium_scripts': {
       'webkit_lint': {
-        'script': 'webkit_lint.py',
+        'script': 'blink_lint_expectations.py',
       },
     },
 
@@ -2570,7 +2573,7 @@
         'args': [
           '--num-retries=3',
         ],
-        'isolate_name': 'webkit_layout_tests_exparchive',
+        'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
             '--verbose',
@@ -2725,7 +2728,7 @@
         'args': [
           '--num-retries=3',
         ],
-        'isolate_name': 'webkit_layout_tests_exparchive',
+        'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
             '--verbose',
@@ -2737,7 +2740,7 @@
           'shards': 12,
         }
       },
-      'webkit_python_tests': {},
+      'blink_python_tests': {},
     },
 
     'fuchsia_gtests': {
@@ -3524,7 +3527,7 @@
         'args': [
           '--enable-blink-features=LayoutNG'
         ],
-        'test': 'webkit_unit_tests',
+        'test': 'blink_unittests',
       },
     },
 
@@ -3681,7 +3684,7 @@
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
         ],
-        'isolate_name': 'webkit_layout_tests_exparchive',
+        'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
             '--verbose',
@@ -3779,7 +3782,7 @@
           # retry 3 times, so we explicitly specify it.
           '--num-retries=3',
         ],
-        'isolate_name': 'webkit_layout_tests_exparchive',
+        'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
           'args': [
             '--verbose',
