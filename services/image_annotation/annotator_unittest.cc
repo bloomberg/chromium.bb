@@ -42,16 +42,13 @@ constexpr char kImage3Url[] = "https://www.example.com/image3.jpg";
 // Template for a request for a single image.
 constexpr char kTemplateRequest[] = R"(
 {
-  "imageRequests": [
-    {
-      "imageId": "%s",
-      "imageBytes": "%s"
-    }
-  ],
-
-  "featureRequest": {
-    "ocrFeature": {}
-  }
+  "imageRequests": [{
+    "imageId": "%s",
+    "imageBytes": "%s",
+    "engineParameters": [{
+      "ocrParameters": {}
+    }]
+  }]
 }
 )";
 
@@ -61,29 +58,36 @@ constexpr char kBatchRequest[] = R"(
   "imageRequests": [
     {
       "imageId": "https://www.example.com/image1.jpg",
-      "imageBytes": "AQID"
+      "imageBytes": "AQID",
+      "engineParameters": [{
+        "ocrParameters": {}
+      }]
     },
     {
       "imageId": "https://www.example.com/image2.jpg",
-      "imageBytes": "BAUG"
+      "imageBytes": "BAUG",
+      "engineParameters": [{
+        "ocrParameters": {}
+      }]
     },
     {
       "imageId": "https://www.example.com/image3.jpg",
-      "imageBytes": "BwgJ"
+      "imageBytes": "BwgJ",
+      "engineParameters": [{
+        "ocrParameters": {}
+      }]
     }
-  ],
-  "featureRequest": {
-    "ocrFeature": {}
-  }
+  ]
 })";
 
 // Successful text extraction for |kImage1Url|.
 constexpr char kSuccessResponse[] = R"(
-  {
-    "results": [
-      {
-        "imageId": "https://www.example.com/image1.jpg",
-        "annotations": {
+{
+  "results": [
+    {
+      "imageId": "https://www.example.com/image1.jpg",
+      "engineResults": [{
+        "ocrEngine": {
           "ocrRegions": [
             {
               "words": [
@@ -111,24 +115,25 @@ constexpr char kSuccessResponse[] = R"(
             }
           ]
         }
-      }
-    ]
-  }
+      }]
+    }
+  ]
+}
 )";
 
 // Failed text extraction for |kImage1Url|.
 constexpr char kErrorResponse[] = R"(
-  {
-    "results": [
-      {
-        "imageId": "https://www.example.com/image1.jpg",
-        "status": {
-          "code": 8,
-          "message": "Resource exhaused"
-        }
+{
+  "results": [{
+    "imageId": "https://www.example.com/image1.jpg",
+    "engineResults": [{
+      "status": {
+        "code": 8,
+        "message": "Resource exhaused"
       }
-    ]
-  }
+    }]
+  }]
+}
 )";
 
 // Batch response containing successful annotations for |kImage1Url| and
@@ -140,40 +145,38 @@ constexpr char kBatchResponse[] = R"(
   "results": [
     {
       "imageId": "https://www.example.com/image2.jpg",
-      "annotations": {
-        "ocrRegions": [
-          {
-            "words": [
-               {
-                 "detectedText": "2",
-                 "confidenceScore": 1.0
-               }
-            ]
-          }
-        ]
-      }
+      "engineResults": [{
+        "ocrEngine": {
+          "ocrRegions": [{
+            "words": [{
+              "detectedText": "2",
+              "confidenceScore": 1.0
+            }]
+          }]
+        }
+      }]
     },
     {
       "imageId": "https://www.example.com/image1.jpg",
-      "annotations": {
-        "ocrRegions": [
-          {
-            "words": [
-               {
-                 "detectedText": "1",
-                 "confidenceScore": 1.0
-               }
-            ]
-          }
-        ]
-      }
+      "engineResults": [{
+        "ocrEngine": {
+          "ocrRegions": [{
+            "words": [{
+              "detectedText": "1",
+              "confidenceScore": 1.0
+            }]
+          }]
+        }
+      }]
     },
     {
       "imageId": "https://www.example.com/image3.jpg",
-      "status": {
-        "code": 8,
-        "message": "Resource exhaused"
-      }
+      "engineResults": [{
+        "status": {
+          "code": 8,
+          "message": "Resource exhaused"
+        }
+      }]
     }
   ]
 })";
@@ -729,23 +732,19 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
       "ocr",
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       R"({
-           "results": [
-             {
-               "imageId": "https://www.example.com/image1.jpg",
-               "annotations": {
-                 "ocrRegions": [
-                   {
-                     "words": [
-                        {
-                          "detectedText": "1",
-                          "confidenceScore": 1.0
-                        }
-                     ]
-                   }
-                 ]
+           "results": [{
+             "imageId": "https://www.example.com/image1.jpg",
+             "engineResults": [{
+               "ocrEngine": {
+                 "ocrRegions": [{
+                   "words": [{
+                     "detectedText": "1",
+                     "confidenceScore": 1.0
+                   }]
+                 }]
                }
-             }
-           ]
+             }]
+           }]
          })",
       net::HTTP_OK);
   EXPECT_THAT(test_url_factory.requests(), IsEmpty());
@@ -757,23 +756,19 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
       "ocr",
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage2Url, "BAUG")),
       R"({
-           "results": [
-             {
-               "imageId": "https://www.example.com/image2.jpg",
-               "annotations": {
-                 "ocrRegions": [
-                   {
-                     "words": [
-                        {
-                          "detectedText": "2",
-                          "confidenceScore": 1.0
-                        }
-                     ]
-                   }
-                 ]
+           "results": [{
+             "imageId": "https://www.example.com/image2.jpg",
+             "engineResults": [{
+               "ocrEngine": {
+                 "ocrRegions": [{
+                   "words": [{
+                     "detectedText": "2",
+                     "confidenceScore": 1.0
+                   }]
+                 }]
                }
-             }
-           ]
+             }]
+           }]
          })",
       net::HTTP_OK);
 
