@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::AutofillUploadContents;
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -39,6 +40,7 @@ using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AllOf;
+using testing::Contains;
 using testing::Mock;
 using testing::NiceMock;
 using testing::Return;
@@ -947,6 +949,7 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
   EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_));
   EXPECT_FALSE(form_manager_->IsNewLogin());
   EXPECT_FALSE(form_manager_->IsPasswordOverridden());
+  EXPECT_TRUE(form_manager_->IsPasswordUpdate());
 
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
   PasswordForm updated_form;
@@ -977,38 +980,43 @@ TEST_F(NewPasswordFormManagerTest, UpdatePasswordOnChangePasswordForm) {
 
 TEST_F(NewPasswordFormManagerTest, VotesUploadingOnPasswordUpdate) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
-  CreateFormManager(observed_form_only_password_fields_);
-  fetcher_->SetNonFederated({&saved_match_}, 0u);
 
-  FormData submitted_form = observed_form_only_password_fields_;
-  submitted_form.fields[0].value = saved_match_.password_value;
-  base::string16 new_password = saved_match_.password_value + ASCIIToUTF16("1");
-  submitted_form.fields[1].value = new_password;
+  for (auto expected_vote :
+       {autofill::NEW_PASSWORD, autofill::PROBABLY_NEW_PASSWORD,
+        autofill::NOT_NEW_PASSWORD}) {
+    SCOPED_TRACE(testing::Message("expected_vote=") << expected_vote);
+    CreateFormManager(observed_form_only_password_fields_);
+    fetcher_->SetNonFederated({&saved_match_}, 0u);
 
-  EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_));
-  EXPECT_TRUE(form_manager_->IsPasswordUpdate());
+    FormData submitted_form = observed_form_only_password_fields_;
+    submitted_form.fields[0].value = saved_match_.password_value;
+    auto new_password = saved_match_.password_value + ASCIIToUTF16("1");
+    submitted_form.fields[1].value = new_password;
 
-  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
-  PasswordForm updated_form;
-  std::map<base::string16, const PasswordForm*> best_matches;
-  std::vector<PasswordForm> credentials_to_update;
-  EXPECT_CALL(form_saver, Update(_, _, _, nullptr))
-      .WillOnce(DoAll(SaveArg<0>(&updated_form), SaveArg<1>(&best_matches),
-                      SaveArgPointee<2>(&credentials_to_update)));
+    EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_));
 
-  std::map<base::string16, autofill::ServerFieldType> expected_types;
-  expected_types[ASCIIToUTF16("password")] = autofill::PASSWORD;
-  expected_types[ASCIIToUTF16("password2")] = autofill::NEW_PASSWORD;
+    std::map<base::string16, autofill::ServerFieldType> expected_types;
+    expected_types[ASCIIToUTF16("password")] = autofill::PASSWORD;
+    expected_types[ASCIIToUTF16("password2")] = expected_vote;
 
-  testing::InSequence in_sequence;
-  EXPECT_CALL(mock_autofill_download_manager_,
-              StartUploadRequest(UploadedAutofillTypesAre(expected_types),
-                                 false, _, _, true, nullptr));
-  // An unrelated |FIRST_USE| vote.
-  EXPECT_CALL(mock_autofill_download_manager_,
-              StartUploadRequest(_, _, _, _, _, _));
+    testing::InSequence in_sequence;
+    EXPECT_CALL(mock_autofill_download_manager_,
+                StartUploadRequest(UploadedAutofillTypesAre(expected_types),
+                                   false, _, _, true, nullptr));
+    if (expected_vote == autofill::NEW_PASSWORD) {
+      // An unrelated |FIRST_USE| vote.
+      EXPECT_CALL(mock_autofill_download_manager_,
+                  StartUploadRequest(_, _, _, _, _, _));
+    }
 
-  form_manager_->Save();
+    if (expected_vote == autofill::NEW_PASSWORD)
+      form_manager_->Save();
+    else if (expected_vote == autofill::PROBABLY_NEW_PASSWORD)
+      form_manager_->OnNoInteraction(true /* is_update */);
+    else
+      form_manager_->OnNopeUpdateClicked();
+    Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
+  }
 }
 
 TEST_F(NewPasswordFormManagerTest, UpdateUsernameEmptyStore) {
@@ -1027,6 +1035,40 @@ TEST_F(NewPasswordFormManagerTest, UpdateUsernameEmptyStore) {
 
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
   EXPECT_TRUE(form_manager_->IsNewLogin());
+}
+
+TEST_F(NewPasswordFormManagerTest, UpdateUsernameToAnotherFieldValue) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+
+  base::string16 user_chosen_username = ASCIIToUTF16("user_chosen_username");
+  base::string16 automatically_chosen_username =
+      ASCIIToUTF16("automatically_chosen_username");
+  submitted_form_.fields[0].value = user_chosen_username;
+  submitted_form_.fields[1].value = automatically_chosen_username;
+  form_manager_->ProvisionallySave(submitted_form_, &driver_);
+
+  EXPECT_EQ(automatically_chosen_username,
+            form_manager_->GetPendingCredentials().username_value);
+
+  form_manager_->UpdateUsername(user_chosen_username);
+
+  EXPECT_EQ(user_chosen_username,
+            form_manager_->GetPendingCredentials().username_value);
+
+  FieldTypeMap expected_types = {
+      {ASCIIToUTF16("firstname"), autofill::USERNAME},
+      {ASCIIToUTF16("password"), autofill::PASSWORD}};
+  VoteTypeMap expected_vote_types = {
+      {ASCIIToUTF16("firstname"),
+       AutofillUploadContents::Field::USERNAME_EDITED}};
+  EXPECT_CALL(
+      mock_autofill_download_manager_,
+      StartUploadRequest(
+          AllOf(UploadedAutofillTypesAre(expected_types),
+                HasGenerationVote(false), VoteTypesAre(expected_vote_types)),
+          _, Contains(autofill::USERNAME), _, _, nullptr));
+  form_manager_->Save();
 }
 
 TEST_F(NewPasswordFormManagerTest, UpdateUsernameToAlreadyExisting) {
@@ -1701,6 +1743,77 @@ TEST_F(NewPasswordFormManagerTest, MAYBE_FillingAssistanceMetric) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.FillingAssistance",
       PasswordFormMetricsRecorder::FillingAssistance::kManual, 1);
+}
+
+TEST_F(NewPasswordFormManagerTest, PasswordRevealedVote) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+  for (bool password_revealed : {false, true}) {
+    SCOPED_TRACE(testing::Message("password_revealed=") << password_revealed);
+    CreateFormManager(observed_form_);
+    fetcher_->SetNonFederated({}, 0u);
+
+    EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_));
+
+    if (password_revealed)
+      form_manager_->OnPasswordsRevealed();
+
+    EXPECT_CALL(mock_autofill_download_manager_,
+                StartUploadRequest(PasswordsWereRevealed(password_revealed),
+                                   false, _, _, true, nullptr));
+    form_manager_->Save();
+    Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
+  }
+}
+
+TEST_F(NewPasswordFormManagerTest, GenerationUploadOnNoInteraction) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+  for (bool generation_popup_shown : {false, true}) {
+    SCOPED_TRACE(testing::Message("generation_popup_shown=")
+                 << generation_popup_shown);
+    CreateFormManager(observed_form_);
+    fetcher_->SetNonFederated({}, 0u);
+
+    if (generation_popup_shown) {
+      form_manager_->SetGenerationElement(ASCIIToUTF16("password"));
+      form_manager_->SetGenerationPopupWasShown(
+          true /*generation_popup_was_shown*/, false /*is_manual_generation*/);
+    }
+    EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_));
+
+    EXPECT_CALL(
+        mock_autofill_download_manager_,
+        StartUploadRequest(HasGenerationVote(true), false, _, _, true, nullptr))
+        .Times(generation_popup_shown ? 1 : 0);
+    form_manager_->OnNoInteraction(false /*is_update */);
+    Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
+  }
+}
+
+TEST_F(NewPasswordFormManagerTest, GenerationUploadOnNeverClicked) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+  for (bool generation_popup_shown : {false, true}) {
+    SCOPED_TRACE(testing::Message("generation_popup_shown=")
+                 << generation_popup_shown);
+    CreateFormManager(observed_form_);
+    fetcher_->SetNonFederated({}, 0u);
+
+    if (generation_popup_shown) {
+      form_manager_->SetGenerationElement(ASCIIToUTF16("password"));
+      form_manager_->SetGenerationPopupWasShown(
+          true /*generation_popup_was_shown*/, false /*is_manual_generation*/);
+    }
+    EXPECT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_));
+
+    EXPECT_CALL(
+        mock_autofill_download_manager_,
+        StartUploadRequest(HasGenerationVote(true), false, _, _, true, nullptr))
+        .Times(generation_popup_shown ? 1 : 0);
+    form_manager_->OnNeverClicked();
+    Mock::VerifyAndClearExpectations(&mock_autofill_download_manager_);
+  }
 }
 
 }  // namespace

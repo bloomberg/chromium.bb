@@ -316,8 +316,23 @@ void NewPasswordFormManager::UpdateUsername(
   parsed_submitted_form_->username_value = new_username;
   parsed_submitted_form_->username_element.clear();
 
-  // TODO(https://crbug.com/831123): Implement processing username editing votes
-  // after implementation of |other_possible_usernames|.
+  // |has_username_edited_vote_| is true iff |new_username| was typed in another
+  // field. Otherwise, |has_username_edited_vote_| is false and no vote will be
+  // uploaded.
+  votes_uploader_.set_has_username_edited_vote(false);
+  if (!new_username.empty()) {
+    // |other_possible_usernames| has all possible usernames.
+    // TODO(crbug.com/831123): rename to |all_possible_usernames| when the old
+    // parser is gone.
+    for (const auto& possible_username :
+         parsed_submitted_form_->other_possible_usernames) {
+      if (possible_username.first == new_username) {
+        parsed_submitted_form_->username_element = possible_username.second;
+        votes_uploader_.set_has_username_edited_vote(true);
+        break;
+      }
+    }
+  }
 
   CreatePendingCredentials();
 }
@@ -344,15 +359,29 @@ void NewPasswordFormManager::UpdatePasswordValue(
   CreatePendingCredentials();
 }
 
-// TODO(https://crbug.com/831123): Implement all methods from
-// PasswordFormManagerForUI.
-void NewPasswordFormManager::OnNopeUpdateClicked() {}
+void NewPasswordFormManager::OnNopeUpdateClicked() {
+  votes_uploader_.UploadPasswordVote(*parsed_submitted_form_,
+                                     *parsed_submitted_form_,
+                                     autofill::NOT_NEW_PASSWORD, std::string());
+}
 
 void NewPasswordFormManager::OnNeverClicked() {
+  // |UNKNOWN_TYPE| is sent in order to record that a generation popup was
+  // shown and ignored.
+  votes_uploader_.UploadPasswordVote(*parsed_submitted_form_,
+                                     *parsed_submitted_form_,
+                                     autofill::UNKNOWN_TYPE, std::string());
   PermanentlyBlacklist();
 }
 
-void NewPasswordFormManager::OnNoInteraction(bool is_update) {}
+void NewPasswordFormManager::OnNoInteraction(bool is_update) {
+  // |UNKNOWN_TYPE| is sent in order to record that a generation popup was
+  // shown and ignored.
+  votes_uploader_.UploadPasswordVote(
+      *parsed_submitted_form_, *parsed_submitted_form_,
+      is_update ? autofill::PROBABLY_NEW_PASSWORD : autofill::UNKNOWN_TYPE,
+      std::string());
+}
 
 void NewPasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsIncognito());
@@ -366,7 +395,9 @@ void NewPasswordFormManager::PermanentlyBlacklist() {
   form_saver_->PermanentlyBlacklist(new_blacklisted_.get());
 }
 
-void NewPasswordFormManager::OnPasswordsRevealed() {}
+void NewPasswordFormManager::OnPasswordsRevealed() {
+  votes_uploader_.set_has_passwords_revealed_vote(true);
+}
 
 bool NewPasswordFormManager::IsNewLogin() const {
   return is_new_login_;

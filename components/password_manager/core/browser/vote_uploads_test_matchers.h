@@ -158,4 +158,8 @@ MATCHER_P2(UploadedGenerationTypesAre,
   return true;
 }
 
+MATCHER_P(PasswordsWereRevealed, passwords_were_revealed, "") {
+  return passwords_were_revealed == arg.passwords_were_revealed();
+}
+
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_VOTE_UPLOADS_TEST_MATCHERS_H_
