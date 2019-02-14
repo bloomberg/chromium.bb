@@ -18,6 +18,16 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 from chromite.lib import portage_util
 
+_CHROME_BINHOST_SAFE_FALLBACKS = frozenset({
+    'amd64-generic',
+    'arm-generic',
+    'arm64-generic',
+    'betty',
+    'mipsel-o32-generic',
+    'veyron_jerry',
+    'x86-generic',
+})
+
 
 def _Ascii(s):
   """Convert |s| to ASCII.
@@ -151,7 +161,14 @@ class PrebuiltMapping(_PrebuiltMapping):
       compat_id = compat_ids[key]
       configs.by_compat_id[compat_id].add(key)
       partial_compat_id = (compat_id.arch, compat_id.useflags)
-      configs.by_arch_useflags[partial_compat_id].add(key)
+
+      # Boards other than those in _CHROME_BINHOST_SAFE_FALLBACKS are not safe
+      # to use for binary packages without additional ISA compatibility
+      # checking. Since partial compat matching is a fallback mechanism, we
+      # will take the conservative option and only ever fall back to the known
+      # safe boards.
+      if key.board in _CHROME_BINHOST_SAFE_FALLBACKS:
+        configs.by_arch_useflags[partial_compat_id].add(key)
     return configs
 
   def Dump(self, filename, internal=True):
