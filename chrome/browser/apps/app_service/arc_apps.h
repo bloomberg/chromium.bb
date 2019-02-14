@@ -44,10 +44,10 @@ class ArcApps : public KeyedService,
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;
-  void LoadIcon(const std::string& app_id,
-                apps::mojom::IconKeyPtr icon_key,
+  void LoadIcon(apps::mojom::IconKeyPtr icon_key,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
                 LoadIconCallback callback) override;
   void Launch(const std::string& app_id,
               int32_t event_flags,
@@ -83,6 +83,7 @@ class ArcApps : public KeyedService,
   void LoadIconFromVM(const std::string icon_key_s_key,
                       apps::mojom::IconCompression icon_compression,
                       int32_t size_hint_in_dip,
+                      bool allow_placeholder_icon,
                       LoadIconCallback callback);
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                          int32_t size_hint_in_dip,

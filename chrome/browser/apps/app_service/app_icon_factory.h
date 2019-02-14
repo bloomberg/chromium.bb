@@ -39,6 +39,7 @@ void LoadIconFromFileWithFallback(
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           int size_hint_in_dip,
                           int resource_id,
+                          bool is_placeholder_icon,
                           apps::mojom::Publisher::LoadIconCallback callback);
 
 }  // namespace apps

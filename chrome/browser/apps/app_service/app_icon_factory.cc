@@ -49,6 +49,7 @@ std::vector<uint8_t> CompressedDataFromResource(
 // Runs |callback| passing an IconValuePtr with a compressed image: a
 // std::vector<uint8_t>.
 void RunCallbackWithCompressedData(
+    bool is_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback,
     std::vector<uint8_t> data) {
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
@@ -56,12 +57,14 @@ void RunCallbackWithCompressedData(
                              ? apps::mojom::IconCompression::kUnknown
                              : apps::mojom::IconCompression::kCompressed;
   iv->compressed = std::move(data);
+  iv->is_placeholder_icon = is_placeholder_icon;
   std::move(callback).Run(std::move(iv));
 }
 
 // Like RunCallbackWithCompressedData, but calls "fallback(callback)" if the
 // data is empty.
 void RunCallbackWithCompressedDataWithFallback(
+    bool is_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback,
     base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)> fallback,
     std::vector<uint8_t> data) {
@@ -69,17 +72,20 @@ void RunCallbackWithCompressedDataWithFallback(
     std::move(fallback).Run(std::move(callback));
     return;
   }
-  RunCallbackWithCompressedData(std::move(callback), std::move(data));
+  RunCallbackWithCompressedData(is_placeholder_icon, std::move(callback),
+                                std::move(data));
 }
 
 // Runs |callback| passing an IconValuePtr with an uncompressed image: a
 // SkBitmap.
 void RunCallbackWithUncompressedSkBitmap(
+    bool is_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback,
     const SkBitmap& bitmap) {
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
   iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
   iv->uncompressed = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 0.0f));
+  iv->is_placeholder_icon = is_placeholder_icon;
   std::move(callback).Run(std::move(iv));
 }
 
@@ -87,6 +93,7 @@ void RunCallbackWithUncompressedSkBitmap(
 // std::vector<uint8_t> to a SkBitmap. It calls "fallback(callback)" if the
 // data is empty.
 void RunCallbackWithCompressedDataToUncompressWithFallback(
+    bool is_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback,
     base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)> fallback,
     std::vector<uint8_t> data) {
@@ -98,18 +105,20 @@ void RunCallbackWithCompressedDataToUncompressWithFallback(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(), data,
       data_decoder::mojom::ImageCodec::DEFAULT, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-      base::BindOnce(&RunCallbackWithUncompressedSkBitmap,
+      base::BindOnce(&RunCallbackWithUncompressedSkBitmap, is_placeholder_icon,
                      std::move(callback)));
 }
 
 // Runs |callback| passing an IconValuePtr with an uncompressed image: an
 // ImageSkia.
 void RunCallbackWithUncompressedImageSkia(
+    bool is_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback,
     const gfx::ImageSkia image) {
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
   iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
   iv->uncompressed = image;
+  iv->is_placeholder_icon = is_placeholder_icon;
   std::move(callback).Run(std::move(iv));
 }
 
@@ -117,11 +126,13 @@ void RunCallbackWithUncompressedImageSkia(
 // an Image.
 void RunCallbackWithUncompressedImage(
     base::OnceCallback<void(gfx::ImageSkia*)> image_filter,
+    bool is_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback,
     const gfx::Image& image) {
   gfx::ImageSkia image_skia = image.AsImageSkia();
   std::move(image_filter).Run(&image_skia);
-  RunCallbackWithUncompressedImageSkia(std::move(callback), image_skia);
+  RunCallbackWithUncompressedImageSkia(is_placeholder_icon, std::move(callback),
+                                       image_skia);
 }
 
 // Forwards to extensions::ChromeAppIcon::ApplyEffects, with subtle differences
@@ -148,6 +159,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            content::BrowserContext* context,
                            const std::string& extension_id,
                            apps::mojom::Publisher::LoadIconCallback callback) {
+  constexpr bool is_placeholder_icon = false;
   int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
 
   const extensions::Extension* extension =
@@ -183,7 +195,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                     resize_function, apply_chrome_badge,
                     extensions::util::IsAppLaunchable(extension_id, context),
                     extension->from_bookmark()),
-                std::move(callback)));
+                is_placeholder_icon, std::move(callback)));
         return;
       }
 
@@ -194,7 +206,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         base::PostTaskWithTraitsAndReplyWithResult(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
             base::BindOnce(&CompressedDataFromResource, ext_resource),
-            base::BindOnce(&RunCallbackWithCompressedData,
+            base::BindOnce(&RunCallbackWithCompressedData, is_placeholder_icon,
                            std::move(callback)));
         return;
       }
@@ -211,6 +223,7 @@ void LoadIconFromFileWithFallback(
     apps::mojom::Publisher::LoadIconCallback callback,
     base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
         fallback) {
+  constexpr bool is_placeholder_icon = false;
   // TODO(crbug.com/826982): pass size_hint_in_dip (or _in_px) on to the
   // callbacks, and re-size the decoded-from-file image)?
 
@@ -223,7 +236,8 @@ void LoadIconFromFileWithFallback(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ReadFileAsCompressedData, path),
           base::BindOnce(&RunCallbackWithCompressedDataToUncompressWithFallback,
-                         std::move(callback), std::move(fallback)));
+                         is_placeholder_icon, std::move(callback),
+                         std::move(fallback)));
 
       return;
     }
@@ -233,7 +247,8 @@ void LoadIconFromFileWithFallback(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ReadFileAsCompressedData, path),
           base::BindOnce(&RunCallbackWithCompressedDataWithFallback,
-                         std::move(callback), std::move(fallback)));
+                         is_placeholder_icon, std::move(callback),
+                         std::move(fallback)));
       return;
     }
   }
@@ -244,6 +259,7 @@ void LoadIconFromFileWithFallback(
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
                           int size_hint_in_dip,
                           int resource_id,
+                          bool is_placeholder_icon,
                           apps::mojom::Publisher::LoadIconCallback callback) {
   if (resource_id != 0) {
     switch (icon_compression) {
@@ -255,7 +271,7 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
             ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                 resource_id);
         RunCallbackWithUncompressedImageSkia(
-            std::move(callback),
+            is_placeholder_icon, std::move(callback),
             gfx::ImageSkiaOperations::CreateResizedImage(
                 *unscaled, skia::ImageOperations::RESIZE_BEST,
                 gfx::Size(size_hint_in_dip, size_hint_in_dip)));
@@ -267,7 +283,7 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
             ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
                 resource_id);
         RunCallbackWithCompressedData(
-            std::move(callback),
+            is_placeholder_icon, std::move(callback),
             std::vector<uint8_t>(data.begin(), data.end()));
         return;
       }

@@ -97,8 +97,9 @@ void AppIconSource::StartDataRequest(
     return;
   }
 
+  constexpr bool allow_placeholder_icon = false;
   app_service_proxy->LoadIcon(app_id, apps::mojom::IconCompression::kCompressed,
-                              size_in_dip,
+                              size_in_dip, allow_placeholder_icon,
                               base::BindOnce(&RunCallback, callback));
 }
 

@@ -108,6 +108,7 @@ struct IconValue {
   IconCompression icon_compression;
   gfx.mojom.ImageSkia? uncompressed;
   array<uint8>? compressed;
+  bool is_placeholder_icon;
 };
 
 enum LaunchSource {

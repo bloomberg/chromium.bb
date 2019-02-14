@@ -48,6 +48,8 @@ class AppServiceAppItem : public ChromeAppListItem,
   void ExecuteLaunchCommand(int event_flags) override;
 
   void Launch(int event_flags, apps::mojom::LaunchSource launch_source);
+
+  void CallLoadIcon(bool allow_placeholder_icon);
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
 
   apps::mojom::AppType app_type_;

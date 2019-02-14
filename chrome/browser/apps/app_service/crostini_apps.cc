@@ -62,17 +62,18 @@ void CrostiniApps::Connect(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void CrostiniApps::LoadIcon(const std::string& app_id,
-                            apps::mojom::IconKeyPtr icon_key,
+void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                             apps::mojom::IconCompression icon_compression,
                             int32_t size_hint_in_dip,
+                            bool allow_placeholder_icon,
                             LoadIconCallback callback) {
   if (!icon_key.is_null()) {
     if ((icon_key->icon_type == apps::mojom::IconType::kResource) &&
         (icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
       int resource_id = static_cast<int>(icon_key->u_key);
+      constexpr bool is_placeholder_icon = false;
       LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                           std::move(callback));
+                           is_placeholder_icon, std::move(callback));
       return;
     }
 
@@ -87,7 +88,8 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
           std::move(callback),
           base::BindOnce(&CrostiniApps::LoadIconFromVM,
                          weak_ptr_factory_.GetWeakPtr(), icon_key->s_key,
-                         scale_factor));
+                         icon_compression, size_hint_in_dip,
+                         allow_placeholder_icon, scale_factor));
       return;
     }
   }
@@ -142,10 +144,23 @@ void CrostiniApps::OnAppIconUpdated(const std::string& app_id,
 }
 
 void CrostiniApps::LoadIconFromVM(const std::string icon_key_s_key,
+                                  apps::mojom::IconCompression icon_compression,
+                                  int32_t size_hint_in_dip,
+                                  bool allow_placeholder_icon,
                                   ui::ScaleFactor scale_factor,
                                   LoadIconCallback callback) {
-  // Treat this as failure. We still run the callback, with the zero IconValue.
-  std::move(callback).Run(apps::mojom::IconValue::New());
+  if (!allow_placeholder_icon) {
+    // Treat this as failure. We still run the callback, with the zero
+    // IconValue.
+    std::move(callback).Run(apps::mojom::IconValue::New());
+    return;
+  }
+
+  // Provide a placeholder icon.
+  constexpr bool is_placeholder_icon = true;
+  LoadIconFromResource(icon_compression, size_hint_in_dip,
+                       IDR_LOGO_CROSTINI_DEFAULT_192, is_placeholder_icon,
+                       std::move(callback));
 
   // Ask the VM to load the icon (and write a cached copy to the file system).
   // The "Maybe" is because multiple requests for the same icon will be merged,

@@ -78,14 +78,8 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
   }
 
   if (in_constructor || app_update.IconKeyChanged()) {
-    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
-    if (proxy) {
-      proxy->LoadIcon(app_update.AppId(),
-                      apps::mojom::IconCompression::kUncompressed,
-                      app_list::AppListConfig::instance().grid_icon_dimension(),
-                      base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                                     weak_ptr_factory_.GetWeakPtr()));
-    }
+    constexpr bool allow_placeholder_icon = true;
+    CallLoadIcon(allow_placeholder_icon);
   }
 
   if (in_constructor || app_update.IsPlatformAppChanged()) {
@@ -131,10 +125,26 @@ void AppServiceAppItem::Launch(int event_flags,
   }
 }
 
+void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
+  apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+  if (proxy) {
+    proxy->LoadIcon(id(), apps::mojom::IconCompression::kUncompressed,
+                    app_list::AppListConfig::instance().grid_icon_dimension(),
+                    allow_placeholder_icon,
+                    base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
   if (icon_value->icon_compression !=
       apps::mojom::IconCompression::kUncompressed) {
     return;
   }
   SetIcon(icon_value->uncompressed);
+
+  if (icon_value->is_placeholder_icon) {
+    constexpr bool allow_placeholder_icon = false;
+    CallLoadIcon(allow_placeholder_icon);
+  }
 }

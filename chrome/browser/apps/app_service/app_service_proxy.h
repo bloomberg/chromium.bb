@@ -42,6 +42,7 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
                 apps::mojom::Publisher::LoadIconCallback callback);
 
   void Launch(const std::string& app_id,
