@@ -26,6 +26,26 @@
 bool FLAGS_quic_enforce_single_packet_chlo = true;
 
 namespace quic {
+namespace {
+
+QuicLongHeaderType EncryptionlevelToLongHeaderType(EncryptionLevel level) {
+  switch (level) {
+    case ENCRYPTION_NONE:
+      return INITIAL;
+    case ENCRYPTION_INITIAL:
+      return ZERO_RTT_PROTECTED;
+    case ENCRYPTION_FORWARD_SECURE:
+      QUIC_BUG
+          << "Try to derive long header type for packet with encryption level: "
+          << QuicUtils::EncryptionLevelToString(level);
+      return INVALID_PACKET_TYPE;
+    default:
+      QUIC_BUG << QuicUtils::EncryptionLevelToString(level);
+      return INVALID_PACKET_TYPE;
+  }
+}
+
+}  // namespace
 
 #define ENDPOINT \
   (framer_->perspective() == Perspective::IS_SERVER ? "Server: " : "Client: ")
@@ -63,7 +83,9 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       needs_full_padding_(false),
       can_set_transmission_type_(false),
       set_transmission_type_for_next_frame_(
-          GetQuicReloadableFlag(quic_set_transmission_type_for_next_frame)) {
+          GetQuicReloadableFlag(quic_set_transmission_type_for_next_frame)),
+      encryption_level_driven_long_header_type_(
+          GetQuicReloadableFlag(quic_encryption_driven_header_type)) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
@@ -717,7 +739,10 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   if (!HasIetfLongHeader()) {
     return;
   }
-  header->long_packet_type = long_header_type_;
+  header->long_packet_type =
+      (encryption_level_driven_long_header_type_
+           ? EncryptionlevelToLongHeaderType(packet_.encryption_level)
+           : long_header_type_);
 }
 
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,

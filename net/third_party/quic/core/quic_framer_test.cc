@@ -1450,6 +1450,10 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
   };
   // clang-format on
 
+  if (framer_.version().handshake_protocol != PROTOCOL_QUIC_CRYPTO) {
+    return;
+  }
+
   unsigned char* p = packet;
   size_t p_size = QUIC_ARRAYSIZE(packet);
   if (framer_.transport_version() > QUIC_VERSION_45) {

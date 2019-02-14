@@ -354,6 +354,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   SerializedPacket packet_;
 
   // Long header type of next constructed packets.
+  // TODO(fayang): remove this variable when deprecating
+  // quic_encryption_driven_header_type.
   QuicLongHeaderType long_header_type_;
 
   // Pending padding bytes to send. Pending padding bytes will be sent in next
@@ -373,6 +375,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Latched value of --quic_set_transmission_type_for_next_frame. Don't use
   // this variable directly, use ShouldSetTransmissionTypeForNextFrame instead.
   bool set_transmission_type_for_next_frame_;
+
+  // Latched value of quic_reloadable_flag_quic_encryption_driven_header_type.
+  const bool encryption_level_driven_long_header_type_;
 };
 
 }  // namespace quic

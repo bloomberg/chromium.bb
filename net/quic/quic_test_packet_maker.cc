@@ -41,7 +41,10 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       perspective_(perspective),
       encryption_level_(quic::ENCRYPTION_FORWARD_SECURE),
-      long_header_type_(quic::HANDSHAKE),
+      long_header_type_(
+          FLAGS_quic_reloadable_flag_quic_encryption_driven_header_type
+              ? quic::INVALID_PACKET_TYPE
+              : quic::HANDSHAKE),
       client_headers_include_h2_stream_dependency_(
           client_headers_include_h2_stream_dependency &&
           version >= quic::QUIC_VERSION_43) {
@@ -122,7 +125,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
 
 std::unique_ptr<quic::QuicReceivedPacket>
 QuicTestPacketMaker::MakeDummyCHLOPacket(uint64_t packet_num) {
-  encryption_level_ = quic::ENCRYPTION_NONE;
+  SetEncryptionLevel(quic::ENCRYPTION_NONE);
   SetLongHeaderType(quic::INITIAL);
   InitializeHeader(packet_num, /*include_version=*/true);
 
@@ -1289,9 +1292,30 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
 
 void QuicTestPacketMaker::SetEncryptionLevel(quic::EncryptionLevel level) {
   encryption_level_ = level;
+  if (FLAGS_quic_reloadable_flag_quic_encryption_driven_header_type) {
+    switch (level) {
+      case quic::ENCRYPTION_NONE:
+        long_header_type_ = quic::INITIAL;
+        break;
+      case quic::ENCRYPTION_INITIAL:
+        long_header_type_ = quic::ZERO_RTT_PROTECTED;
+        break;
+      case quic::ENCRYPTION_FORWARD_SECURE:
+        long_header_type_ = quic::INVALID_PACKET_TYPE;
+        break;
+      default:
+        QUIC_BUG << quic::QuicUtils::EncryptionLevelToString(level);
+        long_header_type_ = quic::INVALID_PACKET_TYPE;
+    }
+  }
 }
 
 void QuicTestPacketMaker::SetLongHeaderType(quic::QuicLongHeaderType type) {
+  if (FLAGS_quic_reloadable_flag_quic_encryption_driven_header_type) {
+    // TODO(fayang): Remove SetLongHeaderType when deprecating
+    // FLAGS_quic_reloadable_flag_quic_encryption_driven_header_type.
+    return;
+  }
   long_header_type_ = type;
 }
 
