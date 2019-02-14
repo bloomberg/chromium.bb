@@ -210,12 +210,10 @@ void StabilityMetricsHelper::BrowserUtilityProcessLaunched(
 void StabilityMetricsHelper::BrowserUtilityProcessCrashed(
     const std::string& metrics_name,
     int exit_code) {
-  // TODO(wfh): there doesn't appear to be a good way to log these exit_codes
-  // without adding something into the stability proto, so for now only log the
-  // crash and if the numbers are high enough, logging exit codes can be added
-  // later.
   uint32_t hash = variations::HashName(metrics_name);
   base::UmaHistogramSparse("ChildProcess.Crashed.UtilityProcessHash", hash);
+  base::UmaHistogramSparse("ChildProcess.Crashed.UtilityProcessExitCode",
+                           exit_code);
 }
 
 void StabilityMetricsHelper::BrowserChildProcessCrashed() {
