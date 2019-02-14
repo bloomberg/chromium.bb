@@ -247,6 +247,10 @@ void WebRuntimeFeatures::EnableMediaSession(bool enable) {
   RuntimeEnabledFeatures::SetMediaSessionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableMimeHandlerViewInCrossProcessFrame(bool enable) {
+  RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableModernMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetModernMediaControlsEnabled(enable);
 }
