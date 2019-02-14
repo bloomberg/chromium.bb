@@ -8,12 +8,15 @@
 
 namespace ui {
 
-OverlaySurfaceCandidate::OverlaySurfaceCandidate() : is_clipped(false) {}
+OverlaySurfaceCandidate::OverlaySurfaceCandidate() = default;
 
 OverlaySurfaceCandidate::OverlaySurfaceCandidate(
     const OverlaySurfaceCandidate& other) = default;
 
-OverlaySurfaceCandidate::~OverlaySurfaceCandidate() {}
+OverlaySurfaceCandidate::~OverlaySurfaceCandidate() = default;
+
+OverlaySurfaceCandidate& OverlaySurfaceCandidate::operator=(
+    const OverlaySurfaceCandidate& other) = default;
 
 bool OverlaySurfaceCandidate::operator<(
     const OverlaySurfaceCandidate& param) const {
