@@ -90,7 +90,10 @@ InFlightBoundsChange::InFlightBoundsChange(
       window_tree_client_(window_tree_client),
       revert_bounds_(revert_bounds),
       from_server_(from_server),
-      revert_local_surface_id_allocation_(revert_local_surface_id_allocation) {}
+      revert_local_surface_id_allocation_(revert_local_surface_id_allocation) {
+  // Should always be created with a window.
+  CHECK(window);
+}
 
 InFlightBoundsChange::~InFlightBoundsChange() {}
 
@@ -110,14 +113,17 @@ void InFlightBoundsChange::Revert() {
 }
 
 void InFlightBoundsChange::OnLastChangeOfTypeSucceeded() {
-  if (!window() || !window()->GetWindow()->GetHost())
-    return;  // Revert() handles this case.
-  WindowTreeHostMus* window_tree_host =
-      static_cast<WindowTreeHostMus*>(window()->GetWindow()->GetHost());
-  if (window_tree_host->window() != window()->GetWindow())
+  // InFlightBoundsChange is always created with a window.
+  CHECK(window());
+  aura::Window* w = window()->GetWindow();
+  // WindowTreeHostMus returns null if not a WindowTreeHostMus.
+  aura::WindowTreeHostMus* window_tree_host = WindowTreeHostMus::ForWindow(w);
+  // ApplyPendingSurfaceIdFromServer() is only applicable for
+  // WindowTreeHostMus's window(). If |w| is not that window, nothing to do.
+  if (!window_tree_host || w != window_tree_host->window() ||
+      !window_tree_host->has_pending_local_surface_id_from_server()) {
     return;
-  if (!window_tree_host->has_pending_local_surface_id_from_server())
-    return;
+  }
   window_tree_client_->ApplyPendingSurfaceIdFromServer(window());
 }
 
