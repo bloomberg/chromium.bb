@@ -78,6 +78,10 @@ bool Video::IsLoaded() const {
   return data_.size() > 0;
 }
 
+const base::FilePath& Video::FilePath() const {
+  return file_path_;
+}
+
 const std::vector<uint8_t>& Video::Data() const {
   return data_;
 }

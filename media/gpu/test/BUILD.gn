@@ -127,6 +127,23 @@ source_set("encode_helpers") {
 
 # TODO(dstaessens@) Make this work on other platforms too.
 if (is_chromeos) {
+  static_library("video_player_thumbnail_renderer") {
+    testonly = true
+    sources = [
+      "video_player/frame_renderer.h",
+      "video_player/frame_renderer_thumbnail.cc",
+      "video_player/frame_renderer_thumbnail.h",
+    ]
+    deps = [
+      ":decode_helpers",
+      "//gpu/command_buffer/common",
+      "//media/gpu",
+      "//ui/gfx/codec:codec",
+      "//ui/gl:gl",
+      "//ui/gl/init:init",
+    ]
+  }
+
   static_library("video_player") {
     testonly = true
     sources = [

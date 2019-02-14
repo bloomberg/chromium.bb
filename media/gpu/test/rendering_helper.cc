@@ -39,38 +39,6 @@
 
 namespace media {
 
-namespace {
-
-// Helper for Shader creation.
-void CreateShader(GLuint program, GLenum type, const char* source, int size) {
-  GLuint shader = glCreateShader(type);
-  glShaderSource(shader, 1, &source, &size);
-  glCompileShader(shader);
-  int result = GL_FALSE;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-  if (!result) {
-    char log[4096];
-    glGetShaderInfoLog(shader, base::size(log), NULL, log);
-    LOG(FATAL) << log;
-  }
-  glAttachShader(program, shader);
-  glDeleteShader(shader);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-}
-
-void DeleteTexture(uint32_t texture_id) {
-  glDeleteTextures(1, &texture_id);
-  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
-}
-
-// Helper function to set GL viewport.
-void GLSetViewPort(const gfx::Rect& area) {
-  glViewport(area.x(), area.y(), area.width(), area.height());
-  glScissor(area.x(), area.y(), area.width(), area.height());
-}
-
-}  // namespace
-
 bool RenderingHelper::use_gl_ = false;
 
 VideoFrameTexture::VideoFrameTexture(uint32_t texture_target,
@@ -436,6 +404,39 @@ void RenderingHelper::QueueVideoFrame(
   }
 }
 
+// static
+void RenderingHelper::DeleteTexture(uint32_t texture_id) {
+  glDeleteTextures(1, &texture_id);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+}
+
+// static
+void RenderingHelper::GLSetViewPort(const gfx::Rect& area) {
+  glViewport(area.x(), area.y(), area.width(), area.height());
+  glScissor(area.x(), area.y(), area.width(), area.height());
+}
+
+// static
+void RenderingHelper::CreateShader(GLuint program,
+                                   GLenum type,
+                                   const char* source,
+                                   int size) {
+  GLuint shader = glCreateShader(type);
+  glShaderSource(shader, 1, &source, &size);
+  glCompileShader(shader);
+  int result = GL_FALSE;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+  if (!result) {
+    char log[4096];
+    glGetShaderInfoLog(shader, base::size(log), NULL, log);
+    LOG(FATAL) << log;
+  }
+  glAttachShader(program, shader);
+  glDeleteShader(shader);
+  CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+}
+
+// static
 void RenderingHelper::RenderTexture(uint32_t texture_target,
                                     uint32_t texture_id) {
   // The ExternalOES sampler is bound to GL_TEXTURE1 and the Texture2D sampler
