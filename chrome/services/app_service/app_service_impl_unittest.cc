@@ -37,7 +37,7 @@ class FakePublisher : public apps::mojom::Publisher {
     }
   }
 
-  std::string load_icon_app_id_;
+  std::string load_icon_s_key;
 
  private:
   void Connect(apps::mojom::SubscriberPtr subscriber,
@@ -46,12 +46,12 @@ class FakePublisher : public apps::mojom::Publisher {
     subscribers_.AddPtr(std::move(subscriber));
   }
 
-  void LoadIcon(const std::string& app_id,
-                apps::mojom::IconKeyPtr icon_key,
+  void LoadIcon(apps::mojom::IconKeyPtr icon_key,
                 apps::mojom::IconCompression icon_compression,
                 int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
                 LoadIconCallback callback) override {
-    load_icon_app_id_ = app_id;
+    load_icon_s_key = icon_key->s_key;
     std::move(callback).Run(apps::mojom::IconValue::New());
   }
 
@@ -193,20 +193,24 @@ TEST_F(AppServiceImplTest, PubSub) {
                            : apps::mojom::AppType::kUnknown;
 
     bool callback_ran = false;
-    pub0.load_icon_app_id_ = "-";
-    pub1.load_icon_app_id_ = "-";
-    pub2.load_icon_app_id_ = "-";
+    pub0.load_icon_s_key = "-";
+    pub1.load_icon_s_key = "-";
+    pub2.load_icon_s_key = "-";
+    auto icon_key = apps::mojom::IconKey::New();
+    icon_key->s_key = "o";
+    constexpr bool allow_placeholder_icon = false;
     impl.LoadIcon(
-        app_type, "o", apps::mojom::IconKey::New(),
+        app_type, std::move(icon_key),
         apps::mojom::IconCompression::kUncompressed, size_hint_in_dip,
+        allow_placeholder_icon,
         base::BindOnce(
             [](bool* ran, apps::mojom::IconValuePtr iv) { *ran = true; },
             &callback_ran));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(callback_ran);
-    EXPECT_EQ("-", pub0.load_icon_app_id_);
-    EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_app_id_);
-    EXPECT_EQ("-", pub2.load_icon_app_id_);
+    EXPECT_EQ("-", pub0.load_icon_s_key);
+    EXPECT_EQ(i == 0 ? "o" : "-", pub1.load_icon_s_key);
+    EXPECT_EQ("-", pub2.load_icon_s_key);
   }
 }
 

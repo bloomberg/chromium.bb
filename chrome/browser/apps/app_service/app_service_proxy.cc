@@ -58,18 +58,20 @@ void AppServiceProxy::LoadIcon(
     const std::string& app_id,
     apps::mojom::IconCompression icon_compression,
     int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
   bool found = false;
   cache_.ForOneApp(app_id, [this, &icon_compression, &size_hint_in_dip,
-                            &callback, &found](const apps::AppUpdate& update) {
+                            &allow_placeholder_icon, &callback,
+                            &found](const apps::AppUpdate& update) {
     apps::mojom::IconKeyPtr icon_key = update.IconKey();
     if (icon_key.is_null()) {
       return;
     }
     found = true;
-    app_service_->LoadIcon(update.AppType(), update.AppId(),
-                           std::move(icon_key), icon_compression,
-                           size_hint_in_dip, std::move(callback));
+    app_service_->LoadIcon(update.AppType(), std::move(icon_key),
+                           icon_compression, size_hint_in_dip,
+                           allow_placeholder_icon, std::move(callback));
   });
 
   if (!found) {

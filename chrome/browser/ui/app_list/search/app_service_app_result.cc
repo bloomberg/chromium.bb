@@ -24,6 +24,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
       is_platform_app_(false),
       show_in_launcher_(false),
       weak_ptr_factory_(this) {
+  constexpr bool allow_placeholder_icon = true;
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile);
 
   if (proxy) {
@@ -38,6 +39,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
     proxy->LoadIcon(
         app_id, apps::mojom::IconCompression::kUncompressed,
         AppListConfig::instance().GetPreferredIconDimension(display_type()),
+        allow_placeholder_icon,
         base::BindOnce(&AppServiceAppResult::OnLoadIcon,
                        weak_ptr_factory_.GetWeakPtr(), false));
 
@@ -45,6 +47,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
       proxy->LoadIcon(
           app_id, apps::mojom::IconCompression::kUncompressed,
           AppListConfig::instance().suggestion_chip_icon_dimension(),
+          allow_placeholder_icon,
           base::BindOnce(&AppServiceAppResult::OnLoadIcon,
                          weak_ptr_factory_.GetWeakPtr(), true));
     }
@@ -122,6 +125,10 @@ void AppServiceAppResult::OnLoadIcon(bool chip,
     SetChipIcon(icon_value->uncompressed);
   } else {
     SetIcon(icon_value->uncompressed);
+  }
+
+  if (icon_value->is_placeholder_icon) {
+    // TODO(crbug.com/826982): watch for new (non-placeholder) icons.
   }
 }
 

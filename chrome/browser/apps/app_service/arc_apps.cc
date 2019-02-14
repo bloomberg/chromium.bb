@@ -25,6 +25,7 @@
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/common/app_permissions.mojom.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/display/display.h"
@@ -168,10 +169,10 @@ void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void ArcApps::LoadIcon(const std::string& app_id,
-                       apps::mojom::IconKeyPtr icon_key,
+void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                        apps::mojom::IconCompression icon_compression,
                        int32_t size_hint_in_dip,
+                       bool allow_placeholder_icon,
                        LoadIconCallback callback) {
   if (!icon_key.is_null() &&
       (icon_key->icon_type == apps::mojom::IconType::kArc) &&
@@ -195,7 +196,8 @@ void ArcApps::LoadIcon(const std::string& app_id,
         GetCachedIconFilePath(icon_key->s_key, size_hint_in_dip),
         std::move(callback),
         base::BindOnce(&ArcApps::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
-                       icon_key->s_key, icon_compression, size_hint_in_dip));
+                       icon_key->s_key, icon_compression, size_hint_in_dip,
+                       allow_placeholder_icon));
     return;
   }
 
@@ -387,7 +389,16 @@ const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
 void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
                              apps::mojom::IconCompression icon_compression,
                              int32_t size_hint_in_dip,
+                             bool allow_placeholder_icon,
                              LoadIconCallback callback) {
+  if (allow_placeholder_icon) {
+    constexpr bool is_placeholder_icon = true;
+    LoadIconFromResource(icon_compression, size_hint_in_dip,
+                         IDR_APP_DEFAULT_ICON, is_placeholder_icon,
+                         std::move(callback));
+    return;
+  }
+
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       prefs_->GetApp(icon_key_s_key);
   if (app_info) {
@@ -418,8 +429,9 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
   int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
   int resource_id = (size_hint_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32
                                             : IDR_ARC_SUPPORT_ICON_192;
+  constexpr bool is_placeholder_icon = false;
   LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                       std::move(callback));
+                       is_placeholder_icon, std::move(callback));
 }
 
 apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,

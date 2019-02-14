@@ -280,10 +280,10 @@ statically built resource ID.
       // App Icon Factory methods.
       LoadIcon(
           AppType app_type,
-          string app_id,
           IconKey icon_key,
           IconCompression icon_compression,
-          int32 size_hint_in_dip) => (IconValue icon_value);
+          int32 size_hint_in_dip,
+          bool allow_placeholder_icon) => (IconValue icon_value);
 
       // Some additional methods; not App Icon Factory related.
     };
@@ -291,16 +291,18 @@ statically built resource ID.
     interface Publisher {
       // App Icon Factory methods.
       LoadIcon(
-          string app_id,
           IconKey icon_key,
           IconCompression icon_compression,
-          int32 size_hint_in_dip) => (IconValue icon_value);
+          int32 size_hint_in_dip,
+          bool allow_placeholder_icon) => (IconValue icon_value);
 
       // Some additional methods; not App Icon Factory related.
     };
 
     enum IconType {
       kUnknown,
+      kArc,
+      kCrostini,
       kExtension,
       kResource,
     };
@@ -322,10 +324,42 @@ statically built resource ID.
       IconCompression icon_compression;
       gfx.mojom.ImageSkia? uncompressed;
       array<uint8>? compressed;
+      bool is_placeholder_icon;
     };
 
 TBD: post-processing effects like rounded corners, badges or grayed out (for
 disabled apps) icons.
+
+
+## Placeholder Icons
+
+It can take some time for `Publisher`s to provide an icon. For example, loading
+the canonical icon for an ARC++ or Crostini app might require waiting for a VM
+to start. Such icons are often cached on the file system, but on a cache miss,
+there may be a number of seconds before the system can present an icon. In this
+case, we might want to present a `Publisher`-specific placeholder, typically
+loaded from a resource (an asset statically compiled into the binary).
+
+There are two boolean fields that facilitate this: `allow_placeholder_icon` is
+sent from a `Subsciber` to a `Publisher` and `is_placeholder_icon` is sent in
+the response.
+
+`LoadIcon`'s `allow_placeholder_icon` states whether the the caller will accept
+a placeholder if the real icon can not be provided quickly. Native user
+interfaces like the app launcher will probably set this to true. On the other
+hand, serving Web-UI URLs such as `chrome://app-icon/app_id/icon_size` will set
+this to false, as that URL should identify a particular icon, not one that
+changes over time. Web-UI that wants to display placeholder icons and be
+notified of when real icons are ready will require some mechanism other than a
+`chrome:://app-icon/etc` URL.
+
+`IconValue`'s `is_placeholder_icon` states whether the icon provided is a
+placeholder. That field should only be true if the corresponding `LoadIcon`
+call had `allow_placeholder_icon` true. When the `LoadIcon` caller receives a
+placeholder icon, it is up to the caller to issue a new `LoadIcon` call, this
+time with `allow_placeholder_icon` false. A new Mojo call is necessary, because
+a Mojo callback is a `base::OnceCallback`, so the same callback can't be used
+for both the placeholder and the real icon.
 
 
 # App Runner
@@ -383,4 +417,4 @@ TBD: details.
 
 ---
 
-Updated on 2018-11-22.
+Updated on 2019-02-09.

@@ -124,10 +124,10 @@ void ExtensionApps::Connect(apps::mojom::SubscriberPtr subscriber,
   subscribers_.AddPtr(std::move(subscriber));
 }
 
-void ExtensionApps::LoadIcon(const std::string& app_id,
-                             apps::mojom::IconKeyPtr icon_key,
+void ExtensionApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                              apps::mojom::IconCompression icon_compression,
                              int32_t size_hint_in_dip,
+                             bool allow_placeholder_icon,
                              LoadIconCallback callback) {
   if (!icon_key.is_null() &&
       (icon_key->icon_type == apps::mojom::IconType::kExtension) &&
