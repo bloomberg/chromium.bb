@@ -102,6 +102,8 @@ class BASE_EXPORT WeakReference {
 
     bool MaybeValid() const;
 
+    void DetachFromSequence();
+
    private:
     friend class base::RefCountedThreadSafe<Flag>;
 
@@ -134,7 +136,7 @@ class BASE_EXPORT WeakReferenceOwner {
 
   WeakReference GetRef() const;
 
-  bool HasRefs() const { return flag_ && !flag_->HasOneRef(); }
+  bool HasRefs() const { return !flag_->HasOneRef(); }
 
   void Invalidate();
 
@@ -223,7 +225,6 @@ template <typename T>
 class WeakPtr : public internal::WeakPtrBase {
  public:
   WeakPtr() = default;
-
   WeakPtr(std::nullptr_t) {}
 
   // Allow conversion from U to T provided U "is a" T. Note that this
