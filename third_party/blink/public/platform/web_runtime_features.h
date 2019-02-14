@@ -203,7 +203,6 @@ class WebRuntimeFeatures {
   EnableSendBeaconThrowForBlobWithNonSimpleType(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackgroundVideoTrackOptimization(
       bool);
-  BLINK_PLATFORM_EXPORT static void EnableNewRemotePlaybackPipeline(bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoFullscreenOrientationLock(bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoRotateToFullscreen(bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoFullscreenDetection(bool);

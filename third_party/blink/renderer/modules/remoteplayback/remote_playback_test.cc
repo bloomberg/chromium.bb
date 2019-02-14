@@ -359,7 +359,6 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
 }
 
 TEST_F(RemotePlaybackTest, IsListening) {
-  ScopedNewRemotePlaybackPipelineForTest new_remote_playback_pipeline(true);
   V8TestingScope scope;
 
   auto page_holder = DummyPageHolder::Create();

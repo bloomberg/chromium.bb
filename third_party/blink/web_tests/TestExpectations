@@ -114,7 +114,6 @@ crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
-crbug.com/881040 virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure Pass ]
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
@@ -502,7 +501,6 @@ crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top-ab
 crbug.com/417223 external/wpt/css/css-position/position-relative-table-tr-top.html [ Failure ]
 
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
-crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 crbug.com/722825 virtual/video-surface-layer/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 crbug.com/876050 virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Pass Failure ]
 
@@ -4589,7 +4587,6 @@ crbug.com/873454 css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 # Sheriff failures 2018-08-15
 crbug.com/874567 [ Mac ] svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ Pass Failure ]
 crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Pass Failure ]
-crbug.com/874866 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 crbug.com/874931 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure Crash ]
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Pass Failure ]
 
@@ -4682,8 +4679,6 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Mac ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
-crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
-crbug.com/746128 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
 
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Release ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
@@ -4703,12 +4698,9 @@ crbug.com/832169 media/media-controls-fit-properly-while-zoomed.html [ Failure P
 crbug.com/832169 virtual/video-surface-layer/media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]
 crbug.com/832447 media/controls/controls-page-zoom-in.html [ Failure Pass ]
 crbug.com/832447 media/controls/controls-page-zoom-out.html [ Failure Pass ]
-crbug.com/832447 virtual/new-remote-playback-pipeline/media/controls/controls-page-zoom-in.html [ Failure Pass ]
-crbug.com/832447 virtual/new-remote-playback-pipeline/media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/832447 virtual/video-surface-layer/media/controls/controls-page-zoom-in.html [ Failure Pass ]
 crbug.com/832447 virtual/video-surface-layer/media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
-crbug.com/849694 [ Mac ] virtual/new-remote-playback-pipeline/http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
 
 # ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
@@ -4972,25 +4964,15 @@ crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubl
 crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubletap-on-play-button.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/video-surface-layer/media/controls/click-anywhere-to-play-pause.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-on-play-button.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/click-anywhere-to-play-pause.html [ Skip ]
 
 # Seen flaky on Linux, suppressing on Windows as well
 crbug.com/831720 [ Win ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Win ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Win ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Mac ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Win ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 virtual/video-surface-layer/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
@@ -5002,7 +4984,6 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/modern/scrubbing.html [ Skip ]
-crbug.com/793771 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/scrubbing.html [ Skip ]
 crbug.com/914981 [ Mac ] virtual/video-surface-layer/media/controls/modern/scrubbing.html [ Skip ]
 crbug.com/916902 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Skip ]
 
@@ -5037,7 +5018,6 @@ crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]
 crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-22
-crbug.com/789921 virtual/new-remote-playback-pipeline/media/controls/repaint-on-resize.html [ Failure Pass ]
 crbug.com/789921 virtual/video-surface-layer/media/controls/repaint-on-resize.html [ Failure Pass ]
 crbug.com/814889 idle-callback/test-runner-run-idle-tasks.html [ Crash Timeout Pass ]
 crbug.com/814953 fast/replaced/no-focus-ring-iframe.html [ Failure Pass ]
@@ -5117,8 +5097,6 @@ crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824775 [ Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
-crbug.com/824775 [ Win ] virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
-crbug.com/824775 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824775 [ Win ] virtual/video-surface-layer/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824775 [ Mac ] virtual/video-surface-layer/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824830 fast/peerconnection/RTCPeerConnection-many.html [ Timeout Crash Failure Pass ]
@@ -5195,7 +5173,6 @@ crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-
 
 # Sheriff 2018-04-13
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
-crbug.com/833655 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/video-surface-layer/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Win ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
@@ -5232,7 +5209,6 @@ crbug.com/749738 http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout 
 crbug.com/846997 http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Timeout Pass ]
 crbug.com/849284 [ Mac ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Timeout Pass ]
 crbug.com/846982 http/tests/devtools/editor/text-editor-formatter.js [ Timeout Pass ]
-crbug.com/847094 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Skip ]
 crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Timeout ]
 ### See crbug.com/891427 comment near the top of this file:
 ###crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
@@ -5288,7 +5264,6 @@ crbug.com/853360 [ Mac ] http/tests/media/controls/toggle-class-with-state-sourc
 crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout Failure ]
 crbug.com/853360 [ Mac ] paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
 crbug.com/853360 [ Mac ] tables/mozilla/bugs/bug30692.html [ Failure ]
-crbug.com/853360 [ Mac ] virtual/new-remote-playback-pipeline/http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
 crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ru.html [ Failure ]
@@ -5810,7 +5785,6 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.worker.html [ Pa
 # Sheriff 2018-12-13
 crbug.com/878226 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
-crbug.com/910452 virtual/new-remote-playback-pipeline/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/910452 virtual/video-surface-layer/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
 
@@ -5981,11 +5955,6 @@ crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer
 crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Skip ]
 crbug.com/922951 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Skip ]
 crbug.com/922951 virtual/mouseevent_fractional/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
-crbug.com/922951 virtual/new-remote-playback-pipeline/media/controls/modern/scrubbing-stops-when-controls-hidden.html [ Skip ]
-crbug.com/922951 virtual/new-remote-playback-pipeline/media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Skip ]
-crbug.com/922951 virtual/new-remote-playback-pipeline/media/controls/overflow-menu-hide-on-click-outside.html [ Skip ]
-crbug.com/922951 virtual/new-remote-playback-pipeline/media/controls/overflow-menu-hide-on-click-panel.html [ Skip ]
-crbug.com/922951 virtual/new-remote-playback-pipeline/media/controls/overflow-menu-toggle-class-for-animation.html [ Skip ]
 crbug.com/922951 virtual/outofblink-cors-ns/http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Skip ]
 crbug.com/922951 virtual/outofblink-cors/http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Skip ]
 crbug.com/922951 virtual/feature-policy-for-sandbox/http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Skip ]
