@@ -4063,6 +4063,14 @@
     ]
   },
 
+  "CrostiniExportImportUIAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "CrostiniExportImportUIAllowed": false },
+    "pref_mappings": [
+      { "pref": "crostini.user_export_import_ui_allowed_by_policy" }
+    ]
+  },
+
   "DeviceSamlLoginAuthenticationType": {
   },
 

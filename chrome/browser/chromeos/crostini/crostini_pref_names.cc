@@ -31,6 +31,10 @@ const char kContainerKey[] = "container_name";
 // A boolean preference representing a user level enterprise policy to enable
 // Crostini use.
 const char kUserCrostiniAllowedByPolicy[] = "crostini.user_allowed_by_policy";
+// A boolean preference representing a user level enterprise policy to enable
+// the crostini export / import UI.
+const char kUserCrostiniExportImportUIAllowedByPolicy[] =
+    "crostini.user_export_import_ui_allowed_by_policy";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -70,6 +74,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(kCrostiniLastLaunchTimeWindowStart, 0u);
   registry->RegisterInt64Pref(kCrostiniLastDiskSize, 0u);
   registry->RegisterBooleanPref(kUserCrostiniAllowedByPolicy, true);
+  registry->RegisterBooleanPref(kUserCrostiniExportImportUIAllowedByPolicy,
+                                true);
 }
 
 }  // namespace prefs
