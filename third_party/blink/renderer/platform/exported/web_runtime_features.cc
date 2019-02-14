@@ -420,6 +420,10 @@ void WebRuntimeFeatures::EnableSharedWorker(bool enable) {
   RuntimeEnabledFeatures::SetSharedWorkerEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableTextFragmentAnchor(bool enable) {
+  RuntimeEnabledFeatures::SetTextFragmentIdentifiersEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePreciseMemoryInfo(bool enable) {
   RuntimeEnabledFeatures::SetPreciseMemoryInfoEnabled(enable);
 }

@@ -454,6 +454,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableImplicitRootScroller(
       base::FeatureList::IsEnabled(blink::features::kImplicitRootScroller));
 
+  WebRuntimeFeatures::EnableTextFragmentAnchor(
+      base::FeatureList::IsEnabled(blink::features::kTextFragmentAnchor));
+
   if (!base::FeatureList::IsEnabled(features::kBackgroundFetch))
     WebRuntimeFeatures::EnableBackgroundFetch(false);
 

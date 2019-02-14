@@ -160,6 +160,10 @@ const base::Feature kStopNonTimersInBackground {
 #endif
 };
 
+// Enable text snippets in URL fragments. https://crbug.com/919204.
+const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the site isolated Wasm code cache that is keyed on the resource URL
 // and the origin lock of the renderer that is requesting the resource. When
 // this flag is enabled, content/GeneratedCodeCache handles code cache requests.

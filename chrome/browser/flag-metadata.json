@@ -1873,6 +1873,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-text-fragment-anchor",
+    "owners": [ "bokan", "input-dev" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-touch-drag-drop",
     "owners": [ "eirage", "input-dev" ],
     "expiry_milestone": 78
