@@ -1201,6 +1201,253 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   scroll_end_observer.Wait();
 }
 
+// Ensure that the positions of touch events sent to cross-process subframes
+// account for any change in the position of the subframe during the scroll
+// sequence.
+// Before the issue fix, we record the transform for root to subframe coordinate
+// space and reuse it in the sequence. It is wrong if the subframe moved in the
+// sequence. In this test, the point passed to subframe at the touch end (scroll
+// end) would be wrong because the subframe moved in scroll.
+// Suppose the offset of subframe in rootframe is (0, 0) in the test, the touch
+// start position in root is (15, 15) same in subframe, then move to (15, 10)
+// in rootframe and subframe it caused subframe scroll down for 5px, then touch
+// release in (15, 10) same as the touch move in root frame. Before the fix the
+// touch end would pass (15, 10) to subframe which should be (15, 15) in
+// subframe.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       TouchAndGestureEventPositionChange) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_tall_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  auto* root_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // Synchronize with the child and parent renderers to guarantee that the
+  // surface information required for event hit testing is ready.
+  RenderWidgetHostViewChildFrame* child_rwhv =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          root->child_at(0)->current_frame_host()->GetView());
+  WaitForHitTestDataOrChildSurfaceReady(
+      root->child_at(0)->current_frame_host());
+
+  RenderFrameSubmissionObserver render_frame_submission_observer(
+      shell()->web_contents());
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  const float scale_factor =
+      render_frame_submission_observer.LastRenderFrameMetadata()
+          .page_scale_factor;
+
+  auto await_touch_event_with_position = base::BindRepeating(
+      [](blink::WebInputEvent::Type expected_type,
+         RenderWidgetHostViewBase* rwhv, gfx::PointF expected_position,
+         gfx::PointF expected_position_in_root, InputEventAckSource,
+         InputEventAckState, const blink::WebInputEvent& event) {
+        if (event.GetType() != expected_type)
+          return false;
+
+        const auto& touch_event =
+            static_cast<const blink::WebTouchEvent&>(event);
+        const gfx::PointF root_point = rwhv->TransformPointToRootCoordSpaceF(
+            touch_event.touches[0].PositionInWidget());
+
+        EXPECT_NEAR(touch_event.touches[0].PositionInWidget().x,
+                    expected_position.x(), 1.0f);
+        EXPECT_NEAR(touch_event.touches[0].PositionInWidget().y,
+                    expected_position.y(), 1.0f);
+        EXPECT_NEAR(root_point.x(), expected_position_in_root.x(), 1.0f);
+        EXPECT_NEAR(root_point.y(), expected_position_in_root.y(), 1.0f);
+        return true;
+      });
+
+  auto await_gesture_event_with_position = base::BindRepeating(
+      [](blink::WebInputEvent::Type expected_type,
+         RenderWidgetHostViewBase* rwhv, gfx::PointF expected_position,
+         gfx::PointF expected_position_in_root, InputEventAckSource,
+         InputEventAckState, const blink::WebInputEvent& event) {
+        if (event.GetType() != expected_type)
+          return false;
+
+        const auto& gesture_event =
+            static_cast<const blink::WebGestureEvent&>(event);
+        const gfx::PointF root_point = rwhv->TransformPointToRootCoordSpaceF(
+            gesture_event.PositionInWidget());
+
+        EXPECT_NEAR(gesture_event.PositionInWidget().x, expected_position.x(),
+                    1.0f);
+        EXPECT_NEAR(gesture_event.PositionInWidget().y, expected_position.y(),
+                    1.0f);
+        EXPECT_NEAR(root_point.x(), expected_position_in_root.x(), 1.0f);
+        EXPECT_NEAR(root_point.y(), expected_position_in_root.y(), 1.0f);
+        return true;
+      });
+
+  MainThreadFrameObserver thread_observer(root_rwhv->GetRenderWidgetHost());
+
+  gfx::PointF touch_start_point_in_child(15, 15);
+  gfx::PointF touch_move_point_in_child(15, 10);
+
+  gfx::PointF touch_start_point =
+      child_rwhv->TransformPointToRootCoordSpaceF(touch_start_point_in_child);
+  gfx::PointF touch_move_point =
+      child_rwhv->TransformPointToRootCoordSpaceF(touch_move_point_in_child);
+
+  // Touch start
+  {
+    blink::WebTouchEvent touch_start_event(
+        blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests());
+    touch_start_event.touches_length = 1;
+    touch_start_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+    touch_start_event.touches[0].SetPositionInWidget(touch_start_point);
+    touch_start_event.unique_touch_event_id = 1;
+
+    InputEventAckWaiter await_begin_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_touch_event_with_position,
+                            blink::WebInputEvent::kTouchStart, child_rwhv,
+                            touch_start_point_in_child, touch_start_point));
+
+    router->RouteTouchEvent(root_rwhv, &touch_start_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+    await_begin_in_child.Wait();
+
+    blink::WebGestureEvent gesture_tap_event(
+        blink::WebInputEvent::kGestureTapDown,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests(),
+        blink::kWebGestureDeviceTouchscreen);
+    gesture_tap_event.unique_touch_event_id = 1;
+    gesture_tap_event.SetPositionInWidget(touch_start_point);
+    InputEventAckWaiter await_tap_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_gesture_event_with_position,
+                            blink::WebInputEvent::kGestureTapDown, child_rwhv,
+                            touch_start_point_in_child, touch_start_point));
+    router->RouteGestureEvent(root_rwhv, &gesture_tap_event,
+                              ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    await_tap_in_child.Wait();
+  }
+
+  // Touch move
+  {
+    blink::WebTouchEvent touch_move_event(
+        blink::WebInputEvent::kTouchMove, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests());
+    touch_move_event.touches_length = 1;
+    touch_move_event.touches[0].state = blink::WebTouchPoint::kStateMoved;
+    touch_move_event.touches[0].SetPositionInWidget(touch_move_point);
+    touch_move_event.unique_touch_event_id = 2;
+    InputEventAckWaiter await_move_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_touch_event_with_position,
+                            blink::WebInputEvent::kTouchMove, child_rwhv,
+                            touch_move_point_in_child, touch_move_point));
+    router->RouteTouchEvent(root_rwhv, &touch_move_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    await_move_in_child.Wait();
+  }
+
+  // Gesture Begin and update
+  {
+    blink::WebGestureEvent gesture_scroll_begin(
+        blink::WebGestureEvent::kGestureScrollBegin,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests(),
+        blink::kWebGestureDeviceTouchscreen);
+    gesture_scroll_begin.unique_touch_event_id = 2;
+    gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+    gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+    gesture_scroll_begin.data.scroll_begin.delta_y_hint = -5.f * scale_factor;
+    gesture_scroll_begin.SetPositionInWidget(touch_start_point);
+
+    blink::WebGestureEvent gesture_scroll_update(
+        blink::WebGestureEvent::kGestureScrollUpdate,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests(),
+        blink::kWebGestureDeviceTouchscreen);
+    gesture_scroll_update.unique_touch_event_id = 2;
+    gesture_scroll_update.data.scroll_update.delta_units =
+        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+    gesture_scroll_update.data.scroll_update.delta_x = 0.f;
+    gesture_scroll_update.data.scroll_update.delta_y = -5.f * scale_factor;
+    gesture_scroll_update.SetPositionInWidget(touch_start_point);
+
+    InputEventAckWaiter await_begin_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_gesture_event_with_position,
+                            blink::WebInputEvent::kGestureScrollBegin,
+                            child_rwhv, touch_start_point_in_child,
+                            touch_start_point));
+    InputEventAckWaiter await_update_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_gesture_event_with_position,
+                            blink::WebInputEvent::kGestureScrollUpdate,
+                            child_rwhv, touch_start_point_in_child,
+                            touch_start_point));
+    InputEventAckWaiter await_update_in_root(
+        root_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_gesture_event_with_position,
+                            blink::WebInputEvent::kGestureScrollUpdate,
+                            root_rwhv, touch_start_point, touch_start_point));
+
+    router->RouteGestureEvent(root_rwhv, &gesture_scroll_begin,
+                              ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    await_begin_in_child.Wait();
+    router->RouteGestureEvent(root_rwhv, &gesture_scroll_update,
+                              ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    await_update_in_child.Wait();
+    await_update_in_root.Wait();
+    thread_observer.Wait();
+  }
+
+  // Touch end & Scroll end
+  {
+    blink::WebTouchEvent touch_end_event(
+        blink::WebInputEvent::kTouchEnd, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests());
+    touch_end_event.touches_length = 1;
+    touch_end_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
+    touch_end_event.touches[0].SetPositionInWidget(touch_move_point);
+    touch_end_event.unique_touch_event_id = 3;
+    InputEventAckWaiter await_end_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_touch_event_with_position,
+                            blink::WebInputEvent::kTouchEnd, child_rwhv,
+                            touch_start_point_in_child, touch_move_point));
+    router->RouteTouchEvent(root_rwhv, &touch_end_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    await_end_in_child.Wait();
+
+    blink::WebGestureEvent gesture_scroll_end(
+        blink::WebGestureEvent::kGestureScrollEnd,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests(),
+        blink::kWebGestureDeviceTouchscreen);
+    gesture_scroll_end.unique_touch_event_id = 3;
+    gesture_scroll_end.data.scroll_end.delta_units =
+        blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+    gesture_scroll_end.SetPositionInWidget(touch_move_point);
+
+    InputEventAckWaiter await_scroll_end_in_child(
+        child_rwhv->GetRenderWidgetHost(),
+        base::BindRepeating(await_gesture_event_with_position,
+                            blink::WebInputEvent::kGestureScrollEnd, child_rwhv,
+                            touch_start_point_in_child, touch_move_point));
+    router->RouteGestureEvent(root_rwhv, &gesture_scroll_end,
+                              ui::LatencyInfo(ui::SourceEventType::TOUCH));
+    await_scroll_end_in_child.Wait();
+
+    thread_observer.Wait();
+  }
+}
+
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        CSSTransformedIframeTouchEventCoordinates) {
   // This test only makes sense if viz hit testing is enabled.
@@ -4319,52 +4566,51 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
   EXPECT_TRUE(router->touchscreen_gesture_target_map_.empty());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send touch sequence to main-frame.
   gfx::Point main_frame_point(25, 25);
   uint32_t firstId = SendTouchTapWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touch_target_.target, rwhv_parent,
+      rwhv_parent, main_frame_point, router->touch_target_, rwhv_parent,
       nullptr);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send touch sequence to child.
   gfx::Point child_center(150, 150);
   uint32_t secondId = SendTouchTapWithExpectedTarget(
-      rwhv_parent, child_center, router->touch_target_.target, rwhv_child,
-      nullptr);
+      rwhv_parent, child_center, router->touch_target_, rwhv_child, nullptr);
   EXPECT_EQ(2u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send another touch sequence to main frame.
   uint32_t thirdId = SendTouchTapWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touch_target_.target, rwhv_parent,
+      rwhv_parent, main_frame_point, router->touch_target_, rwhv_parent,
       nullptr);
   EXPECT_EQ(3u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send Gestures to clear GestureTargetQueue.
 
   // The first touch sequence should generate a GestureTapDown, sent to the
   // main frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_parent, firstId);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->touchscreen_gesture_target_,
+                                           rwhv_parent, firstId);
   EXPECT_EQ(2u, router->touchscreen_gesture_target_map_.size());
 
   // The second touch sequence should generate a GestureTapDown, sent to the
   // child frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, child_center, router->touchscreen_gesture_target_.target,
-      rwhv_child, secondId);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, child_center,
+                                           router->touchscreen_gesture_target_,
+                                           rwhv_child, secondId);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
 
   // The third touch sequence should generate a GestureTapDown, sent to the
   // main frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_parent, thirdId);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->touchscreen_gesture_target_,
+                                           rwhv_parent, thirdId);
   EXPECT_EQ(0u, router->touchscreen_gesture_target_map_.size());
 }
 
@@ -4409,45 +4655,45 @@ IN_PROC_BROWSER_TEST_P(
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
   EXPECT_TRUE(router->touchscreen_gesture_target_map_.empty());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send touch sequence to main-frame.
   gfx::Point main_frame_point(25, 25);
   uint32_t firstId = SendTouchTapWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touch_target_.target, rwhv_parent,
+      rwhv_parent, main_frame_point, router->touch_target_, rwhv_parent,
       child_render_widget_host);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send touch sequence to child.
   gfx::Point child_center(150, 150);
   SendTouchTapWithExpectedTarget(rwhv_parent, child_center,
-                                 router->touch_target_.target, rwhv_child,
+                                 router->touch_target_, rwhv_child,
                                  child_render_widget_host);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send another touch sequence to main frame.
   uint32_t thirdId = SendTouchTapWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touch_target_.target, rwhv_parent,
+      rwhv_parent, main_frame_point, router->touch_target_, rwhv_parent,
       child_render_widget_host);
   EXPECT_EQ(2u, router->touchscreen_gesture_target_map_.size());
-  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchscreen_gesture_target_);
 
   // Send Gestures to clear GestureTargetQueue.
 
   // The first touch sequence should generate a GestureTapDown, sent to the
   // main frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_parent, firstId);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->touchscreen_gesture_target_,
+                                           rwhv_parent, firstId);
   EXPECT_EQ(1u, router->touchscreen_gesture_target_map_.size());
 
   // The third touch sequence should generate a GestureTapDown, sent to the
   // main frame.
-  SendGestureTapSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchscreen_gesture_target_.target,
-      rwhv_parent, thirdId);
+  SendGestureTapSequenceWithExpectedTarget(rwhv_parent, main_frame_point,
+                                           router->touchscreen_gesture_target_,
+                                           rwhv_parent, thirdId);
   EXPECT_EQ(0u, router->touchscreen_gesture_target_map_.size());
 }
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
