@@ -146,25 +146,25 @@ TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_Valid) {
   EXPECT_EQ(result->start().timezone_offset(), 0);
 }
 
-INSTANTIATE_TEST_CASE_P(OneMinuteInterval,
-                        SingleWeeklyTimeIntervalTest,
-                        testing::Values(std::make_tuple(kWednesday,
-                                                        kMinutesInHour,
-                                                        kWednesday,
-                                                        kMinutesInHour + 1)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(OneMinuteInterval,
+                         SingleWeeklyTimeIntervalTest,
+                         testing::Values(std::make_tuple(kWednesday,
+                                                         kMinutesInHour,
+                                                         kWednesday,
+                                                         kMinutesInHour + 1)));
+INSTANTIATE_TEST_SUITE_P(
     TheLongestInterval,
     SingleWeeklyTimeIntervalTest,
     testing::Values(
         std::make_tuple(kMonday, 0, kSunday, 24 * kMinutesInHour - 1)));
 
-INSTANTIATE_TEST_CASE_P(RandomInterval,
-                        SingleWeeklyTimeIntervalTest,
-                        testing::Values(std::make_tuple(kTuesday,
-                                                        10 * kMinutesInHour,
-                                                        kFriday,
-                                                        14 * kMinutesInHour +
-                                                            15)));
+INSTANTIATE_TEST_SUITE_P(RandomInterval,
+                         SingleWeeklyTimeIntervalTest,
+                         testing::Values(std::make_tuple(kTuesday,
+                                                         10 * kMinutesInHour,
+                                                         kFriday,
+                                                         14 * kMinutesInHour +
+                                                             15)));
 
 class WeeklyTimeIntervalAndWeeklyTimeTest
     : public testing::TestWithParam<
@@ -190,24 +190,25 @@ TEST_P(WeeklyTimeIntervalAndWeeklyTimeTest, Contains) {
   EXPECT_EQ(interval.Contains(weekly_time), expected_contains());
 }
 
-INSTANTIATE_TEST_CASE_P(TheLongestInterval,
-                        WeeklyTimeIntervalAndWeeklyTimeTest,
-                        testing::Values(std::make_tuple(kMonday,
-                                                        0,
-                                                        kSunday,
-                                                        24 * kMinutesInHour - 1,
-                                                        kWednesday,
-                                                        10 * kMinutesInHour,
-                                                        true),
-                                        std::make_tuple(kSunday,
-                                                        24 * kMinutesInHour - 1,
-                                                        kMonday,
-                                                        0,
-                                                        kWednesday,
-                                                        10 * kMinutesInHour,
-                                                        false)));
+INSTANTIATE_TEST_SUITE_P(
+    TheLongestInterval,
+    WeeklyTimeIntervalAndWeeklyTimeTest,
+    testing::Values(std::make_tuple(kMonday,
+                                    0,
+                                    kSunday,
+                                    24 * kMinutesInHour - 1,
+                                    kWednesday,
+                                    10 * kMinutesInHour,
+                                    true),
+                    std::make_tuple(kSunday,
+                                    24 * kMinutesInHour - 1,
+                                    kMonday,
+                                    0,
+                                    kWednesday,
+                                    10 * kMinutesInHour,
+                                    false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TheShortestInterval,
     WeeklyTimeIntervalAndWeeklyTimeTest,
     testing::Values(std::make_tuple(kMonday,
@@ -220,7 +221,7 @@ INSTANTIATE_TEST_CASE_P(
                     std::make_tuple(kMonday, 0, kMonday, 1, kMonday, 1, false),
                     std::make_tuple(kMonday, 0, kMonday, 1, kMonday, 0, true)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CheckStartInterval,
     WeeklyTimeIntervalAndWeeklyTimeTest,
     testing::Values(std::make_tuple(kTuesday,
@@ -231,7 +232,7 @@ INSTANTIATE_TEST_CASE_P(
                                     10 * kMinutesInHour + 30,
                                     true)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CheckEndInterval,
     WeeklyTimeIntervalAndWeeklyTimeTest,
     testing::Values(std::make_tuple(kTuesday,
@@ -242,22 +243,22 @@ INSTANTIATE_TEST_CASE_P(
                                     14 * kMinutesInHour + 45,
                                     false)));
 
-INSTANTIATE_TEST_CASE_P(RandomInterval,
-                        WeeklyTimeIntervalAndWeeklyTimeTest,
-                        testing::Values(std::make_tuple(kFriday,
-                                                        17 * kMinutesInHour +
-                                                            60,
-                                                        kMonday,
-                                                        9 * kMinutesInHour,
-                                                        kSunday,
-                                                        14 * kMinutesInHour,
-                                                        true),
-                                        std::make_tuple(kMonday,
-                                                        9 * kMinutesInHour,
-                                                        kFriday,
-                                                        17 * kMinutesInHour,
-                                                        kSunday,
-                                                        14 * kMinutesInHour,
-                                                        false)));
+INSTANTIATE_TEST_SUITE_P(RandomInterval,
+                         WeeklyTimeIntervalAndWeeklyTimeTest,
+                         testing::Values(std::make_tuple(kFriday,
+                                                         17 * kMinutesInHour +
+                                                             60,
+                                                         kMonday,
+                                                         9 * kMinutesInHour,
+                                                         kSunday,
+                                                         14 * kMinutesInHour,
+                                                         true),
+                                         std::make_tuple(kMonday,
+                                                         9 * kMinutesInHour,
+                                                         kFriday,
+                                                         17 * kMinutesInHour,
+                                                         kSunday,
+                                                         14 * kMinutesInHour,
+                                                         false)));
 
 }  // namespace policy

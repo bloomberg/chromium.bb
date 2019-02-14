@@ -117,17 +117,17 @@ TEST_P(SingleWeeklyTimeTest, ExtractFromProto_Valid) {
   EXPECT_EQ(result->timezone_offset(), timezone_offset());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TheSmallestCase,
     SingleWeeklyTimeTest,
     testing::Values(std::make_tuple(kMonday, 0, base::nullopt)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TheBiggestCase,
     SingleWeeklyTimeTest,
     testing::Values(std::make_tuple(kSunday, 24 * kMinutesInHour - 1, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     RandomCase,
     SingleWeeklyTimeTest,
     testing::Values(std::make_tuple(kWednesday, 15 * kMinutesInHour + 30, 10)));
@@ -151,23 +151,24 @@ TEST_P(TwoWeeklyTimesAndDurationTest, GetDuration) {
   EXPECT_EQ(weekly_time1.GetDurationTo(weekly_time2), expected_duration());
 }
 
-INSTANTIATE_TEST_CASE_P(ZeroDuration,
-                        TwoWeeklyTimesAndDurationTest,
-                        testing::Values(std::make_tuple(kWednesday,
-                                                        kMinutesInHour,
-                                                        kWednesday,
-                                                        kMinutesInHour,
-                                                        base::TimeDelta())));
+INSTANTIATE_TEST_SUITE_P(ZeroDuration,
+                         TwoWeeklyTimesAndDurationTest,
+                         testing::Values(std::make_tuple(kWednesday,
+                                                         kMinutesInHour,
+                                                         kWednesday,
+                                                         kMinutesInHour,
+                                                         base::TimeDelta())));
 
-INSTANTIATE_TEST_CASE_P(TheLongestDuration,
-                        TwoWeeklyTimesAndDurationTest,
-                        testing::Values(std::make_tuple(kMonday,
-                                                        0,
-                                                        kSunday,
-                                                        24 * kMinutesInHour - 1,
-                                                        kWeek - kMinute)));
+INSTANTIATE_TEST_SUITE_P(TheLongestDuration,
+                         TwoWeeklyTimesAndDurationTest,
+                         testing::Values(std::make_tuple(kMonday,
+                                                         0,
+                                                         kSunday,
+                                                         24 * kMinutesInHour -
+                                                             1,
+                                                         kWeek - kMinute)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DifferentDurations,
     TwoWeeklyTimesAndDurationTest,
     testing::Values(
@@ -207,7 +208,7 @@ TEST_P(TwoWeeklyTimesAndDurationInDifferentTimezonesTest, ConvertToTimezone) {
   EXPECT_EQ(weekly_time1.GetDurationTo(weekly_time2), expected_duration());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DifferentTimezones,
     TwoWeeklyTimesAndDurationInDifferentTimezonesTest,
     testing::Values(std::make_tuple(kMonday,
@@ -218,7 +219,7 @@ INSTANTIATE_TEST_CASE_P(
                                     5 * kMillisecondsInHour,
                                     kWeek - base::TimeDelta::FromHours(4))));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TimezoneMakesDurationWrapAround,
     TwoWeeklyTimesAndDurationInDifferentTimezonesTest,
     testing::Values(std::make_tuple(kMonday,
@@ -229,7 +230,7 @@ INSTANTIATE_TEST_CASE_P(
                                     4 * kMillisecondsInHour,
                                     base::TimeDelta::FromHours(1))));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TwoAgnosticTimezones,
     TwoWeeklyTimesAndDurationInDifferentTimezonesTest,
     testing::Values(std::make_tuple(kMonday,
@@ -262,7 +263,7 @@ TEST_P(TwoWeeklyTimesAndOffsetTest, AddMilliseconds) {
             weekly_time.timezone_offset());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ZeroOffset,
     TwoWeeklyTimesAndOffsetTest,
     testing::Values(std::make_tuple(kTuesday,
@@ -271,7 +272,7 @@ INSTANTIATE_TEST_CASE_P(
                                     kTuesday,
                                     15 * kMinutesInHour + 30)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TheSmallestOffset,
     TwoWeeklyTimesAndOffsetTest,
     testing::Values(std::make_tuple(kWednesday,
@@ -285,7 +286,7 @@ INSTANTIATE_TEST_CASE_P(
                                     kSunday,
                                     20 * kMinutesInHour + 30)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TheBiggestOffset,
     TwoWeeklyTimesAndOffsetTest,
     testing::Values(std::make_tuple(kTuesday,
@@ -299,7 +300,7 @@ INSTANTIATE_TEST_CASE_P(
                                     kMonday,
                                     10 * kMinutesInHour + 30)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DifferentOffsets,
     TwoWeeklyTimesAndOffsetTest,
     testing::Values(std::make_tuple(kWednesday,
@@ -338,7 +339,7 @@ TEST_P(WeeklyTimeTimezoneConversionTest, ConvertToTimezone) {
   EXPECT_EQ(result.timezone_offset().value(), result_offset());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ConversionToABiggerTimezone,
     WeeklyTimeTimezoneConversionTest,
     testing::Values(std::make_tuple(kMonday,
@@ -348,16 +349,17 @@ INSTANTIATE_TEST_CASE_P(
                                     15 * kMinutesInHour,
                                     7 * kMillisecondsInHour)));
 
-INSTANTIATE_TEST_CASE_P(ConversionToASmallerTimezone,
-                        WeeklyTimeTimezoneConversionTest,
-                        testing::Values(std::make_tuple(kMonday,
-                                                        10 * kMinutesInHour,
-                                                        4 * kMillisecondsInHour,
-                                                        kMonday,
-                                                        6 * kMinutesInHour,
-                                                        0)));
+INSTANTIATE_TEST_SUITE_P(
+    ConversionToASmallerTimezone,
+    WeeklyTimeTimezoneConversionTest,
+    testing::Values(std::make_tuple(kMonday,
+                                    10 * kMinutesInHour,
+                                    4 * kMillisecondsInHour,
+                                    kMonday,
+                                    6 * kMinutesInHour,
+                                    0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ConversionToTheSameTimezone,
     WeeklyTimeTimezoneConversionTest,
     testing::Values(std::make_tuple(kMonday,
@@ -367,7 +369,7 @@ INSTANTIATE_TEST_CASE_P(
                                     10 * kMinutesInHour,
                                     4 * kMillisecondsInHour)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ConversionToANegativeTimezone,
     WeeklyTimeTimezoneConversionTest,
     testing::Values(std::make_tuple(kMonday,

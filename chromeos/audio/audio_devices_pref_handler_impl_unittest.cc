@@ -205,8 +205,8 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Input, AudioDevicesPrefHandlerTest, Values(true));
-INSTANTIATE_TEST_CASE_P(Output, AudioDevicesPrefHandlerTest, Values(false));
+INSTANTIATE_TEST_SUITE_P(Input, AudioDevicesPrefHandlerTest, Values(true));
+INSTANTIATE_TEST_SUITE_P(Output, AudioDevicesPrefHandlerTest, Values(false));
 
 TEST_P(AudioDevicesPrefHandlerTest, TestDefaultValuesV1) {
   AudioDevice device = GetDeviceWithVersion(1);
