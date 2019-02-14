@@ -54,6 +54,8 @@ class TabletModeWindowState : public wm::WindowState::State {
   }
 
  private:
+  friend class TabletModeControllerTestApi;
+
   // Updates the window to |new_state_type| and resulting bounds:
   // Either full screen, maximized centered or minimized. If the state does not
   // change, only the bounds will be changed. If |animate| is set, the bound
