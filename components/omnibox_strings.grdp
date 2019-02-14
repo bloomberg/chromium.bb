@@ -7,17 +7,30 @@
   <message name="IDS_EMPTY_KEYWORD_VALUE" desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
     &lt;Type search term&gt;
   </message>
-  <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard. [Length: 21em]">
-    Link you copied
-  </message>
-  <message name="IDS_TEXT_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the text has been extracted from the user's clipboard.">
-    Text you copied
-  </message>
+  <if expr="use_titlecase">
+    <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard." meaning="Length: 35em">
+      Link You Copied
+    </message>
+    <message name="IDS_TEXT_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the text has been extracted from the user's clipboard." meaning="Length: 35em">
+      Text You Copied
+    </message>
+    <message name="IDS_IMAGE_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the image has been extracted from the user's clipboard." meaning="Length: 35em">
+      Image You Copied
+    </message>
+  </if>
+  <if expr="not use_titlecase">
+    <message name="IDS_LINK_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the link has been extracted from the user's clipboard." meaning="Length: 21em">
+      Link you copied
+    </message>
+    <message name="IDS_TEXT_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the text has been extracted from the user's clipboard." meaning="Length: 21em">
+      Text you copied
+    </message>
+    <message name="IDS_IMAGE_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the image has been extracted from the user's clipboard." meaning="Length: 21em">
+      Image you copied
+    </message>
+  </if>
   <message name="IDS_COPIED_TEXT_FROM_CLIPBOARD" desc="The actual text the user copied, surrounded by quotation marks.">
     &quot;<ph name="TEXT">$1<ex>search string</ex></ph>&quot;
-  </message>
-  <message name="IDS_IMAGE_FROM_CLIPBOARD" desc="The label in the omnibox dropdown explaining that the image has been extracted from the user's clipboard.">
-    Image you copied
   </message>
   <message name="IDS_SEARCH_WEB_FOR_IMAGE" desc="Description for performing a search by image">
     Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for Image
