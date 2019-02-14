@@ -240,6 +240,16 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
       .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_PLATFORM);
   for (unsigned int i = 1; i <= 8; ++i) {
+    auto conflict_policy =
+        expected_bundle
+            .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+            .Get(kHomepageLocation)
+            ->DeepCopy();
+    conflict_policy.conflicts.clear();
+    conflict_policy.value = std::make_unique<base::Value>("http://bar.com");
+    expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+        .GetMutable(kHomepageLocation)
+        ->AddConflictingPolicy(conflict_policy);
     expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .GetMutable(kHomepageLocation)
         ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);

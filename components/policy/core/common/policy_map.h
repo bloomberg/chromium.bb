@@ -30,13 +30,18 @@ class POLICY_EXPORT PolicyMap {
    public:
     PolicyLevel level = POLICY_LEVEL_RECOMMENDED;
     PolicyScope scope = POLICY_SCOPE_USER;
-    std::unique_ptr<base::Value> value;
-    std::unique_ptr<ExternalDataFetcher> external_data_fetcher;
-
     // For debugging and displaying only. Set by provider delivering the policy.
     PolicySource source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
+    std::unique_ptr<base::Value> value;
+    std::unique_ptr<ExternalDataFetcher> external_data_fetcher;
+    std::vector<Entry> conflicts;
 
     Entry();
+    Entry(PolicyLevel level,
+          PolicyScope scope,
+          PolicySource source,
+          std::unique_ptr<base::Value> value,
+          std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
     ~Entry();
 
     Entry(Entry&&) noexcept;
@@ -56,6 +61,9 @@ class POLICY_EXPORT PolicyMap {
     void AddError(base::StringPiece error);
     // Add a localized error given its l10n message ID.
     void AddError(int message_id);
+
+    // Adds a conflicting policy.
+    void AddConflictingPolicy(const Entry& conflict);
 
     // Callback used to look up a localized string given its l10n message ID. It
     // should return a UTF-16 string.

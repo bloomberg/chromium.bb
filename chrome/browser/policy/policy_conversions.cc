@@ -129,6 +129,60 @@ base::Optional<policy::Schema> GetKnownPolicySchema(
   return known_policy_iterator->second;
 }
 
+// Create a description of the policy |policy_name| using |policy| and the
+// optional errors in |errors| to determine the status of each policy. If
+// |convert_values| is true, converts the values to show them in javascript.
+// |known_policy_schemas| contains |Schema|s for known policies in the same
+// policy namespace of |map|. A policy without an entry in
+// |known_policy_schemas| is an unknown policy.
+Value GetPolicyValue(
+    const std::string& policy_name,
+    const policy::PolicyMap::Entry& policy,
+    policy::PolicyErrorMap* errors,
+    bool convert_values,
+    const base::Optional<PolicyToSchemaMap>& known_policy_schemas) {
+  base::Optional<policy::Schema> known_policy_schema =
+      GetKnownPolicySchema(known_policy_schemas, policy_name);
+  Value value(Value::Type::DICTIONARY);
+  value.SetKey("value", CopyAndMaybeConvert(*policy.value, convert_values,
+                                            known_policy_schema));
+  value.SetKey(
+      "scope",
+      Value((policy.scope == policy::POLICY_SCOPE_USER) ? "user" : "machine"));
+  value.SetKey("level", Value((policy.level == policy::POLICY_LEVEL_RECOMMENDED)
+                                  ? "recommended"
+                                  : "mandatory"));
+  value.SetKey("source", Value(kPolicySources[policy.source].key));
+  base::string16 error;
+  if (!known_policy_schema.has_value()) {
+    // We don't know what this policy is. This is an important error to
+    // show.
+    error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
+  } else {
+    // The PolicyMap contains errors about retrieving the policy, while the
+    // PolicyErrorMap contains validation errors. Give priority to PolicyMap.
+    error = policy.GetLocalizedErrors(
+        base::BindRepeating(&l10n_util::GetStringUTF16));
+    if (error.empty())
+      error = errors->GetErrors(policy_name);
+  }
+  if (!error.empty())
+    value.SetKey("error", Value(error));
+
+  if (!policy.conflicts.empty()) {
+    Value conflict_values(Value::Type::LIST);
+    for (const auto& conflict : policy.conflicts) {
+      base::Value conflicted_policy_value = GetPolicyValue(
+          policy_name, conflict, errors, convert_values, known_policy_schemas);
+      conflict_values.GetList().push_back(std::move(conflicted_policy_value));
+    }
+
+    value.SetKey("conflicts", std::move(conflict_values));
+  }
+
+  return value;
+}
+
 // Inserts a description of each policy in |map| into |values|, using the
 // optional errors in |errors| to determine the status of each policy. If
 // |convert_values| is true, converts the values to show them in javascript.
@@ -148,35 +202,8 @@ void GetPolicyValues(
     const PolicyMap::Entry& policy = entry.second;
     if (policy.scope == policy::POLICY_SCOPE_USER && !with_user_policies)
       continue;
-
-    base::Optional<policy::Schema> known_policy_schema =
-        GetKnownPolicySchema(known_policy_schemas, policy_name);
-    Value value(Value::Type::DICTIONARY);
-    value.SetKey("value", CopyAndMaybeConvert(*policy.value, convert_values,
-                                              known_policy_schema));
-    value.SetKey("scope", Value((policy.scope == policy::POLICY_SCOPE_USER)
-                                    ? "user"
-                                    : "machine"));
-    value.SetKey("level",
-                 Value((policy.level == policy::POLICY_LEVEL_RECOMMENDED)
-                           ? "recommended"
-                           : "mandatory"));
-    value.SetKey("source", Value(kPolicySources[policy.source].key));
-    base::string16 error;
-    if (!known_policy_schema.has_value()) {
-      // We don't know what this policy is. This is an important error to
-      // show.
-      error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
-    } else {
-      // The PolicyMap contains errors about retrieving the policy, while the
-      // PolicyErrorMap contains validation errors. Give priority to PolicyMap.
-      error = policy.GetLocalizedErrors(
-          base::BindRepeating(&l10n_util::GetStringUTF16));
-      if (error.empty())
-        error = errors->GetErrors(policy_name);
-    }
-    if (!error.empty())
-      value.SetKey("error", Value(error));
+    base::Value value = GetPolicyValue(policy_name, policy, errors,
+                                       convert_values, known_policy_schemas);
     values->SetKey(policy_name, std::move(value));
   }
 }
