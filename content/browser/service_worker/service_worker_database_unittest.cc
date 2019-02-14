@@ -1462,6 +1462,90 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
   EXPECT_EQ("value_e2", user_data_list[2].second);
 }
 
+TEST(ServiceWorkerDatabaseTest,
+     UserData_DeleteUserDataForAllRegistrationsByKeyPrefix) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  const GURL kOrigin("https://example.com");
+
+  // Add registration 1.
+  RegistrationData data1;
+  data1.registration_id = 100;
+  data1.scope = URL(kOrigin, "/foo");
+  data1.script = URL(kOrigin, "/script1.js");
+  data1.version_id = 200;
+  data1.resources_total_size_bytes = 100;
+  std::vector<Resource> resources1;
+  resources1.push_back(CreateResource(1, data1.script, 100));
+
+  // Add registration 2.
+  RegistrationData data2;
+  data2.registration_id = 101;
+  data2.scope = URL(kOrigin, "/bar");
+  data2.script = URL(kOrigin, "/script2.js");
+  data2.version_id = 201;
+  data2.resources_total_size_bytes = 200;
+  std::vector<Resource> resources2;
+  resources2.push_back(CreateResource(2, data2.script, 200));
+
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data1, resources1, &deleted_version,
+                                        &newly_purgeable_resources));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data2, resources2, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Write user data associated with registration 1.
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    {{"key_prefix:key1", "value_a1"},
+                                     {"key_prefix:key2", "value_a2"},
+                                     {"key_prefix:key3", "value_a3"},
+                                     {"kept_key_prefix:key1", "value_b1"}}));
+
+  // Write user data associated with registration 2.
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data2.registration_id, kOrigin,
+                                    {{"key_prefix:key1", "value_c1"},
+                                     {"key_prefix:key2", "value_c2"},
+                                     {"kept_key_prefix:key1", "value_d1"},
+                                     {"kept_key_prefix:key2", "value_d2"}}));
+
+  // Deleting user data by key prefixes should return STATUS_OK (rather than
+  // STATUS_ERROR_NOT_FOUND) even if no keys match the prefixes and so nothing
+  // is deleted.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->DeleteUserDataForAllRegistrationsByKeyPrefix(
+                "not_found_key_prefix:"));
+
+  // Actually delete user data by key prefixes.
+  ASSERT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->DeleteUserDataForAllRegistrationsByKeyPrefix("key_prefix:"));
+
+  // User data with deleted "key_prefix:" should be deleted.
+  std::vector<std::pair<int64_t, std::string>> user_data_list;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataForAllRegistrationsByKeyPrefix(
+                "key_prefix:", &user_data_list));
+  EXPECT_TRUE(user_data_list.empty());
+
+  // User data with "kept_key_prefix:" should remain on both registrations.
+  user_data_list.clear();
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataForAllRegistrationsByKeyPrefix(
+                "kept_key_prefix:", &user_data_list));
+  ASSERT_EQ(3u, user_data_list.size());
+
+  EXPECT_EQ(data1.registration_id, user_data_list[0].first);
+  EXPECT_EQ("value_b1", user_data_list[0].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[1].first);
+  EXPECT_EQ("value_d1", user_data_list[1].second);
+  EXPECT_EQ(data2.registration_id, user_data_list[2].first);
+  EXPECT_EQ("value_d2", user_data_list[2].second);
+}
+
 TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   const GURL kOrigin("https://example.com");

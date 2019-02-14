@@ -240,11 +240,18 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       const std::string& user_data_name,
       std::vector<std::pair<int64_t, std::string>>* user_data);
 
-  // Reads user data for all registrations that have data with |user_data_name|
-  // from the database. Returns OK if they are successfully read or not found.
+  // Reads user data for all registrations that have data with
+  // |user_data_name_prefix| from the database. Returns OK if they are
+  // successfully read or not found.
   Status ReadUserDataForAllRegistrationsByKeyPrefix(
       const std::string& user_data_name_prefix,
       std::vector<std::pair<int64_t, std::string>>* user_data);
+
+  // Deletes user data for all registrations that have data with
+  // |user_data_name_prefix| from the database. Returns OK if all are
+  // successfully deleted or not found in the database.
+  Status DeleteUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& user_data_name_prefix);
 
   // Resources should belong to one of following resource lists: uncommitted,
   // committed and purgeable.
