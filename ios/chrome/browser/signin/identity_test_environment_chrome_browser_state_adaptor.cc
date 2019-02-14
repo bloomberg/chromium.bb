@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
@@ -71,9 +72,16 @@ std::unique_ptr<KeyedService> BuildFakeAccountFetcherService(
   return account_fetcher_service;
 }
 
+std::unique_ptr<KeyedService> BuildTestSigninClient(web::BrowserState* state) {
+  return std::make_unique<TestSigninClient>(
+      ios::ChromeBrowserState::FromBrowserState(state)->GetPrefs());
+}
+
 TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories(
     bool use_ios_token_service_delegate) {
-  return {{ios::AccountFetcherServiceFactory::GetInstance(),
+  return {{SigninClientFactory::GetInstance(),
+           base::BindRepeating(&BuildTestSigninClient)},
+          {ios::AccountFetcherServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeAccountFetcherService)},
           {ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(use_ios_token_service_delegate

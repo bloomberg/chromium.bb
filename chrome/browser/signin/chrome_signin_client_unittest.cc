@@ -190,42 +190,6 @@ TEST_F(ChromeSigninClientSignoutTest, SignOut) {
   PreSignOut(source_metric, delete_metric);
 }
 
-TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
-  signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
-  signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::IGNORE_METRIC;
-
-  // Call the method below instead calling SigninManager::CopyCredentialsFrom,
-  // keeping the same behavior.
-  client_->AfterCredentialsCopied();
-
-  EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
-      .Times(0);
-  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
-      .Times(1);
-  EXPECT_CALL(
-      *client_,
-      SignOutCallback(source_metric, delete_metric,
-                      SigninClient::SignoutDecision::ALLOW_SIGNOUT))
-      .Times(1);
-
-  PreSignOut(source_metric, delete_metric);
-
-  ::testing::Mock::VerifyAndClearExpectations(client_.get());
-
-  EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
-      .Times(1);
-  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
-      .Times(1);
-  EXPECT_CALL(
-      *client_,
-      SignOutCallback(source_metric, delete_metric,
-                      SigninClient::SignoutDecision::ALLOW_SIGNOUT))
-      .Times(1);
-  PreSignOut(source_metric, delete_metric);
-}
-
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
   signin_util::SetForceSigninForTesting(false);
   CreateClient(browser()->profile());

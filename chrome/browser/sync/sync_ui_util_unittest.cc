@@ -22,7 +22,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,7 +33,6 @@ namespace {
 enum DistinctState {
   STATUS_CASE_SETUP_IN_PROGRESS,
   STATUS_CASE_SETUP_ERROR,
-  STATUS_CASE_AUTHENTICATING,
   STATUS_CASE_AUTH_ERROR,
   STATUS_CASE_PROTOCOL_ERROR,
   STATUS_CASE_PASSPHRASE_ERROR,
@@ -44,9 +42,7 @@ enum DistinctState {
   NUMBER_OF_STATUS_CASES
 };
 
-const char kTestGaiaId[] = "gaia-id-test_user@test.com";
 const char kTestUser[] = "test_user@test.com";
-const char kRefreshToken[] = "refresh_token";
 
 }  // namespace
 
@@ -76,30 +72,6 @@ void GetDistinctCase(TestSyncService* service,
       service->SetDisableReasons(
           syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
       service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
-      return;
-    }
-    case STATUS_CASE_AUTHENTICATING: {
-      service->SetFirstSetupComplete(true);
-      service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-      service->SetPassphraseRequired(false);
-      service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
-      service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
-
-      // This case will be run in platforms supporting mutation of the primary
-      // account (i.e., not ChromeOS) only, so we can assume mutator != nullptr.
-      auto* primary_account_mutator =
-          identity_manager->GetPrimaryAccountMutator();
-      DCHECK(primary_account_mutator);
-
-      // Starting the auth process and not completing it will make the mutator
-      // report "auth in progress" when checked from the test later on.
-      primary_account_mutator
-          ->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-              kRefreshToken, kTestGaiaId, kTestUser,
-              base::BindOnce([](const std::string& refresh_token) {
-                // Check that the token is properly passed along.
-                EXPECT_EQ(kRefreshToken, refresh_token);
-              }));
       return;
     }
     case STATUS_CASE_AUTH_ERROR: {
@@ -174,8 +146,6 @@ sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
       return sync_ui_util::NO_ACTION;
     case STATUS_CASE_SETUP_ERROR:
       return sync_ui_util::REAUTHENTICATE;
-    case STATUS_CASE_AUTHENTICATING:
-      return sync_ui_util::NO_ACTION;
     case STATUS_CASE_AUTH_ERROR:
       return sync_ui_util::REAUTHENTICATE;
     case STATUS_CASE_PROTOCOL_ERROR:
@@ -225,13 +195,6 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
         env_adaptor.identity_test_env();
     identity::IdentityManager* identity_manager =
         environment->identity_manager();
-
-    // We can't check the "Authenticating" case in platforms that don't support
-    // mutation of the primary account (e.g. ChromeOS), so skip those cases.
-    if (idx == STATUS_CASE_AUTHENTICATING &&
-        !identity_manager->GetPrimaryAccountMutator()) {
-      continue;
-    }
 
     // Need a primary account signed in before calling GetDistinctCase().
     environment->MakePrimaryAccountAvailable(kTestUser);

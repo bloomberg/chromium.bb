@@ -66,7 +66,7 @@ TEST(StartupTabProviderTest, GetStandardOnboardingTabsForState_Negative) {
     StandardOnboardingTabsParams params;
     params.is_first_run = true;
     params.is_signin_allowed = true;
-    params.is_signin_in_progress = true;
+    params.is_signed_in = true;
     StartupTabs output =
         StartupTabProviderImpl::GetStandardOnboardingTabsForState(params);
     EXPECT_TRUE(output.empty());
@@ -251,22 +251,6 @@ TEST(StartupTabProviderTest, GetWin10OnboardingTabsForState_Negative) {
     standard_params.is_first_run = true;
     standard_params.is_signin_allowed = true;
     standard_params.is_signed_in = true;
-
-    Win10OnboardingTabsParams win10_params;
-    win10_params.has_seen_win10_promo = true;
-    win10_params.set_default_browser_allowed = true;
-
-    StartupTabs output = StartupTabProviderImpl::GetWin10OnboardingTabsForState(
-        standard_params, win10_params);
-
-    EXPECT_TRUE(output.empty());
-  }
-  {
-    // If sign-in is in progress, block showing the standard Welcome page.
-    StandardOnboardingTabsParams standard_params;
-    standard_params.is_first_run = true;
-    standard_params.is_signin_allowed = true;
-    standard_params.is_signin_in_progress = true;
 
     Win10OnboardingTabsParams win10_params;
     win10_params.has_seen_win10_promo = true;

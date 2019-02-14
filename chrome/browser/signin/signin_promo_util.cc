@@ -41,13 +41,7 @@ bool ShouldShowPromo(Profile* profile) {
   // Display the signin promo if the user is not signed in.
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(original_profile);
-  if (identity_manager->HasPrimaryAccount() ||
-      identity_manager->GetPrimaryAccountMutator()
-          ->LegacyIsPrimaryAccountAuthInProgress()) {
-    return false;
-  }
-
-  return true;
+  return !identity_manager->HasPrimaryAccount();
 #endif
 }
 

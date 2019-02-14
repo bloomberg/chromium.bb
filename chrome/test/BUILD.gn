@@ -5471,6 +5471,7 @@ if (!is_android && !is_fuchsia) {
       "//components/sync:test_support_testserver",
       "//content/test:test_support",
       "//net",
+      "//services/identity/public/cpp:test_support",
       "//skia",
     ]
 

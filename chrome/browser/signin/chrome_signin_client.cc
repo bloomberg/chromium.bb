@@ -338,15 +338,6 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
 #endif
 }
 
-void ChromeSigninClient::AfterCredentialsCopied() {
-  if (signin_util::IsForceSigninEnabled()) {
-    // The signout after credential copy won't open UserManager after all
-    // browser window are closed. Because the browser window will be opened for
-    // the new profile soon.
-    should_display_user_manager_ = false;
-  }
-}
-
 void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   AccountConsistencyModeManager::GetForProfile(profile_)

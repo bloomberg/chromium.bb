@@ -48,16 +48,8 @@ class IdentityManager;
 }  // namespace identity
 
 class SigninManager : public SigninManagerBase,
-                      public AccountTrackerService::Observer,
                       public OAuth2TokenService::Observer {
  public:
-  // The callback invoked once the OAuth token has been fetched during signin,
-  // but before the profile transitions to the "signed-in" state. This allows
-  // callers to load policy and prompt the user appropriately before completing
-  // signin. The callback is passed the just-fetched OAuth login refresh token.
-  using OAuthTokenFetchedCallback =
-      base::OnceCallback<void(const std::string&)>;
-
   // Used to remove accounts from the token service and the account tracker.
   enum class RemoveAccountsOption {
     // Do not remove accounts.
@@ -86,24 +78,6 @@ class SigninManager : public SigninManagerBase,
   // platforms where signin_manager.* is built, all SigninManagerBase instances
   // are actually SigninManager instances.
   static SigninManager* FromSigninManagerBase(SigninManagerBase* manager);
-
-  // Attempt to sign in this user with a refresh token.
-  // If |refresh_token| is not empty, then SigninManager will add it to the
-  // |token_service_| when the sign-in flow is completed.
-  // If non-null, the passed |oauth_fetched_callback| callback is invoked once
-  // sign-in has been completed.
-  // The callback should invoke SignOut() or CompletePendingSignin() to either
-  // continue or cancel the in-process signin.
-  virtual void StartSignInWithRefreshToken(
-      const std::string& refresh_token,
-      const std::string& gaia_id,
-      const std::string& username,
-      OAuthTokenFetchedCallback oauth_fetched_callback);
-
-  // Copies auth credentials from one SigninManager to this one. This is used
-  // when creating a new profile during the signin process to transfer the
-  // in-progress credentials to the new profile.
-  virtual void CopyCredentialsFrom(const SigninManager& source);
 
   // Signs a user out, removing the preference, erasing all keys
   // associated with the authenticated user, and canceling all auth in progress.
@@ -140,17 +114,11 @@ class SigninManager : public SigninManagerBase,
   // If applicable, merge the signed in account into the cookie jar.
   void MergeSigninCredentialIntoCookieJar();
 
-  // Invoked from an OAuthTokenFetchedCallback to complete user signin.
-  virtual void CompletePendingSignin();
-
   // Invoked from SigninManagerAndroid to indicate that the sign-in process
   // has completed for the email |username|.  SigninManager assumes that
   // |username| can be used to look up the corresponding account_id and gaia_id
   // for this email.
   void OnExternalSigninCompleted(const std::string& username);
-
-  // Returns true if there's a signin in progress.
-  bool AuthInProgress() const override;
 
   // Returns whether sign-in is allowed.
   // TODO(crbug.com/806778): Remove method in super-class.
@@ -158,18 +126,6 @@ class SigninManager : public SigninManagerBase,
 
   // Sets whether sign-in is allowed or not.
   void SetSigninAllowed(bool allowed);
-
-  // If an authentication is in progress, return the account id being
-  // authenticated. Returns an empty string if no auth is in progress.
-  const std::string& GetAccountIdForAuthInProgress() const;
-
-  // If an authentication is in progress, return the gaia id being
-  // authenticated. Returns an empty string if no auth is in progress.
-  const std::string& GetGaiaIdForAuthInProgress() const;
-
-  // If an authentication is in progress, return the username being
-  // authenticated. Returns an empty string if no auth is in progress.
-  const std::string& GetUsernameForAuthInProgress() const;
 
  protected:
   // The sign out process which is started by SigninClient::PreSignOut()
@@ -180,31 +136,10 @@ class SigninManager : public SigninManagerBase,
       SigninClient::SignoutDecision signout_decision);
 
  private:
-  enum SigninType {
-    SIGNIN_TYPE_NONE,
-    SIGNIN_TYPE_WITH_REFRESH_TOKEN,
-    SIGNIN_TYPE_WITHOUT_REFRESH_TOKEN
-  };
-
-  std::string SigninTypeToString(SigninType type);
   friend class FakeSigninManager;
   friend class identity::IdentityManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, TestAlternateWildcard);
-
-  // Called to setup the transient signin data during one of the
-  // StartSigninXXX methods.  |type| indicates which of the methods is being
-  // used to perform the signin while |username| identifies the account to be
-  // signed in. Returns false and generates an auth error if the passed
-  // |username| is not allowed by policy.  |gaia_id| is the obfuscated gaia id
-  // corresponding to |username|.
-  bool PrepareForSignin(SigninType type,
-                        const std::string& gaia_id,
-                        const std::string& username);
-
-  // Persists |account_id| as the currently signed-in account, and triggers
-  // a sign-in success notification.
-  void OnSignedIn();
 
   // Send all observers |GoogleSigninSucceeded| notifications.
   void FireGoogleSigninSucceeded();
@@ -212,17 +147,8 @@ class SigninManager : public SigninManagerBase,
   // Send all observers |GoogleSignedOut| notifications.
   void FireGoogleSignedOut(const AccountInfo& account_info);
 
-  // AccountTrackerService::Observer:
-  void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountUpdateFailed(const std::string& account_id) override;
-
   // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
-
-  // Called when a new request to re-authenticate a user is in progress.
-  // Will clear in memory data but leaves the db as such so when the browser
-  // restarts we can use the old token(which might throw a password error).
-  void ClearTransientSigninData();
 
   // Called to handle an error from a GAIA auth fetch.  Sets the last error
   // to |error|, sends out a notification of login failure and clears the
@@ -240,19 +166,6 @@ class SigninManager : public SigninManagerBase,
   // Returns true if the passed username is allowed by policy.
   bool IsAllowedUsername(const std::string& username) const;
 
-  std::string possibly_invalid_account_id_;
-  std::string possibly_invalid_gaia_id_;
-  std::string possibly_invalid_email_;
-
-  // The type of sign being performed.  This value is valid only between a call
-  // to one of the StartSigninXXX methods and when the sign in is either
-  // successful or not.
-  SigninType type_;
-
-  // Temporarily saves the oauth2 refresh token.  It will be passed to the
-  // token service so that it does not need to mint new ones.
-  std::string temp_refresh_token_;
-
   // Object used to use the token to push a GAIA cookie into the cookie jar.
   GaiaCookieManagerService* cookie_manager_service_;
 
@@ -264,12 +177,6 @@ class SigninManager : public SigninManagerBase,
   BooleanPrefMember signin_allowed_;
 
   signin::AccountConsistencyMethod account_consistency_;
-
-  // Two gate conditions for when PostSignedIn should be called. Verify
-  // that the SigninManager has reached OnSignedIn() and the AccountTracker
-  // has completed calling GetUserInfo.
-  bool signin_manager_signed_in_;
-  bool user_info_fetched_by_account_tracker_;
 
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
 

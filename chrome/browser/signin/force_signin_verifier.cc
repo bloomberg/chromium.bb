@@ -142,8 +142,7 @@ void ForceSigninVerifier::CloseAllBrowserWindows() {
   // Do not close window if there is ongoing reauth. If it fails later, the
   // signin process should take care of the signout.
   auto* primary_account_mutator = identity_manager_->GetPrimaryAccountMutator();
-  if (!primary_account_mutator ||
-      primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress())
+  if (!primary_account_mutator)
     return;
   primary_account_mutator->ClearPrimaryAccount(
       identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,

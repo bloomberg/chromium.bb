@@ -659,10 +659,6 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
       GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   // Sync should not be enabled.
   EXPECT_TRUE(GetIdentityManager()->GetPrimaryAccountId().empty());
-  EXPECT_TRUE(GetIdentityManager()
-                  ->GetPrimaryAccountMutator()
-                  ->LegacyPrimaryAccountForAuthInProgress()
-                  .account_id.empty());
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -906,10 +902,6 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, PRE_TurnOffDice) {
       browser()->profile()));
 
   EXPECT_FALSE(GetIdentityManager()->GetPrimaryAccountId().empty());
-  EXPECT_TRUE(GetIdentityManager()
-                  ->GetPrimaryAccountMutator()
-                  ->LegacyPrimaryAccountForAuthInProgress()
-                  .account_id.empty());
   EXPECT_TRUE(
       GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   EXPECT_FALSE(GetIdentityManager()->GetAccountsWithRefreshTokens().empty());
@@ -929,10 +921,6 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice) {
       browser()->profile()));
 
   EXPECT_TRUE(GetIdentityManager()->GetPrimaryAccountId().empty());
-  EXPECT_TRUE(GetIdentityManager()
-                  ->GetPrimaryAccountMutator()
-                  ->LegacyPrimaryAccountForAuthInProgress()
-                  .account_id.empty());
   EXPECT_FALSE(
       GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   EXPECT_TRUE(GetIdentityManager()->GetAccountsWithRefreshTokens().empty());

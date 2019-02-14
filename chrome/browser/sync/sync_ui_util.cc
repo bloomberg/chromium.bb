@@ -20,7 +20,6 @@
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace sync_ui_util {
@@ -138,23 +137,20 @@ void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
 }
 
 // status_label and link_label must either be both null or both non-null.
-MessageType GetStatusLabelsImpl(const syncer::SyncService* service,
-                                identity::IdentityManager* identity_manager,
-                                const bool is_user_signout_allowed,
-                                const GoogleServiceAuthError& auth_error,
-                                base::string16* status_label,
-                                base::string16* link_label,
-                                ActionType* action_type) {
+MessageType GetStatusLabelsImpl(
+    const syncer::SyncService* service,
+    const identity::IdentityManager* identity_manager,
+    bool is_user_signout_allowed,
+    const GoogleServiceAuthError& auth_error,
+    base::string16* status_label,
+    base::string16* link_label,
+    ActionType* action_type) {
   DCHECK(service);
   DCHECK_EQ(status_label == nullptr, link_label == nullptr);
 
   if (!identity_manager->HasPrimaryAccount()) {
     return PRE_SYNCED;
   }
-
-  // Needed to check the state of the authentication process below.
-  const auto* primary_account_mutator =
-      identity_manager->GetPrimaryAccountMutator();
 
   syncer::SyncStatus status;
   service->QueryDetailedSyncStatus(&status);
@@ -174,16 +170,6 @@ MessageType GetStatusLabelsImpl(const syncer::SyncService* service,
                                        status_label, link_label, action_type);
       }
       return SYNC_ERROR;
-    }
-
-    // For auth errors first check if an auth is in progress.
-    if (primary_account_mutator &&
-        primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress()) {
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL);
-      }
-      return PRE_SYNCED;
     }
 
     // Since there is no auth in progress, check for an auth error first.
@@ -241,14 +227,8 @@ MessageType GetStatusLabelsImpl(const syncer::SyncService* service,
       *status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
     }
 
-    if (primary_account_mutator &&
-        primary_account_mutator->LegacyIsPrimaryAccountAuthInProgress()) {
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL);
-      }
-    } else if (auth_error.state() != GoogleServiceAuthError::NONE &&
-               auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
+    if (auth_error.state() != GoogleServiceAuthError::NONE &&
+        auth_error.state() != GoogleServiceAuthError::TWO_FACTOR) {
       if (status_label && link_label) {
         GetStatusForAuthError(auth_error, status_label, link_label,
                               action_type);
