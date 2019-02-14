@@ -266,9 +266,8 @@ size_t VP9Decoder::GetRequiredNumOfPictures() const {
 }
 
 size_t VP9Decoder::GetNumReferenceFrames() const {
-  // Maximum number of reference frames needed plus one for the one being
-  // currently egressed.
-  return kVp9NumRefFrames + 1;
+  // Maximum number of reference frames
+  return kVp9NumRefFrames;
 }
 
 }  // namespace media

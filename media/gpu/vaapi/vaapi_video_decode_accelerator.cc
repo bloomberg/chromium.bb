@@ -534,19 +534,18 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
 
   requested_pic_size_ = size;
 
-  // If we are in BufferAllocationMode::kNone, split the requested |num_pics|
-  // between VA reference frames and client PictureBuffers proper.
-  if (IsBufferAllocationModeReducedOrSuperReduced())
-    requested_num_reference_frames_ = num_reference_frames;
-  else
+  if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
+    // Add one to the reference frames for the one being currently egressed.
+    requested_num_reference_frames_ = num_reference_frames + 1;
+    requested_num_pics_ = num_pics - num_reference_frames;
+  } else if (buffer_allocation_mode_ == BufferAllocationMode::kReduced) {
+    // Add one to the reference frames for the one being currently egressed,
+    // and an extra allocation for both |client_| and |decoder_|.
+    requested_num_reference_frames_ = num_reference_frames + 2;
+    requested_num_pics_ = num_pics - num_reference_frames + 1;
+  } else {
     requested_num_reference_frames_ = 0;
-
-  requested_num_pics_ = num_pics - requested_num_reference_frames_;
-
-  // Add an extra allocation for |client_| and |decoder_| in the kReduced case.
-  if (buffer_allocation_mode_ == BufferAllocationMode::kReduced) {
-    requested_num_reference_frames_++;
-    requested_num_pics_++;
+    requested_num_pics_ = num_pics;
   }
 
   VLOGF(2) << " |requested_num_pics_| = " << requested_num_pics_
@@ -567,7 +566,6 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
       IsBufferAllocationModeReducedOrSuperReduced()
           ? previously_requested_num_reference_frames_
           : pictures_.size();
-
   if (!pending_output_cbs_.empty() ||
       expected_max_available_va_surfaces != available_va_surfaces_.size()) {
     // If we're here the stream resolution has changed; we need to wait until:
@@ -1111,7 +1109,7 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() const {
   // If we're here, we have to use the Vpp unit and allocate buffers for
   // |decoder_|; usually we'd have to allocate the |decoder_|s
   // GetRequiredNumOfPictures() internally, but on SkyLake and later, we can
-  // allocate just |decoder_|s GetNumReferenceFrames(). Moreover, we also
+  // allocate just |decoder_|s GetNumReferenceFrames() + 1. Moreover, we also
   // request the |client_| to allocate less than the usual |decoder_|s
   // GetRequiredNumOfPictures().
   // TODO(crbug.com/912295): enable for previous architectures.
@@ -1124,7 +1122,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() const {
 
     return BufferAllocationMode::kSuperReduced;
   }
-
   return BufferAllocationMode::kNormal;
 }
 
