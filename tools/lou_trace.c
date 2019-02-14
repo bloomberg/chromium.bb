@@ -280,8 +280,11 @@ main(int argc, char **argv) {
 	int forward_flag = 0;
 	int backward_flag = 0;
 	int mode = 0;
-	int noContractionsMode, dotsIOMode, ucBrlMode, noUndefinedDotsMode,
-			partialTransMode = 0;
+	int noContractionsMode = 0;
+	int dotsIOMode = 0;
+	int ucBrlMode = 0;
+	int noUndefinedDotsMode = 0;
+	int partialTransMode = 0;
 
 	const struct option longopts[] = {
 		{ "help", no_argument, NULL, 'h' }, { "version", no_argument, NULL, 'v' },
