@@ -345,9 +345,9 @@ TEST_F(GPUTestExpectationsParserTest, MultipleAPIsConflict) {
   EXPECT_NE(0u, parser.GetErrorMessages().size());
 }
 
-INSTANTIATE_TEST_CASE_P(GPUTestExpectationsParser,
-                        GPUTestExpectationsParserParamTest,
-                        ::testing::ValuesIn(kOSVersionsWithFamily));
+INSTANTIATE_TEST_SUITE_P(GPUTestExpectationsParser,
+                         GPUTestExpectationsParserParamTest,
+                         ::testing::ValuesIn(kOSVersionsWithFamily));
 
 }  // namespace gpu
 

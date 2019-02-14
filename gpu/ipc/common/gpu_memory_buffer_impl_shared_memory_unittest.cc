@@ -10,13 +10,13 @@
 namespace gpu {
 namespace {
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplSharedMemory,
-                              GpuMemoryBufferImplTest,
-                              GpuMemoryBufferImplSharedMemory);
+INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferImplSharedMemory,
+                               GpuMemoryBufferImplTest,
+                               GpuMemoryBufferImplSharedMemory);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplSharedMemory,
-                              GpuMemoryBufferImplCreateTest,
-                              GpuMemoryBufferImplSharedMemory);
+INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferImplSharedMemory,
+                               GpuMemoryBufferImplCreateTest,
+                               GpuMemoryBufferImplSharedMemory);
 
 }  // namespace
 }  // namespace gpu

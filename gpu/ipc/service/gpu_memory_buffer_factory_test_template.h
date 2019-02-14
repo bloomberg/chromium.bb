@@ -41,7 +41,7 @@ class GpuMemoryBufferFactoryTest : public testing::Test {
   GpuMemoryBufferFactoryType factory_;
 };
 
-TYPED_TEST_CASE_P(GpuMemoryBufferFactoryTest);
+TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryTest);
 
 TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
   const gfx::GpuMemoryBufferId kBufferId(1);
@@ -76,7 +76,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
 
 // The GpuMemoryBufferFactoryTest test case verifies behavior that is expected
 // from a GpuMemoryBuffer factory in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer);
+REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer);
 
 }  // namespace gpu
 
