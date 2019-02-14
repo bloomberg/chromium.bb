@@ -12953,7 +12953,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['https://example.com', 'https://www.chromium.org'],
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
       'id': 431,
       'caption': '''Allow media autoplay on a whitelist of URL patterns''',
       'tags': [],
@@ -12961,7 +12961,21 @@
 
       If autoplay is enabled then videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+      A valid URL patterns specifications are:
+
+      - [*.]domain.tld (matches domain.tld and all sub-domains)
+
+      - host (matches an exact hostname)
+
+      - scheme://host:port (supported schemes: http,https)
+
+      - scheme://[*.]domain.tld:port (supported schemes: http,https)
+
+      - file://path (The path has to be an absolute path and start with a '/')
+
+      - a.b.c.d (matches an exact IPv4 ip)
+
+      - [a:b:c:d:e:f:g:h] (matches an exact IPv6 ip)
 
       If the AutoplayAllowed policy is set to True then this policy will have no effect.
 
