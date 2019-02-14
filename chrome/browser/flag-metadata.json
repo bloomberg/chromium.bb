@@ -2981,7 +2981,7 @@
   },
   {
     "name": "stop-in-background",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-catan@google.com" ],
     "expiry_milestone": 76
   },
   {
