@@ -122,6 +122,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cors_origin_pattern_setter.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/permission_controller.h"
@@ -227,6 +228,7 @@
 using base::TimeDelta;
 using bookmarks::BookmarkModel;
 using content::BrowserThread;
+using content::CorsOriginPatternSetter;
 using content::DownloadManagerDelegate;
 
 namespace {
@@ -324,52 +326,6 @@ bool LocaleNotChanged(const std::string& pref_locale,
   return pref_locale == new_locale_converted;
 }
 #endif  // defined(OS_CHROMEOS)
-
-// A class used to make an asynchronous Mojo call with cloned patterns for each
-// StoragePartition iteration. |this| instance will be destructed when all
-// existing asynchronous Mojo calls made in SetLists() are done, and |closure|
-// will be invoked on destructing |this|.
-class CorsOriginPatternSetter
-    : public base::RefCounted<CorsOriginPatternSetter> {
- public:
-  CorsOriginPatternSetter(
-      const url::Origin& source_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-      base::OnceClosure closure)
-      : source_origin_(source_origin),
-        allow_patterns_(std::move(allow_patterns)),
-        block_patterns_(std::move(block_patterns)),
-        closure_(std::move(closure)) {}
-
-  void SetLists(content::StoragePartition* partition) {
-    partition->GetNetworkContext()->SetCorsOriginAccessListsForOrigin(
-        source_origin_, ClonePatterns(allow_patterns_),
-        ClonePatterns(block_patterns_),
-        base::BindOnce([](scoped_refptr<CorsOriginPatternSetter> setter) {},
-                       base::RetainedRef(this)));
-  }
-
-  static std::vector<network::mojom::CorsOriginPatternPtr> ClonePatterns(
-      const std::vector<network::mojom::CorsOriginPatternPtr>& patterns) {
-    std::vector<network::mojom::CorsOriginPatternPtr> cloned_patterns;
-    cloned_patterns.reserve(patterns.size());
-    for (const auto& item : patterns)
-      cloned_patterns.push_back(item.Clone());
-    return cloned_patterns;
-  }
-
- private:
-  friend class base::RefCounted<CorsOriginPatternSetter>;
-
-  ~CorsOriginPatternSetter() { std::move(closure_).Run(); }
-
-  const url::Origin source_origin_;
-  const std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns_;
-  const std::vector<network::mojom::CorsOriginPatternPtr> block_patterns_;
-
-  base::OnceClosure closure_;
-};
 
 }  // namespace
 
