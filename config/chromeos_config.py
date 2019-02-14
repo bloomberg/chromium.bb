@@ -1955,6 +1955,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_enable_skylab_hwtest = frozenset([
+      'auron_paine',
+      'bob',
       'coral',
       'nyan_blaze',
       'reef',
