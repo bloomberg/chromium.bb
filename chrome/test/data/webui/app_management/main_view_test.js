@@ -21,13 +21,11 @@ suite('<app-management-main-view>', function() {
   setup(function() {
     appIdCounter = 0;
 
-    mainView = document.createElement('app-management-main-view');
-    PolymerTest.clearBody();
-
     fakeHandler = setupFakeHandler();
     replaceStore();
 
-    document.body.appendChild(mainView);
+    mainView = document.createElement('app-management-main-view');
+    replaceBody(mainView);
   });
 
   test('simple app addition', async function() {

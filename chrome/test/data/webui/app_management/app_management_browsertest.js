@@ -19,7 +19,9 @@ AppManagementBrowserTest.prototype = {
   browsePreload: 'chrome://apps',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    '../test_store.js',
     'test_util.js',
+    'test_store.js',
   ]),
 
   featureList: ['features::kAppManagement', ''],
@@ -95,6 +97,20 @@ AppManagementReducersTest.prototype = {
 };
 
 TEST_F('AppManagementReducersTest', 'All', function() {
+  mocha.run();
+});
+
+function AppManagementRouterTest() {}
+
+AppManagementRouterTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'router_test.js',
+  ]),
+};
+
+TEST_F('AppManagementRouterTest', 'All', function() {
   mocha.run();
 });
 

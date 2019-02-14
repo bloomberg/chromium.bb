@@ -44,3 +44,25 @@ function isHidden(element) {
   const rect = element.getBoundingClientRect();
   return rect.height === 0 && rect.width === 0;
 }
+
+/**
+ * Create an app for testing purpose.
+ * @param {string} id
+ * @param {Object=} optConfig
+ * @return {!App}
+ */
+function createApp(id, config) {
+  return app_management.FakePageHandler.createApp(id, config);
+}
+
+/**
+ * Replace the current body of the test with a new element.
+ * @param {Element} element
+ */
+function replaceBody(element) {
+  PolymerTest.clearBody();
+
+  window.history.replaceState({}, '', '/');
+
+  document.body.appendChild(element);
+}
