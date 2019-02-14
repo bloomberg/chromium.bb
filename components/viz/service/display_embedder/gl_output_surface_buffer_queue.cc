@@ -37,15 +37,13 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  buffer_queue_.reset(new BufferQueue(
+  buffer_queue_ = std::make_unique<BufferQueue>(
       context_provider->ContextGL(), target, internalformat, buffer_format,
-      gpu_memory_buffer_manager, surface_handle));
+      gpu_memory_buffer_manager, surface_handle);
   buffer_queue_->Initialize();
 }
 
-GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() {
-  // TODO(rjkroege): Support cleanup.
-}
+GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() = default;
 
 void GLOutputSurfaceBufferQueue::BindFramebuffer() {
   DCHECK(buffer_queue_);
@@ -89,7 +87,6 @@ uint32_t GLOutputSurfaceBufferQueue::GetFramebufferCopyTextureFormat() {
 }
 
 bool GLOutputSurfaceBufferQueue::IsDisplayedAsOverlayPlane() const {
-  // TODO(rjkroege): implement remaining overlay functionality.
   return true;
 }
 

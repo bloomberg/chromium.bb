@@ -20,6 +20,9 @@ class GLOutputSurfaceOzone : public GLOutputSurfaceBufferQueue {
       uint32_t internal_format);
   ~GLOutputSurfaceOzone() override;
 
+  // OutputSurface implementation.
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLOutputSurfaceOzone);
 };

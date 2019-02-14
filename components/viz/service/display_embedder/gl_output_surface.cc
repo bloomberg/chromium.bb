@@ -4,7 +4,8 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface.h"
 
-#include <stdint.h>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -107,6 +108,10 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   if (frame.sub_buffer_rect) {
     HandlePartialSwap(*frame.sub_buffer_rect, flags, std::move(swap_callback),
                       std::move(presentation_callback));
+  } else if (!frame.content_bounds.empty()) {
+    context_provider_->ContextSupport()->SwapWithBounds(
+        frame.content_bounds, flags, std::move(swap_callback),
+        std::move(presentation_callback));
   } else {
     context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback),
                                               std::move(presentation_callback));
