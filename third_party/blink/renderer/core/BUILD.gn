@@ -307,6 +307,8 @@ jumbo_source_set("testing") {
     "testing/use_mock_scrollbar_settings.h",
     "testing/v8/web_core_test_support.cc",
     "testing/v8/web_core_test_support.h",
+    "testing/wait_for_event.cc",
+    "testing/wait_for_event.h",
     "testing/worker_internals.cc",
     "testing/worker_internals.h",
   ]
