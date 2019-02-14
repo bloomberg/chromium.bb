@@ -7,7 +7,6 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/app/cpp/fidl.h>
-#include <fuchsia/ui/viewsv1/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
@@ -29,10 +28,8 @@ class WebContentRunner;
 // resources and service bindings.  Runners for specialized web-based content
 // (e.g. Cast applications) can extend this class to configure the Frame to
 // their needs, publish additional APIs, etc.
-// TODO(crbug.com/899348): Remove fuchsia::ui::viewsv1::ViewProvider.
 class WebComponent : public fuchsia::sys::ComponentController,
-                     public fuchsia::ui::app::ViewProvider,
-                     public fuchsia::ui::viewsv1::ViewProvider {
+                     public fuchsia::ui::app::ViewProvider {
  public:
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
   // will be published to the service-directory specified in |startup_info|, and
@@ -62,11 +59,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
       fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
       override;
-
-  // fuchsia::ui::viewsv1::ViewProvider implementation.
-  void CreateView(
-      fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
-      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override;
 
   // Reports the supplied exit-code and reason to the |controller_binding_| and
   // requests that the |runner_| delete this component.
@@ -106,9 +98,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
   std::unique_ptr<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>
       view_provider_binding_;
-  std::unique_ptr<
-      base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>
-      legacy_view_provider_binding_;
 
   // Termination reason and exit-code to be reported via the
   // sys::ComponentController::OnTerminated event.

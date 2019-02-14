@@ -12,7 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_FUCHSIA)
-#include <lib/zx/eventpair.h>
+#include <fuchsia/ui/gfx/cpp/fidl.h>
 #endif
 
 namespace ui {
@@ -45,7 +45,7 @@ struct PlatformWindowInitProperties {
   gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget;
 
 #if defined(OS_FUCHSIA)
-  zx::eventpair view_token;
+  fuchsia::ui::gfx::ExportToken view_token;
 #endif
 };
 

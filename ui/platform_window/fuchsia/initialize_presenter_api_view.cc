@@ -21,7 +21,7 @@ void InitializeViewTokenAndPresentView(
   // Presenter API.
   zx::eventpair view_holder_token;
   zx_status_t status = zx::eventpair::create(
-      /* options = */ 0, &window_properties_out->view_token,
+      /* options = */ 0, &window_properties_out->view_token.value,
       &view_holder_token);
   ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create";
 

@@ -61,7 +61,8 @@ void ScenicGpuHost::ExportParent(int32_t surface_handle,
       scenic_window_manager_->GetWindow(surface_handle);
   if (!scenic_window)
     return;
-  zx::eventpair export_token(
+  ::fuchsia::ui::gfx::ExportToken export_token;
+  export_token.value = zx::eventpair(
       mojo::UnwrapPlatformHandle(std::move(export_token_mojo)).TakeHandle());
   scenic_window->ExportRenderingEntity(std::move(export_token));
 }

@@ -51,9 +51,7 @@ class FrameImpl : public chromium::web::Frame,
   bool has_view_for_test() { return window_tree_host_ != nullptr; }
 
   // chromium::web::Frame implementation.
-  void CreateView(
-      fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
-      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override;
+  void CreateView(fuchsia::ui::gfx::ExportToken view_token) override;
   void CreateView2(
       zx::eventpair view_token,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
