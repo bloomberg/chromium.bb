@@ -35,7 +35,7 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
   EnrollmentScreenTest() = default;
   ~EnrollmentScreenTest() override = default;
 
-  // InProcessBrowserTest:
+  // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendArg(switches::kLoginManager);
@@ -43,69 +43,64 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     ShowLoginWizard(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+    EXPECT_EQ(WizardController::default_controller()->current_screen(),
+              enrollment_screen());
+    static_cast<BaseScreen*>(enrollment_screen())->base_screen_delegate_ =
+        &mock_base_screen_delegate_;
+  }
+  void TearDownOnMainThread() override {
+    static_cast<BaseScreen*>(enrollment_screen())->base_screen_delegate_ =
+        WizardController::default_controller();
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  EnrollmentScreen* enrollment_screen() {
+    EXPECT_TRUE(WizardController::default_controller());
+    EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
+        WizardController::default_controller()->screen_manager());
+    EXPECT_TRUE(enrollment_screen);
+    return enrollment_screen;
+  }
+
+  MockBaseScreenDelegate* mock_base_screen_delegate() {
+    return &mock_base_screen_delegate_;
   }
 
  private:
+  MockBaseScreenDelegate mock_base_screen_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenTest);
 };
 
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
-  ASSERT_TRUE(WizardController::default_controller());
-
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
-      WizardController::default_controller()->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
   base::RunLoop run_loop;
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      &mock_base_screen_delegate;
-
-  ASSERT_EQ(WizardController::default_controller()->current_screen(),
-            enrollment_screen);
-
-  EXPECT_CALL(mock_base_screen_delegate,
+  EXPECT_CALL(*mock_base_screen_delegate(),
               OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  enrollment_screen->OnCancel();
-  content::RunThisRunLoop(&run_loop);
-  Mock::VerifyAndClearExpectations(&mock_base_screen_delegate);
-
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      WizardController::default_controller();
+  enrollment_screen()->OnCancel();
+  run_loop.Run();
 }
 
 // Flaky test: crbug.com/394069
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, DISABLED_TestSuccess) {
-  ASSERT_TRUE(WizardController::default_controller());
-  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
-      WizardController::default_controller()->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
+  WizardController::SkipEnrollmentPromptsForTesting();
   base::RunLoop run_loop;
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      &mock_base_screen_delegate;
-
-  ASSERT_EQ(WizardController::default_controller()->current_screen(),
-            enrollment_screen);
-
-  enrollment_screen->OnDeviceEnrolled();
-  run_loop.RunUntilIdle();
-  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
-
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      WizardController::default_controller();
+  EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+  EXPECT_CALL(*mock_base_screen_delegate(),
+              OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  enrollment_screen()->OnDeviceAttributeUpdatePermission(false /* granted */);
+  run_loop.Run();
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
 class AttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
  public:
-  AttestationAuthEnrollmentScreenTest() {}
+  AttestationAuthEnrollmentScreenTest() = default;
+  ~AttestationAuthEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from InProcessBrowserTest:
+  // Overridden from EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnterpriseEnableZeroTouchEnrollment);
@@ -115,41 +110,18 @@ class AttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AttestationAuthEnrollmentScreenTest, TestCancel) {
-  ASSERT_TRUE(WizardController::default_controller());
-
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
-      WizardController::default_controller()->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
   base::RunLoop run_loop;
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      &mock_base_screen_delegate;
 
-  ASSERT_EQ(WizardController::default_controller()->current_screen(),
-            enrollment_screen);
-
-  EXPECT_CALL(mock_base_screen_delegate,
+  EXPECT_CALL(*mock_base_screen_delegate(),
               OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  ASSERT_FALSE(enrollment_screen->AdvanceToNextAuth());
-  enrollment_screen->OnCancel();
-  content::RunThisRunLoop(&run_loop);
-  Mock::VerifyAndClearExpectations(&mock_base_screen_delegate);
-
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      WizardController::default_controller();
+  ASSERT_FALSE(enrollment_screen()->AdvanceToNextAuth());
+  enrollment_screen()->OnCancel();
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
-  WizardController* wcontroller = WizardController::default_controller();
-  ASSERT_TRUE(wcontroller);
-
-  EnrollmentScreen* enrollment_screen =
-      EnrollmentScreen::Get(wcontroller->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
-  EnrollmentScreenView* view = enrollment_screen->GetView();
+  EnrollmentScreenView* view = enrollment_screen()->GetView();
   ASSERT_TRUE(view);
 
   test::JSChecker checker(
@@ -175,10 +147,11 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, EnrollmentSpinner) {
 
 class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
  public:
-  ForcedAttestationAuthEnrollmentScreenTest() {}
+  ForcedAttestationAuthEnrollmentScreenTest() = default;
+  ~ForcedAttestationAuthEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from InProcessBrowserTest:
+  // Overridden from EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
@@ -189,38 +162,22 @@ class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ForcedAttestationAuthEnrollmentScreenTest, TestCancel) {
-  ASSERT_TRUE(WizardController::default_controller());
-
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
-      WizardController::default_controller()->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
   base::RunLoop run_loop;
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      &mock_base_screen_delegate;
-
-  ASSERT_EQ(WizardController::default_controller()->current_screen(),
-            enrollment_screen);
-
-  EXPECT_CALL(mock_base_screen_delegate,
+  EXPECT_CALL(*mock_base_screen_delegate(),
               OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  ASSERT_FALSE(enrollment_screen->AdvanceToNextAuth());
-  enrollment_screen->OnCancel();
-  content::RunThisRunLoop(&run_loop);
-  Mock::VerifyAndClearExpectations(&mock_base_screen_delegate);
-
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      WizardController::default_controller();
+  ASSERT_FALSE(enrollment_screen()->AdvanceToNextAuth());
+  enrollment_screen()->OnCancel();
+  run_loop.Run();
 }
 
 class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
  public:
-  MultiAuthEnrollmentScreenTest() {}
+  MultiAuthEnrollmentScreenTest() = default;
+  ~MultiAuthEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from InProcessBrowserTest:
+  // Overridden from EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnterpriseEnableZeroTouchEnrollment);
@@ -237,38 +194,22 @@ class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MultiAuthEnrollmentScreenTest, TestCancel) {
-  ASSERT_TRUE(WizardController::default_controller());
-
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
-      WizardController::default_controller()->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
   base::RunLoop run_loop;
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      &mock_base_screen_delegate;
-
-  ASSERT_EQ(WizardController::default_controller()->current_screen(),
-            enrollment_screen);
-
-  EXPECT_CALL(mock_base_screen_delegate,
+  EXPECT_CALL(*mock_base_screen_delegate(),
               OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  ASSERT_TRUE(enrollment_screen->AdvanceToNextAuth());
-  enrollment_screen->OnCancel();
-  content::RunThisRunLoop(&run_loop);
-  Mock::VerifyAndClearExpectations(&mock_base_screen_delegate);
-
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      WizardController::default_controller();
+  ASSERT_TRUE(enrollment_screen()->AdvanceToNextAuth());
+  enrollment_screen()->OnCancel();
+  run_loop.Run();
 }
 
 class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
  public:
-  ProvisionedEnrollmentScreenTest() {}
+  ProvisionedEnrollmentScreenTest() = default;
+  ~ProvisionedEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from InProcessBrowserTest:
+  // Overridden from EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
@@ -283,29 +224,12 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProvisionedEnrollmentScreenTest, TestBackButton) {
-  ASSERT_TRUE(WizardController::default_controller());
-
-  EnrollmentScreen* enrollment_screen = EnrollmentScreen::Get(
-      WizardController::default_controller()->screen_manager());
-  ASSERT_TRUE(enrollment_screen);
-
   base::RunLoop run_loop;
-  MockBaseScreenDelegate mock_base_screen_delegate;
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      &mock_base_screen_delegate;
-
-  ASSERT_EQ(WizardController::default_controller()->current_screen(),
-            enrollment_screen);
-
-  EXPECT_CALL(mock_base_screen_delegate,
+  EXPECT_CALL(*mock_base_screen_delegate(),
               OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_BACK))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  enrollment_screen->OnCancel();
-  content::RunThisRunLoop(&run_loop);
-  Mock::VerifyAndClearExpectations(&mock_base_screen_delegate);
-
-  static_cast<BaseScreen*>(enrollment_screen)->base_screen_delegate_ =
-      WizardController::default_controller();
+  enrollment_screen()->OnCancel();
+  run_loop.Run();
 }
 
 }  // namespace chromeos
