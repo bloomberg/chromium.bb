@@ -285,7 +285,8 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
     commands.SyncChrome(build_root=self._orig_root,
                         chrome_root=self._run.options.chrome_root,
                         useflags=useflags,
-                        tag=chrome_version)
+                        tag=chrome_version,
+                        git_cache_dir=self._run.options.git_cache_dir)
 
 
 class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
