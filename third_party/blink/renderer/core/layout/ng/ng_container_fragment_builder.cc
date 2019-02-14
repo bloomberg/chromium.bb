@@ -105,7 +105,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 }
 
 NGLogicalOffset NGContainerFragmentBuilder::GetChildOffset(
-    const LayoutObject* child) {
+    const LayoutObject* child) const {
   for (wtf_size_t i = 0; i < children_.size(); ++i) {
     if (children_[i]->GetLayoutObject() == child)
       return offsets_[i];

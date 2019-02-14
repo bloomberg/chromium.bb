@@ -88,7 +88,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   // Returns offset for given child. DCHECK if child not found.
   // Warning: Do not call unless necessary.
-  NGLogicalOffset GetChildOffset(const LayoutObject* child);
+  NGLogicalOffset GetChildOffset(const LayoutObject* child) const;
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
