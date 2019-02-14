@@ -8,11 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 
 namespace ui {
-class OverlayCandidatesOzone;
 class OverlaySurfaceCandidate;
 
 // Ozone DRM extension of the OverlayManagerOzone interface.
@@ -32,17 +34,53 @@ class DrmOverlayManager : public OverlayManagerOzone {
 
   // Resets the cache of OverlaySurfaceCandidates and if they can be displayed
   // as an overlay. For use when display configuration changes.
-  virtual void ResetCache() = 0;
+  void ResetCache();
 
   // Checks if overlay candidates can be displayed as overlays. Modifies
   // |candidates| to indicate if they can.
-  virtual void CheckOverlaySupport(
-      std::vector<OverlaySurfaceCandidate>* candidates,
-      gfx::AcceleratedWidget widget) = 0;
+  void CheckOverlaySupport(std::vector<OverlaySurfaceCandidate>* candidates,
+                           gfx::AcceleratedWidget widget);
+
+ protected:
+  // Sends a request to see if overlay configuration will work. Implementations
+  // should call UpdateCacheForOverlayCandidates() with the response.
+  virtual void SendOverlayValidationRequest(
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      gfx::AcceleratedWidget widget) const = 0;
+
+  // Perform basic validation to see if |candidate| is a valid request.
+  virtual bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
+                                  gfx::AcceleratedWidget widget) const;
+
+  // Updates the MRU cache for overlay configuration |candidates| with |status|.
+  void UpdateCacheForOverlayCandidates(
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      const std::vector<OverlayStatus>& status);
 
  private:
+  // Value for the request cache, that keeps track of how many times a
+  // specific validation has been requested, if there is a GPU validation
+  // in flight, and at last the result of the validation.
+  struct OverlayValidationCacheValue {
+    OverlayValidationCacheValue();
+    OverlayValidationCacheValue(OverlayValidationCacheValue&& other);
+    ~OverlayValidationCacheValue();
+    OverlayValidationCacheValue& operator=(OverlayValidationCacheValue&& other);
+
+    int request_num = 0;
+    std::vector<OverlayStatus> status;
+  };
+
   // Whether we have DRM atomic capabilities and can support HW overlays.
   bool supports_overlays_ = false;
+
+  // List of all OverlaySurfaceCandidate instances which have been requested
+  // for validation and/or validated.
+  base::MRUCache<std::vector<OverlaySurfaceCandidate>,
+                 OverlayValidationCacheValue>
+      cache_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);
 };

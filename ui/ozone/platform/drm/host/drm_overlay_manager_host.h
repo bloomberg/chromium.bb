@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
@@ -36,12 +35,6 @@ class DrmOverlayManagerHost : public DrmOverlayManager {
                         DrmWindowHostManager* window_manager);
   ~DrmOverlayManagerHost() override;
 
-  // DrmOverlayManager:
-  void ResetCache() override;
-  void CheckOverlaySupport(
-      OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
-      gfx::AcceleratedWidget widget) override;
-
   // Communication-free implementations of actions performed in response to
   // messages from the GPU thread.
   void GpuSentOverlayResult(gfx::AcceleratedWidget widget,
@@ -49,30 +42,15 @@ class DrmOverlayManagerHost : public DrmOverlayManager {
                             const OverlayStatusList& returns);
 
  private:
-  // Value for the request cache, that keeps track of how many times a
-  // specific validation has been requested, if there is a GPU validation
-  // in flight, and at last the result of the validation.
-  struct OverlayValidationCacheValue {
-    OverlayValidationCacheValue();
-    OverlayValidationCacheValue(const OverlayValidationCacheValue&);
-    ~OverlayValidationCacheValue();
-    int request_num = 0;
-    std::vector<OverlayStatus> status;
-  };
-
+  // DrmOverlayManager:
   void SendOverlayValidationRequest(
       const OverlaySurfaceCandidateList& candidates,
-      gfx::AcceleratedWidget widget) const;
+      gfx::AcceleratedWidget widget) const override;
   bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
-                          gfx::AcceleratedWidget widget) const;
+                          gfx::AcceleratedWidget widget) const override;
 
   GpuThreadAdapter* const proxy_;               // Not owned.
   DrmWindowHostManager* const window_manager_;  // Not owned.
-
-  // List of all OverlaySurfaceCandidate instances which have been requested
-  // for validation and/or validated.
-  base::MRUCache<OverlaySurfaceCandidateList, OverlayValidationCacheValue>
-      cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManagerHost);
 };
