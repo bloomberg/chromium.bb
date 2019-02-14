@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -807,8 +807,18 @@ TEST_F(NetworkErrorLoggingServiceTest, NestedTooDeep) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
-  base::SimpleTestTickClock clock;
-  service()->SetTickClockForTesting(&clock);
+  // The expiration times will be bogus, but we need a reproducible value for
+  // this test.
+  base::SimpleTestClock clock;
+  service()->SetClockForTesting(&clock);
+  // The clock is initialized to the "zero" or origin point of the Time class.
+  // This sets the clock's Time to the equivalent of the "zero" or origin point
+  // of the TimeTicks class, so that the serialized value produced by
+  // NetLog::TimeToString is consistent across restarts.
+  base::TimeDelta delta_from_origin =
+      base::Time::UnixEpoch().since_origin() -
+      base::TimeTicks::UnixEpoch().since_origin();
+  clock.Advance(delta_from_origin);
 
   static const std::string kHeaderSuccessFraction1 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";

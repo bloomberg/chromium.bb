@@ -12,7 +12,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/time/tick_clock.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -182,20 +182,23 @@ class NET_EXPORT NetworkErrorLoggingService {
   // |reporting_service| must outlive the NetworkErrorLoggingService.
   void SetReportingService(ReportingService* reporting_service);
 
-  // Sets a base::TickClock (used to track policy expiration) for tests.
-  // |tick_clock| must outlive the NetworkErrorLoggingService, and cannot be
+  // Sets a base::Clock (used to track policy expiration) for tests.
+  // |clock| must outlive the NetworkErrorLoggingService, and cannot be
   // nullptr.
-  void SetTickClockForTesting(const base::TickClock* tick_clock);
+  void SetClockForTesting(const base::Clock* clock);
 
+  // Dumps info about all the currently stored policies, including expired ones.
+  // Used to display information about NEL policies on the NetLog Reporting tab.
   virtual base::Value StatusAsValue() const;
 
+  // Gets the origins of all currently stored policies, including expired ones.
   virtual std::set<url::Origin> GetPolicyOriginsForTesting();
 
  protected:
   NetworkErrorLoggingService();
 
   // Unowned:
-  const base::TickClock* tick_clock_;
+  const base::Clock* clock_;
   ReportingService* reporting_service_;
 
  private:

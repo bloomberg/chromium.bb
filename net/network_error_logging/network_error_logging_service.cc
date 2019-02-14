@@ -14,8 +14,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
@@ -197,8 +197,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     OriginPolicy policy;
     policy.origin = origin;
     policy.received_ip_address = received_ip_address;
-    HeaderOutcome outcome =
-        ParseHeader(value, tick_clock_->NowTicks(), &policy);
+    HeaderOutcome outcome = ParseHeader(value, clock_->Now(), &policy);
     RecordHeaderOutcome(outcome);
     if (outcome != HeaderOutcome::SET && outcome != HeaderOutcome::REMOVED)
       return;
@@ -337,8 +336,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       policy_dict.SetKey("includeSubdomains",
                          base::Value(policy.include_subdomains));
       policy_dict.SetKey("reportTo", base::Value(policy.report_to));
-      policy_dict.SetKey(
-          "expires", base::Value(NetLog::TickCountToString(policy.expires)));
+      policy_dict.SetKey("expires",
+                         base::Value(NetLog::TimeToString(policy.expires)));
       policy_dict.SetKey("successFraction",
                          base::Value(policy.success_fraction));
       policy_dict.SetKey("failureFraction",
@@ -366,7 +365,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // Reporting API endpoint group to which reports should be sent.
     std::string report_to;
 
-    base::TimeTicks expires;
+    base::Time expires;
 
     double success_fraction;
     double failure_fraction;
@@ -397,7 +396,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   WildcardPolicyMap wildcard_policies_;
 
   HeaderOutcome ParseHeader(const std::string& json_value,
-                            base::TimeTicks now_ticks,
+                            base::Time now,
                             OriginPolicy* policy_out) const {
     DCHECK(policy_out);
 
@@ -449,11 +448,10 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     policy_out->success_fraction = success_fraction;
     policy_out->failure_fraction = failure_fraction;
     if (max_age_sec > 0) {
-      policy_out->expires =
-          now_ticks + base::TimeDelta::FromSeconds(max_age_sec);
+      policy_out->expires = now + base::TimeDelta::FromSeconds(max_age_sec);
       return HeaderOutcome::SET;
     } else {
-      policy_out->expires = base::TimeTicks();
+      policy_out->expires = base::Time();
       return HeaderOutcome::REMOVED;
     }
   }
@@ -461,7 +459,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   const OriginPolicy* FindPolicyForOrigin(const url::Origin& origin) const {
     // TODO(juliatuttle): Clean out expired policies sometime/somewhere.
     auto it = policies_.find(origin);
-    if (it != policies_.end() && tick_clock_->NowTicks() < it->second.expires)
+    if (it != policies_.end() && clock_->Now() < it->second.expires)
       return &it->second;
 
     std::string domain = origin.host();
@@ -492,7 +490,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
 
     for (auto jt = it->second.begin(); jt != it->second.end(); ++jt) {
-      if (tick_clock_->NowTicks() < (*jt)->expires)
+      if (clock_->Now() < (*jt)->expires)
         return *jt;
     }
 
@@ -635,9 +633,8 @@ void NetworkErrorLoggingService::SetReportingService(
   reporting_service_ = reporting_service;
 }
 
-void NetworkErrorLoggingService::SetTickClockForTesting(
-    const base::TickClock* tick_clock) {
-  tick_clock_ = tick_clock;
+void NetworkErrorLoggingService::SetClockForTesting(const base::Clock* clock) {
+  clock_ = clock;
 }
 
 base::Value NetworkErrorLoggingService::StatusAsValue() const {
@@ -651,7 +648,6 @@ std::set<url::Origin> NetworkErrorLoggingService::GetPolicyOriginsForTesting() {
 }
 
 NetworkErrorLoggingService::NetworkErrorLoggingService()
-    : tick_clock_(base::DefaultTickClock::GetInstance()),
-      reporting_service_(nullptr) {}
+    : clock_(base::DefaultClock::GetInstance()), reporting_service_(nullptr) {}
 
 }  // namespace net
