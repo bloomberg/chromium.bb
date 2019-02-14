@@ -34,7 +34,7 @@
 #include "components/arc/net/always_on_vpn_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class AccountId;
@@ -91,7 +91,7 @@ class UserSessionStateObserver {
 // load profile, restore OAuth authentication session etc.
 class UserSessionManager
     : public OAuth2LoginManager::Observer,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public base::SupportsWeakPtr<UserSessionManager>,
       public UserSessionManagerDelegate,
       public user_manager::UserManager::UserSessionStateObserver,
@@ -321,14 +321,16 @@ class UserSessionManager
   UserSessionManager();
   ~UserSessionManager() override;
 
+  void SetNetworkConnectionTracker(
+      network::NetworkConnectionTracker* network_connection_tracker);
+
   // OAuth2LoginManager::Observer overrides:
   void OnSessionRestoreStateChanged(
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) override;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver overrides:
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver overrides:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // UserSessionManagerDelegate overrides:
   // Used when restoring user sessions after crash.
@@ -515,6 +517,9 @@ class UserSessionManager
   void NotifyEasyUnlockKeyOpsFinished();
 
   UserSessionManagerDelegate* delegate_;
+
+  // Used to listen to network changes.
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   // Authentication/user context.
   UserContext user_context_;

@@ -144,6 +144,8 @@ class ExtensionDataCollectionTest : public testing::Test {
     // UserManager should be destroyed before TestingBrowserProcess as it
     // uses it in destructor.
     test_user_manager_.reset();
+    // Finish any pending tasks before deleting the TestingBrowserProcess.
+    browser_thread_bundle_.RunUntilIdle();
 #endif
     profile_manager_.reset();
     TestingBrowserProcess::DeleteInstance();
