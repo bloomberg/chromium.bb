@@ -97,6 +97,8 @@ class ASH_EXPORT TabletModeWindowManager
   TabletModeWindowManager();
 
  private:
+  friend class TabletModeControllerTestApi;
+
   using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;
 
   // Maximize all windows, except that a snapped active window shall become

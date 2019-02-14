@@ -45,6 +45,8 @@ class TabletModeControllerTestApi {
   void CloseLid();
   void SetTabletMode(bool on);
 
+  bool GetDeferBoundsUpdates(aura::Window* window);
+
   // Sets the event blocker on the tablet mode controller.
   void set_event_blocker(
       std::unique_ptr<InternalInputDevicesEventBlocker> blocker) {

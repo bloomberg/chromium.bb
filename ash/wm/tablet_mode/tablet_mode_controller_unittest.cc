@@ -142,6 +142,10 @@ class TabletModeControllerTest : public AshTestBase {
 
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
+  bool GetDeferBoundsUpdates(aura::Window* window) {
+    return test_api_->GetDeferBoundsUpdates(window);
+  }
+
   // Creates a test window snapped on the left in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
@@ -1115,6 +1119,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveNoSnap) {
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if the active window is snapped on the left before tablet mode,
@@ -1128,6 +1133,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if the active window is snapped on the right before tablet mode,
@@ -1141,6 +1147,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
   EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->right_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the left and
@@ -1158,6 +1165,8 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the right
@@ -1175,6 +1184,8 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is an ARC window snapped
@@ -1193,6 +1204,8 @@ TEST_F(TabletModeControllerTest,
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(right_window.get()));
 }
 
 // Test that if before tablet mode, the active window is snapped on the left,
@@ -1216,6 +1229,9 @@ TEST_F(TabletModeControllerTest,
   EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(left_window.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(right_window.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(extra_right_window.get()));
 }
 
 // Test that if overview is triggered on entering tablet mode, then the app list
@@ -1228,6 +1244,84 @@ TEST_F(TabletModeControllerTest, AppListWorksAfterEnteringTabletForOverview) {
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
   app_list_controller->ShowAppList();
   EXPECT_TRUE(app_list_controller->IsVisible());
+}
+
+// Test that bounds updates are deferred for windows in overview.
+TEST_F(TabletModeControllerTest, DeferBoundsUpdatesForWindowsInOverview) {
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  ::wm::ActivateWindow(window1.get());
+  ASSERT_FALSE(GetDeferBoundsUpdates(window1.get()));
+  ASSERT_FALSE(GetDeferBoundsUpdates(window2.get()));
+  ASSERT_FALSE(GetDeferBoundsUpdates(window3.get()));
+  Shell::Get()->overview_controller()->ToggleOverview();
+  EXPECT_TRUE(GetDeferBoundsUpdates(window1.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(window3.get()));
+}
+
+// Test that bounds updates are deferred for windows in overview, in the case
+// that there are two snapped windows when overview is started.
+TEST_F(TabletModeControllerTest,
+       DeferBoundsUpdatesForWindowsInOverviewEnteredFromSplitView) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  ::wm::ActivateWindow(window1.get());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  ASSERT_FALSE(GetDeferBoundsUpdates(window1.get()));
+  ASSERT_FALSE(GetDeferBoundsUpdates(window2.get()));
+  ASSERT_FALSE(GetDeferBoundsUpdates(window3.get()));
+  Shell::Get()->overview_controller()->ToggleOverview();
+  ASSERT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(window3.get()));
+}
+
+// Test that if both the active window and the previous window are snapped on
+// the left before tablet mode, then split view is activated with the active
+// window on the left, and if the user proceeds to snap the other window on the
+// right and then enter overview again, bounds updates are still not deferred on
+// the window that remains snapped.
+TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window1 = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> window2 = CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(window1.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(window1.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
+  EXPECT_FALSE(GetDeferBoundsUpdates(window2.get()));
+  ASSERT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window1.get()));
+  EXPECT_TRUE(GetDeferBoundsUpdates(window2.get()));
+}
+
+// Test that it is okay to write code that first starts split view by snapping a
+// window on one side, and then starts overview to be seen on the other side.
+TEST_F(TabletModeControllerTest,
+       ProgrammaticallyStartSplitViewAndThenOverview) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  ::wm::ActivateWindow(window.get());
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+  EXPECT_FALSE(GetDeferBoundsUpdates(window.get()));
 }
 
 }  // namespace ash
