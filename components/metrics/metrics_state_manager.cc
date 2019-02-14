@@ -144,8 +144,25 @@ MetricsStateManager::MetricsStateManager(
 
   // Set the install date if this is our first run.
   int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
-  if (install_date == 0)
+  if (install_date == 0) {
     local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
+
+#if !defined(OS_WIN)
+    // If this is a first run (no install date) and there's no client id, then
+    // generate a provisional client id now. This id will be used for field
+    // trial randomization on first run and will be promoted to become the
+    // client id if UMA is enabled during this session, via the logic in
+    // ForceClientIdCreation().
+    //
+    // Note: We don't do this on Windows because on Windows, there's no UMA
+    // checkbox on first run and instead it comes from the install page. So if
+    // UMA is not enabled at this point, it's unlikely it will be enabled in
+    // the same session since that requires the user to manually do that via
+    // settings page after they unchecked it on the download page.
+    if (client_id_.empty())
+      provisional_client_id_ = base::GenerateGUID();
+#endif  // !defined(OS_WIN)
+  }
 
   // Delete the cache used by CachingPermutedEntropyProvider, which was removed.
   // TODO(crbug/912368): Remove this after it's been deleted from most installs.
@@ -174,6 +191,15 @@ int64_t MetricsStateManager::GetInstallDate() const {
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
+  // TODO(asvitkine): Ideally, all tests would actually set up consent properly,
+  // so the command-line check wouldn't be needed here.
+  // Currently, kForceEnableMetricsReporting is used by Java UkmTest and
+  // kMetricsRecordingOnly is used by Chromedriver tests.
+  DCHECK(enabled_state_provider_->IsConsentGiven() ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kForceEnableMetricsReporting) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kMetricsRecordingOnly));
   {
     std::string client_id_from_prefs =
         local_state_->GetString(prefs::kMetricsClientID);
@@ -220,8 +246,16 @@ void MetricsStateManager::ForceClientIdCreation() {
     return;
   }
 
-  // Failing attempts at getting an existing client ID, generate a new one.
-  client_id_ = base::GenerateGUID();
+  // If we're here, there was no client ID yet (either in prefs or backup),
+  // so generate a new one. If there's a provisional client id (e.g. UMA
+  // was enabled as part of first run), promote that to the client id,
+  // otherwise (e.g. UMA enabled in a future session), generate a new one.
+  if (provisional_client_id_.empty()) {
+    client_id_ = base::GenerateGUID();
+  } else {
+    client_id_ = provisional_client_id_;
+    provisional_client_id_.clear();
+  }
   local_state_->SetString(prefs::kMetricsClientID, client_id_);
 
   // Record the timestamp of when the user opted in to UMA.
@@ -243,7 +277,8 @@ void MetricsStateManager::CheckForClonedInstall() {
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsStateManager::CreateDefaultEntropyProvider() {
-  if (enabled_state_provider_->IsConsentGiven()) {
+  if (enabled_state_provider_->IsConsentGiven() ||
+      !provisional_client_id_.empty()) {
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_HIGH);
     return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
         new variations::SHA1EntropyProvider(GetHighEntropySource()));
@@ -319,11 +354,12 @@ std::unique_ptr<ClientInfo> MetricsStateManager::LoadClientInfo() {
 }
 
 std::string MetricsStateManager::GetHighEntropySource() {
-  // This should only be called if UMA is enabled, and if UMA is enabled, then
-  // the constructor should have loaded |client_id_|. The user shouldn't be able
-  // to enable UMA between the constructor and calling this, because field trial
-  // setup happens at Chrome initialization.
-  DCHECK(!client_id_.empty());
+  // This should only be called if UMA is enabled or there's a provisional
+  // client id. If UMA is enabled, then the constructor should have loaded
+  // |client_id_|. The user shouldn't be able to enable UMA between the
+  // constructor and calling this, because field trial setup happens at Chrome
+  // initialization. Only one of these is expected to hold a value.
+  DCHECK(client_id_.empty() != provisional_client_id_.empty());
 
   // For metrics reporting-enabled users, we combine the client ID and low
   // entropy source to get the final entropy source.
@@ -341,7 +377,9 @@ std::string MetricsStateManager::GetHighEntropySource() {
   if (low_entropy_source == kLowEntropySourceNotSet)
     low_entropy_source = GetLowEntropySource();
 
-  return client_id_ + base::NumberToString(low_entropy_source);
+  const std::string& client_id_to_use =
+      (client_id_.empty() ? provisional_client_id_ : client_id_);
+  return client_id_to_use + base::NumberToString(low_entropy_source);
 }
 
 int MetricsStateManager::GetLowEntropySource() {

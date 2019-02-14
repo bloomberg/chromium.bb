@@ -346,6 +346,7 @@ TEST_F(MetricsServiceTest, MetricsProvidersInitialized) {
 }
 
 TEST_F(MetricsServiceTest, SplitRotation) {
+  EnableMetricsReporting();
   TestMetricsServiceClient client;
   TestMetricsService service(GetMetricsStateManager(), &client,
                              GetLocalState());
@@ -396,6 +397,7 @@ TEST_F(MetricsServiceTest, SplitRotation) {
 }
 
 TEST_F(MetricsServiceTest, LastLiveTimestamp) {
+  EnableMetricsReporting();
   TestMetricsServiceClient client;
   TestMetricsService service(GetMetricsStateManager(), &client,
                              GetLocalState());
