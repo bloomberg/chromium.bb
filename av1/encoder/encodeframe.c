@@ -2325,10 +2325,10 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
 
   // This overwrites the mv_limits so we will need to restore it later.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
-  var = av1_full_pixel_search(cpi, x, bsize, &ref_mv_full, step_param,
-                              search_methods, do_mesh_search, sadpb,
-                              cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX,
-                              1, mi_col * MI_SIZE, mi_row * MI_SIZE, 0);
+  var = av1_full_pixel_search(
+      cpi, x, bsize, &ref_mv_full, step_param, search_methods, do_mesh_search,
+      sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
+      mi_col * MI_SIZE, mi_row * MI_SIZE, 0, &cpi->ss_cfg[SS_CFG_SRC]);
   // Restore
   x->mv_limits = tmp_mv_limits;
 

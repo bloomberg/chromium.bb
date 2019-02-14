@@ -148,6 +148,12 @@ typedef enum {
   kVeryHighSad = 6,
 } CONTENT_STATE_SB;
 
+enum {
+  SS_CFG_SRC = 0,
+  SS_CFG_LOOKAHEAD = 1,
+  SS_CFG_TOTAL = 2
+} UENUM1BYTE(SS_CFG_OFFSET);
+
 typedef struct TplDepStats {
   int64_t intra_cost;
   int64_t inter_cost;
@@ -858,7 +864,9 @@ typedef struct AV1_COMP {
 
   int frame_flags;
 
-  search_site_config ss_cfg;
+  // ss_cfg[SS_CFG_LOOKAHEAD] : used only in temporal filtering
+  // ss_cfg[SS_CFG_SRC] : used everywhere except temporal filtering
+  search_site_config ss_cfg[SS_CFG_TOTAL];
 
   TileDataEnc *tile_data;
   int allocated_tiles;  // Keep track of memory allocated for tiles.
