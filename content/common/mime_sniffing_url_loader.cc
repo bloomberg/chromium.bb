@@ -174,6 +174,8 @@ void MimeSniffingURLLoader::PauseReadingBodyFromNet() {
 void MimeSniffingURLLoader::ResumeReadingBodyFromNet() {
   if (state_ == State::kAborted)
     return;
+  // TODO(http://crbug.com/916098): Remove when the bug is fixed.
+  CHECK(source_url_loader_) << "crbug.com/916098";
   source_url_loader_->ResumeReadingBodyFromNet();
 }
 

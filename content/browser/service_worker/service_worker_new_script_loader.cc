@@ -161,6 +161,8 @@ void ServiceWorkerNewScriptLoader::PauseReadingBodyFromNet() {
 }
 
 void ServiceWorkerNewScriptLoader::ResumeReadingBodyFromNet() {
+  // TODO(http://crbug.com/916098): Remove when the bug is fixed.
+  CHECK(network_loader_) << "crbug.com/916098";
   network_loader_->ResumeReadingBodyFromNet();
 }
 

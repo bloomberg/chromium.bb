@@ -262,6 +262,8 @@ void SignedExchangeLoader::PauseReadingBodyFromNet() {
 }
 
 void SignedExchangeLoader::ResumeReadingBodyFromNet() {
+  // TODO(http://crbug.com/916098): Remove when the bug is fixed.
+  CHECK(url_loader_) << "crbug.com/916098";
   url_loader_->ResumeReadingBodyFromNet();
 }
 

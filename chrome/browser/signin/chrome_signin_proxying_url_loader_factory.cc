@@ -118,6 +118,8 @@ class ProxyingURLLoaderFactory::InProgressRequest
   }
 
   void ResumeReadingBodyFromNet() override {
+    // TODO(http://crbug.com/916098): Remove when the bug is fixed.
+    CHECK(target_loader_) << "crbug.com/916098";
     target_loader_->ResumeReadingBodyFromNet();
   }
 

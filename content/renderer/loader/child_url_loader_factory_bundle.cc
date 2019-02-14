@@ -56,6 +56,8 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   }
 
   void ResumeReadingBodyFromNet() override {
+    // TODO(http://crbug.com/916098): Remove when the bug is fixed.
+    CHECK(loader_sink_) << "crbug.com/916098";
     loader_sink_->ResumeReadingBodyFromNet();
   }
 
