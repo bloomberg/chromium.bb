@@ -24,6 +24,7 @@
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 #include "google_apis/internal/google_chrome_api_keys.h"
+#include "google_apis/internal/metrics_signing_key.h"
 #endif
 
 // Used to indicate an unset key/id/secret.  This works better with
@@ -32,6 +33,10 @@
 
 #if !defined(GOOGLE_API_KEY)
 #define GOOGLE_API_KEY DUMMY_API_TOKEN
+#endif
+
+#if !defined(GOOGLE_METRICS_SIGNING_KEY)
+#define GOOGLE_METRICS_SIGNING_KEY DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_MAIN)
@@ -118,6 +123,11 @@ class APIKeyCache {
     api_key_remoting_ftl_ =
         CalculateKeyValue(GOOGLE_API_KEY_REMOTING_FTL,
                           STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING_FTL),
+                          NULL, std::string(), environment.get(), command_line);
+
+    metrics_key_ =
+        CalculateKeyValue(GOOGLE_METRICS_SIGNING_KEY,
+                          STRINGIZE_NO_EXPANSION(GOOGLE_METRICS_SIGNING_KEY),
                           NULL, std::string(), environment.get(), command_line);
 
     std::string default_client_id =
@@ -208,6 +218,8 @@ class APIKeyCache {
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
   std::string api_key_remoting_ftl() const { return api_key_remoting_ftl_; }
+
+  std::string metrics_key() const { return metrics_key_; }
 
   std::string GetClientID(OAuth2Client client) const {
     DCHECK_LT(client, CLIENT_NUM_ITEMS);
@@ -304,6 +316,7 @@ class APIKeyCache {
   std::string api_key_;
   std::string api_key_non_stable_;
   std::string api_key_remoting_ftl_;
+  std::string metrics_key_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
 };
@@ -332,6 +345,10 @@ void SetAPIKey(const std::string& api_key) {
   g_api_key_cache.Get().set_api_key(api_key);
 }
 #endif
+
+std::string GetMetricsKey() {
+  return g_api_key_cache.Get().metrics_key();
+}
 
 bool HasOAuthClientConfigured() {
   for (size_t client_id = 0; client_id < CLIENT_NUM_ITEMS; ++client_id) {
