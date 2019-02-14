@@ -761,8 +761,6 @@ void InterceptionJob::GetResponseBody(
     body_reader_ = std::make_unique<BodyReader>(base::BindOnce(
         &InterceptionJob::ResponseBodyComplete, base::Unretained(this)));
     client_binding_.ResumeIncomingMethodCallProcessing();
-    // TODO(http://crbug.com/916098): Remove when the bug is fixed.
-    CHECK(loader_) << "crbug.com/916098";
     loader_->ResumeReadingBodyFromNet();
   }
   body_reader_->AddCallback(std::move(callback));
@@ -784,8 +782,6 @@ void InterceptionJob::TakeResponseBodyPipe(
   state_ = State::kResponseTaken;
   pending_response_body_pipe_callback_ = std::move(callback);
   client_binding_.ResumeIncomingMethodCallProcessing();
-  // TODO(http://crbug.com/916098): Remove when the bug is fixed.
-  CHECK(loader_) << "crbug.com/916098";
   loader_->ResumeReadingBodyFromNet();
 }
 
