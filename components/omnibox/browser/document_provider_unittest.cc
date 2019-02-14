@@ -526,3 +526,37 @@ TEST_F(DocumentProviderTest, GenerateLastModifiedString) {
             base::ASCIIToUTF16("8/27/17"));
 }
 #endif  // !defined(OS_IOS)
+
+TEST_F(DocumentProviderTest, GetURLForDeduping) {
+  // Checks that |url_string| is a URL for opening |expected_id|. An empty ID
+  // signifies |url_string| is not a Drive document.
+  auto CheckDeduper = [](const std::string& url_string,
+                         const std::string& expected_id) {
+    const GURL url(url_string);
+    const GURL got_output = DocumentProvider::GetURLForDeduping(url);
+
+    const GURL expected_output;
+    if (!expected_id.empty()) {
+      EXPECT_EQ(got_output,
+                GURL("https://drive.google.com/open?id=" + expected_id));
+    } else {
+      EXPECT_EQ(got_output, GURL());
+    }
+  };
+
+  // URLs that represent documents:
+  CheckDeduper("https://drive.google.com/open?id=the_doc-id", "the_doc-id");
+  CheckDeduper("https://docs.google.com/document/d/the_doc-id/edit",
+               "the_doc-id");
+  CheckDeduper(
+      "https://docs.google.com/presentation/d/the_doc-id/edit#slide=xyz",
+      "the_doc-id");
+  CheckDeduper(
+      "https://docs.google.com/spreadsheets/d/the_doc-id/preview?x=1#y=2",
+      "the_doc-id");
+
+  // URLs that do not represent documents:
+  CheckDeduper("https://docs.google.com/help?id=d123", "");
+  CheckDeduper("https://www.google.com", "");
+  CheckDeduper("https://docs.google.com/kittens/d/d123/preview?x=1#y=2", "");
+}

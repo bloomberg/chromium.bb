@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/suggestion_answer.h"
@@ -487,6 +488,14 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     const base::string16& keyword) {
   if (!url.is_valid())
     return url;
+
+  // Special-case canonicalizing Docs URLs. This logic is self-contained and
+  // will not participate in the TemplateURL canonicalization.
+  if (base::FeatureList::IsEnabled(omnibox::kDedupeGoogleDriveURLs)) {
+    GURL docs_url = DocumentProvider::GetURLForDeduping(url);
+    if (docs_url.is_valid())
+      return docs_url;
+  }
 
   GURL stripped_destination_url = url;
 

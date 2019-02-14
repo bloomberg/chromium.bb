@@ -233,6 +233,7 @@ jumbo_static_library("browser") {
     "//skia",
     "//sql",
     "//third_party/protobuf:protobuf_lite",
+    "//third_party/re2",
     "//ui/base",
     "//ui/gfx",
   ]
