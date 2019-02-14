@@ -452,8 +452,11 @@ Polymer({
    * @private
    */
   isShared_: function() {
-    return this.networkProperties.Source == 'Device' ||
-        this.networkProperties.Source == 'DevicePolicy';
+    if (!this.networkProperties) {
+      return false;
+    }
+    const source = this.networkProperties.Source;
+    return source == 'Device' || source == 'DevicePolicy';
   },
 
   /**
