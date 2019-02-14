@@ -71,7 +71,6 @@ source_set("public") {
     "web_state/session_certificate_policy_cache.h",
     "web_state/ui/crw_content_view.h",
     "web_state/ui/crw_context_menu_delegate.h",
-    "web_state/ui/crw_generic_content_view.h",
     "web_state/ui/crw_native_content.h",
     "web_state/ui/crw_native_content_provider.h",
     "web_state/ui/crw_web_view_content_view.h",
