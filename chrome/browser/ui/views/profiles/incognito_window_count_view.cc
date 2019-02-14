@@ -8,7 +8,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -64,10 +63,8 @@ void IncognitoWindowCountView::Init() {
       views::BoxLayout::Orientation::kVertical));
 
   auto incognito_icon = std::make_unique<views::ImageView>();
-  const ui::ThemeProvider& theme_provider =
-      ThemeService::GetThemeProviderForProfile(browser_->profile());
-  const SkColor icon_color =
-      theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+  const SkColor icon_color = ThemeProperties::GetDefaultColor(
+      ThemeProperties::COLOR_NTP_BACKGROUND, true /* incognito */);
   incognito_icon->SetImage(
       gfx::CreateVectorIcon(kIncognitoIcon, 40, icon_color));
 
