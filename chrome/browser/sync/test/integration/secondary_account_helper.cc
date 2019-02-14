@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_test_util.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -29,14 +29,14 @@ namespace {
 void OnWillCreateBrowserContextServices(
     network::TestURLLoaderFactory* test_url_loader_factory,
     content::BrowserContext* context) {
-  GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
+  ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
+      context, base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
                                    test_url_loader_factory));
 }
 
 }  // namespace
 
-ScopedGaiaCookieManagerServiceFactory SetUpGaiaCookieManagerService(
+ScopedSigninClientFactory SetUpSigninClient(
     network::TestURLLoaderFactory* test_url_loader_factory) {
   return BrowserContextDependencyManager::GetInstance()
       ->RegisterWillCreateBrowserContextServicesCallbackForTesting(

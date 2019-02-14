@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_GAIA_COOKIE_MANAGER_SERVICE_TEST_UTIL_H_
-#define CHROME_BROWSER_SIGNIN_GAIA_COOKIE_MANAGER_SERVICE_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_TEST_UTIL_H_
+#define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_TEST_UTIL_H_
 
 #include <memory>
 
@@ -17,10 +17,10 @@ namespace network {
 class TestURLLoaderFactory;
 }
 
-// Creates a GaiaCookieManagerService using the supplied
+// Creates a ChromeSigninClient using the supplied
 // |test_url_loader_factory| and |context|.
-std::unique_ptr<KeyedService> BuildGaiaCookieManagerServiceWithURLLoader(
+std::unique_ptr<KeyedService> BuildChromeSigninClientWithURLLoader(
     network::TestURLLoaderFactory* test_url_loader_factory,
     content::BrowserContext* context);
 
-#endif  // CHROME_BROWSER_SIGNIN_GAIA_COOKIE_MANAGER_SERVICE_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_TEST_UTIL_H_
