@@ -12,6 +12,7 @@ group("all") {
     ":system_api-chaps-protos",
     ":system_api-cryptohome-protos",
     ":system_api-dlcservice-protos",
+    ":system_api-kerberos-protos",
     ":system_api-login_manager-goprotos",
     ":system_api-login_manager-protos",
     ":system_api-metrics_event-goprotos",
@@ -102,6 +103,15 @@ proto_library("system_api-biod-protos") {
   sources = [
     "${proto_in_dir}/constants.proto",
     "${proto_in_dir}/messages.proto",
+  ]
+  standalone = true
+}
+
+proto_library("system_api-kerberos-protos") {
+  proto_in_dir = "dbus/kerberos"
+  proto_out_dir = "include/kerberos/proto_bindings"
+  sources = [
+    "${proto_in_dir}/kerberos_service.proto",
   ]
   standalone = true
 }

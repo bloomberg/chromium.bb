@@ -12,6 +12,12 @@ const char kKerberosInterface[] = "org.chromium.Kerberos";
 const char kKerberosServicePath[] = "/org/chromium/Kerberos";
 const char kKerberosServiceName[] = "org.chromium.Kerberos";
 
+// Methods
+const char kAddAccountMethod[] = "AddAccount";
+const char kRemoveAccountMethod[] = "RemoveAccount";
+const char kAcquireKerberosTgtMethod[] = "AcquireKerberosTgt";
+const char kGetKerberosFilesMethod[] = "GetKerberosFiles";
+
 }  // namespace kerberos
 
 #endif  // SYSTEM_API_DBUS_KERBEROS_DBUS_CONSTANTS_H_
