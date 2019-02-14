@@ -208,7 +208,8 @@ void WindowTreeHostMus::SetBounds(
     // OnWindowTreeHostBoundsWillChange().
     if (!local_surface_id_allocation.IsValid() &&
         ShouldAllocateLocalSurfaceIdOnResize()) {
-      window()->AllocateLocalSurfaceId();
+      if (pixel_bounds.size() != compositor()->size())
+        window()->AllocateLocalSurfaceId();
       actual_local_surface_id_allocation =
           window()->GetLocalSurfaceIdAllocation();
     }
