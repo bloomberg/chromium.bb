@@ -178,7 +178,8 @@ enum class SpdyPushedStreamFate {
   kAcceptedMatchingVary = 18,
   kPushDisabled = 19,
   kAlreadyInCache = 20,
-  kMaxValue = kAlreadyInCache
+  kUnsupportedStatusCode = 21,
+  kMaxValue = kUnsupportedStatusCode
 };
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
