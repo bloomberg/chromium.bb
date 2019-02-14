@@ -1610,14 +1610,14 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
               << " not in use (anymore?).";
     return;
   }
-  V4L2ReadableBufferRef buffer = std::move(iter->second);
-  DCHECK_EQ(buffers_at_client_.count(picture_buffer_id), 1u);
-  buffers_at_client_.erase(iter);
 
-  // Take ownership of the EGL fence.
+  // Take ownership of the EGL fence and keep the buffer out of the game until
+  // the fence signals.
   if (egl_fence)
     buffers_awaiting_fence_.emplace(
-        std::make_pair(std::move(egl_fence), std::move(buffer)));
+        std::make_pair(std::move(egl_fence), std::move(iter->second)));
+
+  buffers_at_client_.erase(iter);
 
   // We got a buffer back, so enqueue it back.
   Enqueue();
@@ -1885,6 +1885,9 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
     decoder_input_queue_.pop_front();
   decoder_flushing_ = false;
 
+  // First liberate all the frames held by the client.
+  buffers_at_client_.clear();
+
   image_processor_ = nullptr;
   while (!buffers_at_ip_.empty())
     buffers_at_ip_.pop();
@@ -1995,6 +1998,8 @@ void V4L2VideoDecodeAccelerator::StartResolutionChange() {
     VLOGF(2) << "Wait image processor to finish before destroying buffers.";
     return;
   }
+
+  buffers_at_client_.clear();
 
   image_processor_ = nullptr;
 
@@ -2584,10 +2589,6 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
   while (!buffers_awaiting_fence_.empty())
     buffers_awaiting_fence_.pop();
 
-  // TODO(acourbot@) the client should properly drop all references to the
-  // frames it holds instead!
-  buffers_at_client_.clear();
-
   if (!output_queue_->DeallocateBuffers()) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     success = false;
@@ -2601,7 +2602,8 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
 void V4L2VideoDecodeAccelerator::SendBufferToClient(
     size_t output_buffer_index,
     int32_t bitstream_buffer_id,
-    V4L2ReadableBufferRef vda_buffer) {
+    V4L2ReadableBufferRef vda_buffer,
+    scoped_refptr<VideoFrame> frame) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_GE(bitstream_buffer_id, 0);
   OutputRecord& output_record = output_buffer_map_[output_buffer_index];
@@ -2610,7 +2612,9 @@ void V4L2VideoDecodeAccelerator::SendBufferToClient(
   // We need to keep the VDA buffer for now, as the IP still needs to be told
   // which buffer to use so we cannot use this buffer index before the client
   // has returned the corresponding IP buffer.
-  buffers_at_client_.emplace(output_record.picture_id, std::move(vda_buffer));
+  buffers_at_client_.emplace(
+      output_record.picture_id,
+      std::make_pair(std::move(vda_buffer), std::move(frame)));
   // TODO(hubbe): Insert correct color space. http://crbug.com/647725
   const Picture picture(output_record.picture_id, bitstream_buffer_id,
                         gfx::Rect(visible_size_), gfx::ColorSpace(), false);
@@ -2719,8 +2723,7 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
     child_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
-                       weak_this_, ip_buffer_index,
-                       ip_output_record.picture_id,
+                       weak_this_, ip_buffer_index, ip_output_record.picture_id,
                        media::DuplicateFDs(frame->DmabufFds()),
                        ip_output_record.texture_id, egl_image_size_,
                        egl_image_format_fourcc_));
@@ -2734,7 +2737,7 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   buffers_at_ip_.pop();
 
   SendBufferToClient(ip_buffer_index, bitstream_buffer_id,
-                     std::move(vda_buffer));
+                     std::move(vda_buffer), std::move(frame));
   // Flush or resolution change may be waiting image processor to finish.
   if (buffers_at_ip_.empty()) {
     NotifyFlushDoneIfNeeded();
