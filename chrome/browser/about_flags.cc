@@ -4201,6 +4201,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
 
+    {"enable-text-fragment-anchor",
+     flag_descriptions::kEnableTextFragmentAnchorName,
+     flag_descriptions::kEnableTextFragmentAnchorDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kTextFragmentAnchor)},
+
 #if defined(OS_CHROMEOS)
     {"enable-assistant-stereo-input",
      flag_descriptions::kEnableGoogleAssistantStereoInputName,

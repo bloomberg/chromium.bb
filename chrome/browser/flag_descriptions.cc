@@ -928,6 +928,10 @@ const char kEnableSyncUSSSessionsDescription[] =
     "Enables the new, experimental implementation of session sync (aka tab "
     "sync).";
 
+const char kEnableTextFragmentAnchorName[] = "Enable Text Fragment Anchor.";
+const char kEnableTextFragmentAnchorDescription[] =
+    "Enables scrolling to text specified in URL's fragment.";
+
 const char kEnableUseZoomForDsfName[] =
     "Use Blink's zoom for device scale factor.";
 const char kEnableUseZoomForDsfDescription[] =

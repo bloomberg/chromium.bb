@@ -555,6 +555,9 @@ extern const char kEnableSyncUSSPasswordsDescription[];
 extern const char kEnableSyncUSSSessionsName[];
 extern const char kEnableSyncUSSSessionsDescription[];
 
+extern const char kEnableTextFragmentAnchorName[];
+extern const char kEnableTextFragmentAnchorDescription[];
+
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
 extern const char kEnableUseZoomForDsfChoiceDefault[];

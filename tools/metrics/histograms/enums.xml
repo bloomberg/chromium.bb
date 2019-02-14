@@ -31189,6 +31189,7 @@ from previous Chrome versions.
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
+  <int value="-1239262870" label="TextFragmentAnchor:enabled"/>
   <int value="-1237621246" label="WebXRGamepadSupport:disabled"/>
   <int value="-1236065190" label="HardwareMediaKeyHandling:disabled"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
@@ -32885,6 +32886,7 @@ from previous Chrome versions.
   <int value="1702821235" label="WebAssembly:enabled"/>
   <int value="1705724232" label="use-android-midi-api"/>
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
+  <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>
