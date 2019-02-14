@@ -93,18 +93,6 @@ const GURL& OmniboxPedal::GetNavigationUrl() const {
   return url_;
 }
 
-bool OmniboxPedal::ShouldExecute(bool button_pressed) const {
-  const auto mode = OmniboxFieldTrial::GetPedalSuggestionMode();
-  return (mode == OmniboxFieldTrial::PedalSuggestionMode::DEDICATED) ||
-         (mode == OmniboxFieldTrial::PedalSuggestionMode::IN_SUGGESTION &&
-          button_pressed);
-}
-
-bool OmniboxPedal::ShouldPresentButton() const {
-  return OmniboxFieldTrial::GetPedalSuggestionMode() ==
-         OmniboxFieldTrial::PedalSuggestionMode::IN_SUGGESTION;
-}
-
 void OmniboxPedal::Execute(OmniboxPedal::ExecutionContext& context) const {
   DCHECK(IsNavigation());
   OpenURL(context, url_);

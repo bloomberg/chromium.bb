@@ -739,19 +739,6 @@ const FeatureEntry::FeatureVariation kAutofillPreviewStyleVariations[] = {
     {"(Black on GoogleYellow050)", kAutofillPreviewStyleBlackOnYellow050,
      base::size(kAutofillPreviewStyleBlackOnYellow050), nullptr}};
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-const FeatureEntry::FeatureParam kPedalSuggestionInSuggestion[] = {
-    {OmniboxFieldTrial::kPedalSuggestionModeParam, "in_suggestion"}};
-const FeatureEntry::FeatureParam kPedalSuggestionDedicated[] = {
-    {OmniboxFieldTrial::kPedalSuggestionModeParam, "dedicated"}};
-const FeatureEntry::FeatureVariation kPedalSuggestionVariations[] = {
-    {"In Suggestion (Side Button)", kPedalSuggestionInSuggestion,
-     base::size(kPedalSuggestionInSuggestion), nullptr},
-    {"Dedicated Suggestion Line", kPedalSuggestionDedicated,
-     base::size(kPedalSuggestionDedicated), nullptr},
-};
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
 const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kAutoplayPolicyNoUserGestureRequired,
@@ -2987,9 +2974,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-pedal-suggestions",
      flag_descriptions::kOmniboxPedalSuggestionsName,
      flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions,
-                                    kPedalSuggestionVariations,
-                                    "PedalSuggestionVariations")},
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalSuggestions)},
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,

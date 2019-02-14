@@ -167,13 +167,6 @@ class OmniboxFieldTrial {
     EMPHASIZE_NEVER = 3
   };
 
-  // These are the discrete possibilities for Pedal behavior.
-  enum class PedalSuggestionMode {
-    NONE,
-    IN_SUGGESTION,
-    DEDICATED,
-  };
-
   // ---------------------------------------------------------
   // For any experiment that's part of the bundled omnibox field trial.
 
@@ -449,8 +442,8 @@ class OmniboxFieldTrial {
   // Returns true if the feature of reversing the tab switch logic is enabled.
   static bool IsTabSwitchLogicReversed();
 
-  // Returns the #omnibox-pedal-suggestions feature's mode parameter as enum.
-  static PedalSuggestionMode GetPedalSuggestionMode();
+  // Returns true if the #omnibox-pedal-suggestions feature is enabled.
+  static bool IsPedalSuggestionsEnabled();
 
   // Returns true if either the steady-state elision flag for scheme or the
   // #upcoming-ui-features flag is enabled.
@@ -528,7 +521,6 @@ class OmniboxFieldTrial {
   // Parameter names used by UI experiments.
   static const char kUIMaxAutocompleteMatchesParam[];
   static const char kUIVerticalMarginParam[];
-  static const char kPedalSuggestionModeParam[];
 
   // Parameter name and values used by the Simplify HTTPS experiment.
   static const char kSimplifyHttpsIndicatorParameterName[];

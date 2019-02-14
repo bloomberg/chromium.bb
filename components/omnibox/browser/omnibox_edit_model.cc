@@ -676,14 +676,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   autocomplete_controller()->UpdateMatchDestinationURLWithQueryFormulationTime(
       elapsed_time_since_user_first_modified_omnibox, &match);
 
-  // TODO(orinj): This is being used to distinguish between button
-  // press and other (keyboard/click) acceptance of suggestion but
-  // if in-suggestion side button Pedals are liked/kept by UX & PM then
-  // the meaning should be clarified.  Instead of relying on SWITCH_TO_TAB,
-  // it may make sense to add a new disposition and change/move this code.
-  const bool button_pressed =
-      disposition == WindowOpenDisposition::SWITCH_TO_TAB;
-  if (match.pedal && match.pedal->ShouldExecute(button_pressed)) {
+  if (match.pedal) {
     {
       // This block resets omnibox to unedited state and closes popup, which
       // may not seem necessary in cases of navigation but makes sense for
