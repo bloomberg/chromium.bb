@@ -37,6 +37,7 @@
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -545,6 +546,11 @@ const char kNTPHelpURL[] =
                                 inBackground:!incognito
                                     appendTo:kCurrentTab];
   command.originPoint = originPoint;
+  if (incognito) {
+    // Unfocus the omnibox if the new page should be opened in incognito to
+    // prevent staying stuck.
+    [self.dispatcher cancelOmniboxEdit];
+  }
   [self.dispatcher webPageOrderedOpen:command];
 }
 
