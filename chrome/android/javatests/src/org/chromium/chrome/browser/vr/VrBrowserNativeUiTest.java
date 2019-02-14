@@ -356,4 +356,33 @@ public class VrBrowserNativeUiTest {
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "page_info_visible_browser_ui", mRenderTestRule);
     }
+
+    /**
+     * Tests that data URLs have the data portion of the URL emphasized like in 2D browsing.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testDataUrlEmphasis() throws InterruptedException, IOException {
+        NativeUiUtils.enableMockedInput();
+        mVrTestRule.loadUrl("data:,Hello%2C%20World!", PAGE_LOAD_TIMEOUT_S);
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "data_url_emphasis_browser_ui", mRenderTestRule);
+    }
+
+    /**
+     * Tests that file URLs have the entire URL emphasized like in 2D browsing.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Browser", "RenderTest"})
+    public void testFileUrlEmphasis() throws InterruptedException, IOException {
+        NativeUiUtils.enableMockedInput();
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        NativeUiUtils.waitForUiQuiescence();
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "file_url_emphasis_browser_ui", mRenderTestRule);
+    }
 }
