@@ -26,7 +26,7 @@ namespace blink {
 namespace {
 #ifndef NDEBUG
 String GetImageUrl(const LayoutObject& object) {
-  if (object.IsImage()) {
+  if (object.IsLayoutImage()) {
     const ImageResourceContent* cached_image =
         ToLayoutImage(&object)->CachedImage();
     return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
@@ -76,7 +76,7 @@ bool AttachedBackgroundImagesAllLoaded(const LayoutObject& object) {
 }
 
 bool IsLoaded(const LayoutObject& object) {
-  if (object.IsImage()) {
+  if (object.IsLayoutImage()) {
     const ImageResourceContent* cached_image =
         ToLayoutImage(&object)->CachedImage();
     return cached_image ? cached_image->IsLoaded() : false;
