@@ -22,6 +22,12 @@ namespace browser_switcher {
 
 namespace {
 
+class TestBrowserSwitcherPrefs : public BrowserSwitcherPrefs {
+ public:
+  explicit TestBrowserSwitcherPrefs(PrefService* prefs)
+      : BrowserSwitcherPrefs(prefs, nullptr) {}
+};
+
 std::unique_ptr<base::Value> StringArrayToValue(
     const std::vector<const char*>& strings) {
   std::vector<base::Value> values(strings.size());
@@ -43,7 +49,7 @@ class BrowserSwitcherSitelistTest : public testing::Test {
                                   StringArrayToValue(url_list));
     prefs_backend_.SetManagedPref(prefs::kUrlGreylist,
                                   StringArrayToValue(url_greylist));
-    prefs_ = std::make_unique<BrowserSwitcherPrefs>(&prefs_backend_);
+    prefs_ = std::make_unique<TestBrowserSwitcherPrefs>(&prefs_backend_);
     sitelist_ = std::make_unique<BrowserSwitcherSitelistImpl>(prefs_.get());
   }
 

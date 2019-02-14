@@ -21,6 +21,12 @@ using StringType = base::FilePath::StringType;
 
 namespace {
 
+class TestBrowserSwitcherPrefs : public BrowserSwitcherPrefs {
+ public:
+  explicit TestBrowserSwitcherPrefs(PrefService* prefs)
+      : BrowserSwitcherPrefs(prefs, nullptr) {}
+};
+
 StringType UTF8ToNative(base::StringPiece src) {
 #if defined(OS_WIN)
   return base::UTF8ToWide(src);
@@ -46,7 +52,7 @@ class AlternativeBrowserDriverTest : public testing::Test {
  public:
   void SetUp() override {
     BrowserSwitcherPrefs::RegisterProfilePrefs(prefs_backend_.registry());
-    prefs_ = std::make_unique<BrowserSwitcherPrefs>(&prefs_backend_);
+    prefs_ = std::make_unique<TestBrowserSwitcherPrefs>(&prefs_backend_);
     driver_ = std::make_unique<AlternativeBrowserDriverImpl>(prefs_.get());
   }
 

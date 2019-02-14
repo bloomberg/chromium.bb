@@ -7,42 +7,86 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace browser_switcher {
 
 RuleSet::RuleSet() = default;
 RuleSet::~RuleSet() = default;
 
-BrowserSwitcherPrefs::BrowserSwitcherPrefs(PrefService* prefs) : prefs_(prefs) {
-  DCHECK(prefs_);
+BrowserSwitcherPrefs::BrowserSwitcherPrefs(Profile* profile)
+    : BrowserSwitcherPrefs(
+          profile->GetPrefs(),
+          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+              ->policy_service()) {}
 
-  change_registrar_.Init(prefs_);
+BrowserSwitcherPrefs::BrowserSwitcherPrefs(
+    PrefService* prefs,
+    policy::PolicyService* policy_service)
+    : policy_service_(policy_service), prefs_(prefs), weak_ptr_factory_(this) {
+  filtering_change_registrar_.Init(prefs_);
 
   const struct {
     const char* pref_name;
-    void (BrowserSwitcherPrefs::*callback)();
+    base::RepeatingCallback<void(BrowserSwitcherPrefs*)> callback;
   } hooks[] = {
       {prefs::kAlternativeBrowserPath,
-       &BrowserSwitcherPrefs::AlternativeBrowserPathChanged},
+       base::BindRepeating(
+           &BrowserSwitcherPrefs::AlternativeBrowserPathChanged)},
       {prefs::kAlternativeBrowserParameters,
-       &BrowserSwitcherPrefs::AlternativeBrowserParametersChanged},
-      {prefs::kUrlList, &BrowserSwitcherPrefs::UrlListChanged},
-      {prefs::kUrlGreylist, &BrowserSwitcherPrefs::GreylistChanged},
+       base::BindRepeating(
+           &BrowserSwitcherPrefs::AlternativeBrowserParametersChanged)},
+      {prefs::kUrlList,
+       base::BindRepeating(&BrowserSwitcherPrefs::UrlListChanged)},
+      {prefs::kUrlGreylist,
+       base::BindRepeating(&BrowserSwitcherPrefs::GreylistChanged)},
   };
 
   // Listen for pref changes, and run all the hooks once to initialize state.
   for (const auto& hook : hooks) {
-    change_registrar_.Add(
-        hook.pref_name,
-        base::BindRepeating(hook.callback, base::Unretained(this)));
-    (*this.*hook.callback)();
+    auto callback = base::BindRepeating(hook.callback, base::Unretained(this));
+    filtering_change_registrar_.Add(hook.pref_name, callback);
+    callback.Run();
   }
+
+  // When any pref changes, mark this object as 'dirty' for the purpose of
+  // triggering observers.
+  notifying_change_registrar_.Init(prefs_);
+  const char* all_prefs[] = {
+    prefs::kEnabled,
+    prefs::kAlternativeBrowserPath,
+    prefs::kAlternativeBrowserParameters,
+    prefs::kKeepLastTab,
+    prefs::kUrlList,
+    prefs::kUrlGreylist,
+    prefs::kExternalSitelistUrl,
+#if defined(OS_WIN)
+    prefs::kUseIeSitelist,
+#endif
+  };
+  for (const char* pref_name : all_prefs) {
+    notifying_change_registrar_.Add(
+        pref_name, base::BindRepeating(&BrowserSwitcherPrefs::MarkDirty,
+                                       base::Unretained(this)));
+  }
+
+  if (policy_service_)
+    policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 }
 
 BrowserSwitcherPrefs::~BrowserSwitcherPrefs() = default;
+
+void BrowserSwitcherPrefs::Shutdown() {
+  if (policy_service_)
+    policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+}
 
 // static
 void BrowserSwitcherPrefs::RegisterProfilePrefs(
@@ -94,6 +138,33 @@ bool BrowserSwitcherPrefs::UseIeSitelist() const {
   return prefs_->GetBoolean(prefs::kUseIeSitelist);
 }
 #endif
+
+void BrowserSwitcherPrefs::OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                                           const policy::PolicyMap& previous,
+                                           const policy::PolicyMap& current) {
+  // Let all the other policy observers run first, so that prefs are up-to-date
+  // when we run our own callbacks.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserSwitcherPrefs::RunCallbacksIfDirty,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+std::unique_ptr<BrowserSwitcherPrefs::CallbackSubscription>
+BrowserSwitcherPrefs::RegisterPrefsChangedCallback(
+    BrowserSwitcherPrefs::PrefsChangedCallback cb) {
+  return callback_list_.Add(cb);
+}
+
+void BrowserSwitcherPrefs::RunCallbacksIfDirty() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (dirty_)
+    callback_list_.Notify(this);
+  dirty_ = false;
+}
+
+void BrowserSwitcherPrefs::MarkDirty() {
+  dirty_ = true;
+}
 
 void BrowserSwitcherPrefs::AlternativeBrowserPathChanged() {
   alt_browser_path_.clear();

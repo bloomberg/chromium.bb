@@ -8,8 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
@@ -18,6 +23,7 @@ class PrefRegistrySyncable;
 }  // namespace user_prefs
 
 class PrefService;
+class Profile;
 
 namespace browser_switcher {
 
@@ -34,10 +40,19 @@ struct RuleSet {
 // only respects managed prefs. Also does some type conversions and
 // transformations on the prefs (e.g. expanding preset values for
 // AlternativeBrowserPath).
-class BrowserSwitcherPrefs {
+class BrowserSwitcherPrefs : public KeyedService,
+                             public policy::PolicyService::Observer {
  public:
-  explicit BrowserSwitcherPrefs(PrefService* prefs);
-  virtual ~BrowserSwitcherPrefs();
+  using PrefsChangedCallback =
+      base::RepeatingCallback<void(BrowserSwitcherPrefs*)>;
+  using CallbackSubscription =
+      base::CallbackList<void(BrowserSwitcherPrefs*)>::Subscription;
+
+  explicit BrowserSwitcherPrefs(Profile* profile);
+  ~BrowserSwitcherPrefs() override;
+
+  // KeyedService:
+  void Shutdown() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -69,15 +84,42 @@ class BrowserSwitcherPrefs {
   bool UseIeSitelist() const;
 #endif
 
+  // policy::PolicyService::Observer
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
+
+  std::unique_ptr<CallbackSubscription> RegisterPrefsChangedCallback(
+      PrefsChangedCallback cb);
+
+ protected:
+  // For internal use and testing.
+  BrowserSwitcherPrefs(PrefService* prefs,
+                       policy::PolicyService* policy_service);
+
  private:
+  void RunCallbacksIfDirty();
+  void MarkDirty();
+
   // Hooks for PrefChangeRegistrar.
   void AlternativeBrowserPathChanged();
   void AlternativeBrowserParametersChanged();
   void UrlListChanged();
   void GreylistChanged();
 
-  PrefService* prefs_;
-  PrefChangeRegistrar change_registrar_;
+  policy::PolicyService* const policy_service_;
+  PrefService* const prefs_;
+
+  // We need 2 change registrars because we can't bind 2 observers to the same
+  // pref on the same registrar.
+
+  // Listens on *some* prefs, to apply a filter to them
+  // (e.g. convert ListValue => vector<string>).
+  PrefChangeRegistrar filtering_change_registrar_;
+
+  // Listens on *all* BrowserSwitcher prefs, to notify observers when prefs
+  // change as a result of a policy refresh.
+  PrefChangeRegistrar notifying_change_registrar_;
 
   // Type-converted and/or expanded pref values, updated by the
   // PrefChangeRegistrar hooks.
@@ -85,6 +127,13 @@ class BrowserSwitcherPrefs {
   std::vector<std::string> alt_browser_params_;
 
   RuleSet rules_;
+
+  // True if a policy refresh recently caused prefs to change.
+  bool dirty_ = false;
+
+  base::CallbackList<void(BrowserSwitcherPrefs*)> callback_list_;
+
+  base::WeakPtrFactory<BrowserSwitcherPrefs> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherPrefs);
 };

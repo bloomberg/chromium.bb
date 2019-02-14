@@ -71,9 +71,14 @@ std::string SerializeCacheFile(const BrowserSwitcherPrefs& prefs) {
   return buffer.str();
 }
 
-void SavePrefsToFile(std::string data) {
-  // Ensure the directory exists
+// Does the I/O for the |SavePrefsToFile()|. Should be run in a worker thread to
+// avoid blocking the main thread.
+void DoSavePrefsToFile(std::string data) {
+  // Ensure the directory exists.
   base::FilePath dir = GetCacheDir();
+
+  if (dir.empty())
+    return;
 
   bool success = base::CreateDirectory(dir);
   UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkDirSuccess", success);
@@ -105,6 +110,17 @@ base::Optional<std::string>* IeemSitelistUrlForTesting() {
   return ieem_sitelist_url_for_testing.get();
 }
 
+void DoRemovePrefsFile() {
+  base::FilePath dir = GetCacheDir();
+
+  if (dir.empty())
+    return;
+
+  // Ignore errors while deleting.
+  base::FilePath dest_path = dir.AppendASCII("cache.dat");
+  base::DeleteFile(dest_path, false);
+}
+
 }  // namespace
 
 BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
@@ -119,20 +135,25 @@ BrowserSwitcherServiceWin::BrowserSwitcherServiceWin(Profile* profile)
     }
   }
 
-  if (prefs_.IsEnabled()) {
-    // TODO(nicolaso): also write cache.dat when policies change (e.g. after
-    // loading cloud policies or after enabling LBS while Chrome is running).
-    //
-    // Write the cache.dat file.
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::BindOnce(&SavePrefsToFile, SerializeCacheFile(prefs_)));
-  }
+  if (prefs_.IsEnabled())
+    SavePrefsToFile();
+  else
+    DeletePrefsFile();
+
+  prefs_subscription_ = prefs_.RegisterPrefsChangedCallback(base::BindRepeating(
+      &BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged,
+      base::Unretained(this)));
 }
 
 BrowserSwitcherServiceWin::~BrowserSwitcherServiceWin() = default;
+
+void BrowserSwitcherServiceWin::OnBrowserSwitcherPrefsChanged(
+    BrowserSwitcherPrefs* prefs) {
+  if (prefs_.IsEnabled())
+    SavePrefsToFile();
+  else
+    DeletePrefsFile();
+}
 
 // static
 void BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(
@@ -165,6 +186,21 @@ void BrowserSwitcherServiceWin::OnIeemSitelistParsed(ParsedXml xml) {
     sitelist()->SetIeemSitelist(std::move(xml));
   }
   ieem_downloader_.reset();
+}
+
+void BrowserSwitcherServiceWin::SavePrefsToFile() const {
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&DoSavePrefsToFile, SerializeCacheFile(prefs_)));
+}
+
+void BrowserSwitcherServiceWin::DeletePrefsFile() const {
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                           base::BindOnce(&DoRemovePrefsFile));
 }
 
 }  // namespace browser_switcher
