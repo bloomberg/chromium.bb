@@ -21,6 +21,9 @@ public class InlineUpdateController {
 
     private final Runnable mCallback;
 
+    private boolean mEnabled;
+    private @Nullable @UpdateState Integer mUpdateState;
+
     /**
      * Builds an instance of {@link InlineUpdateController}.
      * @param callback The {@link Runnable} to notify when an inline update state change occurs.
@@ -28,7 +31,17 @@ public class InlineUpdateController {
     public InlineUpdateController(Runnable callback) {
         mCallback = callback;
 
-        mHandler.post(mCallback);
+        setEnabled(true);
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (mEnabled == enabled) return;
+        mEnabled = enabled;
+
+        if (mEnabled) {
+            mUpdateState = UpdateState.NONE;
+            mHandler.post(mCallback);
+        }
     }
 
     /**
@@ -36,7 +49,7 @@ public class InlineUpdateController {
      * hasn't been determined yet.
      */
     public @Nullable @UpdateState Integer getStatus() {
-        return UpdateState.NONE;
+        return mUpdateState;
     }
 
     /**

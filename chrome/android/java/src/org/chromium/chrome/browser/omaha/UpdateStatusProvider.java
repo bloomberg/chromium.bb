@@ -20,6 +20,9 @@ import android.text.TextUtils;
 
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -28,6 +31,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.AsyncTask.Status;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -42,7 +46,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * For manually testing this functionality, see {@link UpdateConfigs}.
  */
-public class UpdateStatusProvider {
+public class UpdateStatusProvider implements ActivityStateListener {
     /** Possible update states. */
     @IntDef({UpdateState.NONE, UpdateState.UPDATE_AVAILABLE, UpdateState.UNSUPPORTED_OS_VERSION,
             UpdateState.INLINE_UPDATE_AVAILABLE, UpdateState.INLINE_UPDATE_DOWNLOADING,
@@ -188,9 +192,28 @@ public class UpdateStatusProvider {
         mInlineController.completeUpdate();
     }
 
+    // ApplicationStateListener implementation.
+    @Override
+    public void onActivityStateChange(Activity changedActivity, @ActivityState int newState) {
+        boolean hasActiveActivity = false;
+
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (activity == null || !(activity instanceof ChromeActivity)) continue;
+
+            hasActiveActivity |=
+                    ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED;
+            if (hasActiveActivity) break;
+        }
+
+        mInlineController.setEnabled(hasActiveActivity);
+    }
+
     private UpdateStatusProvider() {
         mInlineController = new InlineUpdateController(this::resolveStatus);
         mOmahaQuery = new UpdateQuery(this::resolveStatus);
+
+        // Note that as a singleton this class never unregisters.
+        ApplicationStatus.registerStateListenerForAllActivities(this);
     }
 
     private void pingObservers() {
