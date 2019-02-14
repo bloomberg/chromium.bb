@@ -3371,7 +3371,7 @@ bool Element::DisplayLockPreventsActivation() const {
     if (!current->IsElementNode())
       continue;
     if (auto* context = ToElement(current)->GetDisplayLockContext()) {
-      if (!context->IsSearchable())
+      if (!context->IsActivatable())
         return true;
     }
   }

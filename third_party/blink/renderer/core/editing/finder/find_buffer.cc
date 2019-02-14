@@ -138,7 +138,7 @@ bool ShouldIgnoreContents(const Node& node) {
          IsHTMLScriptElement(element) || IsHTMLVideoElement(element) ||
          IsHTMLAudioElement(element) ||
          (element.GetDisplayLockContext() &&
-          !element.GetDisplayLockContext()->IsSearchable());
+          !element.GetDisplayLockContext()->IsActivatable());
 }
 
 Node* GetNonSearchableAncestor(const Node& node) {

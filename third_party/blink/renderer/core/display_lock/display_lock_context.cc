@@ -123,9 +123,14 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
                           ? options->timeout()
                           : kDefaultLockTimeoutMs;
 
-  // TODO(vmpstr): IMPORTANT. When searchability changes, we might need to
-  // adjust the count of activation blocking locks we keep on the document
-  // object.
+  if (IsLocked()) {
+    // If we're locked, the activatable flag might change the activation
+    // blocking lock count. If we're not locked, the activation blocking lock
+    // count will be updated when we changed the state.
+    state_.UpdateActivationBlockingCount(activatable_,
+                                         options && options->activatable());
+  }
+  activatable_ = options && options->activatable();
 
   // We always reschedule a timeout task even if we're not starting a new
   // acquire. The reason for this is that the last acquire dictates the timeout
@@ -349,10 +354,8 @@ void DisplayLockContext::DidPaint() {
   // This is here for symmetry, but could be removed if necessary.
 }
 
-bool DisplayLockContext::IsSearchable() const {
-  // TODO(vmpstr): Support "searchable: true" option, which allows locked
-  // elements to be searched.
-  return !IsLocked();
+bool DisplayLockContext::IsActivatable() const {
+  return activatable_ || !IsLocked();
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
@@ -565,7 +568,7 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
   if (document_->View())
     document_->View()->RegisterForLifecycleNotifications(this);
 
-  if (!IsSearchable()) {
+  if (!IsActivatable()) {
     old_document.RemoveActivationBlockingDisplayLock();
     document_->AddActivationBlockingDisplayLock();
   }
@@ -770,13 +773,15 @@ operator=(State new_state) {
   if (new_state == state_)
     return *this;
 
-  bool was_searchable = context_->IsSearchable();
+  bool was_activatable = context_->IsActivatable();
   bool was_locked = context_->IsLocked();
 
   state_ = new_state;
 
   if (!context_->document_)
     return *this;
+
+  UpdateActivationBlockingCount(was_activatable, context_->IsActivatable());
 
   // Adjust the total number of locked display locks.
   auto& document = *context_->document_;
@@ -787,14 +792,20 @@ operator=(State new_state) {
       document.AddLockedDisplayLock();
   }
 
+  return *this;
+}
+
+void DisplayLockContext::StateChangeHelper::UpdateActivationBlockingCount(
+    bool old_activatable,
+    bool new_activatable) {
+  auto& document = *context_->document_;
   // Adjust activation blocking lock counts.
-  if (context_->IsSearchable() != was_searchable) {
-    if (was_searchable)
+  if (old_activatable != new_activatable) {
+    if (old_activatable)
       document.AddActivationBlockingDisplayLock();
     else
       document.RemoveActivationBlockingDisplayLock();
   }
-  return *this;
 }
 
 }  // namespace blink

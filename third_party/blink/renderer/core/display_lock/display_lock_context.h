@@ -113,8 +113,8 @@ class CORE_EXPORT DisplayLockContext final
   void DidPaint();
 
   // Returns true if the contents of the associated element should be visible
-  // for find-in-page and tab order.
-  bool IsSearchable() const;
+  // from and activatable by find-in-page, tab order, anchor links, etc.
+  bool IsActivatable() const;
 
   // Returns true if this lock is locked. Note from the outside perspective, the
   // lock is locked any time the state is not kUnlocked or kPendingAcquire.
@@ -171,6 +171,8 @@ class CORE_EXPORT DisplayLockContext final
 
     operator State() const { return state_; }
     StateChangeHelper& operator=(State);
+    void UpdateActivationBlockingCount(bool old_activatable,
+                                       bool new_activatable);
 
    private:
     State state_ = kUnlocked;
@@ -250,6 +252,7 @@ class CORE_EXPORT DisplayLockContext final
 
   bool update_forced_ = false;
   bool timeout_task_is_scheduled_ = false;
+  bool activatable_ = false;
 
   base::WeakPtrFactory<DisplayLockContext> weak_factory_;
 };

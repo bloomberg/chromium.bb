@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -159,7 +160,7 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
-  EXPECT_FALSE(element->GetDisplayLockContext()->IsSearchable());
+  EXPECT_FALSE(element->GetDisplayLockContext()->IsActivatable());
 
   EXPECT_FALSE(text_finder.Find(identifier, search_text, *find_options,
                                 wrap_within_frame));
@@ -245,7 +246,7 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
-  EXPECT_FALSE(element->GetDisplayLockContext()->IsSearchable());
+  EXPECT_FALSE(element->GetDisplayLockContext()->IsActivatable());
 
   find_in_page->Find(current_id++, "testing", find_options->Clone());
   EXPECT_FALSE(client.FindResultsAreReady());
@@ -452,5 +453,94 @@ TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
   // Both inner and outer locks should have committed.
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+}
+
+TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .container {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body>
+    <div id="activatable" class="container"></div>
+    <div id="nonActivatable" class="container"></div>
+    </body>
+  )HTML");
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  auto* activatable = GetDocument().getElementById("activatable");
+  auto* non_activatable = GetDocument().getElementById("nonActivatable");
+
+  DisplayLockOptions activatable_options;
+  activatable_options.setActivatable(true);
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    activatable->getDisplayLockForBindings()->acquire(script_state,
+                                                      &activatable_options);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
+
+  {
+    ScriptState::Scope scope(script_state);
+    non_activatable->getDisplayLockForBindings()->acquire(script_state,
+                                                          nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable());
+
+  // Now commit the lock for |non_ctivatable|.
+  {
+    ScriptState::Scope scope(script_state);
+    non_activatable->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
+
+  // Re-acquire the lock for |activatable|, but without the activatable flag.
+  {
+    ScriptState::Scope scope(script_state);
+    activatable->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_FALSE(activatable->GetDisplayLockContext()->IsActivatable());
+
+  // Re-acquire the lock for |activatable| again with the activatable flag.
+  {
+    ScriptState::Scope scope(script_state);
+    activatable->getDisplayLockForBindings()->acquire(script_state,
+                                                      &activatable_options);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable());
 }
 }  // namespace blink
