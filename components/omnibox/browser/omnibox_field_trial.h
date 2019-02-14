@@ -55,6 +55,7 @@ extern const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions;
 extern const base::Feature kUIExperimentUseGenericSearchEngineIcon;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
 extern const base::Feature kDocumentProvider;
+extern const base::Feature kDedupeGoogleDriveURLs;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 

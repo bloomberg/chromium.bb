@@ -54,6 +54,13 @@ class DocumentProvider : public AutocompleteProvider {
   // Registers a client-side preference to enable document suggestions.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Builds a GURL to use for deduping against other document/history
+  // suggestions. Multiple URLs may refer to the same document.
+  // Returns an empty GURL if not a recognized Docs URL.
+  // The URL returned is not guaranteed to be navigable and should only be used
+  // as a deduping token.
+  static const GURL GetURLForDeduping(const GURL& url);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, CheckFeatureBehindFlag);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,

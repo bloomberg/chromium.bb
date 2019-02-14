@@ -44,9 +44,11 @@
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -486,7 +488,11 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     base::string16 original_url;
     std::string mimetype;
     if (result->GetString("originalUrl", &original_url)) {
-      match.stripped_destination_url = GURL(original_url);
+      GURL stripped_url = GURL(original_url);
+      if (base::FeatureList::IsEnabled(omnibox::kDedupeGoogleDriveURLs))
+        stripped_url = GetURLForDeduping(stripped_url);
+      if (stripped_url.is_valid())
+        match.stripped_destination_url = stripped_url;
     }
     match.contents = AutocompleteMatch::SanitizeString(title);
     match.contents_class = Classify(match.contents, input_.text());
@@ -545,4 +551,35 @@ ACMatchClassifications DocumentProvider::Classify(
 
   return HistoryProvider::SpansFromTermMatch(matches, clean_text.length(),
                                              false);
+}
+
+// static
+const GURL DocumentProvider::GetURLForDeduping(const GURL& url) {
+  // We aim to prevent duplicate Drive URLs to appear between the Drive document
+  // search provider and history/bookmark entries.
+  // Drive URLs take on two core forms, and may have request parameters.
+  // All URLs are canonicalized to a GURL form only used for deduplication and
+  // not guaranteed to be usable for navigation.
+  // URLs of the following forms are handled:
+  // https://drive.google.com/open?id=(id)
+  // https://docs.google.com/document/d/(id)/edit
+  // https://docs.google.com/spreadsheets/d/(id)/edit#gid=12345
+  // https://docs.google.com/presentation/d/(id)/edit#slide=id.g12345a_0_26
+  // where id is comprised of characters in [0-9A-Za-z\-_] = [\w\-]
+  std::string id;
+  if (url.host() == "drive.google.com" && url.path() == "/open") {
+    net::GetValueForKeyInQuery(url, "id", &id);
+  } else if (url.host() == "docs.google.com") {
+    static re2::LazyRE2 doc_link_regex = {
+        "^/(?:document|spreadsheets|presentation|forms)/d/([\\w-]+)/"};
+    RE2::PartialMatch(url.path(), *doc_link_regex, &id);
+  }
+
+  if (id.empty()) {
+    return GURL();
+  } else {
+    // Canonicalize to the /open form without any extra args.
+    // This is similar to what we expect from the server.
+    return GURL("https://drive.google.com/open?id=" + id);
+  }
 }
