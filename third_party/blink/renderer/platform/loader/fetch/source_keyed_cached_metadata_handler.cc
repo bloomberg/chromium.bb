@@ -101,7 +101,7 @@ void SourceKeyedCachedMetadataHandler::ClearCachedMetadata(
   cached_metadata_map_.clear();
   if (cache_type == CachedMetadataHandler::kSendToPlatform)
     SendToPlatform();
-};
+}
 
 String SourceKeyedCachedMetadataHandler::Encoding() const {
   return String(encoding_.GetName());
@@ -212,7 +212,7 @@ void SourceKeyedCachedMetadataHandler::SetSerializedCachedMetadata(
   if (size > 0) {
     cached_metadata_map_.clear();
   }
-};
+}
 
 void SourceKeyedCachedMetadataHandler::SendToPlatform() {
   if (!sender_)

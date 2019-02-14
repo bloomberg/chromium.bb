@@ -33,7 +33,7 @@ class ResourceLoaderTest : public testing::Test {
   };
 
   ResourceLoaderTest()
-      : foo_url_("https://foo.test"), bar_url_("https://bar.test"){};
+      : foo_url_("https://foo.test"), bar_url_("https://bar.test") {}
 
  protected:
   using FetchRequestMode = network::mojom::FetchRequestMode;
