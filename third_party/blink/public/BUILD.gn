@@ -445,7 +445,6 @@ source_set("blink_headers") {
     "web/web_hit_test_result.h",
     "web/web_icon_url.h",
     "web/web_image_cache.h",
-    "web/web_image_decoder.h",
     "web/web_ime_text_span.h",
     "web/web_input_element.h",
     "web/web_input_method_controller.h",
