@@ -83,8 +83,6 @@ _NEGATIVE_FILTER = [
     'ChromeDriverAndroidTest.testScreenOrientationAcrossMultipleTabs',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2777
-    'ChromeDriverTest.testActionsTouchStart',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -749,14 +747,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
-  def testActionsTouchStart(self):
+  def testActionsTouchTap(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
         'div.style["width"] = "100px";'
         'div.style["height"] = "100px";'
-        'div.addEventListener("touchstart", function() {'
+        'div.addEventListener("click", function() {'
         '  var div = document.getElementsByTagName("div")[0];'
         '  div.innerHTML="new<br>";'
         '});'
