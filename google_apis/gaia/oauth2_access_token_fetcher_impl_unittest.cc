@@ -74,18 +74,13 @@ MATCHER_P(resourceRequestUrlEquals, url, "") {
 class OAuth2AccessTokenFetcherImplTest : public testing::Test {
  public:
   OAuth2AccessTokenFetcherImplTest()
-      : shared_url_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &url_loader_factory_)),
-        fetcher_(&consumer_, shared_url_loader_factory_, "refresh_token") {
+      : fetcher_(&consumer_,
+                 url_loader_factory_.GetSafeWeakWrapper(),
+                 "refresh_token") {
     url_loader_factory_.SetInterceptor(base::BindRepeating(
         &URLLoaderFactoryInterceptor::Intercept,
         base::Unretained(&url_loader_factory_interceptor_)));
     base::RunLoop().RunUntilIdle();
-  }
-
-  ~OAuth2AccessTokenFetcherImplTest() override {
-    shared_url_loader_factory_->Detach();
   }
 
   void SetupGetAccessToken(int net_error_code,
@@ -124,8 +119,6 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
   MockOAuth2AccessTokenConsumer consumer_;
   URLLoaderFactoryInterceptor url_loader_factory_interceptor_;
   network::TestURLLoaderFactory url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      shared_url_loader_factory_;
   OAuth2AccessTokenFetcherImpl fetcher_;
 };
 
