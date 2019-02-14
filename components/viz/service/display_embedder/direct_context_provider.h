@@ -69,6 +69,7 @@ class VIZ_SERVICE_EXPORT DirectContextProvider
   gpu::gles2::TextureManager* texture_manager();
   GLuint GenClientTextureId();
   void DeleteClientTextureId(GLuint client_id);
+  void MarkContextLost();
 
   // ContextProvider implementation.
   void AddRef() const override;

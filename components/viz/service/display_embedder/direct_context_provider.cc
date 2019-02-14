@@ -136,6 +136,7 @@ void DirectContextProvider::SetGLRendererCopierRequiredState(
   gles2_implementation_->Disable(GL_SCISSOR_TEST);
   gles2_implementation_->Disable(GL_STENCIL_TEST);
   gles2_implementation_->Disable(GL_BLEND);
+  gles2_implementation_->ActiveTexture(GL_TEXTURE0);
 
   if (texture_client_id) {
     if (!framebuffer_id_)
@@ -317,6 +318,14 @@ GLuint DirectContextProvider::GenClientTextureId() {
 
 void DirectContextProvider::DeleteClientTextureId(GLuint client_id) {
   gles2_implementation_->DeleteTextures(1, &client_id);
+}
+
+void DirectContextProvider::MarkContextLost() {
+  if (!decoder_->WasContextLost()) {
+    decoder_->MarkContextLost(gpu::error::kUnknown);
+    command_buffer_->service()->SetParseError(gpu::error::kLostContext);
+    OnContextLost();
+  }
 }
 
 }  // namespace viz

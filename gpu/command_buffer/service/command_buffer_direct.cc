@@ -48,6 +48,8 @@ CommandBuffer::State CommandBufferDirect::WaitForGetOffsetInRange(
 
 void CommandBufferDirect::Flush(int32_t put_offset) {
   DCHECK(handler_);
+  if (GetLastState().error != gpu::error::kNoError)
+    return;
   service_.Flush(put_offset, handler_);
 }
 

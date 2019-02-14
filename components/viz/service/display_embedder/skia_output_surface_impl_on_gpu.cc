@@ -81,6 +81,7 @@ class SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider {
     api->glDisableFn(GL_SCISSOR_TEST);
     api->glDisableFn(GL_STENCIL_TEST);
     api->glDisableFn(GL_BLEND);
+    api->glActiveTextureFn(GL_TEXTURE0);
     impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState(
         texture_client_id);
   }
@@ -554,9 +555,12 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // ~DirectContextProvider wants either the context to be lost or made current.
+  // |context_provider_| and clients want either the context to be lost or made
+  // current on destruction.
   MakeCurrent();
-  context_provider_.reset();
+  copier_ = nullptr;
+  texture_deleter_ = nullptr;
+  context_provider_ = nullptr;
 
   sync_point_client_state_->Destroy();
 }
@@ -1155,8 +1159,7 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent() {
       LOG(ERROR) << "Failed to make current.";
       context_lost_callback_.Run();
       if (context_provider_)
-        context_provider_->decoder()->MarkContextLost(
-            gpu::error::kMakeCurrentFailed);
+        context_provider_->MarkContextLost();
       return false;
     }
     context_state_->set_need_context_state_reset(true);
