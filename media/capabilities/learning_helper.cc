@@ -74,6 +74,8 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
     dropped_frame_task.name = kDroppedFrameRatioEnhancedTreeTaskName;
     dropped_frame_task.feature_descriptions.push_back(
         FeatureLibrary::NetworkType());
+    dropped_frame_task.feature_descriptions.push_back(
+        FeatureLibrary::BatteryPower());
     dropped_frame_task.uma_hacky_confusion_matrix =
         "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.EnhancedTree";
     learning_session_.Post(FROM_HERE, &LearningSessionImpl::RegisterTask,

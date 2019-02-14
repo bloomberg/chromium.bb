@@ -15,5 +15,10 @@ ValueDescription FeatureLibrary::NetworkType() {
   return ValueDescription({"NetworkType", Ordering::kUnordered});
 }
 
+// static
+ValueDescription FeatureLibrary::BatteryPower() {
+  return ValueDescription({"BatteryPower", Ordering::kUnordered});
+}
+
 }  // namespace learning
 }  // namespace media
