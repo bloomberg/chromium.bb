@@ -363,7 +363,7 @@ class AudioDecoderTest
     // Generate a lossy hash of the audio used for comparison across platforms.
     AudioHash audio_hash;
     audio_hash.Update(output.get(), output->frames());
-    EXPECT_TRUE(audio_hash.IsEquivalent(sample_info.hash, 0.02))
+    EXPECT_TRUE(audio_hash.IsEquivalent(sample_info.hash, 0.03))
         << "Audio hashes differ. Expected: " << sample_info.hash
         << " Actual: " << audio_hash.ToString();
 
