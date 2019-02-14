@@ -150,7 +150,15 @@ class NET_EXPORT NetLog {
 
   // Converts a time to the string format that the NetLog uses to represent
   // times.  Strings are used since integers may overflow.
+  // The resulting string contains the number of milliseconds since the origin
+  // or "zero" point of the TimeTicks class, which can vary each time the
+  // application is restarted. This number is related to an actual time via the
+  // timeTickOffset recorded in GetNetConstants().
   static std::string TickCountToString(const base::TimeTicks& time);
+
+  // Same as above but takes a base::Time. Should not be used if precise
+  // timestamps are desired, but is suitable for e.g. expiration times.
+  static std::string TimeToString(const base::Time& time);
 
   // Returns a C-String symbolic name for |event_type|.
   static const char* EventTypeToString(NetLogEventType event_type);

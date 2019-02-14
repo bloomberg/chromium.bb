@@ -209,9 +209,17 @@ bool NetLog::HasObserver(ThreadSafeObserver* observer) {
 
 // static
 std::string NetLog::TickCountToString(const base::TimeTicks& time) {
-  int64_t delta_time = (time - base::TimeTicks()).InMilliseconds();
+  int64_t delta_time = time.since_origin().InMilliseconds();
   // TODO(https://crbug.com/915391): Use NetLogNumberValue().
   return base::NumberToString(delta_time);
+}
+
+// static
+std::string NetLog::TimeToString(const base::Time& time) {
+  // Convert the base::Time to its (approximate) equivalent in base::TimeTicks.
+  base::TimeTicks time_ticks =
+      base::TimeTicks::UnixEpoch() + (time - base::Time::UnixEpoch());
+  return TickCountToString(time_ticks);
 }
 
 // static
