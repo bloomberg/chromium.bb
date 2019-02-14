@@ -140,11 +140,6 @@ class GaiaCookieManagerService : public KeyedService,
         const std::string& account_id,
         const GoogleServiceAuthError& error) {}
 
-    // Called whenever a logout is completed. If |error| is equal to
-    // GoogleServiceAuthError::AuthErrorNone() then the logout succeeded.
-    virtual void OnLogOutAccountsFromCookieCompleted(
-        const GoogleServiceAuthError& error) {}
-
     // Called whenever the GaiaCookieManagerService's list of GAIA accounts is
     // updated. The GCMS monitors the APISID cookie and triggers a /ListAccounts
     // call on change. The GCMS will also call ListAccounts upon the first call
