@@ -131,6 +131,12 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
   if (!state->subresource_loader_factory) {
     DCHECK(!state->controller_connector);
     DCHECK(state->controller_endpoint);
+
+    blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info =
+        CloneContainerHostPtrInfo();
+    if (!host_ptr_info)
+      return nullptr;
+
     // Create a SubresourceLoaderFactory on a background thread to avoid
     // extra contention on the main thread.
     auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
@@ -138,7 +144,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
     task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&CreateSubresourceLoaderFactoryForProviderContext,
-                       CloneContainerHostPtrInfo(),
+                       std::move(host_ptr_info),
                        std::move(state->controller_endpoint), state->client_id,
                        state->fallback_loader_factory->Clone(),
                        mojo::MakeRequest(&state->controller_connector),
@@ -201,6 +207,8 @@ ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
+  if (!container_host_)
+    return nullptr;
   blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
   container_host_->CloneContainerHost(
       mojo::MakeRequest(&container_host_ptr_info));
@@ -214,6 +222,8 @@ void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
 void ServiceWorkerProviderContext::PingContainerHost(
     base::OnceClosure callback) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  if (!container_host_)
+    return;
   container_host_->Ping(std::move(callback));
 }
 
@@ -231,6 +241,9 @@ void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
       blink::mojom::ControllerServiceWorkerMode::kNoController) {
     return;
   }
+
+  if (!container_host_)
+    return;
 
   container_host_->HintToUpdateServiceWorker();
 }

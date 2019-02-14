@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -708,6 +709,48 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   ASSERT_EQ(2UL, client->used_features().size());
   ASSERT_EQ(blink::mojom::WebFeature::kWindowEvent,
             *(++(client->used_features().begin())));
+}
+
+TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
+  // Make the object host for .controller.
+  auto object_host =
+      std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
+  blink::mojom::ServiceWorkerObjectInfoPtr object_info =
+      object_host->CreateObjectInfo();
+
+  // Make the ControllerServiceWorkerInfo.
+  FakeControllerServiceWorker fake_controller;
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
+  fake_controller.Clone(mojo::MakeRequest(&controller_ptr));
+  controller_info->mode =
+      blink::mojom::ControllerServiceWorkerMode::kControlled;
+  controller_info->object_info = std::move(object_info);
+  controller_info->endpoint = controller_ptr.PassInterface();
+
+  // Make the container host and container pointers.
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
+
+  // Make the provider context.
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      11 /* provider_id */, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      std::move(container_request), host_ptr.PassInterface(),
+      std::move(controller_info), loader_factory_);
+
+  // Put it in the weird state to test.
+  provider_context->OnNetworkProviderDestroyed();
+
+  // Calling these in the weird state shouldn't crash.
+  EXPECT_FALSE(provider_context->container_host());
+  EXPECT_FALSE(provider_context->CloneContainerHostPtrInfo());
+  provider_context->PingContainerHost(base::DoNothing());
+  provider_context->DispatchNetworkQuiet();
+  provider_context->NotifyExecutionReady();
 }
 
 }  // namespace service_worker_provider_context_unittest

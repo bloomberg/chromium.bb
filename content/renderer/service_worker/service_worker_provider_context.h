@@ -136,7 +136,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // S13nServiceWorker:
   // Returns a ServiceWorkerContainerHostPtrInfo to this context's container
-  // host.
+  // host. This can return null after OnNetworkProviderDestroyed() is called
+  // (in which case |this| will be destroyed soon).
   blink::mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
 
   // Called when WebServiceWorkerNetworkProvider is destructed. This function
@@ -147,6 +148,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // ServiceWorkerProviderHost must destruct quickly in order to remove the
   // ServiceWorkerClient from the system (thus allowing unregistration/update to
   // occur and ensuring the Clients API doesn't return the client).
+  //
+  // TODO(https://crbug.com/931497): Remove this weird partially destroyed
+  // state.
   void OnNetworkProviderDestroyed();
 
   // Gets the blink::mojom::ServiceWorkerContainerHost* for sending requests to
@@ -210,7 +214,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // The |container_host_| interface represents the connection to the
   // browser-side ServiceWorkerProviderHost, whose lifetime is bound to
-  // |container_host_| via the Mojo connection.
+  // |container_host_| via the Mojo connection. This may be nullptr if the Mojo
+  // connection was broken in OnNetworkProviderDestroyed().
+  //
   // The |container_host_| interface also implements functions for
   // navigator.serviceWorker, but all the methods that correspond to
   // navigator.serviceWorker.* can be used only if |this| is a provider

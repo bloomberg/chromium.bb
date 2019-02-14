@@ -144,10 +144,6 @@ ServiceWorkerNetworkProviderForFrame::Create(
     // ServiceWorkerContainerHost since we couldn't set it up correctly due to
     // this test limitation. This way we don't crash when the associated
     // interface ptr is used.
-    //
-    // TODO(falken): Just give ServiceWorkerProviderContext a null interface ptr
-    // and make the callsites deal with it. They are supposed to anyway because
-    // OnNetworkProviderDestroyed() can reset the ptr to null at any time.
     mojo::AssociateWithDisconnectedPipe(host_info->host_request.PassHandle());
   }
   return provider;
