@@ -12,7 +12,7 @@ from blinkpy.web_tests.controllers import web_test_finder
 
 _MOCK_ROOT = os.path.join(
     path_finder.get_chromium_src_dir(), 'third_party', 'pymock')
-sys.path.append(_MOCK_ROOT)
+sys.path.insert(0, _MOCK_ROOT)
 import mock
 
 
