@@ -64,9 +64,6 @@ const bool kHostedApp = true;
 #if BUILDFLAG(ENABLE_NACL)
 const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
-const char kChatManifestFS[] = "filesystem:https://talkgadget.google.com/foo";
-
-const char kChatAppURL[] = "https://talkgadget.google.com/hangouts/foo";
 #endif
 
 void AddContentTypeHandler(content::WebPluginInfo* info,
@@ -158,7 +155,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(),
-        GURL(),
         kNaClUnrestricted,
         CreateExtension(kExtensionNotFromWebStore).get(),
         &params));
@@ -167,7 +163,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::UNPACKED,
@@ -178,7 +173,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::COMPONENT,
@@ -188,7 +182,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::EXTERNAL_COMPONENT,
@@ -200,14 +193,12 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::EXTERNAL_POLICY,
                                     kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(
@@ -220,79 +211,39 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtension(kExtensionFromWebStore).get(),
         &params));
   }
-
-  // Whitelisted URLs are allowed without --enable-nacl. There is a whitelist
-  // for the app URL and the manifest URL.
-  {
-    WebPluginParams params;
-    // Whitelisted Chat app is allowed.
-    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL(kChatAppURL),
-        kNaClRestricted,
-        nullptr,
-        &params));
-
-    // Whitelisted manifest URL, bad app URLs, NOT allowed.
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL("http://plus.google.com/foo"),  // http scheme
-        kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL("http://plus.sandbox.google.com/foo"),  // http scheme
-        kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL("https://plus.google.evil.com/foo"),  // bad host
-        kNaClRestricted, nullptr, &params));
-    // Whitelisted app URL, bad manifest URL, NOT allowed.
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("http://ssl.gstatic.com/s2/oz/nacl/foo"),  // http scheme
-        GURL(kChatAppURL), kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("https://ssl.gstatic.evil.com/s2/oz/nacl/foo"),  // bad host
-        GURL(kChatAppURL), kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("https://ssl.gstatic.com/wrong/s2/oz/nacl/foo"),  // bad path
-        GURL(kChatAppURL), kNaClRestricted, nullptr, &params));
-  }
-  // Non-whitelisted URLs are blocked without --enable-nacl.
+  // Other URLs (including previously-whitelisted URLs) are blocked
+  // without --enable-nacl.
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
-        GURL("https://plus.google.com.evil.com/foo1"),
-        kNaClRestricted,
-        nullptr,
+        GURL("https://plus.google.com.evil.com/foo1"), kNaClRestricted, nullptr,
         &params));
+    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL("https://talkgadget.google.com/hangouts/foo1"), kNaClRestricted,
+        nullptr, &params));
   }
   // Non chrome-extension:// URLs belonging to hosted apps are allowed for
   // webstore installed hosted apps.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL("http://example.com/test.html"),
         kNaClRestricted,
         CreateHostedApp(kExtensionFromWebStore,
                         "http://example.com/").get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL("http://example.com/test.html"),
         kNaClRestricted,
         CreateHostedApp(kExtensionNotFromWebStore,
                         "http://example.com/").get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL("http://example.evil.com/test.html"),
         kNaClRestricted,
         CreateHostedApp(kExtensionNotFromWebStore,

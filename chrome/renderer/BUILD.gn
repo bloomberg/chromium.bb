@@ -43,8 +43,6 @@ grit("resources") {
 
 jumbo_static_library("renderer") {
   sources = [
-    "app_categorizer.cc",
-    "app_categorizer.h",
     "benchmarking_extension.cc",
     "benchmarking_extension.h",
     "chrome_content_renderer_client.cc",

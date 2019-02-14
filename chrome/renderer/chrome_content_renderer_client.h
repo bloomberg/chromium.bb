@@ -260,8 +260,7 @@ class ChromeContentRendererClient
 #if BUILDFLAG(ENABLE_NACL)
   // Determines if a NaCl app is allowed, and modifies params to pass the app's
   // permissions to the trusted NaCl plugin.
-  static bool IsNaClAllowed(const GURL& manifest_url,
-                            const GURL& app_url,
+  static bool IsNaClAllowed(const GURL& app_url,
                             bool is_nacl_unrestricted,
                             const extensions::Extension* extension,
                             blink::WebPluginParams* params);

@@ -43,7 +43,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
-#include "chrome/renderer/app_categorizer.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
@@ -836,10 +835,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           const Extension* extension =
               extensions::RendererExtensionRegistry::Get()
                   ->GetExtensionOrAppByURL(manifest_url);
-          if (!IsNaClAllowed(manifest_url,
-                             app_url,
-                             is_nacl_unrestricted,
-                             extension,
+          if (!IsNaClAllowed(app_url, is_nacl_unrestricted, extension,
                              &params)) {
             WebString error_message;
             if (is_nacl_mime_type) {
@@ -1071,7 +1067,6 @@ void ChromeContentRendererClient::GetInterface(
 #if BUILDFLAG(ENABLE_NACL)
 //  static
 bool ChromeContentRendererClient::IsNaClAllowed(
-    const GURL& manifest_url,
     const GURL& app_url,
     bool is_nacl_unrestricted,
     const Extension* extension,
@@ -1101,14 +1096,12 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   // Allow NaCl under any of the following circumstances:
-  //  1) An app or URL is explictly whitelisted above.
-  //  2) An extension is loaded unpacked or built-in (component) to Chrome.
-  //  3) An extension is force installed by policy.
-  //  4) An extension is installed from the webstore, and invoked in that
+  //  1) An extension is loaded unpacked or built-in (component) to Chrome.
+  //  2) An extension is force installed by policy.
+  //  3) An extension is installed from the webstore, and invoked in that
   //     context (hosted app URL or chrome-extension:// scheme).
-  //  5) --enable-nacl is set.
+  //  4) --enable-nacl is set.
   bool is_nacl_allowed_by_location =
-      AppCategorizer::IsWhitelistedApp(manifest_url, app_url) ||
       is_extension_unrestricted ||
       is_extension_force_installed ||
       is_invoked_by_webstore_installed_extension;
