@@ -3075,29 +3075,16 @@
     "expiry_milestone": 76
   },
   {
-    "name": "translate",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "translate-android-manual-trigger",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "translate-explicit-ask",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "anthonyvd", "frechette", "chrome-language@google.com" ],
+    // This flag is used to force manual Translate IPH to trigger on Android,
+    // which has no way to set command-line flags.
+    "expiry_milestone": -1
   },
   {
     "name": "translate-force-trigger-on-english",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "translate-ranker-enforcement",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "anthonyvd", "frechette", "chrome-language@google.com" ],
+    "expiry_milestone": 78
   },
   {
     "name": "try-supported-channel-layouts",

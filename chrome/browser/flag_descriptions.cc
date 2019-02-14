@@ -1950,12 +1950,6 @@ const char kTraceUploadUrlChoiceEmloading[] = "emloading";
 const char kTraceUploadUrlChoiceQa[] = "QA";
 const char kTraceUploadUrlChoiceTesting[] = "Testing";
 
-const char kTranslateExplicitLanguageAskName[] =
-    "Explicitly ask for language preferences";
-const char kTranslateExplicitLanguageAskDescription[] =
-    "Explicitly ask the user which languages they can read on Chrome startup, "
-    "on the first run that doesn't already have a promo.";
-
 const char kTranslateForceTriggerOnEnglishName[] =
     "Select which language model to use to trigger translate on English "
     "content";
@@ -1963,15 +1957,6 @@ const char kTranslateForceTriggerOnEnglishDescription[] =
     "Force the Translate Triggering on English pages experiment to be enabled "
     "with the selected language model active.";
 
-const char kTranslateRankerEnforcementName[] =
-    "Enforce TranslateRanker decisions";
-const char kTranslateRankerEnforcementDescription[] =
-    "Improved Translate UI triggering logic. TranslateRanker decides whether "
-    "or not Translate UI should be triggered in a given context.";
-
-const char kTranslateUIName[] = "Enable Translate";
-const char kTranslateUIDescription[] =
-    "Enable the Translate popup when visiting webpages in other languages.";
 
 const char kTreatInsecureOriginAsSecureName[] =
     "Insecure origins treated as secure";
