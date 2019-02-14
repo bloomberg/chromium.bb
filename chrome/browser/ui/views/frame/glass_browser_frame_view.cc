@@ -229,13 +229,6 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   return min_size;
 }
 
-bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
-  // We can't paint the special single-tab appearance unless we're
-  // custom-drawing the titlebar.
-  return ShouldCustomDrawSystemTitlebar() &&
-         BrowserNonClientFrameView::IsSingleTabModeAvailable();
-}
-
 SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
   const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
                                   ? SK_AlphaOPAQUE

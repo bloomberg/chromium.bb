@@ -413,8 +413,6 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
 }
 
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
-  const bool was_single_tab_mode = SingleTabMode();
-
   // Get view child index of where we want to insert
   int view_index = 0;
   if (model_index > 0) {
@@ -457,10 +455,6 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
     DoLayout();
 
   SwapLayoutIfNecessary();
-
-  if (was_single_tab_mode != SingleTabMode())
-    SingleTabModeChanged();
-
   UpdateAccessibleTabIndices();
 
   for (TabStripObserver& observer : observers_)
@@ -612,9 +606,6 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
   for (TabStripObserver& observer : observers_)
     observer.OnTabRemoved(model_index);
 
-  if (SingleTabMode())
-    SingleTabModeChanged();
-
   // Stop dragging when a new tab is removed and dragging a window. Doing
   // otherwise results in a confusing state if the user attempts to reattach. We
   // could allow this and make TabDragController update itself during the
@@ -632,15 +623,11 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 }
 
 void TabStrip::SetTabData(int model_index, TabRendererData data) {
-  const bool was_single_tab_mode = SingleTabMode();
-
   Tab* tab = tab_at(model_index);
   const bool pinned_state_changed = tab->data().pinned != data.pinned;
   tab->SetData(std::move(data));
 
   if (pinned_state_changed) {
-    if (SingleTabMode() != was_single_tab_mode)
-      SingleTabModeChanged();
     if (touch_layout_) {
       int pinned_tab_count = 0;
       int start_x = GenerateIdealBoundsForPinnedTabs(&pinned_tab_count);
@@ -703,11 +690,6 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
 bool TabStrip::ShouldDrawStrokes() const {
   // If the controller says we can't draw strokes, don't.
   if (!controller_->CanDrawStrokes())
-    return false;
-
-  // In single-tab mode, the whole point is to have the active tab blend with
-  // the frame.
-  if (SingleTabMode())
     return false;
 
   // The tabstrip normally avoids strokes and relies on the active tab
@@ -922,12 +904,8 @@ NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
 }
 
 bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
-  if (tab->IsActive()) {
-    // For single-tab mode, the close button looks like it's floating oddly in
-    // space for LEADING/TRAILING NTBs, so hide in that case.
-    return SingleTabMode() &&
-           controller_->GetNewTabButtonPosition() != AFTER_TABS;
-  }
+  if (tab->IsActive())
+    return false;
   return !!touch_layout_;
 }
 
@@ -1028,11 +1006,6 @@ bool TabStrip::IsFirstVisibleTab(const Tab* tab) const {
 
 bool TabStrip::IsLastVisibleTab(const Tab* tab) const {
   return GetLastVisibleTab() == tab;
-}
-
-bool TabStrip::SingleTabMode() const {
-  return controller_->IsSingleTabModeAvailable() && tab_count() == 1 &&
-         !tab_at(0)->data().pinned;
 }
 
 void TabStrip::MaybeStartDrag(
@@ -1255,8 +1228,7 @@ SkColor TabStrip::GetTabBackgroundColor(
                            ? ThemeProperties::COLOR_BACKGROUND_TAB
                            : ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE;
   // When the background tab color has not been customized, use the actual frame
-  // color instead of COLOR_BACKGROUND_TAB; these will differ for single-tab
-  // mode and custom window frame colors.
+  // color instead of COLOR_BACKGROUND_TAB.
   const SkColor frame = controller_->GetFrameColor(active_state);
   const SkColor background =
       tp->HasCustomColor(color_id)
@@ -1565,9 +1537,7 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
 }
 
 void TabStrip::OnThemeChanged() {
-  // Adding or removing a frame image will change whether single tab mode is
-  // available.
-  SingleTabModeChanged();
+  FrameColorsChanged();
 }
 
 BrowserRootView::DropIndex TabStrip::GetDropIndex(
@@ -2686,15 +2656,6 @@ void TabStrip::UpdateNewTabButtonBorder() {
   constexpr int kHorizontalInset = 8;
   new_tab_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       extra_vertical_space / 2, kHorizontalInset, 0, kHorizontalInset)));
-}
-
-void TabStrip::SingleTabModeChanged() {
-  const int active_tab_index = controller_->GetActiveIndex();
-  if (IsValidModelIndex(active_tab_index))
-    tab_at(active_tab_index)->Layout();
-  FrameColorsChanged();
-  for (TabStripObserver& observer : observers_)
-    observer.OnSingleTabModeChanged();
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {

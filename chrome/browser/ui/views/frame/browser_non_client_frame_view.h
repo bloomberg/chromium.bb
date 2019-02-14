@@ -119,21 +119,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Provided for mus and macOS to update the minimum window size property.
   virtual void UpdateMinimumSize();
 
-  // Whether the special painting mode for one tab is allowed, regardless of how
-  // many tabs there are right now.
-  virtual bool IsSingleTabModeAvailable() const;
-
-  // Whether the frame should be painted with the special mode for one tab.
-  bool ShouldPaintAsSingleTabMode() const;
-
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   int NonClientHitTest(const gfx::Point& point) override;
   void ResetWindowControls() override;
-
-  // TabStripObserver:
-  void OnSingleTabModeChanged() override;
 
   HostedAppButtonContainer* hosted_app_button_container_for_testing() {
     return hosted_app_button_container_;

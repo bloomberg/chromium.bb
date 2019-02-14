@@ -131,9 +131,6 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
-  // Called when the value of SingleTabMode() changes.
-  void SingleTabModeChanged();
-
   // Returns the bounds of the new tab button.
   gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
 
@@ -253,7 +250,6 @@ class TabStrip : public views::AccessiblePaneView,
   bool IsTabPinned(const Tab* tab) const override;
   bool IsFirstVisibleTab(const Tab* tab) const override;
   bool IsLastVisibleTab(const Tab* tab) const override;
-  bool SingleTabMode() const override;
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,

@@ -42,7 +42,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   bool CanDrawStrokes() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
-  bool IsSingleTabModeAvailable() const override;
   SkColor GetCaptionColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:

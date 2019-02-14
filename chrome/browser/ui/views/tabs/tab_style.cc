@@ -599,13 +599,9 @@ TabStyle::SeparatorOpacities GM2TabStyle::GetSeparatorOpacities(
   // Something should visually separate tabs from each other and any adjacent
   // new tab button.  Normally, active and hovered tabs draw distinct shapes
   // (via different background colors) and thus need no separators, while
-  // background tabs need separators between them.  In single-tab mode, the
-  // active tab has no visible shape and thus needs separators on any side with
-  // an adjacent new tab button.  (The other sides will be faded out below.)
+  // background tabs need separators between them.
   float leading_opacity, trailing_opacity;
-  if (tab_->controller()->SingleTabMode()) {
-    leading_opacity = trailing_opacity = 1.f;
-  } else if (tab_->IsActive()) {
+  if (tab_->IsActive()) {
     leading_opacity = trailing_opacity = 0;
   } else {
     // Fade out the trailing separator while this tab or the subsequent tab is
