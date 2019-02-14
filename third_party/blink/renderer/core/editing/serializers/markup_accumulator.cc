@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
-#include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -203,13 +202,6 @@ void MarkupAccumulator::AppendAttributeAsXMLWithNamespace(
     if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
       candidate_prefix = g_xmlns_atom;
   } else {
-    // TODO(tkent): Remove this block. The standard and Firefox don't
-    // have this behavior.
-    if (attribute_namespace == xlink_names::kNamespaceURI) {
-      if (!candidate_prefix)
-        candidate_prefix = g_xlink_atom;
-    }
-
     // 3.5.3. Otherwise, the attribute namespace in not the XMLNS namespace.
     // Run these steps:
     if (ShouldAddNamespaceAttribute(attribute, candidate_prefix)) {
