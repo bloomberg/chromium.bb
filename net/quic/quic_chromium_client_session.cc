@@ -1577,6 +1577,12 @@ void QuicChromiumClientSession::OnConnectionClosed(
         UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ClosedByPublicReset",
                               is_from_google_server);
       }
+
+      if (is_from_google_server) {
+        UMA_HISTOGRAM_COUNTS_100(
+            "Net.QuicSession.NumMigrationsExercisedBeforePublicReset",
+            sockets_.size() - 1);
+      }
     }
     if (IsCryptoHandshakeConfirmed()) {
       if (is_google_host) {
