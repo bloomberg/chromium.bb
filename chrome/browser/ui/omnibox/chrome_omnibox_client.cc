@@ -58,6 +58,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_controller_emitter.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
@@ -397,6 +398,13 @@ gfx::Image ChromeOmniboxClient::GetFaviconForPageUrl(
 
 gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
     FaviconFetchedCallback on_favicon_fetched) {
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentUseGenericSearchEngineIcon)) {
+    // Returning an empty image and never calling |on_favicon_fetched| will
+    // keep the generic icon showing for the default search provider.
+    return gfx::Image();
+  }
+
   const TemplateURL* const default_provider =
       GetTemplateURLService()->GetDefaultSearchProvider();
   if (!default_provider)

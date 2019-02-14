@@ -245,6 +245,12 @@ const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{
     "OmniboxUIExperimentShowSuffixOnAllSearchSuggestions",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to show a generic vector icon for omnibox search instead of the
+// search engine favicon.
+extern const base::Feature kUIExperimentUseGenericSearchEngineIcon{
+    "OminboxUIExperimentUseGenericSearchEngineIcon",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a
 // query.
