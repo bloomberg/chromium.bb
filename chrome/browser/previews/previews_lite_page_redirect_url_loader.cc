@@ -83,6 +83,8 @@ void PreviewsLitePageRedirectURLLoader::PauseReadingBodyFromNet() {
 
 void PreviewsLitePageRedirectURLLoader::ResumeReadingBodyFromNet() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(http://crbug.com/916098): Remove when the bug is fixed.
+  CHECK(serving_url_loader_) << "crbug.com/916098";
   // Pass through.
   serving_url_loader_->ResumeReadingBodyFromNet();
 }
