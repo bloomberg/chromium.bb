@@ -97,6 +97,21 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Testing the private RemovalTask.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverImplTest, MultipleTasks);
 
+  // For debugging purposes. Please add new deletion tasks at the end.
+  enum class TracingDataType {
+    kSynchronous = 1,
+    kEmbedderData = 2,
+    kStoragePartition = 3,
+    kHttpCache = 4,
+    kHttpAndMediaCaches = 5,
+    kReportingCache = 6,
+    kChannelIds = 7,
+    kNetworkHistory = 8,
+    kAuthCache = 9,
+    kCodeCaches = 10,
+    kNetworkErrorLogging = 11,
+  };
+
   // Represents a single removal task. Contains all parameters needed to execute
   // it and a pointer to the observer that added it. CONTENT_EXPORTed to be
   // visible in tests.
@@ -144,19 +159,20 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Notifies observers and transitions to the idle state.
   void Notify();
 
-  // Called by the closures returned by CreatePendingTaskCompletionClosure().
+  // Called by the closures returned by CreateTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls Notify().
-  void OnTaskComplete();
+  void OnTaskComplete(TracingDataType data_type);
 
   // Increments the number of pending tasks by one, and returns a OnceClosure
   // that calls OnTaskComplete(). The Remover is complete once all the closures
   // created by this method have been invoked.
-  base::OnceClosure CreatePendingTaskCompletionClosure();
+  base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
 
-  // Same as CreatePendingTaskCompletionClosure() but guarantees that
+  // Same as CreateTaskCompletionClosure() but guarantees that
   // OnTaskComplete() is called if the task is dropped. That can typically
   // happen when the connection is closed while an interface call is made.
-  base::OnceClosure CreatePendingTaskCompletionClosureForMojo();
+  base::OnceClosure CreateTaskCompletionClosureForMojo(
+      TracingDataType data_type);
 
   // Like GetWeakPtr(), but returns a weak pointer to BrowsingDataRemoverImpl
   // for internal purposes.
