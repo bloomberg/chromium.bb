@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
@@ -103,6 +104,19 @@ void LoadIcon0(apps::mojom::IconCompression icon_compression,
 
   // On failure, we still run the callback, with the zero IconValue.
   std::move(callback).Run(apps::mojom::IconValue::New());
+}
+
+void UpdateAppPermissions(
+    const base::flat_map<arc::mojom::AppPermission, bool>& new_permissions,
+    std::vector<apps::mojom::PermissionPtr>* permissions) {
+  for (const auto& new_permission : new_permissions) {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_id = static_cast<uint32_t>(new_permission.first);
+    permission->value_type = apps::mojom::PermissionValueType::kBool;
+    permission->value = static_cast<uint32_t>(new_permission.second);
+
+    permissions->push_back(std::move(permission));
+  }
 }
 
 }  // namespace
@@ -340,6 +354,25 @@ void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
   }
 }
 
+void ArcApps::OnPackageInstalled(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  ConvertAndPublishPackageApps(package_info);
+}
+
+void ArcApps::OnPackageModified(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  ConvertAndPublishPackageApps(package_info);
+}
+
+void ArcApps::OnPackageListInitialRefreshed() {
+  for (const auto& app_id : prefs_->GetAppIds()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
+    if (app_info) {
+      Publish(Convert(app_id, *app_info));
+    }
+  }
+}
+
 const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
                                                     int32_t size_hint_in_dip) {
   // TODO(crbug.com/826982): process the app_id argument like the private
@@ -421,6 +454,12 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->show_in_search = show;
   app->show_in_management = show;
 
+  std::unique_ptr<ArcAppListPrefs::PackageInfo> package =
+      prefs_->GetPackage(app_info.package_name);
+  if (package) {
+    UpdateAppPermissions(package->permissions, &app->permissions);
+  }
+
   return app;
 }
 
@@ -438,6 +477,21 @@ void ArcApps::Publish(apps::mojom::AppPtr app) {
     apps.push_back(app.Clone());
     subscriber->OnApps(std::move(apps));
   });
+}
+
+void ArcApps::ConvertAndPublishPackageApps(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  if (!package_info.permissions.has_value()) {
+    return;
+  }
+  std::vector<apps::mojom::AppPtr> apps;
+  for (const auto& app_id :
+       prefs_->GetAppsForPackage(package_info.package_name)) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
+    if (app_info) {
+      Publish(Convert(app_id, *app_info));
+    }
+  }
 }
 
 }  // namespace apps

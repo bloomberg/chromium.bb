@@ -364,6 +364,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
                 package_info->last_backup_android_id);
       EXPECT_EQ(package->last_backup_time, package_info->last_backup_time);
       EXPECT_EQ(package->sync, package_info->should_sync);
+      EXPECT_EQ(package->permissions, package_info->permissions);
     }
   }
 
@@ -452,9 +453,13 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   }
 
   arc::mojom::ArcPackageInfoPtr CreatePackage(const std::string& package_name) {
+    base::flat_map<arc::mojom::AppPermission, bool> permissions;
+    permissions.insert(std::make_pair(arc::mojom::AppPermission::CAMERA, 0));
+    permissions.insert(std::make_pair(arc::mojom::AppPermission::LOCATION, 1));
     return arc::mojom::ArcPackageInfo::New(
         package_name, 1 /* package_version */, 1 /* last_backup_android_id */,
-        1 /* last_backup_time */, true /* sync */);
+        1 /* last_backup_time */, true /* sync */, false /* system */,
+        false /* vpn_provider */, nullptr /* web_app_info */, permissions);
   }
 
   void AddPackage(const arc::mojom::ArcPackageInfoPtr& package) {
