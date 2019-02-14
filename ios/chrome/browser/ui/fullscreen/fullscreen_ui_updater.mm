@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 
@@ -35,14 +36,23 @@ void FullscreenUIUpdater::FullscreenViewportInsetRangeChanged(
 void FullscreenUIUpdater::FullscreenEnabledStateChanged(
     FullscreenController* controller,
     bool enabled) {
-  if ([ui_element_ respondsToSelector:@selector(updateForFullscreenProgress:)])
+  if ([ui_element_ respondsToSelector:@selector(updateForFullscreenEnabled:)]) {
     [ui_element_ updateForFullscreenEnabled:enabled];
+  } else if (!enabled) {
+    [ui_element_ updateForFullscreenProgress:1.0];
+  }
 }
 
 void FullscreenUIUpdater::FullscreenWillAnimate(
     FullscreenController* controller,
     FullscreenAnimator* animator) {
   SEL animator_selector = @selector(animateFullscreenWithAnimator:);
-  if ([ui_element_ respondsToSelector:animator_selector])
+  if ([ui_element_ respondsToSelector:animator_selector]) {
     [ui_element_ animateFullscreenWithAnimator:animator];
+  } else {
+    CGFloat progress = animator.finalProgress;
+    [animator addAnimations:^{
+      [ui_element_ updateForFullscreenProgress:progress];
+    }];
+  }
 }

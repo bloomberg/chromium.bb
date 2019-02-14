@@ -22,9 +22,29 @@
 @property(nonatomic, readonly) UIEdgeInsets maxViewportInsets;
 @property(nonatomic, readonly, getter=isEnabled) BOOL enabled;
 @property(nonatomic, readonly) FullscreenAnimator* animator;
+// Whether the UI element should implement optional selectors.  Defaults to YES.
+@property(nonatomic, assign) BOOL implementsOptionalSelectors;
 @end
 
 @implementation TestFullscreenUIElement
+
+- (instancetype)init {
+  if (self = [super init]) {
+    _implementsOptionalSelectors = YES;
+  }
+  return self;
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+  if (!self.implementsOptionalSelectors &&
+      (aSelector == @selector(updateForFullscreenMinViewportInsets:
+                                                 maxViewportInsets:) ||
+       aSelector == @selector(updateForFullscreenEnabled:) ||
+       aSelector == @selector(animateFullscreenWithAnimator:))) {
+    return NO;
+  }
+  return [super respondsToSelector:aSelector];
+}
 
 - (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
                            maxViewportInsets:(UIEdgeInsets)maxViewportInsets {
@@ -103,4 +123,24 @@ TEST_F(FullscreenUIUpdaterTest, ScrollEnd) {
                       style:FullscreenAnimatorStyle::ENTER_FULLSCREEN];
   observer()->FullscreenWillAnimate(nullptr, kAnimator);
   EXPECT_EQ(element().animator, kAnimator);
+}
+
+// Tests the default behavior of FullscreenUIUpdater when optional
+// FullscreenUIElement selectors aren not implemented.
+TEST_F(FullscreenUIUpdaterTest, OptionalSelectors) {
+  element().implementsOptionalSelectors = NO;
+  // Verify that the fullscreen progress gets reset to 1.0 when the enabled
+  // state selector is not implemented.
+  ASSERT_TRUE(AreCGFloatsEqual(element().progress, 0.0));
+  observer()->FullscreenEnabledStateChanged(nullptr, false);
+  EXPECT_TRUE(AreCGFloatsEqual(element().progress, 1.0));
+  // Verify that the fullscreen progress gets reset to 0.0 for an
+  // ENTER_FULLSCREEN animator when the animation selector is not implemented.
+  FullscreenAnimator* animator = [[FullscreenAnimator alloc]
+      initWithStartProgress:0.0
+                      style:FullscreenAnimatorStyle::ENTER_FULLSCREEN];
+  observer()->FullscreenWillAnimate(nullptr, animator);
+  [animator startAnimation];
+  EXPECT_TRUE(AreCGFloatsEqual(element().progress, 0.0));
+  [animator stopAnimation:YES];
 }
