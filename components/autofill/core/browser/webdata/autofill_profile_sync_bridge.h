@@ -29,7 +29,6 @@ class AutofillProfileSyncDifferenceTracker;
 class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
-enum class AutofillProfileSyncChangeOrigin;
 
 // Sync bridge implementation for AUTOFILL_PROFILE model type. Takes care of
 // propagating local autofill profiles to other clients as well as incorporating
@@ -91,9 +90,7 @@ class AutofillProfileSyncBridge
   // Flushes changes accumulated within |tracker| both to local and to sync.
   base::Optional<syncer::ModelError> FlushSyncTracker(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      AutofillProfileSyncDifferenceTracker* tracker,
-      // TODO(crbug.com/904390): Remove |origin| when the investigation is over.
-      AutofillProfileSyncChangeOrigin origin);
+      AutofillProfileSyncDifferenceTracker* tracker);
 
   // Synchronously load sync metadata from the autofill table and pass it to the
   // processor so that it can start tracking changes.
