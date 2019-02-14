@@ -20,8 +20,6 @@
 
 namespace net {
 
-class StreamSocket;
-
 // Keep track of ongoing WebSocket connections in order to satisfy the WebSocket
 // connection throttling requirements described in RFC6455 4.1.2:
 //
@@ -46,6 +44,26 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
     virtual void GotEndpointLock() = 0;
   };
 
+  // LockReleaser calls UnlockEndpoint() when it is destroyed, but only if it
+  // has not already been called. Only one LockReleaser object may exist for
+  // each endpoint at a time.
+  class NET_EXPORT_PRIVATE LockReleaser final {
+   public:
+    LockReleaser(WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
+                 IPEndPoint endpoint);
+    ~LockReleaser();
+
+   private:
+    friend class WebSocketEndpointLockManager;
+
+    // This is null if UnlockEndpoint() has been called before this object was
+    // destroyed.
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;
+    const IPEndPoint endpoint_;
+
+    DISALLOW_COPY_AND_ASSIGN(LockReleaser);
+  };
+
   WebSocketEndpointLockManager();
   ~WebSocketEndpointLockManager();
 
@@ -55,30 +73,12 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   // its destructor is called.
   int LockEndpoint(const IPEndPoint& endpoint, Waiter* waiter);
 
-  // Records the IPEndPoint associated with a particular socket. This is
-  // necessary because TCPClientSocket refuses to return the PeerAddress after
-  // the connection is disconnected. The association will be forgotten when
-  // UnlockSocket() or UnlockEndpoint() is called. The |socket| pointer must not
-  // be deleted between the call to RememberSocket() and the call to
-  // UnlockSocket().
-  void RememberSocket(StreamSocket* socket, const IPEndPoint& endpoint);
-
-  // Removes the socket association that was recorded by RememberSocket(), then
-  // asynchronously releases the lock on the endpoint after a delay. If
-  // appropriate, calls |waiter->GetEndpointLock()| when the lock is
-  // released. Should be called exactly once for each |socket| that was passed
-  // to RememberSocket(). Does nothing if UnlockEndpoint() has been called since
-  // the call to RememberSocket().
-  void UnlockSocket(StreamSocket* socket);
-
   // Asynchronously releases the lock on |endpoint| after a delay. Does nothing
-  // if |endpoint| is not locked.  Removes any socket association that was
-  // recorded with RememberSocket(). If appropriate, calls
-  // |waiter->GotEndpointLock()| when the lock is released.
+  // if |endpoint| is not locked. If a LockReleaser object has been created for
+  // this endpoint, it will be unregistered.
   void UnlockEndpoint(const IPEndPoint& endpoint);
 
-  // Checks that |lock_info_map_| and |socket_lock_info_map_| are empty. For
-  // tests.
+  // Checks that |lock_info_map_| is empty. For tests.
   bool IsEmpty() const;
 
   // Changes the value of the unlock delay. Returns the previous value of the
@@ -104,34 +104,25 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
     // until this object is deleted.
     std::unique_ptr<WaiterQueue> queue;
 
-    // This pointer is only used to identify the last instance of StreamSocket
-    // that was passed to RememberSocket() for this endpoint. It should only be
-    // compared with other pointers. It is never dereferenced and not owned. It
-    // is non-NULL if RememberSocket() has been called for this endpoint since
-    // the last call to UnlockSocket() or UnlockEndpoint().
-    StreamSocket* socket;
+    // This pointer is non-NULL if a LockReleaser object has been constructed
+    // since the last call to UnlockEndpoint().
+    LockReleaser* lock_releaser;
   };
 
   // SocketLockInfoMap requires std::map iterator semantics for LockInfoMap
   // (ie. that the iterator will remain valid as long as the entry is not
   // deleted).
   typedef std::map<IPEndPoint, LockInfo> LockInfoMap;
-  typedef std::map<StreamSocket*, LockInfoMap::iterator> SocketLockInfoMap;
 
+  // Records the association of a LockReleaser with a particular endpoint.
+  void RegisterLockReleaser(LockReleaser* lock_releaser, IPEndPoint endpoint);
   void UnlockEndpointAfterDelay(const IPEndPoint& endpoint);
   void DelayedUnlockEndpoint(const IPEndPoint& endpoint);
-  void EraseSocket(LockInfoMap::iterator lock_info_it);
 
   // If an entry is present in the map for a particular endpoint, then that
   // endpoint is locked. If LockInfo.queue is non-empty, then one or more
   // Waiters are waiting for the lock.
   LockInfoMap lock_info_map_;
-
-  // Store sockets remembered by RememberSocket() and not yet unlocked by
-  // UnlockSocket() or UnlockEndpoint(). Every entry in this map always
-  // references a live entry in lock_info_map_, and the LockInfo::socket member
-  // is non-NULL if and only if there is an entry in this map for the socket.
-  SocketLockInfoMap socket_lock_info_map_;
 
   // Time to wait between a call to Unlock* and actually unlocking the socket.
   base::TimeDelta unlock_delay_;

@@ -18,21 +18,16 @@ namespace {
 
 // StreamSocket wrapper that registers/unregisters the wrapped StreamSocket with
 // a WebSocketEndpointLockManager on creation/destruction.
-class WebSocketStreamSocket : public StreamSocket {
+class WebSocketStreamSocket final : public StreamSocket {
  public:
   WebSocketStreamSocket(
       std::unique_ptr<StreamSocket> wrapped_socket,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       const IPEndPoint& address)
       : wrapped_socket_(std::move(wrapped_socket)),
-        websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager) {
-    websocket_endpoint_lock_manager->RememberSocket(wrapped_socket_.get(),
-                                                    address);
-  }
+        lock_releaser_(websocket_endpoint_lock_manager, address) {}
 
-  ~WebSocketStreamSocket() override {
-    websocket_endpoint_lock_manager_->UnlockSocket(wrapped_socket_.get());
-  }
+  ~WebSocketStreamSocket() override = default;
 
   // Socket implementation:
   int Read(IOBuffer* buf,
@@ -111,7 +106,8 @@ class WebSocketStreamSocket : public StreamSocket {
 
  private:
   std::unique_ptr<StreamSocket> wrapped_socket_;
-  WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
+  WebSocketEndpointLockManager::LockReleaser lock_releaser_;
+
   DISALLOW_COPY_AND_ASSIGN(WebSocketStreamSocket);
 };
 
