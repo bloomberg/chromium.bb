@@ -169,8 +169,7 @@ id CreateTextMarker(BrowserAccessibilityPositionInstance position) {
   AXTextMarkerRef text_marker = AXTextMarkerCreate(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(position.get()),
       sizeof(BrowserAccessibilityPosition));
-  return static_cast<id>(
-      base::mac::CFTypeRefToNSObjectAutorelease(text_marker));
+  return [static_cast<id>(text_marker) autorelease];
 }
 
 // |range| is destructed at the end of this method. |anchor| and |focus| are
@@ -184,8 +183,7 @@ id CreateTextMarkerRange(const AXPlatformRange range) {
       sizeof(BrowserAccessibilityPosition)));
   AXTextMarkerRangeRef marker_range =
       AXTextMarkerRangeCreate(kCFAllocatorDefault, start_marker, end_marker);
-  return static_cast<id>(
-      base::mac::CFTypeRefToNSObjectAutorelease(marker_range));
+  return [static_cast<id>(marker_range) autorelease];
 }
 
 BrowserAccessibilityPositionInstance CreatePositionFromTextMarker(
