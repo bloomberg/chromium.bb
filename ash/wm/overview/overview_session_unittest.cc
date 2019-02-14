@@ -29,6 +29,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -268,16 +269,20 @@ class OverviewSessionTest : public AshTestBase {
     return os->grid_list_[os->selected_grid_index_]->is_selecting();
   }
 
-  views::ImageButton* GetCloseButton(OverviewItem* window) {
-    return window->caption_container_view_->GetCloseButton();
+  views::ImageButton* GetCloseButton(OverviewItem* item) {
+    return item->caption_container_view_->GetCloseButton();
   }
 
-  views::Label* GetLabelView(OverviewItem* window) {
-    return window->caption_container_view_->title_label();
+  views::Label* GetLabelView(OverviewItem* item) {
+    return item->caption_container_view_->title_label();
   }
 
-  views::Label* GetCannotSnapLabelView(OverviewItem* window) {
-    return window->caption_container_view_->cannot_snap_label();
+  views::Label* GetCannotSnapLabelView(OverviewItem* item) {
+    return item->caption_container_view_->cannot_snap_label();
+  }
+
+  RoundedRectView* GetBackdropView(OverviewItem* item) {
+    return item->caption_container_view_->backdrop_view();
   }
 
   // Tests that a window is contained within a given OverviewItem, and that both
@@ -316,10 +321,6 @@ class OverviewSessionTest : public AshTestBase {
 
   views::Widget* minimized_widget(OverviewItem* item) {
     return item->transform_window_.minimized_widget();
-  }
-
-  views::Widget* backdrop_widget(OverviewItem* item) {
-    return item->backdrop_widget_.get();
   }
 
   bool HasMaskForItem(OverviewItem* item) const {
@@ -2151,10 +2152,13 @@ TEST_F(OverviewSessionTest, Backdrop) {
   OverviewItem* tall_item = GetWindowItemForWindow(0, tall.get());
   OverviewItem* normal_item = GetWindowItemForWindow(0, normal.get());
 
-  // Only very tall and very wide windows will have a backdrop.
-  EXPECT_TRUE(backdrop_widget(wide_item));
-  EXPECT_TRUE(backdrop_widget(tall_item));
-  EXPECT_FALSE(backdrop_widget(normal_item));
+  // Only very tall and very wide windows will have a backdrop. The backdrop
+  // only gets created if we need it once during the overview session.
+  ASSERT_TRUE(GetBackdropView(wide_item));
+  EXPECT_TRUE(GetBackdropView(wide_item)->visible());
+  EXPECT_TRUE(GetBackdropView(tall_item));
+  ASSERT_TRUE(GetBackdropView(tall_item)->visible());
+  EXPECT_FALSE(GetBackdropView(normal_item));
 
   display::Screen* screen = display::Screen::GetScreen();
   const display::Display& display = screen->GetPrimaryDisplay();
@@ -2162,11 +2166,13 @@ TEST_F(OverviewSessionTest, Backdrop) {
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
 
-  // After rotation the former wide window will be a normal window and lose its
-  // backdrop.
-  EXPECT_FALSE(backdrop_widget(wide_item));
-  EXPECT_TRUE(backdrop_widget(tall_item));
-  EXPECT_FALSE(backdrop_widget(normal_item));
+  // After rotation the former wide window will be a normal window and its
+  // backdrop will still be there but invisible.
+  ASSERT_TRUE(GetBackdropView(wide_item));
+  EXPECT_FALSE(GetBackdropView(wide_item)->visible());
+  EXPECT_TRUE(GetBackdropView(tall_item));
+  ASSERT_TRUE(GetBackdropView(tall_item)->visible());
+  EXPECT_FALSE(GetBackdropView(normal_item));
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();

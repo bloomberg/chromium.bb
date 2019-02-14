@@ -52,10 +52,6 @@ constexpr float kPreCloseScale = 0.02f;
 
 constexpr int kShadowElevation = 16;
 
-// Values of the backdrop.
-constexpr int kBackdropRoundingDp = 4;
-constexpr SkColor kBackdropColor = SkColorSetARGB(0x24, 0xFF, 0xFF, 0xFF);
-
 // The amount of translation an item animates by when it is closed by using
 // swipe to close.
 constexpr int kSwipeToCloseCloseTranslationDp = 96;
@@ -63,16 +59,6 @@ constexpr int kSwipeToCloseCloseTranslationDp = 96;
 // Before dragging an overview window, the window will be scaled up
 // |kPreDragScale| to indicate its selection.
 constexpr float kDragWindowScale = 0.04f;
-
-std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
-  auto widget = CreateBackgroundWidget(
-      /*root_window=*/nullptr, ui::LAYER_TEXTURED, kBackdropColor,
-      /*border_thickness=*/0, kBackdropRoundingDp, kBackdropColor,
-      /*initial_opacity=*/1.f, parent,
-      /*stack_on_top=*/false, /*accept_events=*/false);
-  widget->GetNativeWindow()->SetName("OverviewBackdrop");
-  return widget;
-}
 
 }  // namespace
 
@@ -296,8 +282,6 @@ void OverviewItem::SetBounds(const gfx::Rect& target_bounds,
   // and UpdateHeaderLayout. Do not apply the shadow for drop target.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE)
     UpdateMaskAndShadow();
-
-  UpdateBackdropBounds();
 }
 
 void OverviewItem::SendAccessibleSelectionEvent() {
@@ -405,48 +389,11 @@ OverviewItem::GetWindowDimensionsType() const {
 }
 
 void OverviewItem::UpdateWindowDimensionsType() {
-  // TODO(oshima|sammiequon|xdai): Use EnableBackdropIfNeeded.
   transform_window_.UpdateWindowDimensionsType();
-  if (GetWindowDimensionsType() ==
-      ScopedOverviewTransformWindow::GridWindowFillMode::kNormal) {
-    // Delete the backdrop widget, if it exists for normal windows.
-    if (backdrop_widget_)
-      backdrop_widget_.reset();
-  } else {
-    // Create the backdrop widget if needed.
-    if (!backdrop_widget_) {
-      backdrop_widget_ =
-          CreateBackdropWidget(transform_window_.window()->parent());
-    }
-  }
-}
-
-void OverviewItem::EnableBackdropIfNeeded() {
-  if (GetWindowDimensionsType() ==
-      ScopedOverviewTransformWindow::GridWindowFillMode::kNormal) {
-    DisableBackdrop();
-    return;
-  }
-  if (!backdrop_widget_) {
-    backdrop_widget_ =
-        CreateBackdropWidget(transform_window_.window()->parent());
-  }
-  UpdateBackdropBounds();
-}
-
-void OverviewItem::DisableBackdrop() {
-  if (backdrop_widget_)
-    backdrop_widget_->Hide();
-}
-
-void OverviewItem::UpdateBackdropBounds() {
-  if (!backdrop_widget_)
-    return;
-
-  gfx::Rect backdrop_bounds = caption_container_view_->backdrop_bounds();
-  ::wm::ConvertRectToScreen(item_widget_->GetNativeWindow(), &backdrop_bounds);
-  backdrop_widget_->SetBounds(backdrop_bounds);
-  backdrop_widget_->Show();
+  const bool show_backdrop =
+      GetWindowDimensionsType() !=
+      ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
+  caption_container_view_->SetBackdropVisibility(show_backdrop);
 }
 
 gfx::Rect OverviewItem::GetBoundsOfSelectedItem() {
@@ -620,13 +567,11 @@ void OverviewItem::UpdateMaskAndShadow() {
   if (!should_show) {
     transform_window_.UpdateMask(false);
     SetShadowBounds(base::nullopt);
-    DisableBackdrop();
     return;
   }
 
   transform_window_.UpdateMask(true);
   SetShadowBounds(transform_window_.GetTransformedBounds());
-  EnableBackdropIfNeeded();
 }
 
 void OverviewItem::OnStartingAnimationComplete() {
@@ -634,7 +579,10 @@ void OverviewItem::OnStartingAnimationComplete() {
   FadeInWidgetAndMaybeSlideOnEnter(
       item_widget_.get(), OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
       /*slide=*/false);
-  EnableBackdropIfNeeded();
+  const bool show_backdrop =
+      GetWindowDimensionsType() !=
+      ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
+  caption_container_view_->SetBackdropVisibility(show_backdrop);
 }
 
 void OverviewItem::SetOpacity(float opacity) {

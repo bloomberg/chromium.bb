@@ -60,6 +60,10 @@ constexpr SkColor kCloseButtonInkDropRippleHighlightColor =
 // The font delta of the overview window title.
 constexpr int kLabelFontDelta = 2;
 
+// Values of the backdrop.
+constexpr int kBackdropRoundingDp = 4;
+constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
+
 void AddChildWithLayer(views::View* parent, views::View* child) {
   child->SetPaintToLayer();
   child->layer()->SetFillsBoundsOpaquely(false);
@@ -305,6 +309,18 @@ void CaptionContainerView::SetHeaderVisibility(HeaderVisibility visibility) {
   AnimateLayerOpacity(header_view_->layer(), visible);
 }
 
+void CaptionContainerView::SetBackdropVisibility(bool visible) {
+  if (!backdrop_view_ && !visible)
+    return;
+
+  if (!backdrop_view_) {
+    backdrop_view_ = new RoundedRectView(kBackdropRoundingDp, kBackdropColor);
+    AddChildWithLayer(this, backdrop_view_);
+    Layout();
+  }
+  backdrop_view_->SetVisible(visible);
+}
+
 void CaptionContainerView::SetCannotSnapLabelVisibility(bool visible) {
   if (!cannot_snap_container_ && !visible)
     return;
@@ -339,8 +355,11 @@ void CaptionContainerView::Layout() {
   listener_button_->SetBoundsRect(bounds);
 
   const int visible_height = close_button_->GetPreferredSize().height();
-  backdrop_bounds_ = bounds;
-  backdrop_bounds_.Inset(0, visible_height, 0, 0);
+  if (backdrop_view_) {
+    gfx::Rect backdrop_bounds = bounds;
+    backdrop_bounds.Inset(0, visible_height, 0, 0);
+    backdrop_view_->SetBoundsRect(backdrop_bounds);
+  }
 
   if (cannot_snap_container_) {
     gfx::Size label_size = cannot_snap_label_->CalculatePreferredSize();
