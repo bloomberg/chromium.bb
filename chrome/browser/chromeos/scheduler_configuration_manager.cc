@@ -7,6 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_params.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -14,6 +16,11 @@
 #include "third_party/cros_system_api/dbus/debugd/dbus-constants.h"
 
 namespace chromeos {
+
+namespace {
+constexpr base::FeatureParam<std::string> kSchedulerConfigurationParam{
+    &features::kSchedulerConfiguration, "config", ""};
+}  // namespace
 
 SchedulerConfigurationManager::SchedulerConfigurationManager(
     DebugDaemonClient* debug_daemon_client,
@@ -34,6 +41,10 @@ SchedulerConfigurationManager::~SchedulerConfigurationManager() {}
 // static
 void SchedulerConfigurationManager::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
+  // Ideally the pref would be registered specifying the default provided via
+  // the feature parameter. This is unfortunately not possible though because
+  // the feature API initialization depends on the local state PrefService, so
+  // this function runs before feature parameters are available.
   registry->RegisterStringPref(prefs::kSchedulerConfiguration, std::string());
 }
 
@@ -55,10 +66,16 @@ void SchedulerConfigurationManager::OnPrefChange() {
     return;
   }
 
+  // Determine the effective configuration name. Prefer the value from local
+  // state if present, feature parameter if otherwise, hard-coded default if
+  // no configuration is present.
   std::string config_name;
   PrefService* local_state = observer_.prefs();
+  std::string feature_param_value = kSchedulerConfigurationParam.Get();
   if (local_state->HasPrefPath(prefs::kSchedulerConfiguration)) {
     config_name = local_state->GetString(prefs::kSchedulerConfiguration);
+  } else if (!feature_param_value.empty()) {
+    config_name = feature_param_value;
   } else {
     config_name = debugd::scheduler_configuration::kPerformanceScheduler;
   }

@@ -453,6 +453,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUsbguard;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUsbbouncer;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kShillSandboxing;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSchedulerConfiguration;
 #endif  // defined(OS_CHROMEOS)
 
 COMPONENT_EXPORT(CHROME_FEATURES)

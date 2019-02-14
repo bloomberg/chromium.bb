@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -77,6 +79,22 @@ TEST_F(SchedulerConfigurationManagerTest, ConfigChange) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(debugd::scheduler_configuration::kPerformanceScheduler,
             debug_daemon_client_.scheduler_configuration_name());
+}
+
+TEST_F(SchedulerConfigurationManagerTest, FinchDefault) {
+  auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  feature_list->InitAndEnableFeatureWithParameters(
+      features::kSchedulerConfiguration, {{"config", "finch"}});
+
+  // Finch parameter selects the default.
+  SchedulerConfigurationManager manager(&debug_daemon_client_, &local_state_);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ("finch", debug_daemon_client_.scheduler_configuration_name());
+
+  // Config values override finch default.
+  local_state_.SetString(prefs::kSchedulerConfiguration, "config");
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ("config", debug_daemon_client_.scheduler_configuration_name());
 }
 
 }  // namespace chromeos
