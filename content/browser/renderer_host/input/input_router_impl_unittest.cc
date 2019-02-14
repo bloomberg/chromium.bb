@@ -480,7 +480,7 @@ class InputRouterImplTestBase : public testing::Test {
                                    source, ack_state);
     EXPECT_EQ(input_router_->AllowedTouchAction(), expected_touch_action);
     EXPECT_EQ(input_router_->touch_action_filter_.white_listed_touch_action(),
-              expected_white_listed_touch_action);
+              expected_white_listed_touch_action.value());
   }
 
   const float radius_x_ = 20.0f;
@@ -512,7 +512,7 @@ class InputRouterImplTest : public InputRouterImplTestBase,
     return input_router_->touch_action_filter_.allowed_touch_action_;
   }
 
-  base::Optional<cc::TouchAction> WhiteListedTouchAction() {
+  cc::TouchAction WhiteListedTouchAction() {
     return input_router_->touch_action_filter_.white_listed_touch_action_;
   }
 
@@ -714,58 +714,79 @@ TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_CONSUMED,
-                              cc::kTouchActionAuto, cc::kTouchActionAuto);
+                              expected_touch_action, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-                              cc::kTouchActionAuto, cc::kTouchActionAuto);
+                              expected_touch_action, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(source,
                               INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE,
-                              cc::kTouchActionAuto, cc::kTouchActionAuto);
+                              expected_touch_action, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-                              cc::kTouchActionAuto, cc::kTouchActionAuto);
+                              expected_touch_action, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_IGNORED,
-                              cc::kTouchActionAuto, cc::kTouchActionAuto);
+                              expected_touch_action, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(source, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
-                              cc::kTouchActionAuto, cc::kTouchActionAuto);
+                              expected_touch_action, cc::kTouchActionAuto);
 }
 
 TEST_P(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
   InputEventAckSource source = compositor_touch_action_enabled_
                                    ? InputEventAckSource::COMPOSITOR_THREAD
                                    : InputEventAckSource::MAIN_THREAD;
+  base::Optional<cc::TouchAction> expected_touch_action;
+  if (!compositor_touch_action_enabled_)
+    expected_touch_action = cc::kTouchActionAuto;
   OnTouchEventAckWithAckState(
       source, INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING,
-      cc::kTouchActionAuto, cc::kTouchActionAuto);
+      expected_touch_action, cc::kTouchActionAuto);
 }
 
 // Tests that touch-events are sent properly.
@@ -2087,13 +2108,11 @@ TEST_P(InputRouterImplTest, TouchActionInCallback) {
       expected_touch_action);
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   base::Optional<cc::TouchAction> allowed_touch_action = AllowedTouchAction();
-  base::Optional<cc::TouchAction> white_listed_touch_action =
-      WhiteListedTouchAction();
+  cc::TouchAction white_listed_touch_action = WhiteListedTouchAction();
   if (compositor_touch_action_enabled_) {
     EXPECT_FALSE(allowed_touch_action.has_value());
-    EXPECT_EQ(expected_touch_action, white_listed_touch_action);
+    EXPECT_EQ(expected_touch_action.value(), white_listed_touch_action);
   } else {
-    EXPECT_FALSE(white_listed_touch_action.has_value());
     EXPECT_EQ(expected_touch_action, allowed_touch_action);
   }
 }
