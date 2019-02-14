@@ -13,6 +13,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Vertical spacing between label and the container view of a cell.
+const CGFloat kLabelCellVerticalSpacing = 11.0;
+}  // namespace
+
 @implementation TableViewImageItem
 
 @synthesize image = _image;
@@ -42,8 +47,11 @@
   }
 
   cell.titleLabel.text = self.title;
-  cell.imageView.backgroundColor = styler.tableViewBackgroundColor;
-  cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
+  UIColor* cellBackgroundColor = styler.cellBackgroundColor
+                                     ? styler.cellBackgroundColor
+                                     : styler.tableViewBackgroundColor;
+  cell.imageView.backgroundColor = cellBackgroundColor;
+  cell.titleLabel.backgroundColor = cellBackgroundColor;
   if (self.textColor) {
     cell.titleLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {
@@ -99,10 +107,10 @@
                          constant:-kTableViewHorizontalSpacing],
       [horizontalStack.topAnchor
           constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:kTableViewVerticalSpacing],
+                         constant:kLabelCellVerticalSpacing],
       [horizontalStack.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kTableViewVerticalSpacing],
+                         constant:-kLabelCellVerticalSpacing],
     ]];
   }
   return self;
