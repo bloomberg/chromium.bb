@@ -937,7 +937,14 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, StorageIdTest) {
                        kUnitTestSuccess);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
+// TODO(crbug.com/902310): Times out in debug builds.
+#ifdef NDEBUG
+#define MAYBE_MultipleCdmTypes MultipeCdmTypes
+#else
+#define MAYBE_MultipleCdmTypes DISABLED_MultipeCdmTypes
+#endif
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MultipleCdmTypes) {
   base::StringPairs empty_query_params;
   RunMediaTestPage("multiple_cdm_types.html", empty_query_params, media::kEnded,
                    true);
