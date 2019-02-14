@@ -11,6 +11,22 @@ cr.exportPath('management');
  */
 management.Extension;
 
+/** @enum {string} */
+management.ReportingType = {
+  SECURITY: 'security',
+  DEVICE: 'device',
+  USER: 'user',
+  EXTENSIONS: 'extensions'
+};
+
+/**
+ * @typedef {{
+ *    messageId: string,
+ *    reportingType: !management.ReportingType,
+ * }}
+ */
+management.BrowserReportingResponse;
+
 cr.define('management', function() {
   /** @interface */
   class ManagementBrowserProxy {
@@ -26,8 +42,8 @@ cr.define('management', function() {
     // </if>
 
     /**
-     * @return {!Promise<!Array<string>>} The list of browser reporting info
-     *     messages.
+     * @return {!Promise<!Array<!management.BrowserReportingResponse>>} The list
+     *     of browser reporting info messages.
      */
     initBrowserReportingInfo() {}
   }

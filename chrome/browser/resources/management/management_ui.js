@@ -2,13 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *    messages: !Array<string>,
+ *    icon: string,
+ * }}
+ */
+management.BrowserReportingData;
+
 Polymer({
   is: 'management-ui',
 
   properties: {
     /**
      * List of messages related to browser reporting.
-     * @private {?Array<string>}
+     * @private {?Array<!management.BrowserReportingData>}
      */
     browserReportingInfo_: Array,
 
@@ -57,12 +65,31 @@ Polymer({
   },
 
   /**
-   * @param {!Array<string>} reportingInfo
+   * @param {!Array<!management.BrowserReportingResponse>} reportingInfo
    * @private
    */
   onBrowserReportingInfoReceived_(reportingInfo) {
+    const reportingInfoMap = reportingInfo.reduce((info, response) => {
+      info[response.reportingType] = info[response.reportingType] || {
+        icon: this.getIconForReportingType_(response.reportingType),
+        messages: []
+      };
+      info[response.reportingType].messages.push(
+          loadTimeData.getString(response.messageId));
+      return info;
+    }, {});
+
+    const reportingTypeOrder = {
+      [management.ReportingType.SECURITY]: 1,
+      [management.ReportingType.EXTENSIONS]: 2,
+      [management.ReportingType.USER]: 3,
+      [management.ReportingType.DEVICE]: 4,
+    };
+
     this.browserReportingInfo_ =
-        reportingInfo.map(id => loadTimeData.getString(id));
+        Object.keys(reportingInfoMap)
+            .sort((a, b) => reportingTypeOrder[a] - reportingTypeOrder[b])
+            .map(reportingType => reportingInfoMap[reportingType]);
   },
 
   /** @private */
@@ -98,5 +125,25 @@ Polymer({
    */
   showExtensionReportingInfo_() {
     return !!this.extensions_ && this.extensions_.length > 0;
+  },
+
+  /**
+   * @param {management.ReportingType} reportingType
+   * @returns {string} The associated icon.
+   * @private
+   */
+  getIconForReportingType_(reportingType) {
+    switch (reportingType) {
+      case management.ReportingType.SECURITY:
+        return 'cr:security';
+      case management.ReportingType.DEVICE:
+        return 'cr:computer';
+      case management.ReportingType.EXTENSIONS:
+        return 'cr:extension';
+      case management.ReportingType.USER:
+        return 'cr:person';
+      default:
+        return 'cr:security';
+    }
   },
 });

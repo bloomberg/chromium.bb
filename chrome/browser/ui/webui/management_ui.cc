@@ -24,6 +24,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
                              IDS_MANAGEMENT_DEVICE_REPORTING);
   source->AddLocalizedString("browserReporting",
                              IDS_MANAGEMENT_BROWSER_REPORTING);
+  source->AddLocalizedString("browserReportingExplanation",
+                             IDS_MANAGEMENT_BROWSER_REPORTING_EXPLANATION);
   source->AddLocalizedString("deviceConfiguration",
                              IDS_MANAGEMENT_DEVICE_CONFIGURATION);
   source->AddLocalizedString("extensionReporting",
@@ -67,13 +69,14 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
       kManagementExtensionReportExtensionsPlugin,
       IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS);
   source->AddLocalizedString(
+      kManagementExtensionReportExtensionsAndPolicies,
+      IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_AND_POLICIES);
+
+  source->AddLocalizedString(
       kManagementExtensionReportSafeBrowsingWarnings,
       IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS);
   source->AddLocalizedString(kManagementExtensionReportPerfCrash,
                              IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH);
-  source->AddLocalizedString(
-      kManagementExtensionReportWebsiteUsageStatistics,
-      IDS_MANAGEMENT_EXTENSION_REPORT_WEBSITE_USAGE_STATISTICS);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
