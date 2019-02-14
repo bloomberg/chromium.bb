@@ -24,13 +24,13 @@ namespace ui {
 
 ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
                            PlatformWindowDelegate* delegate,
-                           zx::eventpair view_token)
+                           fuchsia::ui::gfx::ExportToken view_token)
     : manager_(window_manager),
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
       event_dispatcher_(this),
       scenic_session_(manager_->GetScenic()),
-      view_(&scenic_session_, std::move(view_token), "chromium window"),
+      view_(&scenic_session_, std::move(view_token.value), "chromium window"),
       node_(&scenic_session_),
       input_node_(&scenic_session_),
       render_node_(&scenic_session_) {
@@ -58,13 +58,14 @@ ScenicWindow::~ScenicWindow() {
   manager_->RemoveWindow(window_id_, this);
 }
 
-void ScenicWindow::ExportRenderingEntity(zx::eventpair export_token) {
+void ScenicWindow::ExportRenderingEntity(
+    fuchsia::ui::gfx::ExportToken export_token) {
   scenic::EntityNode export_node(&scenic_session_);
 
   render_node_.DetachChildren();
   render_node_.AddChild(export_node);
 
-  export_node.Export(std::move(export_token));
+  export_node.Export(std::move(export_token.value));
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }

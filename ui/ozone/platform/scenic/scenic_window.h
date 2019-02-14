@@ -5,10 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 #define UI_OZONE_PLATFORM_SCENIC_SCENIC_WINDOW_H_
 
+#include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <fuchsia/ui/input/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/resources.h>
 #include <lib/ui/scenic/cpp/session.h>
-#include <lib/zx/eventpair.h>
 #include <string>
 #include <vector>
 
@@ -34,12 +34,12 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   // |view_token| is passed to Scenic to attach the view to the view tree.
   ScenicWindow(ScenicWindowManager* window_manager,
                PlatformWindowDelegate* delegate,
-               zx::eventpair view_token);
+               fuchsia::ui::gfx::ExportToken view_token);
   ~ScenicWindow() override;
 
   scenic::Session* scenic_session() { return &scenic_session_; }
 
-  void ExportRenderingEntity(zx::eventpair export_token);
+  void ExportRenderingEntity(fuchsia::ui::gfx::ExportToken export_token);
 
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;

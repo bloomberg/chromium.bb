@@ -6,7 +6,7 @@ library chromium.web;
 
 using fuchsia.mem;
 using fuchsia.sys;
-using fuchsia.ui.viewsv1token;
+using fuchsia.ui.gfx;
 
 enum ExecuteMode {
   /// Evaluate the script immediately.
@@ -34,15 +34,14 @@ protocol Frame {
   /// to a the view tree.
   ///
   /// |view_token|: Token for the new view.
-  CreateView2(handle<eventpair> view_token,
-                 request<fuchsia.sys.ServiceProvider>? incoming_services,
-                 fuchsia.sys.ServiceProvider? outgoing_services);
+  CreateView(fuchsia.ui.gfx.ExportToken view_token);
 
   // Deprecated.
-  // TODO(crbug.com/899348): Update all code to use CreateView2()
-  // and remove CreateView().
-  CreateView(request<fuchsia.ui.viewsv1token.ViewOwner> view_owner,
-                request<fuchsia.sys.ServiceProvider>? services);
+  // TODO(crbug.com/899348): Update all code to use CreateView()
+  // and remove CreateView2().
+  CreateView2(handle<eventpair> view_token,
+              request<fuchsia.sys.ServiceProvider>? incoming_services,
+              fuchsia.sys.ServiceProvider? outgoing_services);
 
   /// Returns an interface through which the frame may be navigated to
   /// a desired URL, reloaded, etc.

@@ -81,9 +81,6 @@ WebComponent::WebComponent(
   view_provider_binding_ = std::make_unique<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>(
       service_directory_.get(), this);
-  legacy_view_provider_binding_ = std::make_unique<
-      base::fuchsia::ScopedServiceBinding<fuchsia::ui::viewsv1::ViewProvider>>(
-      service_directory_.get(), this);
 }
 
 void WebComponent::Kill() {
@@ -102,20 +99,11 @@ void WebComponent::CreateView(
   DCHECK(frame_);
   DCHECK(!view_is_bound_);
 
-  frame_->CreateView2(std::move(view_token), std::move(incoming_services),
-                      std::move(outgoing_services));
+  fuchsia::ui::gfx::ExportToken export_token;
+  export_token.value = std::move(view_token);
+  frame_->CreateView(std::move(export_token));
 
   view_is_bound_ = true;
-}
-
-void WebComponent::CreateView(
-    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
-    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) {
-  // Cast the ViewOwner request to view_token. This is temporary hack for
-  // ViewsV2 transition. This version of CreateView() will be removed in the
-  // future.
-  CreateView(zx::eventpair(view_owner.TakeChannel().release()),
-             std::move(services), nullptr);
 }
 
 void WebComponent::DestroyComponent(int termination_exit_code,
