@@ -9,41 +9,41 @@
 std::array<GURL, kOnboardingNtpBackgroundsCount> GetOnboardingNtpBackgrounds() {
   // A set of whitelisted NTP background image URLs that are always considered
   // to be valid URLs that are shown to the user as part of the Onboarding flow.
-  // These backgrounds were handpicked from the Backdrop API.
+  // These backgrounds were handpicked from the Backdrop API based on popularity
+  // and those requiring minimum maintenance and translation work. This list
+  // matches with chrome/browser/ui/webui/welcome/nux/ntp_background_handler.cc.
   const std::array<GURL, kOnboardingNtpBackgroundsCount>
-      kOnboardingNtpBackgrounds = {
-          {// Art
-           GURL(
-               "https://lh4.googleusercontent.com/proxy/"
-               "rh9ut9biDoATqaadvgilbUAkIDo50op0G9056C1TnbfK5063_"
-               "M1OzTyOSfgbHbwcXzWz-UoM19yeObH2gXCX8wB8hVPbc_MXHBMfJWUmpg1Tg0s="
+      kOnboardingNtpBackgrounds = {{
+          // Art
+          GURL("https://lh5.googleusercontent.com/proxy/"
+               "E60bugMrz3Jw0Ty3vD1HqfrrabnAQGlHzIJjRadV1kDS_"
+               "XSE0AtWuMnjW9VPvq1YeyPJK13gZw63TQYvh2RlaZq_"
+               "aQm5xskpsgWW1l67gg3mkYaZr07BQqMV47onKA=w3840-h2160-p-k-no-nd-"
+               "mv"),
+
+          // Cityscape
+          GURL("https://lh4.googleusercontent.com/proxy/"
+               "UOhQwfclsAK8TnXZqoTkh9szHvYOJ3auDH07hZBZeVaaRWvzGaXpaYl60MfCRuW"
+               "_S57gvzBw859pj5Xl2pW_GpfG8k2GhE9LUFNKwA=w3840-h2160-p-k-no-nd-"
+               "mv"),
+
+          // Geometric Shapes
+          GURL("https://lh3.googleusercontent.com/proxy/"
+               "FWOBAVfQYasxV3KURX1VVKem1yOC2iazWAb8csOmqCDwI1CCzAA1zCpnAxR-"
+               "wL2rbfZNcRHbI5b-SZfLASmF7uhJnzrksBWougEGlkw_-4U=w3840-h2160-p-"
+               "k-no-nd-mv"),
+
+          // Landscapes
+          GURL("https://lh3.googleusercontent.com/proxy/"
+               "nMIspgHzTUU0GzmiadmPphBelzF2xy9-tIiejZg3VvJTITxUb-1vILxf-"
+               "IsCfyl94VSn6YvHa8_PiIyR9d3rwD8ZhNdQ1C1rnblP6zy3OaI=w3840-h2160-"
+               "p-k-no-nd-mv"),
+
+          // Life
+          GURL("https://lh3.googleusercontent.com/proxy/"
+               "6gLbz6fLpHWeNGMCg-3SAr4V3qJsZN_Q-VePkM70-"
+               "FbHVROkRKx35pwEenRDVLuRSnQse6MTKo455BPVwULXX42R7VjAKJbm-4ivxQ="
                "w3840-h2160-p-k-no-nd-mv"),
-
-           // Landscape
-           GURL("https://lh6.googleusercontent.com/proxy/"
-                "5YUVHiA1x4KXBMvcnQ_"
-                "fNcsGFQig9vpKgEbH98vc3mIx6963Jawv4WtVMemvIEdCHGpo60iD8t0OfwnHu"
-                "5w"
-                "Y5InXTyqTPZx4a77T7iIFnHti=w3840-h2160-p-k-no-nd-mv"),
-
-           // Cityscape
-           GURL(
-               "https://lh6.googleusercontent.com/proxy/"
-               "Ym39mP3aRahUqQD_W1bks3MdDZx-Mea7_ajAs293LciDm70mFzpsswh_"
-               "QBJVFeUMWYF2jIQFvcBPeEdNAAwBlFNc2PsINAWHXe68Kg=w3840-h2160-p-k-"
-               "no-nd-mv"),
-
-           // Seascape
-           GURL("https://lh4.googleusercontent.com/proxy/"
-                "hl6qyPDq9FBOuU8G1A3X2khJJdAzfccHtIoX7hHtlkR4tgj_"
-                "WJvpj4s8FX8cb8u9R6xhrp96xXJIIFrTK8Rdpqh0tTiSfL5k_OXcWw=w3840-"
-                "h2160-p-k-no-nd-mv"),
-
-           // Geometric forms
-           GURL("https://lh5.googleusercontent.com/proxy/"
-                "Dm41Zdz8s5TnQcIRSCnAXUvHItsB67S7U3DytjCwsIpG9SmJKsVkkBRCK0ODme"
-                "vy"
-                "_M47-2CSAxGzFaiJM3bHaPfVT90Fm6lBbNd2yueqMg=w3840-h2160-p-k-no-"
-                "nd-mv")}};
+      }};
   return kOnboardingNtpBackgrounds;
 }
