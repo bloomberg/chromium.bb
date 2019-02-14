@@ -5750,6 +5750,27 @@
             ]
         }
     ],
+    "history-manipulation-intervention": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "android_webview",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "HistoryManipulationIntervention",
+                    "enable_features": [
+                        "HistoryManipulationIntervention"
+                    ]
+                }
+            ]
+        }
+    ],
     "use-new-media-cache": [
         {
             "platforms": [

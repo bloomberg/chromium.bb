@@ -331,8 +331,12 @@ public class LoadUrlTest {
         validateHeadersValue(awContents, contentsClient, extraHeaders, true);
 
         int currentCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
-        JSUtils.clickOnLinkUsingJs(InstrumentationRegistry.getInstrumentation(), awContents,
-                contentsClient.getOnEvaluateJavaScriptResultHelper(), "click");
+
+        // Using a user gesture for the redirect since the history intervention will not allow to
+        // go back to a page that does a redirect without any user interaction since the page
+        // loaded.
+        JSUtils.clickNodeWithUserGesture(testContainerView.getWebContents(), "click");
+
         contentsClient.getOnPageFinishedHelper().waitForCallback(
                 currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         // No extra headers for the page navigated via clicking.
