@@ -34,7 +34,6 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/logging.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/version.h"
@@ -409,8 +408,6 @@ int main(int argc, char *argv[]) {
         "whitelisted-ips",
         "comma-separated whitelist of remote IP addresses "
         "which are allowed to connect to ChromeDriver",
-        "minimum-chrome-version",
-        "minimum supported Chrome version",
     };
     for (size_t i = 0; i < base::size(kOptionAndDescriptions) - 1; i += 2) {
       options += base::StringPrintf(
@@ -423,11 +420,6 @@ int main(int argc, char *argv[]) {
   bool early_exit = false;
   if (cmd_line->HasSwitch("v") || cmd_line->HasSwitch("version")) {
     printf("ChromeDriver %s\n", kChromeDriverVersion);
-    early_exit = true;
-  }
-  if (cmd_line->HasSwitch("minimum-chrome-version")) {
-    printf("minimum supported Chrome version: %s\n",
-           GetMinimumSupportedChromeVersion().c_str());
     early_exit = true;
   }
   if (early_exit)

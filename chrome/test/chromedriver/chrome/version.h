@@ -7,9 +7,6 @@
 
 #include <string>
 
-extern const int kMinimumSupportedChromeBuildNo;
-extern const int kMinimumSupportedChromeMajorVersion;
-
-std::string GetMinimumSupportedChromeVersion();
+extern const int kSupportedChromeMajorVersion;
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_VERSION_H_
