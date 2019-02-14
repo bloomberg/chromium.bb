@@ -4014,8 +4014,7 @@ class RestoreOnStartupPolicyTest
     // these tests.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringVector argv = command_line->argv();
-    argv.erase(std::remove_if(++argv.begin(), argv.end(), IsNonSwitchArgument),
-               argv.end());
+    base::EraseIf(argv, IsNonSwitchArgument);
     command_line->InitFromArgv(argv);
     ASSERT_TRUE(std::equal(argv.begin(), argv.end(),
                            command_line->argv().begin()));

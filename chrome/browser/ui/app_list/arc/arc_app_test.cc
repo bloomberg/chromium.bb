@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -235,12 +236,9 @@ void ArcAppTest::AddPackage(arc::mojom::ArcPackageInfoPtr package) {
 }
 
 void ArcAppTest::RemovePackage(const std::string& package_name) {
-  fake_packages_.erase(
-      std::remove_if(fake_packages_.begin(), fake_packages_.end(),
-                     [package_name](const auto& package) {
-                       return package->package_name == package_name;
-                     }),
-      fake_packages_.end());
+  base::EraseIf(fake_packages_, [package_name](const auto& package) {
+    return package->package_name == package_name;
+  });
 }
 
 bool ArcAppTest::FindPackage(const std::string& package_name) {

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -210,13 +211,9 @@ void LocalCardMigrationDialogControllerImpl::DeleteCard(
   DCHECK(delete_local_card_callback_);
   delete_local_card_callback_.Run(deleted_card_guid);
 
-  migratable_credit_cards_.erase(
-      std::remove_if(migratable_credit_cards_.begin(),
-                     migratable_credit_cards_.end(),
-                     [&](const auto& card) {
-                       return card.credit_card().guid() == deleted_card_guid;
-                     }),
-      migratable_credit_cards_.end());
+  base::EraseIf(migratable_credit_cards_, [&](const auto& card) {
+    return card.credit_card().guid() == deleted_card_guid;
+  });
 
   if (!HasFailedCard()) {
     view_state_ = LocalCardMigrationDialogState::kFinished;
