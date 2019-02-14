@@ -6347,8 +6347,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(*td->counts);
   av1_zero(rdc->comp_pred_diff);
 
-  // Allow intrabc when screen content tools are enabled.
-  cm->allow_intrabc = cm->allow_screen_content_tools;
   // Reset the flag.
   cpi->intrabc_used = 0;
   // Need to disable intrabc when superres is selected
