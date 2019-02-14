@@ -555,35 +555,63 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
       }
     };
 
-    var volumeInfo =
-        CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
-        CommandUtil.getCurrentVolumeInfo(fileManager);
-    if (!volumeInfo) {
-      errorCallback();
-      return;
-    }
-
-    const label = volumeInfo.label || '';
-    fileManager.volumeManager.unmount(volumeInfo, () => {
+    const successCallback = () => {
       const msg = strf('A11Y_VOLUME_EJECT', label);
       fileManager.ui.speakA11yMessage(msg);
-    }, errorCallback.bind(null, volumeInfo.volumeType));
+    };
+
+    // Find volumes to unmount.
+    let volumes = [];
+    let label = '';
+    const element = event.target;
+    if (element instanceof EntryListItem) {
+      // The element is a group of removable partitions.
+      const entry = element.entry;
+      if (!entry) {
+        errorCallback();
+        return;
+      }
+      // Add child partitions to the list of volumes to be unmounted.
+      volumes = entry.getUIChildren().map(child => child.volumeInfo);
+      label = entry.label || '';
+    } else {
+      // The element is a removable volume with no partitions.
+      const volumeInfo =
+          CommandUtil.getElementVolumeInfo(element, fileManager) ||
+          CommandUtil.getCurrentVolumeInfo(fileManager);
+      if (!volumeInfo) {
+        errorCallback();
+        return;
+      }
+      volumes.push(volumeInfo);
+      label = element.label || '';
+    }
+
+    // Eject volumes of which there may be multiple.
+    for (let i = 0; i < volumes.length; i++) {
+      fileManager.volumeManager.unmount(
+          volumes[i], (i == volumes.length - 1) ? successCallback : () => {},
+          errorCallback.bind(null, volumes[i].volumeType));
+    }
   },
   /**
    * @param {!Event} event Command event.
    * @this {CommandHandler}
    */
   canExecute: function(event, fileManager) {
-    var volumeInfo =
+    const volumeInfo =
         CommandUtil.getElementVolumeInfo(event.target, fileManager) ||
         CommandUtil.getCurrentVolumeInfo(fileManager);
-    if (!volumeInfo) {
+    const entry = event.target.entry;
+    if (!volumeInfo && !entry) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
     }
 
-    var volumeType = volumeInfo.volumeType;
+    const volumeType = (event.target instanceof EntryListItem) ?
+        entry.rootType :
+        volumeInfo.volumeType;
     event.canExecute = (
         volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
         volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
@@ -599,63 +627,6 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
         event.command.label = str('UNMOUNT_DEVICE_BUTTON_LABEL');
         break;
     }
-  }
-});
-
-/**
- * Unmounts external drive which contains partitions.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['unmount-all-partitions'] = /** @type {Command} */ ({
-  /**
-   * @param {!Event} event Command event.
-   * @param {!CommandHandlerDeps} fileManager The file manager instance.
-   */
-  execute: function(event, fileManager) {
-    const errorCallback = () => {
-      fileManager.ui.alertDialog.showHtml(
-          '', str('UNMOUNT_FAILED'), null, null, null);
-    };
-
-    const successCallback = () => {
-      const rootLabel = entry.label || '';
-      const msg = strf('A11Y_VOLUME_EJECT', rootLabel);
-      fileManager.ui.speakA11yMessage(msg);
-    };
-
-    const entry = event.target.entry;
-    if (!entry) {
-      errorCallback();
-      return;
-    }
-
-    // Eject partitions one by one.
-    const partitions = entry.getUIChildren();
-    for (let i = 0; i < partitions.length; i++) {
-      const volumeInfo = partitions[i].volumeInfo;
-      fileManager.volumeManager.unmount(
-          volumeInfo, (i == partitions.length) ? successCallback : () => {},
-          errorCallback);
-    }
-  },
-
-  /**
-   * @param {!Event} event Command event.
-   * @this {CommandHandler}
-   */
-  canExecute: function(event, fileManager) {
-    const entry = event.target.entry;
-    if (!entry) {
-      event.canExecute = false;
-      event.command.setHidden(true);
-      return;
-    }
-
-    event.canExecute =
-        (entry.rootType === VolumeManagerCommon.VolumeType.REMOVABLE &&
-         entry.type_name === 'EntryList');
-    event.command.label = str('UNMOUNT_DEVICE_BUTTON_LABEL');
-    event.command.setHidden(!event.canExecute);
   }
 });
 

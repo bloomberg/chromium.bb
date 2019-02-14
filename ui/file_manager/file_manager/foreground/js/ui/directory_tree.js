@@ -662,13 +662,11 @@ DirectoryItem.prototype.setupEjectButton_ = function(rowElement) {
   ejectButton.setAttribute('tabindex', '0');
   ejectButton.addEventListener('click', (event) => {
     event.stopPropagation();
-    const unmountCommand = (this instanceof EntryListItem) ?
-        cr.doc.querySelector('command#unmount-all-partitions') :
-        cr.doc.querySelector('command#unmount');
+    const command = cr.doc.querySelector('command#unmount');
     // Let's make sure 'canExecute' state of the command is properly set for
     // the root before executing it.
-    unmountCommand.canExecuteChange(this);
-    unmountCommand.execute(this);
+    command.canExecuteChange(this);
+    command.execute(this);
   });
   rowElement.appendChild(ejectButton);
 
@@ -792,7 +790,8 @@ SubDirectoryItem.prototype.updateDriveSpecificIcons = function() {
  * @constructor
  */
 function EntryListItem(rootType, modelItem, tree) {
-  const item = new DirectoryItem(modelItem.label, tree);
+  const item =
+      /** @type {EntryListItem} */ (new DirectoryItem(modelItem.label, tree));
   // Get the original label id defined by TreeItem, before overwriting
   // prototype.
   item.__proto__ = EntryListItem.prototype;
