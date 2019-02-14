@@ -26,11 +26,11 @@ namespace {
 namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = extensions::api::declarative_net_request;
 
-std::unique_ptr<dnr_api::Rule> CreateGenericParsedRule() {
-  auto rule = std::make_unique<dnr_api::Rule>();
-  rule->id = kMinValidID;
-  rule->condition.url_filter = std::make_unique<std::string>("filter");
-  rule->action.type = dnr_api::RULE_ACTION_TYPE_BLOCK;
+dnr_api::Rule CreateGenericParsedRule() {
+  dnr_api::Rule rule;
+  rule.id = kMinValidID;
+  rule.condition.url_filter = std::make_unique<std::string>("filter");
+  rule.action.type = dnr_api::RULE_ACTION_TYPE_BLOCK;
   return rule;
 }
 
@@ -55,8 +55,8 @@ TEST_F(IndexedRuleTest, IDParsing) {
   };
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->id = cases[i].id;
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.id = cases[i].id;
 
     IndexedRule indexed_rule;
     ParseResult result =
@@ -87,10 +87,10 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->priority = std::move(cases[i].priority);
-    rule->action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
-    rule->action.redirect_url =
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.priority = std::move(cases[i].priority);
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
+    rule.action.redirect_url =
         std::make_unique<std::string>("http://google.com");
 
     IndexedRule indexed_rule;
@@ -104,8 +104,8 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
 
   // Ensure priority is ignored for non-redirect rules.
   {
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->priority = std::make_unique<int>(5);
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.priority = std::make_unique<int>(5);
     IndexedRule indexed_rule;
     ParseResult result =
         IndexedRule::CreateIndexedRule(std::move(rule), &indexed_rule);
@@ -137,10 +137,10 @@ TEST_F(IndexedRuleTest, OptionsParsing) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->condition.domain_type = cases[i].domain_type;
-    rule->action.type = cases[i].action_type;
-    rule->condition.is_url_filter_case_sensitive =
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.domain_type = cases[i].domain_type;
+    rule.action.type = cases[i].action_type;
+    rule.condition.is_url_filter_case_sensitive =
         std::move(cases[i].is_url_filter_case_sensitive);
 
     IndexedRule indexed_rule;
@@ -202,9 +202,9 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->condition.resource_types = std::move(cases[i].resource_types);
-    rule->condition.excluded_resource_types =
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.resource_types = std::move(cases[i].resource_types);
+    rule.condition.excluded_resource_types =
         std::move(cases[i].excluded_resource_types);
 
     IndexedRule indexed_rule;
@@ -273,8 +273,8 @@ TEST_F(IndexedRuleTest, UrlFilterParsing) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->condition.url_filter = std::move(cases[i].input_url_filter);
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.url_filter = std::move(cases[i].input_url_filter);
 
     IndexedRule indexed_rule;
     ParseResult result =
@@ -305,9 +305,9 @@ TEST_F(IndexedRuleTest, CaseInsensitiveLowerCased) {
   };
 
   for (auto& test_case : test_cases) {
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->condition.url_filter = std::make_unique<std::string>(kPattern);
-    rule->condition.is_url_filter_case_sensitive =
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.url_filter = std::make_unique<std::string>(kPattern);
+    rule.condition.is_url_filter_case_sensitive =
         std::move(test_case.is_url_filter_case_sensitive);
     IndexedRule indexed_rule;
     ASSERT_EQ(ParseResult::SUCCESS,
@@ -369,9 +369,9 @@ TEST_F(IndexedRuleTest, DomainsParsing) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->condition.domains = std::move(cases[i].domains);
-    rule->condition.excluded_domains = std::move(cases[i].excluded_domains);
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.condition.domains = std::move(cases[i].domains);
+    rule.condition.excluded_domains = std::move(cases[i].excluded_domains);
 
     IndexedRule indexed_rule;
     ParseResult result =
@@ -402,10 +402,10 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
-    std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->action.redirect_url = std::move(cases[i].redirect_url);
-    rule->action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
-    rule->priority = std::make_unique<int>(kMinValidPriority);
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.action.redirect_url = std::move(cases[i].redirect_url);
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
+    rule.priority = std::make_unique<int>(kMinValidPriority);
 
     IndexedRule indexed_rule;
     ParseResult result =

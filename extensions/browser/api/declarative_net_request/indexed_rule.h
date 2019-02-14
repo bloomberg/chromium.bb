@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_INDEXED_RULE_H_
 
 #include <stdint.h>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -35,8 +34,7 @@ struct IndexedRule {
   IndexedRule& operator=(IndexedRule&& other);
 
   static ParseResult CreateIndexedRule(
-      std::unique_ptr<extensions::api::declarative_net_request::Rule>
-          parsed_rule,
+      extensions::api::declarative_net_request::Rule parsed_rule,
       IndexedRule* indexed_rule);
 
   // These fields correspond to the attributes of a flatbuffer UrlRule, as
