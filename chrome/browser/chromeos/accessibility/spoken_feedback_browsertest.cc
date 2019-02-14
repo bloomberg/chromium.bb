@@ -5,6 +5,7 @@
 #include <queue>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -349,8 +350,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TypeInOmnibox) {
   EXPECT_EQ("z", speech_monitor_.GetNextUtterance());
 }
 
-// TODO(https://crbug.com/926038): Failed MSAN test
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_LauncherStateTransition) {
+  // Do not running expand arrow hinting animation to avoid msan test crash.
+  // (See https://crbug.com/926038)
+  app_list::AppListView::SetShortAnimationForTesting(true);
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
@@ -389,11 +392,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_LauncherStateTransition) {
 
   // Check that Launcher, all apps state is announced.
   EXPECT_EQ("Launcher, all apps", speech_monitor_.GetNextUtterance());
+  app_list::AppListView::SetShortAnimationForTesting(false);
 }
 
-// TODO(https://crbug.com/926038): Failed MSAN test
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
                        DISABLED_DisabledFullscreenExpandButton) {
+  // Do not running expand arrow hinting animation to avoid msan test crash.
+  // (See https://crbug.com/926038)
+  app_list::AppListView::SetShortAnimationForTesting(true);
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
@@ -425,6 +431,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   // Make sure the second traversal left is not the expand arrow button.
   SendKeyPressWithSearch(ui::VKEY_LEFT);
   EXPECT_NE("Expand to all apps", speech_monitor_.GetNextUtterance());
+  app_list::AppListView::SetShortAnimationForTesting(false);
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
