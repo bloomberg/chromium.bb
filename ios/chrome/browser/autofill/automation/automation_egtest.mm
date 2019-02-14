@@ -88,7 +88,8 @@ static const int kRecipeRetryLimit = 5;
   bool readSuccess(base::ReadFileToString(path, &json_text));
   GREYAssert(readSuccess, @"Unable to read json file.");
 
-  std::unique_ptr<base::Value> value(base::JSONReader().ReadToValue(json_text));
+  std::unique_ptr<base::Value> value(
+      base::JSONReader::ReadDeprecated(json_text));
 
   GREYAssert(value, @"Unable to parse json file.");
   GREYAssert(value->is_dict(), @"Expecting a dictionary in the JSON file.");

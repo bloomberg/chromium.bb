@@ -146,7 +146,7 @@ void IOSPaymentInstrumentLauncher::ReceiveResponseFromIOSPaymentInstrument(
   base::Base64Decode(base_64_response, &stringified_parameters);
 
   std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(stringified_parameters);
+      base::JSONReader::ReadDeprecated(stringified_parameters);
   if (!value) {
     CompleteLaunchRequest("", "");
     return;
@@ -193,7 +193,7 @@ IOSPaymentInstrumentLauncher::SerializeMethodData(
     for (auto const& data_it : map_it.second) {
       // We insert the stringified data, not the JSON object and only if the
       // corresponding JSON object is valid.
-      if (base::JSONReader().ReadToValue(data_it))
+      if (base::JSONReader::ReadDeprecated(data_it))
         data_list.GetList().emplace_back(data_it);
     }
 

@@ -136,8 +136,15 @@ class BASE_EXPORT JSONReader {
   // Returns an empty string if error_code is JSON_NO_ERROR.
   static std::string ErrorCodeToString(JsonParseError error_code);
 
-  // Non-static version of Read() above.
+  // Work in progress. Please use ReadToValueDeprecated() for now.
+  // https://crbug.com/925165
+  // A new version of ReadToValue() that returns a Value will be available
+  // as soon as all existing callers have been migrated to
+  // ReadToValueDeprecated(). Non-static version of Read() above.
   std::unique_ptr<Value> ReadToValue(StringPiece json);
+
+  // Non-static version of Read() above.
+  std::unique_ptr<Value> ReadToValueDeprecated(StringPiece json);
 
   // Returns the error code if the last call to ReadToValue() failed.
   // Returns JSON_NO_ERROR otherwise.

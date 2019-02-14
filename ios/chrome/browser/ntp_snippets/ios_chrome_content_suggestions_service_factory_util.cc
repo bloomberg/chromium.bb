@@ -71,7 +71,7 @@ void ParseJson(const std::string& json,
                const ntp_snippets::SuccessCallback& success_callback,
                const ntp_snippets::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
+  std::unique_ptr<base::Value> value = json_reader.ReadToValueDeprecated(json);
   if (value) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(success_callback, base::Passed(&value)));

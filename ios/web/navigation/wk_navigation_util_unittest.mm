@@ -53,7 +53,7 @@ int ExtractSessionDict(GURL restore_session_url,
       net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
   int error_code = 0;
-  *session_value = base::JSONReader::ReadAndReturnError(
+  *session_value = base::JSONReader::ReadAndReturnErrorDeprecated(
       session_json, base::JSON_PARSE_RFC, &error_code,
       /*error_msg_out=*/nullptr);
   return error_code;

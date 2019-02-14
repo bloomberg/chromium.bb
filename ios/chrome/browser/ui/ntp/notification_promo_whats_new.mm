@@ -268,7 +268,7 @@ void NotificationPromoWhatsNew::InjectFakePromo(const std::string& promo_id,
       base::ReplaceStringPlaceholders(promo_json, replacements, NULL);
 
   std::unique_ptr<base::Value> value(
-      base::JSONReader::Read(promo_json_filled_in));
+      base::JSONReader::ReadDeprecated(promo_json_filled_in));
   base::DictionaryValue* dict = NULL;
   if (value->GetAsDictionary(&dict)) {
     notification_promo_.InitFromJson(*dict);
