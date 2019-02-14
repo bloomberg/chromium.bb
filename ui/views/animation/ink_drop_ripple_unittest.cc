@@ -40,7 +40,7 @@ enum InkDropRippleTestTypes {
 //    2. Implement set up and tear down code for the new enum value in
 //       InkDropRippleTest() and
 //      ~InkDropRippleTest().
-//    3. Add the new enum value to the INSTANTIATE_TEST_CASE_P) Values list.
+//    3. Add the new enum value to the INSTANTIATE_TEST_SUITE_P) Values list.
 class InkDropRippleTest
     : public testing::TestWithParam<InkDropRippleTestTypes> {
  public:
@@ -92,10 +92,10 @@ InkDropRippleTest::~InkDropRippleTest() {}
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(,
-                        InkDropRippleTest,
-                        testing::Values(SQUARE_INK_DROP_RIPPLE,
-                                        FLOOD_FILL_INK_DROP_RIPPLE));
+INSTANTIATE_TEST_SUITE_P(,
+                         InkDropRippleTest,
+                         testing::Values(SQUARE_INK_DROP_RIPPLE,
+                                         FLOOD_FILL_INK_DROP_RIPPLE));
 
 TEST_P(InkDropRippleTest, InitialStateAfterConstruction) {
   EXPECT_EQ(views::InkDropState::HIDDEN,

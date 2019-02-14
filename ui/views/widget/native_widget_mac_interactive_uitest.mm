@@ -322,9 +322,9 @@ TEST_F(NativeWidgetMacInteractiveUITest, GlobalNSTextInputContextUpdates) {
   base::RunLoop().RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(NativeWidgetMacInteractiveUITestInstance,
-                        NativeWidgetMacInteractiveUITest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(NativeWidgetMacInteractiveUITestInstance,
+                         NativeWidgetMacInteractiveUITest,
+                         ::testing::Bool());
 
 }  // namespace test
 }  // namespace views

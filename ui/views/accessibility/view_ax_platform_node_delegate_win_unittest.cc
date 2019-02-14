@@ -165,9 +165,9 @@ class ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag
   DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag,
+                         testing::Bool());
 
 TEST_P(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag, AuraChildWidgets) {
   // Create the parent widget.

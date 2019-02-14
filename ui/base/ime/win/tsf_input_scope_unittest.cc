@@ -99,9 +99,9 @@ TEST_P(TSFInputScopeTest, GetInputScopes) {
     EXPECT_EQ(test_case.expected_input_scopes[i], input_scopes[i]);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        TSFInputScopeTest,
-                        ::testing::ValuesIn(kGetInputScopesTestCases));
+INSTANTIATE_TEST_SUITE_P(,
+                         TSFInputScopeTest,
+                         ::testing::ValuesIn(kGetInputScopesTestCases));
 
 }  // namespace
 }  // namespace ui

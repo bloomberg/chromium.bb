@@ -427,10 +427,10 @@ TEST_P(MenuRunnerCocoaTest, ComboboxAnchoring) {
   EXPECT_EQ(combobox_rect.right(), last_anchor_frame_.origin.x);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MenuRunnerCocoaTest,
-                        ::testing::Values(MenuType::NATIVE, MenuType::VIEWS),
-                        &MenuTypeToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         MenuRunnerCocoaTest,
+                         ::testing::Values(MenuType::NATIVE, MenuType::VIEWS),
+                         &MenuTypeToString);
 
 }  // namespace test
 }  // namespace views

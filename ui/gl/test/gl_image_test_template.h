@@ -73,7 +73,7 @@ class GLImageTest : public testing::Test {
   GLImageTestDelegate delegate_;
 };
 
-TYPED_TEST_CASE_P(GLImageTest);
+TYPED_TEST_SUITE_P(GLImageTest);
 
 TYPED_TEST_P(GLImageTest, Create) {
   if (this->delegate_.SkipTest())
@@ -104,13 +104,13 @@ TYPED_TEST_P(GLImageTest, Create) {
 
 // The GLImageTest test case verifies the behaviour that is expected from a
 // GLImage in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GLImageTest, Create);
+REGISTER_TYPED_TEST_SUITE_P(GLImageTest, Create);
 
 template <typename GLImageTestDelegate>
 class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
 
 // This test verifies that odd-sized GLImages can be created and destroyed.
-TYPED_TEST_CASE_P(GLImageOddSizeTest);
+TYPED_TEST_SUITE_P(GLImageOddSizeTest);
 
 TYPED_TEST_P(GLImageOddSizeTest, Create) {
   if (this->delegate_.SkipTest())
@@ -131,14 +131,14 @@ TYPED_TEST_P(GLImageOddSizeTest, Create) {
 
 // The GLImageTest test case verifies the behaviour that is expected from a
 // GLImage in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GLImageOddSizeTest, Create);
+REGISTER_TYPED_TEST_SUITE_P(GLImageOddSizeTest, Create);
 
 template <typename GLImageTestDelegate>
 class GLImageZeroInitializeTest : public GLImageTest<GLImageTestDelegate> {};
 
 // This test verifies that if an uninitialized image is bound to a texture, the
 // result is zero-initialized.
-TYPED_TEST_CASE_P(GLImageZeroInitializeTest);
+TYPED_TEST_SUITE_P(GLImageZeroInitializeTest);
 
 TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   if (this->delegate_.SkipTest())
@@ -187,12 +187,12 @@ TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   glDeleteFramebuffersEXT(1, &framebuffer);
 }
 
-REGISTER_TYPED_TEST_CASE_P(GLImageZeroInitializeTest, ZeroInitialize);
+REGISTER_TYPED_TEST_SUITE_P(GLImageZeroInitializeTest, ZeroInitialize);
 
 template <typename GLImageTestDelegate>
 class GLImageBindTest : public GLImageTest<GLImageTestDelegate> {};
 
-TYPED_TEST_CASE_P(GLImageBindTest);
+TYPED_TEST_SUITE_P(GLImageBindTest);
 
 TYPED_TEST_P(GLImageBindTest, BindTexImage) {
   if (this->delegate_.SkipTest())
@@ -237,12 +237,12 @@ TYPED_TEST_P(GLImageBindTest, BindTexImage) {
   glDeleteFramebuffersEXT(1, &framebuffer);
 }
 
-REGISTER_TYPED_TEST_CASE_P(GLImageBindTest, BindTexImage);
+REGISTER_TYPED_TEST_SUITE_P(GLImageBindTest, BindTexImage);
 
 template <typename GLImageTestDelegate>
 class GLImageCopyTest : public GLImageTest<GLImageTestDelegate> {};
 
-TYPED_TEST_CASE_P(GLImageCopyTest);
+TYPED_TEST_SUITE_P(GLImageCopyTest);
 
 TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   if (this->delegate_.SkipTest())
@@ -307,7 +307,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 
 // The GLImageCopyTest test case verifies that the GLImage implementation
 // handles CopyTexImage correctly.
-REGISTER_TYPED_TEST_CASE_P(GLImageCopyTest, CopyTexImage);
+REGISTER_TYPED_TEST_SUITE_P(GLImageCopyTest, CopyTexImage);
 
 }  // namespace gl
 

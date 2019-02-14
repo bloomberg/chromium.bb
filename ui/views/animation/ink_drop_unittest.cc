@@ -76,9 +76,9 @@ InkDropType InkDropTest::GetInkDropType() const {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(,
-                        InkDropTest,
-                        testing::Values(INK_DROP_STUB, INK_DROP_IMPL));
+INSTANTIATE_TEST_SUITE_P(,
+                         InkDropTest,
+                         testing::Values(INK_DROP_STUB, INK_DROP_IMPL));
 
 TEST_P(InkDropTest,
        VerifyInkDropLayersRemovedAfterDestructionWhenRippleIsActive) {

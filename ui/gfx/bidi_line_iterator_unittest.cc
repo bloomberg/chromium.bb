@@ -141,7 +141,7 @@ TEST_P(BiDiLineIteratorTest, RTLPunctuationNoCustomBehavior) {
   EXPECT_EQ(1, level);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     BiDiLineIteratorTest,
     ::testing::Values(base::i18n::TextDirection::LEFT_TO_RIGHT,
