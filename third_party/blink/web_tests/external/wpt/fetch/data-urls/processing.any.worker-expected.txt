@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 71 tests; 45 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 71 tests; 46 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup.
 PASS "data://test/,X"
 FAIL "data://test:test/,X" assert_unreached: Should have rejected: undefined Reached unreachable code
@@ -49,7 +49,7 @@ FAIL "data:x/x;base64;charset=x,WA" assert_array_equals: lengths differ, expecte
 PASS "data:x/x;base64;charset=x;base64,WA"
 FAIL "data:x/x;base64;base64x,WA" assert_array_equals: lengths differ, expected 2 got 1
 PASS "data:;base64,W%20A"
-FAIL "data:;base64,W%0CA" promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+PASS "data:;base64,W%0CA"
 PASS "data:x;base64x,WA"
 FAIL "data:x;base64;x,WA" assert_array_equals: lengths differ, expected 2 got 1
 PASS "data:x;base64=x,WA"
