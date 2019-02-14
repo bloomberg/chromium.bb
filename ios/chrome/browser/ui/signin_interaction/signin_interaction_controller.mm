@@ -138,7 +138,7 @@ using signin_ui::CompletionCallback;
 - (void)reAuthenticateWithCompletion:(CompletionCallback)completion {
   signin_metrics::LogSigninAccessPointStarted(accessPoint_, promoAction_);
   completionCallback_ = [completion copy];
-  AccountInfo accountInfo =
+  CoreAccountInfo accountInfo =
       IdentityManagerFactory::GetForBrowserState(browserState_)
           ->GetPrimaryAccountInfo();
   std::string emailToReauthenticate = accountInfo.email;
