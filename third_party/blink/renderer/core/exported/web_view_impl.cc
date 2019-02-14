@@ -3450,4 +3450,14 @@ void WebViewImpl::DeferMainFrameUpdateForTesting() {
   scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
 }
 
+void WebViewImpl::StartDeferringCommits() {
+  if (layer_tree_view_)
+    layer_tree_view_->StartDeferringCommits();
+}
+
+void WebViewImpl::StopDeferringCommits() {
+  if (layer_tree_view_)
+    layer_tree_view_->StopDeferringCommits();
+}
+
 }  // namespace blink

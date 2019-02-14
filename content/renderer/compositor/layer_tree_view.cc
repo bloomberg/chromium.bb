@@ -502,6 +502,14 @@ LayerTreeView::DeferMainFrameUpdate() {
   return layer_tree_host_->DeferMainFrameUpdate();
 }
 
+void LayerTreeView::StartDeferringCommits() {
+  layer_tree_host_->StartDeferringCommits();
+}
+
+void LayerTreeView::StopDeferringCommits() {
+  layer_tree_host_->StopDeferringCommits();
+}
+
 int LayerTreeView::LayerTreeId() const {
   return layer_tree_host_->GetId();
 }

@@ -931,11 +931,19 @@ void ChromeClientImpl::SetEventListenerProperties(
 }
 
 void ChromeClientImpl::BeginLifecycleUpdates() {
-  web_view_->StopDeferringCommits();
+  web_view_->StopDeferringMainFrameUpdate();
   // The WidgetClient is null for some WebViews, in which case they can not
   // composite.
   if (web_view_->WidgetClient())
     web_view_->WidgetClient()->ScheduleAnimation();
+}
+
+void ChromeClientImpl::StartDeferringCommits() {
+  web_view_->StartDeferringCommits();
+}
+
+void ChromeClientImpl::StopDeferringCommits() {
+  web_view_->StopDeferringCommits();
 }
 
 cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(

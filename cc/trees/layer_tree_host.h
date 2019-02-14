@@ -236,6 +236,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // StopDeferringCommits is called.
   std::unique_ptr<ScopedDeferMainFrameUpdate> DeferMainFrameUpdate();
 
+  // Prevents the proxy from committing the layer tree to the compositor,
+  // while still allowing main frame lifecycle updates.
+  void StartDeferringCommits();
+  void StopDeferringCommits();
+
   // Returns whether there are any outstanding ScopedDeferMainFrameUpdate,
   // though commits may be deferred also when the local_surface_id_from_parent()
   // is not valid.

@@ -168,6 +168,7 @@ _CONFIG = [
             # Feature list checking.
             'base::Feature.*',
             'base::FEATURE_.+',
+            "base::GetFieldTrial.*",
             'features::.+',
 
             # PartitionAlloc

@@ -143,6 +143,11 @@ class WebLayerTreeView {
     return nullptr;
   }
 
+  // Start and Stop defering commits to the compositor. Defering commits
+  // allows document lifecycle updates but does not commit the layer tree.
+  virtual void StartDeferringCommits() {}
+  virtual void StopDeferringCommits() {}
+
   struct ViewportLayers {
     cc::ElementId overscroll_elasticity_element_id;
     scoped_refptr<cc::Layer> page_scale;
