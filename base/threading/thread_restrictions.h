@@ -125,6 +125,9 @@ class StatisticsProviderImpl;
 namespace chrome_browser_net {
 class Predictor;
 }
+namespace chrome_cleaner {
+class SystemReportComponent;
+}
 namespace content {
 class BrowserGpuChannelHostFactory;
 class BrowserMainLoop;
@@ -373,6 +376,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   // Allowed usage:
   friend class SimpleThread;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
+  friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
   friend class content::DWriteFontLookupTableBuilder;
