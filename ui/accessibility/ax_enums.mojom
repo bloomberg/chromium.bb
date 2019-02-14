@@ -340,6 +340,9 @@ enum Action {
    // Return the content of this image object in the image_data attribute.
   kGetImageData,
 
+  // Gets the bounding rect for a range of text.
+  kGetTextLocation,
+
    // Given a point, find the object it corresponds to and fire a
    // |AXActionData.hit_test_event_to_fire| event on it in response.
   kHitTest,
@@ -390,9 +393,7 @@ enum Action {
    // Replace the value of the control with AXActionData::value and
    // reset the selection, if applicable.
   kSetValue,
-
   kShowContextMenu,
-  kGetTextLocation,
 };
 
 enum ActionFlags {
