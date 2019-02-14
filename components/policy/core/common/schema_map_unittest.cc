@@ -185,6 +185,10 @@ TEST_F(SchemaMapTest, FilterBundle) {
   // Merged twice so this causes a conflict.
   expected_bundle.Get(chrome_ns)
       .GetMutable("ChromePolicy")
+      ->AddConflictingPolicy(
+          *expected_bundle.Get(chrome_ns).Get("ChromePolicy"));
+  expected_bundle.Get(chrome_ns)
+      .GetMutable("ChromePolicy")
       ->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 
