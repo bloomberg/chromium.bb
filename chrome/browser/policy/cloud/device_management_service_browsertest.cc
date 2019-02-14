@@ -57,7 +57,7 @@ void ConstructResponse(const std::string& request_data,
   } else if (request.has_unregister_request()) {
     response.mutable_unregister_response();
   } else if (request.has_policy_request()) {
-    response.mutable_policy_response()->add_response();
+    response.mutable_policy_response()->add_responses();
   } else if (request.has_auto_enrollment_request()) {
     response.mutable_auto_enrollment_response();
   } else if (request.has_app_install_report_request()) {
@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
   job->SetClientID("testid");
   em::DeviceServiceApiAccessRequest* request =
       job->GetRequest()->mutable_service_api_access_request();
-  request->add_auth_scope("authScope4Test");
+  request->add_auth_scopes("authScope4Test");
   request->set_oauth2_client_id("oauth2ClientId4Test");
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
   job->SetClientID("testid");
   em::DevicePolicyRequest* request =
       job->GetRequest()->mutable_policy_request();
-  request->add_request()->set_policy_type(dm_protocol::kChromeUserPolicyType);
+  request->add_requests()->set_policy_type(dm_protocol::kChromeUserPolicyType);
   job->Start(base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
                         base::Unretained(this)));
   run_loop.Run();

@@ -167,7 +167,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     job->SetOAuthTokenParameter(kOAuthToken);
     job->SetClientID(kClientID);
     em::PolicyFetchRequest* fetch_request =
-        job->GetRequest()->mutable_policy_request()->add_request();
+        job->GetRequest()->mutable_policy_request()->add_requests();
     fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
     job->SetRetryCallback(base::Bind(
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));
@@ -184,7 +184,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
     job->SetClientID(kClientID);
     job->SetCritical(true);
     em::PolicyFetchRequest* fetch_request =
-        job->GetRequest()->mutable_policy_request()->add_request();
+        job->GetRequest()->mutable_policy_request()->add_requests();
     fetch_request->set_policy_type(dm_protocol::kChromeUserPolicyType);
     job->SetRetryCallback(base::Bind(
         &DeviceManagementServiceTestBase::OnJobRetry, base::Unretained(this)));

@@ -64,21 +64,21 @@ using Events = std::map<std::string, std::vector<em::AppInstallReportLogEvent>>;
 
 bool ContainsSameEvents(const Events& expected,
                         const em::AppInstallReportRequest& actual) {
-  if (actual.app_install_report_size() != static_cast<int>(expected.size())) {
+  if (actual.app_install_reports_size() != static_cast<int>(expected.size())) {
     return false;
   }
   for (const auto& expected_app_log : expected) {
     bool app_found = false;
-    for (int i = 0; i < actual.app_install_report_size(); ++i) {
-      const auto& actual_app_log = actual.app_install_report(i);
+    for (int i = 0; i < actual.app_install_reports_size(); ++i) {
+      const auto& actual_app_log = actual.app_install_reports(i);
       if (actual_app_log.package() == expected_app_log.first) {
-        if (actual_app_log.log_size() !=
+        if (actual_app_log.logs_size() !=
             static_cast<int>(expected_app_log.second.size())) {
           return false;
         }
         for (int j = 0; j < static_cast<int>(expected_app_log.second.size());
              ++j) {
-          if (actual_app_log.log(j).SerializePartialAsString() !=
+          if (actual_app_log.logs(j).SerializePartialAsString() !=
               expected_app_log.second[j].SerializePartialAsString()) {
             return false;
           }

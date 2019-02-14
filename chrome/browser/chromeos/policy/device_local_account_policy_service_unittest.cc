@@ -394,7 +394,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
 
   em::DeviceManagementRequest request;
   em::DeviceManagementResponse response;
-  response.mutable_policy_response()->add_response()->CopyFrom(
+  response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   EXPECT_CALL(mock_device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
@@ -412,12 +412,12 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   Mock::VerifyAndClearExpectations(&service_observer_);
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
   EXPECT_TRUE(request.has_policy_request());
-  ASSERT_EQ(2, request.policy_request().request_size());
+  ASSERT_EQ(2, request.policy_request().requests_size());
 
   const em::PolicyFetchRequest* public_account =
-      &request.policy_request().request(0);
+      &request.policy_request().requests(0);
   const em::PolicyFetchRequest* extensions =
-      &request.policy_request().request(1);
+      &request.policy_request().requests(1);
   // The order is not guarateed.
   if (extensions->policy_type() ==
       dm_protocol::kChromePublicAccountPolicyType) {
@@ -458,7 +458,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   ASSERT_TRUE(broker->core()->service());
 
   em::DeviceManagementResponse response;
-  response.mutable_policy_response()->add_response()->CopyFrom(
+  response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   EXPECT_CALL(mock_device_management_service_, CreateJob(_, _))
       .WillOnce(mock_device_management_service_.SucceedJob(response));
@@ -959,7 +959,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   ASSERT_TRUE(request_job);
   em::DeviceManagementResponse response;
   device_local_account_policy_.Build();
-  response.mutable_policy_response()->add_response()->CopyFrom(
+  response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   request_job->SendResponse(DM_STATUS_SUCCESS, response);
   FlushDeviceSettings();

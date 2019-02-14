@@ -208,7 +208,7 @@ class BlockingLoginTest
   // Returns the body of the fetch response from the policy server.
   std::string GetPolicyResponse() {
     em::DeviceManagementResponse response;
-    response.mutable_policy_response()->add_response();
+    response.mutable_policy_response()->add_responses();
     std::string data;
     EXPECT_TRUE(response.SerializeToString(&data));
     return data;

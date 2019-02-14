@@ -240,7 +240,7 @@ message DeviceCertUploadResponse {}
 // Request to access a Google service with the given scope.
 message DeviceServiceApiAccessRequest {
   // The list of auth scopes the device requests from DMServer.
-  repeated string auth_scope = 1;
+  repeated string auth_scopes = 1;
 
   // OAuth2 client ID to which the returned authorization code is bound.
   optional string oauth2_client_id = 2;
@@ -648,16 +648,16 @@ message PublicKeyVerificationData {
 
 // Request from device to server for reading policies.
 message DevicePolicyRequest {
-  // The policy fetch request.  If this field exists, the request must
-  // comes from a non-TT client.  The repeated field allows client to
-  // request multiple policies for better performance.
-  repeated PolicyFetchRequest request = 3;
+  // The policy fetch requests.  If this field exists, the requests must come
+  // from a non-TT client.  The repeated field allows clients to request
+  // multiple policies for better performance.
+  repeated PolicyFetchRequest requests = 3;
 }
 
 // Response from server to device for reading policies.
 message DevicePolicyResponse {
-  // The policy fetch response.
-  repeated PolicyFetchResponse response = 3;
+  // The policy fetch responses.
+  repeated PolicyFetchResponse responses = 3;
 }
 
 message TimePeriod {
@@ -817,7 +817,7 @@ message BatteryInfo {
   optional int64 full_charge_capacity = 5;
   optional int32 cycle_count = 6;
   // Last sampling data.
-  repeated BatterySample sample = 7;
+  repeated BatterySample samples = 7;
   // Designed minimum output voltage (mV)
   optional int32 design_min_voltage = 9;
 }
@@ -862,12 +862,12 @@ message ThermalSample {
 message ThermalInfo {
   reserved 2;
   optional string label = 1;
-  repeated ThermalSample sample = 3;
+  repeated ThermalSample samples = 3;
 }
 
 // Status for various on-board components
 message BoardStatus {
-  repeated ThermalInfo thermal = 1;
+  repeated ThermalInfo thermal_infos = 1;
 }
 
 // Report device level status.
@@ -888,32 +888,32 @@ message DeviceStatusReportRequest {
   optional string browser_version = 5;
 
   // A list of periods when the device was active, aggregated by day by user.
-  repeated ActiveTimePeriod active_period = 6;
+  repeated ActiveTimePeriod active_periods = 6;
 
   // List of network interfaces.
-  repeated NetworkInterface network_interface = 8;
+  repeated NetworkInterface network_interfaces = 8;
 
   // List of recent device users, in descending order by last login time.
-  repeated DeviceUser user = 9;
+  repeated DeviceUser users = 9;
 
   // Disk space + other info about mounted/connected volumes.
-  repeated VolumeInfo volume_info = 10;
+  repeated VolumeInfo volume_infos = 10;
 
   // List of visible/configured networks
-  repeated NetworkState network_state = 11;
+  repeated NetworkState network_states = 11;
 
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
-  repeated int32 cpu_utilization_pct = 12;
+  repeated int32 cpu_utilization_pct_samples = 12;
 
   // Total RAM on the device.
   optional int64 system_ram_total = 14;
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
-  repeated int64 system_ram_free = 15;
+  repeated int64 system_ram_free_samples = 15;
 
   // Samples of CPU temperatures in Celsius, plus associated labels
   // identifying which CPU produced the temperature measurement.
-  repeated CPUTempInfo cpu_temp_info = 16;
+  repeated CPUTempInfo cpu_temp_infos = 16;
 
   // This field is set only when an OS update is needed because of the required
   // platform version of an updated kiosk app is different from the current
@@ -1303,7 +1303,7 @@ message DeviceAutoEnrollmentResponse {
   // enrollment should be optional.
   // The format of each entry depends on the |enrollment_check_type| that was
   // set in the DeviceAutoEnrollmentRequest.
-  repeated bytes hash = 2;
+  repeated bytes hashes = 2;
 }
 
 // Sent by the client to the server. The device management server keeps a
@@ -1327,7 +1327,7 @@ message DeviceStateKeyUpdateRequest {
   // algorithm that takes stable device identifiers as an input and produces a
   // key as the output, possibly by running the identifiers through a
   // cryptographic hash function such as SHA-256.
-  repeated bytes server_backed_state_key = 1;
+  repeated bytes server_backed_state_keys = 1;
 }
 
 // Server to client message carrying the device state response. Because the
@@ -1759,7 +1759,7 @@ message CheckDeviceLicenseResponse {
   // contains more than one entry then device should display a screen asking
   // user to choose license type and send selected license type value in the
   // DeviceRegisterRequest.license_type field.
-  repeated LicenseAvailability license_availability = 2;
+  repeated LicenseAvailability license_availabilities = 2;
 }
 
 // Sign in an Active Directory user using SAML SSO. The device management server
@@ -1808,7 +1808,7 @@ message TpmStatusInfo {
 // System state included with some log events.
 message SystemState {
   // VolumeInfo is reused from existing Chrome reporting.
-  repeated VolumeInfo volume_info = 1;
+  repeated VolumeInfo volume_infos = 1;
 }
 
 // A single entry in the push-install log for an app.
@@ -1894,13 +1894,13 @@ message AppInstallReport {
   optional bool incomplete = 2;
 
   // Log events for the app.
-  repeated AppInstallReportLogEvent log = 3;
+  repeated AppInstallReportLogEvent logs = 3;
 }
 
 // Push-install logs for all apps.
 message AppInstallReportRequest {
   // Log buckets for each app.
-  repeated AppInstallReport app_install_report = 1;
+  repeated AppInstallReport app_install_reports = 1;
 }
 
 // Response from server after receiving a report on the status of app

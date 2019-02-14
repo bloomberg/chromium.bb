@@ -160,7 +160,7 @@ void SingleAppInstallEventLog::Serialize(em::AppInstallReport* report) {
   report->set_package(package_);
   report->set_incomplete(incomplete_);
   for (const auto& event : events_) {
-    em::AppInstallReportLogEvent* const log_event = report->add_log();
+    em::AppInstallReportLogEvent* const log_event = report->add_logs();
     *log_event = event;
   }
   serialized_entries_ = events_.size();

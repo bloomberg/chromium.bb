@@ -684,7 +684,7 @@ bool AutoEnrollmentClientImpl::OnBucketDownloadRequestCompletion(
     }
   } else {
     // Server should have sent down a list of hashes to try.
-    has_server_state_ = IsIdHashInProtobuf(enrollment_response.hash());
+    has_server_state_ = IsIdHashInProtobuf(enrollment_response.hashes());
     // Cache the current decision in local_state, so that it is reused in case
     // the device reboots before enrolling.
     local_state_->SetBoolean(prefs::kShouldAutoEnroll, has_server_state_);

@@ -44,27 +44,27 @@ class AppInstallEventLogTest : public testing::Test {
 
   void VerifyTenLogEntriesEach(int first_app_timestamp_offset,
                                int second_app_timestamp_offset) {
-    ASSERT_EQ(2, report_.app_install_report_size());
+    ASSERT_EQ(2, report_.app_install_reports_size());
     const int first_app_index =
-        report_.app_install_report(0).package() == kFirstPackageName ? 0 : 1;
+        report_.app_install_reports(0).package() == kFirstPackageName ? 0 : 1;
     const int second_app_index = 1 - first_app_index;
 
     const em::AppInstallReport& first_app_log =
-        report_.app_install_report(first_app_index);
+        report_.app_install_reports(first_app_index);
     EXPECT_EQ(kFirstPackageName, first_app_log.package());
-    ASSERT_EQ(10, first_app_log.log_size());
+    ASSERT_EQ(10, first_app_log.logs_size());
     for (int i = 0; i < 10; ++i) {
       EXPECT_EQ(i + first_app_timestamp_offset,
-                first_app_log.log(i).timestamp());
+                first_app_log.logs(i).timestamp());
     }
 
     const em::AppInstallReport& second_app_log =
-        report_.app_install_report(second_app_index);
+        report_.app_install_reports(second_app_index);
     EXPECT_EQ(kSecondPackageName, second_app_log.package());
-    ASSERT_EQ(10, second_app_log.log_size());
+    ASSERT_EQ(10, second_app_log.logs_size());
     for (int i = 0; i < 10; ++i) {
       EXPECT_EQ(i + second_app_timestamp_offset,
-                second_app_log.log(i).timestamp());
+                second_app_log.logs(i).timestamp());
     }
   }
 
@@ -88,11 +88,11 @@ class AppInstallEventLogTest : public testing::Test {
   }
 
   void VerifyOneLogEntryEachPlusFirstApp(int first_app_log_entries) {
-    ASSERT_EQ(kMaxLogs, report_.app_install_report_size());
+    ASSERT_EQ(kMaxLogs, report_.app_install_reports_size());
     std::map<std::string, em::AppInstallReport> logs;
     for (int i = 0; i < kMaxLogs; ++i) {
-      logs[report_.app_install_report(i).package()] =
-          report_.app_install_report(i);
+      logs[report_.app_install_reports(i).package()] =
+          report_.app_install_reports(i);
     }
 
     for (int i = 0; i < kMaxLogs - 1; ++i) {
@@ -101,20 +101,20 @@ class AppInstallEventLogTest : public testing::Test {
       const auto log = logs.find(package.str());
       ASSERT_NE(logs.end(), log);
       EXPECT_EQ(package.str(), log->second.package());
-      ASSERT_EQ(1, log->second.log_size());
-      EXPECT_EQ(i, log->second.log(0).timestamp());
+      ASSERT_EQ(1, log->second.logs_size());
+      EXPECT_EQ(i, log->second.logs(0).timestamp());
       EXPECT_EQ(em::AppInstallReportLogEvent::SUCCESS,
-                log->second.log(0).event_type());
+                log->second.logs(0).event_type());
     }
 
     const auto log = logs.find(kFirstPackageName);
     ASSERT_NE(logs.end(), log);
     EXPECT_EQ(kFirstPackageName, log->second.package());
-    ASSERT_EQ(first_app_log_entries, log->second.log_size());
+    ASSERT_EQ(first_app_log_entries, log->second.logs_size());
     for (int i = 0; i < first_app_log_entries; ++i) {
-      EXPECT_EQ(i + kMaxLogs - 1, log->second.log(i).timestamp());
+      EXPECT_EQ(i + kMaxLogs - 1, log->second.logs(i).timestamp());
       EXPECT_EQ(em::AppInstallReportLogEvent::SUCCESS,
-                log->second.log(i).event_type());
+                log->second.logs(i).event_type());
     }
 
     EXPECT_EQ(logs.end(), logs.find(kSecondPackageName));
@@ -136,7 +136,7 @@ TEST_F(AppInstallEventLogTest, SerializeEmpty) {
   EXPECT_EQ(0, log_->max_size());
 
   log_->Serialize(&report_);
-  EXPECT_EQ(0, report_.app_install_report_size());
+  EXPECT_EQ(0, report_.app_install_reports_size());
 }
 
 // Populate the logs for two apps. Verify that the entries are serialized
@@ -154,29 +154,29 @@ TEST_F(AppInstallEventLogTest, AddAndSerialize) {
   EXPECT_EQ(2, log_->max_size());
 
   log_->Serialize(&report_);
-  ASSERT_EQ(2, report_.app_install_report_size());
+  ASSERT_EQ(2, report_.app_install_reports_size());
   const int first_app_index =
-      report_.app_install_report(0).package() == kFirstPackageName ? 0 : 1;
+      report_.app_install_reports(0).package() == kFirstPackageName ? 0 : 1;
   const int second_app_index = 1 - first_app_index;
 
   const em::AppInstallReport& first_app_log =
-      report_.app_install_report(first_app_index);
+      report_.app_install_reports(first_app_index);
   EXPECT_EQ(kFirstPackageName, first_app_log.package());
-  ASSERT_EQ(2, first_app_log.log_size());
-  EXPECT_EQ(0, first_app_log.log(0).timestamp());
+  ASSERT_EQ(2, first_app_log.logs_size());
+  EXPECT_EQ(0, first_app_log.logs(0).timestamp());
   EXPECT_EQ(em::AppInstallReportLogEvent::SUCCESS,
-            first_app_log.log(0).event_type());
-  EXPECT_EQ(2, first_app_log.log(1).timestamp());
+            first_app_log.logs(0).event_type());
+  EXPECT_EQ(2, first_app_log.logs(1).timestamp());
   EXPECT_EQ(em::AppInstallReportLogEvent::SUCCESS,
-            first_app_log.log(1).event_type());
+            first_app_log.logs(1).event_type());
 
   const em::AppInstallReport& second_app_log =
-      report_.app_install_report(second_app_index);
+      report_.app_install_reports(second_app_index);
   EXPECT_EQ(kSecondPackageName, second_app_log.package());
-  ASSERT_EQ(1, second_app_log.log_size());
-  EXPECT_EQ(1, second_app_log.log(0).timestamp());
+  ASSERT_EQ(1, second_app_log.logs_size());
+  EXPECT_EQ(1, second_app_log.logs(0).timestamp());
   EXPECT_EQ(em::AppInstallReportLogEvent::SUCCESS,
-            second_app_log.log(0).event_type());
+            second_app_log.logs(0).event_type());
 }
 
 // Add 10 log entries for an app. Serialize the log. Clear the serialized log
@@ -200,7 +200,7 @@ TEST_F(AppInstallEventLogTest, SerializeAndClear) {
 
   report_.Clear();
   log_->Serialize(&report_);
-  EXPECT_EQ(0, report_.app_install_report_size());
+  EXPECT_EQ(0, report_.app_install_reports_size());
 }
 
 // Add 10 log entries for a first app. Serialize the log. Add 10 more log
@@ -257,7 +257,7 @@ TEST_F(AppInstallEventLogTest, OverflowSerializeAndClear) {
 
   report_.Clear();
   log_->Serialize(&report_);
-  EXPECT_EQ(0, report_.app_install_report_size());
+  EXPECT_EQ(0, report_.app_install_reports_size());
 }
 
 // Add entries for as many apps as the log has capacity for. Add entries for one
@@ -284,7 +284,7 @@ TEST_F(AppInstallEventLogTest, OverflowAddSerializeAndClear) {
 
   report_.Clear();
   log_->Serialize(&report_);
-  EXPECT_EQ(0, report_.app_install_report_size());
+  EXPECT_EQ(0, report_.app_install_reports_size());
 }
 
 // Add entries for as many apps as the log has capacity for. Add entries for one
@@ -315,12 +315,12 @@ TEST_F(AppInstallEventLogTest, OverflowSerializeAddAndClear) {
 
   report_.Clear();
   log_->Serialize(&report_);
-  ASSERT_EQ(1, report_.app_install_report_size());
-  const em::AppInstallReport& app_log = report_.app_install_report(0);
+  ASSERT_EQ(1, report_.app_install_reports_size());
+  const em::AppInstallReport& app_log = report_.app_install_reports(0);
   EXPECT_EQ(kFirstPackageName, app_log.package());
-  ASSERT_EQ(20, app_log.log_size());
+  ASSERT_EQ(20, app_log.logs_size());
   for (int i = 0; i < 20; ++i) {
-    EXPECT_EQ(i + kMaxLogs + 9, app_log.log(i).timestamp());
+    EXPECT_EQ(i + kMaxLogs + 9, app_log.logs(i).timestamp());
   }
 }
 
@@ -392,7 +392,7 @@ TEST_F(AppInstallEventLogTest, AddSerializeCleaStoreAndLoad) {
 
   report_.Clear();
   log.Serialize(&report_);
-  EXPECT_EQ(0, report_.app_install_report_size());
+  EXPECT_EQ(0, report_.app_install_reports_size());
 }
 
 // Populate and store a log. Load the log. Verify that that the log contents are
@@ -450,12 +450,12 @@ TEST_F(AppInstallEventLogTest, SerializeStoreLoadAndClear) {
 
   report_.Clear();
   log.Serialize(&report_);
-  ASSERT_EQ(1, report_.app_install_report_size());
-  const em::AppInstallReport& app_log = report_.app_install_report(0);
+  ASSERT_EQ(1, report_.app_install_reports_size());
+  const em::AppInstallReport& app_log = report_.app_install_reports(0);
   EXPECT_EQ(kFirstPackageName, app_log.package());
-  ASSERT_EQ(10, app_log.log_size());
+  ASSERT_EQ(10, app_log.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i, app_log.log(i).timestamp());
+    EXPECT_EQ(i, app_log.logs(i).timestamp());
   }
 }
 
@@ -488,7 +488,7 @@ TEST_F(AppInstallEventLogTest, LoadVersionMismatch) {
   EXPECT_EQ(0, log.max_size());
 
   log.Serialize(&report_);
-  EXPECT_EQ(0, report_.app_install_report_size());
+  EXPECT_EQ(0, report_.app_install_reports_size());
 }
 
 // Add 10 log entries each for two apps. Store the log. Truncate the file to the
@@ -524,16 +524,16 @@ TEST_F(AppInstallEventLogTest, LoadTruncated) {
   EXPECT_EQ(10, log.max_size());
 
   log.Serialize(&report_);
-  ASSERT_EQ(1, report_.app_install_report_size());
-  const std::string& package_name = report_.app_install_report(0).package();
+  ASSERT_EQ(1, report_.app_install_reports_size());
+  const std::string& package_name = report_.app_install_reports(0).package();
   ASSERT_TRUE(package_name == kFirstPackageName ||
               package_name == kSecondPackageName);
 
-  const em::AppInstallReport& app_log = report_.app_install_report(0);
+  const em::AppInstallReport& app_log = report_.app_install_reports(0);
   EXPECT_EQ(package_name, app_log.package());
-  ASSERT_EQ(10, app_log.log_size());
+  ASSERT_EQ(10, app_log.logs_size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(i, app_log.log(i).timestamp());
+    EXPECT_EQ(i, app_log.logs(i).timestamp());
   }
 }
 

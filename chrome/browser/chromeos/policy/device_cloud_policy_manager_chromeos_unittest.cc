@@ -375,7 +375,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   device_policy_.Build();
   session_manager_client_.set_device_policy(device_policy_.GetBlob());
   em::DeviceManagementResponse policy_fetch_response;
-  policy_fetch_response.mutable_policy_response()->add_response()->CopyFrom(
+  policy_fetch_response.mutable_policy_response()->add_responses()->CopyFrom(
       device_policy_.policy());
   policy_fetch_job->SendResponse(DM_STATUS_SUCCESS, policy_fetch_response);
   FlushDeviceSettings();
@@ -459,7 +459,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         PolicyBuilder::kFakeToken);
     register_response_.mutable_register_response()->set_enrollment_type(
         em::DeviceRegisterResponse::ENTERPRISE);
-    policy_fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
+    policy_fetch_response_.mutable_policy_response()->add_responses()->CopyFrom(
         device_policy_.policy());
     robot_auth_fetch_response_.mutable_service_api_access_response()
         ->set_auth_code("auth_code_for_test");
@@ -754,7 +754,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, PolicyFetchFailed) {
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
   device_policy_.policy().set_policy_data_signature("bad");
   policy_fetch_response_.clear_policy_response();
-  policy_fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
+  policy_fetch_response_.mutable_policy_response()->add_responses()->CopyFrom(
       device_policy_.policy());
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::VALIDATION_FAILED);

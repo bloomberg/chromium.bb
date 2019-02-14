@@ -336,7 +336,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     em::PolicyData policy_data;
     policy_data.set_policy_type(dm_protocol::kChromeUserPolicyType);
     em::PolicyFetchResponse* policy_response =
-        policy_blob.mutable_policy_response()->add_response();
+        policy_blob.mutable_policy_response()->add_responses();
     ASSERT_TRUE(
         policy_data.SerializeToString(policy_response->mutable_policy_data()));
     fetch_request->SendResponse(DM_STATUS_SUCCESS, policy_blob);
