@@ -1001,9 +1001,7 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   Client* client = it->second.get();
   // TODO(crbug.com/873959): Remove this CHECK once the investigation is done.
   CHECK(client);
-  DCHECK(!base::FeatureList::IsEnabled(
-             features::kUnthrottleRequestsAfterLongQueuingDelay) ||
-         client->HasNoPendingRequests() ||
+  DCHECK(client->HasNoPendingRequests() ||
          IsLongQueuedRequestsDispatchTimerRunning());
   // ResourceDispatcherHost cancels all requests except for cross-renderer
   // navigations, async revalidations and detachable requests after
@@ -1027,11 +1025,6 @@ ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
 }
 
 void ResourceScheduler::StartLongQueuedRequestsDispatchTimerIfNeeded() {
-  if (!base::FeatureList::IsEnabled(
-          features::kUnthrottleRequestsAfterLongQueuingDelay)) {
-    return;
-  }
-
   bool pending_request_found = false;
   for (const auto& client : client_map_) {
     if (!client.second->HasNoPendingRequests()) {
