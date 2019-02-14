@@ -96,8 +96,8 @@ class TabListMediator {
      *                                                 the tabs concerned.
      * @param tabContentManager {@link TabContentManager} to provide screenshot related details.
      */
-    public TabListMediator(TabListModel model, Context context, ToolbarManager toolbarManager,
-            TabModelSelector tabModelSelector, TabContentManager tabContentManager) {
+    public TabListMediator(TabListModel model, Context context, TabModelSelector tabModelSelector,
+            TabContentManager tabContentManager) {
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.tab_grid_favicon_size);
 
         mTabModelSelector = tabModelSelector;
@@ -155,7 +155,7 @@ class TabListMediator {
 
     private void addTabInfoToModel(final Tab tab, boolean isSelected) {
         PropertyModel tabInfo =
-                new PropertyModel.Builder(TabProperties.ALL_KEYS)
+                new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
                         .with(TabProperties.TITLE, tab.getTitle())
                         .with(TabProperties.FAVICON, tab.getFavicon())

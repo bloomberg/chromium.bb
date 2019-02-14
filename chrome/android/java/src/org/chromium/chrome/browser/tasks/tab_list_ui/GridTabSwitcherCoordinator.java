@@ -29,7 +29,7 @@ import javax.inject.Named;
 public class GridTabSwitcherCoordinator implements Destroyable {
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-    private final TabGridCoordinator mTabGridCoordinator;
+    private final TabListCoordinator mTabGridCoordinator;
     private final GridTabSwitcherMediator mMediator;
 
     @Inject
@@ -39,8 +39,8 @@ public class GridTabSwitcherCoordinator implements Destroyable {
             CompositorViewHolder compositorViewHolder) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
-        mTabGridCoordinator = new TabGridCoordinator(
-                context, toolbarManager, tabModelSelector, tabContentManager, compositorViewHolder);
+        mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
+                tabModelSelector, tabContentManager, compositorViewHolder);
 
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
