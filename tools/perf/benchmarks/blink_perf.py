@@ -313,7 +313,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     trace_cpu_time_metrics = {}
     if tab.EvaluateJavaScript('testRunner.tracingCategories'):
-      trace_data = tab.browser.platform.tracing_controller.StopTracing()[0]
+      trace_data = tab.browser.platform.tracing_controller.StopTracing()
       # TODO(#763375): Rely on results.telemetry_info.trace_local_path/etc.
       kwargs = {}
       if hasattr(results.telemetry_info, 'trace_local_path'):

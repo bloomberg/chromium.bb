@@ -141,7 +141,7 @@ class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     del page  # unused
-    timeline_data = tab.browser.platform.tracing_controller.StopTracing()[0]
+    timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = TimelineModel(timeline_data)
     threads = timeline_model.GetAllThreads()
     for thread in threads:
