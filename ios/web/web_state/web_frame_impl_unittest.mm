@@ -255,7 +255,7 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionMessageProperlyEncoded) {
                         /*additional_data=*/nullptr, &plaintext));
 
   std::unique_ptr<base::Value> parsed_result(
-      base::JSONReader::Read(plaintext, false));
+      base::JSONReader::ReadDeprecated(plaintext, false));
   EXPECT_TRUE(parsed_result.get());
 
   base::DictionaryValue* result_dict;
@@ -326,7 +326,7 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionRespondWithResult) {
                         /*additional_data=*/nullptr, &plaintext));
 
   std::unique_ptr<base::Value> parsed_result(
-      base::JSONReader::Read(plaintext, false));
+      base::JSONReader::ReadDeprecated(plaintext, false));
   EXPECT_TRUE(parsed_result.get());
 
   base::DictionaryValue* result_dict;

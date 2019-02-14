@@ -43,7 +43,7 @@ void ParseJSONOnBackgroundThread(
     return;
   }
 
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(data));
+  std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(data));
   if (!value.get()) {
     // Page information not properly read, or corrupted.
     PostErrorTask(task_runner, error_callback, kInvalidDataTypeError);

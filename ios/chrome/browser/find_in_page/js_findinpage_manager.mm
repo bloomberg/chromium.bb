@@ -175,7 +175,8 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
   // Parse JSONs.
   std::string json = base::SysNSStringToUTF8(result_str);
-  std::unique_ptr<base::Value> root(base::JSONReader::Read(json, false));
+  std::unique_ptr<base::Value> root(
+      base::JSONReader::ReadDeprecated(json, false));
   if (!root.get())
     return YES;
   if (!root->is_list())
@@ -222,7 +223,8 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
 
 - (FindInPageEntry)findInPageEntryForJson:(NSString*)jsonStr {
   std::string json = base::SysNSStringToUTF8(jsonStr);
-  std::unique_ptr<base::Value> root(base::JSONReader::Read(json, false));
+  std::unique_ptr<base::Value> root(
+      base::JSONReader::ReadDeprecated(json, false));
   if (!root.get())
     return kFindInPageEntryZero;
 

@@ -55,7 +55,7 @@ std::unique_ptr<base::DictionaryValue> PaymentResponseToDictionaryValue(
   // when |result| is converted to a JSON string, the "details" property won't
   // get json-escaped.
   std::unique_ptr<base::Value> details_value =
-      base::JSONReader().ReadToValue(response.details);
+      base::JSONReader::ReadDeprecated(response.details);
   result->Set(kPaymentResponseDetails, details_value
                                            ? std::move(details_value)
                                            : std::make_unique<base::Value>());

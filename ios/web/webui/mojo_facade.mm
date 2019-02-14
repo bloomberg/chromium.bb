@@ -92,8 +92,8 @@ void MojoFacade::GetMessageNameAndArguments(
   int error_code = 0;
   std::string error_message;
   std::unique_ptr<base::Value> mojo_message_as_value(
-      base::JSONReader::ReadAndReturnError(mojo_message_as_json, false,
-                                           &error_code, &error_message));
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          mojo_message_as_json, false, &error_code, &error_message));
   CHECK(!error_code);
   base::DictionaryValue* mojo_message = nullptr;
   CHECK(mojo_message_as_value->GetAsDictionary(&mojo_message));
