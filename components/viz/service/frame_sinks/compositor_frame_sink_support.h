@@ -305,7 +305,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   uint32_t trace_sequence_ = 0;
 
   base::flat_map<uint32_t, gfx::PresentationFeedback> presentation_feedbacks_;
-  uint32_t last_evicted_parent_sequence_number_ = 0;
+
+  LocalSurfaceId::ParentComponent last_evicted_parent_component_;
 
   base::TimeTicks last_frame_time_;
 

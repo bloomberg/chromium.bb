@@ -8,14 +8,38 @@
 
 namespace viz {
 
+bool LocalSurfaceId::ParentComponent::operator==(
+    const ParentComponent& other) const {
+  return sequence_number == other.sequence_number &&
+         embed_token == other.embed_token;
+}
+
+bool LocalSurfaceId::ParentComponent::operator!=(
+    const ParentComponent& other) const {
+  return !(*this == other);
+}
+
+bool LocalSurfaceId::ParentComponent::IsNewerThan(
+    const ParentComponent& other) const {
+  return embed_token == other.embed_token &&
+         sequence_number > other.sequence_number;
+}
+
+bool LocalSurfaceId::ParentComponent::IsSameOrNewerThan(
+    const ParentComponent& other) const {
+  return embed_token == other.embed_token &&
+         sequence_number >= other.sequence_number;
+}
+
 std::string LocalSurfaceId::ToString() const {
-  std::string embed_token = VLOG_IS_ON(1)
-                                ? embed_token_.ToString()
-                                : embed_token_.ToString().substr(0, 4) + "...";
+  std::string embed_token =
+      VLOG_IS_ON(1)
+          ? parent_component_.embed_token.ToString()
+          : parent_component_.embed_token.ToString().substr(0, 4) + "...";
 
   return base::StringPrintf("LocalSurfaceId(%u, %u, %s)",
-                            parent_sequence_number_, child_sequence_number_,
-                            embed_token.c_str());
+                            parent_component_.sequence_number,
+                            child_sequence_number_, embed_token.c_str());
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -24,14 +48,10 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 bool LocalSurfaceId::IsNewerThan(const LocalSurfaceId& other) const {
-  // Sequence numbers can wrap around so look at their difference instead of
-  // their absolute values.
-  return embed_token_ == other.embed_token_ &&
-         (child_sequence_number_ - other.child_sequence_number_ < (1u << 31)) &&
-         (parent_sequence_number_ - other.parent_sequence_number_ <
-          (1u << 31)) &&
-         (child_sequence_number_ != other.child_sequence_number_ ||
-          parent_sequence_number_ != other.parent_sequence_number_);
+  return (parent_component_.IsNewerThan(other.parent_component_) &&
+          child_sequence_number_ >= other.child_sequence_number_) ||
+         (parent_component_ == other.parent_component_ &&
+          child_sequence_number_ > other.child_sequence_number_);
 }
 
 bool LocalSurfaceId::IsSameOrNewerThan(const LocalSurfaceId& other) const {
@@ -39,7 +59,7 @@ bool LocalSurfaceId::IsSameOrNewerThan(const LocalSurfaceId& other) const {
 }
 
 LocalSurfaceId LocalSurfaceId::ToSmallestId() const {
-  return LocalSurfaceId(1, 1, embed_token_);
+  return LocalSurfaceId(1, 1, embed_token());
 }
 
 }  // namespace viz

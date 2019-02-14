@@ -111,8 +111,8 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   if (!last_activated_surface_id_.is_valid() ||
       local_surface_id > last_activated_local_surface_id) {
     if (last_activated_surface_id_.is_valid()) {
-      CHECK_GE(local_surface_id.parent_sequence_number(),
-               last_activated_local_surface_id.parent_sequence_number());
+      CHECK(!last_activated_local_surface_id.parent_component().IsNewerThan(
+          local_surface_id.parent_component()));
       CHECK_GE(local_surface_id.child_sequence_number(),
                last_activated_local_surface_id.child_sequence_number());
 
@@ -226,21 +226,23 @@ CompositorFrameSinkSupport::TakeCopyOutputRequests(
 }
 
 void CompositorFrameSinkSupport::EvictSurface(const LocalSurfaceId& id) {
-  DCHECK_GE(id.parent_sequence_number(), last_evicted_parent_sequence_number_);
-  last_evicted_parent_sequence_number_ = id.parent_sequence_number();
+  DCHECK(!last_evicted_parent_component_.IsNewerThan(id.parent_component()));
+  last_evicted_parent_component_ = id.parent_component();
   surface_manager_->DropTemporaryReference(SurfaceId(frame_sink_id_, id));
   MaybeEvictSurfaces();
 }
 
 void CompositorFrameSinkSupport::MaybeEvictSurfaces() {
+  if (!last_evicted_parent_component_.is_valid())
+    return;
   if (last_activated_surface_id_.is_valid() &&
-      last_activated_surface_id_.local_surface_id().parent_sequence_number() <=
-          last_evicted_parent_sequence_number_) {
+      last_evicted_parent_component_.IsSameOrNewerThan(
+          last_activated_surface_id_.local_surface_id().parent_component())) {
     EvictLastActiveSurface();
   }
   if (last_created_surface_id_.is_valid() &&
-      last_created_surface_id_.local_surface_id().parent_sequence_number() <=
-          last_evicted_parent_sequence_number_) {
+      last_evicted_parent_component_.IsSameOrNewerThan(
+          last_created_surface_id_.local_surface_id().parent_component())) {
     surface_manager_->DestroySurface(last_created_surface_id_);
     last_created_surface_id_ = SurfaceId();
   }
@@ -430,16 +432,14 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
         local_surface_id.child_sequence_number() >
             last_created_local_surface_id.child_sequence_number();
 
-    // Neither sequence numbers of the LocalSurfaceId can decrease and at least
-    // one must increase.
+    // Child sequence number should never decrease. Parent sequence number
+    // might decrease but only if the embed token also changed.
     bool monotonically_increasing_id =
-        (local_surface_id.parent_sequence_number() >=
-             last_created_local_surface_id.parent_sequence_number() &&
+        local_surface_id.IsSameOrNewerThan(last_created_local_surface_id) ||
+        (local_surface_id.embed_token() !=
+             last_created_local_surface_id.embed_token() &&
          local_surface_id.child_sequence_number() >=
-             last_created_local_surface_id.child_sequence_number()) &&
-        (local_surface_id.parent_sequence_number() >
-             last_created_local_surface_id.parent_sequence_number() ||
-         child_initiated_synchronization_event);
+             last_created_local_surface_id.child_sequence_number());
 
     if (!surface_info.is_valid() || !monotonically_increasing_id) {
       TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
@@ -457,8 +457,9 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
 
     // Don't recreate a surface that was previously evicted. Drop the
     // CompositorFrame and return all its resources.
-    if (local_surface_id.parent_sequence_number() <=
-        last_evicted_parent_sequence_number_) {
+    if (last_evicted_parent_component_.is_valid() &&
+        last_evicted_parent_component_.IsSameOrNewerThan(
+            local_surface_id.parent_component())) {
       TRACE_EVENT_INSTANT0("viz", "Submit rejected to evicted surface",
                            TRACE_EVENT_SCOPE_THREAD);
       return SubmitResult::ACCEPTED;
