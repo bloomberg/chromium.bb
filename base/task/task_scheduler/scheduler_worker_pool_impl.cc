@@ -97,7 +97,7 @@ bool ContainsWorker(const std::vector<scoped_refptr<SchedulerWorker>>& workers,
 // to satisfy locking requirements of worker actions.
 class SchedulerWorkerPoolImpl::SchedulerWorkerActionExecutor {
  public:
-  SchedulerWorkerActionExecutor(TrackedRef<SchedulerWorkerPoolImpl> outer)
+  SchedulerWorkerActionExecutor(SchedulerWorkerPoolImpl* outer)
       : outer_(outer) {}
 
   ~SchedulerWorkerActionExecutor() {
@@ -157,7 +157,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerActionExecutor {
     DISALLOW_COPY_AND_ASSIGN(WorkerContainer);
   };
 
-  const TrackedRef<SchedulerWorkerPoolImpl> outer_;
+  SchedulerWorkerPoolImpl* const outer_;
 
   WorkerContainer workers_to_wake_up_;
   WorkerContainer workers_to_start_;
@@ -364,7 +364,7 @@ void SchedulerWorkerPoolImpl::Start(
     SchedulerWorkerObserver* scheduler_worker_observer,
     WorkerEnvironment worker_environment,
     Optional<TimeDelta> may_block_threshold) {
-  SchedulerWorkerActionExecutor executor(tracked_ref_factory_.GetTrackedRef());
+  SchedulerWorkerActionExecutor executor(this);
 
   AutoSchedulerLock auto_lock(lock_);
 
@@ -421,7 +421,7 @@ void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
 void SchedulerWorkerPoolImpl::PushSequenceAndWakeUpWorkers(
     SequenceAndTransaction sequence_and_transaction) {
   bool must_schedule_adjust_max_tasks;
-  SchedulerWorkerActionExecutor executor(tracked_ref_factory_.GetTrackedRef());
+  SchedulerWorkerActionExecutor executor(this);
   {
     AutoSchedulerLock auto_lock(lock_);
     priority_queue_.Push(std::move(sequence_and_transaction.sequence),
@@ -620,7 +620,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
   DCHECK(!worker_only().is_running_task);
   DCHECK(!read_worker().is_running_best_effort_task);
 
-  SchedulerWorkerActionExecutor executor(outer_);
+  SchedulerWorkerActionExecutor executor(outer_.get());
   AutoSchedulerLock auto_lock(outer_->lock_);
 
   DCHECK(ContainsWorker(outer_->workers_, worker));
@@ -944,7 +944,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
 
-  SchedulerWorkerActionExecutor executor(outer_);
+  SchedulerWorkerActionExecutor executor(outer_.get());
   AutoSchedulerLock auto_lock(outer_->lock_);
 
   DCHECK(!incremented_max_tasks_since_blocked_);
@@ -1113,7 +1113,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
   DCHECK(
       after_start().service_thread_task_runner->RunsTasksInCurrentSequence());
 
-  SchedulerWorkerActionExecutor executor(tracked_ref_factory_.GetTrackedRef());
+  SchedulerWorkerActionExecutor executor(this);
   AutoSchedulerLock auto_lock(lock_);
 
   // Increment max tasks for each worker that has been within a MAY_BLOCK
