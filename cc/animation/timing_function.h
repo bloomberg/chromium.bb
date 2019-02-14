@@ -68,8 +68,9 @@ class CC_ANIMATION_EXPORT CubicBezierTimingFunction : public TimingFunction {
 
 class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
  public:
-  // Web Animations specification, 3.12.4. Timing in discrete steps.
-  enum class StepPosition { START, MIDDLE, END };
+  // step-timing-function values
+  // https://drafts.csswg.org/css-easing-1/#typedef-step-timing-function
+  enum class StepPosition { START, END };
 
   static std::unique_ptr<StepsTimingFunction> Create(
       int steps,

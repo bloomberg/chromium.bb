@@ -1488,7 +1488,6 @@ enum WebFeature {
   kBudgetAPIGetCost = 2021,
   kBudgetAPIGetBudget = 2022,
   kCrossOriginMainFrameNulledNonEmptyNameAccessed = 2023,
-  kDeprecatedTimingFunctionStepMiddle = 2024,
   kDocumentDomainSetWithNonDefaultPort = 2025,
   kDocumentDomainSetWithDefaultPort = 2026,
   kFeaturePolicyHeader = 2027,

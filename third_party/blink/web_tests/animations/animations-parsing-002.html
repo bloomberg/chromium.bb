@@ -265,15 +265,15 @@ test(() => {
   assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
 
   style.animationTimingFunction = "step-middle";
-  assert_equals(style.animationTimingFunction, 'step-middle');
+  assert_equals(style.animationTimingFunction, '');
   assert_equals(computedStyle.animationTimingFunction, 'ease');
-  assert_equals(style.webkitAnimationTimingFunction, 'step-middle');
+  assert_equals(style.webkitAnimationTimingFunction, '');
   assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
 
   style.animationTimingFunction = "steps(5, middle)";
-  assert_equals(style.animationTimingFunction, 'steps(5, middle)');
+  assert_equals(style.animationTimingFunction, '');
   assert_equals(computedStyle.animationTimingFunction, 'ease');
-  assert_equals(style.webkitAnimationTimingFunction, 'steps(5, middle)');
+  assert_equals(style.webkitAnimationTimingFunction, '');
   assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
 }, "Invalid animation-timing-function values.");
 </script>

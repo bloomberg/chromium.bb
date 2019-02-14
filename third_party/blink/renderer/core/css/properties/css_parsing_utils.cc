@@ -133,11 +133,6 @@ CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
       StepsTimingFunction::StepPosition::END;
   if (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args)) {
     switch (args.ConsumeIncludingWhitespace().Id()) {
-      case CSSValueMiddle:
-        if (!RuntimeEnabledFeatures::WebAnimationsAPIEnabled())
-          return nullptr;
-        position = StepsTimingFunction::StepPosition::MIDDLE;
-        break;
       case CSSValueStart:
         position = StepsTimingFunction::StepPosition::START;
         break;
@@ -542,8 +537,7 @@ CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range) {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueEase || id == CSSValueLinear || id == CSSValueEaseIn ||
       id == CSSValueEaseOut || id == CSSValueEaseInOut ||
-      id == CSSValueStepStart || id == CSSValueStepEnd ||
-      id == CSSValueStepMiddle)
+      id == CSSValueStepStart || id == CSSValueStepEnd)
     return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueID function = range.Peek().FunctionId();
