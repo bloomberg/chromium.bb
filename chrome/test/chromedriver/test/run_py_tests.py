@@ -116,6 +116,8 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=932073
+    'ChromeExtensionsCapabilityTest.testWaitsForExtensionToLoad',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
