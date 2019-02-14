@@ -252,4 +252,4 @@ TEST_F(V4L2CaptureDelegateTest, MAYBE_CreateAndDestroyAndVerifyControls) {
   }
 }
 
-};  // namespace media
+}  // namespace media
