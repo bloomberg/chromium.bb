@@ -72,6 +72,11 @@ class ArcApps : public KeyedService,
   void OnAppNameUpdated(const std::string& app_id,
                         const std::string& name) override;
   void OnAppLastLaunchTimeUpdated(const std::string& app_id) override;
+  void OnPackageInstalled(
+      const arc::mojom::ArcPackageInfo& package_info) override;
+  void OnPackageModified(
+      const arc::mojom::ArcPackageInfo& package_info) override;
+  void OnPackageListInitialRefreshed() override;
 
   const base::FilePath GetCachedIconFilePath(const std::string& app_id,
                                              int32_t size_hint_in_dip);
@@ -87,6 +92,8 @@ class ArcApps : public KeyedService,
                               const ArcAppListPrefs::AppInfo& app_info);
   apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
   void Publish(apps::mojom::AppPtr app);
+  void ConvertAndPublishPackageApps(
+      const arc::mojom::ArcPackageInfo& package_info);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;

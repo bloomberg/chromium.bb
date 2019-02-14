@@ -62,6 +62,7 @@ constexpr char kName[] = "name";
 constexpr char kNotificationsEnabled[] = "notifications_enabled";
 constexpr char kPackageName[] = "package_name";
 constexpr char kPackageVersion[] = "package_version";
+constexpr char kPermissions[] = "permissions";
 constexpr char kSticky[] = "sticky";
 constexpr char kShortcut[] = "shortcut";
 constexpr char kShouldSync[] = "should_sync";
@@ -596,6 +597,7 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   bool should_sync = false;
   bool system = false;
   bool vpn_provider = false;
+  base::flat_map<arc::mojom::AppPermission, bool> permissions;
 
   GetInt64FromPref(package, kLastBackupAndroidId, &last_backup_android_id);
   GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
@@ -603,10 +605,30 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   package->GetBoolean(kShouldSync, &should_sync);
   package->GetBoolean(kSystem, &system);
   package->GetBoolean(kVPNProvider, &vpn_provider);
+  const base::Value* permission_val = package->FindKey(kPermissions);
+  if (permission_val) {
+    const base::DictionaryValue* permission_dict = nullptr;
+    permission_val->GetAsDictionary(&permission_dict);
+    DCHECK(permission_dict);
 
-  return std::make_unique<PackageInfo>(package_name, package_version,
-                                       last_backup_android_id, last_backup_time,
-                                       should_sync, system, vpn_provider);
+    for (base::DictionaryValue::Iterator iter(*permission_dict);
+         !iter.IsAtEnd(); iter.Advance()) {
+      int64_t permission_type = -1;
+      base::StringToInt64(iter.key(), &permission_type);
+      DCHECK_NE(-1, permission_type);
+
+      bool value = false;
+      iter.value().GetAsBoolean(&value);
+
+      arc::mojom::AppPermission permission =
+          static_cast<arc::mojom::AppPermission>(permission_type);
+      permissions.insert(std::make_pair(permission, value));
+    }
+  }
+
+  return std::make_unique<PackageInfo>(
+      package_name, package_version, last_backup_android_id, last_backup_time,
+      should_sync, system, vpn_provider, permissions);
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
@@ -677,6 +699,7 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetAppFromPrefs(
   bool notifications_enabled = true;
   bool shortcut = false;
   bool launchable = true;
+
   app->GetString(kName, &name);
   app->GetString(kPackageName, &package_name);
   app->GetString(kActivity, &activity);
@@ -1192,6 +1215,18 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
   package_dict->SetBoolean(kSystem, package.system);
   package_dict->SetBoolean(kUninstalled, false);
   package_dict->SetBoolean(kVPNProvider, package.vpn_provider);
+  if (package.permissions.has_value()) {
+    base::DictionaryValue permission_dict;
+    for (const auto& permission : package.permissions.value()) {
+      permission_dict.SetBoolean(
+          base::Int64ToString(static_cast<int64_t>(permission.first)),
+          permission.second);
+    }
+    package_dict->SetKey(kPermissions, std::move(permission_dict));
+  } else {
+    // Remove kPermissions from dict if there are no permissions.
+    package_dict->RemoveKey(kPermissions);
+  }
 
   if (old_package_version == -1 ||
       old_package_version == package.package_version) {
@@ -1794,17 +1829,24 @@ bool ArcAppListPrefs::AppInfo::operator==(const AppInfo& other) const {
          shortcut == other.shortcut && launchable == other.launchable;
 }
 
-ArcAppListPrefs::PackageInfo::PackageInfo(const std::string& package_name,
-                                          int32_t package_version,
-                                          int64_t last_backup_android_id,
-                                          int64_t last_backup_time,
-                                          bool should_sync,
-                                          bool system,
-                                          bool vpn_provider)
+ArcAppListPrefs::PackageInfo::PackageInfo(
+    const std::string& package_name,
+    int32_t package_version,
+    int64_t last_backup_android_id,
+    int64_t last_backup_time,
+    bool should_sync,
+    bool system,
+    bool vpn_provider,
+    const base::flat_map<arc::mojom::AppPermission, bool>& permissions)
     : package_name(package_name),
       package_version(package_version),
       last_backup_android_id(last_backup_android_id),
       last_backup_time(last_backup_time),
       should_sync(should_sync),
       system(system),
-      vpn_provider(vpn_provider) {}
+      vpn_provider(vpn_provider),
+      permissions(permissions) {}
+
+// Need to add explicit destructor for chromium style checker error:
+// Complex class/struct needs an explicit out-of-line destructor
+ArcAppListPrefs::PackageInfo::~PackageInfo() = default;
