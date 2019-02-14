@@ -272,6 +272,8 @@ Polymer({
       if (this.unifiedConsentEnabled && this.syncStatus &&
           !!this.syncStatus.setupInProgress && this.didAbort_ &&
           !this.setupCancelConfirmed_) {
+        chrome.metricsPrivate.recordUserAction(
+            'Signin_Signin_BackOnAdvancedSyncSettings');
         // Yield so that other |currentRouteChanged| observers are called,
         // before triggering another navigation (and another round of observers
         // firing). Triggering navigation from within an observer leads to some
