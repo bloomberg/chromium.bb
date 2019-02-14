@@ -19,6 +19,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
@@ -186,8 +187,10 @@ class RulesMonitorService::FileSequenceState {
     IndexAndPersistRulesCallback ruleset_reindexed_callback = base::BindOnce(
         &FileSequenceState::OnRulesetReindexed, weak_factory_.GetWeakPtr(),
         std::move(info), result, std::move(ui_callback));
-    IndexAndPersistRules(connector_.get(), base::nullopt /* decoder_batch_id */,
-                         *extension, std::move(ruleset_reindexed_callback));
+    IndexAndPersistRules(
+        connector_.get(), base::nullopt /* decoder_batch_id */,
+        declarative_net_request::RulesetSource::Create(*extension),
+        std::move(ruleset_reindexed_callback));
   }
 
   // Callback invoked when the JSON ruleset is reindexed.

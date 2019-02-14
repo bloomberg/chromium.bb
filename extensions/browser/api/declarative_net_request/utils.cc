@@ -18,6 +18,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -28,11 +29,10 @@
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/api/declarative_net_request.h"
-#include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
@@ -88,17 +88,15 @@ int GetChecksum(base::span<const uint8_t> data) {
   return static_cast<int>(hash & 0x7fffffff);
 }
 
-// Helper function to persist the indexed ruleset |data| for |extension|. The
-// ruleset is composed of a version header corresponding to the current ruleset
-// format version, followed by the actual ruleset data. Note: The checksum only
-// corresponds to this ruleset data and does not include the version header.
-bool PersistRuleset(const Extension& extension,
+// Helper function to persist the indexed ruleset |data| at the given |path|.
+// The ruleset is composed of a version header corresponding to the current
+// ruleset format version, followed by the actual ruleset data. Note: The
+// checksum only corresponds to this ruleset data and does not include the
+// version header.
+bool PersistRuleset(const base::FilePath& path,
                     base::span<const uint8_t> data,
                     int* ruleset_checksum) {
   DCHECK(ruleset_checksum);
-
-  const base::FilePath path =
-      file_util::GetIndexedRulesetPath(extension.path());
 
   // Create the directory corresponding to |path| if it does not exist.
   if (!base::CreateDirectory(path.DirName()))
@@ -130,15 +128,9 @@ bool PersistRuleset(const Extension& extension,
   return true;
 }
 
-// Helper to retrieve the ruleset ExtensionResource for |extension|.
-const ExtensionResource* GetRulesetResource(const Extension& extension) {
-  return declarative_net_request::DNRManifestData::GetRulesetResource(
-      &extension);
-}
-
-// Helper to retrieve the filename of the JSON ruleset provided by |extension|.
-std::string GetJSONRulesetFilename(const Extension& extension) {
-  return GetRulesetResource(extension)->GetFilePath().BaseName().AsUTF8Unsafe();
+// Helper to retrieve the filename for the given |file_path|.
+std::string GetFilename(const base::FilePath& file_path) {
+  return file_path.BaseName().AsUTF8Unsafe();
 }
 
 InstallWarning CreateInstallWarning(const std::string& message) {
@@ -146,10 +138,9 @@ InstallWarning CreateInstallWarning(const std::string& message) {
                         manifest_keys::kDeclarativeRuleResourcesKey);
 }
 
-// Helper function to index |rules| and persist them to the
-// |indexed_ruleset_path|.
+// Helper function to index |rules| and persist them to |indexed_path|.
 ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
-                                   const Extension& extension,
+                                   const base::FilePath& indexed_path,
                                    std::vector<InstallWarning>* warnings,
                                    int* ruleset_checksum) {
   DCHECK(warnings);
@@ -227,7 +218,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   indexer.Finish();
   UMA_HISTOGRAM_TIMES(kIndexRulesTimeHistogram, timer.Elapsed());
 
-  if (!PersistRuleset(extension, indexer.GetData(), ruleset_checksum))
+  if (!PersistRuleset(indexed_path, indexer.GetData(), ruleset_checksum))
     return ParseInfo(ParseResult::ERROR_PERSISTING_RULESET);
 
   if (rule_count_exceeded)
@@ -247,23 +238,22 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   return ParseInfo(ParseResult::SUCCESS);
 }
 
-void OnSafeJSONParserSuccess(const Extension* extension,
+void OnSafeJSONParserSuccess(const RulesetSource& source,
                              IndexAndPersistRulesCallback callback,
                              std::unique_ptr<base::Value> root) {
   DCHECK(root);
 
   std::vector<InstallWarning> warnings;
   int ruleset_checksum;
-  const ParseInfo info =
-      IndexAndPersistRulesImpl(*root, *extension, &warnings, &ruleset_checksum);
+  const ParseInfo info = IndexAndPersistRulesImpl(*root, source.indexed_path,
+                                                  &warnings, &ruleset_checksum);
   if (info.result() == ParseResult::SUCCESS) {
     std::move(callback).Run(IndexAndPersistRulesResult::CreateSuccessResult(
         ruleset_checksum, std::move(warnings)));
     return;
   }
 
-  std::string error =
-      info.GetErrorDescription(GetJSONRulesetFilename(*extension));
+  std::string error = info.GetErrorDescription(GetFilename(source.json_path));
   std::move(callback).Run(
       IndexAndPersistRulesResult::CreateErrorResult(std::move(error)));
 }
@@ -310,45 +300,39 @@ IndexAndPersistRulesResult& IndexAndPersistRulesResult::operator=(
 IndexAndPersistRulesResult::IndexAndPersistRulesResult() = default;
 
 IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
-    const Extension& extension) {
+    const RulesetSource& source) {
   DCHECK(IsAPIAvailable());
 
-  const ExtensionResource* resource = GetRulesetResource(extension);
-  DCHECK(resource);
-
-  JSONFileValueDeserializer deserializer(resource->GetFilePath());
+  JSONFileValueDeserializer deserializer(source.json_path);
   std::string error;
   std::unique_ptr<base::Value> root = deserializer.Deserialize(
       nullptr /*error_code*/, &error /*error_message*/);
   if (!root) {
     return IndexAndPersistRulesResult::CreateErrorResult(
-        GetJSONParseError(GetJSONRulesetFilename(extension), error));
+        GetJSONParseError(GetFilename(source.json_path), error));
   }
 
   std::vector<InstallWarning> warnings;
   int ruleset_checksum;
-  const ParseInfo info =
-      IndexAndPersistRulesImpl(*root, extension, &warnings, &ruleset_checksum);
+  const ParseInfo info = IndexAndPersistRulesImpl(*root, source.indexed_path,
+                                                  &warnings, &ruleset_checksum);
   if (info.result() == ParseResult::SUCCESS) {
     return IndexAndPersistRulesResult::CreateSuccessResult(ruleset_checksum,
                                                            std::move(warnings));
   }
 
-  error = info.GetErrorDescription(GetJSONRulesetFilename(extension));
+  error = info.GetErrorDescription(GetFilename(source.json_path));
   return IndexAndPersistRulesResult::CreateErrorResult(std::move(error));
 }
 
 void IndexAndPersistRules(service_manager::Connector* connector,
                           const base::Optional<base::Token>& decoder_batch_id,
-                          const Extension& extension,
+                          const RulesetSource& source,
                           IndexAndPersistRulesCallback callback) {
   DCHECK(IsAPIAvailable());
 
-  const ExtensionResource* resource = GetRulesetResource(extension);
-  DCHECK(resource);
-
   std::string json_contents;
-  if (!base::ReadFileToString(resource->GetFilePath(), &json_contents)) {
+  if (!base::ReadFileToString(source.json_path, &json_contents)) {
     std::move(callback).Run(IndexAndPersistRulesResult::CreateErrorResult(
         manifest_errors::kDeclarativeNetRequestJSONRulesFileReadError));
     return;
@@ -358,12 +342,11 @@ void IndexAndPersistRules(service_manager::Connector* connector,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  auto success_callback =
-      base::BindRepeating(&OnSafeJSONParserSuccess,
-                          base::RetainedRef(&extension), repeating_callback);
+  auto success_callback = base::BindRepeating(
+      &OnSafeJSONParserSuccess, source.Clone(), repeating_callback);
   auto error_callback =
       base::BindRepeating(&OnSafeJSONParserError, repeating_callback,
-                          GetJSONRulesetFilename(extension));
+                          GetFilename(source.json_path));
 
   if (decoder_batch_id) {
     data_decoder::SafeJsonParser::ParseBatch(connector, json_contents,

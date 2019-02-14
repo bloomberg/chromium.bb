@@ -23,6 +23,7 @@
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
@@ -274,7 +275,8 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
   declarative_net_request::IndexAndPersistRulesResult result =
-      declarative_net_request::IndexAndPersistRulesUnsafe(*extension());
+      declarative_net_request::IndexAndPersistRulesUnsafe(
+          declarative_net_request::RulesetSource::Create(*extension()));
   if (!result.success) {
     *error = std::move(result.error);
     return false;

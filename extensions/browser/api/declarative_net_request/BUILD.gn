@@ -20,6 +20,8 @@ source_set("declarative_net_request") {
     "ruleset_manager.h",
     "ruleset_matcher.cc",
     "ruleset_matcher.h",
+    "ruleset_source.cc",
+    "ruleset_source.h",
     "utils.cc",
     "utils.h",
   ]
