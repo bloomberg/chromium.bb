@@ -836,7 +836,12 @@
       name: "MiddleClickAutoscroll",
       status: "test",
     },
+    // Specific mime-types such as PDF are rendered in cross-process frames.
     {
+      name: "MimeHandlerViewInCrossProcessFrame",
+    },
+    {
+
       name: "MobileLayoutTheme",
     },
     {

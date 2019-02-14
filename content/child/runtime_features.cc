@@ -480,6 +480,10 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableGetDisplayMedia(
       base::FeatureList::IsEnabled(blink::features::kRTCGetDisplayMedia));
+
+  WebRuntimeFeatures::EnableMimeHandlerViewInCrossProcessFrame(
+      base::FeatureList::IsEnabled(
+          features::kMimeHandlerViewInCrossProcessFrame));
 }
 
 }  // namespace
