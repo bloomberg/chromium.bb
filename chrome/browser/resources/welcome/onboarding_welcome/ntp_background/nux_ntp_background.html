@@ -69,6 +69,26 @@
         flex: 1;
       }
 
+      .art {
+        background-image: url(../images/ntp_thumbnails/art.jpg);
+      }
+
+      .cityscape {
+        background-image: url(../images/ntp_thumbnails/cityscape.jpg);
+      }
+
+      .geometric-shapes {
+        background-image: url(../images/ntp_thumbnails/geometric_shapes.jpg);
+      }
+
+      .landscape {
+        background-image: url(../images/ntp_thumbnails/landscape.jpg);
+      }
+
+      .life {
+        background-image: url(../images/ntp_thumbnails/life.jpg);
+      }
+
       .ntp-background-title {
         border-top: var(--cr-separator-line);
         font-size: 14px;
@@ -109,7 +129,7 @@
             on-click="onBackgroundClick_"
             on-keyup="onBackgroundKeyUp_"
             on-pointerdown="onBackgroundPointerDown_">
-          <div class="ntp-background-thumbnail"></div>
+          <div class$="ntp-background-thumbnail [[item.thumbnailClass]]"></div>
           <div class="ntp-background-title">[[item.title]]</div>
         </button>
       </template>
