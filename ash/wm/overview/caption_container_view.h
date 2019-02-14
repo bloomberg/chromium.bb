@@ -32,6 +32,7 @@ class RoundedRectView;
 // CaptionContainerView covers the overview window and listens for events. It
 // also draws a header for overview mode which contains a icon, title and close
 // button.
+// TODO(sammiequon): Rename this to something which describes it better.
 class ASH_EXPORT CaptionContainerView : public views::View {
  public:
   // The visibility of the header. It may be fully visible or invisible, or
@@ -51,6 +52,9 @@ class ASH_EXPORT CaptionContainerView : public views::View {
 
   void SetHeaderVisibility(HeaderVisibility visibility);
 
+  // Sets the visiblity of |backdrop_view_|. Creates it if it is null.
+  void SetBackdropVisibility(bool visible);
+
   // Animates |cannot_snap_container_| to its visibility state.
   void SetCannotSnapLabelVisibility(bool visible);
 
@@ -65,7 +69,7 @@ class ASH_EXPORT CaptionContainerView : public views::View {
   views::View* header_view() { return header_view_; }
   views::Label* title_label() { return title_label_; }
   views::Label* cannot_snap_label() { return cannot_snap_label_; }
-  gfx::Rect backdrop_bounds() const { return backdrop_bounds_; }
+  RoundedRectView* backdrop_view() { return backdrop_view_; }
 
  protected:
   // views::View:
@@ -98,7 +102,9 @@ class ASH_EXPORT CaptionContainerView : public views::View {
   // |cannot_snap_label_| and to give the label rounded corners.
   RoundedRectView* cannot_snap_container_ = nullptr;
 
-  gfx::Rect backdrop_bounds_;
+  // A view that covers the area except the header. It is null when the window
+  // associated is not pillar or letter boxed.
+  RoundedRectView* backdrop_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionContainerView);
 };
