@@ -1192,11 +1192,6 @@ void ExistingUserController::OnPolicyFetchResult(
     }
 
     case apu::EcryptfsMigrationAction::kMinimalMigrate:
-      // Reset the profile ever initialized flag, so that user policy manager
-      // will block sign-in if no policy can be retrieved for the migrated
-      // profile.
-      user_manager::UserManager::Get()->ResetProfileEverInitialized(
-          user_context.GetAccountId());
       user_manager::known_user::SetUserHomeMinimalMigrationAttempted(
           user_context.GetAccountId(), true);
       user_manager::UserManager::Get()->GetLocalState()->CommitPendingWrite(

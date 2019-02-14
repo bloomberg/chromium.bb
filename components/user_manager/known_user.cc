@@ -54,9 +54,6 @@ const char kReauthReasonKey[] = "reauth_reason";
 // Key for the GaiaId migration status.
 const char kGaiaIdMigration[] = "gaia_id_migration";
 
-// Key of the boolean flag telling if user session has finished init yet.
-const char kProfileEverInitialized[] = "profile_ever_initialized";
-
 // Key of the boolean flag telling if a minimal user home migration has been
 // attempted.
 const char kMinimalMigrationAttempted[] = "minimal_migration_attempted";
@@ -486,19 +483,6 @@ bool IsUsingSAML(const AccountId& account_id) {
   if (GetBooleanPref(account_id, kUsingSAMLKey, &using_saml))
     return using_saml;
   return false;
-}
-
-bool WasProfileEverInitialized(const AccountId& account_id) {
-  bool profile_ever_initialized;
-  if (GetBooleanPref(account_id, kProfileEverInitialized,
-                     &profile_ever_initialized)) {
-    return profile_ever_initialized;
-  }
-  return false;
-}
-
-void SetProfileEverInitialized(const AccountId& account_id, bool initialized) {
-  SetBooleanPref(account_id, kProfileEverInitialized, initialized);
 }
 
 void SetProfileRequiresPolicy(const AccountId& account_id,

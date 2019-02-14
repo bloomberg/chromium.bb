@@ -169,7 +169,7 @@ void AffiliationTestHelper::PreLoginUser(const AccountId& account_id) {
   users_pref->AppendIfNotPresent(
       std::make_unique<base::Value>(account_id.GetUserEmail()));
   if (user_manager::UserManager::IsInitialized())
-    user_manager::known_user::SetProfileEverInitialized(account_id, false);
+    user_manager::known_user::SaveKnownUser(account_id);
 
   chromeos::StartupUtils::MarkOobeCompleted();
 }

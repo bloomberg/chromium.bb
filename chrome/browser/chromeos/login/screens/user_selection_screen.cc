@@ -466,11 +466,9 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
       token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID)
     RecordReauthReason(user->GetAccountId(), ReauthReason::OTHER);
 
-  // We need to force an online signin if the user is marked as requiring it,
-  // or if the user's session never completed initialization (still need to
-  // check for policy/management state) or if there's an invalid OAUTH token
-  // that needs to be refreshed.
-  return user->force_online_signin() || !user->profile_ever_initialized() ||
+  // We need to force an online signin if the user is marked as requiring it or
+  // if there's an invalid OAUTH token that needs to be refreshed.
+  return user->force_online_signin() ||
          (has_gaia_account &&
           (token_status == user_manager::User::OAUTH2_TOKEN_STATUS_INVALID ||
            token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN));
