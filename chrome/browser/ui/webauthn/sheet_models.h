@@ -344,4 +344,43 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
   std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
+class AuthenticatorClientPinEntrySheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  class Delegate {
+   public:
+    virtual void ShowPinError(const base::string16& error) = 0;
+  };
+  // Indicates whether the view should accommodate setting up a new PIN or
+  // entering an existing one.
+  enum class Mode { kPinEntry, kPinSetup };
+  AuthenticatorClientPinEntrySheetModel(
+      AuthenticatorRequestDialogModel* dialog_model,
+      Mode mode);
+  ~AuthenticatorClientPinEntrySheetModel() override;
+
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+  void SetDelegate(Delegate* delegate);
+  void SetPinCode(base::string16 pin_code);
+  void SetPinConfirmation(base::string16 pin_confirmation);
+
+  Mode mode() const { return mode_; }
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
+
+  base::string16 pin_code_;
+  base::string16 pin_confirmation_;
+  const Mode mode_;
+  Delegate* delegate_ = nullptr;
+};
+
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_

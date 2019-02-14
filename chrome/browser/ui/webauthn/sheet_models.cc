@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webauthn/other_transports_menu_model.h"
@@ -661,4 +662,101 @@ base::string16 AuthenticatorPaaskSheetModel::GetStepDescription() const {
 
 ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
+}
+
+// AuthenticatorClientPinEntrySheetModel
+// -----------------------------------------
+
+AuthenticatorClientPinEntrySheetModel::AuthenticatorClientPinEntrySheetModel(
+    AuthenticatorRequestDialogModel* dialog_model,
+    Mode mode)
+    : AuthenticatorSheetModelBase(dialog_model), mode_(mode) {}
+
+AuthenticatorClientPinEntrySheetModel::
+    ~AuthenticatorClientPinEntrySheetModel() = default;
+
+void AuthenticatorClientPinEntrySheetModel::SetDelegate(Delegate* delegate) {
+  DCHECK(!delegate_);
+  delegate_ = delegate;
+}
+
+void AuthenticatorClientPinEntrySheetModel::SetPinCode(
+    base::string16 pin_code) {
+  pin_code_ = std::move(pin_code);
+}
+
+void AuthenticatorClientPinEntrySheetModel::SetPinConfirmation(
+    base::string16 pin_confirmation) {
+  DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
+  pin_confirmation_ = std::move(pin_confirmation);
+}
+
+gfx::ImageSkia* AuthenticatorClientPinEntrySheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PIN);
+}
+
+base::string16 AuthenticatorClientPinEntrySheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_TITLE);
+}
+
+base::string16 AuthenticatorClientPinEntrySheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(
+      mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry
+          ? IDS_WEBAUTHN_PIN_ENTRY_DESCRIPTION
+          : IDS_WEBAUTHN_PIN_SETUP_DESCRIPTION);
+}
+
+bool AuthenticatorClientPinEntrySheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorClientPinEntrySheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16 AuthenticatorClientPinEntrySheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_NEXT);
+}
+
+static bool IsValidUTF16(const base::string16& str16) {
+  std::string unused_str8;
+  return base::UTF16ToUTF8(str16.c_str(), str16.size(), &unused_str8);
+}
+
+void AuthenticatorClientPinEntrySheetModel::OnAccept() {
+  // TODO(martinkr): use device::pin::kMinLength once landed.
+  constexpr size_t kMinPinLength = 4;
+  if (!delegate_) {
+    NOTREACHED();
+    return;
+  }
+  if (mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup) {
+    // Validate a new PIN.
+    base::Optional<base::string16> error;
+    if (!pin_code_.empty() && !IsValidUTF16(pin_code_)) {
+      error = l10n_util::GetStringUTF16(
+          IDS_WEBAUTHN_PIN_ENTRY_ERROR_INVALID_CHARACTERS);
+    } else if (pin_code_.size() < kMinPinLength) {
+      error = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_TOO_SHORT);
+    } else if (pin_code_ != pin_confirmation_) {
+      error = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_MISMATCH);
+    }
+    if (error) {
+      delegate_->ShowPinError(*error);
+      return;
+    }
+  } else {
+    // Submit PIN to authenticator for verification.
+    DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry);
+    if (pin_code_.size() < kMinPinLength) {
+      delegate_->ShowPinError(
+          l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_TOO_SHORT));
+      return;
+    }
+  }
+  // TODO(martinkr): Actually set the PIN/request the PIN token and continue
+  // the request.
 }

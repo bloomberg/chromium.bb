@@ -79,6 +79,10 @@ class AuthenticatorRequestDialogModel {
 
     // Phone as a security key.
     kCableActivate,
+
+    // Authenticator Client PIN.
+    kClientPinEntry,
+    kClientPinSetup,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
