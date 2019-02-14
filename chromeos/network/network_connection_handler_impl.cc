@@ -214,8 +214,7 @@ void NetworkConnectionHandlerImpl::LoggedInStateChanged() {
   logged_in_time_ = base::TimeTicks::Now();
 }
 
-void NetworkConnectionHandlerImpl::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list) {
+void NetworkConnectionHandlerImpl::OnCertificatesLoaded() {
   certificates_loaded_ = true;
   NET_LOG_EVENT("Certificates Loaded", "");
   if (queued_connect_)

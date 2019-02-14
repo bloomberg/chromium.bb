@@ -79,31 +79,38 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
   net::CertificateList authority_certificates_;
 };
 
-bool IsCertInCertificateList(CERTCertificate* cert,
-                             const net::ScopedCERTCertificateList& cert_list) {
-  for (const auto& cert_list_element : cert_list) {
-    if (net::x509_util::IsSameCertificate(cert_list_element.get(), cert))
+bool IsCertInCertificateList(
+    CERTCertificate* cert,
+    bool device_wide,
+    const std::vector<NetworkCertLoader::NetworkCert>& network_cert_list) {
+  for (const auto& network_cert : network_cert_list) {
+    if (device_wide == network_cert.is_device_wide() &&
+        net::x509_util::IsSameCertificate(network_cert.cert(), cert)) {
       return true;
+    }
   }
   return false;
 }
 
-bool IsCertInCertificateList(const net::X509Certificate* cert,
-                             const net::ScopedCERTCertificateList& cert_list) {
-  for (const auto& cert_list_element : cert_list) {
-    if (net::x509_util::IsSameCertificate(cert_list_element.get(), cert))
+bool IsCertInCertificateList(
+    const net::X509Certificate* cert,
+    bool device_wide,
+    const std::vector<NetworkCertLoader::NetworkCert>& network_cert_list) {
+  for (const auto& network_cert : network_cert_list) {
+    if (device_wide == network_cert.is_device_wide() &&
+        net::x509_util::IsSameCertificate(network_cert.cert(), cert)) {
       return true;
+    }
   }
   return false;
 }
 
 size_t CountCertOccurencesInCertificateList(
     CERTCertificate* cert,
-    const net::ScopedCERTCertificateList& cert_list) {
+    const std::vector<NetworkCertLoader::NetworkCert>& network_cert_list) {
   size_t count = 0;
-  for (net::ScopedCERTCertificateList::const_iterator it = cert_list.begin();
-       it != cert_list.end(); ++it) {
-    if (net::x509_util::IsSameCertificate(it->get(), cert))
+  for (const auto& network_cert : network_cert_list) {
+    if (net::x509_util::IsSameCertificate(network_cert.cert(), cert))
       ++count;
   }
   return count;
@@ -144,7 +151,8 @@ class NetworkCertLoaderTest : public testing::Test,
   ~NetworkCertLoaderTest() override = default;
 
   void SetUp() override {
-    ASSERT_TRUE(primary_db_.is_open());
+    ASSERT_TRUE(primary_public_slot_db_.is_open());
+    ASSERT_TRUE(primary_private_slot_db_.is_open());
 
     NetworkCertLoader::Initialize();
     cert_loader_ = NetworkCertLoader::Get();
@@ -157,19 +165,12 @@ class NetworkCertLoaderTest : public testing::Test,
   }
 
  protected:
+  // Initializes |primary_certdb_| as a NSSCertDatabse based on
+  // |primary_public_slot_db| and |primary_private_slot_db| and starts the
+  // NetworkCertLoader with it.
   void StartCertLoaderWithPrimaryDB() {
-    CreateCertDatabase(&primary_db_, &primary_certdb_);
-    cert_loader_->SetUserNSSDB(primary_certdb_.get());
-
-    scoped_task_environment_.RunUntilIdle();
-    GetAndResetCertificatesLoadedEventsCount();
-  }
-
-  // Starts the cert loader with a primary cert database which has access to the
-  // system token.
-  void StartCertLoaderWithPrimaryDBAndSystemToken() {
-    CreateCertDatabase(&primary_db_, &primary_certdb_);
-    AddSystemToken(primary_certdb_.get());
+    CreateCertDatabase(&primary_public_slot_db_, &primary_private_slot_db_,
+                       &primary_certdb_);
     cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
     scoped_task_environment_.RunUntilIdle();
@@ -178,8 +179,7 @@ class NetworkCertLoaderTest : public testing::Test,
 
   // NetworkCertLoader::Observer:
   // The test keeps count of times the observer method was called.
-  void OnCertificatesLoaded(
-      const net::ScopedCERTCertificateList& cert_list) override {
+  void OnCertificatesLoaded() override {
     EXPECT_TRUE(certificates_loaded_events_count_ == 0);
     certificates_loaded_events_count_++;
   }
@@ -192,13 +192,24 @@ class NetworkCertLoaderTest : public testing::Test,
     return result;
   }
 
-  void CreateCertDatabase(crypto::ScopedTestNSSDB* db,
+  // Creates a TestNSSCertDatabase in *|certdb|, using the (mandatory)
+  // |public_slot_db| for the public slot and the (optional) |private_slot_db|
+  // as the private slot.
+  void CreateCertDatabase(crypto::ScopedTestNSSDB* public_slot_db,
+                          crypto::ScopedTestNSSDB* private_slot_db,
                           std::unique_ptr<TestNSSCertDatabase>* certdb) {
-    ASSERT_TRUE(db->is_open());
+    ASSERT_TRUE(public_slot_db && public_slot_db->is_open());
 
-    certdb->reset(new TestNSSCertDatabase(
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(db->slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(db->slot()))));
+    crypto::ScopedPK11Slot scoped_public_slot(
+        PK11_ReferenceSlot(public_slot_db->slot()));
+    crypto::ScopedPK11Slot scoped_private_slot;
+    if (private_slot_db) {
+      ASSERT_TRUE(private_slot_db->is_open());
+      scoped_private_slot =
+          crypto::ScopedPK11Slot(PK11_ReferenceSlot(private_slot_db->slot()));
+    }
+    *certdb = std::make_unique<TestNSSCertDatabase>(
+        std::move(scoped_public_slot), std::move(scoped_private_slot));
   }
 
   void ImportCACert(const std::string& cert_file,
@@ -261,10 +272,10 @@ class NetworkCertLoaderTest : public testing::Test,
 
   NetworkCertLoader* cert_loader_;
 
-  // The user is primary as the one whose certificates NetworkCertLoader
-  // handles, it has nothing to do with crypto::InitializeNSSForChromeOSUser
-  // is_primary_user parameter (which is irrelevant for these tests).
-  crypto::ScopedTestNSSDB primary_db_;
+  // The NSSCertDatabse and underlying slots for the primary user (because
+  // NetworkCertLoader uses device-wide certs and primary user's certs).
+  crypto::ScopedTestNSSDB primary_private_slot_db_;
+  crypto::ScopedTestNSSDB primary_public_slot_db_;
   std::unique_ptr<TestNSSCertDatabase> primary_certdb_;
 
   // Additional NSS DB simulating the system token.
@@ -285,14 +296,19 @@ TEST_F(NetworkCertLoaderTest, BasicOnlyUserDB) {
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
 
-  CreateCertDatabase(&primary_db_, &primary_certdb_);
+  CreateCertDatabase(&primary_public_slot_db_, &primary_private_slot_db_,
+                     &primary_certdb_);
+  net::ScopedCERTCertificateList certs;
+  ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
+  scoped_task_environment_.RunUntilIdle();
+
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
-  EXPECT_TRUE(cert_loader_->all_certs().empty());
-  EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
+  EXPECT_TRUE(cert_loader_->authority_certs().empty());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -302,9 +318,10 @@ TEST_F(NetworkCertLoaderTest, BasicOnlyUserDB) {
   EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
-  // Default CA cert roots should get loaded.
-  EXPECT_FALSE(cert_loader_->all_certs().empty());
-  EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
+  // Default CA cert roots should get loaded but not be available in
+  // NetworkCertLoader.
+  EXPECT_EQ(1U, cert_loader_->authority_certs().size());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 }
 
 TEST_F(NetworkCertLoaderTest, BasicOnlySystemDB) {
@@ -312,13 +329,19 @@ TEST_F(NetworkCertLoaderTest, BasicOnlySystemDB) {
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
 
-  CreateCertDatabase(&system_db_, &system_certdb_);
+  CreateCertDatabase(&system_db_, nullptr /* private_slot_db */,
+                     &system_certdb_);
+  AddSystemToken(system_certdb_.get());
+  net::ScopedCERTCertificateList certs;
+  ImportCACert("root_ca_cert.pem", system_certdb_.get(), &certs);
+  scoped_task_environment_.RunUntilIdle();
+
   cert_loader_->SetSystemNSSDB(system_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
-  EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
-  EXPECT_TRUE(cert_loader_->all_certs().empty());
+  EXPECT_TRUE(cert_loader_->authority_certs().empty());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -328,21 +351,27 @@ TEST_F(NetworkCertLoaderTest, BasicOnlySystemDB) {
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
-  // Default CA cert roots should get loaded.
-  EXPECT_FALSE(cert_loader_->all_certs().empty());
+  // Default CA cert roots should get loaded, but not be exposed through
+  // NetworkCertLoader.
+  EXPECT_EQ(1U, cert_loader_->authority_certs().size());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 }
 
 // Tests the NetworkCertLoader with a system DB and then with an additional user
 // DB which does not have access to the system token.
 TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
-  CreateCertDatabase(&system_db_, &system_certdb_);
+  CreateCertDatabase(&system_db_, nullptr /* private_slot_db */,
+                     &system_certdb_);
+  AddSystemToken(system_certdb_.get());
   net::ScopedCERTCertificate system_token_cert(ImportClientCertAndKey(
       system_certdb_.get(), system_db_.slot(), TEST_CLIENT_CERT_1));
   ASSERT_TRUE(system_token_cert);
 
-  CreateCertDatabase(&primary_db_, &primary_certdb_);
+  CreateCertDatabase(&primary_public_slot_db_, &primary_private_slot_db_,
+                     &primary_certdb_);
   net::ScopedCERTCertificate user_token_cert(ImportClientCertAndKey(
-      primary_certdb_.get(), primary_db_.slot(), TEST_CLIENT_CERT_2));
+      primary_certdb_.get(), primary_private_slot_db_.slot(),
+      TEST_CLIENT_CERT_2));
   ASSERT_TRUE(user_token_cert);
 
   scoped_task_environment_.RunUntilIdle();
@@ -356,8 +385,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
-  EXPECT_TRUE(cert_loader_->all_certs().empty());
-  EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -366,19 +394,17 @@ TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
+  EXPECT_EQ(1U, cert_loader_->client_certs().size());
 
-  EXPECT_TRUE(IsCertInCertificateList(
-      system_token_cert.get(), cert_loader_->system_token_client_certs()));
   EXPECT_TRUE(IsCertInCertificateList(system_token_cert.get(),
-                                      cert_loader_->all_certs()));
+                                      true /* device_wide */,
+                                      cert_loader_->client_certs()));
 
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
-  EXPECT_FALSE(cert_loader_->all_certs().empty());
-  EXPECT_FALSE(cert_loader_->system_token_client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -387,24 +413,31 @@ TEST_F(NetworkCertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->initial_load_finished());
   EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
+  EXPECT_EQ(2U, cert_loader_->client_certs().size());
 
-  EXPECT_FALSE(IsCertInCertificateList(
-      user_token_cert.get(), cert_loader_->system_token_client_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(user_token_cert.get(),
+                                       true /* device_wide */,
+                                       cert_loader_->client_certs()));
   EXPECT_TRUE(IsCertInCertificateList(user_token_cert.get(),
-                                      cert_loader_->all_certs()));
+                                      false /* device_wide */,
+                                      cert_loader_->client_certs()));
 }
 
 // Tests the NetworkCertLoader with a system DB and then with an additional user
 // DB which has access to the system token.
 TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
-  CreateCertDatabase(&system_db_, &system_certdb_);
+  CreateCertDatabase(&system_db_, nullptr /* private_slot_db */,
+                     &system_certdb_);
+  AddSystemToken(system_certdb_.get());
   net::ScopedCERTCertificate system_token_cert(ImportClientCertAndKey(
       system_certdb_.get(), system_db_.slot(), TEST_CLIENT_CERT_1));
   ASSERT_TRUE(system_token_cert);
 
-  CreateCertDatabase(&primary_db_, &primary_certdb_);
+  CreateCertDatabase(&primary_public_slot_db_, &primary_private_slot_db_,
+                     &primary_certdb_);
   net::ScopedCERTCertificate user_token_cert(ImportClientCertAndKey(
-      primary_certdb_.get(), primary_db_.slot(), TEST_CLIENT_CERT_2));
+      primary_certdb_.get(), primary_private_slot_db_.slot(),
+      TEST_CLIENT_CERT_2));
   ASSERT_TRUE(user_token_cert);
 
   AddSystemToken(primary_certdb_.get());
@@ -419,8 +452,7 @@ TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_FALSE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
-  EXPECT_TRUE(cert_loader_->all_certs().empty());
-  EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -429,19 +461,17 @@ TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
+  EXPECT_EQ(1U, cert_loader_->client_certs().size());
 
-  EXPECT_TRUE(IsCertInCertificateList(
-      system_token_cert.get(), cert_loader_->system_token_client_certs()));
   EXPECT_TRUE(IsCertInCertificateList(system_token_cert.get(),
-                                      cert_loader_->all_certs()));
+                                      true /* device_wide */,
+                                      cert_loader_->client_certs()));
 
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
   EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
-  EXPECT_FALSE(cert_loader_->all_certs().empty());
-  EXPECT_FALSE(cert_loader_->system_token_client_certs().empty());
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
@@ -450,11 +480,41 @@ TEST_F(NetworkCertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_TRUE(cert_loader_->initial_load_finished());
   EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
+  EXPECT_EQ(2U, cert_loader_->client_certs().size());
 
-  EXPECT_FALSE(IsCertInCertificateList(
-      user_token_cert.get(), cert_loader_->system_token_client_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(user_token_cert.get(),
+                                       true /* device_wide */,
+                                       cert_loader_->client_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(user_token_cert.get(),
+                                      false /* device_wide */,
+                                      cert_loader_->client_certs()));
   EXPECT_EQ(1U, CountCertOccurencesInCertificateList(
-                    user_token_cert.get(), cert_loader_->all_certs()));
+                    user_token_cert.get(), cert_loader_->client_certs()));
+}
+
+// Tests that NetworkCertLoader does not list certs twice if they appear on
+// multiple slots.
+TEST_F(NetworkCertLoaderTest, DeduplicatesCerts) {
+  // Use the same slot as public and private slot.
+  crypto::ScopedTestNSSDB* single_slot_db = &primary_public_slot_db_;
+  CreateCertDatabase(single_slot_db /* public_slot_db */,
+                     single_slot_db /* private_slot_db */, &primary_certdb_);
+  net::ScopedCERTCertificateList certs;
+  ImportCACert("root_ca_cert.pem", primary_certdb_.get(), &certs);
+  scoped_task_environment_.RunUntilIdle();
+
+  cert_loader_->SetUserNSSDB(primary_certdb_.get());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+
+  EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
+  EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
+
+  // Default CA cert roots should get loaded but not be available in
+  // NetworkCertLoader.
+  EXPECT_EQ(1U, cert_loader_->authority_certs().size());
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
 }
 
 TEST_F(NetworkCertLoaderTest, UpdateCertListOnNewCert) {
@@ -465,16 +525,16 @@ TEST_F(NetworkCertLoaderTest, UpdateCertListOnNewCert) {
 
   // Certs are loaded asynchronously, so the new cert should not yet be in the
   // cert list.
-  EXPECT_FALSE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(certs[0].get(), false /* device_wide */,
+                                       cert_loader_->client_certs()));
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   // The certificate list should be updated now, as the message loop's been run.
-  EXPECT_TRUE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->all_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(certs[0].get(), false /* device_wide */,
+                                      cert_loader_->authority_certs()));
 
   EXPECT_FALSE(cert_loader_->IsCertificateHardwareBacked(certs[0].get()));
 }
@@ -484,15 +544,18 @@ TEST_F(NetworkCertLoaderTest, NoUpdateOnSecondaryDbChanges) {
   std::unique_ptr<TestNSSCertDatabase> secondary_certdb;
 
   StartCertLoaderWithPrimaryDB();
-  CreateCertDatabase(&secondary_db, &secondary_certdb);
+  CreateCertDatabase(&secondary_db /* public_slot_db */,
+                     &secondary_db /* private_slot_db */, &secondary_certdb);
 
   net::ScopedCERTCertificateList certs;
   ImportCACert("root_ca_cert.pem", secondary_certdb.get(), &certs);
 
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(certs[0].get(), false /* device_wide */,
+                                       cert_loader_->client_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(certs[0].get(), true /* device_wide */,
+                                       cert_loader_->client_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
@@ -506,25 +569,32 @@ TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCert) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(cert.get(), false /* device_wide */,
+                                      cert_loader_->client_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, ClientLoaderUpdateOnNewClientCertInSystemToken) {
-  StartCertLoaderWithPrimaryDBAndSystemToken();
+  CreateCertDatabase(&system_db_ /* public_slot_db */,
+                     nullptr /* private_slot_db */, &system_certdb_);
+  AddSystemToken(system_certdb_.get());
+  scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(cert_loader_->system_token_client_certs().empty());
+  cert_loader_->SetSystemNSSDB(system_certdb_.get());
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+
+  EXPECT_TRUE(cert_loader_->client_certs().empty());
   net::ScopedCERTCertificate cert(ImportClientCertAndKey(
-      primary_certdb_.get(), primary_certdb_->GetSystemSlot().get()));
+      system_certdb_.get(), system_certdb_->GetSystemSlot().get()));
   ASSERT_TRUE(cert);
 
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
-  EXPECT_EQ(1U, cert_loader_->system_token_client_certs().size());
-  EXPECT_TRUE(IsCertInCertificateList(
-      cert.get(), cert_loader_->system_token_client_certs()));
+  EXPECT_EQ(1U, cert_loader_->client_certs().size());
+  EXPECT_TRUE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                      cert_loader_->client_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, NoUpdateOnNewClientCertInSecondaryDb) {
@@ -532,7 +602,8 @@ TEST_F(NetworkCertLoaderTest, NoUpdateOnNewClientCertInSecondaryDb) {
   std::unique_ptr<TestNSSCertDatabase> secondary_certdb;
 
   StartCertLoaderWithPrimaryDB();
-  CreateCertDatabase(&secondary_db, &secondary_certdb);
+  CreateCertDatabase(&secondary_db /* public_slot_db */,
+                     &secondary_db /* private_slot_db */, &secondary_certdb);
 
   net::ScopedCERTCertificate cert(
       ImportClientCertAndKey(secondary_certdb.get()));
@@ -540,7 +611,10 @@ TEST_F(NetworkCertLoaderTest, NoUpdateOnNewClientCertInSecondaryDb) {
 
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), false /* device_wide */,
+                                       cert_loader_->client_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                       cert_loader_->client_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, UpdatedOnCertRemoval) {
@@ -553,7 +627,8 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCertRemoval) {
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  ASSERT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  ASSERT_TRUE(IsCertInCertificateList(cert.get(), false /* device_wide */,
+                                      cert_loader_->client_certs()));
 
   primary_certdb_->DeleteCertAndKey(cert.get());
 
@@ -561,7 +636,8 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCertRemoval) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
-  ASSERT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  ASSERT_FALSE(IsCertInCertificateList(cert.get(), false /* device_wide */,
+                                       cert_loader_->client_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, UpdatedOnCACertTrustChange) {
@@ -572,8 +648,8 @@ TEST_F(NetworkCertLoaderTest, UpdatedOnCACertTrustChange) {
 
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  ASSERT_TRUE(
-      IsCertInCertificateList(certs[0].get(), cert_loader_->all_certs()));
+  ASSERT_TRUE(IsCertInCertificateList(certs[0].get(), false /* device_wide */,
+                                      cert_loader_->authority_certs()));
 
   // The value that should have been set by |ImportCACert|.
   ASSERT_EQ(net::NSSCertDatabase::TRUST_DEFAULT,
@@ -597,20 +673,24 @@ TEST_F(NetworkCertLoaderTest, UpdateSinglePolicyCertificateProvider) {
   FakePolicyCertificateProvider device_policy_certs_provider;
 
   // Setting the cert provider triggers an update.
-  cert_loader_->AddPolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(
+      &device_policy_certs_provider);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   // When policy changes, an update is triggered too.
-  EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                       cert_loader_->authority_certs()));
   device_policy_certs_provider.SetAuthorityCertificates({cert});
   device_policy_certs_provider.NotifyObservers();
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                      cert_loader_->authority_certs()));
 
   // Removing the cert provider triggers an update.
-  cert_loader_->RemovePolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(nullptr);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                       cert_loader_->authority_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, UpdateOnTwoPolicyCertificateProviders) {
@@ -631,27 +711,32 @@ TEST_F(NetworkCertLoaderTest, UpdateOnTwoPolicyCertificateProviders) {
   FakePolicyCertificateProvider user_policy_certs_provider;
   user_policy_certs_provider.SetAuthorityCertificates({user_policy_cert});
 
-  // Adding a first policy certificate provider triggers an update. In this test
-  // case, the device policy certs provider already contains a cert.
-  cert_loader_->AddPolicyCertificateProvider(&device_policy_certs_provider);
+  // Adding a device policy certificate provider triggers an update. In this
+  // test case, the device policy certs provider already contains a cert.
+  cert_loader_->SetDevicePolicyCertificateProvider(
+      &device_policy_certs_provider);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
   EXPECT_TRUE(IsCertInCertificateList(device_policy_cert.get(),
-                                      cert_loader_->all_certs()));
+                                      true /* device_wide */,
+                                      cert_loader_->authority_certs()));
   EXPECT_FALSE(IsCertInCertificateList(user_policy_cert.get(),
-                                       cert_loader_->all_certs()));
+                                       false /* device_wide */,
+                                       cert_loader_->authority_certs()));
 
-  // Adding a second policy certificate provider triggers an update. In this
+  // Adding a user policy certificate provider triggers an update. In this
   // test case, the user policy certs provider already contains a cert.
-  cert_loader_->AddPolicyCertificateProvider(&user_policy_certs_provider);
+  cert_loader_->SetUserPolicyCertificateProvider(&user_policy_certs_provider);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
   EXPECT_TRUE(IsCertInCertificateList(device_policy_cert.get(),
-                                      cert_loader_->all_certs()));
+                                      true /* device_wide */,
+                                      cert_loader_->authority_certs()));
   EXPECT_TRUE(IsCertInCertificateList(user_policy_cert.get(),
-                                      cert_loader_->all_certs()));
+                                      false /* device_wide */,
+                                      cert_loader_->authority_certs()));
 
-  cert_loader_->RemovePolicyCertificateProvider(&user_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(nullptr);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  cert_loader_->RemovePolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetUserPolicyCertificateProvider(nullptr);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 }
 
@@ -666,23 +751,27 @@ TEST_F(NetworkCertLoaderTest,
 
   // Setting the cert provider does not trigger an update yet, because the
   // NetworkCertLoader has not been set to use a system or user NSS Database.
-  cert_loader_->AddPolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(
+      &device_policy_certs_provider);
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
 
   // Same when the policy changes.
-  EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                       cert_loader_->authority_certs()));
   device_policy_certs_provider.SetAuthorityCertificates({cert});
   device_policy_certs_provider.NotifyObservers();
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
 
   // After starting the NetworkCertLoader, the policy-provided cert is there.
   StartCertLoaderWithPrimaryDB();
-  EXPECT_TRUE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_TRUE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                      cert_loader_->authority_certs()));
 
   // Removing the cert provider triggers an update.
-  cert_loader_->RemovePolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(nullptr);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
-  EXPECT_FALSE(IsCertInCertificateList(cert.get(), cert_loader_->all_certs()));
+  EXPECT_FALSE(IsCertInCertificateList(cert.get(), true /* device_wide */,
+                                       cert_loader_->authority_certs()));
 }
 
 TEST_F(NetworkCertLoaderTest, NoUpdateWhenShuttingDown) {
@@ -691,13 +780,14 @@ TEST_F(NetworkCertLoaderTest, NoUpdateWhenShuttingDown) {
   FakePolicyCertificateProvider device_policy_certs_provider;
 
   // Setting the cert provider triggers an update.
-  cert_loader_->AddPolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(
+      &device_policy_certs_provider);
   ASSERT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   // Removing the cert provider does not trigger an update if the shutdown
   // procedure has started.
   cert_loader_->set_is_shutting_down();
-  cert_loader_->RemovePolicyCertificateProvider(&device_policy_certs_provider);
+  cert_loader_->SetDevicePolicyCertificateProvider(nullptr);
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
 }
 

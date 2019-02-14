@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -275,19 +276,20 @@ std::string GetPEMEncodedIssuer(CERTCertificate* cert) {
   return pem_encoded_issuer;
 }
 
-std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
-    net::ScopedCERTCertificateList certs,
-    base::Time now) {
+void CreateSortedCertAndIssuerList(
+    const NetworkCertLoader::NetworkCertList& network_certs,
+    base::Time now,
+    std::vector<CertAndIssuer>* all_cert_and_issuers,
+    std::vector<CertAndIssuer>* device_wide_cert_and_issuers) {
   // Filter all client certs and determines each certificate's issuer, which is
   // required for the pattern matching.
-  // TODO(crbug.com/781693): Consider moving the filtering of client certs into
-  // NetworkCertLoader. It should not be in ClientCertResolver's responsibility
-  // to decide if a certificate is a valid client certificate or not. Other
-  // consumers of NetworkCertLoader could also use a pre-filtered list (e.g.
-  // NetworkCertMigrator).
-  std::vector<CertAndIssuer> client_certs;
-  for (net::ScopedCERTCertificate& scoped_cert : certs) {
-    CERTCertificate* cert = scoped_cert.get();
+  for (const NetworkCertLoader::NetworkCert& network_cert : network_certs) {
+    // If the caller is interested in device-wide certificates only, skip
+    // user-specific certificates.
+    if (!all_cert_and_issuers && !network_cert.is_device_wide())
+      continue;
+
+    CERTCertificate* cert = network_cert.cert();
     base::Time not_after;
     if (!net::x509_util::GetValidityTimes(cert, nullptr, &not_after) ||
         now > not_after ||
@@ -303,31 +305,42 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
       continue;
     }
     std::string pem_encoded_issuer = GetPEMEncodedIssuer(cert);
-    client_certs.push_back(CertAndIssuer(std::move(scoped_cert),
-                                         pem_encoded_issuer,
-                                         private_key_nickname.value()));
+    if (all_cert_and_issuers) {
+      all_cert_and_issuers->push_back(
+          CertAndIssuer(net::x509_util::DupCERTCertificate(cert),
+                        pem_encoded_issuer, private_key_nickname.value()));
+    }
+    if (device_wide_cert_and_issuers && network_cert.is_device_wide()) {
+      device_wide_cert_and_issuers->push_back(
+          CertAndIssuer(net::x509_util::DupCERTCertificate(cert),
+                        pem_encoded_issuer, private_key_nickname.value()));
+    }
   }
 
-  std::sort(client_certs.begin(), client_certs.end(), &CompareCertExpiration);
-  return client_certs;
+  if (all_cert_and_issuers) {
+    std::sort(all_cert_and_issuers->begin(), all_cert_and_issuers->end(),
+              &CompareCertExpiration);
+  }
+  if (device_wide_cert_and_issuers) {
+    std::sort(device_wide_cert_and_issuers->begin(),
+              device_wide_cert_and_issuers->end(), &CompareCertExpiration);
+  }
 }
 
-// Searches for matches between |networks| and |all_certs| (for networks
-// configured in user policy) / |system_token_client_certs| (for networks
-// configured in device policy). Returns the matches that were found. Because
-// this calls NSS functions and is potentially slow, it must be run on a worker
-// thread.
+// Searches for matches between |networks| and |network_certs|. Returns the
+// matches that were found. Because this calls NSS functions and is potentially
+// slow, it must be run on a worker thread.
 std::vector<NetworkAndMatchingCert> FindCertificateMatches(
-    net::ScopedCERTCertificateList all_certs,
-    net::ScopedCERTCertificateList system_token_client_certs,
+    NetworkCertLoader::NetworkCertList network_certs,
     const std::vector<NetworkAndCertConfig>& networks,
     base::Time now) {
   std::vector<NetworkAndMatchingCert> matches;
 
-  std::vector<CertAndIssuer> all_client_certs(
-      CreateSortedCertAndIssuerList(std::move(all_certs), now));
-  std::vector<CertAndIssuer> system_client_certs(
-      CreateSortedCertAndIssuerList(std::move(system_token_client_certs), now));
+  std::vector<CertAndIssuer> all_client_cert_and_issuers;
+  std::vector<CertAndIssuer> device_wide_client_cert_and_issuers;
+  CreateSortedCertAndIssuerList(network_certs, now,
+                                &all_client_cert_and_issuers,
+                                &device_wide_client_cert_and_issuers);
 
   for (const NetworkAndCertConfig& network_and_cert_config : networks) {
     // Use only certs from the system token if the source of the client cert
@@ -335,8 +348,8 @@ std::vector<NetworkAndMatchingCert> FindCertificateMatches(
     std::vector<CertAndIssuer>* client_certs =
         network_and_cert_config.cert_config.onc_source ==
                 ::onc::ONC_SOURCE_DEVICE_POLICY
-            ? &system_client_certs
-            : &all_client_certs;
+            ? &device_wide_client_cert_and_issuers
+            : &all_client_cert_and_issuers;
     auto cert_it = std::find_if(
         client_certs->begin(), client_certs->end(),
         MatchCertWithCertConfig(network_and_cert_config.cert_config));
@@ -456,25 +469,25 @@ bool ClientCertResolver::ResolveClientCertificateSync(
 
   // Prepare and sort the list of known client certs. Use only certs from the
   // system token if the source of the client cert config is device policy.
-  std::vector<CertAndIssuer> client_certs;
+  std::vector<CertAndIssuer> client_cert_and_issuers;
   if (client_cert_config.onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
-    client_certs = CreateSortedCertAndIssuerList(
-        net::x509_util::DupCERTCertificateList(
-            NetworkCertLoader::Get()->system_token_client_certs()),
-        base::Time::Now());
+    CreateSortedCertAndIssuerList(
+        NetworkCertLoader::Get()->client_certs(), base::Time::Now(),
+        nullptr /* all_cert_and_issuers */,
+        &client_cert_and_issuers /* device_wide_cert_and_issuers */);
   } else {
-    client_certs = CreateSortedCertAndIssuerList(
-        net::x509_util::DupCERTCertificateList(
-            NetworkCertLoader::Get()->all_certs()),
-        base::Time::Now());
+    CreateSortedCertAndIssuerList(
+        NetworkCertLoader::Get()->client_certs(), base::Time::Now(),
+        &client_cert_and_issuers /* all_cert_and_issuers */,
+        nullptr /* device_wide_cert_and_issuers */);
   }
 
   // Search for a certificate matching the pattern or reference.
-  std::vector<CertAndIssuer>::iterator cert_it =
-      std::find_if(client_certs.begin(), client_certs.end(),
-                   MatchCertWithCertConfig(client_cert_config));
+  std::vector<CertAndIssuer>::iterator cert_it = std::find_if(
+      client_cert_and_issuers.begin(), client_cert_and_issuers.end(),
+      MatchCertWithCertConfig(client_cert_config));
 
-  if (cert_it == client_certs.end()) {
+  if (cert_it == client_cert_and_issuers.end()) {
     VLOG(1) << "Couldn't find a matching client cert";
     client_cert::SetEmptyShillProperties(client_cert_type, shill_properties);
     return false;
@@ -547,8 +560,7 @@ void ClientCertResolver::NetworkConnectionStateChanged(
   }
 }
 
-void ClientCertResolver::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list) {
+void ClientCertResolver::OnCertificatesLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "OnCertificatesLoaded.";
   if (!ClientCertificatesLoaded())
@@ -652,10 +664,8 @@ void ClientCertResolver::ResolveNetworks(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FindCertificateMatches,
-                     net::x509_util::DupCERTCertificateList(
-                         NetworkCertLoader::Get()->all_certs()),
-                     net::x509_util::DupCERTCertificateList(
-                         NetworkCertLoader::Get()->system_token_client_certs()),
+                     NetworkCertLoader::CloneNetworkCertList(
+                         NetworkCertLoader::Get()->client_certs()),
                      networks_to_resolve, Now()),
       base::BindOnce(&ClientCertResolver::ConfigureCertificates,
                      weak_ptr_factory_.GetWeakPtr()));
