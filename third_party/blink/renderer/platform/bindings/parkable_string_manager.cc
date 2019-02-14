@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_allocator_dump.h"
@@ -170,12 +171,18 @@ bool ParkableStringManager::OnMemoryDump(
 
   size_t total_size =
       uncompressed_size + compressed_size + metadata_size + overhead_size;
+  size_t memory_footprint =
+      compressed_size + uncompressed_size + metadata_size + overhead_size;
+  // Has to be uint64_t.
+  size_t savings_size =
+      original_size > memory_footprint ? original_size - memory_footprint : 0;
   dump->AddScalar("size", "bytes", total_size);
   dump->AddScalar("original_size", "bytes", original_size);
   dump->AddScalar("uncompressed_size", "bytes", uncompressed_size);
   dump->AddScalar("compressed_size", "bytes", compressed_size);
   dump->AddScalar("metadata_size", "bytes", metadata_size);
   dump->AddScalar("overhead_size", "bytes", overhead_size);
+  dump->AddScalar("savings_size", "bytes", savings_size);
 
   pmd->AddSuballocation(dump->guid(),
                         WTF::Partitions::kAllocatedObjectPoolName);
@@ -215,6 +222,19 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
     did_register_memory_pressure_listener_ = true;
   }
 
+  if (!has_posted_unparking_time_accounting_task_ &&
+      GetCompressionMode() == CompressionMode::kForeground) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        Thread::Current()->GetTaskRunner();
+    DCHECK(task_runner);
+    task_runner->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ParkableStringManager::RecordUnparkingCpuCost,
+                       base::Unretained(this)),
+        base::TimeDelta::FromMinutes(5));
+    has_posted_unparking_time_accounting_task_ = true;
+  }
+
   return new_parkable_string;
 }
 
@@ -246,7 +266,8 @@ void ParkableStringManager::OnParked(ParkableStringImpl* newly_parked_string,
 }
 
 void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
-                                       StringImpl* new_unparked_string) {
+                                       StringImpl* new_unparked_string,
+                                       base::TimeDelta unparking_time) {
   DCHECK(IsMainThread());
   DCHECK(was_parked_string->may_be_parked());
   DCHECK(!was_parked_string->is_parked());
@@ -254,6 +275,7 @@ void ParkableStringManager::OnUnparked(ParkableStringImpl* was_parked_string,
   DCHECK(it != parked_strings_.end());
   parked_strings_.erase(it);
   unparked_strings_.insert(new_unparked_string, was_parked_string);
+  total_unparking_time_ += unparking_time;
   ScheduleAgingTaskIfNeeded();
 }
 
@@ -347,6 +369,11 @@ void ParkableStringManager::DropStringsWithCompressedDataAndRecordStatistics() {
   }
 }
 
+void ParkableStringManager::RecordUnparkingCpuCost() const {
+  base::UmaHistogramTimes("Memory.ParkableString.MainThreadTime.5min",
+                          total_unparking_time_);
+}
+
 void ParkableStringManager::AgeStringsAndPark() {
   if (GetCompressionMode() != CompressionMode::kForeground)
     return;
@@ -417,7 +444,9 @@ void ParkableStringManager::ResetForTesting() {
   waiting_to_record_stats_ = false;
   has_pending_aging_task_ = false;
   should_record_stats_ = false;
+  has_posted_unparking_time_accounting_task_ = false;
   did_register_memory_pressure_listener_ = false;
+  total_unparking_time_ = base::TimeDelta();
   unparked_strings_.clear();
   parked_strings_.clear();
 }
@@ -427,7 +456,9 @@ ParkableStringManager::ParkableStringManager()
       waiting_to_record_stats_(false),
       has_pending_aging_task_(false),
       should_record_stats_(false),
+      has_posted_unparking_time_accounting_task_(false),
       did_register_memory_pressure_listener_(false),
+      total_unparking_time_(),
       unparked_strings_(),
       parked_strings_() {}
 

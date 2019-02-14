@@ -385,44 +385,46 @@ void ParkableStringImpl::Unpark() {
                CharactersSizeInBytes());
   DCHECK(compressed_);
   base::ElapsedTimer timer;
+  {
+    base::StringPiece compressed_string_piece(
+        reinterpret_cast<const char*>(compressed_->data()),
+        compressed_->size() * sizeof(uint8_t));
+    String uncompressed;
+    base::StringPiece uncompressed_string_piece;
+    size_t size = CharactersSizeInBytes();
+    if (is_8bit()) {
+      LChar* data;
+      uncompressed = String::CreateUninitialized(length(), data);
+      uncompressed_string_piece =
+          base::StringPiece(reinterpret_cast<const char*>(data), size);
+    } else {
+      UChar* data;
+      uncompressed = String::CreateUninitialized(length(), data);
+      uncompressed_string_piece =
+          base::StringPiece(reinterpret_cast<const char*>(data), size);
+    }
 
-  base::StringPiece compressed_string_piece(
-      reinterpret_cast<const char*>(compressed_->data()),
-      compressed_->size() * sizeof(uint8_t));
-  String uncompressed;
-  base::StringPiece uncompressed_string_piece;
-  size_t size = CharactersSizeInBytes();
-  if (is_8bit()) {
-    LChar* data;
-    uncompressed = String::CreateUninitialized(length(), data);
-    uncompressed_string_piece =
-        base::StringPiece(reinterpret_cast<const char*>(data), size);
-  } else {
-    UChar* data;
-    uncompressed = String::CreateUninitialized(length(), data);
-    uncompressed_string_piece =
-        base::StringPiece(reinterpret_cast<const char*>(data), size);
+    // If decompression fails, this is either because:
+    // 1. The output buffer is too small
+    // 2. Compressed data is corrupted
+    // 3. Cannot allocate memory in zlib
+    //
+    // (1-2) are data corruption, and (3) is OOM. In all cases, we cannot
+    // recover the string we need, nothing else to do than to abort.
+    CHECK(compression::GzipUncompress(compressed_string_piece,
+                                      uncompressed_string_piece));
+    string_ = uncompressed;
+    state_ = State::kUnparked;
   }
-
-  // If decompression fails, this is either because:
-  // 1. The output buffer is too small
-  // 2. Compressed data is corrupted
-  // 3. Cannot allocate memory in zlib
-  //
-  // (1-2) are data corruption, and (3) is OOM. In all cases, we cannot recover
-  // the string we need, nothing else to do than to abort.
-  CHECK(compression::GzipUncompress(compressed_string_piece,
-                                    uncompressed_string_piece));
-  string_ = uncompressed;
-  state_ = State::kUnparked;
-  ParkableStringManager::Instance().OnUnparked(this, string_.Impl());
+  base::TimeDelta elapsed = timer.Elapsed();
+  ParkableStringManager::Instance().OnUnparked(this, string_.Impl(), elapsed);
 
   bool backgrounded =
       ParkableStringManager::Instance().IsRendererBackgrounded();
   auto action = backgrounded ? ParkingAction::kUnparkedInBackground
                              : ParkingAction::kUnparkedInForeground;
   RecordParkingAction(action);
-  RecordStatistics(CharactersSizeInBytes(), timer.Elapsed(), action);
+  RecordStatistics(CharactersSizeInBytes(), elapsed, action);
 }
 
 void ParkableStringImpl::OnParkingCompleteOnMainThread(
