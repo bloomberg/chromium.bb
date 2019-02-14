@@ -5,14 +5,6 @@
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
-config("simd_config") {
-  # TODO(crbug.com/webrtc/9577): Use SIMD while fuzzing.
-  # TODO(crbug.com/webrtc/9577): Fix SIMD not detected on Android, fuchsia, iOS.
-  if (use_fuzzing_engine || is_android || is_fuchsia || is_ios) {
-    cflags = [ "-DPFFFT_SIMD_DISABLE" ]
-  }
-}
-
 config("common_config") {
   if (is_win) {
     defines = [
@@ -23,10 +15,7 @@ config("common_config") {
 }
 
 static_library("pffft") {
-  configs += [
-    ":common_config",
-    ":simd_config",
-  ]
+  configs += [ ":common_config" ]
   sources = [
     "src/pffft.c",
     "src/pffft.h",
@@ -95,10 +84,7 @@ static_library("fftpack") {
 
 executable("pffft_benchmark") {
   testonly = true
-  configs += [
-    ":common_config",
-    ":simd_config",
-  ]
+  configs += [ ":common_config" ]
   sources = [
     "src/test_pffft.c",
   ]
