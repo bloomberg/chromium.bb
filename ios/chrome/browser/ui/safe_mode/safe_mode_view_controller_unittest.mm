@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_view_controller.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#import "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/ocmock/OCMockObject+BreakpadControllerTesting.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,6 +63,20 @@ TEST_F(SafeModeViewControllerTest, HasSuggestions) {
   EXPECT_FALSE([SafeModeViewController hasSuggestions]);
 
   breakpad_helper::SetUploadingEnabled(false);
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      // Calling SetUploadingEnabled() for the first time kicks off several
+      // asynchronous calls that ultimately result in MainThreadFreezeDetector's
+      // |-canUploadBreakpadCrashReports| being flipped to YES.  Subsequent
+      // calls will perform synchronously after |canUploadBreakpadCrashReports|
+      // is YES.  The OCMock verification calls below expect these selectors to
+      // be called synchronously, so wait until |canUploadBreakpadCrashReports|
+      // is YES before continuing the test.
+      // TODO(crbug.com/931826): Remove timing assumptions for the OCMock
+      // verification calls below.
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return [MainThreadFreezeDetector sharedInstance]
+            .canUploadBreakpadCrashReports;
+      }));
   EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
   EXPECT_FALSE([SafeModeViewController hasSuggestions]);
 
