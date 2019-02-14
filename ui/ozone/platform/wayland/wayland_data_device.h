@@ -58,6 +58,8 @@ class WaylandDataDevice {
 
   wl_data_device* data_device() const { return data_device_.get(); }
 
+  bool IsDragEntered() { return drag_offer_ != nullptr; }
+
  private:
   void ReadClipboardDataFromFD(base::ScopedFD fd, const std::string& mime_type);
 
