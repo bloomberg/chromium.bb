@@ -10,6 +10,11 @@ MediaSinkWithCastModes::MediaSinkWithCastModes(const MediaSink& sink)
     : sink(sink) {}
 
 MediaSinkWithCastModes::MediaSinkWithCastModes(
+    const MediaSink& sink,
+    std::initializer_list<MediaCastMode> cast_modes)
+    : sink(sink), cast_modes(cast_modes) {}
+
+MediaSinkWithCastModes::MediaSinkWithCastModes(
     const MediaSinkWithCastModes& other) = default;
 
 MediaSinkWithCastModes::~MediaSinkWithCastModes() {}

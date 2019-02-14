@@ -30,6 +30,9 @@ class MediaSinksObserver {
                      const MediaSource& source,
                      const url::Origin& origin);
   // Constructs an observer for all sinks known to |router|.
+  // NOTE: Not all Media Route Providers support sink queries with an empty
+  // source, so the returned sink list may be incomplete.
+  // TODO(crbug.com/929937): Fix this.
   explicit MediaSinksObserver(MediaRouter* router);
   virtual ~MediaSinksObserver();
 
