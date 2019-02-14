@@ -67,7 +67,9 @@ class MarkupAccumulator {
   void AppendString(const String&);
   // Serialize a Node, without its children and its end tag.
   void AppendStartMarkup(const Node&);
-  void AppendStartTagOpen(const Element&);
+  // Returns 'ignore namespace definition attribute' flag.
+  // If it's true, we should not serialize xmlns="..." on the element.
+  bool AppendStartTagOpen(const Element&);
   void AppendStartTagClose(const Element&);
   bool ShouldAddNamespaceElement(const Element&);
   void AppendNamespace(const AtomicString& prefix,
