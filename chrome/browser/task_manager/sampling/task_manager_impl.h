@@ -89,6 +89,7 @@ class TaskManagerImpl : public TaskManagerInterface,
   const TaskIdList& GetTaskIdsList() const override;
   TaskIdList GetIdsOfTasksSharingSameProcess(TaskId task_id) const override;
   size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override;
+  bool IsRunningInVM(TaskId task_id) const override;
   TaskId GetTaskIdForWebContents(
       content::WebContents* web_contents) const override;
 
@@ -109,6 +110,9 @@ class TaskManagerImpl : public TaskManagerInterface,
       std::vector<network::mojom::NetworkUsagePtr> total_network_usages);
 
  private:
+  using PidToTaskGroupMap =
+      std::map<base::ProcessId, std::unique_ptr<TaskGroup>>;
+
   friend struct base::LazyInstanceTraitsBase<TaskManagerImpl>;
 
   TaskManagerImpl();
@@ -135,6 +139,7 @@ class TaskManagerImpl : public TaskManagerInterface,
   bool UpdateTasksWithBytesTransferred(const BytesTransferredKey& key,
                                        const BytesTransferredParam& param);
 
+  PidToTaskGroupMap* GetVmPidToTaskGroupMap(Task::Type type);
   TaskGroup* GetTaskGroupByTaskId(TaskId task_id) const;
   Task* GetTaskByTaskId(TaskId task_id) const;
 
@@ -145,7 +150,12 @@ class TaskManagerImpl : public TaskManagerInterface,
   const base::Closure on_background_data_ready_callback_;
 
   // Map TaskGroups by the IDs of the processes they represent.
-  std::map<base::ProcessId, std::unique_ptr<TaskGroup>> task_groups_by_proc_id_;
+  PidToTaskGroupMap task_groups_by_proc_id_;
+
+  // Map ARC VM PidToTaskGroupMaps by the task type. This should be separate
+  // from the non-VM map |task_groups_by_proc_id_| as there can be conflicting
+  // PIDs.
+  PidToTaskGroupMap arc_vm_task_groups_by_proc_id_;
 
   // Map each task by its ID to the TaskGroup on which it resides.
   // Keys are unique but values will have duplicates (i.e. multiple tasks

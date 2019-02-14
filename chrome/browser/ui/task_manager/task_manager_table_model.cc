@@ -353,6 +353,13 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           observed_task_manager()->GetSwappedMemoryUsage(tasks_[row]), false);
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+      if (observed_task_manager()->IsRunningInVM(tasks_[row])) {
+        // Don't show the process ID if running inside a VM to avoid confusion
+        // over conflicting pids.
+        // TODO(b/122992194): Figure out if we need to change this to display
+        // something for VM processes.
+        return base::string16();
+      }
       return stringifier_->GetProcessIdText(
           observed_task_manager()->GetProcessId(tasks_[row]));
 
@@ -502,9 +509,15 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetNaClDebugStubPort(tasks_[row1]),
           observed_task_manager()->GetNaClDebugStubPort(tasks_[row2]));
 
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN: {
+      bool vm1 = observed_task_manager()->IsRunningInVM(tasks_[row1]);
+      bool vm2 = observed_task_manager()->IsRunningInVM(tasks_[row2]);
+      if (vm1 != vm2) {
+        return ValueCompare(vm1, vm2);
+      }
       return ValueCompare(observed_task_manager()->GetProcessId(tasks_[row1]),
                           observed_task_manager()->GetProcessId(tasks_[row2]));
+    }
 
     case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN: {
       int64_t current1, peak1, current2, peak2;
@@ -611,17 +624,21 @@ int TaskManagerTableModel::CompareValues(int row1,
 void TaskManagerTableModel::GetRowsGroupRange(int row_index,
                                               int* out_start,
                                               int* out_length) {
-  const base::ProcessId process_id =
-      observed_task_manager()->GetProcessId(tasks_[row_index]);
   int i = row_index;
   int limit = row_index + 1;
-  while (i > 0 &&
-         observed_task_manager()->GetProcessId(tasks_[i - 1]) == process_id) {
-    --i;
-  }
-  while (limit < RowCount() &&
-         observed_task_manager()->GetProcessId(tasks_[limit]) == process_id) {
-    ++limit;
+  if (!observed_task_manager()->IsRunningInVM(tasks_[row_index])) {
+    const base::ProcessId process_id =
+        observed_task_manager()->GetProcessId(tasks_[row_index]);
+    while (i > 0 &&
+           observed_task_manager()->GetProcessId(tasks_[i - 1]) == process_id &&
+           !observed_task_manager()->IsRunningInVM(tasks_[i - 1])) {
+      --i;
+    }
+    while (limit < RowCount() &&
+           observed_task_manager()->GetProcessId(tasks_[limit]) == process_id &&
+           !observed_task_manager()->IsRunningInVM(tasks_[limit])) {
+      ++limit;
+    }
   }
   *out_start = i;
   *out_length = limit - i;
@@ -897,8 +914,15 @@ bool TaskManagerTableModel::IsTaskFirstInGroup(int row_index) const {
   if (row_index == 0)
     return true;
 
-  return observed_task_manager()->GetProcessId(tasks_[row_index - 1]) !=
-      observed_task_manager()->GetProcessId(tasks_[row_index]);
+  if (observed_task_manager()->GetProcessId(tasks_[row_index - 1]) !=
+      observed_task_manager()->GetProcessId(tasks_[row_index]))
+    return true;
+
+  if (observed_task_manager()->IsRunningInVM(tasks_[row_index - 1]) !=
+      observed_task_manager()->IsRunningInVM(tasks_[row_index]))
+    return true;
+
+  return false;
 }
 
 }  // namespace task_manager

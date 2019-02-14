@@ -154,6 +154,9 @@ class Task {
   // Returns the keep-alive counter if the Task is an event page, -1 otherwise.
   virtual int GetKeepaliveCount() const;
 
+  // Returns true if the task is running inside a VM.
+  virtual bool IsRunningInVM() const;
+
   int64_t task_id() const { return task_id_; }
 
   // Returns the instantaneous rate, in bytes per second, of network usage

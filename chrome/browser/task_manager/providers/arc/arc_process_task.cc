@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -128,6 +129,10 @@ int ArcProcessTask::GetChildProcessUniqueID() const {
 bool ArcProcessTask::IsKillable() {
   // Do not kill persistent processes.
   return !arc_process_.IsPersistent();
+}
+
+bool ArcProcessTask::IsRunningInVM() const {
+  return arc::IsArcVmEnabled();
 }
 
 void ArcProcessTask::Kill() {

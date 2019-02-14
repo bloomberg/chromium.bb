@@ -33,6 +33,7 @@ class ArcProcessTask
   int GetChildProcessUniqueID() const override;
   bool IsKillable() override;
   void Kill() override;
+  bool IsRunningInVM() const override;
 
   // arc::ConnectionObserver<arc::mojom::IntentHelperInstance>:
   void OnConnectionReady() override;

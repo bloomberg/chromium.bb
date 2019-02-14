@@ -234,6 +234,9 @@ class TaskManagerInterface {
   // the Task with |task_id| is running.
   virtual size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const = 0;
 
+  // Returns true if the task is running inside a VM.
+  virtual bool IsRunningInVM(TaskId task_id) const = 0;
+
   // Returns the TaskId associated with the main task for |web_contents|.
   // Returns -1 if |web_contents| is nullptr or does not currently have an
   // associated Task.
