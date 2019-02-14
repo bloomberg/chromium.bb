@@ -29,9 +29,8 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
       event_dispatcher_(this),
-      view_listener_binding_(this),
       scenic_session_(manager_->GetScenic()),
-      parent_node_(&scenic_session_),
+      view_(&scenic_session_, std::move(view_token), "chromium window"),
       node_(&scenic_session_),
       input_node_(&scenic_session_),
       render_node_(&scenic_session_) {
@@ -40,37 +39,17 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   scenic_session_.set_event_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicEvents));
 
-  // Import parent node and create event pair to pass to the ViewManager.
-  zx::eventpair parent_export_token;
-  parent_node_.BindAsRequest(&parent_export_token);
-
-  // Subscribe to metrics events from the parent node. These events are used to
+  // Subscribe to metrics events from the node. These events are used to
   // get the device pixel ratio for the screen.
-  parent_node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
-  parent_node_.AddChild(node_);
+  node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
 
   // Add input shape.
-  input_node_.SetShape(scenic::Rectangle(&scenic_session_, 1.f, 1.f));
   node_.AddChild(input_node_);
 
   // Add rendering subtree. Hit testing is disabled to prevent GPU process from
   // receiving input.
   render_node_.SetHitTestBehavior(fuchsia::ui::gfx::HitTestBehavior::kSuppress);
   node_.AddChild(render_node_);
-
-  // Create the view.
-  manager_->GetViewManager()->CreateView2(
-      view_.NewRequest(), std::move(view_token),
-      view_listener_binding_.NewBinding(), std::move(parent_export_token),
-      "Chromium");
-  view_.set_error_handler(fit::bind_member(this, &ScenicWindow::OnViewError));
-  view_listener_binding_.set_error_handler(
-      fit::bind_member(this, &ScenicWindow::OnViewError));
-
-  // Call Present() to ensure that the scenic session commands are processed,
-  // which is necessary to receive metrics event from Scenic.
-  scenic_session_.Present(
-      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 
   delegate_->OnAcceleratedWidgetAvailable(window_id_);
 }
@@ -104,7 +83,12 @@ void ScenicWindow::SetTitle(const base::string16& title) {
 }
 
 void ScenicWindow::Show() {
-  parent_node_.AddChild(node_);
+  view_.AddChild(node_);
+
+  // Call Present() to ensure that the scenic session commands are processed,
+  // which is necessary to receive metrics event from Scenic.
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
 
 void ScenicWindow::Hide() {
@@ -194,8 +178,12 @@ void ScenicWindow::UpdateSize() {
   node_.SetTranslation(size_dips_.width() / 2.0, size_dips_.height() / 2.0,
                        0.f);
 
-  // Scale the node so that surface rect can always be 1x1.
-  node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
+  // Scale the render node so that surface rect can always be 1x1.
+  render_node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
+
+  // Resize input node to cover the whole surface.
+  input_node_.SetShape(scenic::Rectangle(&scenic_session_, size_dips_.width(),
+                                         size_dips_.height()));
 
   // This is necessary when using vulkan because ImagePipes are presented
   // separately and we need to make sure our sizes change is committed.
@@ -205,18 +193,6 @@ void ScenicWindow::UpdateSize() {
   delegate_->OnBoundsChanged(size_rect);
 }
 
-void ScenicWindow::OnPropertiesChanged(
-    fuchsia::ui::viewsv1::ViewProperties properties,
-    OnPropertiesChangedCallback callback) {
-  if (properties.view_layout) {
-    size_dips_.SetSize(properties.view_layout->size.width,
-                       properties.view_layout->size.height);
-    if (device_pixel_ratio_ > 0.0)
-      UpdateSize();
-  }
-
-  callback();
-}
 
 void ScenicWindow::OnScenicError(zx_status_t status) {
   LOG(ERROR) << "scenic::Session failed with code " << status << ".";
@@ -227,38 +203,52 @@ void ScenicWindow::OnScenicEvents(
     std::vector<fuchsia::ui::scenic::Event> events) {
   for (const auto& event : events) {
     if (event.is_gfx()) {
-      if (!event.gfx().is_metrics())
-        continue;
-
-      auto& metrics = event.gfx().metrics();
-      if (metrics.node_id != parent_node_.id())
-        continue;
-
-      device_pixel_ratio_ =
-          std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
-
-      ScenicScreen* screen = manager_->screen();
-      if (screen)
-        screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
-
-      if (!size_dips_.IsEmpty())
-        UpdateSize();
-    } else if (event.is_input()) {
-      auto& input_event = event.input();
-      if (input_event.is_focus()) {
-        delegate_->OnActivationChanged(input_event.focus().focused);
-      } else {
-        // Scenic doesn't care if the input event was handled, so ignore the
-        // "handled" status.
-        ignore_result(event_dispatcher_.ProcessEvent(input_event));
+      if (event.gfx().is_metrics()) {
+        if (event.gfx().metrics().node_id != node_.id())
+          continue;
+        OnViewMetrics(event.gfx().metrics().metrics);
+      } else if (event.gfx().is_view_properties_changed()) {
+        if (event.gfx().view_properties_changed().view_id != view_.id())
+          continue;
+        OnViewProperties(event.gfx().view_properties_changed().properties);
       }
+    } else if (event.is_input()) {
+      OnInputEvent(event.input());
     }
   }
 }
 
-void ScenicWindow::OnViewError(zx_status_t status) {
-  VLOG(1) << "viewsv1::View connection was closed with code " << status << ".";
-  delegate_->OnClosed();
+void ScenicWindow::OnViewMetrics(const fuchsia::ui::gfx::Metrics& metrics) {
+  device_pixel_ratio_ = std::max(metrics.scale_x, metrics.scale_y);
+
+  ScenicScreen* screen = manager_->screen();
+  if (screen)
+    screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
+
+  if (!size_dips_.IsEmpty())
+    UpdateSize();
+}
+
+void ScenicWindow::OnViewProperties(
+    const fuchsia::ui::gfx::ViewProperties& properties) {
+  float width = properties.bounding_box.max.x - properties.bounding_box.min.x -
+                properties.inset_from_min.x - properties.inset_from_max.x;
+  float height = properties.bounding_box.max.y - properties.bounding_box.min.y -
+                 properties.inset_from_min.y - properties.inset_from_max.y;
+
+  size_dips_.SetSize(width, height);
+  if (device_pixel_ratio_ > 0.0)
+    UpdateSize();
+}
+
+void ScenicWindow::OnInputEvent(const fuchsia::ui::input::InputEvent& event) {
+  if (event.is_focus()) {
+    delegate_->OnActivationChanged(event.focus().focused);
+  } else {
+    // Scenic doesn't care if the input event was handled, so ignore the
+    // "handled" status.
+    ignore_result(event_dispatcher_.ProcessEvent(event));
+  }
 }
 
 void ScenicWindow::DispatchEvent(ui::Event* event) {
