@@ -21,8 +21,6 @@ using safe_browsing::SafeBrowsingNavigationObserverManager;
 
 namespace extensions {
 
-namespace GetReferrerChain = api::safe_browsing_private::GetReferrerChain;
-
 namespace {
 
 // The number of user gestures we trace back for the referrer chain.
@@ -41,8 +39,8 @@ SafeBrowsingPrivateGetReferrerChainFunction::
 
 ExtensionFunction::ResponseAction
 SafeBrowsingPrivateGetReferrerChainFunction::Run() {
-  std::unique_ptr<GetReferrerChain::Params> params =
-      GetReferrerChain::Params::Create(*args_);
+  std::unique_ptr<api::safe_browsing_private::GetReferrerChain::Params> params =
+      api::safe_browsing_private::GetReferrerChain::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::WebContents* contents = nullptr;
@@ -85,8 +83,9 @@ SafeBrowsingPrivateGetReferrerChainFunction::Run() {
     referrer_entries.emplace_back(
         safe_browsing_util::ReferrerToReferrerChainEntry(entry));
   }
-  return RespondNow(
-      ArgumentList(GetReferrerChain::Results::Create(referrer_entries)));
+  return RespondNow(ArgumentList(
+      api::safe_browsing_private::GetReferrerChain::Results::Create(
+          referrer_entries)));
 }
 
 }  // namespace extensions
