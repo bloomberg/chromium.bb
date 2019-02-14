@@ -17,7 +17,7 @@ namespace nacl_io {
 // reply on a parent (usually an emitter) to lock for them as appropriate.
 class FIFOInterface {
  public:
-  virtual ~FIFOInterface() {};
+  virtual ~FIFOInterface() {}
 
   virtual bool IsEmpty() = 0;
   virtual bool IsFull() = 0;

@@ -1299,7 +1299,7 @@ int KernelProxy::select(int nfds,
 }
 
 struct PollInfo {
-  PollInfo() : index(-1) {};
+  PollInfo() : index(-1) {}
 
   std::vector<struct pollfd*> fds;
   int index;
