@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/power_monitor/power_monitor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/learning/common/feature_library.h"
 #include "net/base/network_change_notifier.h"
@@ -48,6 +49,11 @@ void BrowserFeatureProvider::AddFeatures(FeatureVector features,
     if (desc.name == FeatureLibrary::NetworkType().name) {
       features[i] = FeatureValue(
           static_cast<int>(net::NetworkChangeNotifier::GetConnectionType()));
+    } else if (desc.name == FeatureLibrary::BatteryPower().name) {
+      bool is_battery = false;
+      if (base::PowerMonitor* monitor = base::PowerMonitor::Get())
+        is_battery = monitor->IsOnBatteryPower();
+      features[i] = FeatureValue(is_battery);
     }
   }
 

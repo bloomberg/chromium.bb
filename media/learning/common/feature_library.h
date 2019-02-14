@@ -23,6 +23,9 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) FeatureLibrary {
   // Current network connection type (wired, 3G, etc.).
   static LearningTask::ValueDescription NetworkType();
 
+  // Is the device on battery power?
+  static LearningTask::ValueDescription BatteryPower();
+
   // TODO(liberato): add CpuLoad, ConcurrentMediaPlayers, NetworkUsage, Battery.
 
   // Common renderer features
