@@ -46,8 +46,7 @@ CryptAuthEnrollmentResult::CryptAuthEnrollmentResult(
 CryptAuthEnrollmentResult::~CryptAuthEnrollmentResult() = default;
 
 bool CryptAuthEnrollmentResult::IsSuccess() const {
-  return result_code_ == ResultCode::kSuccessNoSyncRequired ||
-         result_code_ == ResultCode::kSuccessNewKeysEnrolled ||
+  return result_code_ == ResultCode::kSuccessNewKeysEnrolled ||
          result_code_ == ResultCode::kSuccessNoNewKeysNeeded;
 }
 

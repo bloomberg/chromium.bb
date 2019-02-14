@@ -18,8 +18,6 @@ class CryptAuthEnrollmentResult {
  public:
   // Enum class to denote the result of a CryptAuth v2 Enrollment attempt
   enum class ResultCode {
-    // No SyncKeysRequest was made to CryptAuth because it was not necessary.
-    kSuccessNoSyncRequired,
     // Successfully synced but no new keys were requested by CryptAuth, so no
     // EnrollKeysRequest was made.
     kSuccessNoNewKeysNeeded,
@@ -43,15 +41,9 @@ class CryptAuthEnrollmentResult {
     // The CryptAuth server indicated via SyncKeysResponse::server_status that
     // it was overloaded and did not process the SyncKeysRequest.
     kErrorCryptAuthServerOverloaded,
-    // An error occurred while performing a cryptographic operation, such as
-    // generating key proofs.
-    kErrorCryptographicOperationFailed,
-    // The size of SyncKeysResponse::sync_single_key_responses does not agree
-    // with the number of key bundle names.
-    kErrorSyncKeysResponseIncorrectNumberOfKeys,
-    // Failed to generate the new keys requested by CryptAuth or the ephemeral
-    // keys needed for intermediate cryptographic operations.
-    kErrorKeyCreationFailed
+    // The data sent in the SyncKeysResponse is not self-consistent or is not
+    // consistent with the SyncKeysRequest data.
+    kErrorSyncKeysResponseMalformed,
   };
 
   static ResultCode NetworkRequestErrorToResultCode(NetworkRequestError error);
