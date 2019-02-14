@@ -51,8 +51,8 @@ TEST_P(H264BitstreamBufferAppendBitsTest, AppendAndVerifyBits) {
   EXPECT_EQ(got, expected) << std::hex << "0x" << got << " vs 0x" << expected;
 }
 
-INSTANTIATE_TEST_CASE_P(AppendNumBits,
-                        H264BitstreamBufferAppendBitsTest,
-                        ::testing::Range(static_cast<uint64_t>(1),
-                                         static_cast<uint64_t>(65)));
+INSTANTIATE_TEST_SUITE_P(AppendNumBits,
+                         H264BitstreamBufferAppendBitsTest,
+                         ::testing::Range(static_cast<uint64_t>(1),
+                                          static_cast<uint64_t>(65)));
 }  // namespace media

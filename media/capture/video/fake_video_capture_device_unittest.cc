@@ -262,7 +262,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FakeVideoCaptureDeviceTest,
     Combine(
@@ -566,7 +566,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FakeVideoCaptureDeviceFactoryTest,
     Values(CommandLineTestData{"fps=-1",

@@ -235,9 +235,9 @@ TEST_P(VideoDecoderTest, DecodesFramesOfVaryingSizes) {
   WaitForAllVideoToBeDecoded();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoDecoderTest,
-                        ::testing::Values(CODEC_VIDEO_VP8));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoDecoderTest,
+                         ::testing::Values(CODEC_VIDEO_VP8));
 
 }  // namespace cast
 }  // namespace media

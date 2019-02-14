@@ -596,8 +596,8 @@ static std::vector<VideoCodecProfile> GetTestList() {
   return test_profiles;
 }
 
-INSTANTIATE_TEST_CASE_P(AndroidVideoDecodeAcceleratorTest,
-                        AndroidVideoDecodeAcceleratorTest,
-                        testing::ValuesIn(GetTestList()));
+INSTANTIATE_TEST_SUITE_P(AndroidVideoDecodeAcceleratorTest,
+                         AndroidVideoDecodeAcceleratorTest,
+                         testing::ValuesIn(GetTestList()));
 
 }  // namespace media

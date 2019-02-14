@@ -278,7 +278,7 @@ static const float kInverseCheckerboard[] = {  // 32 alternating 1, 0
   1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Scenarios,
     VectorMathEWMAAndMaxPowerTest,
     ::testing::Values(

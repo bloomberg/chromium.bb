@@ -239,14 +239,13 @@ TEST_P(AudioDecoderTest, RecoversFromDroppedFrames) {
 }
 
 #if !defined(OS_ANDROID)  // https://crbug.com/831999
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioDecoderTestScenarios,
     AudioDecoderTest,
-    ::testing::Values(
-         TestScenario(CODEC_AUDIO_PCM16, 1, 8000),
-         TestScenario(CODEC_AUDIO_PCM16, 2, 48000),
-         TestScenario(CODEC_AUDIO_OPUS, 1, 8000),
-         TestScenario(CODEC_AUDIO_OPUS, 2, 48000)));
+    ::testing::Values(TestScenario(CODEC_AUDIO_PCM16, 1, 8000),
+                      TestScenario(CODEC_AUDIO_PCM16, 2, 48000),
+                      TestScenario(CODEC_AUDIO_OPUS, 1, 8000),
+                      TestScenario(CODEC_AUDIO_OPUS, 2, 48000)));
 #endif
 
 }  // namespace cast

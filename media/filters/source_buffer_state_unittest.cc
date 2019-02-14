@@ -350,11 +350,11 @@ TEST_P(SourceBufferStateTest, TrackIdsSwappedInSecondInitSegment) {
   AppendDataAndReportTracks(sbs, std::move(tracks2));
 }
 
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        SourceBufferStateTest,
-                        Values(ChunkDemuxerStream::RangeApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        SourceBufferStateTest,
-                        Values(ChunkDemuxerStream::RangeApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         SourceBufferStateTest,
+                         Values(ChunkDemuxerStream::RangeApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         SourceBufferStateTest,
+                         Values(ChunkDemuxerStream::RangeApi::kNewByPts));
 
 }  // namespace media

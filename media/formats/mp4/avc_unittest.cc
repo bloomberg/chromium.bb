@@ -361,9 +361,9 @@ TEST_P(AVCConversionTest, ParseEmpty) {
   EXPECT_EQ(0u, buf.size());
 }
 
-INSTANTIATE_TEST_CASE_P(AVCConversionTestValues,
-                        AVCConversionTest,
-                        ::testing::Values(1, 2, 4));
+INSTANTIATE_TEST_SUITE_P(AVCConversionTestValues,
+                         AVCConversionTest,
+                         ::testing::Values(1, 2, 4));
 
 TEST_F(AVCConversionTest, ConvertConfigToAnnexB) {
   AVCDecoderConfigurationRecord avc_config;

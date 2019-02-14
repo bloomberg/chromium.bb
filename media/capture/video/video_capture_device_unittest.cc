@@ -569,7 +569,7 @@ const VideoCaptureImplementationTweak kCaptureImplementationTweaks[] = {
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VideoCaptureDeviceTests,
     VideoCaptureDeviceTest,
     testing::Combine(testing::ValuesIn(kCaptureSizes),

@@ -58,11 +58,11 @@ TEST_P(VideoFramePoolTest, FrameInitializedAndZeroed) {
     EXPECT_EQ(0, frame->data(i)[0]);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoFramePoolTest,
-                        testing::Values(PIXEL_FORMAT_I420,
-                                        PIXEL_FORMAT_NV12,
-                                        PIXEL_FORMAT_ARGB));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoFramePoolTest,
+                         testing::Values(PIXEL_FORMAT_I420,
+                                         PIXEL_FORMAT_NV12,
+                                         PIXEL_FORMAT_ARGB));
 
 TEST_F(VideoFramePoolTest, SimpleFrameReuse) {
   scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_I420, 10);

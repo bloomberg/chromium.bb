@@ -2031,22 +2031,22 @@ TEST_P(FrameProcessorTest,
   CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
 }
 
-INSTANTIATE_TEST_CASE_P(SequenceModeLegacyByDts,
-                        FrameProcessorTest,
-                        Values(FrameProcessorTestParams(
-                            true,
-                            ChunkDemuxerStream::RangeApi::kLegacyByDts)));
-INSTANTIATE_TEST_CASE_P(SegmentsModeLegacyByDts,
-                        FrameProcessorTest,
-                        Values(FrameProcessorTestParams(
-                            false,
-                            ChunkDemuxerStream::RangeApi::kLegacyByDts)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(SequenceModeLegacyByDts,
+                         FrameProcessorTest,
+                         Values(FrameProcessorTestParams(
+                             true,
+                             ChunkDemuxerStream::RangeApi::kLegacyByDts)));
+INSTANTIATE_TEST_SUITE_P(SegmentsModeLegacyByDts,
+                         FrameProcessorTest,
+                         Values(FrameProcessorTestParams(
+                             false,
+                             ChunkDemuxerStream::RangeApi::kLegacyByDts)));
+INSTANTIATE_TEST_SUITE_P(
     SequenceModeNewByPts,
     FrameProcessorTest,
     Values(FrameProcessorTestParams(true,
                                     ChunkDemuxerStream::RangeApi::kNewByPts)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SegmentsModeNewByPts,
     FrameProcessorTest,
     Values(FrameProcessorTestParams(false,

@@ -160,7 +160,7 @@ static float kFiveOneToMonoValues[] = { 0.1f, 0.2f, 0.0f, 0.4f, 0.5f, 0.6f };
 static float kFiveDiscreteValues[] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f };
 
 // Run through basic sanity tests for some common conversions.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ChannelMixerTest,
     ChannelMixerTest,
     testing::Values(ChannelMixerTestData(CHANNEL_LAYOUT_STEREO,
