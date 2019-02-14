@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
@@ -54,6 +55,16 @@ void WebAppInstallDialogCallback(
   }
 }
 
+WebAppInstalledCallbackForTesting& GetInstalledCallbackForTesting() {
+  static base::NoDestructor<WebAppInstalledCallbackForTesting> instance;
+  return *instance;
+}
+
+void OnWebAppInstalled(const AppId& installed_app_id, InstallResultCode code) {
+  if (GetInstalledCallbackForTesting())
+    std::move(GetInstalledCallbackForTesting()).Run(installed_app_id, code);
+}
+
 }  // namespace
 
 bool CanCreateWebApp(const Browser* browser) {
@@ -77,7 +88,13 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
 
   provider->install_manager().InstallWebApp(
       web_contents, force_shortcut_app,
-      base::BindOnce(WebAppInstallDialogCallback), base::DoNothing());
+      base::BindOnce(WebAppInstallDialogCallback),
+      base::BindOnce(OnWebAppInstalled));
+}
+
+void SetInstalledCallbackForTesting(
+    WebAppInstalledCallbackForTesting callback) {
+  GetInstalledCallbackForTesting() = std::move(callback);
 }
 
 }  // namespace web_app

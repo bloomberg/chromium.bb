@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -46,6 +47,8 @@
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -1302,14 +1305,30 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
   ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
-  chrome::SetAutoAcceptPWAInstallDialogForTesting(true);
+  chrome::SetAutoAcceptPWAInstallDialogForTesting(/*auto_accept*/ true);
+
+  web_app::AppId app_id;
+
+  base::RunLoop run_loop;
+  web_app::SetInstalledCallbackForTesting(
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+        app_id = installed_app_id;
+        run_loop.Quit();
+      }));
+
   chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
+  run_loop.Run();
+
+  chrome::SetAutoAcceptPWAInstallDialogForTesting(/*auto_accept*/ false);
+
   const extensions::Extension* app =
-      extensions::TestExtensionRegistryObserver(
-          extensions::ExtensionRegistry::Get(browser()->profile()))
-          .WaitForExtensionInstalled();
+      extensions::ExtensionRegistry::Get(browser()->profile())
+          ->enabled_extensions()
+          .GetByID(app_id);
+  ASSERT_TRUE(app);
   EXPECT_EQ(app->name(), GetInstallableAppName());
-  chrome::SetAutoAcceptPWAInstallDialogForTesting(false);
 
   // Installed PWAs should launch in their own window.
   EXPECT_EQ(extensions::GetLaunchContainer(
