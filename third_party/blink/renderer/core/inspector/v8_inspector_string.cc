@@ -158,6 +158,13 @@ Binary Binary::fromVector(Vector<uint8_t> in) {
 }
 
 // static
+Binary Binary::fromSpan(const uint8_t* data, size_t size) {
+  Vector<uint8_t> in;
+  in.Append(data, size);
+  return Binary::fromVector(std::move(in));
+}
+
+// static
 Binary Binary::fromCachedData(
     std::unique_ptr<v8::ScriptCompiler::CachedData> data) {
   CHECK_EQ(data->buffer_policy, v8::ScriptCompiler::CachedData::BufferOwned);

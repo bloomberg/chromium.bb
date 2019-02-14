@@ -124,6 +124,7 @@ class {{config.lib.export_macro}} Binary {
   static Binary fromRefCounted(scoped_refptr<base::RefCountedMemory> memory);
   static Binary fromVector(std::vector<uint8_t> data);
   static Binary fromString(std::string data);
+  static Binary fromSpan(const uint8_t* data, size_t size);
 
  private:
   explicit Binary(scoped_refptr<base::RefCountedMemory> bytes);
