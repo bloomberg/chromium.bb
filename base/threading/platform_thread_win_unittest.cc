@@ -26,7 +26,9 @@ namespace base {
 // behavior which we suspect is a Windows kernel bug. If this test starts
 // failing, the mitigation for https://crbug.com/901483 in
 // PlatformThread::SetCurrentThreadPriority() should be revisited.
-TEST(PlatformThreadWinTest, SetBackgroundThreadModeFailsInIdlePriorityProcess) {
+// Fails on various windows bots: https://crbug.com/931720.
+TEST(PlatformThreadWinTest,
+     DISABLED_SetBackgroundThreadModeFailsInIdlePriorityProcess) {
   PlatformThreadHandle::Handle thread_handle =
       PlatformThread::CurrentHandle().platform_handle();
 
