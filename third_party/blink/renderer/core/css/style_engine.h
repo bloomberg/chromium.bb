@@ -360,6 +360,13 @@ class CORE_EXPORT StyleEngine final
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
+  void SetSupportedColorSchemes(const ColorSchemeSet& supported_color_schemes) {
+    supported_color_schemes_ = supported_color_schemes;
+  }
+  const ColorSchemeSet& GetSupportedColorSchemes() const {
+    return supported_color_schemes_;
+  }
+
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
 
@@ -536,6 +543,11 @@ class CORE_EXPORT StyleEngine final
   // Default font-display collected from @font-feature-values rules. The key is
   // font-family.
   HashMap<AtomicString, FontDisplay> default_font_display_map_;
+
+  // Color schemes explicitly supported by the author through the viewport meta
+  // tag. E.g. <meta name="supported-color-schemes" content="light dark">. The
+  // supported schemes are used to opt-out of forced darkening.
+  ColorSchemeSet supported_color_schemes_;
 
   friend class StyleEngineTest;
 };

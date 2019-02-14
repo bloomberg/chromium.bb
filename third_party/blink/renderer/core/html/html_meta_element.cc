@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/renderer/core/loader/http_equiv.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
@@ -472,6 +474,22 @@ void HTMLMetaElement::ProcessViewportContentAttribute(
   viewport_data.SetViewportDescription(description_from_legacy_tag);
 }
 
+void HTMLMetaElement::ProcessSupportedColorSchemes(
+    const AtomicString& content) {
+  SpaceSplitString supported_schemes_strings(content.LowerASCII());
+  size_t count = supported_schemes_strings.size();
+  ColorSchemeSet supported_schemes;
+  for (size_t i = 0; i < count; i++) {
+    auto color_scheme = supported_schemes_strings[i];
+    if (color_scheme == "light") {
+      supported_schemes.Set(ColorScheme::kLight);
+    } else if (color_scheme == "dark") {
+      supported_schemes.Set(ColorScheme::kDark);
+    }
+  }
+  GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
+}
+
 void HTMLMetaElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == kHttpEquivAttr || params.name == kContentAttr) {
@@ -529,6 +547,8 @@ void HTMLMetaElement::Process() {
     else if (DeprecatedEqualIgnoringCase(name_value, "theme-color") &&
              GetDocument().GetFrame())
       GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
+    else if (EqualIgnoringASCIICase(name_value, "supported-color-schemes"))
+      ProcessSupportedColorSchemes(content_value);
   }
 
   // Get the document to process the tag, but only if we're actually part of DOM
