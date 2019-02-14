@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
@@ -17,7 +18,6 @@ class WebContents;
 namespace extensions {
 
 class Extension;
-class ExtensionRegistry;
 
 // Allows to associate a tab with bookmark app.
 class BookmarkAppTabHelper : public web_app::WebAppTabHelperBase,

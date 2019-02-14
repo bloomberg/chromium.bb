@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "ui/views/controls/scroll_view.h"
@@ -16,7 +17,6 @@ class AppMenu;
 class AppMenuButton;
 class Browser;
 class BrowserActionsContainer;
-class ToolbarActionsBar;
 
 namespace views {
 class MenuItemView;
