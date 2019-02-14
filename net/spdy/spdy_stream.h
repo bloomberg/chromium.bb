@@ -451,7 +451,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // Saves the given headers into |response_headers_| and calls
   // OnHeadersReceived() on the delegate if attached.
-  void SaveResponseHeaders(const spdy::SpdyHeaderBlock& response_headers);
+  void SaveResponseHeaders(const spdy::SpdyHeaderBlock& response_headers,
+                           int status);
 
   static std::string DescribeState(State state);
 

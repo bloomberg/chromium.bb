@@ -383,44 +383,42 @@ void SpdyStream::OnHeadersReceived(
     base::Time response_time,
     base::TimeTicks recv_first_byte_time) {
   switch (response_state_) {
-    case READY_FOR_HEADERS:
+    case READY_FOR_HEADERS: {
       // No header block has been received yet.
       DCHECK(response_headers_.empty());
 
-      {
-        spdy::SpdyHeaderBlock::const_iterator it =
-            response_headers.find(spdy::kHttp2StatusHeader);
-        if (it == response_headers.end()) {
-          const std::string error("Response headers do not include :status.");
-          LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-          session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
-          return;
-        }
+      spdy::SpdyHeaderBlock::const_iterator it =
+          response_headers.find(spdy::kHttp2StatusHeader);
+      if (it == response_headers.end()) {
+        const std::string error("Response headers do not include :status.");
+        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        return;
+      }
 
-        int status;
-        if (!StringToInt(it->second, &status)) {
-          const std::string error("Cannot parse :status.");
-          LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-          session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
-          return;
-        }
+      int status;
+      if (!StringToInt(it->second, &status)) {
+        const std::string error("Cannot parse :status.");
+        LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+        session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR, error);
+        return;
+      }
 
-        base::UmaHistogramSparse("Net.SpdyResponseCode", status);
+      base::UmaHistogramSparse("Net.SpdyResponseCode", status);
 
-        // Include 1XX responses in the TTFB as per the resource timing spec
-        // for responseStart.
-        if (recv_first_byte_time_.is_null())
-          recv_first_byte_time_ = recv_first_byte_time;
+      // Include 1XX responses in the TTFB as per the resource timing spec
+      // for responseStart.
+      if (recv_first_byte_time_.is_null())
+        recv_first_byte_time_ = recv_first_byte_time;
 
-        // Ignore informational headers like 103 Early Hints.
-        // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
-        // However, do not ignore 101 Switching Protocols, because broken
-        // servers might send this as a response to a WebSocket request,
-        // in which case it needs to pass through so that the WebSocket layer
-        // can signal an error.
-        if (status / 100 == 1 && status != 101) {
-          return;
-        }
+      // Ignore informational headers like 103 Early Hints.
+      // TODO(bnc): Add support for 103 Early Hints, https://crbug.com/671310.
+      // However, do not ignore 101 Switching Protocols, because broken
+      // servers might send this as a response to a WebSocket request,
+      // in which case it needs to pass through so that the WebSocket layer
+      // can signal an error.
+      if (status / 100 == 1 && status != 101) {
+        return;
       }
 
       response_state_ = READY_FOR_DATA_OR_TRAILERS;
@@ -454,10 +452,10 @@ void SpdyStream::OnHeadersReceived(
       DCHECK_NE(io_state_, STATE_IDLE);
 
       response_time_ = response_time;
-      SaveResponseHeaders(response_headers);
+      SaveResponseHeaders(response_headers, status);
 
       break;
-
+    }
     case READY_FOR_DATA_OR_TRAILERS:
       // Second header block is trailers.
       if (type_ == SPDY_PUSH_STREAM) {
@@ -914,7 +912,8 @@ void SpdyStream::QueueNextDataFrame() {
 }
 
 void SpdyStream::SaveResponseHeaders(
-    const spdy::SpdyHeaderBlock& response_headers) {
+    const spdy::SpdyHeaderBlock& response_headers,
+    int status) {
   DCHECK(response_headers_.empty());
   if (response_headers.find("transfer-encoding") != response_headers.end()) {
     session_->ResetStream(stream_id_, ERR_SPDY_PROTOCOL_ERROR,
@@ -925,6 +924,17 @@ void SpdyStream::SaveResponseHeaders(
   for (spdy::SpdyHeaderBlock::const_iterator it = response_headers.begin();
        it != response_headers.end(); ++it) {
     response_headers_.insert(*it);
+  }
+
+  // Reject pushed stream with unsupported status code regardless of whether
+  // delegate is already attached or not.
+  if (type_ == SPDY_PUSH_STREAM &&
+      (status / 100 != 2 && status / 100 != 3 && status != 416)) {
+    SpdySession::RecordSpdyPushedStreamFateHistogram(
+        SpdyPushedStreamFate::kUnsupportedStatusCode);
+    session_->ResetStream(stream_id_, ERR_SPDY_CLIENT_REFUSED_STREAM,
+                          "Unsupported status code for pushed stream.");
+    return;
   }
 
   // If delegate is not yet attached, OnHeadersReceived() will be called after
