@@ -23,16 +23,9 @@ cr.define('sync.confirmation', function() {
     document.activeElement.blur();
   }
 
-  // The C++ handler calls out to this Javascript function, so it needs to
-  // exist in the namespace. However, this version of the sync confirmation
-  // doesn't use a user image, so we do not need to actually implement this.
-  // TODO(scottchen): make the C++ handler not call this at all.
-  function setUserImageURL() {}
-
   return {
     clearFocus: clearFocus,
     initialize: initialize,
-    setUserImageURL: setUserImageURL
   };
 });
 
