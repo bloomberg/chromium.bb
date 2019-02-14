@@ -2449,59 +2449,6 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
   *max_block_size = AOMMIN(max_size, cm->seq_params.sb_size);
 }
 
-// TODO(jingning) refactor functions setting partition search range
-static void set_partition_range(const AV1_COMMON *const cm,
-                                const MACROBLOCKD *const xd, int mi_row,
-                                int mi_col, BLOCK_SIZE bsize,
-                                BLOCK_SIZE *const min_bs,
-                                BLOCK_SIZE *const max_bs) {
-  const int mi_width = mi_size_wide[bsize];
-  const int mi_height = mi_size_high[bsize];
-  int idx, idy;
-
-  const int idx_str = cm->mi_stride * mi_row + mi_col;
-  MB_MODE_INFO **const prev_mi = &cm->prev_mi_grid_visible[idx_str];
-  BLOCK_SIZE min_size = cm->seq_params.sb_size;  // default values
-  BLOCK_SIZE max_size = BLOCK_4X4;
-
-  if (prev_mi) {
-    for (idy = 0; idy < mi_height; ++idy) {
-      for (idx = 0; idx < mi_width; ++idx) {
-        const MB_MODE_INFO *const mi = prev_mi[idy * cm->mi_stride + idx];
-        const BLOCK_SIZE bs = mi ? mi->sb_type : bsize;
-        min_size = AOMMIN(min_size, bs);
-        max_size = AOMMAX(max_size, bs);
-      }
-    }
-  }
-
-  if (xd->left_available) {
-    for (idy = 0; idy < mi_height; ++idy) {
-      const MB_MODE_INFO *const mi = xd->mi[idy * cm->mi_stride - 1];
-      const BLOCK_SIZE bs = mi ? mi->sb_type : bsize;
-      min_size = AOMMIN(min_size, bs);
-      max_size = AOMMAX(max_size, bs);
-    }
-  }
-
-  if (xd->up_available) {
-    for (idx = 0; idx < mi_width; ++idx) {
-      const MB_MODE_INFO *const mi = xd->mi[idx - cm->mi_stride];
-      const BLOCK_SIZE bs = mi ? mi->sb_type : bsize;
-      min_size = AOMMIN(min_size, bs);
-      max_size = AOMMAX(max_size, bs);
-    }
-  }
-
-  if (min_size == max_size) {
-    min_size = min_partition_size[min_size];
-    max_size = max_partition_size[max_size];
-  }
-
-  *min_bs = AOMMIN(min_size, cm->seq_params.sb_size);
-  *max_bs = AOMMIN(max_size, cm->seq_params.sb_size);
-}
-
 static INLINE void store_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
   memcpy(ctx->pred_mv, x->pred_mv, sizeof(x->pred_mv));
 }
@@ -4076,16 +4023,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh)
     x->mb_energy = av1_log_block_var(cpi, x, bsize);
-
-  if (cpi->sf.cb_partition_search && bsize == BLOCK_16X16) {
-    const int cb_partition_search_ctrl =
-        ((pc_tree->index == 0 || pc_tree->index == 3) +
-         get_chessboard_index(cm->current_frame.frame_number)) &
-        0x1;
-
-    if (cb_partition_search_ctrl && bsize > min_size && bsize < max_size)
-      set_partition_range(cm, xd, mi_row, mi_col, bsize, &min_size, &max_size);
-  }
 
   // Determine partition types in search according to the speed features.
   // The threshold set here has to be of square block size.

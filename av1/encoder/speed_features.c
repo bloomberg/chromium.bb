@@ -346,7 +346,6 @@ static void set_good_speed_features_framesize_independent(
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
-    sf->cb_partition_search = !boosted;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
@@ -553,7 +552,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
-    sf->cb_partition_search = !boosted;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
   }
@@ -682,7 +680,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->adaptive_motion_search = 0;
   sf->adaptive_pred_interp_filter = 0;
   sf->adaptive_mode_search = 0;
-  sf->cb_partition_search = 0;
   sf->alt_ref_search_fp = 0;
   sf->partition_search_type = SEARCH_PARTITION;
   sf->tx_type_search.prune_mode = PRUNE_2D_ACCURATE;

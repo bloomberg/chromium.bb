@@ -454,8 +454,6 @@ typedef struct SPEED_FEATURES {
   // Adaptive prediction mode search
   int adaptive_mode_search;
 
-  int cb_partition_search;
-
   int alt_ref_search_fp;
 
   // Implements various heuristics to skip searching modes
