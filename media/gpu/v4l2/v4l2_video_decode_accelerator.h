@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <queue>
 #include <utility>
@@ -394,9 +395,15 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // output buffer is |output_buffer_index| and its id is |bitstream_buffer_id|.
   bool ProcessFrame(int32_t bitstream_buffer_id, V4L2ReadableBufferRef buf);
 
+  // Send a buffer to the client.
+  // |buffer_index| is the output buffer index of the buffer to be sent.
+  // |bitstream_buffer_id| is the bitstream ID from which the buffer results.
+  // |vda_buffer| is the output VDA buffer containing the decoded frame.
+  // |frame| is the IP frame that will be sent to the client, if IP is used.
   void SendBufferToClient(size_t buffer_index,
                           int32_t bitstream_buffer_id,
-                          V4L2ReadableBufferRef vda_buffer);
+                          V4L2ReadableBufferRef vda_buffer,
+                          scoped_refptr<VideoFrame> frame = nullptr);
 
   //
   // Methods run on child thread.
@@ -518,10 +525,14 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Bitstream IDs and VDA buffers currently being processed by the IP.
   std::queue<std::pair<int32_t, V4L2ReadableBufferRef>> buffers_at_ip_;
   // Keeps decoded buffers out of the free list until the client returns them.
-  std::map<int32_t, V4L2ReadableBufferRef> buffers_at_client_;
+  // First element is the VDA buffer, second is the (optional) IP buffer.
+  std::map<int32_t, std::pair<V4L2ReadableBufferRef, scoped_refptr<VideoFrame>>>
+      buffers_at_client_;
   // Queue of buffers that have been returned by the client, but which fence
-  // hasn't been signaled yet.
-  std::queue<std::pair<std::unique_ptr<gl::GLFenceEGL>, V4L2ReadableBufferRef>>
+  // hasn't been signaled yet. Keeps both the VDA and (optional) IP buffer.
+  std::queue<
+      std::pair<std::unique_ptr<gl::GLFenceEGL>,
+                std::pair<V4L2ReadableBufferRef, scoped_refptr<VideoFrame>>>>
       buffers_awaiting_fence_;
 
   // Mapping of int index to output buffer record.
