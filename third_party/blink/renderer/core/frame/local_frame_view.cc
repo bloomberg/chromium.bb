@@ -2610,7 +2610,7 @@ void LocalFrameView::PaintTree() {
     }
 
     // TODO(sataya.m):Main frame doesn't create RootFrameViewport in some
-    // webkit_unit_tests (http://crbug.com/644788).
+    // blink_unittests (http://crbug.com/644788).
     if (viewport_scrollable_area_) {
       if (GraphicsLayer* layer_for_horizontal_scrollbar =
               viewport_scrollable_area_->LayerForHorizontalScrollbar()) {
