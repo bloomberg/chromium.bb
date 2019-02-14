@@ -11,6 +11,22 @@
 
 namespace send_tab_to_self {
 
+namespace {
+
+// Converts a time object to the format used in sync protobufs (ms since the
+// Windows epoch).
+int64_t TimeToProtoTime(const base::Time t) {
+  return t.ToDeltaSinceWindowsEpoch().InMicroseconds();
+}
+
+// Converts a time field from sync protobufs to a time object.
+base::Time ProtoTimeToTime(int64_t proto_t) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(proto_t));
+}
+
+}  // namespace
+
 SendTabToSelfEntry::SendTabToSelfEntry(const std::string& guid,
                                        const GURL& url,
                                        const std::string& title,
@@ -60,10 +76,9 @@ std::unique_ptr<sync_pb::SendTabToSelfSpecifics> SendTabToSelfEntry::AsProto()
   pb_entry->set_guid(GetGUID());
   pb_entry->set_title(GetTitle());
   pb_entry->set_url(GetURL().spec());
-  pb_entry->set_shared_time_usec(
-      GetSharedTime().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  pb_entry->set_shared_time_usec(TimeToProtoTime(GetSharedTime()));
   pb_entry->set_navigation_time_usec(
-      GetOriginalNavigationTime().ToDeltaSinceWindowsEpoch().InMicroseconds());
+      TimeToProtoTime(GetOriginalNavigationTime()));
   pb_entry->set_device_name(GetDeviceName());
 
   return pb_entry;
@@ -78,16 +93,14 @@ std::unique_ptr<SendTabToSelfEntry> SendTabToSelfEntry::FromProto(
   GURL url(pb_entry.url());
   DCHECK(url.is_valid());
 
-  base::Time shared_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(pb_entry.shared_time_usec()));
+  base::Time shared_time = ProtoTimeToTime(pb_entry.shared_time_usec());
   if (shared_time > now) {
     shared_time = now;
   }
 
   base::Time navigation_time;
   if (pb_entry.has_navigation_time_usec()) {
-    navigation_time = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(pb_entry.navigation_time_usec()));
+    navigation_time = ProtoTimeToTime(pb_entry.navigation_time_usec());
   }
 
   return std::make_unique<SendTabToSelfEntry>(guid, url, pb_entry.title(),
