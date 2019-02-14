@@ -3962,8 +3962,15 @@ def CMDstatus(parser, args):
 
     if colorize:
       return asterisk + color + branch_name + Fore.RESET
-    else:
-      return branch_name
+    return asterisk + branch_name
+
+  def LeftPadColorfulString(string_plain, string_colorful, alignment):
+    """Pad string_colorful with spaces until it hits alignment. Use string_plain
+    to compute required number of spaces."""
+
+    padding_amount = alignment - len(string_plain)
+    padding = ' ' * padding_amount
+    return padding + string_colorful
 
   branch_statuses = {}
 
@@ -3985,9 +3992,14 @@ def CMDstatus(parser, args):
       color = ''
       reset = ''
     status_str = '(%s)' % status if status else ''
-    print('  %*s : %s%s %s%s' % (
-          alignment, FormatBranchName(branch, colorize=True), color, url,
-          status_str, reset))
+
+    branch_display_plain = FormatBranchName(branch)
+    branch_display_color = FormatBranchName(branch, colorize=True)
+    padded_branch_name = LeftPadColorfulString(branch_display_plain,
+                                               branch_display_color, alignment)
+
+    print('  %s : %s%s %s%s' % (
+        padded_branch_name, color, url, status_str, reset))
 
 
   print()
