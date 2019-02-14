@@ -54,6 +54,14 @@ bool MediaPlayerEntryExists(
   return players->second.find(player_id.delegate_id) != players->second.end();
 }
 
+#if defined(OS_ANDROID)
+static void SuspendAllMediaPlayersInRenderFrame(
+    RenderFrameHost* render_frame_host) {
+  render_frame_host->Send(new MediaPlayerDelegateMsg_SuspendAllMediaPlayers(
+      render_frame_host->GetRoutingID()));
+}
+#endif  // defined(OS_ANDROID)
+
 }  // anonymous namespace
 
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
@@ -378,5 +386,12 @@ void MediaWebContentsObserver::RemoveAllMediaPlayerEntries(
 WebContentsImpl* MediaWebContentsObserver::web_contents_impl() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
+
+#if defined(OS_ANDROID)
+void MediaWebContentsObserver::SuspendAllMediaPlayers() {
+  web_contents()->ForEachFrame(
+      base::BindRepeating(&SuspendAllMediaPlayersInRenderFrame));
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content
