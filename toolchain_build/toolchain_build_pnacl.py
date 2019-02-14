@@ -90,7 +90,10 @@ BUILD_CROSS_MINGW = False
 CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
 # Path and version of the native mingw compiler to be installed on Windows hosts
 MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
-MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
+
+# It's important that there's no git binary in here that shadows the
+# magic git wrapper binary (also called "git") that cipd installs.
+MINGW_VERSION = 'i686-w64-mingw32-4.8.1-nogit'
 
 CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                                 'llvm-build', 'Release+Asserts', 'bin')

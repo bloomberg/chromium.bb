@@ -44,6 +44,7 @@ COMMAND_CODE_FILES += [os.path.join(NACL_DIR, 'pynacl', f)
                                  'hashing_tools.py', 'local_storage_cache.py',
                                  'log_tools.py', 'repo_tools.py',)]
 
+
 def HashBuildSystemSources():
   """Read the build source files to use in hashes for Callbacks."""
   global FILE_CONTENTS_HASH
