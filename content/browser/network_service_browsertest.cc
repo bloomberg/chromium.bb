@@ -29,6 +29,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -355,6 +356,39 @@ class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
 
 // Verifies that in-process network service works.
 IN_PROC_BROWSER_TEST_F(NetworkServiceInProcessBrowserTest, Basic) {
+  GURL test_url = embedded_test_server()->GetURL("foo.com", "/echo");
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(
+          shell()->web_contents()->GetBrowserContext()));
+  NavigateToURL(shell(), test_url);
+  ASSERT_EQ(net::OK,
+            LoadBasicRequest(partition->GetNetworkContext(), test_url));
+}
+
+class NetworkServiceInvalidLogBrowserTest : public ContentBrowserTest {
+ public:
+  NetworkServiceInvalidLogBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(network::switches::kLogNetLog, "/abc/def");
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    EXPECT_TRUE(embedded_test_server()->Start());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceInvalidLogBrowserTest);
+};
+
+// Verifies that an invalid --log-net-log flag won't crash the browser.
+IN_PROC_BROWSER_TEST_F(NetworkServiceInvalidLogBrowserTest, Basic) {
   GURL test_url = embedded_test_server()->GetURL("foo.com", "/echo");
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
