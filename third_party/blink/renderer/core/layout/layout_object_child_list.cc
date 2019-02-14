@@ -94,6 +94,9 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     if (notify_layout_object && old_child->EverHadLayout()) {
       old_child->SetNeedsLayoutAndPrefWidthsRecalc(
           layout_invalidation_reason::kRemovedFromLayout);
+      if (old_child->IsOutOfFlowPositioned() &&
+          RuntimeEnabledFeatures::LayoutNGEnabled())
+        old_child->MarkParentForOutOfFlowPositionedChange();
     }
     InvalidatePaintOnRemoval(*old_child);
   }
@@ -213,6 +216,9 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
 
   new_child->SetNeedsLayoutAndPrefWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);
+  if (new_child->IsOutOfFlowPositioned() &&
+      RuntimeEnabledFeatures::LayoutNGEnabled())
+    new_child->MarkParentForOutOfFlowPositionedChange();
   new_child->SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason::kAppeared);
   new_child->AddSubtreePaintPropertyUpdateReason(

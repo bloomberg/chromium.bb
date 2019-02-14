@@ -1168,6 +1168,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void MarkContainerChainForLayout(bool schedule_relayout = true,
                                    SubtreeLayoutScope* = nullptr);
+  void MarkParentForOutOfFlowPositionedChange();
   void SetNeedsLayout(LayoutInvalidationReasonForTracing,
                       MarkingBehavior = kMarkContainerChain,
                       SubtreeLayoutScope* = nullptr);

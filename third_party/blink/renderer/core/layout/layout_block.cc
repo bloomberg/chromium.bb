@@ -1033,12 +1033,6 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
     g_positioned_descendants_map->erase(container);
     container->has_positioned_objects_ = false;
   }
-
-  // Need to clear the anchor of the positioned object in its container box.
-  // The anchors are created in the logical container box, not in the CSS
-  // containing block.
-  if (LayoutObject* parent = o->Parent())
-    parent->MarkContainerNeedsCollectInlines();
 }
 
 bool LayoutBlock::IsAnonymousNGFieldsetContentWrapper() const {
@@ -1114,13 +1108,9 @@ void LayoutBlock::RemovePositionedObjects(
       }
 
       // It is parent blocks job to add positioned child to positioned objects
-      // list of its containing block
+      // list of its containing block.
       // Parent layout needs to be invalidated to ensure this happens.
-      LayoutObject* p = positioned_object->Parent();
-      while (p && !p->IsLayoutBlock())
-        p = p->Parent();
-      if (p)
-        p->SetChildNeedsLayout();
+      positioned_object->MarkParentForOutOfFlowPositionedChange();
 
       dead_objects.push_back(positioned_object);
     }

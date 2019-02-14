@@ -269,18 +269,12 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
     const NGBreakToken* break_token) {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
+
   if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
       (Base::NeedsLayout() && !NeedsRelativePositionedLayoutOnly()))
     return nullptr;
+
   const NGConstraintSpace& old_space = *Base::cached_constraint_space_;
-  // If we used to contain abspos items, we can't reuse the fragment, because
-  // we can't be sure that the list of items hasn't changed (as we bubble them
-  // up during layout). In the case of newly-added abspos items to this
-  // containing block, we will handle those by the NeedsLayout check above for
-  // now.
-  // TODO(layout-ng): Come up with a better solution for this
-  if (cached_result_->OutOfFlowPositionedDescendants().size())
-    return nullptr;
   if (!new_space.MaySkipLayout(old_space))
     return nullptr;
 

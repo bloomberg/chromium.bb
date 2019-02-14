@@ -223,6 +223,8 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
         // recalculation.
         SetNeedsLayoutAndPrefWidthsRecalc(
             layout_invalidation_reason::kStyleChange);
+        if (RuntimeEnabledFeatures::LayoutNGEnabled())
+          MarkParentForOutOfFlowPositionedChange();
       } else {
         MarkContainerChainForLayout();
       }
