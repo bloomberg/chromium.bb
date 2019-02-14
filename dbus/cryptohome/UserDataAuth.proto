@@ -159,3 +159,30 @@ message MountReply {
   // Returns the filesystem-sanitized username.
   string sanitized_username = 3;
 }
+
+// Input parameters to Remove()
+message RemoveRequest {
+  // Identifies the user, whose home directory to remove
+  cryptohome.AccountIdentifier identifier = 1;
+}
+
+// Output parameters for Remove()
+message RemoveReply {
+  // Indicate an error when |error| is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
+// Input parameters to Rename()
+message RenameRequest {
+  // Identifies the user, whose home directory to rename
+  cryptohome.AccountIdentifier id_from = 1;
+  // After the Rename() operation the home directory will have a name that is
+  // the same as if it is owned by |id_to|
+  cryptohome.AccountIdentifier id_to = 2;
+}
+
+// Output parameters for Rename()
+message RenameReply {
+  // Indicate an error when |error| is not empty.
+  CryptohomeErrorCode error = 1;
+}
