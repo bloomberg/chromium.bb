@@ -1120,12 +1120,11 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     return;
 
   // If we're in a locked subtree, then we should not update the style recalc
-  // roots. These would be updated when we commit the lock.
-  // TODO(vmpstr): There's currently no easy way to determine whether we're in a
-  // locked subtree other than navigating up the ancestor chain. We can probably
-  // do better and only do this walk if there is in fact a lock somewhere in the
-  // document.
-  if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+  // roots. These would be updated when we commit the lock. If we have locked
+  // display locks somewhere in the document, we iterate up the ancestor chain
+  // to check if we're in one such subtree.
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+      GetDocument().LockedDisplayLockCount() > 0) {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
          ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
       if (ancestor_copy->IsElementNode() &&
