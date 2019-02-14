@@ -75,10 +75,11 @@ class MetricsStateManager final {
   // Returns the preferred entropy provider used to seed persistent activities
   // based on whether or not metrics reporting is permitted on this client.
   //
-  // If there's consent to report metrics, this method returns an entropy
-  // provider that has a high source of entropy, partially based on the client
-  // ID. Otherwise, it returns an entropy provider that is based on a low
-  // entropy source.
+  // If there's consent to report metrics or this is the first run of Chrome,
+  // this method returns an entropy  provider that has a high source of
+  // entropy, partially based on the client ID or provisional client ID.
+  // Otherwise, it returns an entropy provider that is based on a low entropy
+  // source.
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateDefaultEntropyProvider();
 
@@ -118,6 +119,10 @@ class MetricsStateManager final {
                            CorruptNewLowEntropySources);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
                            CorruptOldLowEntropySources);
+  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
+                           ProvisionalClientId_PromotedToClientId);
+  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest,
+                           ProvisionalClientId_NotPersisted);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, ResetBackup);
   FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, ResetMetricsIDs);
 
@@ -152,10 +157,10 @@ class MetricsStateManager final {
   // Loads the client info via |load_client_info_|.
   std::unique_ptr<ClientInfo> LoadClientInfo();
 
-  // Returns the high entropy source for this client, which is composed of the
+  // Returns the high entropy source for this client, which is composed of a
   // client ID and the low entropy source. This is intended to be unique for
-  // each install. UMA must be enabled (and |client_id_| must be set) before
-  // calling this.
+  // each install. UMA must be enabled (and |client_id_| must be set) or
+  // |provisional_client_id_| must be set before calling this.
   std::string GetHighEntropySource();
 
   // Returns the low entropy source for this client. Generates a new value if
@@ -217,6 +222,14 @@ class MetricsStateManager final {
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;
+
+  // A provisional client id that's generated at start up before we know whether
+  // metrics consent has been received from the client. This id becomes the
+  // |client_id_| if consent is given within the same session, or is cleared
+  // otherwise. Does not control transmission of UMA metrics, only used for the
+  // high entropy source used for field trial randomization so that field
+  // trials don't toggle state between first and second run.
+  std::string provisional_client_id_;
 
   // The non-identifying low entropy source values. These values seed the
   // pseudorandom generators which pick experimental groups. The "old" value is
