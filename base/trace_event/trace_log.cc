@@ -652,6 +652,11 @@ void TraceLog::SetArgumentFilterPredicate(
   argument_filter_predicate_ = argument_filter_predicate;
 }
 
+ArgumentFilterPredicate TraceLog::GetArgumentFilterPredicate() const {
+  AutoLock lock(lock_);
+  return argument_filter_predicate_;
+}
+
 TraceLog::InternalTraceOptions TraceLog::GetInternalOptionsFromTraceConfig(
     const TraceConfig& config) {
   InternalTraceOptions ret = config.IsArgumentFilterEnabled()

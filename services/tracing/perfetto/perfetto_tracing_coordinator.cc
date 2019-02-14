@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/tracing/perfetto/json_trace_exporter.h"
@@ -20,6 +21,15 @@
 
 namespace tracing {
 
+namespace {
+
+bool IsArgumentFilterEnabled(const std::string& config) {
+  base::trace_event::TraceConfig chrome_trace_config_obj(config);
+  return chrome_trace_config_obj.IsArgumentFilterEnabled();
+}
+
+}  // namespace
+
 // A TracingSession acts as a perfetto consumer and is used to wrap all the
 // associated state of an on-going tracing session, for easy setup and cleanup.
 //
@@ -31,6 +41,10 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
   TracingSession(const std::string& config,
                  base::OnceClosure tracing_over_callback)
       : json_trace_exporter_(std::make_unique<JSONTraceExporter>(
+            IsArgumentFilterEnabled(config)
+                ? base::trace_event::TraceLog::GetInstance()
+                      ->GetArgumentFilterPredicate()
+                : JSONTraceExporter::ArgumentFilterPredicate(),
             base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
                                 base::Unretained(this)))),
         tracing_over_callback_(std::move(tracing_over_callback)) {
