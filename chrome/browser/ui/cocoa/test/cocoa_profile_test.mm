@@ -11,8 +11,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_test_util.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -57,8 +57,8 @@ void CocoaProfileTest::SetUp() {
 
   // Always fake out the Gaia service to avoid issuing network requests.
   TestingProfile::TestingFactories testing_factories = {
-      {GaiaCookieManagerServiceFactory::GetInstance(),
-       base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
+      {ChromeSigninClientFactory::GetInstance(),
+       base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
                            &test_url_loader_factory_)}};
 
   profile_ = profile_manager_.CreateTestingProfile(

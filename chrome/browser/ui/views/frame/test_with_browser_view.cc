@@ -15,8 +15,8 @@
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_test_util.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -115,7 +115,7 @@ BrowserWindow* TestWithBrowserView::CreateBrowserWindow() {
 }
 
 TestingProfile::TestingFactories TestWithBrowserView::GetTestingFactories() {
-  return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
+  return {{ChromeSigninClientFactory::GetInstance(),
+           base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
                                test_url_loader_factory())}};
 }

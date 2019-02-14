@@ -341,9 +341,8 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
     // This is required to support (fake) secondary-account-signin (based on
     // cookies) in tests. Without this, the real GaiaCookieManagerService would
     // try talking to Google servers which of course wouldn't work in tests.
-    test_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpGaiaCookieManagerService(
-            &test_url_loader_factory_);
+    test_signin_client_factory_ =
+        secondary_account_helper::SetUpSigninClient(&test_url_loader_factory_);
     UkmBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -357,8 +356,8 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
  private:
   base::test::ScopedFeatureList features_;
 
-  secondary_account_helper::ScopedGaiaCookieManagerServiceFactory
-      test_gaia_cookie_manager_factory_;
+  secondary_account_helper::ScopedSigninClientFactory
+      test_signin_client_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestWithSyncTransport);
 };
