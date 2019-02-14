@@ -378,4 +378,8 @@ void TestWebState::TakeSnapshot(const gfx::RectF& rect,
   std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
 }
 
+void TestWebState::LoadData(NSData* data,
+                            NSString* mime_type,
+                            const GURL& url) {}
+
 }  // namespace web

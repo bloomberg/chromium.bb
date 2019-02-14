@@ -21,10 +21,15 @@
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/web_state_observer.h"
+#include "ios/web/test/test_url_constants.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -43,6 +48,12 @@ namespace {
 // A text string from the test HTML page in the session storage returned  by
 // GetTestSessionStorage().
 const char kTestSessionStoragePageText[] = "pony";
+
+// A text string that is included in |kTestPageHTML|.
+const char kTextInTestPageHTML[] = "test";
+
+// A test page HTML containing |kTextInTestPageHTML|.
+const char kTestPageHTML[] = "<html><body>test</body><html>";
 
 // Returns a session storage with a single committed entry of a test HTML page.
 CRWSessionStorage* GetTestSessionStorage() {
@@ -623,6 +634,64 @@ TEST_P(WebStateTest, DisableAndReenableWebUsage) {
   web_state->GetNavigationManager()->LoadIfNecessary();
   EXPECT_TRUE(test::WaitForWebViewContainingText(web_state.get(),
                                                  kTestSessionStoragePageText));
+}
+
+// Tests that loading an HTML page after a failed navigation works.
+TEST_P(WebStateTest, LoadChromeThenHTML) {
+  GURL app_specific_url(
+      base::StringPrintf("%s://app_specific_url", kTestAppSpecificScheme));
+  web::NavigationManager::WebLoadParams load_params(app_specific_url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+  // Wait for the error loading.
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), "unsupported URL"));
+  NSString* data_html = @(kTestPageHTML);
+  web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                        @"text/html", GURL("https://www.chromium.org"));
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kTextInTestPageHTML));
+}
+
+// Tests that reloading after loading HTML page will load the online page.
+TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
+  net::EmbeddedTestServer server;
+  net::test_server::RegisterDefaultHandlers(&server);
+  ASSERT_TRUE(server.Start());
+  GURL echo_url = server.GetURL("/echo");
+
+  GURL app_specific_url(
+      base::StringPrintf("%s://app_specific_url", kTestAppSpecificScheme));
+  web::NavigationManager::WebLoadParams load_params(app_specific_url);
+  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  // Wait for the error loading.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), "unsupported URL"));
+  NSString* data_html = @(kTestPageHTML);
+  web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
+                        @"text/html", echo_url);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+  EXPECT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), kTextInTestPageHTML));
+
+  web_state()->GetNavigationManager()->Reload(web::ReloadType::NORMAL, true);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
+  web_state()->GetNavigationManager()->Reload(web::ReloadType::NORMAL, true);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

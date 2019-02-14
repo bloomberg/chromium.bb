@@ -176,6 +176,10 @@ class NavigationManagerImpl : public NavigationManager {
   // out of CRWWebController.
   NavigationItemImpl* GetCurrentItemImpl() const;
 
+  // Returns the last committed NavigationItem, which may be null if there
+  // are no committed entries or session restoration is in-progress.
+  NavigationItemImpl* GetLastCommittedItemImpl() const;
+
   // Updates the pending or last committed navigation item after replaceState.
   // TODO(crbug.com/783382): This is a legacy method to maintain backward
   // compatibility for PageLoad stat. Remove this method once PageLoad no longer

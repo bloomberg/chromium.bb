@@ -152,6 +152,10 @@ class WebState : public base::SupportsUserData {
   // Gets the CRWJSInjectionReceiver associated with this WebState.
   virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const = 0;
 
+  // Loads |data| of type |mime_type| and replaces last committed URL with the
+  // given |url|.
+  virtual void LoadData(NSData* data, NSString* mime_type, const GURL& url) = 0;
+
   // DISCOURAGED. Prefer using |WebFrame CallJavaScriptFunction| instead because
   // it restricts JavaScript execution to functions within __gCrWeb and can also
   // call those functions on any frame in the page. ExecuteJavaScript here can

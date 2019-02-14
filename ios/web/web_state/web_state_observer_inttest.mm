@@ -118,6 +118,39 @@ ACTION_P5(VerifyPageStartedContext,
   EXPECT_EQ(url, item->GetURL());
 }
 
+// Verifies correctness of |NavigationContext| (|arg1|) for data navigation
+// passed to |DidStartNavigation|. Stores |NavigationContext| in |context|
+// pointer.
+ACTION_P5(VerifyDataStartedContext,
+          web_state,
+          url,
+          transition,
+          context,
+          nav_id) {
+  *context = arg1;
+  ASSERT_TRUE(*context);
+  EXPECT_EQ(web_state, arg0);
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  *nav_id = (*context)->GetNavigationId();
+  EXPECT_NE(0, *nav_id);
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
+  ui::PageTransition actual_transition = (*context)->GetPageTransition();
+  EXPECT_TRUE(PageTransitionCoreTypeIs(transition, actual_transition))
+      << "Got unexpected transition: " << actual_transition;
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->IsRendererInitiated());
+  ASSERT_FALSE((*context)->GetResponseHeaders());
+  ASSERT_FALSE(web_state->IsLoading());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_EQ(url, item->GetURL());
+}
+
 // Verifies correctness of |NavigationContext| (|arg1|) for navigation for
 // stopped load. Stores |NavigationContext| in |context| pointer.
 ACTION_P5(VerifyAbortedNavigationStartedContext,
@@ -212,6 +245,39 @@ ACTION_P4(VerifyPdfFileUrlFinishedContext, web_state, url, context, nav_id) {
   ASSERT_TRUE(web_state->IsLoading());
   ASSERT_FALSE(web_state->ContentIsHTML());
   ASSERT_EQ("application/pdf", web_state->GetContentsMimeType());
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  NavigationItem* item = navigation_manager->GetLastCommittedItem();
+  EXPECT_TRUE(!item->GetTimestamp().is_null());
+  EXPECT_EQ(url, item->GetURL());
+}
+
+// Verifies correctness of |NavigationContext| (|arg1|) for data navigation
+// passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
+// |context|.
+ACTION_P5(VerifyDataFinishedContext,
+          web_state,
+          url,
+          mime_type,
+          context,
+          nav_id) {
+  ASSERT_EQ(*context, arg1);
+  EXPECT_EQ(web_state, arg0);
+  ASSERT_TRUE((*context));
+  EXPECT_EQ(web_state, (*context)->GetWebState());
+  EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
+  EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
+                               (*context)->GetPageTransition()));
+  EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
+  EXPECT_FALSE((*context)->IsDownload());
+  EXPECT_FALSE((*context)->IsPost());
+  EXPECT_FALSE((*context)->GetError());
+  EXPECT_FALSE((*context)->IsRendererInitiated());
+  ASSERT_FALSE(web_state->ContentIsHTML());
+  ASSERT_FALSE(web_state->IsLoading());
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_TRUE(!item->GetTimestamp().is_null());
@@ -2449,6 +2515,58 @@ TEST_P(WebStateObserverTest, PdfFileUrlNavigation) {
   params.virtual_url =
       GURL(url::SchemeHostPort(kTestAppSpecificScheme, "foo", 0).Serialize());
   ASSERT_TRUE(LoadWithParams(params));
+}
+
+// Tests loading Data in place of a normal URL.
+TEST_P(WebStateObserverTest, LoadData) {
+  // Perform first navigation.
+  const GURL first_url = test_server_->GetURL("/echoall");
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(true));
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), first_url, ui::PageTransition::PAGE_TRANSITION_TYPED,
+          &context, &nav_id));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageFinishedContext(
+          web_state(), first_url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(first_url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  ASSERT_TRUE(LoadUrl(first_url));
+
+  NSString* html = @"<html><body>foo</body></html>";
+  GURL data_url("https://www.chromium.test");
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  // ShouldAllowResponse is not called on loadData navigation.
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyDataStartedContext(
+          web_state(), data_url, ui::PageTransition::PAGE_TRANSITION_TYPED,
+          &context, &nav_id));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyDataFinishedContext(web_state(), data_url, "text/html",
+                                          &context, &nav_id));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("https://www.chromium.test"));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  web_state()->LoadData([html dataUsingEncoding:NSUTF8StringEncoding],
+                        @"text/html", data_url);
+  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state(), "foo"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

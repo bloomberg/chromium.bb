@@ -20,6 +20,7 @@
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
 #include "base/feature_list.h"
+#include "base/i18n/i18n_constants.h"
 #import "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
@@ -1522,6 +1523,47 @@ GURL URLEscapedForHistory(const GURL& url) {
                  ? ui::PAGE_TRANSITION_LINK
                  : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   }
+}
+
+- (void)loadData:(NSData*)data
+        MIMEType:(NSString*)MIMEType
+          forURL:(const GURL&)URL {
+  web::NavigationItemImpl* item =
+      self.navigationManagerImpl->GetLastCommittedItemImpl();
+  auto navigationContext = web::NavigationContextImpl::CreateNavigationContext(
+      _webStateImpl, URL,
+      /*has_user_gesture=*/true, item->GetTransitionType(),
+      /*is_renderer_initiated=*/false);
+  _loadPhase = web::LOAD_REQUESTED;
+  navigationContext->SetNavigationItemUniqueID(item->GetUniqueID());
+
+  item->SetNavigationInitiationType(
+      web::NavigationInitiationType::BROWSER_INITIATED);
+  // The error_retry_state_machine may still be in the
+  // |kDisplayingWebErrorForFailedNavigation| from the navigation that is being
+  // replaced. As the navigation is now successful, the error can be cleared.
+  item->error_retry_state_machine().SetNoNavigationError();
+  // The load data call will replace the current navigation and the webView URL
+  // of the navigation will be replaced by |URL|. Set the URL of the
+  // navigationItem to keep them synced.
+  // Note: it is possible that the URL in item already match |url|. But item can
+  // also contain a placeholder URL intended to be replaced.
+  item->SetURL(URL);
+  if (item->GetUserAgentType() == web::UserAgentType::NONE &&
+      web::wk_navigation_util::URLNeedsUserAgentType(URL)) {
+    item->SetUserAgentType(web::UserAgentType::MOBILE);
+  }
+
+  WKNavigation* navigation =
+      [_webView loadData:data
+                       MIMEType:MIMEType
+          characterEncodingName:base::SysUTF8ToNSString(base::kCodepageUTF8)
+                        baseURL:net::NSURLWithGURL(URL)];
+
+  [_navigationStates setContext:std::move(navigationContext)
+                  forNavigation:navigation];
+  [_navigationStates setState:web::WKNavigationState::REQUESTED
+                forNavigation:navigation];
 }
 
 // TODO(crbug.com/788465): Verify that the history state management here are not

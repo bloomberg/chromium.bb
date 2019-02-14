@@ -177,6 +177,25 @@ NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
   return GetLastCommittedItemInCurrentOrRestoredSession();
 }
 
+NavigationItemImpl* NavigationManagerImpl::GetLastCommittedItemImpl() const {
+  // GetLastCommittedItemImpl() should return null while session restoration is
+  // in progress and real item after the first post-restore navigation is
+  // finished. IsRestoreSessionInProgress(), will return true until the first
+  // post-restore is started.
+  if (IsRestoreSessionInProgress())
+    return nullptr;
+
+  NavigationItemImpl* result = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (!result || wk_navigation_util::IsRestoreSessionUrl(result->GetURL())) {
+    // Session restoration has completed, but the first post-restore navigation
+    // has not finished yet, so there is no committed URLs in the navigation
+    // stack.
+    return nullptr;
+  }
+
+  return result;
+}
+
 void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
     const GURL& url,
     NSString* state_object) {
@@ -224,22 +243,7 @@ void NavigationManagerImpl::GoToIndex(int index) {
 }
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
-  // GetLastCommittedItem() should return null while session restoration is in
-  // progress and real item after the first post-restore navigation is
-  // finished. IsRestoreSessionInProgress(), will return true until the first
-  // post-restore is started.
-  if (IsRestoreSessionInProgress())
-    return nullptr;
-
-  NavigationItem* result = GetLastCommittedItemInCurrentOrRestoredSession();
-  if (!result || wk_navigation_util::IsRestoreSessionUrl(result->GetURL())) {
-    // Session restoration has completed, but the first post-restore navigation
-    // has not finished yet, so there is no committed URLs in the navigation
-    // stack.
-    return nullptr;
-  }
-
-  return result;
+  return GetLastCommittedItemImpl();
 }
 
 int NavigationManagerImpl::GetLastCommittedItemIndex() const {
