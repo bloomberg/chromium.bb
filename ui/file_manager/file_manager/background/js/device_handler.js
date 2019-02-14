@@ -521,13 +521,11 @@ DeviceHandler.prototype.onMount_ = function(event) {
           })
       .then((/**
               * @param {!DirectoryEntry} directory
-              * @this {DeviceHandler}
               */
              function(directory) {
                return importer.isPhotosAppImportEnabled().then(
                    (/**
                      * @param {boolean} appEnabled
-                     * @this {DeviceHandler}
                      */
                     function(appEnabled) {
                       // We don't want to auto-open two windows when a user

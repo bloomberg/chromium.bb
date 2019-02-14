@@ -13,3 +13,8 @@ Window.prototype.appID;
  * @type {string}
  */
 Window.prototype.appInitialURL;
+
+/**
+ * @type {function()}
+ */
+Window.prototype.reload = function() {};

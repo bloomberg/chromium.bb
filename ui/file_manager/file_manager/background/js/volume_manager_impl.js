@@ -52,7 +52,9 @@ function VolumeManagerImpl() {
  */
 VolumeManagerImpl.prototype.onDriveConnectionStatusChanged_ = function() {
   chrome.fileManagerPrivate.getDriveConnectionState(function(state) {
-    this.driveConnectionState_ = state;
+    // TODO(crbug.com/931971): Convert private API to use enum.
+    this.driveConnectionState_ =
+        /** @type {VolumeManagerCommon.DriveConnectionState} */ (state);
     cr.dispatchSimpleEvent(this, 'drive-connection-changed');
   }.bind(this));
 };

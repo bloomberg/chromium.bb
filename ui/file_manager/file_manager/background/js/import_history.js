@@ -278,7 +278,6 @@ importer.PersistentImportHistory.prototype.wasCopied =
           (/**
            * @param {string} key
            * @return {boolean}
-           * @this {importer.PersistentImportHistory}
            */
           function(key) {
             return key in this.copiedEntries_ &&
@@ -296,7 +295,6 @@ importer.PersistentImportHistory.prototype.wasImported =
           (/**
            * @param {string} key
            * @return {boolean}
-           * @this {importer.PersistentImportHistory}
            */
           function(key) {
             return this.getDestinations_(key).indexOf(destination) >= 0;
@@ -312,7 +310,6 @@ importer.PersistentImportHistory.prototype.markCopied = function(
           (/**
            * @param {string} key
            * @return {!Promise<?>}
-           * @this {importer.ImportHistory}
            */
           function(key) {
             return this.storeRecord_([
@@ -360,7 +357,6 @@ importer.PersistentImportHistory.prototype.markImported = function(
           (/**
            * @param {string} key
            * @return {!Promise<?>}
-           * @this {importer.ImportHistory}
            */
           function(key) {
             return this.storeRecord_([
@@ -391,7 +387,7 @@ importer.PersistentImportHistory.prototype.markImportedByUrl =
           key,
           destination])
             .then(
-                (/** @this {importer.PersistentImportHistory} */
+                (
                 function() {
                   const sourceUrl = importer.inflateAppUrl(
                       copyData[destination].sourceUrl);
@@ -401,7 +397,6 @@ importer.PersistentImportHistory.prototype.markImportedByUrl =
                   util.urlToEntry(sourceUrl).then(
                       (/**
                        * @param {Entry} entry
-                       * @this {importer.PersistentImportHistory}
                        */
                       function(entry) {
                         if (entry.isFile) {
@@ -524,7 +519,6 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
     this.getHistoryFiles_()
         .then((/**
                 * @param {!Array<!FileEntry>} fileEntries
-                * @this {importer.SynchronizedHistoryLoader}
                 */
                function(fileEntries) {
                  const storage = new importer.FileBasedRecordStorage(fileEntries);
@@ -532,7 +526,7 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
                      importer.createMetadataHashcode, storage);
                  new importer.DriveSyncWatcher(history);
                  history.whenReady().then(
-                     (/** @this {importer.SynchronizedHistoryLoader} */
+                     (
                       function() {
                         this.historyResolver_.resolve(history);
                       }).bind(this));
@@ -604,7 +598,6 @@ importer.FileBasedRecordStorage.prototype.write = function(record) {
       .then(
           (/**
            * @param {?} ignore
-           * @this {importer.FileBasedRecordStorage}
            */
           function(ignore) {
             return this.outputFile_.createWriter();
@@ -648,7 +641,6 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
       .then(
           (/**
            * @param {?} ignored
-           * @this {importer.FileBasedRecordStorage}
            */
           function(ignored) {
             const filePromises = this.inputFiles_.map(
@@ -664,7 +656,6 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
       .then(
           (/**
            * @return {!Promise<!Array<string>>}
-           * @this {importer.FileBasedRecordStorage}
            */
           function(files) {
             const contentPromises = files.map(
@@ -673,7 +664,6 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
           }).bind(this),
           (/**
            * @return {string}
-           * @this {importer.FileBasedRecordStorage}
            */
           function() {
             console.error('Unable to read from one of history files.');
@@ -682,7 +672,6 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
       .then(
           (/**
            * @param {!Array<string>} fileContents
-           * @this {importer.FileBasedRecordStorage}
            */
           function(fileContents) {
             const parsePromises = fileContents.map(
@@ -858,7 +847,6 @@ importer.DriveSyncWatcher.prototype.checkSyncStatus_ =
       .then(
           (/**
            * @param {boolean} synced True if file is synced
-           * @this {importer.DriveSyncWatcher}
            */
           function(synced) {
             if (synced) {
@@ -949,7 +937,6 @@ importer.RuntimeHistoryLoader.prototype.getHistory = function() {
             (/**
              * @param {boolean} enabled
              * @return {!importer.HistoryLoader}
-             * @this {importer.RuntimeHistoryLoader}
              */
             function(enabled) {
               return enabled ?
@@ -958,7 +945,9 @@ importer.RuntimeHistoryLoader.prototype.getHistory = function() {
             }).bind(this))
         .then(
             function(loader) {
-              return this.historyResolver_.resolve(loader.getHistory());
+              return this.historyResolver_.resolve(
+                  /** @type {!importer.ImportHistory} */
+                      (loader.getHistory()));
             }.bind(this))
         .catch(
             importer.getLogger().catcher(
@@ -985,7 +974,6 @@ importer.createMetadataHashcode = function(fileEntry) {
                metadataProxy.getEntryMetadata(fileEntry).then(
                    (/**
                     * @param {!Object} metadata
-                    * @this {importer.PersistentImportHistory}
                     */
                    function(metadata) {
                      if (!('modificationTime' in metadata)) {

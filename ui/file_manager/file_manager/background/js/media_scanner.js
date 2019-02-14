@@ -82,7 +82,7 @@ importer.DefaultMediaScanner.prototype.scanDirectory = function(directory,
 
   scan.whenFinal()
       .then(
-          (/** @this {importer.DefaultMediaScanner} */
+          (
           function() {
             console.info(
                 scan.name + ': Finished directory scan. Details: ' +
@@ -104,7 +104,6 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
       entries.length + ' entries.');
 
   const watcher = this.watcherFactory_(
-      /** @this {importer.DefaultMediaScanner} */
       (function() {
         scan.cancel();
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
@@ -119,7 +118,7 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
 
   scan.whenFinal()
       .then(
-          (/** @this {importer.DefaultMediaScanner} */
+          (
           function() {
             console.info(
                 scan.name + ': Finished file-selection scan. Details: ' +
@@ -246,7 +245,6 @@ importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
            * @param {!importer.Disposition} disposition The disposition
            *     of the entry. Either some sort of dupe, or an original.
            * @return {!Promise}
-           * @this {importer.DefaultMediaScanner}
            */
           function(disposition) {
             return disposition === importer.Disposition.ORIGINAL ?
@@ -276,7 +274,6 @@ importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
       .then(
           (/**
            * @param {boolean} added
-           * @this {importer.DefaultMediaScanner}
            */
           function(added) {
             if (added) {
@@ -463,7 +460,6 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
   return metadataProxy.getEntryMetadata(entry).then(
       (/**
        * @param {!Metadata} metadata
-       * @this {importer.DefaultScanResult}
        */
       function(metadata) {
         console.assert(
@@ -474,7 +470,6 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
             .then(
                 (/**
                  * @param {string} hashcode
-                 * @this {importer.DefaultScanResult}
                  */
                 function(hashcode) {
                   this.lastScanActivity_ = new Date();

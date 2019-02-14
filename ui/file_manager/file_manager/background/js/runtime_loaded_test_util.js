@@ -656,9 +656,9 @@ test.util.executeTestMessage = function(request, sendResponse) {
   }
   // Call the test utility function and respond the result.
   if (test.util.async[request.func]) {
-    args[test.util.async[request.func].length - 1] = function() {
+    args[test.util.async[request.func].length - 1] = function(...innerArgs) {
       console.debug('Received the result of ' + request.func);
-      sendResponse.apply(null, arguments);
+      sendResponse.apply(null, innerArgs);
     };
     console.debug('Waiting for the result of ' + request.func);
     test.util.async[request.func].apply(null, args);
