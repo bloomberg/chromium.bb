@@ -230,16 +230,10 @@ void OAuthTokenGetterImpl::GetOauthTokensFromAuthCode() {
           ? google_apis::CLIENT_REMOTING_HOST
           : google_apis::CLIENT_REMOTING;
 
-  std::string redirect_uri;
-  if (intermediate_credentials_->oauth_redirect_uri.empty()) {
-    if (intermediate_credentials_->is_service_account) {
-      redirect_uri = "oob";
-    } else {
-      redirect_uri = GetDefaultOauthRedirectUrl();
-    }
-  } else {
-    redirect_uri = intermediate_credentials_->oauth_redirect_uri;
-  }
+  // For the case of fetching an OAuth token from a one-time-use code, the
+  // caller should provide a redirect URI.
+  std::string redirect_uri = intermediate_credentials_->oauth_redirect_uri;
+  DCHECK(!redirect_uri.empty());
 
   gaia::OAuthClientInfo client_info = {
       google_apis::GetOAuth2ClientID(oauth2_client),
