@@ -7,6 +7,7 @@ cr.define('nux', function() {
    * @typedef {{
    *   id: number,
    *   imageUrl: string,
+   *   thumbnailClass: string,
    *   title: string,
    * }}
    */

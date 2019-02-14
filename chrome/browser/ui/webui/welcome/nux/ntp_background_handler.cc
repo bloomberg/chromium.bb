@@ -20,10 +20,10 @@ namespace nux {
 
 enum class NtpBackgrounds {
   kArt = 0,
-  kLandscape = 1,
-  kCityscape = 2,
-  kSeascape = 3,
-  kGeometricShapes = 4,
+  kCityscape = 1,
+  kGeometricShapes = 2,
+  kLandscape = 3,
+  kLife = 4,
 };
 
 NtpBackgroundHandler::NtpBackgroundHandler() {}
@@ -47,12 +47,13 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
       GetOnboardingNtpBackgrounds();
 
   auto element = std::make_unique<base::DictionaryValue>();
-  int id = static_cast<int>(NtpBackgrounds::kArt);
+  int id = static_cast<int>(NtpBackgrounds::kCityscape);
   element->SetInteger("id", id);
-  element->SetString("title",
-                     l10n_util::GetStringUTF8(
-                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_ART_TITLE));
+  element->SetString(
+      "title", l10n_util::GetStringUTF8(
+                   IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE));
   element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
+  element->SetString("thumbnailClass", "cityscape");
   list_value.Append(std::move(element));
 
   element = std::make_unique<base::DictionaryValue>();
@@ -62,24 +63,17 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
       "title", l10n_util::GetStringUTF8(
                    IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LANDSCAPE_TITLE));
   element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
+  element->SetString("thumbnailClass", "landscape");
   list_value.Append(std::move(element));
 
   element = std::make_unique<base::DictionaryValue>();
-  id = static_cast<int>(NtpBackgrounds::kCityscape);
-  element->SetInteger("id", id);
-  element->SetString(
-      "title", l10n_util::GetStringUTF8(
-                   IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE));
-  element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
-  list_value.Append(std::move(element));
-
-  element = std::make_unique<base::DictionaryValue>();
-  id = static_cast<int>(NtpBackgrounds::kSeascape);
+  id = static_cast<int>(NtpBackgrounds::kArt);
   element->SetInteger("id", id);
   element->SetString("title",
                      l10n_util::GetStringUTF8(
-                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_SEASCAPE_TITLE));
+                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_ART_TITLE));
   element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
+  element->SetString("thumbnailClass", "art");
   list_value.Append(std::move(element));
 
   element = std::make_unique<base::DictionaryValue>();
@@ -90,6 +84,17 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
       l10n_util::GetStringUTF8(
           IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE));
   element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
+  element->SetString("thumbnailClass", "geometric-shapes");
+  list_value.Append(std::move(element));
+
+  element = std::make_unique<base::DictionaryValue>();
+  id = static_cast<int>(NtpBackgrounds::kLife);
+  element->SetInteger("id", id);
+  element->SetString("title",
+                     l10n_util::GetStringUTF8(
+                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LIFE_TITLE));
+  element->SetString("imageUrl", onboardingNtpBackgrounds[id].spec());
+  element->SetString("thumbnailClass", "life");
   list_value.Append(std::move(element));
 
   ResolveJavascriptCallback(*callback_id, list_value);

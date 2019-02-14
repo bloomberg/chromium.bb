@@ -35,6 +35,7 @@ Polymer({
     const defaultBackground = {
       id: -1,
       imageUrl: '',
+      thumbnailClass: '',
       title: this.i18n('ntpBackgroundDefault'),
     };
     this.selectedBackground_ = defaultBackground;

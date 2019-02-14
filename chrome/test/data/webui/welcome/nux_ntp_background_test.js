@@ -10,11 +10,13 @@ cr.define('onboarding_ntp_background_test', function() {
         id: 0,
         title: 'Cat',
         imageUrl: 'some/cute/photo/of/a/cat',
+        thumbnailClass: 'cat',
       },
       {
         id: 1,
         title: 'Venice',
         imageUrl: 'some/scenic/photo/of/a/beach',
+        thumbnailClass: 'venice',
       },
     ];
 
