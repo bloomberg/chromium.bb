@@ -1,11 +1,17 @@
 # This OWNERS list is a last resort. Please prefer to use more specific OWNERS
 # where possible.
 
-# Reviewers:
+# Reviewers (in CET):
+droger@chromium.org
+treib@chromium.org
+vasilii@chromium.org
+
+# Reviewers (in EST):
 avi@chromium.org
-jochen@chromium.org
-sky@chromium.org
 thakis@chromium.org
+
+# Reviewers (in PST):
+sky@chromium.org
 thestig@chromium.org
 
 # per-file rules:
