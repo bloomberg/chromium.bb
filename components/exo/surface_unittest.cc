@@ -904,5 +904,30 @@ TEST_P(SurfaceTest, SetClientSurfaceId) {
   EXPECT_EQ(kTestId, surface->GetClientSurfaceId());
 }
 
+TEST_P(SurfaceTest, DestroyWithAttachedBufferReleasesBuffer) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  int release_buffer_call_count = 0;
+  buffer->set_release_callback(base::BindRepeating(
+      &ReleaseBuffer, base::Unretained(&release_buffer_call_count)));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+  // Buffer is still attached at this point.
+  EXPECT_EQ(0, release_buffer_call_count);
+
+  // After the surface is destroyed, we should get a release event for the
+  // attached buffer.
+  shell_surface.reset();
+  surface.reset();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1, release_buffer_call_count);
+}
+
 }  // namespace
 }  // namespace exo
