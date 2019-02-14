@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/video/picture.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,6 +43,15 @@ class FrameRenderer {
   // Render the specified video frame. Once rendering is done the reference to
   // the |video_frame| should be dropped so the video frame can be reused.
   virtual void RenderFrame(scoped_refptr<VideoFrame> video_frame) = 0;
+
+  // Create a texture-backed video frame with specified |pixel_format|, |size|
+  // and |texture_target|. The texture's id will be put in |texture_id|.
+  // TODO(dstaessens@) Remove when allocate mode is removed.
+  virtual scoped_refptr<VideoFrame> CreateVideoFrame(
+      VideoPixelFormat pixel_format,
+      const gfx::Size& size,
+      uint32_t texture_target,
+      uint32_t* texture_id) = 0;
 };
 
 }  // namespace test

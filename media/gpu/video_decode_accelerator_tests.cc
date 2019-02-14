@@ -7,6 +7,7 @@
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
+#include "media/gpu/test/video_player/frame_renderer_thumbnail.h"
 #include "media/gpu/test/video_player/video.h"
 #include "media/gpu/test/video_player/video_collection.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
@@ -41,7 +42,9 @@ class VideoDecoderTest : public ::testing::Test {
  public:
   std::unique_ptr<VideoPlayer> CreateVideoPlayer(
       const Video* video,
-      const VideoDecoderClientConfig& config = VideoDecoderClientConfig()) {
+      const VideoDecoderClientConfig& config = VideoDecoderClientConfig(),
+      std::unique_ptr<FrameRenderer> frame_renderer =
+          FrameRendererDummy::Create()) {
     LOG_ASSERT(video);
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
@@ -61,7 +64,7 @@ class VideoDecoderTest : public ::testing::Test {
       frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
     }
 
-    return VideoPlayer::Create(video, FrameRendererDummy::Create(),
+    return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
   }
 };
@@ -251,6 +254,32 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
     EXPECT_EQ(tvps[i]->GetFrameDecodedCount(), g_env->video_->NumFrames());
     EXPECT_TRUE(tvps[i]->WaitForFrameProcessors());
   }
+}
+
+// Play a video from start to finish. Thumbnails of the decoded frames will be
+// rendered into a image, whose checksum is compared to a golden value. This
+// test is only needed on older platforms that don't support the video frame
+// validator, which requires direct access to the video frame's memory. This
+// test is only ran when --disable_validator is specified, and will be
+// deprecated in the future.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
+  if (g_env->enable_validator_)
+    GTEST_SKIP();
+
+  VideoDecoderClientConfig config;
+  config.allocation_mode = AllocationMode::kAllocate;
+  auto tvp = CreateVideoPlayer(
+      g_env->video_, config,
+      FrameRendererThumbnail::Create(g_env->video_->FilePath()));
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
+  EXPECT_TRUE(static_cast<FrameRendererThumbnail*>(tvp->GetFrameRenderer())
+                  ->ValidateThumbnail());
 }
 
 }  // namespace test

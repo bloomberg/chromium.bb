@@ -45,6 +45,12 @@ VideoDecoderClient::~VideoDecoderClient() {
   DestroyDecoder();
   decoder_client_thread_.Stop();
 
+  // Clear video frames, triggering associated destruction callbacks while we
+  // still have a GLcontext.
+  frame_renderer_->AcquireGLContext();
+  video_frames_.clear();
+  frame_renderer_->ReleaseGLContext();
+
   // Wait until the frame processors are done, before destroying them. As the
   // decoder has been destroyed no new frames will be sent to the processors.
   WaitForFrameProcessors();
@@ -114,6 +120,10 @@ bool VideoDecoderClient::WaitForFrameProcessors() {
   return success;
 }
 
+FrameRenderer* VideoDecoderClient::GetFrameRenderer() const {
+  return frame_renderer_.get();
+}
+
 void VideoDecoderClient::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
@@ -148,23 +158,48 @@ void VideoDecoderClient::ProvidePictureBuffers(
             << " picture buffers with size " << size.height() << "x"
             << size.height();
 
-  // Create a set of picture buffers and give them to the decoder.
-  std::vector<PictureBuffer> picture_buffers;
-  for (uint32_t i = 0; i < requested_num_of_buffers; ++i)
-    picture_buffers.emplace_back(GetNextPictureBufferId(), size);
-  decoder_->AssignPictureBuffers(picture_buffers);
+  // If using import mode, create a set of DMABuf-backed video frames.
+  if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
+    std::vector<PictureBuffer> picture_buffers;
+    for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
+      picture_buffers.emplace_back(GetNextPictureBufferId(), size);
+    }
+    decoder_->AssignPictureBuffers(picture_buffers);
 
-  // Create a video frame for each of the picture buffers and provide memory
-  // handles to the video frame's data to the decoder.
-  for (const PictureBuffer& picture_buffer : picture_buffers) {
-    scoped_refptr<VideoFrame> video_frame =
-        CreatePlatformVideoFrame(pixel_format, size);
-    LOG_ASSERT(video_frame) << "Failed to create video frame";
-    video_frames_.emplace(picture_buffer.id(), video_frame);
-    gfx::GpuMemoryBufferHandle handle =
-        CreateGpuMemoryBufferHandle(video_frame);
-    LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
-    decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format, handle);
+    // Create a video frame for each of the picture buffers and provide memory
+    // handles to the video frame's data to the decoder.
+    for (const PictureBuffer& picture_buffer : picture_buffers) {
+      scoped_refptr<VideoFrame> video_frame =
+          CreatePlatformVideoFrame(pixel_format, size);
+      LOG_ASSERT(video_frame) << "Failed to create video frame";
+      video_frames_.emplace(picture_buffer.id(), video_frame);
+      gfx::GpuMemoryBufferHandle handle =
+          CreateGpuMemoryBufferHandle(video_frame);
+      LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
+      decoder_->ImportBufferForPicture(picture_buffer.id(), pixel_format,
+                                       handle);
+    }
+  }
+
+  // If using allocate mode, request a set of texture-backed video frames from
+  // the renderer.
+  if (decoder_client_config_.allocation_mode == AllocationMode::kAllocate) {
+    std::vector<PictureBuffer> picture_buffers;
+    for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
+      uint32_t texture_id;
+      auto video_frame = frame_renderer_->CreateVideoFrame(
+          pixel_format, size, texture_target, &texture_id);
+      LOG_ASSERT(video_frame) << "Failed to create video frame";
+      int32_t picture_buffer_id = GetNextPictureBufferId();
+      PictureBuffer::TextureIds texture_ids(1, texture_id);
+      picture_buffers.emplace_back(picture_buffer_id, size, texture_ids,
+                                   texture_ids, texture_target, pixel_format);
+      video_frames_.emplace(picture_buffer_id, std::move(video_frame));
+    }
+    // The decoder requires an active GL context to allocate memory.
+    frame_renderer_->AcquireGLContext();
+    decoder_->AssignPictureBuffers(picture_buffers);
+    frame_renderer_->ReleaseGLContext();
   }
 }
 
@@ -183,24 +218,38 @@ void VideoDecoderClient::PictureReady(const Picture& picture) {
   LOG_ASSERT(it != video_frames_.end());
   scoped_refptr<VideoFrame> video_frame = it->second;
 
-  // Wrap the video frame in another video frame that calls
-  // ReusePictureBufferTask() upon destruction. When the renderer is done using
-  // the video frame, the associated picture buffer will automatically be
-  // flagged for reuse.
-  base::OnceClosure delete_cb = BindToCurrentLoop(
-      base::BindOnce(&VideoDecoderClient::ReusePictureBufferTask,
-                     base::Unretained(this), picture.picture_buffer_id()));
+  // When using import mode, we wrap the video frame in another video frame that
+  // calls ReusePictureBufferTask() upon destruction. When the renderer and
+  // video frame processors are done using the video frame, the associated
+  // picture buffer will automatically be flagged for reuse.
+  if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
+    base::OnceClosure delete_cb = BindToCurrentLoop(
+        base::BindOnce(&VideoDecoderClient::ReusePictureBufferTask,
+                       base::Unretained(this), picture.picture_buffer_id()));
 
-  scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
-      video_frame, video_frame->format(), video_frame->visible_rect(),
-      video_frame->visible_rect().size());
-  wrapped_video_frame->AddDestructionObserver(std::move(delete_cb));
+    scoped_refptr<VideoFrame> wrapped_video_frame = VideoFrame::WrapVideoFrame(
+        video_frame, video_frame->format(), video_frame->visible_rect(),
+        video_frame->visible_rect().size());
+    wrapped_video_frame->AddDestructionObserver(std::move(delete_cb));
 
-  frame_renderer_->RenderFrame(wrapped_video_frame);
+    frame_renderer_->RenderFrame(wrapped_video_frame);
 
-  for (auto& frame_processor : frame_processors_)
-    frame_processor->ProcessVideoFrame(wrapped_video_frame,
-                                       current_frame_index_);
+    for (auto& frame_processor : frame_processors_)
+      frame_processor->ProcessVideoFrame(wrapped_video_frame,
+                                         current_frame_index_);
+  }
+
+  // When using allocate mode, direct texture memory access is not supported.
+  // Since this is required by the video frame processors we can't use these
+  // here. Wrapping a video frame inside another video frame is also not
+  // supported, so we have to render the frame and return the picture buffer
+  // synchronously here. See http://crbug/362521.
+  if (decoder_client_config_.allocation_mode == AllocationMode::kAllocate) {
+    frame_renderer_->RenderFrame(video_frame);
+    ReusePictureBufferTask(picture.picture_buffer_id());
+    return;
+  }
+
   current_frame_index_++;
 }
 

@@ -29,6 +29,8 @@ class Video {
   // Returns true if the video file was loaded.
   bool IsLoaded() const;
 
+  // Get the video file path.
+  const base::FilePath& FilePath() const;
   // Get the video data, will be empty if the video hasn't been loaded yet.
   const std::vector<uint8_t>& Data() const;
 

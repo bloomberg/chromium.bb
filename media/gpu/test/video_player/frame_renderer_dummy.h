@@ -29,6 +29,10 @@ class FrameRendererDummy : public FrameRenderer {
   void ReleaseGLContext() override;
   gl::GLContext* GetGLContext() override;
   void RenderFrame(scoped_refptr<VideoFrame> video_frame) override;
+  scoped_refptr<VideoFrame> CreateVideoFrame(VideoPixelFormat pixel_format,
+                                             const gfx::Size& size,
+                                             uint32_t texture_target,
+                                             uint32_t* texture_id) override;
 
  private:
   FrameRendererDummy();

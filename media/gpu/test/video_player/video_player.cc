@@ -57,12 +57,15 @@ void VideoPlayer::Initialize(
       event_cb, std::move(frame_renderer), std::move(frame_processors), config);
   CHECK(decoder_client_) << "Failed to create decoder client";
 
-  // Create a decoder for the specified video. We'll always use import mode as
-  // this is the only mode supported by the media::VideoDecoder interface, which
-  // the video decoders are being migrated to.
+  // Create a decoder for the specified video.
+  // TODO(dstaessens@) Remove support for allocate mode, and always use import
+  // mode. Support for allocate mode is temporary maintained for older platforms
+  // that don't support import mode.
   VideoDecodeAccelerator::Config decoder_config(video->Profile());
   decoder_config.output_mode =
-      VideoDecodeAccelerator::Config::OutputMode::IMPORT;
+      config.allocation_mode == AllocationMode::kImport
+          ? VideoDecodeAccelerator::Config::OutputMode::IMPORT
+          : VideoDecodeAccelerator::Config::OutputMode::ALLOCATE;
   decoder_client_->CreateDecoder(decoder_config, video->Data());
 
   video_ = video;
@@ -127,6 +130,10 @@ VideoPlayerState VideoPlayer::GetState() const {
 
   base::AutoLock auto_lock(event_lock_);
   return video_player_state_;
+}
+
+FrameRenderer* VideoPlayer::GetFrameRenderer() const {
+  return decoder_client_->GetFrameRenderer();
 }
 
 bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,

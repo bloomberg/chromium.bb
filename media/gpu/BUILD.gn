@@ -645,6 +645,7 @@ if (is_chromeos) {
       "test:frame_validator",
       "test:video_player",
       "test:video_player_test_environment",
+      "test:video_player_thumbnail_renderer",
       "//media:test_support",
       "//mojo/core/embedder",
       "//testing/gtest",

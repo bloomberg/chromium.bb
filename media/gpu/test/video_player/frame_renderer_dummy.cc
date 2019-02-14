@@ -48,5 +48,13 @@ gl::GLContext* FrameRendererDummy::GetGLContext() {
 
 void FrameRendererDummy::RenderFrame(scoped_refptr<VideoFrame> video_frame) {}
 
+scoped_refptr<VideoFrame> FrameRendererDummy::CreateVideoFrame(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& size,
+    uint32_t texture_target,
+    uint32_t* texture_id) {
+  return nullptr;
+}
+
 }  // namespace test
 }  // namespace media
