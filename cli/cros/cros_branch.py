@@ -367,15 +367,15 @@ class Branch(object):
   synced to the correct version.
   """
 
-  def __init__(self, name, checkout):
+  def __init__(self, checkout, name):
     """Cache various configuration used by all branch operations.
 
     Args:
-      name: The name of the branch.
       checkout: The synced CrosCheckout.
+      name: The name of the branch.
     """
-    self.name = name
     self.checkout = checkout
+    self.name = name
 
   def _ProjectBranchName(self, branch, project, original=None):
     """Determine's the git branch name for the project.
@@ -564,28 +564,26 @@ class Branch(object):
 
 
 class StandardBranch(Branch):
-  """Branch with a standard name and reporting for branch operations."""
+  """Branch with a standard name, meaning it is suffixed by version."""
 
-  def __init__(self, prefix, checkout):
+  def __init__(self, checkout, *args):
     """Determine the name for this branch.
 
-    By convention, standard branch names must end with the version from which
-    they were created, followed by '.B'.
+    By convention, standard branch names must end with the major version from
+    which they were created, followed by '.B'.
 
     For example:
       - A branch created from 1.0.0 must end with -1.B
       - A branch created from 1.2.0 must end with -1-2.B
 
     Args:
-      prefix: Any tag that describes the branch type (e.g. 'firmware').
       checkout: The synced CrosCheckout.
+      *args: Additional name components, which will be joined by dashes.
     """
     vinfo = checkout.ReadVersion()
-    name = '%s-%s' % (prefix, vinfo.build_number)
-    if int(vinfo.branch_build_number):
-      name += '.%s' % vinfo.branch_build_number
-    name += '.B'
-    super(StandardBranch, self).__init__(name, checkout)
+    version = '.'.join(str(comp) for comp in vinfo.VersionComponents() if comp)
+    name = '-'.join(filter(None, args) + (version,)) + '.B'
+    super(StandardBranch, self).__init__(checkout, name)
 
 
 class ReleaseBranch(StandardBranch):
@@ -598,9 +596,12 @@ class ReleaseBranch(StandardBranch):
   (Chrome branch) in chromeos_version.sh on master.
   """
 
-  def __init__(self, checkout):
+  def __init__(self, checkout, descriptor=None):
     super(ReleaseBranch, self).__init__(
-        'release-R%s' % checkout.ReadVersion().chrome_branch, checkout)
+        checkout,
+        'release',
+        descriptor,
+        'R%s' % checkout.ReadVersion().chrome_branch)
 
   def Create(self, push=False, force=False):
     super(ReleaseBranch, self).Create(push=push, force=force)
@@ -617,24 +618,22 @@ class ReleaseBranch(StandardBranch):
 class FactoryBranch(StandardBranch):
   """Represents a factory branch."""
 
-  def __init__(self, checkout):
-    # TODO(evanhernandez): Allow adding device to branch name.
-    super(FactoryBranch, self).__init__('factory', checkout)
+  def __init__(self, checkout, descriptor=None):
+    super(FactoryBranch, self).__init__(checkout, 'factory', descriptor)
 
 
 class FirmwareBranch(StandardBranch):
   """Represents a firmware branch."""
 
-  def __init__(self, checkout):
-    # TODO(evanhernandez): Allow adding device to branch name.
-    super(FirmwareBranch, self).__init__('firmware', checkout)
+  def __init__(self, checkout, descriptor=None):
+    super(FirmwareBranch, self).__init__(checkout, 'firmware', descriptor)
 
 
 class StabilizeBranch(StandardBranch):
   """Represents a minibranch."""
 
-  def __init__(self, checkout):
-    super(StabilizeBranch, self).__init__('stabilize', checkout)
+  def __init__(self, checkout, descriptor=None):
+    super(StabilizeBranch, self).__init__(checkout, 'stabilize', descriptor)
 
 
 @command.CommandDecorator('branch')
@@ -642,7 +641,7 @@ class BranchCommand(command.CliCommand):
   """Create, delete, or rename a branch of chromiumos.
 
   Branch creation implies branching all git repositories under chromiumos and
-  then updating metadata on the new branch and occassionally the source branch.
+  then updating metadata on the new branch and occassionally on master.
 
   Metadata is updated as follows:
     1. The new branch's manifest is repaired to point to the new branch.
@@ -655,10 +654,17 @@ class BranchCommand(command.CliCommand):
   """
 
   EPILOG = """
-Create Examples:
-  cros branch create 11030.0.0 --factory
-  cros branch --force --push create 11030.0.0 --firmware
-  cros branch create 11030.0.0 --custom my-custom-branch
+Create example: firmware branch 'firmware-nocturne-11030.B'
+  cros branch --push create --descriptor nocturne --version 11030.0.0 --firmware
+
+Create example: release branch 'release-R70-11030.B'
+  cros branch --push create --version 11030.0.0 --release
+
+Create example: custom branch 'my-branch'
+  cros branch --push create --version 11030.0.0 --custom my-branch
+
+Create example: local minibranch 'stabilize-test-11030.B'
+  cros branch create --version 11030.0.0 --descriptor test --stabilize
 
 Rename Examples:
   cros branch rename release-R70-10509.B release-R70-10508.B
@@ -675,13 +681,17 @@ Delete Examples:
     super(BranchCommand, cls).AddParser(parser)
 
     # Common flags.
-    parser.add_argument(
+    remote_group = parser.add_argument_group(
+        'Remote options',
+        description='Arguments determine how branch operations interact with '
+                    'remote repositories.')
+    remote_group.add_argument(
         '--push',
         action='store_true',
         help='Push branch modifications to remote repos. '
              'Before setting this flag, ensure that you have the proper '
              'permissions and that you know what you are doing. Ye be warned.')
-    parser.add_argument(
+    remote_group.add_argument(
         '--force',
         action='store_true',
         help='Required for any remote operation that would delete an existing '
@@ -689,9 +699,9 @@ Delete Examples:
              'branched manifest version.')
 
     sync_group = parser.add_argument_group(
-        'Sync',
+        'Sync options',
         description='Arguments relating to how the checkout is synced. '
-        'These options are primarily used for testing.')
+                    'These options are primarily used for testing.')
     sync_group.add_argument(
         '--root',
         default=constants.SOURCE_ROOT,
@@ -703,60 +713,70 @@ Delete Examples:
 
     # Create subcommand and flags.
     subparser = parser.add_subparsers(dest='subcommand')
-    create_parser = subparser.add_parser(
-        'create', help='Create a branch from a specified maniefest version.')
+    create_parser = subparser.add_parser('create', help='Create a branch.')
+
+    name_group = create_parser.add_argument_group(
+        'Name options', description='Arguments for determining branch name.')
+    name_group.add_argument(
+        '--descriptor',
+        help='Optional descriptor for this branch. Typically, this is a build '
+             'target or a device, depending on the nature of the branch. Used '
+             'to generate the branch name. Cannot be used with --custom.')
 
     manifest_group = create_parser.add_argument_group(
-        'Manifest', description='Which manifest should be branched?')
+        'Manifest options', description='Which manifest should be branched?')
     manifest_ex_group = manifest_group.add_mutually_exclusive_group(
         required=True)
     manifest_ex_group.add_argument(
-        '--version', help="Manifest version to branch off, e.g. '10509.0.0'.")
+        '--version',
+        help="Manifest version to branch off, e.g. '10509.0.0'."
+             'You may not branch off of the same version twice unless you run '
+             'with --force.')
     manifest_ex_group.add_argument(
         '--file', help='Path to manifest file to branch off.')
 
-    type_group = create_parser.add_argument_group(
-        'Branch Type',
-        description='You must specify the type of the new branch. '
-                    'This affects how manifest metadata is updated and how '
-                    'the branch is named (if not specified manually).')
-    type_ex_group = type_group.add_mutually_exclusive_group(required=True)
-    type_ex_group.add_argument(
+    kind_group = create_parser.add_argument_group(
+        'Kind options',
+        description='What kind of branch is this? '
+                    'These flags affect how manifest metadata is updated and '
+                    'how the branch is named.')
+    kind_ex_group = kind_group.add_mutually_exclusive_group(required=True)
+    kind_ex_group.add_argument(
         '--release',
         dest='cls',
         action='store_const',
         const=ReleaseBranch,
         help='The new branch is a release branch. '
-             "Named as 'release-R<Milestone>-<Major Version>.B'.")
-    type_ex_group.add_argument(
+             "Named as 'release-<descriptor>-R<Milestone>-<Major Version>.B'.")
+    kind_ex_group.add_argument(
         '--factory',
         dest='cls',
         action='store_const',
         const=FactoryBranch,
         help='The new branch is a factory branch. '
-             "Named as 'factory-<Major Version>.B'.")
-    type_ex_group.add_argument(
+             "Named as 'factory-<Descriptor>-<Major Version>.B'.")
+    kind_ex_group.add_argument(
         '--firmware',
         dest='cls',
         action='store_const',
         const=FirmwareBranch,
         help='The new branch is a firmware branch. '
-             "Named as 'firmware-<Major Version>.B'.")
-    type_ex_group.add_argument(
+             "Named as 'firmware-<Descriptor>-<Major Version>.B'.")
+    kind_ex_group.add_argument(
         '--stabilize',
         dest='cls',
         action='store_const',
         const=StabilizeBranch,
         help='The new branch is a minibranch. '
-             "Named as 'stabilize-<Major Version>.B'.")
-    type_ex_group.add_argument(
+             "Named as 'stabilize-<Descriptor>-<Major Version>.B'.")
+    kind_ex_group.add_argument(
         '--custom',
         dest='name',
-        help='Custom branch type with arbitrary name. Beware: custom '
-             'branches are dangerous. This tool depends on branch naming '
-             'to know when a version has already been branched. Therefore, '
-             'it can provide NO validation with custom branches. This has '
-             'broken release builds in the past.')
+        help='Use a custom branch type with an explicit name. '
+             'WARNING: custom names are dangerous. This tool greps branch '
+             'names to determine which versions have already been branched. '
+             'Version validation is not possible when the naming convention '
+             'is broken. Use this at your own risk.')
 
     # Rename subcommand and flags.
     rename_parser = subparser.add_parser('rename', help='Rename a branch.')
@@ -778,16 +798,22 @@ Delete Examples:
     # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
     # might be left over. We should check for this.
     if self.options.subcommand == 'create':
-      # Handle sync. Unfortunately, we cannot validate until we have a copy of
-      # chromeos_version.sh.
-      if self.options.file:
-        checkout.SyncFile(self.options.file)
-      elif self.options.version.strip().endswith('0'):
-        checkout.SyncVersion(self.options.version)
-      else:
+      # Start with quick, immediate validations.
+      if self.options.name and self.options.descriptor:
+        raise BranchError('--descriptor cannot be used with --custom.')
+
+      if self.options.version and not self.options.version.endswith('0'):
         raise BranchError('Cannot branch version from nonzero patch number.')
 
-      # First, double check that the checkout has a zero patch number.
+      # Handle sync. Unfortunately, we cannot fully validate the version until
+      # we have a copy of chromeos_version.sh.
+      if self.options.file:
+        checkout.SyncFile(self.options.file)
+      else:
+        checkout.SyncVersion(self.options.version)
+
+      # Now to validate the version. First, double check that the checkout
+      # has a zero patch number in case we synced from file.
       vinfo = checkout.ReadVersion()
       if int(vinfo.patch_number):
         raise BranchError('Cannot branch version with nonzero patch number.')
@@ -803,28 +829,27 @@ Delete Examples:
             'Already branched %s. Please rerun with --force if you wish to '
             'proceed.' % vinfo.VersionString())
 
-      # Determine what kind of branch we will create. If we generated the branch
-      # name, confirm with the user that it is what they wanted.
-      if self.options.name:
-        branch = Branch(self.options.name, checkout)
-        proceed = True
+      # Determine if we are creating a custom branch or a standard branch.
+      if self.options.cls:
+        branch = self.options.cls(checkout, self.options.descriptor)
       else:
-        branch = self.options.cls(checkout)
-        proceed = cros_build_lib.BooleanPrompt(
-            prompt='New branch will be named %s. Continue?' % branch.name,
-            default=False)
+        branch = Branch(checkout, self.options.name)
 
+      # Finally, double check the name with the user.
+      proceed = cros_build_lib.BooleanPrompt(
+          prompt='New branch will be named %s. Continue?' % branch.name,
+          default=False)
       if proceed:
         branch.Create(push=push, force=force)
 
     elif self.options.subcommand == 'rename':
       checkout.SyncBranch(self.options.old)
-      branch = Branch(self.options.new, checkout)
+      branch = Branch(checkout, self.options.new)
       branch.Rename(self.options.old, push=push, force=force)
 
     elif self.options.subcommand == 'delete':
       checkout.SyncBranch(self.options.branch)
-      branch = Branch(self.options.branch, checkout)
+      branch = Branch(checkout, self.options.branch)
       branch.Delete(push=push, force=force)
 
     else:

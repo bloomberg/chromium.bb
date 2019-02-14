@@ -828,7 +828,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testCreateBranchesCorrectProjects(self):
     """Test Create branches the correct projects with correct branch names."""
-    Branch('new-branch', self.checkout).Create()
+    Branch(self.checkout, 'new-branch').Create()
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertProjectBranched(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
@@ -838,13 +838,13 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testCreateRepairsManifests(self):
     """Test Create commits repairs to manifest repositories."""
-    Branch('new-branch', self.checkout).Create()
+    Branch(self.checkout, 'new-branch').Create()
     self.AssertManifestRepairsCommitted()
 
   def testCreateBumpsBranchNumber(self):
     """Test WhichVersionShouldBump bumps branch number on X.0.0 version."""
     self.SetVersion('1.0.0')
-    Branch('new-branch', self.checkout).Create()
+    Branch(self.checkout, 'new-branch').Create()
     self.assertEqual(
         self.bump_version.call_args_list,
         [mock.call('branch', 'new-branch', mock.ANY, dry_run=True)])
@@ -852,7 +852,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
   def testCreateBumpsPatchNumber(self):
     """Test WhichVersionShouldBump bumps patch number on X.X.0 version."""
     self.SetVersion('1.2.0')
-    Branch('new-branch', self.checkout).Create()
+    Branch(self.checkout, 'new-branch').Create()
     self.assertEqual(self.bump_version.call_args_list,
                      [mock.call('patch', 'new-branch', mock.ANY, dry_run=True)])
 
@@ -860,11 +860,11 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test WhichVersionShouldBump dies on X.X.X version."""
     self.SetVersion('1.2.3')
     with self.assertRaises(AssertionError):
-      Branch('new-branch', self.checkout).Create()
+      Branch(self.checkout, 'new-branch').Create()
 
   def testCreatePushesToRemote(self):
     """Test Create pushes new branch to remote."""
-    Branch('new-branch', self.checkout).Create(push=True)
+    Branch(self.checkout, 'new-branch').Create(push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertBranchPushed(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
@@ -874,7 +874,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testRenameCreatesNewBranch(self):
     """Test Rename creates a branch with the new name."""
-    Branch('new-branch', self.branched_checkout).Rename('old-branch')
+    Branch(self.branched_checkout, 'new-branch').Rename('old-branch')
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertProjectBranched(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
@@ -884,12 +884,12 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testRenameRepairsManifests(self):
     """Test Rename commits repairs to manifest repositories."""
-    Branch('new-branch', self.branched_checkout).Rename('old-branch')
+    Branch(self.branched_checkout, 'new-branch').Rename('old-branch')
     self.AssertManifestRepairsCommitted()
 
   def testRenamePushesNewBranch(self):
     """Test Rename pushes the new branch to remote."""
-    Branch('new-branch', self.branched_checkout).Rename('old-branch', push=True)
+    Branch(self.branched_checkout, 'new-branch').Rename('old-branch', push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertBranchPushed(project, 'new-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
@@ -899,7 +899,7 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testRenamePushesDeletionOfOldBranch(self):
     """Test rename deletes old branch on remote."""
-    Branch('new-branch', self.branched_checkout).Rename('old-branch', push=True)
+    Branch(self.branched_checkout, 'new-branch').Rename('old-branch', push=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertRemoteBranchDeleted(project, 'old-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
@@ -910,13 +910,13 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
   def testDeleteRequiresForceForRemotePush(self):
     """Verify Delete does nothing when push is True but force is False."""
     with self.assertRaises(BranchError):
-      Branch('old-branch', self.branched_checkout).Delete(push=True)
+      Branch(self.branched_checkout, 'old-branch').Delete(push=True)
     for project in PROJECTS.values():
       self.AssertNoPush(project)
 
   def testDeletePushesDeletions(self):
     """Verify delete deletes remote branches when push=force=True."""
-    Branch('old-branch', self.branched_checkout).Delete(push=True, force=True)
+    Branch(self.branched_checkout, 'old-branch').Delete(push=True, force=True)
     for project in SINGLE_CHECKOUT_PROJECTS:
       self.AssertRemoteBranchDeleted(project, 'old-branch')
     for project in MULTI_CHECKOUT_PROJECTS:
@@ -944,7 +944,7 @@ class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.checkout = CrosCheckout('/', manifest=self.full_manifest)
 
   def testGenerateNameWithoutBranchVersion(self):
-    """Test GenerateName on a X.0.0 version."""
+    """Test name generation on a X.0.0 version."""
     self.SetVersion('12', '3.0.0')
     branch_names = {
         'release-R12-3.B': ReleaseBranch,
@@ -956,7 +956,7 @@ class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
       self.assertEqual(branch_type(self.checkout).name, branch_name)
 
   def testGenerateNameWithBranchVersion(self):
-    """Test GenerateName on a X.X.0 version."""
+    """Test name generation on a X.X.0 version."""
     self.SetVersion('12', '3.4.0')
     branch_names = {
         'release-R12-3.4.B': ReleaseBranch,
@@ -966,6 +966,18 @@ class StandardBranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     }
     for branch_name, cls in branch_names.iteritems():
       self.assertEqual(cls(self.checkout).name, branch_name)
+
+  def testGenerateNameWithDescriptor(self):
+    """Test name generation with a descriptor."""
+    self.SetVersion('12', '3.4.0')
+    branch_names = {
+        'release-board-R12-3.4.B': ReleaseBranch,
+        'factory-board-3.4.B': FactoryBranch,
+        'firmware-board-3.4.B': FirmwareBranch,
+        'stabilize-board-3.4.B': StabilizeBranch,
+    }
+    for branch_name, cls in branch_names.iteritems():
+      self.assertEqual(cls(self.checkout, 'board').name, branch_name)
 
 
 class MockBranchCommand(command_unittest.MockCommand):
@@ -1078,9 +1090,18 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testCreateCustomCommandParses(self):
     """Test `cros branch create` parses with '--custom' flag."""
-    self.RunCommandMock(['create', '--version', '1.2.0', '--custom', 'branch'])
+    self.RunCommandMock(
+        ['create', '--version', '1.2.0', '--custom', 'branch'])
     self.assertEqual(self.cmd.inst.options.name, 'branch')
+    self.assertIsNone(self.cmd.inst.options.cls)
     self.AssertNoDangerousOptions()
+
+  def testCreateCustomCannotBeUsedWithDescriptor(self):
+    """Test `cros branch create` does not allow --descriptor with --custom."""
+    with self.assertRaises(BranchError):
+      self.RunCommandMock(
+          ['create', '--version', '1.2.0', '--custom', 'branch',
+           '--descriptor', 'blah'])
 
   def testCreateSyncsToFile(self):
     """Test `cros branch create` calls repo_sync_manifest to sync to file."""
@@ -1552,7 +1573,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
-         '--custom', 'new-branch'])
+         '--custom', 'new-branch'],
+        input='yes')
 
     self.AssertCrosBranches(['old-branch', 'new-branch'])
     self.AssertCrosBranchMatchesManifest('new-branch', self.full_manifest)
@@ -1568,7 +1590,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
-         '--custom', 'new-branch'])
+         '--custom', 'new-branch'],
+        input='yes')
 
     self.AssertNoRemoteDiff()
 
@@ -1601,7 +1624,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
-         '--custom', 'old-branch'])
+         '--custom', 'old-branch'],
+        input='yes')
 
     self.AssertCrosBranches(['old-branch'])
     self.AssertCrosBranchMatchesManifest('old-branch', self.full_manifest)
@@ -1619,6 +1643,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          'create',
          '--file', self.full_manifest_path,
          '--custom', 'old-branch'],
+        input='yes',
         error_code_ok=True,
         capture_output=True)
 
@@ -1688,7 +1713,8 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
-         '--custom', 'new-branch'])
+         '--custom', 'new-branch'],
+        input='yes')
 
     # Assert everything is as we expect.
     self.AssertCrosBranches(['new-branch', 'old-branch'])
