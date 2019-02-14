@@ -29,6 +29,7 @@
 #include "components/services/unzip/public/cpp/unzip.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/install/crx_install_error.h"
@@ -692,7 +693,7 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
 
   declarative_net_request::IndexAndPersistRules(
       connector_.get(), *data_decoder_service_filter_.instance_id(),
-      *extension_,
+      declarative_net_request::RulesetSource::Create(*extension_),
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this,
                      std::move(manifest)));
 }

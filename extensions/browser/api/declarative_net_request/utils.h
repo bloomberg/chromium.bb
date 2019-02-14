@@ -16,6 +16,7 @@
 #include "base/optional.h"
 
 namespace base {
+class FilePath;
 class ListValue;
 class Token;
 }  // namespace base
@@ -25,10 +26,10 @@ class Connector;
 }  // namespace service_manager
 
 namespace extensions {
-class Extension;
 struct InstallWarning;
 
 namespace declarative_net_request {
+struct RulesetSource;
 
 struct IndexAndPersistRulesResult {
  public:
@@ -58,12 +59,11 @@ struct IndexAndPersistRulesResult {
   DISALLOW_COPY_AND_ASSIGN(IndexAndPersistRulesResult);
 };
 
-// Indexes and persists the JSON ruleset for for |extension|. This is
-// potentially unsafe since the JSON rules file is parsed in-process. Should
-// only be called for an extension which provided a JSON ruleset.
-// Note: This must be called on a sequence where file IO is allowed.
+// Indexes and persists the JSON ruleset for |source|. This is potentially
+// unsafe since the JSON rules file is parsed in-process. Note: This must be
+// called on a sequence where file IO is allowed.
 IndexAndPersistRulesResult IndexAndPersistRulesUnsafe(
-    const Extension& extension);
+    const RulesetSource& source);
 
 using IndexAndPersistRulesCallback =
     base::OnceCallback<void(IndexAndPersistRulesResult)>;
@@ -76,7 +76,7 @@ using IndexAndPersistRulesCallback =
 // NOTE: This must be called on a sequence where file IO is allowed.
 void IndexAndPersistRules(service_manager::Connector* connector,
                           const base::Optional<base::Token>& decoder_batch_id,
-                          const Extension& extension,
+                          const RulesetSource& source,
                           IndexAndPersistRulesCallback callback);
 
 // Returns true if |data| represents a valid data buffer containing indexed
