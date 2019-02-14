@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_base_test.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 
 namespace blink {
@@ -105,6 +106,34 @@ TEST(ICOImageDecoderTests, NullData) {
   decoder->ClearCacheExceptFrame(0);
   decoder->SetMemoryAllocator(nullptr);
   EXPECT_FALSE(decoder->Failed());
+}
+
+class ICOImageDecoderCorpusTest : public ImageDecoderBaseTest {
+ public:
+  ICOImageDecoderCorpusTest() : ImageDecoderBaseTest("ico") {}
+
+ protected:
+  std::unique_ptr<ImageDecoder> CreateImageDecoder() const override {
+    return std::make_unique<ICOImageDecoder>(
+        ImageDecoder::kAlphaPremultiplied, ColorBehavior::TransformToSRGB(),
+        ImageDecoder::kNoDecodedImageByteLimit);
+  }
+};
+
+TEST_F(ICOImageDecoderCorpusTest, Decoding) {
+  TestDecoding();
+}
+
+TEST_F(ICOImageDecoderCorpusTest, ImageNonZeroFrameIndex) {
+  if (data_dir().empty())
+    return;
+  // Test that the decoder decodes multiple sizes of icons which have them.
+  // Load an icon that has both favicon-size and larger entries.
+  base::FilePath multisize_icon_path(data_dir().AppendASCII("yahoo.ico"));
+  const base::FilePath md5_sum_path(GetMD5SumPath(multisize_icon_path).value() +
+                                    FILE_PATH_LITERAL("2"));
+  static const int kDesiredFrameIndex = 3;
+  TestImageDecoder(multisize_icon_path, md5_sum_path, kDesiredFrameIndex);
 }
 
 }  // namespace blink

@@ -1770,6 +1770,8 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "image-decoders/fast_shared_buffer_reader_test.cc",
     "image-decoders/gif/gif_image_decoder_test.cc",
     "image-decoders/ico/ico_image_decoder_test.cc",
+    "image-decoders/image_decoder_base_test.cc",
+    "image-decoders/image_decoder_base_test.h",
     "image-decoders/image_decoder_test.cc",
     "image-decoders/image_decoder_test_helpers.cc",
     "image-decoders/image_decoder_test_helpers.h",
