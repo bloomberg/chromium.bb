@@ -59,8 +59,8 @@
   },
   {
     "name": "account-consistency",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "droger", "msarda" ],
+    "expiry_milestone": 80
   },
   {
     "name": "allow-insecure-localhost",
@@ -3126,7 +3126,7 @@
   },
   {
     "name": "unified-consent",
-    // "owners": [ "your-team" ],
+    "owners": [ "msarda", "tangltom" ],
     "expiry_milestone": 76
   },
   {
@@ -3168,8 +3168,8 @@
   },
   {
     "name": "use-multilogin-endpoint",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "droger", "msarda" ],
+    "expiry_milestone": 78
   },
   {
     "name": "use-new-accept-language-header",
