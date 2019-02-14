@@ -573,8 +573,11 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
 
 bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
     const GURL& url,
+    const std::string& user_agent,
+    const std::string& content_disposition,
     const std::string& mime_type,
     const std::string& request_origin,
+    int64_t content_length,
     content::WebContents* web_contents) {
   return false;
 }
