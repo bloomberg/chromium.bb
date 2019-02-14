@@ -425,7 +425,7 @@ class EVENTS_EXPORT LocatedEvent : public Event {
   gfx::PointF location_;
 
   // Location of the event. What coordinate system this is in depends upon the
-  // phase of event dispatch. For client code (meaning EventHanalders) it is
+  // phase of event dispatch. For client code (meaning EventHandlers) it is
   // generally in screen coordinates, but early on it may be in pixels and
   // relative to a display. Native events may generate float values with
   // sub-pixel precision.

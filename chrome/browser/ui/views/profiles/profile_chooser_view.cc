@@ -362,9 +362,13 @@ ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
           browser->profile())),
       menu_width_(dice_enabled_ ? kFixedMenuWidthDice
                                 : kFixedMenuWidthPreDice) {
-  // The sign in webview will be clipped on the bottom corners without these
-  // margins, see related bug <http://crbug.com/593203>.
-  set_margins(gfx::Insets(0, views::GridLayout::kFixedSize, 2, 0));
+  // Because the contents are in a ScrollView (see ShowView) they won't be
+  // clipped by the rounded corners like normal. To work around this, we add
+  // extra margins on the top and bottom so the scroll view is entirely
+  // inside the rectangular area of the bubble.
+  const int corner_radius =
+      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+  set_margins(gfx::Insets(corner_radius, 0, corner_radius, 0));
   ResetView();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
 }
@@ -1598,7 +1602,10 @@ int ProfileChooserView::GetMaxHeight() const {
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
           .work_area();
-  int available_space = screen_space.bottom() - anchor_rect.bottom();
+  const int top_margin =
+      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+  int available_space =
+      screen_space.bottom() - anchor_rect.bottom() - top_margin;
 #if defined(OS_WIN)
   // On Windows the bubble can also be show to the top of the anchor.
   available_space =

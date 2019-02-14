@@ -94,6 +94,10 @@ void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
     CloseUnlessUnderInspection();
 }
 
+bool ExtensionPopup::ShouldHaveRoundCorners() const {
+  return false;
+}
+
 void ExtensionPopup::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {

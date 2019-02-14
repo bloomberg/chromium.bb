@@ -59,6 +59,7 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView overrides.
   int GetDialogButtons() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  bool ShouldHaveRoundCorners() const override;
 
   // content::NotificationObserver overrides.
   void Observe(int type,

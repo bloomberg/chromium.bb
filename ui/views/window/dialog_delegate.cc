@@ -169,6 +169,10 @@ bool DialogDelegate::ShouldSnapFrameWidth() const {
   return GetDialogButtons() != ui::DIALOG_BUTTON_NONE;
 }
 
+bool DialogDelegate::ShouldHaveRoundCorners() const {
+  return true;
+}
+
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
@@ -208,14 +212,20 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   LayoutProvider* provider = LayoutProvider::Get();
   BubbleFrameView* frame = new BubbleFrameView(
       provider->GetInsetsMetric(INSETS_DIALOG_TITLE), gfx::Insets());
+
   const BubbleBorder::Shadow kShadow = BubbleBorder::DIALOG_SHADOW;
   std::unique_ptr<BubbleBorder> border = std::make_unique<BubbleBorder>(
       BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor);
   border->set_use_theme_background_color(true);
-  frame->SetBubbleBorder(std::move(border));
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
-  if (delegate)
+  if (delegate) {
+    if (delegate->ShouldHaveRoundCorners()) {
+      const int corner_radius = provider->GetCornerRadiusMetric(EMPHASIS_HIGH);
+      border->SetCornerRadius(corner_radius);
+    }
     frame->SetFootnoteView(delegate->CreateFootnoteView());
+  }
+  frame->SetBubbleBorder(std::move(border));
   return frame;
 }
 
