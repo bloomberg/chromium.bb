@@ -12412,7 +12412,6 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
             ->input_router());
     // Clear the touch actions that were set by previous touches.
     input_router->touch_action_filter_.allowed_touch_action_.reset();
-    input_router->touch_action_filter_.white_listed_touch_action_.reset();
     // Send a touch start event to child to get the TAF filled with child
     // frame's touch action.
     ack_observer.Reset();
