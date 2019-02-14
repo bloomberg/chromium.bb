@@ -325,9 +325,6 @@ void Env::Init(service_manager::Connector* connector) {
   if (mode_ == Mode::MUS) {
     EnableMusOSExchangeDataProvider();
     EnableMusOverrideInputInjector();
-    // Remote clients should not throttle, only the window-service should
-    // throttle (which corresponds to Mode::LOCAL).
-    throttle_input_on_resize_ = false;
     return;
   }
 
