@@ -1276,21 +1276,21 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   rewriter_->set_ime_keyboard_for_testing(&ime_keyboard);
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
-  // On Chrome OS, CapsLock is mapped to F16 with Mod3Mask.
+  // On Chrome OS, CapsLock is mapped to CapsLock with Mod3Mask.
   EXPECT_EQ(GetExpectedResultAsString(
                 ui::ET_KEY_PRESSED, ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                 ui::EF_CAPS_LOCK_ON | ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
-                                      ui::VKEY_F16, ui::DomCode::F16,
-                                      ui::EF_MOD3_DOWN, ui::DomKey::F16));
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK));
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CAPITAL,
                                       ui::DomCode::CAPS_LOCK, ui::EF_NONE,
                                       ui::DomKey::CAPS_LOCK),
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
-                                      ui::VKEY_F16, ui::DomCode::F16,
-                                      ui::EF_MOD3_DOWN, ui::DomKey::F16));
+                                      ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
+                                      ui::EF_MOD3_DOWN, ui::DomKey::CAPS_LOCK));
   EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 
   // Remap Caps Lock to Control.
@@ -1314,22 +1314,6 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
             GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
                                       ui::VKEY_CAPITAL, ui::DomCode::CAPS_LOCK,
                                       ui::EF_NONE, ui::DomKey::CAPS_LOCK));
-
-  // Press F16.
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL,
-                                      ui::DomCode::CONTROL_LEFT,
-                                      ui::EF_CONTROL_DOWN, ui::DomKey::CONTROL),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_PRESSED,
-                                      ui::VKEY_F16, ui::DomCode::F16,
-                                      ui::EF_MOD3_DOWN, ui::DomKey::F16));
-
-  // Release F16.
-  EXPECT_EQ(GetExpectedResultAsString(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL,
-                                      ui::DomCode::CONTROL_LEFT, ui::EF_NONE,
-                                      ui::DomKey::CONTROL),
-            GetRewrittenEventAsString(rewriter_, ui::ET_KEY_RELEASED,
-                                      ui::VKEY_F16, ui::DomCode::F16,
-                                      ui::EF_MOD3_DOWN, ui::DomKey::F16));
 }
 
 TEST_F(EventRewriterTest, TestRewriteDiamondKey) {
