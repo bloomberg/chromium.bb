@@ -12,9 +12,11 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -45,6 +47,20 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
   blink::mojom::DWriteFontProxyPtr dwrite_font_proxy_;
   DWriteFontProxyImpl impl_;
   mojo::Binding<blink::mojom::DWriteFontProxy> binding_;
+};
+
+class DWriteFontProxyUniqueNameMatchingTest
+    : public DWriteFontProxyImplUnitTest {
+ public:
+  DWriteFontProxyUniqueNameMatchingTest() {
+    feature_list_.InitAndEnableFeature(features::kFontSrcLocalMatching);
+    DWriteFontLookupTableBuilder::GetInstance()->ResetLookupTableForTesting();
+    DWriteFontLookupTableBuilder::GetInstance()
+        ->ScheduleBuildFontUniqueNameTable();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(DWriteFontProxyImplUnitTest, GetFamilyCount) {
@@ -191,7 +207,7 @@ TEST_F(DWriteFontProxyImplUnitTest, TestCustomFontFiles) {
   }
 }
 
-TEST_F(DWriteFontProxyImplUnitTest, TestFindUniqueFont) {
+TEST_F(DWriteFontProxyUniqueNameMatchingTest, TestFindUniqueFont) {
   base::ReadOnlySharedMemoryRegion font_table_memory;
   dwrite_font_proxy().GetUniqueNameLookupTable(&font_table_memory);
   blink::FontTableMatcher font_table_matcher(font_table_memory.Map());
@@ -209,7 +225,6 @@ TEST_F(DWriteFontProxyImplUnitTest, TestFindUniqueFont) {
     CHECK_EQ(test_font_name_index.second, match_result->ttc_index);
   }
 }
-
 
 }  // namespace
 
