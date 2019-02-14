@@ -198,6 +198,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
   CRWSessionStorage* BuildSessionStorage() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
+  void LoadData(NSData* data, NSString* mime_type, const GURL& url) override;
   void ExecuteJavaScript(const base::string16& javascript) override;
   void ExecuteJavaScript(const base::string16& javascript,
                          JavaScriptResultCallback callback) override;

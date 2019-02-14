@@ -38,6 +38,7 @@ class TestWebState : public WebState {
   UIView* GetView() override;
   void WasShown() override;
   void WasHidden() override;
+  void LoadData(NSData* data, NSString* mime_type, const GURL& url) override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const OpenURLParams& params) override {}
   void Stop() override {}

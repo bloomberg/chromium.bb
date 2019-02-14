@@ -164,6 +164,12 @@ class WebStateImpl;
 // NavigationManager::LoadIfNecessary() instead.
 - (void)loadCurrentURLIfNecessary;
 
+// Loads |data| of type |MIMEType| and replaces last committed URL with the
+// given |URL|.
+- (void)loadData:(NSData*)data
+        MIMEType:(NSString*)MIMEType
+          forURL:(const GURL&)URL;
+
 // Loads HTML in the page and presents it as if it was originating from an
 // application specific URL. |HTML| must not be empty.
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL;
