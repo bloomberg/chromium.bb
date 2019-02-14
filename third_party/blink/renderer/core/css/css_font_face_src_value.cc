@@ -25,8 +25,6 @@
 
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
 
-#include "base/feature_list.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -90,10 +88,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     ResourceLoaderOptions options;
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
     FetchParameters params(resource_request, options);
-    if (base::FeatureList::IsEnabled(
-            features::kWebFontsCacheAwareTimeoutAdaption)) {
-      params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
-    }
+    params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
     params.SetContentSecurityCheck(should_check_content_security_policy_);
     const SecurityOrigin* security_origin = context->GetSecurityOrigin();
 

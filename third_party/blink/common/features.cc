@@ -192,10 +192,6 @@ const base::Feature kDecodeLossyWebPImagesToYUV{
 const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables cache-aware WebFonts loading. See https://crbug.com/570205.
-const base::Feature kWebFontsCacheAwareTimeoutAdaption{
-    "WebFontsCacheAwareTimeoutAdaption", base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
   // (NetworkService).
