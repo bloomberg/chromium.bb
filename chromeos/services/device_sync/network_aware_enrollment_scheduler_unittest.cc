@@ -202,7 +202,7 @@ TEST_F(DeviceSyncNetworkAwareEnrollmentSchedulerTest,
   EXPECT_TRUE(scheduler()->IsWaitingForEnrollmentResult());
 
   scheduler()->HandleEnrollmentResult(CryptAuthEnrollmentResult(
-      CryptAuthEnrollmentResult::ResultCode::kSuccessNoSyncRequired,
+      CryptAuthEnrollmentResult::ResultCode::kSuccessNoNewKeysNeeded,
       base::nullopt /* client_directive */));
   EXPECT_FALSE(
       fake_network_unaware_scheduler()->IsWaitingForEnrollmentResult());

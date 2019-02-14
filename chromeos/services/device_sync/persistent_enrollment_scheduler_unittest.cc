@@ -262,7 +262,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandleFailures) {
          static_cast<size_t>(fake_client_directive().retry_attempts())) {
     timer()->Fire();
     CryptAuthEnrollmentResult result(
-        CryptAuthEnrollmentResult::ResultCode::kErrorKeyCreationFailed,
+        CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
         fake_client_directive());
     scheduler()->HandleEnrollmentResult(result);
     ++expected_failure_count;
@@ -281,7 +281,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest, HandleFailures) {
   // attempt to be retried after the ClientDirective's retry period.
   timer()->Fire();
   CryptAuthEnrollmentResult result(
-      CryptAuthEnrollmentResult::ResultCode::kErrorKeyCreationFailed,
+      CryptAuthEnrollmentResult::ResultCode::kErrorCryptAuthServerOverloaded,
       fake_client_directive());
   scheduler()->HandleEnrollmentResult(result);
 
