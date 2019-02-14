@@ -37,6 +37,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
       CommandBufferStub* share_group,
       const GPUCreateCommandBufferConfig& init_params,
       base::UnsafeSharedMemoryRegion shared_state_shm) override;
+  MemoryTracker* GetMemoryTracker() const override;
 
 // ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -66,6 +67,9 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
                              bool* succeeded);
 
   void OnSwapBuffers(uint64_t swap_id, uint32_t flags) override;
+
+  // The group of contexts that share namespaces with this context.
+  scoped_refptr<gles2::ContextGroup> context_group_;
 
   // Keep a more specifically typed reference to the decoder to avoid
   // unnecessary casts. Owned by parent class.

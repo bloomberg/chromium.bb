@@ -140,7 +140,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
   }
   gles2::ContextGroup* GetContextGroup() override {
-    NOTREACHED();
     return nullptr;
   }
   gles2::ErrorState* GetErrorState() override {

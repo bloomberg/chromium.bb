@@ -91,9 +91,19 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   DCHECK(manager);
 
   if (share_command_buffer_stub) {
-    context_group_ = share_command_buffer_stub->context_group();
-    DCHECK(context_group_->bind_generates_resource() ==
-           init_params.attribs.bind_generates_resource);
+    context_group_ =
+        share_command_buffer_stub->decoder_context()->GetContextGroup();
+    if (!context_group_) {
+      LOG(ERROR) << "ContextResult::kFatalFailure: attempt to create a GLES2 "
+                    "context sharing with a non-GLES2 context";
+      return gpu::ContextResult::kFatalFailure;
+    }
+    if (context_group_->bind_generates_resource() !=
+        init_params.attribs.bind_generates_resource) {
+      LOG(ERROR) << "ContextResult::kFatalFailure: attempt to create a shared "
+                    "GLES2 context with inconsistent bind_generates_resource";
+      return gpu::ContextResult::kFatalFailure;
+    }
   } else {
     scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
         manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
@@ -416,6 +426,10 @@ void GLES2CommandBufferStub::AddFilter(IPC::MessageFilter* message_filter) {
 
 int32_t GLES2CommandBufferStub::GetRouteID() const {
   return route_id_;
+}
+
+MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {
+  return context_group_->memory_tracker();
 }
 
 bool GLES2CommandBufferStub::HandleMessage(const IPC::Message& message) {

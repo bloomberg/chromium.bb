@@ -132,6 +132,7 @@ CommandBufferStub::CommandBufferStub(
     int32_t stream_id,
     int32_t route_id)
     : channel_(channel),
+      context_type_(init_params.attribs.context_type),
       active_url_(init_params.active_url),
       active_url_hash_(base::Hash(active_url_.possibly_invalid_spec())),
       initialized_(false),
@@ -527,7 +528,8 @@ void CommandBufferStub::OnAsyncFlush(
   CommandBuffer::State pre_state = command_buffer_->GetState();
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
-  MailboxManager* mailbox_manager = context_group_->mailbox_manager();
+  MailboxManager* mailbox_manager =
+      channel_->gpu_channel_manager()->mailbox_manager();
   if (mailbox_manager->UsesSync()) {
     for (const auto& sync_token : sync_token_fences)
       mailbox_manager->PullTextureUpdates(sync_token);
@@ -613,7 +615,8 @@ void CommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
 void CommandBufferStub::OnFenceSyncRelease(uint64_t release) {
   SyncToken sync_token(CommandBufferNamespace::GPU_IO, command_buffer_id_,
                        release);
-  MailboxManager* mailbox_manager = context_group_->mailbox_manager();
+  MailboxManager* mailbox_manager =
+      channel_->gpu_channel_manager()->mailbox_manager();
   if (mailbox_manager->UsesSync() && MakeCurrent())
     mailbox_manager->PushTextureUpdates(sync_token);
 
@@ -681,10 +684,6 @@ std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker(
 void CommandBufferStub::SetMemoryTrackerFactoryForTesting(
     MemoryTrackerFactory factory) {
   SetOrGetMemoryTrackerFactory(factory);
-}
-
-MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
-  return context_group_->memory_tracker();
 }
 
 scoped_refptr<Buffer> CommandBufferStub::GetTransferBuffer(int32_t id) {

@@ -193,6 +193,10 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   return gpu::ContextResult::kSuccess;
 }
 
+MemoryTracker* RasterCommandBufferStub::GetMemoryTracker() const {
+  return context_group_->memory_tracker();
+}
+
 bool RasterCommandBufferStub::HandleMessage(const IPC::Message& message) {
   return false;
 }

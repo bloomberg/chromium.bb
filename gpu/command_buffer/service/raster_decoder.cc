@@ -1254,7 +1254,7 @@ void RasterDecoderImpl::BindImage(uint32_t client_texture_id,
 }
 
 gles2::ContextGroup* RasterDecoderImpl::GetContextGroup() {
-  return group_.get();
+  return nullptr;
 }
 
 gles2::ErrorState* RasterDecoderImpl::GetErrorState() {

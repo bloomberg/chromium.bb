@@ -83,6 +83,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
       const GPUCreateCommandBufferConfig& init_params,
       base::UnsafeSharedMemoryRegion shared_state_shm) = 0;
 
+  virtual MemoryTracker* GetMemoryTracker() const = 0;
+
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -109,7 +111,6 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // This is intended for mocking the MemoryTracker in tests.
   static void SetMemoryTrackerFactoryForTesting(MemoryTrackerFactory factory);
 
-  MemoryTracker* GetMemoryTracker() const;
   scoped_refptr<Buffer> GetTransferBuffer(int32_t id);
   void RegisterTransferBufferForTest(int32_t id, scoped_refptr<Buffer> buffer);
 
@@ -131,12 +132,13 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
   gl::GLSurface* surface() const { return surface_.get(); }
 
+  ContextType context_type() const { return context_type_; }
+
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
 
   void MarkContextLost();
 
-  scoped_refptr<gles2::ContextGroup> context_group() { return context_group_; }
   scoped_refptr<gl::GLShareGroup> share_group() { return share_group_; }
 
  protected:
@@ -162,11 +164,9 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // they are destroyed. So a raw pointer is safe.
   GpuChannel* const channel_;
 
+  ContextType context_type_;
   GURL active_url_;
   size_t active_url_hash_;
-
-  // The group of contexts that share namespaces with this context.
-  scoped_refptr<gles2::ContextGroup> context_group_;
 
   bool initialized_;
   const SurfaceHandle surface_handle_;
