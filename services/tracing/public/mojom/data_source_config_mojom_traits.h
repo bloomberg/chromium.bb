@@ -5,8 +5,8 @@
 // This defines mappings from mojom IPC representations to their native perfetto
 // equivalents.
 
-#ifndef SERVICES_TRACING_PUBLIC_MOJOM_DATA_SOURCE_CONFIG_STRUCT_TRAITS_H_
-#define SERVICES_TRACING_PUBLIC_MOJOM_DATA_SOURCE_CONFIG_STRUCT_TRAITS_H_
+#ifndef SERVICES_TRACING_PUBLIC_MOJOM_DATA_SOURCE_CONFIG_MOJOM_TRAITS_H_
+#define SERVICES_TRACING_PUBLIC_MOJOM_DATA_SOURCE_CONFIG_MOJOM_TRAITS_H_
 
 #include <string>
 
@@ -45,4 +45,4 @@ class StructTraits<tracing::mojom::DataSourceConfigDataView,
                    perfetto::DataSourceConfig* out);
 };
 }  // namespace mojo
-#endif  // SERVICES_TRACING_PUBLIC_MOJOM_DATA_SOURCE_CONFIG_STRUCT_TRAITS_H_
+#endif  // SERVICES_TRACING_PUBLIC_MOJOM_DATA_SOURCE_CONFIG_MOJOM_TRAITS_H_
