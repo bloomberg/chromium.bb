@@ -614,6 +614,11 @@ bool NewPasswordFormManager::ProvisionallySave(
 
 void NewPasswordFormManager::ProcessServerPredictions(
     const std::map<FormSignature, FormPredictions>& predictions) {
+  if (parser_.predictions()) {
+    // This method might be called multiple times. No need to process
+    // predictions again.
+    return;
+  }
   FormSignature observed_form_signature =
       CalculateFormSignature(observed_form_);
   auto it = predictions.find(observed_form_signature);

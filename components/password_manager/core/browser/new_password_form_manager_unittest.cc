@@ -562,6 +562,11 @@ TEST_F(NewPasswordFormManagerTest, ServerPredictionsWithinDelay) {
   // Expect filling without delay on receiving server predictions.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(1);
   form_manager_->ProcessServerPredictions(predictions);
+  Mock::VerifyAndClearExpectations(&driver_);
+
+  // Expect no filling on receving predictions again.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+  form_manager_->ProcessServerPredictions(predictions);
 }
 
 // Tests that NewPasswordFormManager fills after some delay even without
