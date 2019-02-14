@@ -1050,12 +1050,6 @@ extern const char kSupervisedUserCommittedInterstitialsDescription[];
 extern const char kEnableDrawOcclusionName[];
 extern const char kEnableDrawOcclusionDescription[];
 
-extern const char kShowSavedCopyName[];
-extern const char kShowSavedCopyDescription[];
-extern const char kEnableShowSavedCopyPrimary[];
-extern const char kEnableShowSavedCopySecondary[];
-extern const char kDisableShowSavedCopy[];
-
 extern const char kSilentDebuggerExtensionApiName[];
 extern const char kSilentDebuggerExtensionApiDescription[];
 

@@ -328,18 +328,6 @@ const FeatureEntry::Choice kDataReductionProxyServerExperiment[] = {
      data_reduction_proxy::switches::kDataReductionProxyExperiment,
      data_reduction_proxy::switches::kDataReductionProxyServerAlternative10}};
 
-const FeatureEntry::Choice kShowSavedCopyChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kEnableShowSavedCopyPrimary,
-     error_page::switches::kShowSavedCopy,
-     error_page::switches::kEnableShowSavedCopyPrimary},
-    {flag_descriptions::kEnableShowSavedCopySecondary,
-     error_page::switches::kShowSavedCopy,
-     error_page::switches::kEnableShowSavedCopySecondary},
-    {flag_descriptions::kDisableShowSavedCopy,
-     error_page::switches::kShowSavedCopy,
-     error_page::switches::kDisableShowSavedCopy}};
-
 #if defined(OS_WIN)
 const FeatureEntry::Choice kUseAngleChoices[] = {
     {flag_descriptions::kUseAngleDefault, "", ""},
@@ -1743,9 +1731,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineAutoReloadVisibleOnlyDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineAutoReloadVisibleOnly,
                                switches::kDisableOfflineAutoReloadVisibleOnly)},
-    {"show-saved-copy", flag_descriptions::kShowSavedCopyName,
-     flag_descriptions::kShowSavedCopyDescription, kOsAll,
-     MULTI_VALUE_TYPE(kShowSavedCopyChoices)},
 #if defined(OS_CHROMEOS)
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,

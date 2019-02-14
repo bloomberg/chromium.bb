@@ -1764,17 +1764,6 @@ const char kSupervisedUserCommittedInterstitialsDescription[] =
     "Use committed error pages instead of transient navigation entries for "
     "supervised user interstitials";
 
-const char kShowSavedCopyName[] = "Show Saved Copy Button";
-const char kShowSavedCopyDescription[] =
-    "When a page fails to load, if a stale copy of the page exists in the "
-    "browser cache, a button will be presented to allow the user to load that "
-    "stale copy. The primary enabling choice puts the button in the most "
-    "salient position on the error page; the secondary enabling choice puts it "
-    "secondary to the reload button.";
-const char kEnableShowSavedCopyPrimary[] = "Enable: Primary";
-const char kEnableShowSavedCopySecondary[] = "Enable: Secondary";
-const char kDisableShowSavedCopy[] = "Disable";
-
 const char kSilentDebuggerExtensionApiName[] = "Silent Debugging";
 const char kSilentDebuggerExtensionApiDescription[] =
     "Do not show the infobar when an extension attaches to a page via "
