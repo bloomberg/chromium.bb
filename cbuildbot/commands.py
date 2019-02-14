@@ -3182,7 +3182,8 @@ def GetChromeLKGM(revision):
   return base64.b64decode(contents_b64.read()).strip()
 
 
-def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
+def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None,
+               git_cache_dir=None):
   """Sync chrome.
 
   Args:
@@ -3191,6 +3192,7 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
     useflags: Array of use flags.
     tag: If supplied, the Chrome tag to sync.
     revision: If supplied, the Chrome revision to sync.
+    git_cache_dir: Directory to use for git-cache.
   """
   sync_chrome = os.path.join(build_root, 'chromite', 'bin', 'sync_chrome')
   internal = constants.USE_CHROME_INTERNAL in useflags
@@ -3199,9 +3201,14 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   # is needed for unattended operation.
   # --ignore-locks tells sync_chrome to ignore git-cache locks.
   cmd = [sync_chrome, '--reset', '--ignore_locks']
-  cmd += ['--internal'] if internal else []
-  cmd += ['--tag', tag] if tag is not None else []
-  cmd += ['--revision', revision] if revision is not None else []
+  if internal:
+    cmd += ['--internal']
+  if tag:
+    cmd += ['--tag', tag]
+  if revision:
+    cmd += ['--revision', revision]
+  if git_cache_dir:
+    cmd += ['--git_cache_dir', git_cache_dir]
   cmd += [chrome_root]
   retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
 
