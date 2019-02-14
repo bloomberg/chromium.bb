@@ -106,8 +106,7 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
 
 cca.views.camera.Options.prototype = {
   get newStreamRequestDisabled() {
-    return !document.body.classList.contains('streaming') ||
-        document.body.classList.contains('taking');
+    return !cca.state.get('streaming') || cca.state.get('taking');
   },
 };
 
@@ -120,10 +119,9 @@ cca.views.camera.Options.prototype.switchMode_ = function(record) {
   if (this.newStreamRequestDisabled) {
     return;
   }
-  document.body.classList.toggle('record-mode', record);
-  document.body.classList.add('mode-switching');
-  this.onNewStreamNeeded_().then(
-      () => document.body.classList.remove('mode-switching'));
+  cca.state.set('record-mode', record);
+  cca.state.set('mode-switching', true);
+  this.onNewStreamNeeded_().then(() => cca.state.set('mode-switching', false));
 };
 
 /**
@@ -258,7 +256,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
   this.videoDevices_.then((devices) => {
     multi = devices.length >= 2;
   }).catch(console.error).finally(() => {
-    document.body.classList.toggle('multi-camera', multi);
+    cca.state.set('multi-camera', multi);
     this.refreshingVideoDeviceIds_ = false;
   });
 };

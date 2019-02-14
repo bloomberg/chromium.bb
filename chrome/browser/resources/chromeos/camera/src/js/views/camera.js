@@ -145,14 +145,8 @@ cca.views.Camera.RECORD_MIMETYPE = 'video/x-matroska;codecs=avc1';
 
 cca.views.Camera.prototype = {
   __proto__: cca.views.View.prototype,
-  get streaming() {
-    return document.body.classList.contains('streaming');
-  },
-  get taking() {
-    return document.body.classList.contains('taking');
-  },
   get recordMode() {
-    return document.body.classList.contains('record-mode');
+    return cca.state.get('record-mode');
   },
 };
 
@@ -169,10 +163,10 @@ cca.views.Camera.prototype.focus = function() {
  * @private
  */
 cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
-  if (!this.streaming) {
+  if (!cca.state.get('streaming')) {
     return;
   }
-  if (this.taking) {
+  if (cca.state.get('taking')) {
     // End the prior ongoing take if any; a new take shouldn't be started
     // until the prior one is ended.
     this.endTake_();
@@ -199,9 +193,10 @@ cca.views.Camera.prototype.onShutterButtonClicked_ = function(event) {
 cca.views.Camera.prototype.updateShutterLabel_ = function() {
   var label;
   if (this.recordMode) {
-    label = this.taking ? 'record_video_stop_button' : 'record_video_start_button';
+    label = cca.state.get('taking') ?
+        'record_video_stop_button' : 'record_video_start_button';
   } else {
-    label = (this.taking && document.body.classList.contains('timer')) ?
+    label = (cca.state.get('taking') && cca.state.get('timer')) ?
         'take_photo_cancel_button' : 'take_photo_button';
   }
   this.shutterButton_.setAttribute('aria-label', chrome.i18n.getMessage(label));
@@ -230,7 +225,7 @@ cca.views.Camera.prototype.handlingKey = function(key) {
  * @private
  */
 cca.views.Camera.prototype.beginTake_ = function() {
-  document.body.classList.add('taking');
+  cca.state.set('taking', true);
   this.updateShutterLabel_();
 
   cca.views.camera.timertick.start().then(() => {
@@ -285,7 +280,7 @@ cca.views.Camera.prototype.endTake_ = function() {
   }).catch(console.error).finally(() => {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
-    document.body.classList.remove('taking');
+    cca.state.set('taking', false);
     this.updateShutterLabel_();
   });
 };
@@ -331,7 +326,7 @@ cca.views.Camera.prototype.createRecordingBlob_ = function() {
     };
     enableAudio(true);
     this.mediaRecorder_.start();
-    enableAudio(document.body.classList.contains('mic'));
+    enableAudio(cca.state.get('mic'));
     this.recordTime_.start();
   });
 };
@@ -441,7 +436,7 @@ cca.views.Camera.prototype.stop_ = function() {
   // Wait for ongoing 'start' and 'take' done before restarting camera.
   return Promise.all([
     this.started_,
-    Promise.resolve(!this.taking || this.endTake_()),
+    Promise.resolve(!cca.state.get('taking') || this.endTake_()),
   ]).finally(() => {
     this.preview_.stop();
     this.mediaRecorder_ = null;

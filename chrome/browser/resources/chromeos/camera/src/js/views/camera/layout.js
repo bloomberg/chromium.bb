@@ -106,10 +106,10 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function() {
  * Updates the layout for video-size or window-size changes.
  */
 cca.views.camera.Layout.prototype.update = function() {
-  // TODO(yuli): Check if the app runs on a tablet display.
+  // TODO(yuli): Replace tablet-landscape with full-wnd/vert-orien.
   var fullWindow = cca.util.isWindowFullSize();
   var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
-  document.body.classList.toggle('tablet-landscape', tabletLandscape);
+  cca.state.set('tablet-landscape', tabletLandscape);
 
   var [letterboxW, letterboxH] = this.updatePreviewSize_();
   var [halfW, halfH] = [letterboxW / 2, letterboxH / 2];
@@ -128,11 +128,11 @@ cca.views.camera.Layout.prototype.update = function() {
     var [, leastShutter] = dimens(true);
     return (measure > leastShutter) && (measure < leastShutter * 2);
   };
-  if (document.body.classList.toggle('shift-preview-left',
+  if (cca.state.set('shift-preview-left',
       fullWindow && tabletLandscape && accommodate(letterboxW))) {
     [rightBox, leftBox] = [letterboxW, 0];
   }
-  if (document.body.classList.toggle('shift-preview-top',
+  if (cca.state.set('shift-preview-top',
       fullWindow && !tabletLandscape && accommodate(letterboxH))) {
     [bottomBox, topBox] = [letterboxH, 0];
   }
@@ -146,7 +146,7 @@ cca.views.camera.Layout.prototype.update = function() {
   };
   var shift = (stripe, name, measure, shutter) => {
     var [preset, least, gap, baseline] = dimens(shutter);
-    if (document.body.classList.toggle('shift-' + name + '-stripe',
+    if (cca.state.set('shift-' + name + '-stripe',
         measure > gap && measure < preset)) {
       baseline = calc(measure, least);
       stripe.setProperty(name, baseline + 'px');
@@ -156,7 +156,7 @@ cca.views.camera.Layout.prototype.update = function() {
   };
   var symm = (stripe, name, measure, shutterBaseline) => {
     if (measure && shutterBaseline) {
-      document.body.classList.add('shift-' + name + '-stripe');
+      cca.state.set('shift-' + name + '-stripe', true);
       stripe.setProperty(name, shutterBaseline + 'px');
       return true;
     }

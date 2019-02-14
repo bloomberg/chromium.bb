@@ -146,7 +146,7 @@ cca.views.camera.Preview.prototype.start = function(stream) {
       }
     }, 100);
     this.stream_ = stream;
-    document.body.classList.add('streaming');
+    cca.state.set('streaming', true);
   });
 };
 
@@ -164,7 +164,7 @@ cca.views.camera.Preview.prototype.stop = function() {
     this.stream_.getVideoTracks()[0].stop();
     this.stream_ = null;
   }
-  document.body.classList.remove('streaming');
+  cca.state.set('streaming', false);
 };
 
 /**

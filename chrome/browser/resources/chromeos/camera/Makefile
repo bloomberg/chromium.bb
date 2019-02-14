@@ -117,6 +117,7 @@ RESOURCES = \
 	src/js/nav.js \
 	src/js/scrollbar.js \
 	src/js/sound.js \
+	src/js/state.js \
 	src/js/toast.js \
 	src/js/tooltip.js \
 	src/js/util.js \

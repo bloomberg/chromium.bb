@@ -58,8 +58,7 @@ cca.App = function() {
  * @return {boolean} Whether applicable or not.
  */
 cca.App.useGalleryApp = function() {
-  return chrome.fileManagerPrivate &&
-      document.body.classList.contains('ext-fs');
+  return chrome.fileManagerPrivate && cca.state.get('ext-fs');
 };
 
 /**
@@ -90,7 +89,7 @@ cca.App.prototype.setupToggles_ = function() {
     element.addEventListener('keypress', (event) =>
         cca.util.getShortcutIdentifier(event) == 'Enter' && element.click());
 
-    var css = element.getAttribute('data-css');
+    var css = element.getAttribute('data-state');
     var key = element.getAttribute('data-key');
     var payload = () => {
       var keys = {};
@@ -99,7 +98,7 @@ cca.App.prototype.setupToggles_ = function() {
     };
     element.addEventListener('change', (event) => {
       if (css) {
-        document.body.classList.toggle(css, element.checked);
+        cca.state.set(css, element.checked);
       }
       if (event.isTrusted) {
         element.save();
@@ -139,7 +138,7 @@ cca.App.prototype.start = function() {
       }
     });
   }).then((external) => {
-    document.body.classList.toggle('ext-fs', external);
+    cca.state.set('ext-fs', external);
     this.model_.addObserver(this.galleryButton_);
     if (!cca.App.useGalleryApp()) {
       this.model_.addObserver(this.browserView_);

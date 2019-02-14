@@ -36,7 +36,7 @@ cca.views.camera.timertick.cancel_ = null;
  */
 cca.views.camera.timertick.start = function() {
   cca.views.camera.timertick.cancel_ = null;
-  if (!document.body.classList.contains('timer')) {
+  if (!cca.state.get('timer')) {
     return Promise.resolve();
   }
   return new Promise((resolve, reject) => {
@@ -51,7 +51,7 @@ cca.views.camera.timertick.start = function() {
       reject();
     };
 
-    var tickCounter = document.body.classList.contains('_10sec') ? 10 : 3;
+    var tickCounter = cca.state.get('_10sec') ? 10 : 3;
     var onTimerTick = () => {
       if (tickCounter == 0) {
         resolve();
