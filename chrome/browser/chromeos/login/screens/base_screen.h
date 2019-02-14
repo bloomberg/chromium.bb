@@ -138,15 +138,8 @@ class BaseScreen {
   ::login::ScreenContext context_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
-  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
-  FRIEND_TEST_ALL_PREFIXES(AttestationAuthEnrollmentScreenTest, TestCancel);
-  FRIEND_TEST_ALL_PREFIXES(ForcedAttestationAuthEnrollmentScreenTest,
-                           TestCancel);
-  FRIEND_TEST_ALL_PREFIXES(MultiAuthEnrollmentScreenTest, TestCancel);
-  FRIEND_TEST_ALL_PREFIXES(ProvisionedEnrollmentScreenTest, TestBackButton);
-
   friend class BaseWebUIHandler;
+  friend class EnrollmentScreenTest;
   friend class NetworkScreenTest;
   friend class ScreenEditor;
   friend class ScreenManager;
