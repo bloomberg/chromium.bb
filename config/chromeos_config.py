@@ -2326,7 +2326,6 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       images=[],
       unittests=False,
       prebuilts=constants.PRIVATE,
-      git_sync=True,
       factory_toolkit=False,
       upload_hw_test_artifacts=False,
       overlays=constants.BOTH_OVERLAYS,

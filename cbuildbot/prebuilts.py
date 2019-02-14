@@ -11,12 +11,12 @@ import glob
 import os
 
 from chromite.cbuildbot import commands
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 
 _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
+_POSTSUBMIT_BINHOST = 'POSTSUBMIT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _FULL_BINHOST = 'FULL_BINHOST'
 _BINHOST_PACKAGE_FILE = ('/usr/share/dev-install/portage/make.profile/'
@@ -127,7 +127,8 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
   """Upload Prebuilts for non-dev-installer use cases.
 
   Args:
-    category: Build type. Can be [binary|full|chrome|chroot|paladin].
+    category: Build type.
+      Can be [binary|full|chrome|chroot|paladin|postsubmit].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
     private_bucket: True if we are uploading to a private bucket.
     buildroot: The root directory where the build occurs.
@@ -184,11 +185,10 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
     assert chrome_rev
     key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
     extra_args.extend(['--key', key.upper()])
-  elif config_lib.IsPFQType(category):
-    extra_args.extend(['--key', _PREFLIGHT_BINHOST])
+  elif category == constants.POSTSUBMIT_TYPE:
+    extra_args.extend(['--key', _POSTSUBMIT_BINHOST])
   else:
     assert category in (constants.FULL_TYPE,
-                        constants.POSTSUBMIT_TYPE,
                         constants.CHROOT_BUILDER_TYPE)
     extra_args.extend(['--key', _FULL_BINHOST])
 
@@ -319,10 +319,6 @@ class BinhostConfWriter(object):
     public_args, private_args = [], []
     # Gather public/private (slave) builders.
     public_builders, private_builders = [], []
-
-    # Distributed builders that use manifest-versions to sync with one another
-    # share prebuilt logic by passing around versions.
-    assert config_lib.IsPFQType(self._prebuilt_type)
 
     # Public pfqs should upload host preflight prebuilts.
     public_args.append('--sync-host')

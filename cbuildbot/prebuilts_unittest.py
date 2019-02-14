@@ -30,8 +30,11 @@ class PrebuiltTest(cros_test_lib.RunCommandTempDirTestCase):
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
-  def testUploadPrebuilts(self, builder_type=constants.PFQ_TYPE, private=False,
-                          chrome_rev=None, version=None):
+  def testUploadPrebuilts(self,
+                          builder_type=constants.POSTSUBMIT_TYPE,
+                          private=False,
+                          chrome_rev=None,
+                          version=None):
     """Test UploadPrebuilts with a public location."""
     prebuilts.UploadPrebuilts(builder_type, chrome_rev, private,
                               buildroot=self._buildroot, board=self._board,
