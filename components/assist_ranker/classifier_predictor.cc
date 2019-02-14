@@ -21,8 +21,8 @@
 namespace assist_ranker {
 
 ClassifierPredictor::ClassifierPredictor(const PredictorConfig& config)
-    : BasePredictor(config){};
-ClassifierPredictor::~ClassifierPredictor(){};
+    : BasePredictor(config) {}
+ClassifierPredictor::~ClassifierPredictor() {}
 
 // static
 std::unique_ptr<ClassifierPredictor> ClassifierPredictor::Create(
