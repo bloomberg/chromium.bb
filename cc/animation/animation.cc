@@ -257,7 +257,7 @@ void Animation::UpdateState(bool start_ready_animations,
                             AnimationEvents* events) {
   for (auto& keyframe_effect : keyframe_effects_) {
     keyframe_effect->UpdateState(start_ready_animations, events);
-    keyframe_effect->UpdateTickingState(UpdateTickingType::NORMAL);
+    keyframe_effect->UpdateTickingState();
   }
 }
 
@@ -335,7 +335,7 @@ void Animation::SetNeedsPushProperties() {
 void Animation::ActivateKeyframeEffects() {
   for (auto& keyframe_effect : keyframe_effects_) {
     keyframe_effect->ActivateKeyframeEffects();
-    keyframe_effect->UpdateTickingState(UpdateTickingType::NORMAL);
+    keyframe_effect->UpdateTickingState();
   }
 }
 
