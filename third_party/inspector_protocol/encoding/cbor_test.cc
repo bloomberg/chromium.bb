@@ -18,6 +18,9 @@
 using testing::ElementsAreArray;
 
 namespace inspector_protocol {
+
+using cbor::MajorType;
+
 //
 // EncodeInt32 / CBORTokenTag::INT32
 //
@@ -102,8 +105,7 @@ TEST(EncodeDecodeInt32Test, CantRoundtripUint32) {
   // encode it here manually with the internal routine, just to observe
   // that it's considered an invalid int32 by CBORTokenizer.
   std::vector<uint8_t> encoded;
-  cbor_internals::WriteTokenStart(cbor_internals::MajorType::UNSIGNED,
-                                  0xdeadbeef, &encoded);
+  cbor_internals::WriteTokenStart(MajorType::UNSIGNED, 0xdeadbeef, &encoded);
   // 1 for initial byte, 4 for the uint32.
   // first three bits: major type = 0;
   // remaining five bits: additional info = 26, indicating payload is uint32.
@@ -897,7 +899,7 @@ TEST(ParseCBORTest, InvalidSignedError) {
   int64_t error_pos = bytes.size();
   // uint64_t max is a perfectly fine value to encode as CBOR unsigned,
   // but we don't support this since we only cover the int32_t range.
-  cbor_internals::WriteTokenStart(cbor_internals::MajorType::UNSIGNED,
+  cbor_internals::WriteTokenStart(MajorType::UNSIGNED,
                                   std::numeric_limits<uint64_t>::max(), &bytes);
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
   std::string out;
@@ -920,7 +922,7 @@ TEST(ParseCBORTest, TrailingJunk) {
   int64_t error_pos = bytes.size();
   EncodeSevenBitStringForTest("trailing junk", &bytes);
 
-  cbor_internals::WriteTokenStart(cbor_internals::MajorType::UNSIGNED,
+  cbor_internals::WriteTokenStart(MajorType::UNSIGNED,
                                   std::numeric_limits<uint64_t>::max(), &bytes);
   EXPECT_EQ(kPayloadLen, bytes.size() - 6);
   std::string out;

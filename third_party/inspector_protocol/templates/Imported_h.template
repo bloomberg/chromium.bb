@@ -29,12 +29,16 @@ struct ValueConversions<{{"::".join(config.imported.namespace)}}::{{domain.domai
             return nullptr;
         }
 
-        // TODO(pfeldman): switch from JSON to binary commented below.
+        // TODO(pfeldman): toggle to true and delete the json branch when binary is ready.
+        bool binary_protocol = false;
         std::unique_ptr<{{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}> result;
-        String json = value->serializeToJSON();
-        result = {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}::fromJSONString({{config.imported.to_imported_string % "json"}});
-        // std::vector<uint8_t> binary = value->serializeToBinary();
-        // result = {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}::fromBinary(binary.data(), binary.size());
+        if (binary_protocol) {
+            std::vector<uint8_t> binary = value->serializeToBinary();
+            result = {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}::fromBinary(binary.data(), binary.size());
+        } else {
+            String json = value->serializeToJSON();
+            result = {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}::fromJSONString({{config.imported.to_imported_string % "json"}});
+        }
         if (!result)
             errors->addError("cannot parse");
         return result;
@@ -42,11 +46,15 @@ struct ValueConversions<{{"::".join(config.imported.namespace)}}::{{domain.domai
 
     static std::unique_ptr<protocol::Value> toValue(const {{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}* value)
     {
-        // TODO(pfeldman): switch from JSON to binary commented below.
-        auto json = value->toJSONString();
-        String local_json = ({{config.imported.from_imported_string % "std::move(json)"}});
-        return SerializedValue::fromJSON(local_json);
-        // return SerializedValue::fromBinary(value->toBinary());
+        // TODO(pfeldman): toggle to true and delete the json branch when binary is ready.
+        bool binary_protocol = false;
+        if (binary_protocol) {
+            return SerializedValue::fromBinary(value->toBinary());
+        } else {
+            auto json = value->toJSONString();
+            String local_json = ({{config.imported.from_imported_string % "std::move(json)"}});
+            return SerializedValue::fromJSON(local_json);
+        }
     }
 
     static std::unique_ptr<protocol::Value> toValue(const std::unique_ptr<{{"::".join(config.imported.namespace)}}::{{domain.domain}}::API::{{type.id}}>& value)

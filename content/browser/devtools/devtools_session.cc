@@ -333,14 +333,17 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
                                                   const std::string& message) {
   if (child_sessions_.find(session_id) == child_sessions_.end())
     return;
-  if (!message.length() || message[message.length() - 1] != '}')
-    return;
-  std::string suffix =
-      base::StringPrintf(", \"sessionId\": \"%s\"}", session_id.c_str());
   std::string patched;
-  patched.reserve(message.length() + suffix.length() - 1);
-  patched.append(message.data(), message.length() - 1);
-  patched.append(suffix);
+  bool patched_ok;
+  if (client_->UsesBinaryProtocol()) {
+    patched_ok = protocol::AppendStringValueToMapBinary(message, "sessionId",
+                                                        session_id, &patched);
+  } else {
+    patched_ok = protocol::AppendStringValueToMapJSON(message, "sessionId",
+                                                      session_id, &patched);
+  }
+  if (!patched_ok)
+    return;
   client_->DispatchProtocolMessage(agent_host_, patched);
   // |this| may be deleted at this point.
 }
