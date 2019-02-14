@@ -294,7 +294,7 @@ void TabsEventRouter::OnFaviconUpdated(
 
 void TabsEventRouter::OnDiscardedStateChange(
     WebContents* contents,
-    mojom::LifecycleUnitDiscardReason reason,
+    ::mojom::LifecycleUnitDiscardReason reason,
     bool is_discarded) {
   std::set<std::string> changed_property_names;
   changed_property_names.insert(tabs_constants::kDiscardedKey);

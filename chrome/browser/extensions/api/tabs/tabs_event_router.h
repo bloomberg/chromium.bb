@@ -79,7 +79,7 @@ class TabsEventRouter : public TabStripModelObserver,
 
   // resource_coordinator::TabLifecycleObserver:
   void OnDiscardedStateChange(content::WebContents* contents,
-                              mojom::LifecycleUnitDiscardReason reason,
+                              ::mojom::LifecycleUnitDiscardReason reason,
                               bool is_discarded) override;
   void OnAutoDiscardableStateChange(content::WebContents* contents,
                                     bool is_auto_discardable) override;
