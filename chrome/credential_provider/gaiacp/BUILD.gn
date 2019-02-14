@@ -91,6 +91,7 @@ source_set("gaiacp_lib") {
   deps = [
     ":gaia_credential_provider_idl",
     ":static_resources",
+    "../eventlog:gcp_eventlog_messages",
     "//chrome/common:version_header",
     "//chrome/installer/launcher_support",
     "//components/crash/content/app:app",
