@@ -374,9 +374,6 @@ Polymer({
    * @private
    */
   onOpenMenu_: function(e) {
-    if (this.actionMenuModel_) {
-      return;
-    }
     const index = e.detail.index;
     const list = /** @type {IronListElement} */ (this.$['allSitesList']);
     if (index < list.firstVisibleIndex || index > list.lastVisibleIndex) {
