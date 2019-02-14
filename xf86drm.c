@@ -586,8 +586,31 @@ static int drmOpenByBusid(const char *busid, int type)
     if (base < 0)
         return -1;
 
+    /* We need to try for 1.4 first for proper PCI domain support */
     drmMsg("drmOpenByBusid: Searching for BusID %s\n", busid);
     for (i = base; i < base + DRM_MAX_MINOR; i++) {
+        fd = drmOpenMinor(i, 1, type);
+        drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
+        if (fd >= 0) {
+            sv.drm_di_major = 1;
+            sv.drm_di_minor = 4;
+            sv.drm_dd_major = -1;        /* Don't care */
+            sv.drm_dd_minor = -1;        /* Don't care */
+            if (!drmSetInterfaceVersion(fd, &sv)) {
+                buf = drmGetBusid(fd);
+                drmMsg("drmOpenByBusid: drmGetBusid reports %s\n", buf);
+                if (buf && drmMatchBusID(buf, busid, 1)) {
+                    drmFreeBusid(buf);
+                    return fd;
+                }
+                if (buf)
+                    drmFreeBusid(buf);
+            }
+            close(fd);
+        }
+    }
+
+   for (i = base; i < base + DRM_MAX_MINOR; i++) {
         fd = drmOpenMinor(i, 1, type);
         drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
         if (fd >= 0) {
