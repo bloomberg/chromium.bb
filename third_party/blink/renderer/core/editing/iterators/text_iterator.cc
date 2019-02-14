@@ -177,7 +177,7 @@ bool ShouldHandleChildren(const Node& node,
 
   if (node.IsElementNode()) {
     if (auto* context = ToElement(node).GetDisplayLockContext())
-      return context->IsSearchable();
+      return context->IsActivatable();
   }
   return true;
 }
