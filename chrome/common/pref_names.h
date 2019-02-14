@@ -74,7 +74,6 @@ extern const char kAllowedLanguages[];
 #endif
 
 extern const char kDefaultCharset[];
-extern const char kAcceptLanguages[];
 extern const char kWebKitCommonScript[];
 extern const char kWebKitStandardFontFamily[];
 extern const char kWebKitFixedFontFamily[];
@@ -206,8 +205,6 @@ extern const char kResolveTimezoneByGeolocationMigratedToMethod[];
 extern const char kLanguageCurrentInputMethod[];
 extern const char kLanguagePreviousInputMethod[];
 extern const char kLanguageAllowedInputMethods[];
-extern const char kLanguagePreferredLanguages[];
-extern const char kLanguagePreferredLanguagesSyncable[];
 extern const char kLanguagePreloadEngines[];
 extern const char kLanguagePreloadEnginesSyncable[];
 extern const char kLanguageEnabledImes[];

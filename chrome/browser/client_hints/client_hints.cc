@@ -17,9 +17,9 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/client_hints/client_hints.h"
-#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -375,7 +375,7 @@ void ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kLang)],
         blink::SerializeLangClientHint(
-            profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+            profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages)));
   }
 
   // Static assert that triggers if a new client hint header is added. If a
