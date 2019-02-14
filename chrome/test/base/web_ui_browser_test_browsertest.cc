@@ -70,6 +70,13 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestRuntimeErrorFailsFast) {
                        "GetAsBoolean(&run_test_succeeded_)");
 }
 
+// Test times out in debug builds: https://crbug.com/902310
+#ifndef NDEBUG
+#define MAYBE_TestFailsAsyncFast DISABLED_TestFailsAsyncFast
+#else
+#define MAYBE_TestFailsAsyncFast TestFailsAsyncFast
+#endif
+
 // Test that bogus javascript fails async test fast as well - no timeout waiting
 // for result.
 IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestFailsAsyncFast) {
