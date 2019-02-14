@@ -924,3 +924,23 @@ function testAddProviders(callback) {
       }),
       callback);
 }
+
+/** Test EntryListItem.sortEntries doesn't fail sorting empty array. */
+function testEntryListItemSortEntriesEmpty() {
+  const rootType = VolumeManagerCommon.RootType.MY_FILES;
+  const entryList = new EntryList(str('MY_FILES_ROOT_LABEL'), rootType);
+  const modelItem = new NavigationModelFakeItem(
+      entryList.label, NavigationModelItemType.ENTRY_LIST, entryList);
+
+  const metadataModel = createMockMetadataModel();
+  const directoryTree = /** @type {!DirectoryTree} */ (createElements());
+  directoryTree.metadataModel = metadataModel;
+  DirectoryTree.decorate(
+      directoryTree, directoryModel, volumeManager, metadataModel,
+      fileOperationManager, true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+
+  const entryListItem = new EntryListItem(rootType, modelItem, directoryTree);
+
+  assertEquals(0, entryListItem.sortEntries([]).length);
+}
