@@ -27,10 +27,6 @@ suite('<app-management-pwa-permission-view>', function() {
   }
 
   setup(async function() {
-    pwaPermissionView =
-        document.createElement('app-management-pwa-permission-view');
-    PolymerTest.clearBody();
-
     fakeHandler = setupFakeHandler();
     replaceStore();
 
@@ -38,7 +34,9 @@ suite('<app-management-pwa-permission-view>', function() {
     await fakeHandler.addApp(TEST_APP_ID);
     app_management.Store.getInstance().dispatch(
         app_management.actions.changePage(PageType.DETAIL, TEST_APP_ID));
-    document.body.appendChild(pwaPermissionView);
+    pwaPermissionView =
+        document.createElement('app-management-pwa-permission-view');
+    replaceBody(pwaPermissionView);
   });
 
   test('App is rendered correctly', function() {

@@ -11,9 +11,6 @@ suite('<app-management-metadata-view>', function() {
   const APP_ID = '1';
 
   setup(async function() {
-    metadataView = document.createElement('app-management-metadata-view');
-
-    PolymerTest.clearBody();
     fakeHandler = setupFakeHandler();
     replaceStore();
 
@@ -22,7 +19,8 @@ suite('<app-management-metadata-view>', function() {
     app_management.Store.getInstance().dispatch(
         app_management.actions.changePage(PageType.DETAIL, APP_ID));
 
-    document.body.appendChild(metadataView);
+    metadataView = document.createElement('app-management-metadata-view');
+    replaceBody(metadataView);
   });
 
   test(

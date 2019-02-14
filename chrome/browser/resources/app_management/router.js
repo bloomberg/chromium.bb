@@ -45,6 +45,8 @@ Polymer({
     },
   },
 
+  urlParsed_: false,
+
   observers: [
     'onUrlChanged_(path_, queryParams_)',
     'onStateChanged_(currentPageType_, selectedAppId_, searchTerm_)',
@@ -81,6 +83,9 @@ Polymer({
 
   /** @private */
   onStateChanged_: function() {
+    if (!this.urlParsed_) {
+      return;
+    }
     this.debounce('publishUrl', this.publishUrl_);
   },
 
@@ -149,5 +154,6 @@ Polymer({
     } else {
       this.dispatch(app_management.actions.changePage(newPage));
     }
+    this.urlParsed_ = true;
   },
 });
