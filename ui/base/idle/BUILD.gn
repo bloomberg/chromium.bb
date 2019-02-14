@@ -59,6 +59,7 @@ jumbo_component("idle") {
 
   if (is_android) {
     sources -= [ "idle.cc" ]
+    deps += [ "//ui/base:ui_base_jni_headers" ]
   }
 
   if (is_mac) {
