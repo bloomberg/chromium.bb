@@ -161,6 +161,8 @@ jumbo_static_library("browser") {
     "omnibox_pref_names.h",
     "omnibox_view.cc",
     "omnibox_view.h",
+    "on_device_head_serving.cc",
+    "on_device_head_serving.h",
     "scored_history_match.cc",
     "scored_history_match.h",
     "search_provider.cc",
@@ -350,6 +352,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/omnibox/Shortcuts.v0.sql",
     "//components/test/data/omnibox/in_memory_url_index_test.sql",
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
+    "//components/test/data/omnibox/on_device_head_test_model.bin",
   ]
   outputs = [
     "{{bundle_resources_dir}}/" +
@@ -388,6 +391,7 @@ source_set("unit_tests") {
     "omnibox_pedal_unittest.cc",
     "omnibox_popup_model_unittest.cc",
     "omnibox_view_unittest.cc",
+    "on_device_head_serving_unittest.cc",
     "scored_history_match_unittest.cc",
     "search_suggestion_parser_unittest.cc",
     "shortcuts_backend_unittest.cc",
