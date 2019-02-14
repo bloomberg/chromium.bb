@@ -107,6 +107,11 @@ class TrackedRef {
     return ptr_ == compared_ptr;
   }
 
+  // Returns the raw pointer stored in this TrackedRef. This is occasionally
+  // useful for operations in scope but, as with other smart pointers, it
+  // shouldn't be used beyond the scope of this TrackedRef.
+  T* get() const { return ptr_; }
+
  private:
   friend class TrackedRefFactory<T>;
 
