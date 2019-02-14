@@ -24,7 +24,7 @@ namespace {
 // Send a keyboard layout name instead of XKB contents.
 // TODO(tetsui): Remove when the change becomes default.
 const base::Feature kSendKeyboardLayoutNameFeature{
-    "ExoSendKeyboardLayoutName", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ExoSendKeyboardLayoutName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 ////////////////////////////////////////////////////////////////////////////////
 // keyboard_device_configuration interface:
