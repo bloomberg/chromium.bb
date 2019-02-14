@@ -173,7 +173,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         finish_js_condition, timeout=30)
 
     # Stop tracing.
-    timeline_data = tab.browser.platform.tracing_controller.StopTracing()[0]
+    timeline_data = tab.browser.platform.tracing_controller.StopTracing()
 
     # Evaluate success.
     if success_eval_func:
