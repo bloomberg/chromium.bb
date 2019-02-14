@@ -1420,6 +1420,11 @@ void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
     return;
   }
 
+  // Don't accept NEL headers received via a proxy, because the IP address of
+  // the destination server is not known.
+  if (response_.was_fetched_via_proxy)
+    return;
+
   // Only accept NEL headers on HTTPS connections that have no certificate
   // errors.
   if (!response_.ssl_info.is_valid()) {
@@ -1461,6 +1466,17 @@ void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
         RecordRequestDiscardedForNoNetworkErrorLoggingService();
     return;
   }
+
+  // Don't report on proxy auth challenges.
+  if (response_.headers && response_.headers->response_code() ==
+                               HTTP_PROXY_AUTHENTICATION_REQUIRED) {
+    return;
+  }
+
+  // Don't generate NEL reports if we are behind a proxy, to avoid leaking
+  // internal network details.
+  if (response_.was_fetched_via_proxy)
+    return;
 
   // Ignore errors from non-HTTPS origins.
   if (!url_.SchemeIsCryptographic()) {
