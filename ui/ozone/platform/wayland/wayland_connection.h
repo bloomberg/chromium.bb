@@ -161,6 +161,9 @@ class WaylandConnection : public PlatformEventSource,
   void RequestDragData(const std::string& mime_type,
                        base::OnceCallback<void(const std::string&)> callback);
 
+  // Returns true when dragging is entered or started.
+  bool IsDragInProgress();
+
   // Resets flags and keyboard modifiers.
   //
   // This method is specially handy for cases when the WaylandPointer state is

@@ -308,6 +308,10 @@ void WaylandConnection::RequestDragData(
   data_device_->RequestDragData(mime_type, std::move(callback));
 }
 
+bool WaylandConnection::IsDragInProgress() {
+  return data_device_->IsDragEntered() || drag_data_source();
+}
+
 void WaylandConnection::ResetPointerFlags() {
   if (pointer_)
     pointer_->ResetFlags();

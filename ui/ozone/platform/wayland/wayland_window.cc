@@ -25,6 +25,7 @@
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v6.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
+#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
@@ -166,6 +167,19 @@ std::set<uint32_t> WaylandWindow::GetEnteredOutputsIds() const {
 void WaylandWindow::CreateXdgPopup() {
   if (bounds_.IsEmpty())
     return;
+
+  // TODO(jkim): Consider how to support DropArrow window on tabstrip.
+  // When it starts dragging, as described the protocol, https://goo.gl/1Mskq3,
+  // the client must have an active implicit grab. If we try to create a popup
+  // window while dragging is executed, it gets 'popup_done' directly from
+  // Wayland compositor and it's destroyed through 'popup_done'. It causes
+  // a crash when aura::Window is destroyed.
+  // https://crbug.com/875164
+  if (connection_->IsDragInProgress()) {
+    surface_.reset();
+    LOG(ERROR) << "Wayland can't create a popup window during dragging.";
+    return;
+  }
 
   DCHECK(parent_window_ && !xdg_popup_);
 
@@ -593,26 +607,39 @@ void WaylandWindow::OnCloseRequest() {
 void WaylandWindow::OnDragEnter(const gfx::PointF& point,
                                 std::unique_ptr<OSExchangeData> data,
                                 int operation) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return;
+  drop_handler->OnDragEnter(point, std::move(data), operation);
 }
 
 int WaylandWindow::OnDragMotion(const gfx::PointF& point,
                                 uint32_t time,
                                 int operation) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return 0;
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return 0;
+
+  return drop_handler->OnDragMotion(point, operation);
 }
 
 void WaylandWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return;
+  drop_handler->OnDragDrop(std::move(data));
 }
 
 void WaylandWindow::OnDragLeave() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return;
+  drop_handler->OnDragLeave();
 }
 
 void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
   std::move(drag_closed_callback_).Run(dnd_action);
+  connection_->ResetPointerFlags();
 }
 
 bool WaylandWindow::IsMinimized() const {
