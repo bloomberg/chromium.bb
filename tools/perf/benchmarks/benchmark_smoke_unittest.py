@@ -118,6 +118,7 @@ _BLACK_LIST_TEST_NAMES = [
    'memory.long_running_idle_gmail_background_tbmv2',
    'tab_switching.typical_25',
    'oortonline_tbmv2',
+   'webrtc',  # crbug.com/932036
 ]
 
 
