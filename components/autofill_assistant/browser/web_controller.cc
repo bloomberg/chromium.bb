@@ -1455,10 +1455,10 @@ void WebController::OnGetElementPositionResult(
   float visual_h = static_cast<float>(list[7].GetDouble());
 
   RectF rect;
-  rect.left = std::max(0.0f, left_layout - visual_left_offset) / visual_w;
-  rect.top = std::max(0.0f, top_layout - visual_top_offset) / visual_h;
-  rect.right = std::max(0.0f, right_layout - visual_left_offset) / visual_w;
-  rect.bottom = std::max(0.0f, bottom_layout - visual_top_offset) / visual_h;
+  rect.left = (left_layout - visual_left_offset) / visual_w;
+  rect.top = (top_layout - visual_top_offset) / visual_h;
+  rect.right = (right_layout - visual_left_offset) / visual_w;
+  rect.bottom = (bottom_layout - visual_top_offset) / visual_h;
 
   std::move(callback).Run(true, rect);
 }
