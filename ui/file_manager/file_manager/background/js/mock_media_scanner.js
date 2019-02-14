@@ -85,7 +85,7 @@ TestMediaScanner.prototype.update = function() {
   assertTrue(this.scans_.length > 0);
   const scan = this.scans_[this.scans_.length - 1];
   this.observers.forEach(
-      function(observer) {
+      observer => {
         observer(importer.ScanEvent.UPDATED, scan);
       });
 };
@@ -99,7 +99,7 @@ TestMediaScanner.prototype.finalize = function(scan) {
   // finalize() call before being notified to scan observers.
   /** @type {!TestScanResult} */ (scan).finalize();
 
-  this.observers.forEach(function(observer) {
+  this.observers.forEach(observer => {
     observer(importer.ScanEvent.FINALIZED, scan);
   });
 };
@@ -165,16 +165,16 @@ function TestScanResult(fileEntries) {
 
   /** @type {!Promise<!importer.ScanResult>} */
   this.whenFinal_ = new Promise(
-      function(resolve, reject) {
-        this.resolveResult_ = function(result) {
+      (resolve, reject) => {
+        this.resolveResult_ = result => {
           this.settled_ = true;
           resolve(result);
-        }.bind(this);
-        this.rejectResult_ = function() {
+        };
+        this.rejectResult_ = () => {
           this.settled_ = true;
           reject();
-        }.bind(this);
-      }.bind(this));
+        };
+      });
 }
 
 /** @private {number} */
@@ -204,12 +204,12 @@ TestScanResult.prototype.canceled = function() {
 };
 
 /** @override */
-TestScanResult.prototype.setCandidateCount = function() {
+TestScanResult.prototype.setCandidateCount = () => {
   console.warn('setCandidateCount: not implemented');
 };
 
 /** @override */
-TestScanResult.prototype.onCandidatesProcessed = function() {
+TestScanResult.prototype.onCandidatesProcessed = () => {
   console.warn('onCandidatesProcessed: not implemented');
 };
 
@@ -266,5 +266,5 @@ function TestDirectoryWatcher(callback) {
 /**
  * @override
  */
-TestDirectoryWatcher.prototype.addDirectory = function() {
+TestDirectoryWatcher.prototype.addDirectory = () => {
 };

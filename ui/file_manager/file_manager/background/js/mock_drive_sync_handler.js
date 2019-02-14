@@ -49,7 +49,7 @@ MockDriveSyncHandler.DRIVE_SYNC_COMPLETED_EVENT = 'completed';
  * Returns the completed event name.
  * @return {string}
  */
-MockDriveSyncHandler.prototype.getCompletedEventName = function() {
+MockDriveSyncHandler.prototype.getCompletedEventName = () => {
   return MockDriveSyncHandler.DRIVE_SYNC_COMPLETED_EVENT;
 };
 

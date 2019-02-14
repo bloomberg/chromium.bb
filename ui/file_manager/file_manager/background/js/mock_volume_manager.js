@@ -31,10 +31,10 @@ MockVolumeManager.instance_ = null;
  * Replaces the VolumeManager singleton with a MockVolumeManager.
  * @param {!MockVolumeManager=} opt_singleton
  */
-MockVolumeManager.installMockSingleton = function(opt_singleton) {
+MockVolumeManager.installMockSingleton = opt_singleton => {
   MockVolumeManager.instance_ = opt_singleton || new MockVolumeManager();
 
-  volumeManagerFactory.getInstance = function() {
+  volumeManagerFactory.getInstance = () => {
     return Promise.resolve(MockVolumeManager.instance_);
   };
 };
@@ -151,8 +151,7 @@ MockVolumeManager.prototype.getDriveConnectionState = function() {
  * @param {string=} providerId Provider id.
  * @return {!VolumeInfo} Created mock VolumeInfo.
  */
-MockVolumeManager.createMockVolumeInfo = function(
-    type, volumeId, label, devicePath, providerId) {
+MockVolumeManager.createMockVolumeInfo = (type, volumeId, label, devicePath, providerId) => {
   const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
   // If there's no label set it to volumeId to make it shorter to write tests.
@@ -177,23 +176,21 @@ MockVolumeManager.createMockVolumeInfo = function(
   return volumeInfo;
 };
 
-MockVolumeManager.prototype.mountArchive = function(
-    fileUrl, successCallback, errorCallback) {
+MockVolumeManager.prototype.mountArchive = (fileUrl, successCallback, errorCallback) => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.unmount = function(
-    volumeInfo, successCallback, errorCallback) {
+MockVolumeManager.prototype.unmount = (volumeInfo, successCallback, errorCallback) => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.configure = function(volumeInfo) {
+MockVolumeManager.prototype.configure = volumeInfo => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.addEventListener = function(type, handler) {
+MockVolumeManager.prototype.addEventListener = (type, handler) => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.removeEventListener = function(type, handler) {
+MockVolumeManager.prototype.removeEventListener = (type, handler) => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.dispatchEvent = function(event) {
+MockVolumeManager.prototype.dispatchEvent = event => {
   throw new Error('Not implemented.');
 };

@@ -16,12 +16,12 @@ const fileOperationUtil = {};
  * @return {Promise} Promise fulfilled with the resolved entry, or rejected with
  *     FileError.
  */
-fileOperationUtil.resolvePath = function(root, path) {
+fileOperationUtil.resolvePath = (root, path) => {
   if (path === '' || path === '/') {
     return Promise.resolve(root);
   }
   return new Promise(root.getFile.bind(root, path, {create: false})).
-      catch(function(error) {
+      catch(error => {
         if (error.name === util.FileError.TYPE_MISMATCH_ERR) {
           // Bah.  It's a directory, ask again.
           return new Promise(
@@ -48,8 +48,7 @@ fileOperationUtil.resolvePath = function(root, path) {
  *     on error.
  * @return {Promise} Promise fulfilled with available path.
  */
-fileOperationUtil.deduplicatePath = function(
-    dirEntry, relativePath, opt_successCallback, opt_errorCallback) {
+fileOperationUtil.deduplicatePath = (dirEntry, relativePath, opt_successCallback, opt_errorCallback) => {
   // Crack the path into three part. The parenthesized number (if exists) will
   // be replaced by incremented number for retry. For example, suppose
   // |relativePath| is "file (10).txt", the second check path will be
@@ -59,11 +58,11 @@ fileOperationUtil.deduplicatePath = function(
   const ext = match[3] || '';
 
   // Check to see if the target exists.
-  const resolvePath = function(trialPath, copyNumber) {
-    return fileOperationUtil.resolvePath(dirEntry, trialPath).then(function() {
+  const resolvePath = (trialPath, copyNumber) => {
+    return fileOperationUtil.resolvePath(dirEntry, trialPath).then(() => {
       const newTrialPath = prefix + ' (' + copyNumber + ')' + ext;
       return resolvePath(newTrialPath, copyNumber + 1);
-    }, function(error) {
+    }, error => {
       // We expect to be unable to resolve the target file, since we're
       // going to create it during the copy.  However, if the resolve fails
       // with anything other than NOT_FOUND, that's trouble.
@@ -75,7 +74,7 @@ fileOperationUtil.deduplicatePath = function(
     });
   };
 
-  const promise = resolvePath(relativePath, 1).catch(function(error) {
+  const promise = resolvePath(relativePath, 1).catch(error => {
     if (error instanceof Error) {
       return Promise.reject(error);
     }
@@ -100,13 +99,12 @@ fileOperationUtil.deduplicatePath = function(
  *     occurred error (i.e. following errors will just be discarded).
  * @private
  */
-fileOperationUtil.resolveRecursively_ = function(
-    entry, successCallback, errorCallback) {
+fileOperationUtil.resolveRecursively_ = (entry, successCallback, errorCallback) => {
   const result = [];
   let error = null;
   let numRunningTasks = 0;
 
-  const maybeInvokeCallback = function() {
+  const maybeInvokeCallback = () => {
     // If there still remain some running tasks, wait their finishing.
     if (numRunningTasks > 0) {
       return;
@@ -120,7 +118,7 @@ fileOperationUtil.resolveRecursively_ = function(
   };
 
   // The error handling can be shared.
-  const onError = function(fileError) {
+  const onError = fileError => {
     // If this is the first error, remember it.
     if (!error) {
       error = fileError;
@@ -129,7 +127,7 @@ fileOperationUtil.resolveRecursively_ = function(
     maybeInvokeCallback();
   };
 
-  const process = function(entry) {
+  const process = entry => {
     numRunningTasks++;
     result.push(entry);
     if (entry.isDirectory) {
@@ -160,7 +158,7 @@ fileOperationUtil.resolveRecursively_ = function(
           onError);
     } else {
       // For a file, annotate the file size.
-      metadataProxy.getEntryMetadata(entry).then(function(metadata) {
+      metadataProxy.getEntryMetadata(entry).then(metadata => {
         entry.size = metadata.size;
         --numRunningTasks;
         maybeInvokeCallback();
@@ -180,18 +178,18 @@ fileOperationUtil.resolveRecursively_ = function(
  * @param {!DirectoryEntry} entry The DirectoryEntry to scan.
  * @return {!Promise<!Array<!Entry>>} Resolves when scanning is complete.
  */
-fileOperationUtil.gatherEntriesRecursively = function(entry) {
+fileOperationUtil.gatherEntriesRecursively = entry => {
   /** @type {!Array<!Entry>} */
   const gatheredFiles = [];
 
   return fileOperationUtil.findEntriesRecursively(
       entry,
       /** @param {!Entry} entry */
-      function(entry) {
+      entry => {
         gatheredFiles.push(entry);
       })
       .then(
-          function() {
+          () => {
             return gatheredFiles;
           });
 };
@@ -208,11 +206,11 @@ fileOperationUtil.gatherEntriesRecursively = function(entry) {
  *     a {@code FileEntry} is discovered.
  * @return {!Promise} Resolves when scanning is complete.
  */
-fileOperationUtil.findFilesRecursively = function(entry, onResultCallback) {
+fileOperationUtil.findFilesRecursively = (entry, onResultCallback) => {
   return fileOperationUtil.findEntriesRecursively(
       entry,
       /** @param {!Entry} entry */
-      function(entry) {
+      entry => {
         if (entry.isFile) {
           onResultCallback(/** @type {!FileEntry} */ (entry));
         }
@@ -231,9 +229,9 @@ fileOperationUtil.findFilesRecursively = function(entry, onResultCallback) {
  *     an {@code Entry} is discovered.
  * @return {!Promise} Resolves when scanning is complete.
  */
-fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
+fileOperationUtil.findEntriesRecursively = (entry, onResultCallback) => {
   return new Promise(
-      function(resolve, reject) {
+      (resolve, reject) => {
         let numRunningTasks = 0;
         let scanError = null;
 
@@ -241,7 +239,7 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
          * @param  {*=} opt_error If defined immediately
          *     terminates scanning.
          */
-        const maybeSettlePromise = function(opt_error) {
+        const maybeSettlePromise = opt_error => {
           scanError = opt_error;
 
           if (scanError) {
@@ -258,7 +256,7 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
         };
 
         /** @param {!Entry} entry */
-        const processEntry = function(entry) {
+        const processEntry = entry => {
           // All scanning stops when an error is encountered.
           if (scanError) {
             return;
@@ -271,7 +269,7 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
         };
 
         /** @param {!DirectoryEntry} directory */
-        var processDirectory = function(directory) {
+        var processDirectory = directory => {
           // All scanning stops when an error is encountered.
           if (scanError) {
             return;
@@ -312,15 +310,15 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
  * @param {function(!Entry)} callback
  * @return {!Promise} Resolves when listing is complete.
  */
-fileOperationUtil.listEntries = function(directory, callback) {
+fileOperationUtil.listEntries = (directory, callback) => {
   return new Promise(
-      function(resolve, reject) {
+      (resolve, reject) => {
         const reader = directory.createReader();
 
-        const readEntries = function() {
+        const readEntries = () => {
           reader.readEntries (
               /** @param {!Array<!Entry>} entries */
-              function(entries) {
+              entries => {
                 if (entries.length === 0) {
                   resolve(undefined);
                   return;
@@ -358,9 +356,15 @@ fileOperationUtil.listEntries = function(directory, callback) {
  *     When the cancel is done, errorCallback will be called. The returned
  *     callback must not be called more than once.
  */
-fileOperationUtil.copyTo = function(
-    source, parent, newName, entryChangedCallback, progressCallback,
-    successCallback, errorCallback) {
+fileOperationUtil.copyTo = (
+  source,
+  parent,
+  newName,
+  entryChangedCallback,
+  progressCallback,
+  successCallback,
+  errorCallback
+) => {
 
   /** @type {number|undefined} */
   let copyId;
@@ -369,8 +373,8 @@ fileOperationUtil.copyTo = function(
   // Makes the callback called in order they were invoked.
   const callbackQueue = new AsyncUtil.Queue();
 
-  const onCopyProgress = function(progressCopyId, status) {
-    callbackQueue.run(function(callback) {
+  const onCopyProgress = (progressCopyId, status) => {
+    callbackQueue.run(callback => {
       if (copyId === null) {
         // If the copyId is not yet available, wait for it.
         pendingCallbacks.push(
@@ -396,11 +400,11 @@ fileOperationUtil.copyTo = function(
               parent,
               newName,
               null,
-              function(entry) {
+              entry => {
                 entryChangedCallback(status.sourceUrl, entry);
                 callback();
               },
-              function() {
+              () => {
                 entryChangedCallback(status.sourceUrl, null);
                 callback();
               });
@@ -416,7 +420,7 @@ fileOperationUtil.copyTo = function(
               onCopyProgress);
           // TODO(mtomasz): Convert URL to Entry in custom bindings.
           util.URLsToEntries(
-              [status.destinationUrl], function(destinationEntries) {
+              [status.destinationUrl], destinationEntries => {
                 successCallback(destinationEntries[0] || null);
                 callback();
               });
@@ -452,7 +456,7 @@ fileOperationUtil.copyTo = function(
 
   // Then starts the copy.
   chrome.fileManagerPrivate.startCopy(
-      source, parent, newName, function(startCopyId) {
+      source, parent, newName, startCopyId => {
         // last error contains the FileError code on error.
         if (chrome.runtime.lastError) {
           // Unsubscribe the progress listener.
@@ -469,10 +473,10 @@ fileOperationUtil.copyTo = function(
         }
       });
 
-  return function() {
+  return () => {
     // If copyId is not yet available, wait for it.
     if (copyId === undefined) {
-      pendingCallbacks.push(function() {
+      pendingCallbacks.push(() => {
         chrome.fileManagerPrivate.cancelCopy(
             assert(copyId), util.checkAPIError);
       });
@@ -495,10 +499,9 @@ fileOperationUtil.copyTo = function(
  * @param {function(DOMError)} errorCallback Callback invoked when an error
  *     is found.
  */
-fileOperationUtil.zipSelection = function(
-    sources, parent, newName, successCallback, errorCallback) {
+fileOperationUtil.zipSelection = (sources, parent, newName, successCallback, errorCallback) => {
   chrome.fileManagerPrivate.zipSelection(
-      sources, parent, newName, function(success) {
+      sources, parent, newName, success => {
         if (!success) {
           // Failed to create a zip archive.
           errorCallback(
@@ -595,7 +598,7 @@ fileOperationUtil.Task = function(
 /**
  * @param {function()} callback When entries resolved.
  */
-fileOperationUtil.Task.prototype.initialize = function(callback) {
+fileOperationUtil.Task.prototype.initialize = callback => {
 };
 
 /**
@@ -622,8 +625,7 @@ fileOperationUtil.Task.prototype.requestCancel = function() {
  * @param {function(fileOperationUtil.Error)} errorCallback Callback run on
  *     error.
  */
-fileOperationUtil.Task.prototype.run = function(
-    entryChangedCallback, progressCallback, successCallback, errorCallback) {
+fileOperationUtil.Task.prototype.run = (entryChangedCallback, progressCallback, successCallback, errorCallback) => {
 };
 
 /**
@@ -750,7 +752,7 @@ fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
     group.add(function(index, callback) {
       fileOperationUtil.resolveRecursively_(
           this.sourceEntries[index],
-          function(resolvedEntries) {
+          resolvedEntries => {
             const resolvedEntryMap = {};
             for (let j = 0; j < resolvedEntries.length; ++j) {
               const entry = resolvedEntries[j];
@@ -759,8 +761,8 @@ fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
             }
             this.processingEntries[index] = resolvedEntryMap;
             callback();
-          }.bind(this),
-          function(error) {
+          },
+          error => {
             console.error(
                 'Failed to resolve for copy: %s', error.name);
             callback();
@@ -768,7 +770,7 @@ fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
     }.bind(this, i));
   }
 
-  group.run(function() {
+  group.run(() => {
     // Fill totalBytes.
     this.totalBytes = 0;
     for (let i = 0; i < this.processingEntries.length; i++) {
@@ -778,7 +780,7 @@ fileOperationUtil.CopyTask.prototype.initialize = function(callback) {
     }
 
     callback();
-  }.bind(this));
+  });
 };
 
 /**
@@ -805,10 +807,10 @@ fileOperationUtil.CopyTask.prototype.run = function(
 
   // TODO(hidehiko): Delete after copy is the implementation of Move.
   // Migrate the part into MoveTask.run().
-  const deleteOriginals = function() {
+  const deleteOriginals = () => {
     let count = this.sourceEntries.length;
 
-    const onEntryDeleted = function(entry) {
+    const onEntryDeleted = entry => {
       entryChangedCallback(util.EntryChangedKind.DELETED, entry);
       count--;
       if (!count) {
@@ -816,7 +818,7 @@ fileOperationUtil.CopyTask.prototype.run = function(
       }
     };
 
-    const onFilesystemError = function(err) {
+    const onFilesystemError = err => {
       errorCallback(new fileOperationUtil.Error(
           util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     };
@@ -826,7 +828,7 @@ fileOperationUtil.CopyTask.prototype.run = function(
       util.removeFileOrDirectory(
           entry, onEntryDeleted.bind(null, entry), onFilesystemError);
     }
-  }.bind(this);
+  };
 
   /**
    * Accumulates processed bytes and call |progressCallback| if needed.
@@ -881,7 +883,7 @@ fileOperationUtil.CopyTask.prototype.run = function(
 
   AsyncUtil.forEach(
       this.sourceEntries,
-      function(callback, entry, index) {
+      (callback, entry, index) => {
         if (this.cancelRequested_) {
           errorCallback(new fileOperationUtil.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
@@ -891,7 +893,7 @@ fileOperationUtil.CopyTask.prototype.run = function(
         progressCallback();
         this.processEntry_(
             assert(entry), assert(this.targetDirEntry),
-            function(sourceEntryUrl, destinationEntry) {
+            (sourceEntryUrl, destinationEntry) => {
               updateProgress(index, sourceEntryUrl);
               // The destination entry may be null, if the copied file got
               // deleted just after copying.
@@ -900,10 +902,10 @@ fileOperationUtil.CopyTask.prototype.run = function(
                     util.EntryChangedKind.CREATED, destinationEntry);
               }
             },
-            function(sourceEntryUrl, size) {
+            (sourceEntryUrl, size) => {
               updateProgress(index, sourceEntryUrl, size);
             },
-            function() {
+            () => {
               // Finishes off delayed updates if necessary.
               this.updateProgressRateLimiter_.runImmediately();
               // Update current source index and processing bytes.
@@ -912,8 +914,8 @@ fileOperationUtil.CopyTask.prototype.run = function(
               this.numRemainingItems = this.calcNumRemainingItems_();
               errorCount = 0;
               callback();
-            }.bind(this),
-            function(error) {
+            },
+            error => {
               // Finishes off delayed updates if necessary.
               this.updateProgressRateLimiter_.runImmediately();
               // Update current source index and processing bytes.
@@ -928,9 +930,9 @@ fileOperationUtil.CopyTask.prototype.run = function(
               } else {
                 errorCallback(error);
               }
-            }.bind(this));
+            });
       },
-      function() {
+      () => {
         if (lastError) {
           errorCallback(lastError);
         } else if (this.deleteAfterCopy) {
@@ -938,8 +940,7 @@ fileOperationUtil.CopyTask.prototype.run = function(
         } else {
           successCallback();
         }
-      }.bind(this),
-      this);
+      });
 };
 
 /**
@@ -962,7 +963,7 @@ fileOperationUtil.CopyTask.prototype.processEntry_ = function(
     successCallback, errorCallback) {
   fileOperationUtil.deduplicatePath(
       destinationEntry, sourceEntry.name,
-      function(destinationName) {
+      destinationName => {
         if (this.cancelRequested_) {
           errorCallback(new fileOperationUtil.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
@@ -972,16 +973,16 @@ fileOperationUtil.CopyTask.prototype.processEntry_ = function(
         this.cancelCallback_ = fileOperationUtil.copyTo(
             sourceEntry, destinationEntry, destinationName,
             entryChangedCallback, progressCallback,
-            function(entry) {
+            entry => {
               this.cancelCallback_ = null;
               successCallback();
-            }.bind(this),
-            function(error) {
+            },
+            error => {
               this.cancelCallback_ = null;
               errorCallback(new fileOperationUtil.Error(
                   util.FileOperationErrorType.FILESYSTEM_ERROR, error));
-            }.bind(this));
-      }.bind(this),
+            });
+      },
       errorCallback);
 };
 
@@ -1016,7 +1017,7 @@ fileOperationUtil.MoveTask.prototype.initialize = function(callback) {
   // process the deepest entry first. Since move of each entry is
   // done by a single moveTo() call, we don't need to care about the
   // recursive traversal order.
-  this.sourceEntries.sort(function(entry1, entry2) {
+  this.sourceEntries.sort((entry1, entry2) => {
     return entry2.toURL().length - entry1.toURL().length;
   });
 
@@ -1057,7 +1058,7 @@ fileOperationUtil.MoveTask.prototype.run = function(
 
   AsyncUtil.forEach(
       this.sourceEntries,
-      function(callback, entry, index) {
+      (callback, entry, index) => {
         if (this.cancelRequested_) {
           errorCallback(new fileOperationUtil.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
@@ -1067,19 +1068,18 @@ fileOperationUtil.MoveTask.prototype.run = function(
         progressCallback();
         fileOperationUtil.MoveTask.processEntry_(
             assert(entry), assert(this.targetDirEntry), entryChangedCallback,
-            function() {
+            () => {
               // Update current source index.
               this.processingSourceIndex_ = index + 1;
               this.processedBytes = this.calcProcessedBytes_();
               this.numRemainingItems = this.calcNumRemainingItems_();
               callback();
-            }.bind(this),
+            },
             errorCallback);
       },
-      function() {
+      () => {
         successCallback();
-      }.bind(this),
-      this);
+      });
 };
 
 /**
@@ -1094,22 +1094,26 @@ fileOperationUtil.MoveTask.prototype.run = function(
  * @param {function(fileOperationUtil.Error)} errorCallback On error.
  * @private
  */
-fileOperationUtil.MoveTask.processEntry_ = function(
-    sourceEntry, destinationEntry, entryChangedCallback, successCallback,
-    errorCallback) {
+fileOperationUtil.MoveTask.processEntry_ = (
+  sourceEntry,
+  destinationEntry,
+  entryChangedCallback,
+  successCallback,
+  errorCallback
+) => {
   const destination =
       /** @type{!DirectoryEntry} */ (
           assert(util.unwrapEntry(destinationEntry)));
   fileOperationUtil.deduplicatePath(
-      destination, sourceEntry.name, function(destinationName) {
+      destination, sourceEntry.name, destinationName => {
         sourceEntry.moveTo(
             destination, destinationName,
-            function(movedEntry) {
+            movedEntry => {
               entryChangedCallback(util.EntryChangedKind.CREATED, movedEntry);
               entryChangedCallback(util.EntryChangedKind.DELETED, sourceEntry);
               successCallback();
             },
-            function(error) {
+            error => {
               errorCallback(new fileOperationUtil.Error(
                   util.FileOperationErrorType.FILESYSTEM_ERROR, error));
             });
@@ -1155,7 +1159,7 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
   for (let i = 0; i < this.sourceEntries.length; i++) {
     group.add(function(index, callback) {
       fileOperationUtil.resolveRecursively_(
-          this.sourceEntries[index], function(entries) {
+          this.sourceEntries[index], entries => {
             for (let j = 0; j < entries.length; j++) {
               resolvedEntryMap[entries[j].toURL()] = entries[j];
             }
@@ -1164,7 +1168,7 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
     }.bind(this, i));
   }
 
-  group.run(function() {
+  group.run(() => {
     // For zip archiving, all the entries are processed at once.
     this.processingEntries = [resolvedEntryMap];
 
@@ -1174,7 +1178,7 @@ fileOperationUtil.ZipTask.prototype.initialize = function(callback) {
     }
 
     callback();
-  }.bind(this));
+  });
 };
 
 /**
@@ -1200,7 +1204,7 @@ fileOperationUtil.ZipTask.prototype.run = function(
 
   fileOperationUtil.deduplicatePath(
       this.targetDirEntry, destName + '.zip',
-      function(destPath) {
+      destPath => {
         // TODO: per-entry zip progress update with accurate byte count.
         // For now just set completedBytes to 0 so that it is not full until
         // the zip operatoin is done.
@@ -1218,16 +1222,16 @@ fileOperationUtil.ZipTask.prototype.run = function(
             entries,
             this.zipBaseDirEntry,
             destPath,
-            function(entry) {
+            entry => {
               this.processedBytes = this.totalBytes;
               entryChangedCallback(util.EntryChangedKind.CREATED, entry);
               successCallback();
-            }.bind(this),
-            function(error) {
+            },
+            error => {
               errorCallback(new fileOperationUtil.Error(
                   util.FileOperationErrorType.FILESYSTEM_ERROR, error));
             });
-      }.bind(this),
+      },
       errorCallback);
 };
 

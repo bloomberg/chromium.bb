@@ -13,7 +13,7 @@ window.appWindows = {};
  * @param {string} url URL that the obtained windows have.
  * @return {Array<chrome.app.window.AppWindow>} List of similar windows.
  */
-window.getSimilarWindows = function(url) {
+window.getSimilarWindows = url => {
   const result = [];
   for (const appID in window.appWindows) {
     if (window.appWindows[appID].contentWindow.appInitialURL === url) {

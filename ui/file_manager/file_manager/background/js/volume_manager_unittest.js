@@ -45,7 +45,7 @@ function setUp() {
         },
         dispatchEvent: function(event) {
           mockChrome.fileManagerPrivate.onDriveConnectionStatusChangedListeners_
-              .forEach(function(listener) {
+              .forEach(listener => {
                 listener(event);
               });
         }
@@ -57,7 +57,7 @@ function setUp() {
         },
         dispatchEvent: function(event) {
           mockChrome.fileManagerPrivate.onMountCompletedListeners_.forEach(
-              function(listener) {
+              listener => {
                 listener(event);
               });
         }
@@ -143,7 +143,7 @@ function getMockProfile() {
 
 function testGetVolumeInfo(callback) {
   reportPromise(
-      volumeManagerFactory.getInstance().then(function(volumeManager) {
+      volumeManagerFactory.getInstance().then(volumeManager => {
         const entry = new MockFileEntry(new MockFileSystem('download:Downloads'),
             '/foo/bar/bla.zip');
 
@@ -157,7 +157,7 @@ function testGetVolumeInfo(callback) {
 
 function testGetDriveConnectionState(callback) {
   reportPromise(
-      volumeManagerFactory.getInstance().then(function(volumeManager) {
+      volumeManagerFactory.getInstance().then(volumeManager => {
         // Default connection state is online
         assertEquals(VolumeManagerCommon.DriveConnectionType.ONLINE,
             volumeManager.getDriveConnectionState());
@@ -185,10 +185,10 @@ function testMountArchiveAndUnmount(callback) {
       new MockFileSystem('archive:foobar.zip');
 
   reportPromise(
-      volumeManagerFactory.getInstance().then(function(volumeManager) {
+      volumeManagerFactory.getInstance().then(volumeManager => {
         const numberOfVolumes = volumeManager.volumeInfoList.length;
 
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
           // Mount an archieve
           volumeManager.mountArchive(
               'filesystem:chrome-extension://extensionid/external/' +
@@ -210,13 +210,13 @@ function testMountArchiveAndUnmount(callback) {
               source: VolumeManagerCommon.Source.FILE
             }
           });
-        }).then(function(result) {
+        }).then(result => {
           assertEquals(numberOfVolumes + 1,
                        volumeManager.volumeInfoList.length);
 
-          return new Promise(function(resolve, reject) {
+          return new Promise((resolve, reject) => {
             // Unmount the mounted archievea
-            volumeManager.volumeInfoList.addEventListener('splice', function() {
+            volumeManager.volumeInfoList.addEventListener('splice', () => {
               assertEquals(numberOfVolumes,
                   volumeManager.volumeInfoList.length);
               resolve(true);
@@ -234,7 +234,7 @@ function testMountArchiveAndUnmount(callback) {
 
 function testGetCurrentProfileVolumeInfo(callback) {
   reportPromise(
-      volumeManagerFactory.getInstance().then(function(volumeManager) {
+      volumeManagerFactory.getInstance().then(volumeManager => {
         const volumeInfo = volumeManager.getCurrentProfileVolumeInfo(
             VolumeManagerCommon.VolumeType.DRIVE);
 
@@ -248,7 +248,7 @@ function testGetCurrentProfileVolumeInfo(callback) {
 
 function testGetLocationInfo(callback) {
   reportPromise(
-      volumeManagerFactory.getInstance().then(function(volumeManager) {
+      volumeManagerFactory.getInstance().then(volumeManager => {
         const downloadEntry = new MockFileEntry(
             new MockFileSystem('download:Downloads'),
             '/foo/bar/bla.zip');
@@ -391,7 +391,7 @@ function testWhenReady(callback) {
 
 function testDriveMountedDuringInitialization(callback) {
   let sendMetadataListCallback;
-  chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {
+  chrome.fileManagerPrivate.getVolumeMetadataList = callback => {
     sendMetadataListCallback = callback;
   };
 
@@ -413,7 +413,7 @@ function testDriveMountedDuringInitialization(callback) {
   // Complete initialization.
   sendMetadataListCallback([]);
 
-  reportPromise(instancePromise.then(function(volumeManager) {
+  reportPromise(instancePromise.then(volumeManager => {
     assertTrue(!!volumeManager.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE));
   }), callback);

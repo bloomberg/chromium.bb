@@ -9,7 +9,7 @@
  * @param {function(string)} callback Completion callback with the new window's
  *     App ID.
  */
-test.util.async.openMainWindow = function(appState, callback) {
+test.util.async.openMainWindow = (appState, callback) => {
   launcher.launchFileManager(appState,
                     undefined,  // opt_type
                     undefined,  // opt_id
@@ -23,7 +23,7 @@ test.util.async.openMainWindow = function(appState, callback) {
  * @param {Window} contentWindow Window to be tested.
  * @return {string} Name of selected tree item.
  */
-test.util.sync.getSelectedTreeItem = function(contentWindow) {
+test.util.sync.getSelectedTreeItem = contentWindow => {
   const tree = contentWindow.document.querySelector('#directory-tree');
   const items = tree.querySelectorAll('.tree-item');
   const selected = [];
@@ -47,7 +47,7 @@ test.util.sync.getSelectedTreeItem = function(contentWindow) {
  * @param {Window} contentWindow Window to be tested.
  * @return {Array<Array<string>>} Details for each visible file row.
  */
-test.util.sync.getFileList = function(contentWindow) {
+test.util.sync.getFileList = contentWindow => {
   const table = contentWindow.document.querySelector('#detail-table');
   const rows = table.querySelectorAll('li');
   const fileList = [];
@@ -70,7 +70,7 @@ test.util.sync.getFileList = function(contentWindow) {
  * @param {Window} contentWindow Window to be tested.
  * @return {Array<string>} Selected file names.
  */
-test.util.sync.getSelectedFiles = function(contentWindow) {
+test.util.sync.getSelectedFiles = contentWindow => {
   const table = contentWindow.document.querySelector('#detail-table');
   const rows = table.querySelectorAll('li');
   const selected = [];
@@ -89,7 +89,7 @@ test.util.sync.getSelectedFiles = function(contentWindow) {
  * @param {string} filename Name of the file to be selected.
  * @return {boolean} True if file got selected, false otherwise.
  */
-test.util.sync.selectFile = function(contentWindow, filename) {
+test.util.sync.selectFile = (contentWindow, filename) => {
   const rows = contentWindow.document.querySelectorAll('#detail-table li');
   test.util.sync.focus(contentWindow, '#file-list');
   test.util.sync.fakeKeyDown(
@@ -114,7 +114,7 @@ test.util.sync.selectFile = function(contentWindow, filename) {
  * @return {boolean} True if file got selected and a double click message is
  *     sent, false otherwise.
  */
-test.util.sync.openFile = function(contentWindow, filename) {
+test.util.sync.openFile = (contentWindow, filename) => {
   const query = '#file-list li.table-row[selected] .filename-label span';
   return test.util.sync.selectFile(contentWindow, filename) &&
          test.util.sync.fakeMouseDoubleClick(contentWindow, query);
@@ -128,7 +128,7 @@ test.util.sync.openFile = function(contentWindow, filename) {
  * @param {function(boolean)} callback Callback function to notify the caller
  *     whether the target is found and mousedown and click events are sent.
  */
-test.util.async.selectVolume = function(contentWindow, iconName, callback) {
+test.util.async.selectVolume = (contentWindow, iconName, callback) => {
   const query = '#directory-tree [volume-type-icon=' + iconName + ']';
   const isDriveSubVolume = iconName == 'drive_recent' ||
       iconName == 'drive_shared_with_me' || iconName == 'drive_offline';
@@ -147,8 +147,7 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
  * @param {function(boolean)} callback Callback function to notify the caller
  *     whether the target is found and mousedown and click events are sent.
  */
-test.util.async.selectInDirectoryTree = function(
-    contentWindow, query, isDriveSubVolume, callback) {
+test.util.async.selectInDirectoryTree = (contentWindow, query, isDriveSubVolume, callback) => {
   const driveQuery = '#directory-tree [volume-type-icon=drive]';
   let preSelection = false;
   const steps = {
@@ -191,7 +190,7 @@ test.util.async.selectInDirectoryTree = function(
  * @param {string} folderName Name of the folder to be selected.
  * @return {boolean} True if file got selected, false otherwise.
  */
-test.util.sync.selectFolderInTree = function(contentWindow, folderName) {
+test.util.sync.selectFolderInTree = (contentWindow, folderName) => {
   const items =
       contentWindow.document.querySelectorAll('#directory-tree .tree-item');
   test.util.sync.fakeKeyDown(
@@ -219,7 +218,7 @@ test.util.sync.selectFolderInTree = function(contentWindow, folderName) {
  * @param {Window} contentWindow Window to be tested.
  * @return {boolean} True if folder got expanded, false otherwise.
  */
-test.util.sync.expandSelectedFolderInTree = function(contentWindow) {
+test.util.sync.expandSelectedFolderInTree = contentWindow => {
   const selectedItem = contentWindow.document.querySelector(
       '#directory-tree .tree-item[selected]');
   if (!selectedItem) {
@@ -239,7 +238,7 @@ test.util.sync.expandSelectedFolderInTree = function(contentWindow) {
  * @param {Window} contentWindow Window to be tested.
  * @return {boolean} True if folder got expanded, false otherwise.
  */
-test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
+test.util.sync.collapseSelectedFolderInTree = contentWindow => {
   const selectedItem = contentWindow.document.querySelector(
       '#directory-tree .tree-item[selected]');
   if (!selectedItem) {
@@ -262,7 +261,7 @@ test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
  * @param {string} folderName Name of the folder to be selected.
  * @return {boolean} True if Team Drive folder got selected, false otherwise.
  */
-test.util.sync.selectTeamDrive = function(contentWindow, teamDriveName) {
+test.util.sync.selectTeamDrive = (contentWindow, teamDriveName) => {
   // Select + expand Team Drives gran root.
   const teamDrivesSelector = '#directory-tree .tree-item ' +
       '[entry-label="Team Drives"]:not([hidden])';
@@ -292,7 +291,7 @@ test.util.sync.selectTeamDrive = function(contentWindow, teamDriveName) {
  * @param {Window} contentWindow Window to be tested.
  * @return {!Array<string>} List of visible item names.
  */
-test.util.sync.getTreeItems = function(contentWindow) {
+test.util.sync.getTreeItems = contentWindow => {
   const items = contentWindow.document.querySelectorAll(
       '#directory-tree .tree-item');
   const result = [];
@@ -311,7 +310,7 @@ test.util.sync.getTreeItems = function(contentWindow) {
  * @param {Window} contentWindow The window where visitURL() was called.
  * @return {!string} The URL of the last URL visited.
  */
-test.util.sync.getLastVisitedURL = function(contentWindow) {
+test.util.sync.getLastVisitedURL = contentWindow => {
   return contentWindow.util.getLastVisitedURL();
 };
 
@@ -324,8 +323,7 @@ test.util.sync.getLastVisitedURL = function(contentWindow) {
  * @param {function(*)} callback Callback function with results returned by the
  *     script.
  */
-test.util.async.executeScriptInWebView = function(
-    contentWindow, webViewQuery, code, callback) {
+test.util.async.executeScriptInWebView = (contentWindow, webViewQuery, code, callback) => {
   const webView = contentWindow.document.querySelector(webViewQuery);
   webView.executeScript({code: code}, callback);
 };
@@ -338,7 +336,7 @@ test.util.async.executeScriptInWebView = function(
  * @return {boolean} True if copying got simulated successfully. It does not
  *     say if the file got copied, or not.
  */
-test.util.sync.copyFile = function(contentWindow, filename) {
+test.util.sync.copyFile = (contentWindow, filename) => {
   if (!test.util.sync.selectFile(contentWindow, filename)) {
     return false;
   }
@@ -358,7 +356,7 @@ test.util.sync.copyFile = function(contentWindow, filename) {
  * @return {boolean} True if deleting got simulated successfully. It does not
  *     say if the file got deleted, or not.
  */
-test.util.sync.deleteFile = function(contentWindow, filename) {
+test.util.sync.deleteFile = (contentWindow, filename) => {
   if (!test.util.sync.selectFile(contentWindow, filename)) {
     return false;
   }
@@ -375,7 +373,7 @@ test.util.sync.deleteFile = function(contentWindow, filename) {
  * @param {string} command Command name.
  * @return {boolean} True if the command is executed successfully.
  */
-test.util.sync.execCommand = function(contentWindow, command) {
+test.util.sync.execCommand = (contentWindow, command) => {
   return contentWindow.document.execCommand(command);
 };
 
@@ -389,14 +387,14 @@ test.util.sync.execCommand = function(contentWindow, command) {
  * @return {boolean} Always return true.
  */
 test.util.sync.overrideInstallWebstoreItemApi =
-    function(contentWindow, expectedItemId, intendedError) {
-  const setLastError = function(message) {
+    (contentWindow, expectedItemId, intendedError) => {
+  const setLastError = message => {
     contentWindow.chrome.runtime.lastError =
         message ? {message: message} : undefined;
   };
 
-  const installWebstoreItem = function(itemId, silentInstallation, callback) {
-    setTimeout(function() {
+  const installWebstoreItem = (itemId, silentInstallation, callback) => {
+    setTimeout(() => {
       if (itemId !== expectedItemId) {
         setLastError('Invalid Chrome Web Store item ID');
         callback();
@@ -422,19 +420,19 @@ test.util.sync.overrideInstallWebstoreItemApi =
  *     fileManagerPrivate.getFileTasks().
  * @return {boolean} Always return true.
  */
-test.util.sync.overrideTasks = function(contentWindow, taskList) {
-  const getFileTasks = function(entries, onTasks) {
+test.util.sync.overrideTasks = (contentWindow, taskList) => {
+  const getFileTasks = (entries, onTasks) => {
     // Call onTask asynchronously (same with original getFileTasks).
-    setTimeout(function() {
+    setTimeout(() => {
       onTasks(taskList);
     }, 0);
   };
 
-  const executeTask = function(taskId, entry) {
+  const executeTask = (taskId, entry) => {
     test.util.executedTasks_.push(taskId);
   };
 
-  const setDefaultTask = function(taskId) {
+  const setDefaultTask = taskId => {
     for (let i = 0; i < taskList.length; i++) {
       taskList[i].isDefault = taskList[i].taskId === taskId;
     }
@@ -452,7 +450,7 @@ test.util.sync.overrideTasks = function(contentWindow, taskList) {
  * @param {Window} contentWindow Window to be tested.
  * @return {Array<string>} List of executed task ID.
  */
-test.util.sync.getExecutedTasks = function(contentWindow) {
+test.util.sync.getExecutedTasks = contentWindow => {
   if (!test.util.executedTasks_) {
     console.error('Please call overrideTasks() first.');
     return null;
@@ -467,7 +465,7 @@ test.util.sync.getExecutedTasks = function(contentWindow) {
  * @param {string} profileId Destination profile's ID.
  * @return {boolean} True if the menu is found and run.
  */
-test.util.sync.runVisitDesktopMenu = function(contentWindow, profileId) {
+test.util.sync.runVisitDesktopMenu = (contentWindow, profileId) => {
   const list = contentWindow.document.querySelectorAll('.visit-desktop');
   for (let i = 0; i < list.length; ++i) {
     if (list[i].label.indexOf(profileId) != -1) {
@@ -484,7 +482,7 @@ test.util.sync.runVisitDesktopMenu = function(contentWindow, profileId) {
  * Calls the unload handler for the window.
  * @param {Window} contentWindow Window to be tested.
  */
-test.util.sync.unload = function(contentWindow) {
+test.util.sync.unload = contentWindow => {
   contentWindow.fileManager.onUnload_();
 };
 
@@ -494,7 +492,7 @@ test.util.sync.unload = function(contentWindow) {
  * @param {Window} contentWindow Window to be tested.
  * @return {string} Path which is shown in the breadcrumb.
  */
-test.util.sync.getBreadcrumbPath = function(contentWindow) {
+test.util.sync.getBreadcrumbPath = contentWindow => {
   const breadcrumb = contentWindow.document.querySelector(
       '#location-breadcrumbs');
   const paths = breadcrumb.querySelectorAll('.breadcrumb-path');
@@ -511,7 +509,7 @@ test.util.sync.getBreadcrumbPath = function(contentWindow) {
  * @param {function(Object)} callback Callback function with results returned by
  *     the script.
  */
-test.util.async.getPreferences = function(callback) {
+test.util.async.getPreferences = callback => {
   chrome.fileManagerPrivate.getPreferences(callback);
 };
 

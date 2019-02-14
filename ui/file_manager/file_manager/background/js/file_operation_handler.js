@@ -61,7 +61,7 @@ FileOperationHandler.PENDING_TIME_MS_ = 500;
  * @return {string} message.
  * @private
  */
-FileOperationHandler.getMessage_ = function(event) {
+FileOperationHandler.getMessage_ = event => {
   if (event.reason === fileOperationUtil.EventRouter.EventType.ERROR) {
     switch (event.error.code) {
       case util.FileOperationErrorType.TARGET_EXISTS:
@@ -118,7 +118,7 @@ FileOperationHandler.getMessage_ = function(event) {
  * @return {string} message.
  * @private
  */
-FileOperationHandler.getDeleteMessage_ = function(event) {
+FileOperationHandler.getDeleteMessage_ = event => {
   event = /** @type {FileOperationProgressEvent} */ (event);
   if (event.reason === fileOperationUtil.EventRouter.EventType.ERROR) {
     return str('DELETE_ERROR');
@@ -139,7 +139,7 @@ FileOperationHandler.getDeleteMessage_ = function(event) {
  *     operation type.
  * @private
  */
-FileOperationHandler.getType_ = function(operationType) {
+FileOperationHandler.getType_ = operationType => {
   switch (operationType) {
     case 'COPY': return ProgressItemType.COPY;
     case 'MOVE': return ProgressItemType.MOVE;

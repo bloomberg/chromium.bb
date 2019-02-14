@@ -253,7 +253,7 @@ VolumeInfoImpl.prototype = /** @struct */ {
  * @param {string} url The filesystem URL
  * @return {!Promise<Entry>}
  */
-VolumeInfoImpl.resolveFileSystemUrl_ = function(url) {
+VolumeInfoImpl.resolveFileSystemUrl_ = url => {
   return new Promise(window.webkitResolveLocalFileSystemURL.bind(null, url));
 };
 

@@ -25,7 +25,7 @@ importer.DefaultMediaScanner =
    * @param {importer.ScanMode} mode Mode of the scan to find new files.
    * @return {!importer.DefaultScanResult}
    */
-  this.createScanResult_ = function(mode) {
+  this.createScanResult_ = mode => {
     return new importer.DefaultScanResult(mode, hashGenerator);
   };
 
@@ -69,11 +69,11 @@ importer.DefaultMediaScanner.prototype.scanDirectory = function(directory,
   console.info(scan.name + ': Scanning directory ' + directory.fullPath);
 
   const watcher = this.watcherFactory_(
-      (/** @this {importer.DefaultMediaScanner} */
-      function() {
+      /** @this {importer.DefaultMediaScanner} */
+      () => {
         scan.cancel();
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
-      }).bind(this));
+      });
 
   this.crawlDirectory_(directory, watcher)
       .then(this.scanMediaFiles_.bind(this, scan))
@@ -82,13 +82,12 @@ importer.DefaultMediaScanner.prototype.scanDirectory = function(directory,
 
   scan.whenFinal()
       .then(
-          (
-          function() {
+          () => {
             console.info(
                 scan.name + ': Finished directory scan. Details: ' +
                 JSON.stringify(scan.getStatistics()));
             this.notify_(importer.ScanEvent.FINALIZED, scan);
-          }).bind(this));
+          });
 
   return scan;
 };
@@ -104,10 +103,10 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
       entries.length + ' entries.');
 
   const watcher = this.watcherFactory_(
-      (function() {
+      () => {
         scan.cancel();
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
-      }).bind(this));
+      });
 
   scan.setCandidateCount(entries.length);
   const scanPromises = entries.map(this.onFileEntryFound_.bind(this, scan));
@@ -118,13 +117,12 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
 
   scan.whenFinal()
       .then(
-          (
-          function() {
+          () => {
             console.info(
                 scan.name + ': Finished file-selection scan. Details: ' +
                 JSON.stringify(scan.getStatistics()));
             this.notify_(importer.ScanEvent.FINALIZED, scan);
-          }).bind(this));
+          });
 
   return scan;
 };
@@ -149,7 +147,7 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
    *     to process.
    * @return {!Promise}
    */
-  const scanBatch = function(begin) {
+  const scanBatch = begin => {
     if (scan.canceled()) {
       console.debug(
           scan.name + ': Skipping remaining ' +
@@ -166,7 +164,7 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
     return Promise.all(
         batch.map(handleFileEntry))
         .then(
-            function() {
+            () => {
               if (end < entries.length) {
                 return scanBatch(end);
               }
@@ -186,7 +184,7 @@ importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
 importer.DefaultMediaScanner.prototype.notify_ = function(event, result) {
   this.observers_.forEach(
       /** @param {!importer.ScanObserver} observer */
-      function(observer) {
+      observer => {
         observer(event, result);
       });
 };
@@ -201,13 +199,13 @@ importer.DefaultMediaScanner.prototype.notify_ = function(event, result) {
  * @private
  */
 importer.DefaultMediaScanner.prototype.crawlDirectory_ =
-    function(directory, watcher) {
+    (directory, watcher) => {
   const mediaFiles = [];
 
   return fileOperationUtil.findEntriesRecursively(
       directory,
       /** @param  {!Entry} entry */
-      function(entry) {
+      entry => {
         if (watcher.triggered) {
           return;
         }
@@ -222,7 +220,7 @@ importer.DefaultMediaScanner.prototype.crawlDirectory_ =
         }
       })
       .then(
-          function() {
+          () => {
             return mediaFiles;
           });
 };
@@ -241,16 +239,16 @@ importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
   return this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE,
                               scan.mode)
       .then(
-          (/**
-           * @param {!importer.Disposition} disposition The disposition
-           *     of the entry. Either some sort of dupe, or an original.
-           * @return {!Promise}
-           */
-          function(disposition) {
+          /**
+          * @param {!importer.Disposition} disposition The disposition
+          *     of the entry. Either some sort of dupe, or an original.
+          * @return {!Promise}
+          */
+          disposition => {
             return disposition === importer.Disposition.ORIGINAL ?
                 this.onUniqueFileFound_(scan, entry) :
                 this.onDuplicateFileFound_(scan, entry, disposition);
-          }).bind(this));
+          });
 };
 
 /**
@@ -272,14 +270,14 @@ importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
 
   return scan.addFileEntry(entry)
       .then(
-          (/**
-           * @param {boolean} added
-           */
-          function(added) {
+          /**
+          * @param {boolean} added
+          */
+          added => {
             if (added) {
               this.notify_(importer.ScanEvent.UPDATED, scan);
             }
-          }).bind(this));
+          });
 };
 
 /**
@@ -458,20 +456,20 @@ importer.DefaultScanResult.prototype.canceled = function() {
  */
 importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
   return metadataProxy.getEntryMetadata(entry).then(
-      (/**
-       * @param {!Metadata} metadata
-       */
-      function(metadata) {
+      /**
+      * @param {!Metadata} metadata
+      */
+      metadata => {
         console.assert(
             'size' in metadata,
             'size attribute missing from metadata.');
 
         return this.createHashcode_(entry)
             .then(
-                (/**
-                 * @param {string} hashcode
-                 */
-                function(hashcode) {
+                /**
+                * @param {string} hashcode
+                */
+                hashcode => {
                   this.lastScanActivity_ = new Date();
 
                   if (hashcode in this.fileHashcodes_) {
@@ -486,9 +484,9 @@ importer.DefaultScanResult.prototype.addFileEntry = function(entry) {
                   this.fileHashcodes_[hashcode] = entry;
                   this.fileEntries_.push(entry);
                   return true;
-                }).bind(this));
+                });
 
-      }).bind(this));
+      });
 };
 
 /**
@@ -556,7 +554,7 @@ importer.DirectoryWatcher = function() {};
  * Registers new directory to be watched.
  * @param {!DirectoryEntry} entry
  */
-importer.DirectoryWatcher.prototype.addDirectory = function(entry) {};
+importer.DirectoryWatcher.prototype.addDirectory = entry => {};
 
 /**
  * @typedef {function()}
@@ -589,7 +587,7 @@ importer.DefaultDirectoryWatcher = function(callback) {
  *     directories is changed.
  * @return {!importer.DirectoryWatcher}
  */
-importer.DefaultDirectoryWatcher.create = function(callback) {
+importer.DefaultDirectoryWatcher.create = callback => {
   return new importer.DefaultDirectoryWatcher(callback);
 };
 
@@ -604,7 +602,7 @@ importer.DefaultDirectoryWatcher.prototype.addDirectory = function(entry) {
         assert(this.listener_));
   }
   this.watchedDirectories_[entry.toURL()] = true;
-  chrome.fileManagerPrivate.addFileWatch(entry, function() {});
+  chrome.fileManagerPrivate.addFileWatch(entry, () => {});
 };
 
 /**
@@ -618,12 +616,12 @@ importer.DefaultDirectoryWatcher.prototype.onWatchedDirectoryModified_ =
   }
   this.triggered = true;
   for (const url in this.watchedDirectories_) {
-    window.webkitResolveLocalFileSystemURL(url, function(entry) {
+    window.webkitResolveLocalFileSystemURL(url, entry => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError.name);
         return;
       }
-      chrome.fileManagerPrivate.removeFileWatch(entry, function() {});
+      chrome.fileManagerPrivate.removeFileWatch(entry, () => {});
     });
   }
   chrome.fileManagerPrivate.onDirectoryChanged.removeListener(
