@@ -6,7 +6,6 @@
 #define CHROMEOS_NETWORK_NETWORK_CERTIFICATE_HANDLER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -70,27 +69,25 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertificateHandler
   const std::vector<Certificate>& server_ca_certificates() const {
     return server_ca_certificates_;
   }
-  const std::vector<Certificate>& client_certificates() const {
-    return client_certificates_;
+  const std::vector<Certificate>& user_certificates() const {
+    return user_certificates_;
   }
 
-  // Adds a testing certificate to the list of authority ceritificates and
-  // notifies observers that certificates have been updated.
-  void AddAuthorityCertificateForTest(const std::string& issued_to);
+  void SetCertificatesForTest(const net::ScopedCERTCertificateList& cert_list);
+  void NotifyCertificatsChangedForTest();
 
  private:
   // NetworkCertLoader::Observer
-  void OnCertificatesLoaded() override;
+  void OnCertificatesLoaded(
+      const net::ScopedCERTCertificateList& cert_list) override;
 
-  void ProcessCertificates(
-      const NetworkCertLoader::NetworkCertList& authority_certs,
-      const NetworkCertLoader::NetworkCertList& client_certs);
+  void ProcessCertificates(const net::ScopedCERTCertificateList& cert_list);
 
   base::ObserverList<NetworkCertificateHandler::Observer>::Unchecked
       observer_list_;
 
   std::vector<Certificate> server_ca_certificates_;
-  std::vector<Certificate> client_certificates_;
+  std::vector<Certificate> user_certificates_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkCertificateHandler);
 };
