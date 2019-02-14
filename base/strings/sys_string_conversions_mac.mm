@@ -153,13 +153,11 @@ CFStringRef SysUTF16ToCFStringRef(const string16& utf16) {
 }
 
 NSString* SysUTF8ToNSString(const std::string& utf8) {
-  return (NSString*)base::mac::CFTypeRefToNSObjectAutorelease(
-      SysUTF8ToCFStringRef(utf8));
+  return [mac::CFToNSCast(SysUTF8ToCFStringRef(utf8)) autorelease];
 }
 
 NSString* SysUTF16ToNSString(const string16& utf16) {
-  return (NSString*)base::mac::CFTypeRefToNSObjectAutorelease(
-      SysUTF16ToCFStringRef(utf16));
+  return [mac::CFToNSCast(SysUTF16ToCFStringRef(utf16)) autorelease];
 }
 
 std::string SysCFStringRefToUTF8(CFStringRef ref) {
