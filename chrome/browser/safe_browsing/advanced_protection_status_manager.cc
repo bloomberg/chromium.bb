@@ -245,7 +245,7 @@ bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection(
 }
 
 bool AdvancedProtectionStatusManager::IsPrimaryAccount(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   return !account_info.account_id.empty() &&
          account_info.account_id == GetPrimaryAccountId();
 }

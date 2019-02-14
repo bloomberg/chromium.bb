@@ -107,7 +107,7 @@ class AdvancedProtectionStatusManager
   // Sets |last_refresh_| to now and persists it.
   void UpdateLastRefreshTime();
 
-  bool IsPrimaryAccount(const AccountInfo& account_info);
+  bool IsPrimaryAccount(const CoreAccountInfo& account_info);
 
   // Decodes |id_token| to get advanced protection status.
   void OnGetIDToken(const std::string& account_id, const std::string& id_token);
