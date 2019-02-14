@@ -296,6 +296,8 @@ std::unique_ptr<base::DictionaryValue> ConvertTraceStatsToDict(
   dict->SetInteger("data_sources_seen", trace_stats.data_sources_seen());
   dict->SetInteger("tracing_sessions", trace_stats.tracing_sessions());
   dict->SetInteger("total_buffers", trace_stats.total_buffers());
+  dict->SetInteger("chunks_discarded", trace_stats.chunks_discarded());
+  dict->SetInteger("patches_discarded", trace_stats.patches_discarded());
   auto buf_list = std::make_unique<base::ListValue>();
   for (const auto& buf_stats : trace_stats.buffer_stats()) {
     base::Value buf_value(base::Value::Type::DICTIONARY);
