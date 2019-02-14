@@ -29,7 +29,8 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 #include "ui/views/view_properties.h"
@@ -123,10 +124,11 @@ class CustomTabBarTitleOriginView : public views::View {
     AddChildView(title_label_);
     AddChildView(location_label_);
 
-    auto layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
+    auto layout = std::make_unique<views::FlexLayout>();
+    layout->SetOrientation(views::LayoutOrientation::kVertical)
+        .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
+
     SetLayoutManager(std::move(layout));
   }
 
@@ -192,10 +194,11 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   gfx::Insets insets(padding, padding - location_icon_padding, padding,
                      padding);
 
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, insets, 0);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+  auto layout = std::make_unique<views::FlexLayout>();
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetMainAxisAlignment(views::LayoutAlignment::kStart)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetInteriorMargin(insets);
 
   SetLayoutManager(std::move(layout));
 
