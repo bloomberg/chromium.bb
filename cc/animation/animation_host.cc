@@ -307,13 +307,17 @@ bool AnimationHost::ActivateAnimations() {
   return true;
 }
 
-void TickAnimationsIf(AnimationHost::AnimationsList animations,
+bool TickAnimationsIf(AnimationHost::AnimationsList animations,
                       base::TimeTicks monotonic_time,
                       bool (*predicate)(const Animation&)) {
+  bool did_tick = false;
   for (auto& it : animations) {
-    if (predicate(*it))
+    if (predicate(*it)) {
       it->Tick(monotonic_time);
+      did_tick = true;
+    }
   }
+  return did_tick;
 }
 
 bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
@@ -336,22 +340,21 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
 
   // Worklet animations are ticked at a later stage. See above comment for
   // details.
-  TickAnimationsIf(ticking_animations_, monotonic_time,
-                   [](const Animation& animation) {
-                     return !animation.IsWorkletAnimation();
-                   });
+  bool animated = TickAnimationsIf(ticking_animations_, monotonic_time,
+                                   [](const Animation& animation) {
+                                     return !animation.IsWorkletAnimation();
+                                   });
 
   // TODO(majidvp): At the moment we call this for both active and pending
   // trees similar to other animations. However our final goal is to only call
   // it once, ideally after activation, and only when the input
   // to an active timeline has changed. http://crbug.com/767210
-  TickMutator(monotonic_time, scroll_tree, is_active_tree);
+  // TODO(kevers): A return value of true signals that an impl frame and redraw
+  // are required.  Once worklet animations become asynchronous, we need to
+  // defer these requests until the update is complete.
+  animated |= TickMutator(monotonic_time, scroll_tree, is_active_tree);
 
-  for (const auto& it : ticking_animations_) {
-    if (!it->IsWorkletAnimation())
-      return true;
-  }
-  return false;
+  return animated;
 }
 
 void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
