@@ -1239,4 +1239,10 @@ TEST(DiskUtilTests, TruncateLogFileToTail_NotExisting) {
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
+TEST(DiskUtilTests, IgnoredReportingList) {
+  EXPECT_TRUE(IsCompanyOnIgnoredReportingList(L"Google LLC"));
+  EXPECT_FALSE(IsCompanyOnIgnoredReportingList(L"google llc"));
+  EXPECT_FALSE(IsCompanyOnIgnoredReportingList(L"Unrecognized Inc"));
+}
+
 }  // namespace chrome_cleaner
