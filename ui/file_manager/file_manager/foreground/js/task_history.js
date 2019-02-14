@@ -5,55 +5,32 @@
 /**
  * TaskHistory object keeps track of the histry of task executions.
  * This is responsible for keeping the history in persistent storage, too.
- * @extends {cr.EventTarget}
- * @constructor
- * @struct
  */
-function TaskHistory() {
-  cr.EventTarget.call(this);
+class TaskHistory extends cr.EventTarget {
+  constructor() {
+    super();
 
-  /**
-   * The recent history of task executions. Key is task ID and value is time
-   * stamp of the latest execution of the task.
-   * @type {!Object<string, number>}
-   */
-  this.lastExecutedTime_ = {};
+    /**
+     * The recent history of task executions. Key is task ID and value is time
+     * stamp of the latest execution of the task.
+     * @type {!Object<string, number>}
+     */
+    this.lastExecutedTime_ = {};
 
-  chrome.storage.onChanged.addListener(this.onLocalStorageChanged_.bind(this));
-  this.load_();
-}
-
-/**
- * @enum {string}
- */
-TaskHistory.EventType = {
-  UPDATE: 'update'
-};
-
-/**
- * This key is used to store the history in chrome's local storage.
- * @const {string}
- */
-TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME = 'task-last-executed-time';
-
-/**
- * @const {number}
- */
-TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX = 100;
-
-
-TaskHistory.prototype = {
-  __proto__: cr.EventTarget.prototype,
+    chrome.storage.onChanged.addListener(
+        this.onLocalStorageChanged_.bind(this));
+    this.load_();
+  }
 
   /**
    * Records the timing of task execution.
    * @param {string} taskId
    */
-  recordTaskExecuted: function(taskId) {
+  recordTaskExecuted(taskId) {
     this.lastExecutedTime_[taskId] = Date.now();
     this.truncate_();
     this.save_();
-  },
+  }
 
   /**
    * Gets the time stamp of last execution of given task. If the record is not
@@ -61,32 +38,32 @@ TaskHistory.prototype = {
    * @param {string} taskId
    * @return {number}
    */
-  getLastExecutedTime: function(taskId) {
+  getLastExecutedTime(taskId) {
     return this.lastExecutedTime_[taskId] ? this.lastExecutedTime_[taskId] : 0;
-  },
+  }
 
   /**
    * Loads current history from local storage.
    * @private
    */
-  load_: function() {
+  load_() {
     chrome.storage.local.get(
         TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME, function(value) {
           this.lastExecutedTime_ =
               value[TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME] || {};
         }.bind(this));
-  },
+  }
 
   /**
    * Saves current history to local storage.
    * @private
    */
-  save_: function() {
+  save_() {
     var objectToSave = {};
     objectToSave[TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME] =
         this.lastExecutedTime_;
     chrome.storage.local.set(objectToSave);
-  },
+  }
 
   /**
    * Handles change event on storage to update current history.
@@ -94,7 +71,7 @@ TaskHistory.prototype = {
    * @param {string} areaName
    * @private
    */
-  onLocalStorageChanged_: function(changes, areaName) {
+  onLocalStorageChanged_(changes, areaName) {
     if (areaName != 'local') {
       return;
     }
@@ -105,14 +82,14 @@ TaskHistory.prototype = {
         cr.dispatchSimpleEvent(this, TaskHistory.EventType.UPDATE);
       }
     }
-  },
+  }
 
   /**
    * Trancates current history so that the size of history does not exceed
    * STORAGE_KEY_LAST_EXECUTED_TIME.
    * @private
    */
-  truncate_: function() {
+  truncate_() {
     var keys = Object.keys(this.lastExecutedTime_);
     if (keys.length <= TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX) {
       return;
@@ -133,4 +110,22 @@ TaskHistory.prototype = {
 
     this.lastExecutedTime_ = newObject;
   }
+}
+
+/**
+ * @enum {string}
+ */
+TaskHistory.EventType = {
+  UPDATE: 'update'
 };
+
+/**
+ * This key is used to store the history in chrome's local storage.
+ * @const {string}
+ */
+TaskHistory.STORAGE_KEY_LAST_EXECUTED_TIME = 'task-last-executed-time';
+
+/**
+ * @const {number}
+ */
+TaskHistory.LAST_EXECUTED_TIME_HISTORY_MAX = 100;
