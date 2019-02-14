@@ -514,9 +514,19 @@ bool DownloadManagerImpl::InterceptDownload(
       info.request_handle->CancelRequest(false);
     return true;
   }
+
+  std::string user_agent = "";
+  for (const auto& header : info.request_headers) {
+    if (header.first == net::HttpRequestHeaders::kUserAgent) {
+      user_agent = header.second;
+      break;
+    }
+  }
+
   if (!delegate_ ||
       !delegate_->InterceptDownloadIfApplicable(
-          info.url(), info.mime_type, info.request_origin, web_contents)) {
+          info.url(), user_agent, info.content_disposition, info.mime_type,
+          info.request_origin, info.total_bytes, web_contents)) {
     return false;
   }
   if (info.request_handle)
