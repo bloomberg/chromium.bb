@@ -118,8 +118,8 @@ guide](https://google.github.io/styleguide/htmlcssguide.html).
     * Do not add JS to element event handlers.
 
 <div class="note">
-Polymer event handlers like <code>on-tap</code> are allowed and often reduce the
-amount of addressing (adding an ID just to wire up event handling).
+Polymer event handlers like <code>on-click</code> are allowed and often reduce
+the amount of addressing (adding an ID just to wire up event handling).
 </div>
 
 ### Body
@@ -351,13 +351,13 @@ Guide](https://google.github.io/styleguide/jsguide.html) as well as
     * DO: `Object<T>`
     * DON'T: `Object<string, T>`
 
+* Use template types for any class that supports them, for example:
+    * `Array`
+    * `CustomEvent`
+    * `Map`
+    * `Promise`
+    * `Set`
 
-
-<div class="note">
-Calling <code>stopPropagation()</code> from an <code>on-tap</code> handler will
-not prevent on-click event handlers, so make sure that <i>on-tap</i> is used
-consistently throughout the page.
-</div>
 
 ## Polymer
 
@@ -380,10 +380,6 @@ Also see the [Google Polymer Style Guide](http://go/polymer-style).
   This makes changing the type of `this.foo` easier (as the `@type` is
   duplicated in less places, i.e. `@param`).
 
-* Use native `on-click` for click events instead of `on-tap`. 'tap' is a
-  synthetic event provided by Polymer for backward compatibility with some
-  browsers and is not needed by Chrome.
-
 ```js
 properties: {
   foo: {type: Number, observer: 'fooChanged_'}
@@ -394,6 +390,10 @@ fooChanged_: function() {
   this.bar = this.derive(this.foo);
 },
 ```
+
+* Use native `on-click` for click events instead of `on-tap`. 'tap' is a
+  synthetic event provided by Polymer for backward compatibility with some
+  browsers and is not needed by Chrome.
 
 * Make good use of the  [`dom-if` template](
 https://www.polymer-project.org/2.0/docs/devguide/templates#dom-if):
