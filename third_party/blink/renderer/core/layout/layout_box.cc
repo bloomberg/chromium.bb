@@ -643,8 +643,12 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
   if (!GetFrameView())
     return absolute_rect;
 
-  if (params.stop_at_main_frame_layout_viewport && IsLayoutView() &&
-      GetFrame()->IsMainFrame())
+  // If we've reached the main frame's layout viewport (which is always set to
+  // the global root scroller, see ViewportScrollCallback::SetScroller), abort
+  // if the stop_at_main_frame_layout_viewport option is set. We do this so
+  // that we can allow a smooth "scroll and zoom" animation to do the final
+  // scroll in cases like scrolling a focused editable box into view.
+  if (params.stop_at_main_frame_layout_viewport && IsGlobalRootScroller())
     return absolute_rect;
 
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.

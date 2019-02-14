@@ -10,11 +10,15 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/scroll_into_view_options.h"
 #include "third_party/blink/renderer/core/frame/scroll_to_options.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -526,6 +530,83 @@ TEST_F(ScrollIntoViewTest, ApplyRootElementScrollBehaviorToViewport) {
   // Finish scrolling the container
   Compositor().BeginFrame(1);
   ASSERT_EQ(Window().scrollY(), content->OffsetTop());
+}
+
+// This test ensures the stop-at-layout viewport option works correctly when a
+// non-default root scroller is set as the layout viewport.
+TEST_F(ScrollIntoViewTest, StopAtLayoutViewportOption) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body,html {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+      }
+      #inner {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        margin-top: 1000px;
+      }
+      #target {
+        margin-top: 1000px;
+        margin-bottom: 1000px;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id='root'>
+      <div id='inner'>
+        <div id='target'></div>
+      <div>
+    </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* root = GetDocument().getElementById("root");
+  Element* inner = GetDocument().getElementById("inner");
+
+  // Make sure the root scroller is set since that's what we're trying to test
+  // here.
+  {
+    TopDocumentRootScrollerController& rs_controller =
+        GetDocument().GetPage()->GlobalRootScrollerController();
+    ASSERT_EQ(root, rs_controller.GlobalRootScroller());
+  }
+
+  // Use ScrollRectToVisible on the #target element, specifying
+  // stop_at_main_frame_layout_viewport.
+  LayoutObject* target =
+      GetDocument().getElementById("target")->GetLayoutObject();
+  WebScrollIntoViewParams params(
+      ScrollAlignment::kAlignLeftAlways, ScrollAlignment::kAlignTopAlways,
+      kProgrammaticScroll, false, kScrollBehaviorInstant);
+  params.stop_at_main_frame_layout_viewport = true;
+  target->ScrollRectToVisible(LayoutRect(target->AbsoluteBoundingBoxRect()),
+                              params);
+
+  ScrollableArea* root_scroller =
+      ToLayoutBox(root->GetLayoutObject())->GetScrollableArea();
+  ScrollableArea* inner_scroller =
+      ToLayoutBox(inner->GetLayoutObject())->GetScrollableArea();
+
+  // Only the inner scroller should have scrolled. The root_scroller shouldn't
+  // scroll because it is the layout viewport.
+  ASSERT_EQ(root_scroller,
+            &GetDocument().View()->GetRootFrameViewport()->LayoutViewport());
+  EXPECT_EQ(ScrollOffset(), root_scroller->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1000), inner_scroller->GetScrollOffset());
 }
 
 // This test passes if it doesn't crash/hit an ASAN check.
