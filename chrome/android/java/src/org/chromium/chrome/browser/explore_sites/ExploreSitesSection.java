@@ -138,7 +138,7 @@ public class ExploreSitesSection {
                     (Boolean success) -> { updateCategoryIcons(); });
             RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
                     ExploreSitesEnums.CatalogUpdateRequestSource.NEW_TAB_PAGE,
-                    ExploreSitesEnums.CatalogUpdateRequestSource.COUNT);
+                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
         }
         RecordHistogram.recordBooleanHistogram(
                 "ExploreSites.NTPLoadingCatalogFromNetwork", loadingCatalogFromNetwork);

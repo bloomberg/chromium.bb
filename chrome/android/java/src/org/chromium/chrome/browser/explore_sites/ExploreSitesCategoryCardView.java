@@ -226,8 +226,8 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
      * @param category The category the user picked.
      */
     public static void recordCategoryClick(int category) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "ExploreSites.CategoryClick", category, ExploreSitesCategory.CategoryType.COUNT);
+        RecordHistogram.recordEnumeratedHistogram("ExploreSites.CategoryClick", category,
+                ExploreSitesCategory.CategoryType.NUM_ENTRIES);
     }
 
     /**

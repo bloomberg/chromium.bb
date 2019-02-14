@@ -73,7 +73,7 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
                 (ignored) -> mTaskFinishedCallback.taskFinished(false));
         RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
                 ExploreSitesEnums.CatalogUpdateRequestSource.BACKGROUND,
-                ExploreSitesEnums.CatalogUpdateRequestSource.COUNT);
+                ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
     }
 
     @Override

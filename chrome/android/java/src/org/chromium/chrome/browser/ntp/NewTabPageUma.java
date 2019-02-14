@@ -123,13 +123,12 @@ public final class NewTabPageUma {
         int NUM_ENTRIES = 4;
     }
 
-    @IntDef({ContentSuggestionsDisplayStatus.VISIBLE, ContentSuggestionsDisplayStatus.COLLAPSED,
-            ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY,
-            ContentSuggestionsDisplayStatus.NUM_ENTRIES})
-
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused. This maps directly to
     // the ContentSuggestionsDisplayStatus enum defined in tools/metrics/enums.xml.
+    @IntDef({ContentSuggestionsDisplayStatus.VISIBLE, ContentSuggestionsDisplayStatus.COLLAPSED,
+            ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface ContentSuggestionsDisplayStatus {
         int VISIBLE = 0;
         int COLLAPSED = 1;

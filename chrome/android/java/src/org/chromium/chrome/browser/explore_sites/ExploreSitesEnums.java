@@ -16,12 +16,12 @@ import java.lang.annotation.RetentionPolicy;
 public class ExploreSitesEnums {
     /** Enum for use with UMA for identifying where a catalog update request started. */
     @IntDef({CatalogUpdateRequestSource.NEW_TAB_PAGE, CatalogUpdateRequestSource.EXPLORE_SITES_PAGE,
-            CatalogUpdateRequestSource.BACKGROUND, CatalogUpdateRequestSource.COUNT})
+            CatalogUpdateRequestSource.BACKGROUND})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CatalogUpdateRequestSource {
         int NEW_TAB_PAGE = 0; // Catalog update request came from NTP
         int EXPLORE_SITES_PAGE = 1; // Catalog update request came from ESP
         int BACKGROUND = 2; // Catalog update request came from background update.
-        int COUNT = 3; // This must always be one higher than the last value.
+        int NUM_ENTRIES = 3; // This must always be one higher than the last value.
     }
 }
