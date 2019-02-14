@@ -138,7 +138,6 @@ void AnimationHost::RegisterKeyframeEffectForElement(
     element_animations = ElementAnimations::Create(this, element_id);
     element_to_animations_map_[element_animations->element_id()] =
         element_animations;
-    element_animations->InitAffectedElementTypes();
   }
 
   DCHECK(element_animations->AnimationHostIs(this));

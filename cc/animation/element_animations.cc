@@ -51,15 +51,15 @@ ElementAnimations::ElementAnimations(AnimationHost* host, ElementId element_id)
       element_id_(element_id),
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
-      needs_push_properties_(false) {}
+      needs_push_properties_(false) {
+  InitAffectedElementTypes();
+}
 
 ElementAnimations::~ElementAnimations() = default;
 
 void ElementAnimations::InitAffectedElementTypes() {
   DCHECK(element_id_);
   DCHECK(animation_host_);
-
-  UpdateKeyframeEffectsTickingState(UpdateTickingType::FORCE);
 
   DCHECK(animation_host_->mutator_host_client());
   if (animation_host_->mutator_host_client()->IsElementInList(
@@ -112,13 +112,15 @@ void ElementAnimations::ElementRegistered(ElementId element_id,
                                           ElementListType list_type) {
   DCHECK_EQ(element_id_, element_id);
 
-  if (!has_element_in_any_list())
-    UpdateKeyframeEffectsTickingState(UpdateTickingType::FORCE);
+  bool had_element_in_any_list = has_element_in_any_list();
 
   if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(true);
   else
     set_has_element_in_pending_list(true);
+
+  if (!had_element_in_any_list)
+    UpdateKeyframeEffectsTickingState();
 }
 
 void ElementAnimations::ElementUnregistered(ElementId element_id,
@@ -162,10 +164,9 @@ void ElementAnimations::PushPropertiesTo(
   element_animations_impl->UpdateClientAnimationState();
 }
 
-void ElementAnimations::UpdateKeyframeEffectsTickingState(
-    UpdateTickingType update_ticking_type) const {
+void ElementAnimations::UpdateKeyframeEffectsTickingState() const {
   for (auto& keyframe_effect : keyframe_effects_list_)
-    keyframe_effect.UpdateTickingState(update_ticking_type);
+    keyframe_effect.UpdateTickingState();
 }
 
 void ElementAnimations::RemoveKeyframeEffectsFromTicking() const {

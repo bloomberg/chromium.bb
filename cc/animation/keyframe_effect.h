@@ -88,7 +88,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   bool is_ticking() const { return is_ticking_; }
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
-  void UpdateTickingState(UpdateTickingType type);
+  void UpdateTickingState();
 
   void Pause(base::TimeDelta pause_offset);
 

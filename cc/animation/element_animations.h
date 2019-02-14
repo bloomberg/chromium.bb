@@ -28,8 +28,6 @@ class TransformOperations;
 enum class ElementListType;
 struct AnimationEvent;
 
-enum class UpdateTickingType { NORMAL, FORCE };
-
 // An ElementAnimations owns a list of all KeyframeEffects attached to a single
 // target (represented by an ElementId).
 //
@@ -50,7 +48,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   ElementId element_id() const { return element_id_; }
 
-  void InitAffectedElementTypes();
   void ClearAffectedElementTypes(const PropertyToElementIdMap& element_id_map);
 
   void ElementRegistered(ElementId element_id, ElementListType list_type);
@@ -168,6 +165,8 @@ class CC_ANIMATION_EXPORT ElementAnimations
   ElementAnimations(AnimationHost* host, ElementId element_id);
   ~ElementAnimations() override;
 
+  void InitAffectedElementTypes();
+
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters,
                         KeyframeModel* keyframe_model);
@@ -183,8 +182,7 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   static TargetProperties GetPropertiesMaskForAnimationState();
 
-  void UpdateKeyframeEffectsTickingState(
-      UpdateTickingType update_ticking_type) const;
+  void UpdateKeyframeEffectsTickingState() const;
   void RemoveKeyframeEffectsFromTicking() const;
 
   bool KeyframeModelAffectsActiveElements(KeyframeModel* keyframe_model) const;
