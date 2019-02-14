@@ -27,6 +27,7 @@
 
   <if expr="not is_android and not is_ios">
     <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MIGRATION_DIALOG_HEADER" file="autofill/migration_header.png" />
+    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK" file="autofill/migration_header_dark.png" />
   </if>
 
   <structure type="chrome_scaled_image" name="IDR_CREDIT_CARD_CVC_HINT" file="autofill/credit_card_cvc_hint.png" />
