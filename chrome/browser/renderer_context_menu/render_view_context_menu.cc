@@ -747,9 +747,13 @@ base::string16 RenderViewContextMenu::FormatURLForClipboard(const GURL& url) {
   DCHECK(!url.is_empty());
   DCHECK(url.is_valid());
 
+  GURL url_to_format = url;
   url_formatter::FormatUrlTypes format_types;
   net::UnescapeRule::Type unescape_rules;
   if (url.SchemeIs(url::kMailToScheme)) {
+    GURL::Replacements replacements;
+    replacements.ClearQuery();
+    url_to_format = url.ReplaceComponents(replacements);
     format_types = url_formatter::kFormatUrlOmitMailToScheme;
     unescape_rules =
         net::UnescapeRule::PATH_SEPARATORS |
@@ -759,8 +763,8 @@ base::string16 RenderViewContextMenu::FormatURLForClipboard(const GURL& url) {
     unescape_rules = net::UnescapeRule::NONE;
   }
 
-  return url_formatter::FormatUrl(url, format_types, unescape_rules, nullptr,
-                                  nullptr, nullptr);
+  return url_formatter::FormatUrl(url_to_format, format_types, unescape_rules,
+                                  nullptr, nullptr, nullptr);
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
