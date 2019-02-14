@@ -32,6 +32,13 @@ bool GetHistogramForImage(const SkBitmap& image,
 bool GetBlurredImage(const SkBitmap& image,
                      VisualFeatures::BlurredImage* blurred_image);
 
+// Downsizes an image by averaging all the pixels in the source image that
+// contribute to the target image. Groups pixels into squares of size
+// |block_size|, potentially with partial blocks at the edge. The output
+// image has pixels the average of the pixels in each block.
+std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
+                                           int block_size);
+
 }  // namespace visual_utils
 }  // namespace safe_browsing
 

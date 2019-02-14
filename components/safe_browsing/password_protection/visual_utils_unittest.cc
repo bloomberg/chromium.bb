@@ -11,6 +11,17 @@
 namespace safe_browsing {
 namespace visual_utils {
 
+namespace {
+
+// Pixel value constants, all in BGR order.
+const unsigned int kWhite = 0xffffffff;
+const unsigned int kBlack = 0xff000000;
+const unsigned int kRed = 0xff0000ff;
+const unsigned int kGreen = 0xff00ff00;
+const unsigned int kBlue = 0xffff0000;
+
+}  // namespace
+
 using ::testing::FloatEq;
 
 class VisualUtilsTest : public testing::Test {
@@ -22,7 +33,7 @@ class VisualUtilsTest : public testing::Test {
         {2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0},
         SkNamedGamut::kRec2020);
     SkImageInfo bitmap_info =
-        SkImageInfo::Make(1000, 1000, SkColorType::kBGRA_8888_SkColorType,
+        SkImageInfo::Make(1000, 1000, SkColorType::kRGBA_8888_SkColorType,
                           SkAlphaType::kUnpremul_SkAlphaType, rec2020);
 
     ASSERT_TRUE(bitmap_.tryAllocPixels(bitmap_info));
@@ -82,7 +93,7 @@ TEST_F(VisualUtilsTest, GetHistogramForImageWhite) {
   // Draw white over half the image
   for (int x = 0; x < 1000; x++)
     for (int y = 0; y < 1000; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(255, 255, 255);
+      *bitmap_.getAddr32(x, y) = kWhite;
 
   ASSERT_TRUE(GetHistogramForImage(bitmap_, &histogram));
   ASSERT_EQ(histogram.bins_size(), 1);
@@ -102,12 +113,12 @@ TEST_F(VisualUtilsTest, GetHistogramForImageHalfWhiteHalfBlack) {
   // Draw white over half the image
   for (int x = 0; x < 1000; x++)
     for (int y = 0; y < 500; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(255, 255, 255);
+      *bitmap_.getAddr32(x, y) = kWhite;
 
   // Draw black over half the image.
   for (int x = 0; x < 1000; x++)
     for (int y = 500; y < 1000; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(0, 0, 0);
+      *bitmap_.getAddr32(x, y) = kBlack;
 
   ASSERT_TRUE(GetHistogramForImage(bitmap_, &histogram));
   ASSERT_EQ(histogram.bins_size(), 2);
@@ -133,7 +144,7 @@ TEST_F(VisualUtilsTest, BlurImageWhite) {
   // Draw white over the image
   for (int x = 0; x < 1000; x++)
     for (int y = 0; y < 1000; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(255, 255, 255);
+      *bitmap_.getAddr32(x, y) = kWhite;
 
   ASSERT_TRUE(GetBlurredImage(bitmap_, &blurred));
   ASSERT_EQ(48, blurred.width());
@@ -152,7 +163,7 @@ TEST_F(VisualUtilsTest, BlurImageRed) {
   // Draw red over the image.
   for (int x = 0; x < 1000; x++)
     for (int y = 0; y < 1000; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(255, 0, 0);
+      *bitmap_.getAddr32(x, y) = kRed;
 
   ASSERT_TRUE(GetBlurredImage(bitmap_, &blurred));
   ASSERT_EQ(48, blurred.width());
@@ -171,12 +182,12 @@ TEST_F(VisualUtilsTest, BlurImageHalfWhiteHalfBlack) {
   // Draw black over half the image.
   for (int x = 0; x < 1000; x++)
     for (int y = 0; y < 500; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(0, 0, 0);
+      *bitmap_.getAddr32(x, y) = kBlack;
 
   // Draw white over half the image
   for (int x = 0; x < 1000; x++)
     for (int y = 500; y < 1000; y++)
-      *bitmap_.getAddr32(x, y) = SkColorSetRGB(255, 255, 255);
+      *bitmap_.getAddr32(x, y) = kWhite;
 
   ASSERT_TRUE(GetBlurredImage(bitmap_, &blurred));
   ASSERT_EQ(48, blurred.width());
@@ -195,6 +206,50 @@ TEST_F(VisualUtilsTest, BlurImageHalfWhiteHalfBlack) {
     EXPECT_EQ('\xff', blurred.data()[3 * i + 1]);
     EXPECT_EQ('\xff', blurred.data()[3 * i + 2]);
   }
+}
+
+TEST_F(VisualUtilsTest, BlockMeanAverageOneBlock) {
+  // Draw black over half the image.
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 500; y++)
+      *bitmap_.getAddr32(x, y) = kBlack;
+
+  // Draw white over half the image
+  for (int x = 0; x < 1000; x++)
+    for (int y = 500; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+
+  std::unique_ptr<SkBitmap> blocks = BlockMeanAverage(bitmap_, 1000);
+  ASSERT_EQ(1, blocks->width());
+  ASSERT_EQ(1, blocks->height());
+  EXPECT_EQ(blocks->getColor(0, 0), SkColorSetRGB(127, 127, 127));
+}
+
+TEST_F(VisualUtilsTest, BlockMeanAveragePartialBlocks) {
+  // Draw a white, red, green, and blue box with the expected block sizes.
+  for (int x = 0; x < 600; x++)
+    for (int y = 0; y < 600; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+
+  for (int x = 600; x < 1000; x++)
+    for (int y = 0; y < 600; y++)
+      *bitmap_.getAddr32(x, y) = kRed;
+
+  for (int x = 0; x < 600; x++)
+    for (int y = 600; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kGreen;
+
+  for (int x = 600; x < 1000; x++)
+    for (int y = 600; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kBlue;
+
+  std::unique_ptr<SkBitmap> blocks = BlockMeanAverage(bitmap_, 600);
+  ASSERT_EQ(2, blocks->width());
+  ASSERT_EQ(2, blocks->height());
+  EXPECT_EQ(*blocks->getAddr32(0, 0), kWhite);
+  EXPECT_EQ(*blocks->getAddr32(1, 0), kRed);
+  EXPECT_EQ(*blocks->getAddr32(0, 1), kGreen);
+  EXPECT_EQ(*blocks->getAddr32(1, 1), kBlue);
 }
 
 }  // namespace visual_utils
