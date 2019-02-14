@@ -187,7 +187,7 @@ ${argHint}
     if (this[testFixture].prototype.commandLineSwitches)
       output('#include "base/command_line.h"');
     if (this[testFixture].prototype.featureList ||
-        this[testFixture].prototype.featureWithParameters)
+        this[testFixture].prototype.featuresWithParameters)
       output('#include "base/test/scoped_feature_list.h"');
   }
   output();
@@ -395,9 +395,9 @@ function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
     var switches = this[testFixture].prototype.commandLineSwitches;
     var hasSwitches = switches && switches.length;
     var featureList = this[testFixture].prototype.featureList;
-    var featureWithParameters =
-        this[testFixture].prototype.featureWithParameters;
-    if ((!hasSwitches && !featureList && !featureWithParameters) ||
+    var featuresWithParameters =
+        this[testFixture].prototype.featuresWithParameters;
+    if ((!hasSwitches && !featureList && !featuresWithParameters) ||
         typedefCppFixture == 'V8UnitTest') {
       output(`
 typedef ${typedefCppFixture} ${testFixture};
@@ -407,7 +407,7 @@ typedef ${typedefCppFixture} ${testFixture};
       output(`
 class ${testFixture} : public ${typedefCppFixture} {
  protected:`);
-      if (featureList || featureWithParameters) {
+      if (featureList || featuresWithParameters) {
         output(`
   ${testFixture}() {`);
         if (featureList) {
@@ -415,20 +415,23 @@ class ${testFixture} : public ${typedefCppFixture} {
     scoped_feature_list_.InitWithFeatures({${featureList[0]}},
                                           {${featureList[1]}});`);
         }
-        if (featureWithParameters) {
-          var feature = featureWithParameters[0];
-          var parameters = featureWithParameters[1];
+        if (featuresWithParameters) {
+          for (var i = 0; i < featuresWithParameters.length; ++i) {
+            var feature = featuresWithParameters[i];
+            var featureName = feature[0];
+            var parameters = feature[1];
           output(`
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        ${feature}, {`);
-          for (var parameter of parameters) {
-            var parameterName = parameter[0];
-            var parameterValue = parameter[1];
-            output(`
+    scoped_feature_list${i}_.InitAndEnableFeatureWithParameters(
+        ${featureName}, {`);
+            for (var parameter of parameters) {
+              var parameterName = parameter[0];
+              var parameterValue = parameter[1];
+              output(`
             {"${parameterName}", "${parameterValue}"},`);
-          }
-          output(`
+            }
+            output(`
     });`);
+          }
         }
         output(`
   }`);
@@ -453,9 +456,17 @@ class ${testFixture} : public ${typedefCppFixture} {
       output(`
   }`);
       }
-      if (featureList || featureWithParameters) {
+      if (featureList || featuresWithParameters) {
+        if (featureList) {
         output(`
   base::test::ScopedFeatureList scoped_feature_list_;`);
+        }
+        if (featuresWithParameters) {
+          for (var i = 0; i < featuresWithParameters.length; ++i) {
+            output(`
+  base::test::ScopedFeatureList scoped_feature_list${i}_;`);
+          }
+        }
       }
       output(`
 };
