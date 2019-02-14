@@ -5264,9 +5264,15 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
     return initial_state;
   }
 
-  if (!current_navigation_url.SchemeIsHTTPOrHTTPS()) {
+  if (!current_navigation_url.SchemeIsHTTPOrHTTPS())
     return content::PREVIEWS_OFF;
-  }
+
+  // Do not allow previews on POST navigations since the primary opt-out
+  // mechanism is to reload the page. Because POST navigations are not
+  // idempotent, we do not want to show a preview on a POST navigation where
+  // opting out would cause another navigation, i.e.: a reload.
+  if (navigation_handle->IsPost())
+    return content::PREVIEWS_OFF;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   content::WebContentsDelegate* delegate = web_contents->GetDelegate();

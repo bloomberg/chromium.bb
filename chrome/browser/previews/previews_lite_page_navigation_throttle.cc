@@ -303,9 +303,6 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   if (!url.SchemeIs(url::kHttpsScheme))
     ineligible_reasons.push_back(IneligibleReason::kNonHttpsScheme);
 
-  if (navigation_handle()->IsPost())
-    ineligible_reasons.push_back(IneligibleReason::kHttpPost);
-
   if (manager_->IsServerUnavailable())
     ineligible_reasons.push_back(IneligibleReason::kServerUnavailable);
 

@@ -773,7 +773,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
 
   {
     // Verify the preview is not triggered for POST navigations.
-    base::HistogramTester histogram_tester;
     std::string post_data = "helloworld";
     NavigateParams params(browser(), https_url(), ui::PAGE_TRANSITION_LINK);
     params.window_action = NavigateParams::SHOW_WINDOW;
@@ -782,14 +781,17 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     params.uses_post = true;
     params.post_data = network::ResourceRequestBody::CreateFromBytes(
         post_data.data(), post_data.size());
+
     ui_test_utils::NavigateToURL(&params);
-    VerifyPreviewNotLoaded();
+    base::RunLoop().RunUntilIdle();
+    content::WaitForLoadStop(GetWebContents());
+
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(GetWebContents());
+    EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+    EXPECT_FALSE(ui_tab_helper->previews_user_data());
+
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kHttpPost, 1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
   }
 
   {

@@ -53,7 +53,7 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // in tools/metrics/histograms/enums.xml.
   enum class IneligibleReason {
     kNonHttpsScheme = 0,
-    kHttpPost = 1,
+    kHttpPost_DEPRECATED = 1,
     kSubframeNavigation = 2,
     kServerUnavailable = 3,
     kInfoBarNotSeen = 4,
