@@ -3242,17 +3242,4 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, CtrlClickSubframeLink) {
   EXPECT_EQ(new_web_contents1, new_web_contents2);
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetVisibilityBeforeLoad) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/hello.html"));
-
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  web_contents->WasHidden();
-  TestNavigationObserver same_tab_observer(web_contents);
-  shell()->LoadURL(url);
-  same_tab_observer.Wait();
-  EXPECT_TRUE(EvalJs(shell(), "document.hidden").ExtractBool());
-}
-
 }  // namespace content
