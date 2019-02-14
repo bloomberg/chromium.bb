@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
+class AXFragmentRootWin;
 class AXSystemCaretWin;
 class DirectManipulationHelper;
 class WindowEventTarget;
@@ -176,6 +177,9 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
+
+  // Implements IRawElementProviderFragmentRoot when UIA is enabled
+  std::unique_ptr<ui::AXFragmentRootWin> ax_fragment_root_;
 
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll

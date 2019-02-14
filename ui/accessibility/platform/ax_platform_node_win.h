@@ -195,6 +195,22 @@ enum {
 #define WIN_ACCESSIBILITY_API_HISTOGRAM(enum_value) \
   UMA_HISTOGRAM_ENUMERATION("Accessibility.WinAPIs", enum_value, UMA_API_MAX)
 
+//
+// Macros to use at the top of any AXPlatformNodeWin (or derived class) method
+// that implements a UIA COM interface. The error code UIA_E_ELEMENTNOTAVAILABLE
+// signals to the OS that the object is no longer valid and no further methods
+// should be called on it.
+//
+#define UIA_VALIDATE_CALL()               \
+  if (!AXPlatformNodeBase::GetDelegate()) \
+    return UIA_E_ELEMENTNOTAVAILABLE;
+#define UIA_VALIDATE_CALL_1_ARG(arg)      \
+  if (!AXPlatformNodeBase::GetDelegate()) \
+    return UIA_E_ELEMENTNOTAVAILABLE;     \
+  if (!arg)                               \
+    return E_INVALIDARG;                  \
+  *arg = {};
+
 namespace ui {
 class AXPlatformNodeWin;
 class AXPlatformRelationWin;
@@ -233,6 +249,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IGridItemProvider,
                         public IGridProvider,
                         public IRangeValueProvider,
+                        public IRawElementProviderFragment,
                         public IRawElementProviderSimple,
                         public IScrollItemProvider,
                         public IScrollProvider,
@@ -266,6 +283,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
     COM_INTERFACE_ENTRY(IRangeValueProvider)
+    COM_INTERFACE_ENTRY(IRawElementProviderFragment)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
     COM_INTERFACE_ENTRY(IScrollProvider)
@@ -593,8 +611,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   IFACEMETHODIMP get_Value(double* result) override;
 
   // IAccessibleEx methods not implemented.
-  IFACEMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
-
   IFACEMETHODIMP
   ConvertReturnedElement(IRawElementProviderSimple* element,
                          IAccessibleEx** acc) override;
@@ -813,6 +829,21 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                                         LONG y) override;
 
   //
+  // IRawElementProviderFragment methods.
+  //
+
+  IFACEMETHODIMP Navigate(
+      NavigateDirection direction,
+      IRawElementProviderFragment** element_provider) override;
+  IFACEMETHODIMP GetRuntimeId(SAFEARRAY** runtime_id) override;
+  IFACEMETHODIMP get_BoundingRectangle(UiaRect* bounding_rectangle) override;
+  IFACEMETHODIMP GetEmbeddedFragmentRoots(
+      SAFEARRAY** embedded_fragment_roots) override;
+  IFACEMETHODIMP SetFocus() override;
+  IFACEMETHODIMP get_FragmentRoot(
+      IRawElementProviderFragmentRoot** fragment_root) override;
+
+  //
   // IRawElementProviderSimple methods.
   //
 
@@ -821,8 +852,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
                                   VARIANT* result) override;
-
-  // IRawElementProviderSimple methods not implemented.
 
   IFACEMETHODIMP
   get_ProviderOptions(enum ProviderOptions* ret) override;

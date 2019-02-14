@@ -28,6 +28,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/base/win/atl_module.h"
@@ -37,20 +38,11 @@
 
 //
 // Macros to use at the top of any AXPlatformNodeWin function that implements
-// a COM interface. Because COM objects are reference counted and clients
-// are completely untrusted, it's important to always first check that our
-// object is still valid, and then check that all pointer arguments are
-// not NULL.
+// a non-UIA COM interface. Because COM objects are reference counted and
+// clients are completely untrusted, it's important to always first check that
+// our object is still valid, and then check that all pointer arguments are not
+// NULL.
 //
-#define UIA_VALIDATE_CALL() \
-  if (!GetDelegate())       \
-    return UIA_E_ELEMENTNOTAVAILABLE;
-#define UIA_VALIDATE_CALL_1_ARG(arg)  \
-  if (!GetDelegate())                 \
-    return UIA_E_ELEMENTNOTAVAILABLE; \
-  if (!arg)                           \
-    return E_INVALIDARG;              \
-  *arg = {};
 #define COM_OBJECT_VALIDATE() \
   if (!GetDelegate())         \
     return E_FAIL;
@@ -2051,11 +2043,6 @@ IFACEMETHODIMP AXPlatformNodeWin::get_Value(double* result) {
 }
 
 // IAccessibleEx methods not implemented.
-IFACEMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_RUNTIME_ID);
-  return E_NOTIMPL;
-}
-
 IFACEMETHODIMP
 AXPlatformNodeWin::ConvertReturnedElement(IRawElementProviderSimple* element,
                                           IAccessibleEx** acc) {
@@ -3190,6 +3177,135 @@ IFACEMETHODIMP AXPlatformNodeWin::get_attributes(LONG offset,
 }
 
 //
+// IRawElementProviderFragment implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::Navigate(
+    NavigateDirection direction,
+    IRawElementProviderFragment** element_provider) {
+  UIA_VALIDATE_CALL_1_ARG(element_provider);
+
+  *element_provider = nullptr;
+
+  AXPlatformNodeBase* neighbor = nullptr;
+  switch (direction) {
+    case NavigateDirection_Parent:
+      neighbor = FromNativeViewAccessible(GetParent());
+      break;
+
+    case NavigateDirection_FirstChild:
+      if (GetChildCount() > 0) {
+        neighbor = FromNativeViewAccessible(ChildAtIndex(0));
+        DCHECK(neighbor);
+        DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
+      }
+      break;
+
+    case NavigateDirection_LastChild:
+      if (GetChildCount() > 0) {
+        neighbor = FromNativeViewAccessible(ChildAtIndex(GetChildCount() - 1));
+        DCHECK(neighbor);
+        DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
+      }
+      break;
+
+    case NavigateDirection_NextSibling:
+      neighbor = GetNextSibling();
+      if (neighbor != nullptr) {
+        DCHECK(neighbor->GetParent() == GetParent());
+      }
+      break;
+
+    case NavigateDirection_PreviousSibling:
+      neighbor = GetPreviousSibling();
+      if (neighbor != nullptr) {
+        DCHECK(neighbor->GetParent() == GetParent());
+      }
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  if (neighbor != nullptr) {
+    static_cast<AXPlatformNodeWin*>(neighbor)->QueryInterface(
+        IID_PPV_ARGS(element_provider));
+  }
+
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::GetRuntimeId(SAFEARRAY** runtime_id) {
+  UIA_VALIDATE_CALL_1_ARG(runtime_id);
+
+  int id_array[] = {UiaAppendRuntimeId, GetUniqueId()};
+  int id_array_size = 2;
+
+  *runtime_id = ::SafeArrayCreateVector(VT_I4, 0, id_array_size);
+
+  int* array_data = nullptr;
+  ::SafeArrayAccessData(*runtime_id, reinterpret_cast<void**>(&array_data));
+
+  size_t runtime_id_byte_count = id_array_size * sizeof(int);
+  memcpy_s(array_data, runtime_id_byte_count, id_array, runtime_id_byte_count);
+
+  ::SafeArrayUnaccessData(*runtime_id);
+
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_BoundingRectangle(
+    UiaRect* bounding_rectangle) {
+  UIA_VALIDATE_CALL_1_ARG(bounding_rectangle);
+
+  gfx::Rect bounds = delegate_->GetUnclippedScreenBoundsRect();
+  bounding_rectangle->left = bounds.x();
+  bounding_rectangle->top = bounds.y();
+  bounding_rectangle->width = bounds.width();
+  bounding_rectangle->height = bounds.height();
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::GetEmbeddedFragmentRoots(
+    SAFEARRAY** embedded_fragment_roots) {
+  UIA_VALIDATE_CALL_1_ARG(embedded_fragment_roots);
+
+  *embedded_fragment_roots = nullptr;
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::SetFocus() {
+  UIA_VALIDATE_CALL();
+
+  AXActionData action_data;
+  action_data.action = ax::mojom::Action::kFocus;
+  delegate_->AccessibilityPerformAction(action_data);
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_FragmentRoot(
+    IRawElementProviderFragmentRoot** fragment_root) {
+  UIA_VALIDATE_CALL_1_ARG(fragment_root);
+
+  gfx::AcceleratedWidget widget =
+      delegate_->GetTargetForNativeAccessibilityEvent();
+  DCHECK(widget);
+
+  ui::AXFragmentRootWin* root =
+      AXFragmentRootWin::GetForAcceleratedWidget(widget);
+  if (root != nullptr) {
+    root->GetNativeViewAccessible()->QueryInterface(
+        IID_PPV_ARGS(fragment_root));
+    DCHECK(*fragment_root);
+    return S_OK;
+  }
+
+  *fragment_root = nullptr;
+  return UIA_E_ELEMENTNOTAVAILABLE;
+}
+
+//
 // IRawElementProviderSimple implementation.
 //
 
@@ -3350,7 +3466,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_ClassNamePropertyId:
       result->vt = VT_BSTR;
       GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
-                               result->pbstrVal);
+                               &result->bstrVal);
       break;
 
     case UIA_ClickablePointPropertyId:
@@ -3371,7 +3487,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_CulturePropertyId:
       result->vt = VT_BSTR;
       GetStringAttributeAsBstr(ax::mojom::StringAttribute::kLanguage,
-                               result->pbstrVal);
+                               &result->bstrVal);
       break;
 
     case UIA_DescribedByPropertyId:
@@ -3387,6 +3503,16 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_FrameworkIdPropertyId:
+      // TODO(suproteem)
+      break;
+
+    case UIA_HasKeyboardFocusPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = (delegate_->GetFocus() == GetNativeViewAccessible())
+                            ? VARIANT_TRUE
+                            : VARIANT_FALSE;
+      break;
+
     case UIA_IsContentElementPropertyId:
     case UIA_IsControlElementPropertyId:
       // TODO(suproteem)
@@ -3403,6 +3529,13 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
           result->boolVal = VARIANT_FALSE;
         }
       }
+      break;
+
+    case UIA_IsKeyboardFocusablePropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = (ShouldNodeHaveFocusableState(delegate_->GetData()))
+                            ? VARIANT_TRUE
+                            : VARIANT_FALSE;
       break;
 
     case UIA_IsRequiredForFormPropertyId:
@@ -3423,6 +3556,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_LocalizedControlTypePropertyId:
+      break;
+
+    case UIA_NamePropertyId:
+      result->vt = VT_BSTR;
+      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+                               &result->bstrVal);
       break;
 
     case UIA_OrientationPropertyId:
@@ -3448,13 +3587,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     // Covered by MSAA.
     case UIA_BoundingRectanglePropertyId:
-    case UIA_HasKeyboardFocusPropertyId:
     case UIA_HelpTextPropertyId:
     case UIA_IsEnabledPropertyId:
-    case UIA_IsKeyboardFocusablePropertyId:
     case UIA_IsOffscreenPropertyId:
     case UIA_IsPasswordPropertyId:
-    case UIA_NamePropertyId:
     case UIA_NativeWindowHandlePropertyId:
     case UIA_ProcessIdPropertyId:
       break;
@@ -3502,14 +3638,18 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 IFACEMETHODIMP AXPlatformNodeWin::get_ProviderOptions(ProviderOptions* ret) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROVIDER_OPTIONS);
   UIA_VALIDATE_CALL_1_ARG(ret);
-  return E_NOTIMPL;
+
+  *ret = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading;
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_HostRawElementProvider(
     IRawElementProviderSimple** provider) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER);
   UIA_VALIDATE_CALL_1_ARG(provider);
-  return E_NOTIMPL;
+
+  *provider = nullptr;
+  return S_OK;
 }
 
 //

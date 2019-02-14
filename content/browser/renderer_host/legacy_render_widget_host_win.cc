@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -262,9 +263,15 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
         ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
 
     if (is_uia_request) {
-      Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia(root);
+      if (!ax_fragment_root_)
+        ax_fragment_root_ =
+            std::make_unique<ui::AXFragmentRootWin>(hwnd(), root);
+
+      Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia;
+      ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&root_uia));
       return UiaReturnRawElementProvider(hwnd(), w_param, l_param,
-                                         root_uia.Detach());
+                                         root_uia.Get());
     } else {
       Microsoft::WRL::ComPtr<IAccessible> root_msaa(root);
       return LresultFromObject(IID_IAccessible, w_param, root_msaa.Detach());

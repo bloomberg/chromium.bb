@@ -49,11 +49,15 @@ bool AreExperimentalAccessibilityLanguageDetectionEnabled() {
 // Toggles between IAccessible and UI Automation platform API.
 const char kEnableExperimentalUIAutomation[] =
     "enable-experimental-ui-automation";
+#endif
 
 bool IsExperimentalAccessibilityPlatformUIAEnabled() {
+#if defined(OS_WIN)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalUIAutomation);
-}
+#else
+  return false;
 #endif
+}
 
 }  // namespace switches

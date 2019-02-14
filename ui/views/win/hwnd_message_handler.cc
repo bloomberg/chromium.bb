@@ -26,6 +26,7 @@
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/base/ime/input_method.h"
@@ -1777,10 +1778,14 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
     if (is_uia_request &&
         ::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
       // Retrieve UIA object for the root view.
+      if (!ax_fragment_root_)
+        ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
+            hwnd(), delegate_->GetNativeViewAccessible());
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root;
-      delegate_->GetNativeViewAccessible()->QueryInterface(IID_PPV_ARGS(&root));
+      ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&root));
       reference_result =
-          UiaReturnRawElementProvider(hwnd(), w_param, l_param, root.Detach());
+          UiaReturnRawElementProvider(hwnd(), w_param, l_param, root.Get());
     } else if (is_msaa_request &&
                !::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
       // Retrieve MSAA dispatch object for the root view.

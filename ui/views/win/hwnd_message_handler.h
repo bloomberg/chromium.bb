@@ -39,6 +39,7 @@ class Insets;
 }  // namespace gfx
 
 namespace ui  {
+class AXFragmentRootWin;
 class AXSystemCaretWin;
 class InputMethod;
 class TextInputClient;
@@ -712,6 +713,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
+
+  // Implements IRawElementProviderFragmentRoot when UIA is enabled
+  std::unique_ptr<ui::AXFragmentRootWin> ax_fragment_root_;
 
   // The location where the user clicked on the caption. We cache this when we
   // receive the WM_NCLBUTTONDOWN message. We use this in the subsequent

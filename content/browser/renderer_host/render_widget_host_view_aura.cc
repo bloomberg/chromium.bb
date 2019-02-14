@@ -60,6 +60,7 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -110,6 +111,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/input_method_keyboard_controller_observer.h"
 #include "ui/base/win/hidden_window.h"
@@ -1178,8 +1180,17 @@ RenderWidgetHostViewAura::AccessibilityGetAcceleratedWidget() {
 gfx::NativeViewAccessible
 RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
 #if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_)
-    return legacy_render_widget_host_HWND_->window_accessible();
+  if (legacy_render_widget_host_HWND_) {
+    if (switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+      ui::AXFragmentRootWin* fragment_root =
+          ui::AXFragmentRootWin::GetForAcceleratedWidget(
+              legacy_render_widget_host_HWND_->hwnd());
+      if (fragment_root)
+        return fragment_root->GetNativeViewAccessible();
+    } else {
+      return legacy_render_widget_host_HWND_->window_accessible();
+    }
+  }
 #endif
 
   if (window_->parent()) {
