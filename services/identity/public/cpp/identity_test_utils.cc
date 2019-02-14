@@ -176,11 +176,21 @@ void UpdateRefreshTokenForAccount(
 CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                   const std::string& email) {
   DCHECK(!identity_manager->HasPrimaryAccount());
-
   SigninManagerBase* signin_manager = identity_manager->GetSigninManager();
   DCHECK(!signin_manager->IsAuthenticated());
 
-  std::string gaia_id = GetTestGaiaIdForEmail(email);
+  AccountTrackerService* account_tracker_service =
+      identity_manager->GetAccountTrackerService();
+  AccountInfo account_info =
+      account_tracker_service->FindAccountInfoByEmail(email);
+  if (account_info.account_id.empty()) {
+    std::string gaia_id = GetTestGaiaIdForEmail(email);
+    account_tracker_service->SeedAccountInfo(gaia_id, email);
+    account_info = account_tracker_service->FindAccountInfoByEmail(email);
+  }
+
+  std::string gaia_id = account_info.gaia;
+  DCHECK(!gaia_id.empty());
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has no real notion of signin, so just plumb the information
@@ -189,26 +199,9 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   identity_manager->SetPrimaryAccountSynchronously(gaia_id, email,
                                                    /*refresh_token=*/"");
 #else
-
-  base::RunLoop run_loop;
-  OneShotIdentityManagerObserver signin_observer(
-      identity_manager, run_loop.QuitClosure(),
-      IdentityManagerEvent::PRIMARY_ACCOUNT_SET);
-
   SigninManager* real_signin_manager =
       SigninManager::FromSigninManagerBase(signin_manager);
-  // Note: It's important to pass base::DoNothing() (rather than a null
-  // callback) to make this work with both SigninManager and FakeSigninManager.
-  // If we would pass a null callback, then SigninManager would call
-  // CompletePendingSignin directly, but FakeSigninManager never does that.
-  // Note: pass an empty string as the refresh token so that no refresh token is
-  // set.
-  real_signin_manager->StartSignInWithRefreshToken(
-      /*refresh_token=*/"", gaia_id, email,
-      /*oauth_fetched_callback=*/base::DoNothing());
-  real_signin_manager->CompletePendingSignin();
-
-  run_loop.Run();
+  real_signin_manager->OnExternalSigninCompleted(email);
 #endif
 
   DCHECK(signin_manager->IsAuthenticated());
@@ -302,6 +295,10 @@ AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
 
   DCHECK(account_tracker_service);
   DCHECK(account_tracker_service->FindAccountInfoByEmail(email).IsEmpty());
+
+  // Wait until tokens are loaded, otherwise the account will be removed as soon
+  // as tokens finish loading.
+  WaitForLoadCredentialsToComplete(identity_manager);
 
   std::string gaia_id = GetTestGaiaIdForEmail(email);
   account_tracker_service->SeedAccountInfo(gaia_id, email);

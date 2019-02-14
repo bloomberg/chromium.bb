@@ -44,23 +44,11 @@ class FakeSigninManager : public SigninManager {
 
   ~FakeSigninManager() override;
 
-  void set_auth_in_progress(const std::string& account_id) {
-    possibly_invalid_account_id_ = account_id;
-  }
-
   void SignIn(const std::string& gaia_id, const std::string& username);
 
   void ForceSignOut();
 
   void FailSignin(const GoogleServiceAuthError& error);
-
-  void StartSignInWithRefreshToken(
-      const std::string& refresh_token,
-      const std::string& gaia_id,
-      const std::string& username,
-      OAuthTokenFetchedCallback oauth_fetched_callback) override;
-
-  void CompletePendingSignin() override;
 
  protected:
   void OnSignoutDecisionReached(

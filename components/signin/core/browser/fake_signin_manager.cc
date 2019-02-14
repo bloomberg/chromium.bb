@@ -52,33 +52,12 @@ FakeSigninManager::FakeSigninManager(
 
 FakeSigninManager::~FakeSigninManager() {}
 
-void FakeSigninManager::StartSignInWithRefreshToken(
-    const std::string& refresh_token,
-    const std::string& gaia_id,
-    const std::string& username,
-    OAuthTokenFetchedCallback oauth_fetched_callback) {
-  set_auth_in_progress(
-      account_tracker_service()->SeedAccountInfo(gaia_id, username));
-  username_ = username;
-
-  possibly_invalid_gaia_id_.assign(gaia_id);
-  possibly_invalid_email_.assign(username);
-
-  if (!oauth_fetched_callback.is_null())
-    std::move(oauth_fetched_callback).Run(refresh_token);
-}
-
-void FakeSigninManager::CompletePendingSignin() {
-  SetAuthenticatedAccountId(GetAccountIdForAuthInProgress());
-  set_auth_in_progress(std::string());
-  FireGoogleSigninSucceeded();
-}
-
 void FakeSigninManager::SignIn(const std::string& gaia_id,
                                const std::string& username) {
-  StartSignInWithRefreshToken(std::string(), gaia_id, username,
-                              OAuthTokenFetchedCallback());
-  CompletePendingSignin();
+  std::string account_id =
+      account_tracker_service()->SeedAccountInfo(gaia_id, username);
+  token_service()->UpdateCredentials(account_id, "test_refresh_token");
+  OnExternalSigninCompleted(username);
 }
 
 void FakeSigninManager::ForceSignOut() {
@@ -99,18 +78,6 @@ void FakeSigninManager::OnSignoutDecisionReached(
     RemoveAccountsOption remove_option,
     SigninClient::SignoutDecision signout_decision) {
   if (!IsAuthenticated()) {
-    if (AuthInProgress()) {
-      // If the user is in the process of signing in, then treat a call to
-      // SignOut as a cancellation request.
-      GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-      HandleAuthError(error);
-    } else {
-      // Clean up our transient data and exit if we aren't signed in.
-      // This avoids a perf regression from clearing out the TokenDB if
-      // SignOut() is invoked on startup to clean up any incomplete previous
-      // signin attempts.
-      ClearTransientSigninData();
-    }
     return;
   }
 
@@ -119,7 +86,6 @@ void FakeSigninManager::OnSignoutDecisionReached(
   if (signout_decision == SigninClient::SignoutDecision::DISALLOW_SIGNOUT)
     return;
 
-  set_auth_in_progress(std::string());
   AccountInfo account_info = GetAuthenticatedAccountInfo();
   const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = account_info.email;

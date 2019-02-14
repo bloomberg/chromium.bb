@@ -229,11 +229,6 @@ bool SigninManagerBase::IsAuthenticated() const {
   return !authenticated_account_id_.empty();
 }
 
-bool SigninManagerBase::AuthInProgress() const {
-  // SigninManagerBase never kicks off auth processes itself.
-  return false;
-}
-
 void SigninManagerBase::Shutdown() {
   on_shutdown_callback_list_.Notify();
 }

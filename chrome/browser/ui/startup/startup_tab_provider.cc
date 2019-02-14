@@ -76,10 +76,6 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   standard_params.is_signin_allowed = profile->IsSyncAllowed();
   if (auto* identity_manager = IdentityManagerFactory::GetForProfile(profile)) {
     standard_params.is_signed_in = identity_manager->HasPrimaryAccount();
-    if (auto* account_mutator = identity_manager->GetPrimaryAccountMutator()) {
-      standard_params.is_signin_in_progress =
-          account_mutator->LegacyIsPrimaryAccountAuthInProgress();
-    }
   }
   standard_params.is_supervised_user = profile->IsSupervised();
   standard_params.is_force_signin_enabled = signin_util::IsForceSigninEnabled();
@@ -204,9 +200,8 @@ bool StartupTabProviderImpl::CanShowWelcome(bool is_signin_allowed,
 // static
 bool StartupTabProviderImpl::ShouldShowWelcomeForOnboarding(
     bool has_seen_welcome_page,
-    bool is_signed_in,
-    bool is_signin_in_progress) {
-  return !has_seen_welcome_page && !is_signed_in && !is_signin_in_progress;
+    bool is_signed_in) {
+  return !has_seen_welcome_page && !is_signed_in;
 }
 
 // static
@@ -216,8 +211,7 @@ StartupTabs StartupTabProviderImpl::GetStandardOnboardingTabsForState(
   if (CanShowWelcome(params.is_signin_allowed, params.is_supervised_user,
                      params.is_force_signin_enabled) &&
       ShouldShowWelcomeForOnboarding(params.has_seen_welcome_page,
-                                     params.is_signed_in,
-                                     params.is_signin_in_progress)) {
+                                     params.is_signed_in)) {
     tabs.emplace_back(GetWelcomePageUrl(!params.is_first_run), false);
   }
   return tabs;

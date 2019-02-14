@@ -10,8 +10,6 @@
 #include "base/callback_forward.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
-struct AccountInfo;
-
 namespace identity {
 
 // PrimaryAccountMutator is the interface to set and clear the primary account
@@ -72,37 +70,9 @@ class PrimaryAccountMutator {
   // and should not be used when writing new code. They will be removed when the
   // old sign-in workflow has been turned down.
 
-  // Attempts to sign-in user with a given refresh token and account. If it is
-  // defined, |callback| should invoke either ClearPrimaryAccount() or
-  // LegacyCompletePendingPrimaryAccountSignin() to either cancel or continue
-  // the in progress sign-in (legacy, pre-DICE workflow).
-  virtual void LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      const std::string& refresh_token,
-      const std::string& gaia_id,
-      const std::string& username,
-      base::OnceCallback<void(const std::string&)> callback) = 0;
-
-  // Complete the in-process sign-in (legacy, pre-DICE workflow).
-  virtual void LegacyCompletePendingPrimaryAccountSignin() = 0;
-
   // If applicable, merges the signed-in account into the cookie jar (legacy,
   // pre-DICE workflow).
   virtual void LegacyMergeSigninCredentialIntoCookieJar() = 0;
-
-  // Returns true if there is a sign-in in progress (legacy, pre-DICE workflow).
-  virtual bool LegacyIsPrimaryAccountAuthInProgress() const = 0;
-
-  // If an authentication is in progress, returns the AccountInfo for the
-  // account being authenticated. Returns an empty AccountInfo if no auth is
-  // in progress (legacy, pre-DICE workflow).
-  virtual AccountInfo LegacyPrimaryAccountForAuthInProgress() const = 0;
-
-  // Copy auth credentials from the other PrimaryAccountMutator to this one.
-  // Used when creating a new profile during the sign-in process to transfer
-  // the in-progress credential information to the new profile (legacy, pre-
-  // DICE workflow).
-  virtual void LegacyCopyCredentialsFrom(
-      const PrimaryAccountMutator& source) = 0;
 };
 
 }  // namespace identity

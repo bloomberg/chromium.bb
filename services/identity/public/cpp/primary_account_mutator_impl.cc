@@ -43,10 +43,7 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
     ClearAccountsAction action,
     signin_metrics::ProfileSignout source_metric,
     signin_metrics::SignoutDelete delete_metric) {
-  // Check if and auth process is ongoing before reporting failure to support
-  // the legacy workflow of cancelling it by clearing the primary account.
-  if (!signin_manager_->IsAuthenticated() &&
-      !LegacyIsPrimaryAccountAuthInProgress())
+  if (!signin_manager_->IsAuthenticated())
     return false;
 
   switch (action) {
@@ -78,45 +75,8 @@ void PrimaryAccountMutatorImpl::SetAllowedPrimaryAccountPattern(
   NOTIMPLEMENTED();
 }
 
-void PrimaryAccountMutatorImpl::
-    LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-        const std::string& refresh_token,
-        const std::string& gaia_id,
-        const std::string& username,
-        base::OnceCallback<void(const std::string&)> callback) {
-  signin_manager_->StartSignInWithRefreshToken(refresh_token, gaia_id, username,
-                                               std::move(callback));
-}
-
-void PrimaryAccountMutatorImpl::LegacyCompletePendingPrimaryAccountSignin() {
-  signin_manager_->CompletePendingSignin();
-}
-
 void PrimaryAccountMutatorImpl::LegacyMergeSigninCredentialIntoCookieJar() {
   signin_manager_->MergeSigninCredentialIntoCookieJar();
-}
-
-bool PrimaryAccountMutatorImpl::LegacyIsPrimaryAccountAuthInProgress() const {
-  return signin_manager_->AuthInProgress();
-}
-
-AccountInfo PrimaryAccountMutatorImpl::LegacyPrimaryAccountForAuthInProgress()
-    const {
-  if (!LegacyIsPrimaryAccountAuthInProgress())
-    return AccountInfo{};
-
-  AccountInfo account_info;
-  account_info.account_id = signin_manager_->GetAccountIdForAuthInProgress();
-  account_info.gaia = signin_manager_->GetGaiaIdForAuthInProgress();
-  account_info.email = signin_manager_->GetUsernameForAuthInProgress();
-
-  return account_info;
-}
-
-void PrimaryAccountMutatorImpl::LegacyCopyCredentialsFrom(
-    const PrimaryAccountMutator& source) {
-  signin_manager_->CopyCredentialsFrom(
-      *static_cast<const PrimaryAccountMutatorImpl&>(source).signin_manager_);
 }
 
 }  // namespace identity

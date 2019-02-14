@@ -141,11 +141,6 @@ class SigninManagerTest : public testing::Test {
     EXPECT_EQ(0, test_observer_.num_failed_signins_);
   }
 
-  void CompleteSigninCallback(const std::string& oauth_token) {
-    oauth_tokens_fetched_.push_back(oauth_token);
-    manager_->CompletePendingSignin();
-  }
-
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
   TestingPrefServiceSimple local_state_;
@@ -161,63 +156,11 @@ class SigninManagerTest : public testing::Test {
   signin::AccountConsistencyMethod account_consistency_;
 };
 
-TEST_F(SigninManagerTest, SignInWithRefreshToken) {
-  CreateSigninManager();
-  EXPECT_FALSE(manager_->IsAuthenticated());
-
-  std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
-  manager_->StartSignInWithRefreshToken(
-      "rt", "gaia_id", "user@gmail.com",
-      SigninManager::OAuthTokenFetchedCallback());
-
-  ExpectSignInWithRefreshTokenSuccess();
-
-  // Should persist across resets.
-  ShutDownManager();
-  CreateSigninManager();
-  EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
-}
-
-TEST_F(SigninManagerTest, SignInWithRefreshTokenCallbackComplete) {
-  CreateSigninManager();
-  EXPECT_FALSE(manager_->IsAuthenticated());
-
-  manager_->StartSignInWithRefreshToken(
-      "rt", "gaia_id", "user@gmail.com",
-      base::BindOnce(&SigninManagerTest::CompleteSigninCallback,
-                     base::Unretained(this)));
-
-  ExpectSignInWithRefreshTokenSuccess();
-  ASSERT_EQ(1U, oauth_tokens_fetched_.size());
-  EXPECT_EQ(oauth_tokens_fetched_[0], "rt");
-}
-
-TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
-  CreateSigninManager();
-  EXPECT_FALSE(manager_->IsAuthenticated());
-
-  std::string gaia_id = "12345";
-  std::string email = "user@google.com";
-
-  account_tracker()->SeedAccountInfo(gaia_id, email);
-  account_fetcher()->OnRefreshTokensLoaded();
-
-  manager_->StartSignInWithRefreshToken(
-      "rt1", gaia_id, email, SigninManager::OAuthTokenFetchedCallback());
-
-  account_fetcher()->FakeUserInfoFetchSuccess(
-      account_tracker()->PickAccountIdForAccount(gaia_id, email), email,
-      gaia_id, "google.com", "full_name", "given_name", "locale",
-      "http://www.google.com");
-
-  ExpectSignInWithRefreshTokenSuccess();
-}
-
 TEST_F(SigninManagerTest, SignOut) {
   CreateSigninManager();
-  manager_->StartSignInWithRefreshToken(
-      "rt", "gaia_id", "user@gmail.com",
-      SigninManager::OAuthTokenFetchedCallback());
+  std::string main_account_id =
+      AddToAccountTracker("account_id", "user@gmail.com");
+  manager_->OnExternalSigninCompleted("user@gmail.com");
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_FALSE(manager_->IsAuthenticated());

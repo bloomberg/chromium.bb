@@ -669,6 +669,8 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
 // Test that the user signing in results in firing of the IdentityManager
 // observer callback and the IdentityManager's state being updated.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
+  signin_manager()->ForceSignOut();
+
   base::RunLoop run_loop;
   identity_manager_observer()->set_on_primary_account_set_callback(
       run_loop.QuitClosure());
@@ -694,6 +696,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
 // Test that the user signing out results in firing of the IdentityManager
 // observer callback and the IdentityManager's state being updated.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
+  signin_manager()->ForceSignOut();
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
   base::RunLoop run_loop;
@@ -729,6 +732,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
 // Test that the primary account's ID remains tracked by the IdentityManager
 // after signing in even after having removed the account without signing out.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
+  signin_manager()->ForceSignOut();
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
   base::RunLoop run_loop;

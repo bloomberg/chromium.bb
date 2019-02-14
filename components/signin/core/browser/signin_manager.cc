@@ -32,107 +32,13 @@ SigninManager::SigninManager(
     GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : SigninManagerBase(client, token_service, account_tracker_service),
-      type_(SIGNIN_TYPE_NONE),
       cookie_manager_service_(cookie_manager_service),
       account_consistency_(account_consistency),
-      signin_manager_signed_in_(false),
-      user_info_fetched_by_account_tracker_(false),
       weak_pointer_factory_(this) {}
 
 SigninManager::~SigninManager() {}
 
-std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
-  switch (type) {
-    case SIGNIN_TYPE_NONE:
-      return "No Signin";
-    case SIGNIN_TYPE_WITH_REFRESH_TOKEN:
-      return "With refresh token";
-    case SIGNIN_TYPE_WITHOUT_REFRESH_TOKEN:
-      return "Without refresh token";
-  }
-
-  NOTREACHED();
-  return std::string();
-}
-
-bool SigninManager::PrepareForSignin(SigninType type,
-                                     const std::string& gaia_id,
-                                     const std::string& username) {
-  std::string account_id =
-      account_tracker_service()->PickAccountIdForAccount(gaia_id, username);
-  DCHECK(!account_id.empty());
-  DCHECK(possibly_invalid_account_id_.empty() ||
-         possibly_invalid_account_id_ == account_id);
-
-  if (!IsAllowedUsername(username)) {
-    // Account is not allowed by admin policy.
-    HandleAuthError(
-        GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
-    return false;
-  }
-
-  // This attempt is either 1) the user trying to establish initial sync, or
-  // 2) trying to refresh credentials for an existing username.  If it is 2, we
-  // need to try again, but take care to leave state around tracking that the
-  // user has successfully signed in once before with this username, so that on
-  // restart we don't think sync setup has never completed.
-  ClearTransientSigninData();
-  type_ = type;
-  possibly_invalid_account_id_.assign(account_id);
-  possibly_invalid_gaia_id_.assign(gaia_id);
-  possibly_invalid_email_.assign(username);
-  signin_manager_signed_in_ = false;
-  user_info_fetched_by_account_tracker_ = false;
-  return true;
-}
-
-void SigninManager::StartSignInWithRefreshToken(
-    const std::string& refresh_token,
-    const std::string& gaia_id,
-    const std::string& username,
-    OAuthTokenFetchedCallback callback) {
-  DCHECK(!IsAuthenticated());
-  SigninType signin_type = refresh_token.empty()
-                               ? SIGNIN_TYPE_WITHOUT_REFRESH_TOKEN
-                               : SIGNIN_TYPE_WITH_REFRESH_TOKEN;
-  if (!PrepareForSignin(signin_type, gaia_id, username)) {
-    return;
-  }
-
-  // Store the refresh token.
-  temp_refresh_token_ = refresh_token;
-
-  if (!callback.is_null()) {
-    // Callback present, let the caller complete the pending sign-in.
-    std::move(callback).Run(temp_refresh_token_);
-  } else {
-    // No callback, so just complete the pending signin.
-    CompletePendingSignin();
-  }
-}
-
-void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
-  DCHECK_NE(this, &source);
-  possibly_invalid_account_id_ = source.possibly_invalid_account_id_;
-  possibly_invalid_gaia_id_ = source.possibly_invalid_gaia_id_;
-  possibly_invalid_email_ = source.possibly_invalid_email_;
-  temp_refresh_token_ = source.temp_refresh_token_;
-  source.signin_client()->AfterCredentialsCopied();
-}
-
-void SigninManager::ClearTransientSigninData() {
-  DCHECK(IsInitialized());
-
-  possibly_invalid_account_id_.clear();
-  possibly_invalid_gaia_id_.clear();
-  possibly_invalid_email_.clear();
-  type_ = SIGNIN_TYPE_NONE;
-  temp_refresh_token_.clear();
-}
-
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
-  ClearTransientSigninData();
-
   for (auto& observer : observer_list_)
     observer.GoogleSigninFailed(error);
 }
@@ -181,18 +87,6 @@ void SigninManager::OnSignoutDecisionReached(
 
   signin_metrics::LogSignout(signout_source_metric, signout_delete_metric);
   if (!IsAuthenticated()) {
-    if (AuthInProgress()) {
-      // If the user is in the process of signing in, then treat a call to
-      // SignOut as a cancellation request.
-      GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-      HandleAuthError(error);
-    } else {
-      // Clean up our transient data and exit if we aren't signed in.
-      // This avoids a perf regression from clearing out the TokenDB if
-      // SignOut() is invoked on startup to clean up any incomplete previous
-      // signin attempts.
-      ClearTransientSigninData();
-    }
     return;
   }
 
@@ -202,8 +96,6 @@ void SigninManager::OnSignoutDecisionReached(
     DVLOG(1) << "Ignoring attempt to sign out while signout disallowed";
     return;
   }
-
-  ClearTransientSigninData();
 
   AccountInfo account_info = GetAuthenticatedAccountInfo();
   const std::string account_id = GetAuthenticatedAccountId();
@@ -289,8 +181,6 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
                               signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 
-  account_tracker_service()->AddObserver(this);
-
   // It is important to only load credentials after starting to observe the
   // token service.
   token_service()->AddObserver(this);
@@ -298,7 +188,6 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
 
 void SigninManager::Shutdown() {
   token_service()->RemoveObserver(this);
-  account_tracker_service()->RemoveObserver(this);
   local_state_pref_registrar_.RemoveAll();
   SigninManagerBase::Shutdown();
 }
@@ -322,7 +211,7 @@ void SigninManager::SetSigninAllowed(bool allowed) {
 }
 
 void SigninManager::OnSigninAllowedPrefChanged() {
-  if (!IsSigninAllowed() && (IsAuthenticated() || AuthInProgress()))
+  if (!IsSigninAllowed() && IsAuthenticated())
     SignOut(signin_metrics::SIGNOUT_PREF_CHANGED,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
@@ -343,22 +232,6 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   return identity::IsUsernameAllowedByPattern(username, pattern);
 }
 
-bool SigninManager::AuthInProgress() const {
-  return !possibly_invalid_account_id_.empty();
-}
-
-const std::string& SigninManager::GetAccountIdForAuthInProgress() const {
-  return possibly_invalid_account_id_;
-}
-
-const std::string& SigninManager::GetGaiaIdForAuthInProgress() const {
-  return possibly_invalid_gaia_id_;
-}
-
-const std::string& SigninManager::GetUsernameForAuthInProgress() const {
-  return possibly_invalid_email_;
-}
-
 void SigninManager::MergeSigninCredentialIntoCookieJar() {
   if (account_consistency_ == signin::AccountConsistencyMethod::kMirror)
     return;
@@ -370,49 +243,19 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
                                               gaia::GaiaSource::kSigninManager);
 }
 
-void SigninManager::CompletePendingSignin() {
-  DCHECK(!possibly_invalid_account_id_.empty());
-  OnSignedIn();
-
-  DCHECK(IsAuthenticated());
-
-  if (!temp_refresh_token_.empty()) {
-    std::string account_id = GetAuthenticatedAccountId();
-    token_service()->UpdateCredentials(
-        account_id, temp_refresh_token_,
-        signin_metrics::SourceForRefreshTokenOperation::
-            kSigninManager_LegacyPreDiceSigninFlow);
-    temp_refresh_token_.clear();
-  }
-  MergeSigninCredentialIntoCookieJar();
-}
-
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {
   AccountInfo info =
       account_tracker_service()->FindAccountInfoByEmail(username);
   DCHECK(!info.gaia.empty());
   DCHECK(!info.email.empty());
-  possibly_invalid_account_id_ = info.account_id;
-  possibly_invalid_gaia_id_ = info.gaia;
-  possibly_invalid_email_ = info.email;
-  OnSignedIn();
-}
 
-void SigninManager::OnSignedIn() {
   bool reauth_in_progress = IsAuthenticated();
 
   signin_client()->GetPrefs()->SetInt64(
       prefs::kSignedInTime,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
-  SetAuthenticatedAccountInfo(possibly_invalid_gaia_id_,
-                              possibly_invalid_email_);
-  const std::string gaia_id = possibly_invalid_gaia_id_;
-
-  possibly_invalid_account_id_.clear();
-  possibly_invalid_gaia_id_.clear();
-  possibly_invalid_email_.clear();
-  signin_manager_signed_in_ = true;
+  SetAuthenticatedAccountInfo(info.gaia, info.email);
 
   if (!reauth_in_progress)
     FireGoogleSigninSucceeded();
@@ -431,17 +274,6 @@ void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.GoogleSignedOut(account_info);
   }
-}
-
-void SigninManager::OnAccountUpdated(const AccountInfo& info) {
-  if (!info.IsValid())
-    return;
-
-  user_info_fetched_by_account_tracker_ = true;
-}
-
-void SigninManager::OnAccountUpdateFailed(const std::string& account_id) {
-  user_info_fetched_by_account_tracker_ = true;
 }
 
 void SigninManager::OnRefreshTokensLoaded() {

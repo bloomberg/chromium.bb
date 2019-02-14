@@ -126,9 +126,6 @@ class SigninManagerBase : public KeyedService {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // Returns true if there's a signin in progress.
-  virtual bool AuthInProgress() const;
-
   // KeyedService implementation.
   void Shutdown() override;
 

@@ -95,9 +95,6 @@ class SigninClient : public KeyedService {
       gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
 
-  // Called once the credentials has been copied to another SigninManager.
-  virtual void AfterCredentialsCopied() {}
-
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}
 };

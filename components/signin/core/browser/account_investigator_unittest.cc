@@ -267,7 +267,8 @@ TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedError) {
       /*accounts_are_fresh=*/true, just_one, no_accounts};
   GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   investigator()->OnAccountsInCookieUpdated(accounts_in_cookie_jar_info, error);
-  EXPECT_EQ(0u, histogram_tester.GetTotalCountsForPrefix("Signin.").size());
+  EXPECT_EQ(
+      0u, histogram_tester.GetTotalCountsForPrefix("Signin.CookieJar.").size());
 }
 
 TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedOnChange) {
@@ -294,7 +295,8 @@ TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedSigninOnly) {
       /*accounts_are_fresh=*/true, just_one, no_accounts};
   investigator()->OnAccountsInCookieUpdated(
       accounts_in_cookie_jar_info, GoogleServiceAuthError::AuthErrorNone());
-  EXPECT_EQ(1u, histogram_tester.GetTotalCountsForPrefix("Signin.").size());
+  EXPECT_EQ(
+      1u, histogram_tester.GetTotalCountsForPrefix("Signin.CookieJar.").size());
   ExpectRelationReport(ReportingType::ON_CHANGE, histogram_tester,
                        AccountRelation::SINGLE_SIGNED_IN_MATCH_NO_SIGNED_OUT);
 }
@@ -348,7 +350,8 @@ TEST_F(AccountInvestigatorTest, TryPeriodicReportStale) {
   const HistogramTester histogram_tester;
   TryPeriodicReport();
   EXPECT_TRUE(*periodic_pending());
-  EXPECT_EQ(0u, histogram_tester.GetTotalCountsForPrefix("Signin.").size());
+  EXPECT_EQ(
+      0u, histogram_tester.GetTotalCountsForPrefix("Signin.CookieJar.").size());
 
   std::string email("f@bar.com");
   identity_test_env()->SetCookieAccounts(
