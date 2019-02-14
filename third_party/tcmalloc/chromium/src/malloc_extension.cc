@@ -42,6 +42,7 @@
 #else
 #include <sys/types.h>
 #endif
+#include <atomic>
 #include <string>
 #include "base/dynamic_annotations.h"
 #include "base/sysinfo.h"    // for FillProcSelfMaps
@@ -203,34 +204,27 @@ void MallocExtension::MarkThreadTemporarilyIdle() {
 
 // The current malloc extension object.
 
-static MallocExtension* current_instance;
+std::atomic<MallocExtension*> MallocExtension::current_instance_;
 
-static void InitModule() {
-  if (current_instance != NULL) {
-    return;
-  }
-  current_instance = new MallocExtension;
+// static
+MallocExtension* MallocExtension::InitModule() {
+  MallocExtension* instance = new MallocExtension;
 #ifndef NO_HEAP_CHECK
-  HeapLeakChecker::IgnoreObject(current_instance);
+  HeapLeakChecker::IgnoreObject(instance);
 #endif
-}
-
-REGISTER_MODULE_INITIALIZER(malloc_extension_init, InitModule())
-
-MallocExtension* MallocExtension::instance() {
-  InitModule();
-  return current_instance;
+  current_instance_.store(instance, std::memory_order_release);
+  return instance;
 }
 
 void MallocExtension::Register(MallocExtension* implementation) {
-  InitModule();
+  InitModuleOnce();
   // When running under valgrind, our custom malloc is replaced with
   // valgrind's one and malloc extensions will not work.  (Note:
   // callers should be responsible for checking that they are the
   // malloc that is really being run, before calling Register.  This
   // is just here as an extra sanity check.)
   if (!RunningOnValgrind()) {
-    current_instance = implementation;
+    current_instance_.store(implementation, std::memory_order_release);
   }
 }
 
