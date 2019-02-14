@@ -13,9 +13,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
@@ -89,7 +91,7 @@ public class IncognitoTabLauncher extends Activity {
                         ChromeFeatureList.ALLOW_NEW_INCOGNITO_TAB_INTENTS)
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled();
 
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> setComponentEnabled(context, enable));
+        PostTask.postTask(TaskTraits.USER_VISIBLE, () -> setComponentEnabled(context, enable));
     }
 
     /**
@@ -98,6 +100,8 @@ public class IncognitoTabLauncher extends Activity {
      */
     @VisibleForTesting
     static void setComponentEnabled(Context context, boolean enabled) {
+        ThreadUtils.assertOnBackgroundThread();
+
         PackageManager packageManager = context.getPackageManager();
         ComponentName componentName = new ComponentName(context, IncognitoTabLauncher.class);
 
