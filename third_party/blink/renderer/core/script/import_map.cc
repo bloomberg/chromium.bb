@@ -53,6 +53,11 @@ String GetKey(const String& key_string,
       return key.GetImportMapKeyString();
 
     case ParsedSpecifier::Type::kURL:
+      if (!SchemeRegistry::IsFetchScheme(key.GetUrl().Protocol())) {
+        AddIgnoredKeyMessage(logger, key_string,
+                             "Invalid key (non-fetch scheme)");
+        return String();
+      }
       return key.GetImportMapKeyString();
   }
 }
