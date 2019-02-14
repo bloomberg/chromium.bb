@@ -150,7 +150,13 @@ class ChromeDriver(object):
             chrome_processes = chromedriver_process.children()
             if len(chrome_processes) == 1:
               # Remove core file size limit, then use SIGABRT to dump core.
-              chrome_processes[0].rlimit(
+              # Newer versions of psutil.Process have rlimit method, while older
+              # versions have set_rlimit method.
+              if hasattr(chrome_processes[0], 'rlimit'):
+                rlimit_method = chrome_processes[0].rlimit
+              else:
+                rlimit_method = chrome_processes[0].set_rlimit
+              rlimit_method(
                   psutil.RLIMIT_CORE,
                   (psutil.RLIM_INFINITY, psutil.RLIM_INFINITY))
               chrome_processes[0].send_signal(signal.SIGABRT)
