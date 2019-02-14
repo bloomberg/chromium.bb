@@ -790,6 +790,7 @@ Polymer({
     const expandButton = e.currentTarget.querySelector(expandButtonTag);
     assert(expandButton);
     expandButton.expanded = !expandButton.expanded;
+    cr.ui.focusWithoutInk(expandButton);
   },
 });
 })();

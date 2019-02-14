@@ -40,7 +40,21 @@ Polymer({
   },
 
   listeners: {
-    'click': 'toggleExpand_',
+    click: 'toggleExpand_',
+  },
+
+  /** @type {boolean} */
+  get noink() {
+    return this.$.icon.noink;
+  },
+
+  /** @type {boolean} */
+  set noink(value) {
+    this.$.icon.noink = value;
+  },
+
+  focus: function() {
+    this.$.icon.focus();
   },
 
   /**
@@ -70,7 +84,6 @@ Polymer({
     event.preventDefault();
 
     this.expanded = !this.expanded;
-
-    this.$$('cr-icon-button').focus();
+    cr.ui.focusWithoutInk(this.$.icon);
   },
 });
