@@ -42600,6 +42600,39 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="PietErrorCode">
+  <summary>
+    Piet Error Code as defined in
+    com.google.search.now.ui.piet.ErrorsProto.ErrorCode, which located in
+    /third_party/feed/src/main/proto/search/now/ui/piet/errors.proto.
+  </summary>
+  <int value="0" label="ERR_UNSPECIFIED"/>
+  <int value="1" label="ERR_MISSING_STYLESHEET"/>
+  <int value="2" label="ERR_DUPLICATE_STYLESHEET"/>
+  <int value="3" label="ERR_MISSING_STYLE"/>
+  <int value="4" label="ERR_DUPLICATE_STYLE"/>
+  <int value="5" label="ERR_MISSING_TEMPLATE"/>
+  <int value="6" label="ERR_DUPLICATE_TEMPLATE"/>
+  <int value="8" label="ERR_MISSING_BINDING_VALUE"/>
+  <int value="9" label="ERR_DUPLICATE_BINDING_VALUE"/>
+  <int value="10" label="ERR_BINDING_VALUE_TYPE_MISMATCH"/>
+  <int value="101" label="ERR_MISSING_FONTS"/>
+  <int value="102" label="ERR_MISSING_IMAGE_URL"/>
+  <int value="103" label="ERR_IMAGE_UNAVAILABLE"/>
+  <int value="104" label="ERR_MISSING_CUSTOM_ELEMENT_RENDERER"/>
+  <int value="105" label="ERR_INVALID_GRADIENT_DIRECTION"/>
+  <int value="106" label="ERR_MISSING_ACTION_HANDLER"/>
+  <int value="107" label="ERR_CONTENT_WIDTH_GRID_CELL_WITH_INVALID_CONTENT"/>
+  <int value="108" label="ERR_GRID_CELL_WIDTH_WITHOUT_CONTENTS"/>
+  <int value="109" label="ERR_INVALID_MEDIA_QUERY_CONDITION"/>
+  <int value="110" label="ERR_MISSING_ELEMENT_CONTENTS"/>
+  <int value="111" label="ERR_MISSING_OR_UNHANDLED_CONTENT"/>
+  <int value="201" label="ERR_UNSUPPORTED_FEATURE"/>
+  <int value="202" label="ERR_PROTO_TOO_LARGE"/>
+  <int value="203" label="ERR_POOR_FRAME_RATE"/>
+  <int value="204" label="ERR_CHUNKED_TEXT_WITH_SINGLE_CHUNK"/>
+</enum>
+
 <enum name="PingResult">
   <int value="0" label="Success"/>
   <int value="1" label="Response started"/>

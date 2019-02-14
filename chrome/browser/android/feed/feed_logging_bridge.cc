@@ -5,7 +5,9 @@
 #include "chrome/browser/android/feed/feed_logging_bridge.h"
 
 #include <jni.h>
+#include <vector>
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
@@ -46,7 +48,7 @@ void FeedLoggingBridge::Destroy(JNIEnv* j_env, const JavaRef<jobject>& j_this) {
 
 void FeedLoggingBridge::OnContentViewed(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
+    const JavaRef<jobject>& j_this,
     const jint j_position,
     const jlong j_publishedTimeMs,
     const jlong j_timeContentBecameAvailableMs,
@@ -56,28 +58,26 @@ void FeedLoggingBridge::OnContentViewed(
       base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
 }
 
-void FeedLoggingBridge::OnContentDismissed(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
-    const jint j_position,
-    const base::android::JavaRef<jstring>& j_url) {
+void FeedLoggingBridge::OnContentDismissed(JNIEnv* j_env,
+                                           const JavaRef<jobject>& j_this,
+                                           const jint j_position,
+                                           const JavaRef<jstring>& j_url,
+                                           const jboolean was_committed) {
   feed_logging_metrics_->OnSuggestionDismissed(
-      j_position, GURL(ConvertJavaStringToUTF8(j_env, j_url)));
+      j_position, GURL(ConvertJavaStringToUTF8(j_env, j_url)), was_committed);
 }
 
-void FeedLoggingBridge::OnContentSwiped(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {
+void FeedLoggingBridge::OnContentSwiped(JNIEnv* j_env,
+                                        const JavaRef<jobject>& j_this) {
   feed_logging_metrics_->OnSuggestionSwiped();
 }
 
-void FeedLoggingBridge::OnClientAction(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
-    const jint j_window_open_disposition,
-    const jint j_position,
-    const jlong j_publishedTimeMs,
-    const jfloat j_score) {
+void FeedLoggingBridge::OnClientAction(JNIEnv* j_env,
+                                       const JavaRef<jobject>& j_this,
+                                       const jint j_window_open_disposition,
+                                       const jint j_position,
+                                       const jlong j_publishedTimeMs,
+                                       const jfloat j_score) {
   feed_logging_metrics_->OnSuggestionOpened(
       j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score);
   feed_logging_metrics_->OnSuggestionWindowOpened(
@@ -86,7 +86,7 @@ void FeedLoggingBridge::OnClientAction(
 
 void FeedLoggingBridge::OnContentContextMenuOpened(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
+    const JavaRef<jobject>& j_this,
     const jint j_position,
     const jlong j_publishedTimeMs,
     const jfloat j_score) {
@@ -106,6 +106,20 @@ void FeedLoggingBridge::OnMoreButtonClicked(JNIEnv* j_env,
   feed_logging_metrics_->OnMoreButtonClicked(j_position);
 }
 
+void FeedLoggingBridge::OnNotInterestedInSource(JNIEnv* j_env,
+                                                const JavaRef<jobject>& j_this,
+                                                const jint j_position,
+                                                const jboolean was_committed) {
+  feed_logging_metrics_->OnNotInterestedInSource(j_position, was_committed);
+}
+
+void FeedLoggingBridge::OnNotInterestedInTopic(JNIEnv* j_env,
+                                               const JavaRef<jobject>& j_this,
+                                               const jint j_position,
+                                               const jboolean was_committed) {
+  feed_logging_metrics_->OnNotInterestedInTopic(j_position, was_committed);
+}
+
 void FeedLoggingBridge::OnOpenedWithContent(JNIEnv* j_env,
                                             const JavaRef<jobject>& j_this,
                                             const jlong j_time_to_populate,
@@ -117,28 +131,35 @@ void FeedLoggingBridge::OnOpenedWithContent(JNIEnv* j_env,
 
 void FeedLoggingBridge::OnOpenedWithNoImmediateContent(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {}
+    const JavaRef<jobject>& j_this) {}
 
-void FeedLoggingBridge::OnOpenedWithNoContent(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {
+void FeedLoggingBridge::OnOpenedWithNoContent(JNIEnv* j_env,
+                                              const JavaRef<jobject>& j_this) {
   feed_logging_metrics_->OnPageShown(/*suggestions_count=*/0);
 }
 
-void FeedLoggingBridge::OnSpinnerShown(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
-    const jlong j_shownTimeMs) {
+void FeedLoggingBridge::OnSpinnerShown(JNIEnv* j_env,
+                                       const JavaRef<jobject>& j_this,
+                                       const jlong j_shownTimeMs) {
   feed_logging_metrics_->OnSpinnerShown(
       base::TimeDelta::FromMilliseconds(j_shownTimeMs));
 }
 
-void FeedLoggingBridge::OnContentTargetVisited(
+void FeedLoggingBridge::OnPietFrameRenderingEvent(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
-    const jlong visit_time_ms,
-    const jboolean is_offline,
-    const jboolean return_to_ntp) {
+    const JavaRef<jobject>& j_this,
+    const JavaRef<jintArray>& j_piet_error_codes) {
+  std::vector<int> piet_error_codes;
+  base::android::JavaIntArrayToIntVector(j_env, j_piet_error_codes,
+                                         &piet_error_codes);
+  feed_logging_metrics_->OnPietFrameRenderingEvent(std::move(piet_error_codes));
+}
+
+void FeedLoggingBridge::OnContentTargetVisited(JNIEnv* j_env,
+                                               const JavaRef<jobject>& j_this,
+                                               const jlong visit_time_ms,
+                                               const jboolean is_offline,
+                                               const jboolean return_to_ntp) {
   if (is_offline) {
     feed_logging_metrics_->OnSuggestionOfflinePageVisited(
         base::TimeDelta::FromMilliseconds(visit_time_ms), return_to_ntp);
@@ -150,7 +171,7 @@ void FeedLoggingBridge::OnContentTargetVisited(
 
 void FeedLoggingBridge::ReportScrolledAfterOpen(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {
+    const JavaRef<jobject>& j_this) {
   feed_logging_metrics_->ReportScrolledAfterOpen();
 }
 

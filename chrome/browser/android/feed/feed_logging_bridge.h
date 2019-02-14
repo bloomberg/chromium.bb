@@ -33,7 +33,8 @@ class FeedLoggingBridge {
   void OnContentDismissed(JNIEnv* j_env,
                           const base::android::JavaRef<jobject>& j_this,
                           const jint j_position,
-                          const base::android::JavaRef<jstring>& j_url);
+                          const base::android::JavaRef<jstring>& j_url,
+                          const jboolean was_committed);
 
   void OnContentSwiped(JNIEnv* j_env,
                        const base::android::JavaRef<jobject>& j_this);
@@ -59,6 +60,16 @@ class FeedLoggingBridge {
                            const base::android::JavaRef<jobject>& j_this,
                            const jint j_position);
 
+  void OnNotInterestedInSource(JNIEnv* j_env,
+                               const base::android::JavaRef<jobject>& j_this,
+                               const jint j_position,
+                               const jboolean was_committed);
+
+  void OnNotInterestedInTopic(JNIEnv* j_env,
+                              const base::android::JavaRef<jobject>& j_this,
+                              const jint j_position,
+                              const jboolean was_committed);
+
   void OnOpenedWithContent(JNIEnv* j_env,
                            const base::android::JavaRef<jobject>& j_this,
                            const jlong j_time_to_populate,
@@ -74,6 +85,11 @@ class FeedLoggingBridge {
   void OnSpinnerShown(JNIEnv* j_env,
                       const base::android::JavaRef<jobject>& j_this,
                       const jlong j_shownTimeMs);
+
+  void OnPietFrameRenderingEvent(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const base::android::JavaRef<jintArray>& j_piet_error_codes);
 
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
