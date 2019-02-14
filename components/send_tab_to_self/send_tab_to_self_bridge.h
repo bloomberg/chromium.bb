@@ -15,6 +15,7 @@
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
 namespace syncer {
@@ -37,7 +38,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // |clock| must not be null and must outlive this object.
   SendTabToSelfBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-      const syncer::LocalDeviceInfoProvider* local_device_info_provider,
+      syncer::LocalDeviceInfoProvider* local_device_info_provider,
       base::Clock* clock);
   ~SendTabToSelfBridge() override;
 
@@ -79,10 +80,22 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // the model.
   void NotifySendTabToSelfEntryDeleted(const std::vector<std::string>& guids);
 
+  // Used as callback given to LocalDeviceInfoProvider.
+  void OnDeviceProviderInitialized();
+
   // |entries_| is keyed by GUIDs.
   SendTabToSelfEntries entries_;
-  const syncer::LocalDeviceInfoProvider* const local_device_info_provider_;
+
+  syncer::LocalDeviceInfoProvider* const local_device_info_provider_;
+
+  std::string local_device_name_;
+
   const base::Clock* const clock_;
+
+  // Used to listen for provider initialization. If the provider is already
+  // initialized during our constructor then the subscription is never used.
+  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
+      device_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridge);
 };
