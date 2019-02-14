@@ -837,15 +837,22 @@ class SimulatorTestRunner(TestRunner):
 
   def tear_down(self):
     """Performs cleanup actions which must occur after every test launch."""
+    LOGGER.debug('Extracting test data.')
     self.extract_test_data()
+    LOGGER.debug('Retrieving crash reports.')
     self.retrieve_crash_reports()
+    LOGGER.debug('Retrieving derived data.')
     self.retrieve_derived_data()
+    LOGGER.debug('Making desktop screenshots.')
     self.screenshot_desktop()
+    LOGGER.debug('Killing simulators.')
     self.kill_simulators()
+    LOGGER.debug('Wiping simulator.')
     self.wipe_simulator()
     if os.path.exists(self.homedir):
       shutil.rmtree(self.homedir, ignore_errors=True)
       self.homedir = ''
+    LOGGER.debug('End of tear_down.')
 
   def run_tests(self, test_shard=None):
     """Runs passed-in tests. Builds a command and create a simulator to
