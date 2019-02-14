@@ -515,7 +515,7 @@ TEST(P2PSocketTcpWithPseudoTlsTest, Basic) {
 class P2PSocketTcpWithTlsTest
     : public testing::TestWithParam<std::tuple<net::IoMode, P2PSocketType>> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     P2PSocketTcpWithTlsTest,
     ::testing::Combine(::testing::Values(net::SYNCHRONOUS, net::ASYNC),

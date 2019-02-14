@@ -376,7 +376,7 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Variations,
     CertVerifyProcChromeOSOrderingTest,
     ::testing::Combine(
