@@ -151,9 +151,12 @@
      * readable test results.
      */
     function completionCallback(tests, harness_status) {
+        const xhtmlNS = 'http://www.w3.org/1999/xhtml';
 
         // Create element to hold results.
-        const resultsElement = outputDocument.createElement('pre');
+        const resultsElement = outputDocument.createElementNS(xhtmlNS, 'pre');
+        resultsElement.style.whiteSpace = 'pre-wrap';
+        resultsElement.style.lineHeight = '1.5';
 
         // Declare result string.
         let resultStr = 'This is a testharness.js-based test.\n';
@@ -186,7 +189,6 @@
         resultsElement.textContent = resultStr;
 
         function done() {
-            const xhtmlNS = 'http://www.w3.org/1999/xhtml';
             let body = null;
             if (outputDocument.body && outputDocument.body.tagName == 'BODY' &&
                 outputDocument.body.namespaceURI == xhtmlNS) {
