@@ -540,8 +540,10 @@ bool NetworkState::NetworkStateIsCaptivePortal(
 
 // static
 bool NetworkState::ErrorIsValid(const std::string& error) {
-  // Shill uses "Unknown" to indicate an unset or cleared error state.
-  return !error.empty() && error != kErrorUnknown;
+  // Pre M-74 Shill uses "Unknown" to indicate an unset or cleared error state.
+  // TODO(stevenjb): Remove kErrorUnknown once 74 has shipped.
+  return !error.empty() && error != kErrorUnknown &&
+         error != shill::kErrorNoFailure;
 }
 
 // static
