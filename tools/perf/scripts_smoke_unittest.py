@@ -92,4 +92,3 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.fail('json_test_results should be populated: ' + stdout + str(e))
     finally:
       shutil.rmtree(tempdir)
-

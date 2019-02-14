@@ -5,7 +5,10 @@
 import fnmatch
 
 import numpy  # pylint: disable=import-error
-import pandas  # pylint: disable=import-error
+try:
+  import pandas  # pylint: disable=import-error
+except ImportError:
+  pass
 
 
 SECONDS_IN_A_DAY = 60 * 60 * 24

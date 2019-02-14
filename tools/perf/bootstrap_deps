@@ -19,7 +19,7 @@ deps = {
     "src/tools/perf/profile_creators": "",
     "src/tools/perf/run_benchmark": "",
     "src/tools/variations": "",
-    "src/testing/variations": "",
+    "src/testing": "",
     "src/tools/telemetry": "",
     "src/third_party/blink/perf_tests": "",
     "src/third_party/catapult": "",
