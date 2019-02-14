@@ -48,10 +48,8 @@ crbug.com/24182 jquery/traversing.html [ Slow ]
 crbug.com/24182 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-cuechange.html [ Slow ]
 crbug.com/24182 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Slow ]
 crbug.com/24182 media/controls/controls-cast-do-not-fade-out.html [ Slow ]
-crbug.com/24182 virtual/new-remote-playback-pipeline/media/controls/controls-cast-do-not-fade-out.html [ Slow ]
 crbug.com/24182 virtual/video-surface-layer/media/controls/controls-cast-do-not-fade-out.html [ Slow ]
 crbug.com/24182 media/controls/controls-cast-overlay-slow-fade.html [ Slow ]
-crbug.com/24182 virtual/new-remote-playback-pipeline/media/controls/controls-cast-overlay-slow-fade.html [ Slow ]
 crbug.com/24182 virtual/video-surface-layer/media/controls/controls-cast-overlay-slow-fade.html [ Slow ]
 crbug.com/24182 svg/filters/big-sized-filter.svg [ Slow ]
 crbug.com/24182 tables/mozilla/other/slashlogo.html [ Slow ]
@@ -249,7 +247,6 @@ crbug.com/660492 storage/indexeddb/structured-clone.html [ Slow ]
 
 # Media controls tests have to wait for panel to fade out.
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
-crbug.com/722825 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Slow ]
 
 crbug.com/719298 fast/dnd/dropEffect-for-effectAllowed.html [ Slow ]
 
@@ -300,7 +297,6 @@ crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-c
 crbug.com/779956 [ Linux ] external/wpt/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.html [ Slow ]
 
 crbug.com/793771 media/controls/modern/scrubbing.html [ Slow ]
-crbug.com/793771 virtual/new-remote-playback-pipeline/media/controls/modern/scrubbing.html [ Slow ]
 crbug.com/793771 virtual/video-surface-layer/media/controls/modern/scrubbing.html [ Slow ]
 
 # These tests need to do many iterations and so can't be fast.
@@ -387,7 +383,6 @@ crbug.com/833215 external/wpt/accelerometer/Accelerometer.https.html [ Slow ]
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
 
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
-crbug.com/865262 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/text-track-menu-pointer-selection.html [ Slow ]
 crbug.com/876050 [ Mac ] virtual/video-surface-layer/media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
 crbug.com/910627 webexposed/global-interface-listing-shared-worker.html [ Slow ]
@@ -1119,8 +1114,6 @@ crbug.com/874695 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Slow ]
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-click.html [ Slow ]
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/touch-slider-no-js-touch-listener.html [ Slow ]
-crbug.com/874695 virtual/new-remote-playback-pipeline/http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Slow ]
-crbug.com/874695 virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Slow ]
 crbug.com/874695 virtual/origin-policy/external/wpt/origin-policy/origin-policy.https.tentative.html [ Slow ]
 crbug.com/874695 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.sharedworker.html [ Slow ]
 crbug.com/874695 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.worker.html [ Slow ]
@@ -1578,7 +1571,6 @@ crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/r
 crbug.com/912364 [ Mac ] virtual/user-activation-v2/fast/events/no-fake-mousemove.html [ Slow ]
 crbug.com/914981 [ Mac ] media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/mouseevent_fractional/fast/events/no-fake-mousemove.html [ Slow ]
-crbug.com/914981 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/video-surface-layer/media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] fast/events/no-fake-mousemove.html [ Slow ]
 
