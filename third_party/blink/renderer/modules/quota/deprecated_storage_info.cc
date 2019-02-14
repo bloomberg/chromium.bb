@@ -61,7 +61,7 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
 void DeprecatedStorageInfo::requestQuota(
     ScriptState* script_state,
     int storage_type,
-    unsigned long long new_quota_in_bytes,
+    uint64_t new_quota_in_bytes,
     V8StorageQuotaCallback* success_callback,
     V8StorageErrorCallback* error_callback) {
   // Dispatching the request to DeprecatedStorageQuota, as this interface is

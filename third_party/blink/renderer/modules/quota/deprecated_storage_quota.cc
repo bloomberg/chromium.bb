@@ -166,7 +166,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
 
 void DeprecatedStorageQuota::requestQuota(
     ScriptState* script_state,
-    unsigned long long new_quota_in_bytes,
+    uint64_t new_quota_in_bytes,
     V8StorageQuotaCallback* success_callback,
     V8StorageErrorCallback* error_callback) {
   ExecutionContext& execution_context = *ExecutionContext::From(script_state);

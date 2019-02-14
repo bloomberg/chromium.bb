@@ -65,7 +65,7 @@ class DeprecatedStorageInfo final : public ScriptWrappable {
 
   void requestQuota(ScriptState*,
                     int storage_type,
-                    unsigned long long new_quota_in_bytes,
+                    uint64_t new_quota_in_bytes,
                     V8StorageQuotaCallback* = nullptr,
                     V8StorageErrorCallback* = nullptr);
 
