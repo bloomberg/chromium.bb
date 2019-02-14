@@ -1,5 +1,6 @@
 <link rel="import" href="../../html/polymer.html">
 
+<link rel="import" href="../../html/cr/ui/focus_without_ink.html">
 <link rel="import" href="../cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../cr_icons_css.html">
 <link rel="import" href="../shared_style_css.html">
@@ -27,9 +28,10 @@
     </style>
 
     <div id="label"><slot></slot></div>
-    <cr-icon-button class$="[[iconName_(expanded)]]" disabled="[[disabled]]"
-        aria-label$="[[alt]]" aria-pressed$="[[getAriaPressed_(expanded)]]"
-        tabindex="[[tabIndex]]"></cr-icon-button>
+    <cr-icon-button id="icon" class$="[[iconName_(expanded)]]"
+        disabled="[[disabled]]" aria-label$="[[alt]]"
+        aria-pressed$="[[getAriaPressed_(expanded)]]" tabindex="[[tabIndex]]">
+    </cr-icon-button>
   </template>
   <script src="cr_expand_button.js"></script>
 </dom-module>
