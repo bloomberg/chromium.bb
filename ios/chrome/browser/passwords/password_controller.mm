@@ -295,7 +295,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   // Notify the password manager that the page loaded so it can clear its own
   // per-page state.
-  self.passwordManager->DidNavigateMainFrame(/*form_may_be_submitted=*/false);
+  self.passwordManager->DidNavigateMainFrame(/*form_may_be_submitted=*/true);
 
   if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.
