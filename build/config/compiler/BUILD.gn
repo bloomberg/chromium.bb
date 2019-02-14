@@ -1120,7 +1120,7 @@ config("compiler_codegen") {
           # aggregates enabling subsequent optimizations) leads to
           # invalid code generation when using the Android NDK's
           # compiler (r5-r7). This can be verified using
-          # webkit_unit_tests' WTF.Checked_int8_t test.
+          # blink_unittests' WTF.Checked_int8_t test.
           "-fno-tree-sra",
 
           # The following option is disabled to improve binary

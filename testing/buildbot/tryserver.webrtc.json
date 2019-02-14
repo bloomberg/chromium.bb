@@ -3,49 +3,49 @@
   "AAAAA2 See generate_buildbot_json.py to make changes": {},
   "android_chromium_compile": {
     "additional_compile_targets": [
+      "blink_unittests",
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
-      "remoting_unittests",
-      "webkit_unit_tests"
+      "remoting_unittests"
     ]
   },
   "linux_chromium_compile": {
     "additional_compile_targets": [
+      "blink_unittests",
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
       "remoting_unittests",
-      "remoting/webapp:webapp",
-      "webkit_unit_tests"
+      "remoting/webapp:webapp"
     ]
   },
   "mac_chromium_compile": {
     "additional_compile_targets": [
+      "blink_unittests",
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
       "remoting_unittests",
-      "remoting/webapp:webapp",
-      "webkit_unit_tests"
+      "remoting/webapp:webapp"
     ]
   },
   "win_chromium_compile": {
     "additional_compile_targets": [
+      "blink_unittests",
       "browser_tests",
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
       "jingle_unittests",
       "remoting_unittests",
-      "remoting/webapp:webapp",
-      "webkit_unit_tests"
+      "remoting/webapp:webapp"
     ]
   }
 }
