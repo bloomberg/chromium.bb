@@ -370,7 +370,7 @@ BASE_EXPORT bool EndsWith(StringPiece16 str,
 // library versions will change based on locale).
 template <typename Char>
 inline bool IsAsciiWhitespace(Char c) {
-  return c == ' ' || c == '\r' || c == '\n' || c == '\t';
+  return c == ' ' || c == '\r' || c == '\n' || c == '\t' || c == '\f';
 }
 template <typename Char>
 inline bool IsAsciiAlpha(Char c) {
