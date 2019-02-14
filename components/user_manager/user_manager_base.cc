@@ -306,16 +306,6 @@ void UserManagerBase::OnSessionStarted() {
   GetLocalState()->CommitPendingWrite();
 }
 
-void UserManagerBase::OnProfileInitialized(User* user) {
-  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
-
-  // Mark the user as having an initialized session and persist this in
-  // the known_user DB.
-  user->set_profile_ever_initialized(true);
-  known_user::SetProfileEverInitialized(user->GetAccountId(), true);
-  GetLocalState()->CommitPendingWrite();
-}
-
 void UserManagerBase::RemoveUser(const AccountId& account_id,
                                  RemoveUserDelegate* delegate) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
@@ -848,8 +838,6 @@ void UserManagerBase::EnsureUsersLoaded() {
     }
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
-    user->set_profile_ever_initialized(
-        known_user::WasProfileEverInitialized(*it));
     user->set_using_saml(known_user::IsUsingSAML(*it));
     users_.push_back(user);
 
@@ -940,8 +928,6 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
     active_user_->set_oauth_token_status(LoadUserOAuthStatus(account_id));
     SaveUserDisplayName(active_user_->GetAccountId(),
                         base::UTF8ToUTF16(active_user_->GetAccountName(true)));
-    known_user::SetProfileEverInitialized(
-        active_user_->GetAccountId(), active_user_->profile_ever_initialized());
   } else {
     SaveUserType(active_user_);
   }
@@ -1074,18 +1060,6 @@ void UserManagerBase::NotifyActiveUserHashChanged(const std::string& hash) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   for (auto& observer : session_state_observer_list_)
     observer.ActiveUserHashChanged(hash);
-}
-
-void UserManagerBase::ResetProfileEverInitialized(const AccountId& account_id) {
-  User* user = FindUserAndModify(account_id);
-  if (!user) {
-    LOG(ERROR) << "User not found: " << account_id.GetUserEmail();
-    return;  // Ignore if there is no such user.
-  }
-
-  user->set_profile_ever_initialized(false);
-  known_user::SetProfileEverInitialized(user->GetAccountId(), false);
-  GetLocalState()->CommitPendingWrite();
 }
 
 void UserManagerBase::Initialize() {

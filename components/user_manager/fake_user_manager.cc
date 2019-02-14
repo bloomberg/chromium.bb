@@ -56,10 +56,6 @@ const user_manager::User* FakeUserManager::AddUserWithAffiliation(
   return user;
 }
 
-void FakeUserManager::OnProfileInitialized(User* user) {
-  user->set_profile_ever_initialized(true);
-}
-
 void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
   const user_manager::UserList::iterator it =
       std::find_if(users_.begin(), users_.end(),

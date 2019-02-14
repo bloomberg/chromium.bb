@@ -141,7 +141,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
     EXPECT_EQ(GURL(kStartupURLs[i]),
               tabs->GetWebContentsAt(i)->GetVisibleURL());
   }
-  EXPECT_TRUE(user_manager->GetActiveUser()->profile_ever_initialized());
 
   // User should be marked as requiring policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
@@ -169,10 +168,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
   // Should not receive a SESSION_STARTED notification.
   ASSERT_EQ(0, observer.notification_count());
 
-  // User should not be marked as having completed profile initialization.
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  EXPECT_FALSE(user_manager->GetActiveUser()->profile_ever_initialized());
   // User should be marked as not knowing if policy is required yet.
   AccountId account_id =
       AccountId::FromUserEmailGaiaId(kAccountId, kTestGaiaId);
@@ -201,53 +196,8 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
   EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
             user_manager->GetActiveUser()->oauth_token_status());
 
-  // User should be marked as having completed profile initialization.
-  EXPECT_TRUE(user_manager->GetActiveUser()->profile_ever_initialized());
-
   // User should still be marked as not needing policy
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired,
-            user_manager::known_user::GetProfileRequiresPolicy(account_id));
-}
-
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
-                       PolicyCheckRequiredForInitializedProfile) {
-  // Mark user as already having initialized the profile - this should not
-  // change how the policy code treats unknown policy.
-  // the policy code to ignore errors (because we presume we already have a
-  // valid cache). We can remove this test when we fix crbug.com/731726 and
-  // remove the associated migration code from UserPolicyManagerFactoryChromeOS.
-  AccountId account_id =
-      AccountId::FromUserEmailGaiaId(kAccountId, kTestGaiaId);
-  chromeos::ChromeUserManager* user_manager =
-      chromeos::ChromeUserManager::Get();
-  user_manager::User* user =
-      user_manager::User::CreateRegularUserForTesting(account_id);
-  user->set_profile_ever_initialized(true);
-  user_manager->AddUserRecordForTesting(user);
-
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
-            user_manager::known_user::GetProfileRequiresPolicy(account_id));
-
-  user_manager::known_user::SetProfileEverInitialized(account_id, true);
-  EXPECT_TRUE(user_manager::known_user::WasProfileEverInitialized(account_id));
-
-  // Delete the policy file - this will cause a 500 error on policy requests.
-  user_policy_helper()->DeletePolicyFile();
-  SkipToLoginScreen();
-  CountNotificationObserver observer(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources());
-  chromeos::LoginDisplayHost::default_host()
-      ->GetOobeUI()
-      ->GetGaiaScreenView()
-      ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
-  RunUntilBrowserProcessQuits();
-  // Should not receive a SESSION_STARTED notification.
-  ASSERT_EQ(0, observer.notification_count());
-
-  // Policy status should still be unknown since we haven't managed to load
-  // policy from disk nor have we been able to talk to the server.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 }
 
@@ -305,8 +255,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerNonEnterpriseTest,
   EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
             user_manager->GetActiveUser()->oauth_token_status());
 
-  EXPECT_TRUE(user_manager->GetActiveUser()->profile_ever_initialized());
-
   // User should be marked as not requiring policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
@@ -356,8 +304,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
       user_manager::UserManager::Get();
   EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
             user_manager->GetActiveUser()->oauth_token_status());
-
-  EXPECT_TRUE(user_manager->GetActiveUser()->profile_ever_initialized());
 
   // User of CHILD type should be marked as requiring policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
