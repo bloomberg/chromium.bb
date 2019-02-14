@@ -29,9 +29,9 @@ constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 // Returns nullopt if there is any unexpected structure to the annotations
 // message.
 base::Optional<std::string> ParseJsonOcrAnnotation(
-    const base::Value& annotations,
+    const base::Value& ocr_engine,
     const double min_ocr_confidence) {
-  const base::Value* const ocr_regions = annotations.FindKey("ocrRegions");
+  const base::Value* const ocr_regions = ocr_engine.FindKey("ocrRegions");
   // No OCR regions is valid - it just means there is no text.
   if (!ocr_regions)
     return std::string();
@@ -107,12 +107,21 @@ std::map<std::string, std::string> ParseJsonOcrResponse(
     if (!image_id || !image_id->is_string())
       continue;
 
-    const base::Value* const annotations = result.FindKey("annotations");
-    if (!annotations || !annotations->is_dict())
+    const base::Value* const engine_results = result.FindKey("engineResults");
+    if (!engine_results || !engine_results->is_list() ||
+        engine_results->GetList().size() != 1)
+      continue;
+
+    const base::Value& engine_result = engine_results->GetList()[0];
+    if (!engine_result.is_dict())
+      continue;
+
+    const base::Value* const ocr_engine = engine_result.FindKey("ocrEngine");
+    if (!ocr_engine || !ocr_engine->is_dict())
       continue;
 
     const base::Optional<std::string> ocr_text =
-        ParseJsonOcrAnnotation(*annotations, min_ocr_confidence);
+        ParseJsonOcrAnnotation(*ocr_engine, min_ocr_confidence);
     if (!ocr_text.has_value())
       continue;
 
@@ -199,22 +208,25 @@ std::string Annotator::FormatJsonOcrRequest(
                           it->second.size()),
         &base64_data);
 
+    // TODO(crbug.com/916420): accept and propagate page language info to
+    //                         improve OCR accuracy.
+    base::Value engine_params(base::Value::Type::DICTIONARY);
+    engine_params.SetKey("ocrParameters",
+                         base::Value(base::Value::Type::DICTIONARY));
+
+    base::Value engine_params_list(base::Value::Type::LIST);
+    engine_params_list.GetList().push_back(std::move(engine_params));
+
     base::Value image_request(base::Value::Type::DICTIONARY);
     image_request.SetKey("imageId", base::Value(it->first));
     image_request.SetKey("imageBytes", base::Value(std::move(base64_data)));
+    image_request.SetKey("engineParameters", std::move(engine_params_list));
 
     image_request_list.GetList().push_back(std::move(image_request));
   }
 
-  // TODO(crbug.com/916420): accept and propagate page language info to improve
-  //                         OCR accuracy.
-  base::Value feature_request(base::Value::Type::DICTIONARY);
-  feature_request.SetKey("ocrFeature",
-                         base::Value(base::Value::Type::DICTIONARY));
-
   base::Value request(base::Value::Type::DICTIONARY);
-  request.SetKey("imageRequests", base::Value(std::move(image_request_list)));
-  request.SetKey("featureRequest", std::move(feature_request));
+  request.SetKey("imageRequests", std::move(image_request_list));
 
   std::string json_request;
   base::JSONWriter::Write(request, &json_request);
