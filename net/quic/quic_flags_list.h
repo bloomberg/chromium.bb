@@ -345,3 +345,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_simplify_build_connectivity_probing_packet,
     false)
+
+// If true, for QUIC v44+, long header packet type is determined by encryption
+// level.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_encryption_driven_header_type,
+          true)

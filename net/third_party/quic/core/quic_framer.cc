@@ -1574,7 +1574,8 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
   // using QUIC crypto.
   if (header->form == IETF_QUIC_LONG_HEADER_PACKET &&
       header->long_packet_type == ZERO_RTT_PROTECTED &&
-      perspective_ == Perspective::IS_CLIENT) {
+      perspective_ == Perspective::IS_CLIENT &&
+      version_.handshake_protocol == PROTOCOL_QUIC_CRYPTO) {
     if (!encrypted_reader->ReadBytes(
             reinterpret_cast<uint8_t*>(last_nonce_.data()),
             last_nonce_.size())) {
