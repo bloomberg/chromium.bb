@@ -65,14 +65,10 @@ void SourceStreamToDataPipe::ReadMore() {
 
 void SourceStreamToDataPipe::DidRead(int result) {
   DCHECK(pending_write_);
-  if (result < 0) {
-    // An error case.
+  if (result <= 0) {
+    // An error, or end of the stream.
+    pending_write_->Complete(0);  // Closes the data pipe.
     OnComplete(result);
-    return;
-  }
-  if (result == 0) {
-    pending_write_->Complete(0);
-    OnComplete(net::OK);
     return;
   }
   dest_ = pending_write_->Complete(result);
@@ -97,7 +93,7 @@ void SourceStreamToDataPipe::OnComplete(int result) {
   // Resets the watchers, pipes and the exchange handler, so that
   // we will never be called back.
   writable_handle_watcher_.Cancel();
-  pending_write_ = nullptr;  // Closes the data pipe if this was holding it.
+  pending_write_ = nullptr;
   dest_.reset();
 
   std::move(completion_callback_).Run(result);
