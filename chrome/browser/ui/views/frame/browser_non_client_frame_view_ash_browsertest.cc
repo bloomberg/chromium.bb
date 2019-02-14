@@ -1041,6 +1041,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, TranslateIcon) {
   chrome::Find(app_browser_);
   browser_view_->ShowTranslateBubble(browser_view_->GetActiveWebContents(),
                                      translate::TRANSLATE_STEP_AFTER_TRANSLATE,
+                                     "en", "fr",
                                      translate::TranslateErrors::NONE, true);
 
   EXPECT_TRUE(translate_icon->visible());

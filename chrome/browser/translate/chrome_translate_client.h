@@ -70,9 +70,9 @@ class ChromeTranslateClient
       content::WebContents* web_contents);
 
   // Gets |source| and |target| language for translation.
-  static void GetTranslateLanguages(content::WebContents* web_contents,
-                                    std::string* source,
-                                    std::string* target);
+  void GetTranslateLanguages(content::WebContents* web_contents,
+                             std::string* source,
+                             std::string* target);
 
   // Gets the associated TranslateManager.
   translate::TranslateManager* GetTranslateManager();
@@ -133,6 +133,8 @@ class ChromeTranslateClient
   // Shows the translate bubble.
   ShowTranslateBubbleResult ShowBubble(
       translate::TranslateStep step,
+      const std::string& source_language,
+      const std::string& target_language,
       translate::TranslateErrors::Type error_type);
 
   translate::ContentTranslateDriver translate_driver_;

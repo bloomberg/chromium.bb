@@ -63,6 +63,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                                    views::Button* highlighted_button,
                                    content::WebContents* web_contents,
                                    translate::TranslateStep step,
+                                   const std::string& source_language,
+                                   const std::string& target_language,
                                    translate::TranslateErrors::Type error_type,
                                    DisplayReason reason);
 
