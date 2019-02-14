@@ -433,6 +433,10 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 };
 
 TEST_F(DriveFsHostTest, Basic) {
+  MockDriveFsHostObserver observer;
+  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
+  observer_scoper.Add(host_.get());
+
   EXPECT_FALSE(host_->IsMounted());
 
   EXPECT_EQ(base::FilePath("/path/to/profile/GCache/v2/salt-g-ID"),
@@ -444,37 +448,17 @@ TEST_F(DriveFsHostTest, Basic) {
   EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),
             host_->GetMountPath());
 
-  DoUnmount();
+  EXPECT_CALL(observer, OnUnmounted());
+  EXPECT_CALL(*host_delegate_, OnUnmounted(_)).Times(0);
+  base::RunLoop run_loop;
+  delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());
+  host_->Unmount();
+  run_loop.Run();
 }
 
 TEST_F(DriveFsHostTest, GetMountPathWhileUnmounted) {
   EXPECT_EQ(base::FilePath("/media/fuse/drivefs-salt-g-ID"),
             host_->GetMountPath());
-}
-
-TEST_F(DriveFsHostTest, OnMountedBeforeMountEvent) {
-  auto token = StartMount();
-  ASSERT_TRUE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
-  SendOnMounted();
-  EXPECT_CALL(*host_delegate_, OnMounted(_)).Times(0);
-  delegate_ptr_.FlushForTesting();
-
-  testing::Mock::VerifyAndClear(host_delegate_.get());
-
-  EXPECT_FALSE(host_->IsMounted());
-
-  EXPECT_CALL(*host_delegate_,
-              OnMounted(base::FilePath("/media/drivefsroot/salt-g-ID")));
-  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/salt-g-ID",
-                                          chromeos::UNMOUNT_OPTIONS_NONE, _));
-
-  DispatchMountSuccessEvent(token);
-
-  ASSERT_TRUE(host_->IsMounted());
-  EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),
-            host_->GetMountPath());
-
-  DoUnmount();
 }
 
 TEST_F(DriveFsHostTest, OnMountFailedFromMojo) {
@@ -492,6 +476,7 @@ TEST_F(DriveFsHostTest, OnMountFailedFromMojo) {
 
 TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
   ASSERT_FALSE(host_->IsMounted());
+  EXPECT_CALL(*disk_manager_, UnmountPath(_, _, _)).Times(0);
 
   auto token = StartMount();
 
@@ -508,79 +493,6 @@ TEST_F(DriveFsHostTest, OnMountFailedFromDbus) {
   run_loop.Run();
 
   ASSERT_FALSE(host_->IsMounted());
-}
-
-TEST_F(DriveFsHostTest, OnMountFailed_UnmountInObserver) {
-  ASSERT_FALSE(host_->IsMounted());
-
-  auto token = StartMount();
-
-  base::RunLoop run_loop;
-  base::OnceClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _))
-      .WillOnce(testing::InvokeWithoutArgs([&]() {
-        std::move(quit_closure).Run();
-        host_->Unmount();
-      }));
-  DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
-                     chromeos::MOUNT_ERROR_INVALID_MOUNT_OPTIONS,
-                     {base::StrCat({"drivefs://", token}),
-                      "/media/drivefsroot/salt-g-ID",
-                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                      {}});
-  run_loop.Run();
-
-  ASSERT_FALSE(host_->IsMounted());
-}
-
-TEST_F(DriveFsHostTest, UnmountAfterMountComplete) {
-  MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
-
-  ASSERT_NO_FATAL_FAILURE(DoMount());
-
-  EXPECT_CALL(observer, OnUnmounted());
-  base::RunLoop run_loop;
-  delegate_ptr_.set_connection_error_handler(run_loop.QuitClosure());
-  host_->Unmount();
-  run_loop.Run();
-}
-
-TEST_F(DriveFsHostTest, UnmountBeforeMountEvent) {
-  MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
-  EXPECT_CALL(observer, OnUnmounted()).Times(0);
-
-  auto token = StartMount();
-  EXPECT_FALSE(host_->IsMounted());
-  host_->Unmount();
-  EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
-}
-
-TEST_F(DriveFsHostTest, UnmountBeforeMojoConnection) {
-  MockDriveFsHostObserver observer;
-  ScopedObserver<DriveFsHost, DriveFsHostObserver> observer_scoper(&observer);
-  observer_scoper.Add(host_.get());
-  EXPECT_CALL(observer, OnUnmounted()).Times(0);
-
-  auto token = StartMount();
-  DispatchMountSuccessEvent(token);
-
-  EXPECT_FALSE(host_->IsMounted());
-  EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/salt-g-ID",
-                                          chromeos::UNMOUNT_OPTIONS_NONE, _));
-
-  host_->Unmount();
-  EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
-}
-
-TEST_F(DriveFsHostTest, DestroyBeforeMountEvent) {
-  auto token = StartMount();
-  EXPECT_CALL(*disk_manager_, UnmountPath(_, _, _)).Times(0);
-
-  host_.reset();
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
 }
 
@@ -594,91 +506,9 @@ TEST_F(DriveFsHostTest, DestroyBeforeMojoConnection) {
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
 }
 
-TEST_F(DriveFsHostTest, ObserveOtherMount) {
-  auto token = StartMount();
-  EXPECT_CALL(*disk_manager_, UnmountPath(_, _, _)).Times(0);
-
-  DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
-                     chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
-                     {"some/other/mount/event",
-                      "/some/other/mount/point",
-                      chromeos::MOUNT_TYPE_DEVICE,
-                      {}});
-  DispatchMountEvent(chromeos::disks::DiskMountManager::UNMOUNTING,
-                     chromeos::MOUNT_ERROR_NONE,
-                     {base::StrCat({"drivefs://", token}),
-                      "/media/drivefsroot/salt-g-ID",
-                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                      {}});
-  EXPECT_FALSE(host_->IsMounted());
-  host_->Unmount();
-}
-
-TEST_F(DriveFsHostTest, MountError) {
-  auto token = StartMount();
-  EXPECT_CALL(*disk_manager_, UnmountPath(_, _, _)).Times(0);
-  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kInvocation, _));
-
-  DispatchMountEvent(chromeos::disks::DiskMountManager::MOUNTING,
-                     chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
-                     {base::StrCat({"drivefs://", token}),
-                      "/media/drivefsroot/g-ID",
-                      chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                      {}});
-  EXPECT_FALSE(host_->IsMounted());
-  EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
-}
-
 TEST_F(DriveFsHostTest, MountWhileAlreadyMounted) {
   DoMount();
   EXPECT_FALSE(host_->Mount());
-}
-
-TEST_F(DriveFsHostTest, UnmountByRemote) {
-  ASSERT_NO_FATAL_FAILURE(DoMount());
-  base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
-  EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
-  SendOnUnmounted(delay);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(DriveFsHostTest, BreakConnectionAfterMount) {
-  ASSERT_NO_FATAL_FAILURE(DoMount());
-  base::Optional<base::TimeDelta> empty;
-  EXPECT_CALL(*host_delegate_, OnUnmounted(empty));
-  delegate_ptr_.reset();
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(DriveFsHostTest, BreakConnectionBeforeMount) {
-  ASSERT_NO_FATAL_FAILURE(EstablishConnection());
-  EXPECT_FALSE(host_->IsMounted());
-
-  base::Optional<base::TimeDelta> empty;
-  EXPECT_CALL(*host_delegate_,
-              OnMountFailed(MountFailure::kIpcDisconnect, empty));
-  delegate_ptr_.reset();
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(DriveFsHostTest, MountTimeout) {
-  auto token = StartMount();
-  DispatchMountSuccessEvent(token);
-  EXPECT_FALSE(host_->IsMounted());
-
-  base::Optional<base::TimeDelta> empty;
-  EXPECT_CALL(*host_delegate_, OnMountFailed(MountFailure::kTimeout, empty));
-  timer_->Fire();
-}
-
-// DiskMountManager sometimes sends mount events for all existing mount points.
-// Mount events beyond the first should be ignored.
-TEST_F(DriveFsHostTest, MultipleMountNotifications) {
-  ASSERT_NO_FATAL_FAILURE(DoMount());
-
-  // That is event is ignored is verified the the expectations set in DoMount().
-  // OnMounted() should only be invoked once.
-  DispatchMountSuccessEvent(token_);
 }
 
 TEST_F(DriveFsHostTest, UnsupportedAccountTypes) {
