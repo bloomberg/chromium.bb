@@ -683,20 +683,33 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       chroot_args = chroot_args or []
       chroot_args += ['--cache-dir', self._run.options.cache_dir]
 
-    commands.Build(
-        self._build_root,
-        self._current_board,
-        build_autotest=self._run.ShouldBuildAutotest(),
-        usepkg=self._run.config.usepkg_build_packages,
-        packages=packages,
-        skip_chroot_upgrade=True,
-        chrome_root=self._run.options.chrome_root,
-        noretry=self._run.config.nobuildretry,
-        chroot_args=chroot_args,
-        extra_env=self._portage_extra_env,
-        event_file=event_file_in_chroot,
-        run_goma=run_goma,
-        build_all_with_goma=self._run.config.build_all_with_goma)
+    try:
+      commands.Build(
+          self._build_root,
+          self._current_board,
+          build_autotest=self._run.ShouldBuildAutotest(),
+          usepkg=self._run.config.usepkg_build_packages,
+          packages=packages,
+          skip_chroot_upgrade=True,
+          chrome_root=self._run.options.chrome_root,
+          noretry=self._run.config.nobuildretry,
+          chroot_args=chroot_args,
+          extra_env=self._portage_extra_env,
+          event_file=event_file_in_chroot,
+          run_goma=run_goma,
+          build_all_with_goma=self._run.config.build_all_with_goma)
+    except failures_lib.PackageBuildFailure as ex:
+      failure_json = ex.BuildCompileFailureOutputJson()
+      failures_filename = os.path.join(self.archive_path,
+                                       'BuildCompileFailureOutput.json')
+      osutils.WriteFile(failures_filename, failure_json)
+      self.UploadArtifact(os.path.basename(failures_filename),
+                          archive=False)
+      url = self.PrintDownloadLink(os.path.basename(failures_filename),
+                                   text_to_display='BuildCompileFailureOutput')
+      logging.PrintKitchenSetBuildProperty('BuildCompileFailureOutput', url)
+      raise
+
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')

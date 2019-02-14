@@ -351,3 +351,26 @@ class GetStageFailureMessageFromExceptionTests(cros_test_lib.TestCase):
     self.assertEqual(msg.stage_prefix_name, 'CommitQueueSync')
     self.assertEqual(msg.exception_type, 'ValueError')
     self.assertEqual(msg.exception_category, 'unknown')
+
+
+class BuildFailuresForFindit(cros_test_lib.TestCase):
+  """Test cases for exporting build failures for Findit integration."""
+
+  def testBuildFailuresJson(self):
+    error = cros_build_lib.RunCommandError('run cmd error',
+                                           cros_build_lib.CommandResult())
+    failed_packages = ['sys-apps/mosys', 'chromeos-base/cryptohome']
+    build_failure = failures_lib.PackageBuildFailure(
+        error, './build_packages', failed_packages)
+    self.assertSetEqual(set(failed_packages), build_failure.failed_packages)
+    failure_json = build_failure.BuildCompileFailureOutputJson()
+    values = json.loads(failure_json)
+    failures = values['failures']
+    self.assertEqual(len(failures), 2)
+    # Verify both output targets are not equal, this makes sure the loop
+    # below is correct.
+    self.assertNotEqual(failures[0]['output_targets'],
+                        failures[1]['output_targets'])
+    for value in failures:
+      self.assertEqual(value['rule'], 'emerge')
+      self.assertIn(value['output_targets'], failed_packages)

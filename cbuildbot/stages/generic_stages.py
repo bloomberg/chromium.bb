@@ -1090,17 +1090,21 @@ class ArchivingStageMixin(object):
       yield bg_queue
 
   def PrintDownloadLink(self, filename, prefix='', text_to_display=None):
-    """Print a link to an artifact in Google Storage.
+    """Log a link to an artifact in Google Storage and return the URL.
 
     Args:
       filename: The filename of the uploaded file.
       prefix: The prefix to put in front of the filename.
       text_to_display: Text to display. If None, use |prefix| + |filename|.
+
+    Returns:
+      The download URL.
     """
     url = '%s/%s' % (self.download_url.rstrip('/'), filename)
     if not text_to_display:
       text_to_display = '%s%s' % (prefix, filename)
     logging.PrintBuildbotLink(text_to_display, url)
+    return url
 
   def _IsInUploadBlacklist(self, filename):
     """Check if this file is blacklisted to go into a board's extra buckets.

@@ -330,6 +330,17 @@ class PackageBuildFailure(BuildScriptFailure):
     }
     return json.dumps(extra_info_dict)
 
+  def BuildCompileFailureOutputJson(self):
+    """Build proto BuildCompileFailureOutput compatible JSON output.
+
+    Returns:
+      A json string with BuildCompileFailureOutput proto as json.
+    """
+    failures = []
+    for pkg in self.failed_packages:
+      failures.append({'rule': 'emerge', 'output_targets': pkg})
+    wrapper = {'failures': failures}
+    return json.dumps(wrapper, indent=2)
 
 class InfrastructureFailure(CompoundFailure):
   """Raised if a stage fails due to infrastructure issues."""
