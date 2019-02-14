@@ -254,6 +254,8 @@ void MessagingBindings::OpenChannelToTab(
   if (!render_frame)
     return;
 
+  DCHECK_NE(context()->context_type(), Feature::CONTENT_SCRIPT_CONTEXT);
+
   // tabs_custom_bindings.js unwraps arguments to tabs.connect/sendMessage and
   // passes them to OpenChannelToTab, in the following order:
   // - |tab_id| - Positive number that specifies the destination of the channel.
