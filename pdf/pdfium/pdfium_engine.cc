@@ -3620,7 +3620,7 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
   if (!annot)
     return false;
 
-  int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+  int flags = FPDFAnnot_GetFormFieldFlags(form(), page, annot.get());
   return CheckIfEditableFormTextArea(flags, form_type);
 }
 
