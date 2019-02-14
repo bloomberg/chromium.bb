@@ -187,7 +187,7 @@ public class SafeBrowsingTest {
             // clang-format off
             ThreadUtils.runOnUiThread(
                     (Runnable) () -> mObserver.onUrlCheckDone(
-                        callbackId, STATUS_SUCCESS, metadata, CHECK_DELTA_US));
+                        callbackId, SafeBrowsingResult.SUCCESS, metadata, CHECK_DELTA_US));
             // clang-format on
         }
     }

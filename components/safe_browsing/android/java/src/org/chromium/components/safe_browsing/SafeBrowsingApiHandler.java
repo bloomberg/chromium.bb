@@ -26,12 +26,14 @@ public interface SafeBrowsingApiHandler {
     }
 
     // Possible values for resultStatus. Native side has the same definitions.
+    @IntDef({SafeBrowsingResult.INTERNAL_ERROR, SafeBrowsingResult.SUCCESS,
+            SafeBrowsingResult.TIMEOUT})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({STATUS_INTERNAL_ERROR, STATUS_SUCCESS, STATUS_TIMEOUT})
-    @interface SafeBrowsingResult {}
-    static final int STATUS_INTERNAL_ERROR = -1;
-    static final int STATUS_SUCCESS = 0;
-    static final int STATUS_TIMEOUT = 1;
+    @interface SafeBrowsingResult {
+        int INTERNAL_ERROR = -1;
+        int SUCCESS = 0;
+        int TIMEOUT = 1;
+    }
 
     /**
      * Verifies that SafeBrowsingApiHandler can operate and initializes if feasible.
