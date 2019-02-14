@@ -9,7 +9,7 @@
 namespace ui {
 
 std::unique_ptr<OSExchangeData::Provider> BuildOSExchangeDataProviderMac() {
-  return OSExchangeDataProviderMac::CreateProvider();
+  return std::make_unique<OSExchangeDataProviderMac>();
 }
 
 }  // namespace ui
