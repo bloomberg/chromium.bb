@@ -137,8 +137,16 @@ namespace declarativeNetRequest {
 
   callback EmptyCallback = void();
   callback GetAllowedPagesCallback = void(DOMString[] result);
+  callback GetRulesCallback = void(Rule[] rules);
 
   interface Functions {
+
+    // TODO(crbug.com/930961): Enable documentation for these functions once
+    // they are implemented.
+    [nodoc] static void addDynamicRules(Rule[] rules, optional EmptyCallback callback);
+    [nodoc] static void removeDynamicRules(long[] rule_ids, optional EmptyCallback callback);
+    [nodoc] static void getDynamicRules(GetRulesCallback callback);
+
     // Adds <code>page_patterns</code> to the set of allowed pages. Requests
     // from these pages are not intercepted by the extension. These are
     // persisted across browser sessions.
