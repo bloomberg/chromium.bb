@@ -30,6 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 
@@ -164,6 +165,29 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     sync_confirmation_ui_closed_result_ = result;
   }
 
+  void ExpectAccountImageChanged(
+      const content::TestWebUI::CallData& call_data) {
+    EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+    std::string event;
+    ASSERT_TRUE(call_data.arg1()->GetAsString(&event));
+    EXPECT_EQ("account-image-changed", event);
+
+    std::string original_picture_url =
+        IdentityManagerFactory::GetForProfile(profile())
+            ->GetPrimaryAccountInfo()
+            .picture_url;
+    std::string expected_picture_url =
+        original_picture_url.empty()
+            ? profiles::GetPlaceholderAvatarIconUrl()
+            : signin::GetAvatarImageURLWithOptions(GURL(original_picture_url),
+                                                   kExpectedProfileImageSize,
+                                                   false /* no_silhouette */)
+                  .spec();
+    std::string passed_picture_url;
+    ASSERT_TRUE(call_data.arg2()->GetAsString(&passed_picture_url));
+    EXPECT_EQ(expected_picture_url, passed_picture_url);
+  }
+
  protected:
   bool did_user_explicitly_interact;
   bool on_sync_confirmation_ui_closed_called_;
@@ -227,6 +251,25 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
 }
 
+TEST_F(SyncConfirmationHandlerTest,
+       TestSetImageIfPrimaryAccountReady_UnifiedConsent) {
+  unified_consent::ScopedUnifiedConsent scoped_unified_consent(
+      unified_consent::UnifiedConsentFeatureState::kEnabled);
+
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
+      account_info_.account_id, account_info_.email, account_info_.gaia, "",
+      "full_name", "given_name", "locale",
+      "http://picture.example.com/picture.jpg");
+
+  base::ListValue args;
+  args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
+  handler()->HandleInitializedWithSize(&args);
+
+  ExpectAccountImageChanged(*web_ui()->call_data()[0]);
+  EXPECT_EQ("sync.confirmation.clearFocus",
+            web_ui()->call_data()[1]->function_name());
+}
+
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   base::ListValue args;
   args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
@@ -269,6 +312,29 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
       GURL(original_picture_url), kExpectedProfileImageSize,
       false /* no_silhouette */);
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
+}
+
+TEST_F(SyncConfirmationHandlerTest,
+       TestSetImageIfPrimaryAccountReadyLater_UnifiedConsent) {
+  unified_consent::ScopedUnifiedConsent scoped_unified_consent(
+      unified_consent::UnifiedConsentFeatureState::kEnabled);
+
+  base::ListValue args;
+  args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
+  handler()->HandleInitializedWithSize(&args);
+
+  EXPECT_EQ(2U, web_ui()->call_data().size());
+  ExpectAccountImageChanged(*web_ui()->call_data()[0]);
+  EXPECT_EQ("sync.confirmation.clearFocus",
+            web_ui()->call_data()[1]->function_name());
+
+  identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
+      account_info_.account_id, account_info_.email, account_info_.gaia, "",
+      "full_name", "given_name", "locale",
+      "http://picture.example.com/picture.jpg");
+
+  EXPECT_EQ(3U, web_ui()->call_data().size());
+  ExpectAccountImageChanged(*web_ui()->call_data()[2]);
 }
 
 TEST_F(SyncConfirmationHandlerTest,
