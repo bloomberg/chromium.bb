@@ -1421,6 +1421,8 @@ autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
 ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
     content::WebContents* web_contents,
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
   if (contents_web_view_->HasFocus() &&
@@ -1442,7 +1444,7 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
           ->GetPageActionIconView(PageActionIconType::kTranslate);
   TranslateBubbleView::ShowBubble(
       toolbar_button_provider()->GetAnchorView(), translate_icon, web_contents,
-      step, error_type,
+      step, source_language, target_language, error_type,
       is_user_gesture ? TranslateBubbleView::USER_GESTURE
                       : TranslateBubbleView::AUTOMATIC);
 

@@ -341,6 +341,8 @@ class BrowserWindow : public ui::BaseWindow {
   virtual ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
+      const std::string& source_language,
+      const std::string& target_language,
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) = 0;
 

@@ -178,6 +178,8 @@ bool TestBrowserWindow::IsToolbarShowing() const {
 ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
   return ShowTranslateBubbleResult::SUCCESS;

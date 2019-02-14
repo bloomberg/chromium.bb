@@ -908,6 +908,11 @@ void Translate(Browser* browser) {
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(web_contents);
 
+  std::string source_language;
+  std::string target_language;
+  chrome_translate_client->GetTranslateLanguages(web_contents, &source_language,
+                                                 &target_language);
+
   translate::TranslateStep step = translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
   if (chrome_translate_client) {
     if (chrome_translate_client->GetLanguageState().translation_pending())
@@ -918,7 +923,8 @@ void Translate(Browser* browser) {
       step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
   ShowTranslateBubbleResult result = browser->window()->ShowTranslateBubble(
-      web_contents, step, translate::TranslateErrors::NONE, true);
+      web_contents, step, source_language, target_language,
+      translate::TranslateErrors::NONE, true);
   if (result != ShowTranslateBubbleResult::SUCCESS)
     translate::ReportUiAction(TranslateBubbleResultToUiEvent(result));
 }

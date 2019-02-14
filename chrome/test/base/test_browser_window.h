@@ -131,6 +131,8 @@ class TestBrowserWindow : public BrowserWindow {
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
+      const std::string& source_language,
+      const std::string& target_language,
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) override;
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)

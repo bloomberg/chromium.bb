@@ -88,6 +88,8 @@ views::Widget* TranslateBubbleView::ShowBubble(
     views::Button* highlighted_button,
     content::WebContents* web_contents,
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     DisplayReason reason) {
   if (translate_bubble_view_) {
@@ -112,11 +114,6 @@ views::Widget* TranslateBubbleView::ShowBubble(
       return nullptr;
     }
   }
-
-  std::string source_language;
-  std::string target_language;
-  ChromeTranslateClient::GetTranslateLanguages(web_contents, &source_language,
-                                               &target_language);
 
   std::unique_ptr<translate::TranslateUIDelegate> ui_delegate(
       new translate::TranslateUIDelegate(

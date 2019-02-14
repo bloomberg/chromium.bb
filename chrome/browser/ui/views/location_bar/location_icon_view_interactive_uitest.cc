@@ -83,9 +83,9 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest,
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  browser_view->ShowTranslateBubble(web_contents,
-                                    translate::TRANSLATE_STEP_AFTER_TRANSLATE,
-                                    translate::TranslateErrors::NONE, true);
+  browser_view->ShowTranslateBubble(
+      web_contents, translate::TRANSLATE_STEP_AFTER_TRANSLATE, "en", "fr",
+      translate::TranslateErrors::NONE, true);
 
   PageActionIconView* icon_view =
       browser_view->toolbar_button_provider()

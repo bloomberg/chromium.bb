@@ -185,7 +185,6 @@ translate::TranslateManager* ChromeTranslateClient::GetManagerFromWebContents(
   return chrome_translate_client->GetTranslateManager();
 }
 
-// static
 void ChromeTranslateClient::GetTranslateLanguages(
     content::WebContents* web_contents,
     std::string* source,
@@ -193,19 +192,14 @@ void ChromeTranslateClient::GetTranslateLanguages(
   DCHECK(source != NULL);
   DCHECK(target != NULL);
 
-  ChromeTranslateClient* chrome_translate_client =
-      FromWebContents(web_contents);
-  if (!chrome_translate_client)
-    return;
-
   *source = translate::TranslateDownloadManager::GetLanguageCode(
-      chrome_translate_client->GetLanguageState().original_language());
+      GetLanguageState().original_language());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
       CreateTranslatePrefs(profile->GetPrefs());
-  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+  if (!profile->IsOffTheRecord()) {
     std::string auto_translate_language =
         translate::TranslateManager::GetAutoTargetLanguage(
             *source, translate_prefs.get());
@@ -264,7 +258,8 @@ bool ChromeTranslateClient::ShowTranslateUI(
     return false;
   }
 
-  ShowTranslateBubbleResult result = ShowBubble(step, error_type);
+  ShowTranslateBubbleResult result =
+      ShowBubble(step, source_language, target_language, error_type);
   if (result != ShowTranslateBubbleResult::SUCCESS &&
       step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
     translate_manager_->RecordTranslateEvent(
@@ -406,6 +401,8 @@ void ChromeTranslateClient::OnPageTranslated(
 
 ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
     translate::TranslateStep step,
+    const std::string& source_language,
+    const std::string& target_language,
     translate::TranslateErrors::Type error_type) {
   DCHECK(translate_manager_);
 // The bubble is implemented only on the desktop platforms.
@@ -415,7 +412,9 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   // |browser| might be NULL when testing. In this case, Show(...) should be
   // called because the implementation for testing is used.
   if (!browser) {
-    return TranslateBubbleFactory::Show(NULL, web_contents(), step, error_type);
+    return TranslateBubbleFactory::Show(NULL, web_contents(), step,
+                                        source_language, target_language,
+                                        error_type);
   }
 
   if (web_contents() != browser->tab_strip_model()->GetActiveWebContents())
@@ -437,6 +436,7 @@ ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(
   }
 
   return TranslateBubbleFactory::Show(browser->window(), web_contents(), step,
+                                      source_language, target_language,
                                       error_type);
 #else
   NOTREACHED();
