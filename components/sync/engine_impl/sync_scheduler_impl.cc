@@ -514,6 +514,11 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
 
   if (success) {
     SDVLOG(2) << "Configure succeeded.";
+    // At this point, the initial sync for the affected types has been
+    // completed. Let the nudge tracker know to avoid any spurious extra
+    // requests; see also crbug.com/926184.
+    nudge_tracker_.RecordInitialSyncDone(
+        pending_configure_params_->types_to_download);
     pending_configure_params_->ready_task.Run();
     pending_configure_params_.reset();
     HandleSuccess();

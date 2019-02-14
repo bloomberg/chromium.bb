@@ -51,6 +51,10 @@ class NudgeTracker {
   // completed successfully, as the result of a "normal" sync cycle.
   void RecordSuccessfulSyncCycle(ModelTypeSet types);
 
+  // Tells this class that the initial sync has happened for the given |types|,
+  // generally due to a "configuration" cycle.
+  void RecordInitialSyncDone(ModelTypeSet types);
+
   // Takes note of a local change.
   // Returns the shortest nudge delay from the tracker of each type in |types|.
   base::TimeDelta RecordLocalChange(ModelTypeSet types);

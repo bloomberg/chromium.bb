@@ -81,6 +81,10 @@ class DataTypeTracker {
   // function.
   void RecordSuccessfulSyncCycle();
 
+  // Records that the initial sync has completed successfully. This gets called
+  // when the initial configuration/download cycle has finished for this type.
+  void RecordInitialSyncDone();
+
   // Updates the size of the invalidations payload buffer.
   void UpdatePayloadBufferSize(size_t new_size);
 

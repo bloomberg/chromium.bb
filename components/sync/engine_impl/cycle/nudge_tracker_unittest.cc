@@ -350,7 +350,13 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
   // Initial sync request.
   nudge_tracker_.RecordInitialSyncRequired(BOOKMARKS);
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired(ProtocolTypes()));
-  nudge_tracker_.RecordSuccessfulSyncCycle({BOOKMARKS});
+  // Note: The initial sync happens as part of a configuration cycle, not a
+  // normal cycle, so here we need to use RecordInitialSyncDone() rather than
+  // RecordSuccessfulSyncCycle().
+  // A finished initial sync for a different data type doesn't affect us.
+  nudge_tracker_.RecordInitialSyncDone({EXTENSIONS});
+  EXPECT_TRUE(nudge_tracker_.IsSyncRequired(ProtocolTypes()));
+  nudge_tracker_.RecordInitialSyncDone({BOOKMARKS});
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired(ProtocolTypes()));
 
   // Sync request for resolve conflict.
@@ -392,9 +398,12 @@ TEST_F(NudgeTrackerTest, IsGetUpdatesRequired) {
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
 
   // Initial sync request.
+  // TODO(crbug.com/926184): This is probably wrong; a missing initial sync
+  // should not cause IsGetUpdatesRequired(): The former happens during config
+  // cycles, but the latter refers to normal cycles.
   nudge_tracker_.RecordInitialSyncRequired(BOOKMARKS);
   EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
-  nudge_tracker_.RecordSuccessfulSyncCycle(ProtocolTypes());
+  nudge_tracker_.RecordInitialSyncDone(ProtocolTypes());
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired(ProtocolTypes()));
 
   // Local changes.
