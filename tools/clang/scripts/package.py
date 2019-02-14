@@ -494,6 +494,18 @@ def main():
               filter=PrintTarProgress)
     MaybeUpload(args, llddir, platform)
 
+    # dsymutil isn't part of the main zip either, and it gets periodically deployed to CIPD
+    # (manually, not as part of clang rolls) for use in the Mac build toolchain.
+    dsymdir = 'dsymutil-' + stamp
+    shutil.rmtree(dsymdir, ignore_errors=True)
+    os.makedirs(os.path.join(dsymdir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'dsymutil'),
+                os.path.join(dsymdir, 'bin'))
+    with tarfile.open(dsymdir + '.tgz', 'w:gz') as tar:
+      tar.add(os.path.join(dsymdir, 'bin'), arcname='bin',
+              filter=PrintTarProgress)
+    MaybeUpload(args, dsymdir, platform)
+
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp
   shutil.rmtree(translation_unit_dir, ignore_errors=True)
