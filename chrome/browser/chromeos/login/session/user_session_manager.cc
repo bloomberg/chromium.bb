@@ -142,6 +142,7 @@
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
@@ -506,6 +507,7 @@ void UserSessionManager::MaybeAppendPolicySwitches(
 
 UserSessionManager::UserSessionManager()
     : delegate_(nullptr),
+      network_connection_tracker_(nullptr),
       authenticator_(nullptr),
       has_auth_cookies_(false),
       user_sessions_restored_(false),
@@ -518,9 +520,11 @@ UserSessionManager::UserSessionManager()
       waiting_for_child_account_status_(false),
       attempt_restart_closure_(base::BindRepeating(&CallChromeAttemptRestart)),
       weak_factory_(this) {
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
   user_manager::UserManager::Get()->AddObserver(this);
+  content::GetNetworkConnectionTrackerFromUIThread(
+      base::BindOnce(&UserSessionManager::SetNetworkConnectionTracker,
+                     weak_factory_.GetWeakPtr()));
 }
 
 UserSessionManager::~UserSessionManager() {
@@ -532,7 +536,13 @@ UserSessionManager::~UserSessionManager() {
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
     user_manager::UserManager::Get()->RemoveObserver(this);
   }
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+}
+
+void UserSessionManager::SetNetworkConnectionTracker(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK(network_connection_tracker);
+  network_connection_tracker_ = network_connection_tracker;
+  network_connection_tracker_->AddLeakyNetworkConnectionObserver(this);
 }
 
 void UserSessionManager::SetShouldObtainHandleInTests(
@@ -670,7 +680,8 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
                         account_id_valid);
 
   DCHECK(user);
-  if (!net::NetworkChangeNotifier::IsOffline()) {
+  if (network_connection_tracker_ &&
+      !network_connection_tracker_->IsOffline()) {
     pending_signin_restore_sessions_.erase(user->GetAccountId().GetUserEmail());
     RestoreAuthSessionImpl(user_profile, false /* has_auth_cookies */);
   } else {
@@ -1023,10 +1034,10 @@ void UserSessionManager::OnSessionRestoreStateChanged(
     ProfileHelper::Get()->FlushProfile(user_profile);
 }
 
-void UserSessionManager::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void UserSessionManager::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE ||
       !user_manager->IsUserLoggedIn() ||
       !user_manager->IsLoggedInAsUserWithGaiaAccount() ||
       user_manager->IsLoggedInAsStub() || IsRunningTest()) {
