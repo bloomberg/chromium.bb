@@ -61,7 +61,6 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   MaybeObserveTabstrip();
-  OnSingleTabModeChanged();
   UpdateMinimumSize();
 }
 
@@ -141,13 +140,10 @@ bool BrowserNonClientFrameView::CanDrawStrokes() const {
 SkColor BrowserNonClientFrameView::GetFrameColor(
     ActiveState active_state) const {
   ThemeProperties::OverwritableByUserThemeProperty color_id;
-  if (ShouldPaintAsSingleTabMode()) {
-    color_id = ThemeProperties::COLOR_TOOLBAR;
-  } else {
-    color_id = ShouldPaintAsActive(active_state)
-                   ? ThemeProperties::COLOR_FRAME
-                   : ThemeProperties::COLOR_FRAME_INACTIVE;
-  }
+
+  color_id = ShouldPaintAsActive(active_state)
+                 ? ThemeProperties::COLOR_FRAME
+                 : ThemeProperties::COLOR_FRAME_INACTIVE;
 
   if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
@@ -228,25 +224,6 @@ void BrowserNonClientFrameView::ResetWindowControls() {
     hosted_app_button_container_->UpdateStatusIconsVisibility();
 }
 
-void BrowserNonClientFrameView::OnSingleTabModeChanged() {
-  SchedulePaint();
-}
-
-bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
-  // Single-tab mode is only available in when the window is active.  The
-  // special color we use won't be visible if there's a frame image, but since
-  // it's used to determine contrast of other UI elements, the theme color
-  // should be used instead.
-
-  // TODO(yiningwang): Remove all calls to this function.
-  return false;
-}
-
-bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
-  return browser_view_->IsTabStripVisible() &&
-         browser_view_->tabstrip()->SingleTabMode();
-}
-
 SkColor BrowserNonClientFrameView::GetCaptionColor(
     ActiveState active_state) const {
   return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
@@ -296,11 +273,9 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   // "correct" state as an override.
   set_active_state_override(&active);
 
-  // Single-tab mode's availability depends on activation, but even if it's
-  // unavailable for other reasons the inactive tabs' text color still needs to
-  // be recalculated if the frame color changes. SingleTabModeChanged will
-  // handle both cases.
-  browser_view_->tabstrip()->SingleTabModeChanged();
+  // The toolbar top separator color (used as the stroke around the tabs and
+  // the new tab button) needs to be recalculated.
+  browser_view_->tabstrip()->FrameColorsChanged();
 
   set_active_state_override(nullptr);
 

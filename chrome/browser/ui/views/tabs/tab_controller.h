@@ -79,10 +79,6 @@ class TabController {
   virtual bool IsFirstVisibleTab(const Tab* tab) const = 0;
   virtual bool IsLastVisibleTab(const Tab* tab) const = 0;
 
-  // Returns whether the strip is painting in single-tab mode.  This is true in
-  // a subset of the cases where ther is exactly one tab.
-  virtual bool SingleTabMode() const = 0;
-
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       Tab* tab,

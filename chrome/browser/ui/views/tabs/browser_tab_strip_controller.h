@@ -71,7 +71,6 @@ class BrowserTabStripController : public TabStripController,
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
-  bool IsSingleTabModeAvailable() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   bool IsFrameCondensed() const override;
