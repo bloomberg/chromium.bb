@@ -494,7 +494,8 @@ void SetBasicCardMethodData(const ScriptValue& input,
                                       output->supported_types, exception_state);
 }
 
-void StringifyAndParseMethodSpecificData(const String& supported_method,
+void StringifyAndParseMethodSpecificData(ExecutionContext& execution_context,
+                                         const String& supported_method,
                                          const ScriptValue& input,
                                          PaymentMethodDataPtr& output,
                                          ExceptionState& exception_state) {
@@ -527,10 +528,14 @@ void StringifyAndParseMethodSpecificData(const String& supported_method,
     if (exception_state.HadException())
       exception_state.ClearException();
   }
+
   if (supported_method == "basic-card") {
     SetBasicCardMethodData(input, output, exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
+      UseCounter::Count(&execution_context,
+                        WebFeature::kInvalidBasicCardMethodData);
       exception_state.ClearException();
+    }
   }
 }
 
@@ -610,7 +615,7 @@ void ValidateAndConvertPaymentDetailsModifiers(
 
     if (modifier->hasData() && !modifier->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
-          modifier->supportedMethod(), modifier->data(),
+          execution_context, modifier->supportedMethod(), modifier->data(),
           output.back()->method_data, exception_state);
     } else {
       output.back()->method_data->stringified_data = "";
@@ -746,8 +751,8 @@ void ValidateAndConvertPaymentMethodData(
     if (payment_method_data->hasData() &&
         !payment_method_data->data().IsEmpty()) {
       StringifyAndParseMethodSpecificData(
-          payment_method_data->supportedMethod(), payment_method_data->data(),
-          output.back(), exception_state);
+          execution_context, payment_method_data->supportedMethod(),
+          payment_method_data->data(), output.back(), exception_state);
     } else {
       output.back()->stringified_data = "";
     }
