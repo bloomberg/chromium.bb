@@ -269,7 +269,7 @@ void Animation::AddToTicking() {
   animation_host_->AddToTicking(this);
 }
 
-void Animation::KeyframeModelRemovedFromTicking() {
+void Animation::RemoveFromTicking() {
   DCHECK_GE(ticking_keyframe_effects_count, 0);
   if (!ticking_keyframe_effects_count)
     return;
