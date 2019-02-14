@@ -858,6 +858,10 @@ EntryListItem.prototype = {
  * @returns {!Array<!Entry>}
  */
 EntryListItem.prototype.sortEntries = function(entries) {
+  if (!entries.length) {
+    return [];
+  }
+
   if (!util.isMyFilesVolumeEnabled()) {
     return DirectoryItem.prototype.sortEntries.apply(this, [entries]);
   }
