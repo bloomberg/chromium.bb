@@ -9840,9 +9840,12 @@ static int compound_type_rd(
       comp_rate[COMPOUND_AVERAGE] == INT_MAX &&
       comp_rate[COMPOUND_DISTWTD] == INT_MAX;
   for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {
-    if (((1 << cur_type) & mode_search_mask) == 0) continue;
-    if (cur_type >= COMPOUND_WEDGE && !masked_compound_used) break;
+    if (((1 << cur_type) & mode_search_mask) == 0) {
+      if (cur_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
+      continue;
+    }
     if (!is_interinter_compound_used(cur_type, bsize)) continue;
+    if (cur_type >= COMPOUND_WEDGE && !masked_compound_used) break;
     if (cur_type == COMPOUND_DISTWTD && !try_distwtd_comp) continue;
     if (cur_type == COMPOUND_AVERAGE && try_average_and_distwtd_comp) continue;
 
@@ -10016,7 +10019,7 @@ static int compound_type_rd(
       *rd = best_rd_cur;
       comp_best_model_rd = comp_model_rd_cur;
       best_compound_data = mbmi->interinter_comp;
-      if (masked_compound_used && cur_type != COMPOUND_TYPES - 1) {
+      if (masked_compound_used && cur_type >= COMPOUND_WEDGE) {
         memcpy(buffers->tmp_best_mask_buf, xd->seg_mask, mask_len);
       }
       best_compmode_interinter_cost = rs2;
@@ -10151,8 +10154,7 @@ static int64_t handle_inter_mode(
   if (do_two_loop_comp_search) {
     // TODO(debargha): Change this to try alternate ways of splitting
     // modes while doing two pass compound_mode search.
-    mode_search_mask[0] = (1 << COMPOUND_AVERAGE) | (1 << COMPOUND_WEDGE) |
-                          (1 << COMPOUND_DIFFWTD);
+    mode_search_mask[0] = (1 << COMPOUND_AVERAGE);
   } else {
     mode_search_mask[0] = (1 << COMPOUND_AVERAGE) | (1 << COMPOUND_DISTWTD) |
                           (1 << COMPOUND_WEDGE) | (1 << COMPOUND_DIFFWTD);
