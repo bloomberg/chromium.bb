@@ -25,14 +25,14 @@ struct EventOrReconnectionTimeSetting {
                                  const String& data,
                                  const AtomicString& id)
       : type(kEvent), event(event), data(data), id(id), reconnection_time(0) {}
-  explicit EventOrReconnectionTimeSetting(unsigned long long reconnection_time)
+  explicit EventOrReconnectionTimeSetting(uint64_t reconnection_time)
       : type(kReconnectionTimeSetting), reconnection_time(reconnection_time) {}
 
   const Type type;
   const AtomicString event;
   const String data;
   const AtomicString id;
-  const unsigned long long reconnection_time;
+  const uint64_t reconnection_time;
 };
 
 class Client : public GarbageCollectedFinalized<Client>,
@@ -49,7 +49,7 @@ class Client : public GarbageCollectedFinalized<Client>,
                       const AtomicString& id) override {
     events_.push_back(EventOrReconnectionTimeSetting(event, data, id));
   }
-  void OnReconnectionTimeSet(unsigned long long reconnection_time) override {
+  void OnReconnectionTimeSet(uint64_t reconnection_time) override {
     events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 
@@ -73,7 +73,7 @@ class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
     parser_->Stop();
     events_.push_back(EventOrReconnectionTimeSetting(event, data, id));
   }
-  void OnReconnectionTimeSet(unsigned long long reconnection_time) override {
+  void OnReconnectionTimeSet(uint64_t reconnection_time) override {
     events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 

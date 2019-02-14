@@ -60,7 +60,7 @@
 
 namespace blink {
 
-const unsigned long long EventSource::kDefaultReconnectDelay = 3000;
+const uint64_t EventSource::kDefaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
@@ -331,7 +331,7 @@ void EventSource::OnMessageEvent(const AtomicString& event_type,
   DispatchEvent(*e);
 }
 
-void EventSource::OnReconnectionTimeSet(unsigned long long reconnection_time) {
+void EventSource::OnReconnectionTimeSet(uint64_t reconnection_time) {
   reconnect_delay_ = reconnection_time;
 }
 

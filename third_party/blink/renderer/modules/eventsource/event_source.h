@@ -69,7 +69,7 @@ class MODULES_EXPORT EventSource final
   EventSource(ExecutionContext*, const KURL&, const EventSourceInit*);
   ~EventSource() override;
 
-  static const unsigned long long kDefaultReconnectDelay;
+  static const uint64_t kDefaultReconnectDelay;
 
   String url() const;
   bool withCredentials() const;
@@ -111,7 +111,7 @@ class MODULES_EXPORT EventSource final
   void OnMessageEvent(const AtomicString& event,
                       const String& data,
                       const AtomicString& id) override;
-  void OnReconnectionTimeSet(unsigned long long reconnection_time) override;
+  void OnReconnectionTimeSet(uint64_t reconnection_time) override;
 
   void ScheduleInitialConnect();
   void Connect();
@@ -133,7 +133,7 @@ class MODULES_EXPORT EventSource final
   Member<ThreadableLoader> loader_;
   TaskRunnerTimer<EventSource> connect_timer_;
 
-  unsigned long long reconnect_delay_;
+  uint64_t reconnect_delay_;
   String event_stream_origin_;
   unsigned long resource_identifier_ = 0;
 };
