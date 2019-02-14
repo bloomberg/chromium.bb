@@ -1,0 +1,12 @@
+#!/usr/bin/env vpython
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""This is a fake version of a non-Telemetry performance test (gtest_perf_test).
+
+It is used by ../scripts_smoke_unittest.py.
+"""
+
+# This is just a random line of output that can be converted into graph_json.
+print r"*RESULT clockless_video_playback_vp8: bear_silent.webm= 53.406108056578425 runs/s"
