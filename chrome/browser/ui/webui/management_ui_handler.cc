@@ -56,6 +56,21 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+const char kOnPremReportingExtensionStableId[] =
+    "emahakmocgideepebncgnmlmliepgpgb";
+const char kOnPremReportingExtensionBetaId[] =
+    "kigjhoekjcpdfjpimbdjegmgecmlicaf";
+const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
+const char kPolicyKeyReportMachineIdData[] = "report_machine_id_data";
+const char kPolicyKeyReportUserIdData[] = "report_user_id_data";
+const char kPolicyKeyReportVersionData[] = "report_version_data";
+const char kPolicyKeyReportPolicyData[] = "report_policy_data";
+const char kPolicyKeyReportExtensionsData[] = "report_extensions_data";
+const char kPolicyKeyReportSafeBrowsingData[] = "report_safe_browsing_data";
+const char kPolicyKeyReportSystemTelemetryData[] =
+    "report_system_telemetry_data";
+const char kPolicyKeyReportUserBrowsingData[] = "report_user_browsing_data";
+
 const char kManagementExtensionReportMachineName[] =
     "managementExtensionReportMachineName";
 const char kManagementExtensionReportMachineNameAddress[] =
@@ -68,12 +83,20 @@ const char kManagementExtensionReportPolicies[] =
     "managementExtensionReportPolicies";
 const char kManagementExtensionReportExtensionsPlugin[] =
     "managementExtensionReportExtensionsPlugin";
+const char kManagementExtensionReportExtensionsAndPolicies[] =
+    "managementExtensionReportExtensionsAndPolicies";
 const char kManagementExtensionReportSafeBrowsingWarnings[] =
     "managementExtensionReportSafeBrowsingWarnings";
 const char kManagementExtensionReportPerfCrash[] =
     "managementExtensionReportPerfCrash";
-const char kManagementExtensionReportWebsiteUsageStatistics[] =
-    "managementExtensionReportTimePerSite";
+
+const char kReportingTypeDevice[] = "device";
+const char kReportingTypeExtensions[] = "extensions";
+const char kReportingTypeSecurity[] = "security";
+const char kReportingTypeUser[] = "user";
+
+enum class ReportingType { kDevice, kExtensions, kSecurity, kUser };
+
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
@@ -215,21 +238,6 @@ void AddChromeOSReportingInfo(base::Value* report_sources) {
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-const char kOnPremReportingExtensionStableId[] =
-    "emahakmocgideepebncgnmlmliepgpgb";
-const char kOnPremReportingExtensionBetaId[] =
-    "kigjhoekjcpdfjpimbdjegmgecmlicaf";
-const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
-const char kPolicyKeyReportMachineIdData[] = "report_machine_id_data";
-const char kPolicyKeyReportUserIdData[] = "report_user_id_data";
-const char kPolicyKeyReportVersionData[] = "report_version_data";
-const char kPolicyKeyReportPolicyData[] = "report_policy_data";
-const char kPolicyKeyReportExtensionsData[] = "report_extensions_data";
-const char kPolicyKeyReportSafeBrowsingData[] = "report_safe_browsing_data";
-const char kPolicyKeyReportSystemTelemetryData[] =
-    "report_system_telemetry_data";
-const char kPolicyKeyReportUserBrowsingData[] = "report_user_browsing_data";
-
 std::vector<base::Value> GetPermissionsForExtension(
     scoped_refptr<const extensions::Extension> extension) {
   std::vector<base::Value> permission_messages;
@@ -271,6 +279,21 @@ base::Value GetPowerfulExtensions(const extensions::ExtensionSet& extensions) {
   }
 
   return powerful_extensions;
+}
+
+const char* GetReportingTypeValue(ReportingType reportingType) {
+  switch (reportingType) {
+    case ReportingType::kDevice:
+      return kReportingTypeDevice;
+    case ReportingType::kExtensions:
+      return kReportingTypeExtensions;
+    case ReportingType::kSecurity:
+      return kReportingTypeSecurity;
+    case ReportingType::kUser:
+      return kReportingTypeUser;
+    default:
+      return kReportingTypeSecurity;
+  }
 }
 
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -325,80 +348,124 @@ void ManagementUIHandler::RegisterMessages() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void ManagementUIHandler::AddExtensionReportingInfo(
     base::Value* report_sources) {
-  std::unordered_set<std::string> messages;
-
   const extensions::Extension* cloud_reporting_extension =
-      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
-          ->GetExtensionById(kCloudReportingExtensionId,
-                             extensions::ExtensionRegistry::ENABLED);
+      GetEnabledExtension(kCloudReportingExtensionId);
 
-  if (cloud_reporting_extension != nullptr) {
-    messages.insert(kManagementExtensionReportMachineName);
-    messages.insert(kManagementExtensionReportUsername);
-    messages.insert(kManagementExtensionReportVersion);
-    messages.insert(kManagementExtensionReportPolicies);
-    messages.insert(kManagementExtensionReportExtensionsPlugin);
-    messages.insert(kManagementExtensionReportSafeBrowsingWarnings);
-  }
+  const policy::PolicyService* policy_service = GetPolicyService();
 
-  policy::PolicyNamespace on_prem_reporting_extension_stable_policy_namespace =
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
-                              kOnPremReportingExtensionStableId);
-  policy::PolicyNamespace on_prem_reporting_extension_beta_policy_namespace =
-      policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
-                              kOnPremReportingExtensionBetaId);
-
-  const policy::PolicyService* policyService =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()))
-          ->policy_service();
+  const policy::PolicyNamespace
+      on_prem_reporting_extension_stable_policy_namespace =
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
+                                  kOnPremReportingExtensionStableId);
+  const policy::PolicyNamespace
+      on_prem_reporting_extension_beta_policy_namespace =
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
+                                  kOnPremReportingExtensionBetaId);
 
   const policy::PolicyMap& on_prem_reporting_extension_stable_policy_map =
-      policyService->GetPolicies(
+      policy_service->GetPolicies(
           on_prem_reporting_extension_stable_policy_namespace);
   const policy::PolicyMap& on_prem_reporting_extension_beta_policy_map =
-      policyService->GetPolicies(
+      policy_service->GetPolicies(
           on_prem_reporting_extension_beta_policy_namespace);
 
   const policy::PolicyMap* policy_maps[] = {
       &on_prem_reporting_extension_stable_policy_map,
       &on_prem_reporting_extension_beta_policy_map};
 
-  static const struct {
+  const bool cloud_reporting_extension_installed =
+      cloud_reporting_extension != nullptr;
+  const struct {
     const char* policy_key;
     const char* message;
-  } policy_keys_messages[] = {
+    const ReportingType reporting_type;
+    const bool enabled_by_default;
+  } report_definitions[] = {
+      {kPolicyKeyReportMachineIdData, kManagementExtensionReportMachineName,
+       ReportingType::kDevice, cloud_reporting_extension_installed},
       {kPolicyKeyReportMachineIdData,
-       kManagementExtensionReportMachineNameAddress},
-      {kPolicyKeyReportUserIdData, kManagementExtensionReportUsername},
-      {kPolicyKeyReportVersionData, kManagementExtensionReportVersion},
-      {kPolicyKeyReportPolicyData, kManagementExtensionReportPolicies},
-      {kPolicyKeyReportExtensionsData,
-       kManagementExtensionReportExtensionsPlugin},
+       kManagementExtensionReportMachineNameAddress, ReportingType::kDevice,
+       false},
+      {kPolicyKeyReportVersionData, kManagementExtensionReportVersion,
+       ReportingType::kDevice, cloud_reporting_extension_installed},
+      {kPolicyKeyReportSystemTelemetryData, kManagementExtensionReportPerfCrash,
+       ReportingType::kDevice, false},
+      {kPolicyKeyReportUserIdData, kManagementExtensionReportUsername,
+       ReportingType::kUser, cloud_reporting_extension_installed},
       {kPolicyKeyReportSafeBrowsingData,
-       kManagementExtensionReportSafeBrowsingWarnings},
-      {kPolicyKeyReportSystemTelemetryData,
-       kManagementExtensionReportPerfCrash},
-      {kPolicyKeyReportUserBrowsingData,
-       kManagementExtensionReportWebsiteUsageStatistics}};
+       kManagementExtensionReportSafeBrowsingWarnings, ReportingType::kSecurity,
+       cloud_reporting_extension_installed},
+      {kPolicyKeyReportPolicyData, kManagementExtensionReportPolicies,
+       ReportingType::kExtensions, cloud_reporting_extension_installed},
+      {kPolicyKeyReportExtensionsData,
+       kManagementExtensionReportExtensionsPlugin, ReportingType::kExtensions,
+       cloud_reporting_extension_installed},
+      {nullptr, kManagementExtensionReportExtensionsAndPolicies,
+       ReportingType::kExtensions, false},
+  };
 
-  for (const auto* policy_map : policy_maps) {
-    for (const auto& policy_key_message : policy_keys_messages) {
-      const base::Value* policy_value =
-          policy_map->GetValue(policy_key_message.policy_key);
-      if (policy_value && policy_value->is_bool() && policy_value->GetBool())
-        messages.insert(policy_key_message.message);
+  std::unordered_set<const char*> enabled_messages;
+
+  for (auto& report_definition : report_definitions) {
+    if (report_definition.enabled_by_default) {
+      enabled_messages.insert(report_definition.message);
+    } else if (report_definition.policy_key) {
+      for (const policy::PolicyMap* policy_map : policy_maps) {
+        const base::Value* policy_value =
+            policy_map->GetValue(report_definition.policy_key);
+        if (policy_value && policy_value->is_bool() &&
+            policy_value->GetBool()) {
+          enabled_messages.insert(report_definition.message);
+          break;
+        }
+      }
     }
   }
 
-  if (messages.find(kManagementExtensionReportMachineNameAddress) !=
-      messages.end()) {
-    messages.erase(kManagementExtensionReportMachineName);
+  // The message with more data collected for kPolicyKeyReportMachineIdData
+  // trumps the one with less data.
+  if (enabled_messages.find(kManagementExtensionReportMachineNameAddress) !=
+      enabled_messages.end()) {
+    enabled_messages.erase(kManagementExtensionReportMachineName);
   }
 
-  for (const auto& message : messages) {
-    report_sources->GetList().push_back(base::Value(message));
+  // When there extensions and policies reported, use the message combining
+  // both.
+  if (enabled_messages.find(kManagementExtensionReportPolicies) !=
+          enabled_messages.end() &&
+      enabled_messages.find(kManagementExtensionReportExtensionsPlugin) !=
+          enabled_messages.end()) {
+    enabled_messages.erase(kManagementExtensionReportPolicies);
+    enabled_messages.erase(kManagementExtensionReportExtensionsPlugin);
+    enabled_messages.insert(kManagementExtensionReportExtensionsAndPolicies);
   }
+
+  for (auto& report_definition : report_definitions) {
+    if (enabled_messages.find(report_definition.message) ==
+        enabled_messages.end()) {
+      continue;
+    }
+
+    base::Value data(base::Value::Type::DICTIONARY);
+    data.SetKey("messageId", base::Value(report_definition.message));
+    data.SetKey(
+        "reportingType",
+        base::Value(GetReportingTypeValue(report_definition.reporting_type)));
+    report_sources->GetList().push_back(std::move(data));
+  }
+}
+
+const policy::PolicyService* ManagementUIHandler::GetPolicyService() const {
+  return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+             Profile::FromWebUI(web_ui()))
+      ->policy_service();
+}
+
+const extensions::Extension* ManagementUIHandler::GetEnabledExtension(
+    const std::string& extensionId) const {
+  return extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+      ->GetExtensionById(kCloudReportingExtensionId,
+                         extensions::ExtensionRegistry::ENABLED);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_HANDLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_ui.h"
@@ -21,20 +23,47 @@ extern const char kManagementReportNetworkInterfaces[];
 extern const char kManagementReportUsers[];
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+extern const char kCloudReportingExtensionId[];
+extern const char kOnPremReportingExtensionStableId[];
+extern const char kOnPremReportingExtensionBetaId[];
+
 extern const char kManagementExtensionReportMachineName[];
 extern const char kManagementExtensionReportMachineNameAddress[];
 extern const char kManagementExtensionReportUsername[];
 extern const char kManagementExtensionReportVersion[];
 extern const char kManagementExtensionReportPolicies[];
 extern const char kManagementExtensionReportExtensionsPlugin[];
+extern const char kManagementExtensionReportExtensionsAndPolicies[];
 extern const char kManagementExtensionReportSafeBrowsingWarnings[];
 extern const char kManagementExtensionReportPerfCrash[];
-extern const char kManagementExtensionReportWebsiteUsageStatistics[];
+
+extern const char kPolicyKeyReportMachineIdData[];
+extern const char kPolicyKeyReportUserIdData[];
+extern const char kPolicyKeyReportVersionData[];
+extern const char kPolicyKeyReportPolicyData[];
+extern const char kPolicyKeyReportExtensionsData[];
+extern const char kPolicyKeyReportSafeBrowsingData[];
+extern const char kPolicyKeyReportSystemTelemetryData[];
+extern const char kPolicyKeyReportUserBrowsingData[];
+
+extern const char kReportingTypeDevice[];
+extern const char kReportingTypeExtensions[];
+extern const char kReportingTypeSecurity[];
+extern const char kReportingTypeUser[];
+
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace base {
 class ListValue;
 }  // namespace base
+
+namespace extensions {
+class Extension;
+}  // namespace extensions
+
+namespace policy {
+class PolicyService;
+}  // namespace policy
 
 // The JavaScript message handler for the chrome://management page.
 class ManagementUIHandler : public content::WebUIMessageHandler {
@@ -45,11 +74,16 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   // content::WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
- private:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+ protected:
   void AddExtensionReportingInfo(base::Value* report_sources);
+
+  virtual const policy::PolicyService* GetPolicyService() const;
+  virtual const extensions::Extension* GetEnabledExtension(
+      const std::string& extensionId) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+ private:
   base::string16 GetEnterpriseManagementStatusString();
 
   void HandleGetDeviceManagementStatus(const base::ListValue* args);

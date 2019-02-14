@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/load_time_data.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="management_browser_proxy.html">
 
 <dom-module id="management-ui">
@@ -61,8 +63,9 @@
       }
 
       .browser-report {
-        align-items: center;
+        align-items: start;
         display: flex;
+        margin: 12px 0;
       }
 
       .single-column {
@@ -113,6 +116,10 @@
         padding: 0;
       }
 
+      .browser-report ul {
+        margin: 0;
+      }
+
       .list-item div {
         padding: 0 5px 0;
       }
@@ -127,13 +134,20 @@
               if="[[showBrowserReportingInfo_(browserReportingInfo_)]]">
             <section class="three-line single-column">
               <h2>$i18n{browserReporting}</h2>
-              <div class="content-indented browser-report">
-                <ul>
-                  <template is="dom-repeat" items="[[browserReportingInfo_]]">
-                    <li>[[item]]</li>
-                  </template>
-                </ul>
+              <div class="content-indented subtitle">
+                $i18n{browserReportingExplanation}
               </div>
+              <template is="dom-repeat" items="[[browserReportingInfo_]]">
+                <div class="content-indented browser-report">
+                  <iron-icon icon="[[item.icon]]"></iron-icon>
+                  <ul>
+                    <template is="dom-repeat" items="[[item.messages]]"
+                        as="message">
+                      <li>[[message]]</li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
             </section>
           </template>
           <template is="dom-if"

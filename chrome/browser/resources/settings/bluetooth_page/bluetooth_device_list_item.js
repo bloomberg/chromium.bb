@@ -123,7 +123,7 @@ Polymer({
   getDeviceIcon_: function(device) {
     switch (device.type) {
       case 'computer':
-        return 'settings:computer';
+        return 'cr:computer';
       case 'phone':
         return 'settings:smartphone';
       case 'audio':
