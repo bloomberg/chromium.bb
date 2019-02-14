@@ -103,8 +103,14 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
     return false;
   }
   if (!dictionary->GetDictionary("args", &args)) {
-    LOG(ERROR) << "args is missing from TraceEvent JSON";
-    return false;
+    std::string stripped_args;
+    // If argument filter is enabled, the arguments field contains a string
+    // value.
+    if (!dictionary->GetString("args", &stripped_args) ||
+        stripped_args != "__stripped__") {
+      LOG(ERROR) << "args is missing from TraceEvent JSON";
+      return false;
+    }
   }
   if (require_id && !dictionary->GetString("id", &id)) {
     LOG(ERROR) << "id is missing from ASYNC_BEGIN/ASYNC_END TraceEvent JSON";
@@ -125,23 +131,25 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
   }
 
   // For each argument, copy the type and create a trace_analyzer::TraceValue.
-  for (base::DictionaryValue::Iterator it(*args); !it.IsAtEnd();
-       it.Advance()) {
-    std::string str;
-    bool boolean = false;
-    int int_num = 0;
-    double double_num = 0.0;
-    if (it.value().GetAsString(&str)) {
-      arg_strings[it.key()] = str;
-    } else if (it.value().GetAsInteger(&int_num)) {
-      arg_numbers[it.key()] = static_cast<double>(int_num);
-    } else if (it.value().GetAsBoolean(&boolean)) {
-      arg_numbers[it.key()] = static_cast<double>(boolean ? 1 : 0);
-    } else if (it.value().GetAsDouble(&double_num)) {
-      arg_numbers[it.key()] = double_num;
+  if (args) {
+    for (base::DictionaryValue::Iterator it(*args); !it.IsAtEnd();
+         it.Advance()) {
+      std::string str;
+      bool boolean = false;
+      int int_num = 0;
+      double double_num = 0.0;
+      if (it.value().GetAsString(&str)) {
+        arg_strings[it.key()] = str;
+      } else if (it.value().GetAsInteger(&int_num)) {
+        arg_numbers[it.key()] = static_cast<double>(int_num);
+      } else if (it.value().GetAsBoolean(&boolean)) {
+        arg_numbers[it.key()] = static_cast<double>(boolean ? 1 : 0);
+      } else if (it.value().GetAsDouble(&double_num)) {
+        arg_numbers[it.key()] = double_num;
+      }
+      // Record all arguments as values.
+      arg_values[it.key()] = it.value().CreateDeepCopy();
     }
-    // Record all arguments as values.
-    arg_values[it.key()] = it.value().CreateDeepCopy();
   }
 
   return true;

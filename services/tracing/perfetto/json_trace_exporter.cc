@@ -85,10 +85,65 @@ const char* GetStringFromStringTable(
   return it->second.c_str();
 }
 
+void OutputJSONFromArgumentValue(
+    const perfetto::protos::ChromeTraceEvent::Arg& arg,
+    std::string* out) {
+  TraceEvent::TraceValue value;
+  if (arg.has_bool_value()) {
+    value.as_bool = arg.bool_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, value, out);
+    return;
+  }
+
+  if (arg.has_uint_value()) {
+    value.as_uint = arg.uint_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_UINT, value, out);
+    return;
+  }
+
+  if (arg.has_int_value()) {
+    value.as_int = arg.int_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, value, out);
+    return;
+  }
+
+  if (arg.has_double_value()) {
+    value.as_double = arg.double_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, value, out);
+    return;
+  }
+
+  if (arg.has_pointer_value()) {
+    value.as_pointer = reinterpret_cast<void*>(arg.pointer_value());
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_POINTER, value, out);
+    return;
+  }
+
+  if (arg.has_string_value()) {
+    std::string str = arg.string_value();
+    value.as_string = &str[0];
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, value, out);
+    return;
+  }
+
+  if (arg.has_json_value()) {
+    *out += arg.json_value();
+    return;
+  }
+
+  if (arg.has_traced_value()) {
+    AppendProtoDictAsJSON(out, arg.traced_value());
+    return;
+  }
+
+  NOTREACHED();
+}
+
 void OutputJSONFromTraceEventProto(
     const perfetto::protos::ChromeTraceEvent& event,
-    std::string* out,
-    const std::unordered_map<int, std::string>& string_table) {
+    const std::unordered_map<int, std::string>& string_table,
+    const JSONTraceExporter::ArgumentFilterPredicate& argument_filter_predicate,
+    std::string* out) {
   char phase = static_cast<char>(event.phase());
   const char* name =
       event.has_name_index()
@@ -189,72 +244,46 @@ void OutputJSONFromTraceEventProto(
     base::StringAppendF(out, ",\"s\":\"%c\"", scope);
   }
 
-  *out += ",\"args\":{";
-  for (int i = 0; i < event.args_size(); ++i) {
-    auto& arg = event.args(i);
+  *out += ",\"args\":";
 
-    if (i > 0) {
-      *out += ",";
+  JSONTraceExporter::ArgumentNameFilterPredicate argument_name_filter_predicate;
+  bool strip_args =
+      event.args_size() > 0 && !argument_filter_predicate.is_null() &&
+      !argument_filter_predicate.Run(category_group_name, name,
+                                     &argument_name_filter_predicate);
+
+  if (strip_args) {
+    *out += "\"__stripped__\"";
+  } else {
+    *out += "{";
+
+    for (int i = 0; i < event.args_size(); ++i) {
+      auto& arg = event.args(i);
+
+      if (i > 0) {
+        *out += ",";
+      }
+
+      *out += "\"";
+      std::string arg_name =
+          arg.has_name_index()
+              ? GetStringFromStringTable(string_table, arg.name_index())
+              : arg.name();
+      *out += arg_name;
+      *out += "\":";
+
+      if (!argument_name_filter_predicate.is_null() &&
+          !argument_name_filter_predicate.Run(arg_name.c_str())) {
+        *out += "\"__stripped__\"";
+        continue;
+      }
+      OutputJSONFromArgumentValue(arg, out);
     }
 
-    *out += "\"";
-    *out += arg.has_name_index()
-                ? GetStringFromStringTable(string_table, arg.name_index())
-                : arg.name();
-    *out += "\":";
-
-    TraceEvent::TraceValue value;
-    if (arg.has_bool_value()) {
-      value.as_bool = arg.bool_value();
-      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, value, out);
-      continue;
-    }
-
-    if (arg.has_uint_value()) {
-      value.as_uint = arg.uint_value();
-      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_UINT, value, out);
-      continue;
-    }
-
-    if (arg.has_int_value()) {
-      value.as_int = arg.int_value();
-      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, value, out);
-      continue;
-    }
-
-    if (arg.has_double_value()) {
-      value.as_double = arg.double_value();
-      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, value, out);
-      continue;
-    }
-
-    if (arg.has_pointer_value()) {
-      value.as_pointer = reinterpret_cast<void*>(arg.pointer_value());
-      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_POINTER, value, out);
-      continue;
-    }
-
-    if (arg.has_string_value()) {
-      std::string str = arg.string_value();
-      value.as_string = &str[0];
-      TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, value, out);
-      continue;
-    }
-
-    if (arg.has_json_value()) {
-      *out += arg.json_value();
-      continue;
-    }
-
-    if (arg.has_traced_value()) {
-      AppendProtoDictAsJSON(out, arg.traced_value());
-      continue;
-    }
-
-    NOTREACHED();
+    *out += "}";
   }
 
-  *out += "}}";
+  *out += "}";
 }
 
 std::unique_ptr<base::DictionaryValue> ConvertTraceStatsToDict(
@@ -321,9 +350,12 @@ void AppendProtoDictAsJSON(std::string* out,
   out->append("}");
 }
 
-JSONTraceExporter::JSONTraceExporter(OnTraceEventJSONCallback callback)
+JSONTraceExporter::JSONTraceExporter(
+    ArgumentFilterPredicate argument_filter_predicate,
+    OnTraceEventJSONCallback callback)
     : json_callback_(callback),
-      metadata_(std::make_unique<base::DictionaryValue>()) {
+      metadata_(std::make_unique<base::DictionaryValue>()),
+      argument_filter_predicate_(argument_filter_predicate) {
   DCHECK(json_callback_);
 }
 
@@ -380,7 +412,8 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
         has_output_first_event_ = true;
       }
 
-      OutputJSONFromTraceEventProto(event, &out, string_table);
+      OutputJSONFromTraceEventProto(event, string_table,
+                                    argument_filter_predicate_, &out);
     }
 
     for (auto& metadata : bundle.metadata()) {

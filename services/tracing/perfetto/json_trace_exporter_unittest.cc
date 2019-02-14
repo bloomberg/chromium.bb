@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/pattern.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -24,17 +25,52 @@
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 
+using base::trace_event::TraceLog;
+
 namespace tracing {
+
+namespace {
+
+bool IsArgNameWhitelisted(const char* arg_name) {
+  return base::MatchPattern(arg_name, "granular_arg_whitelisted");
+}
+
+bool IsTraceEventArgsWhitelisted(
+    const char* category_group_name,
+    const char* event_name,
+    base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
+  if (base::MatchPattern(category_group_name, "toplevel") &&
+      base::MatchPattern(event_name, "*")) {
+    return true;
+  }
+
+  if (base::MatchPattern(category_group_name, "benchmark") &&
+      base::MatchPattern(event_name, "granularly_whitelisted")) {
+    *arg_filter = base::BindRepeating(&IsArgNameWhitelisted);
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
 
 class JSONTraceExporterTest : public testing::Test {
  public:
   void SetUp() override {
-    json_trace_exporter_.reset(new JSONTraceExporter(base::BindRepeating(
-        &JSONTraceExporterTest::OnTraceEventJSON, base::Unretained(this))));
+    json_trace_exporter_.reset(new JSONTraceExporter(
+        JSONTraceExporter::ArgumentFilterPredicate(),
+        base::BindRepeating(&JSONTraceExporterTest::OnTraceEventJSON,
+                            base::Unretained(this))));
   }
 
   void TearDown() override {
     json_trace_exporter_.reset();
+  }
+
+  void EnableArgumentFilter() {
+    json_trace_exporter_->SetArgumentFilterForTesting(
+        base::BindRepeating(&IsTraceEventArgsWhitelisted));
   }
 
   void OnTraceEventJSON(const std::string& json,
@@ -57,6 +93,7 @@ class JSONTraceExporterTest : public testing::Test {
     base::JSONWriter::Write(*events_value, &raw_events);
 
     trace_analyzer_.reset(trace_analyzer::TraceAnalyzer::Create(raw_events));
+    EXPECT_TRUE(trace_analyzer_);
   }
 
   void SetTestPacketBasicData(
@@ -595,6 +632,77 @@ TEST_F(JSONTraceExporterTest, TestLegacySystemTraceEvents) {
   EXPECT_EQ(content->GetList()[0].FindKey("pid")->GetInt(), 10);
   EXPECT_EQ(content->GetList()[0].FindKey("tid")->GetInt(), 11);
   EXPECT_EQ(content->GetList()[0].FindKey("name")->GetString(), "bar_name");
+}
+
+TEST_F(JSONTraceExporterTest, ArgsWhitelisting) {
+  EnableArgumentFilter();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+
+  {
+    auto* new_trace_event =
+        trace_packet_proto.mutable_chrome_events()->add_trace_events();
+    SetTestPacketBasicData(new_trace_event);
+    new_trace_event->set_name("event1");
+    new_trace_event->set_category_group_name("toplevel");
+    auto* new_arg = new_trace_event->add_args();
+    new_arg->set_name("int_one");
+    new_arg->set_uint_value(1);
+  }
+
+  {
+    auto* new_trace_event =
+        trace_packet_proto.mutable_chrome_events()->add_trace_events();
+    SetTestPacketBasicData(new_trace_event);
+    new_trace_event->set_name("event2");
+    new_trace_event->set_category_group_name("whitewashed");
+    auto* new_arg = new_trace_event->add_args();
+    new_arg->set_name("int_two");
+    new_arg->set_uint_value(1);
+  }
+
+  {
+    auto* new_trace_event =
+        trace_packet_proto.mutable_chrome_events()->add_trace_events();
+    SetTestPacketBasicData(new_trace_event);
+    new_trace_event->set_name("granularly_whitelisted");
+    new_trace_event->set_category_group_name("benchmark");
+    auto* new_arg1 = new_trace_event->add_args();
+    new_arg1->set_name("granular_arg_whitelisted");
+    new_arg1->set_string_value("whitelisted_value");
+    auto* new_arg2 = new_trace_event->add_args();
+    new_arg2->set_name("granular_arg_blacklisted");
+    new_arg2->set_string_value("blacklisted_value");
+  }
+
+  FinalizePacket(trace_packet_proto);
+
+  {
+    const auto* trace_event = trace_analyzer()->FindFirstOf(
+        trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
+        trace_analyzer::Query::String("event1"));
+    EXPECT_TRUE(trace_event);
+    EXPECT_EQ(1, trace_event->GetKnownArgAsDouble("int_one"));
+  }
+
+  {
+    const auto* trace_event = trace_analyzer()->FindFirstOf(
+        trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
+        trace_analyzer::Query::String("event2"));
+    EXPECT_TRUE(trace_event);
+    EXPECT_FALSE(trace_event->HasArg(("int_two")));
+  }
+
+  {
+    const auto* trace_event = trace_analyzer()->FindFirstOf(
+        trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
+        trace_analyzer::Query::String("granularly_whitelisted"));
+    EXPECT_TRUE(trace_event);
+    EXPECT_EQ("whitelisted_value",
+              trace_event->GetKnownArgAsString(("granular_arg_whitelisted")));
+    EXPECT_EQ("__stripped__",
+              trace_event->GetKnownArgAsString(("granular_arg_blacklisted")));
+  }
 }
 
 }  // namespace tracing

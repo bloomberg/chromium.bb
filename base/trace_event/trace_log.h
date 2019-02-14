@@ -165,6 +165,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
 
   void SetArgumentFilterPredicate(
       const ArgumentFilterPredicate& argument_filter_predicate);
+  ArgumentFilterPredicate GetArgumentFilterPredicate() const;
 
   // Flush all collected events to the given output callback. The callback will
   // be called one or more times either synchronously or asynchronously from
