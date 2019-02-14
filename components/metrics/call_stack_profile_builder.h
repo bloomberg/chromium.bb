@@ -7,9 +7,12 @@
 
 #include <limits>
 #include <map>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/time/time.h"
@@ -36,6 +39,17 @@ class WorkIdRecorder {
   WorkIdRecorder& operator=(const WorkIdRecorder&) = delete;
 };
 
+// Records a metadata item to associate with the sample.
+// TODO(crbug.com/913570): Extend to support multiple metadata items per sample.
+class MetadataRecorder {
+ public:
+  MetadataRecorder() = default;
+  virtual ~MetadataRecorder() = default;
+  virtual std::pair<uint64_t, int64_t> GetHashAndValue() const = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(MetadataRecorder);
+};
+
 // An instance of the class is meant to be passed to base::StackSamplingProfiler
 // to collect profiles. The profiles collected are uploaded via the metrics log.
 //
@@ -54,6 +68,7 @@ class CallStackProfileBuilder
   explicit CallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
       const WorkIdRecorder* work_id_recorder = nullptr,
+      const MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~CallStackProfileBuilder() override;
@@ -91,6 +106,7 @@ class CallStackProfileBuilder
   unsigned int last_work_id_ = std::numeric_limits<unsigned int>::max();
   bool is_continued_work_ = false;
   const WorkIdRecorder* const work_id_recorder_;
+  const MetadataRecorder* const metadata_recorder_;
 
   // The SampledProfile protobuf message which contains the collected stack
   // samples.
@@ -100,7 +116,7 @@ class CallStackProfileBuilder
   std::map<const CallStackProfile::Stack*, int, StackComparer> stack_index_;
 
   // The indexes of modules, indexed by module's base_address.
-  std::map<uintptr_t, size_t> module_index_;
+  std::unordered_map<uintptr_t, size_t> module_index_;
 
   // The distinct modules in the current profile.
   std::vector<base::ModuleCache::Module> modules_;
@@ -110,6 +126,9 @@ class CallStackProfileBuilder
 
   // The start time of a profile collection.
   const base::TimeTicks profile_start_time_;
+
+  // Maps metadata hash to index in |metadata_name_hash| array.
+  std::unordered_map<uint64_t, int> metadata_hashes_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };
