@@ -130,10 +130,6 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Registered observers, not owned.
   base::ObserverList<Observer, true>::Unchecked observers_;
 
-  // Used to listen for provider initialization. If the provider is already
-  // initialized during our constructor then the subscription is never used.
-  std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
-
   // In charge of actually persisting changes to disk, or loading previous data.
   std::unique_ptr<ModelTypeStore> store_;
 
@@ -144,6 +140,10 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
 
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
+
+  // Used to listen for provider initialization. If the provider is already
+  // initialized during our constructor then the subscription is never used.
+  std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
 
   base::WeakPtrFactory<DeviceInfoSyncBridge> weak_ptr_factory_;
 
