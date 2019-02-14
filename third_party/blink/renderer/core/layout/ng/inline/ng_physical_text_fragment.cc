@@ -193,6 +193,8 @@ NGPhysicalTextFragment::LineLeftAndRightForOffsets(unsigned start_offset,
 NGPhysicalOffsetRect NGPhysicalTextFragment::LocalRect(
     unsigned start_offset,
     unsigned end_offset) const {
+  if (start_offset == start_offset_ && end_offset == end_offset_)
+    return LocalRect();
   LayoutUnit start_position, end_position;
   std::tie(start_position, end_position) =
       LineLeftAndRightForOffsets(start_offset, end_offset);
