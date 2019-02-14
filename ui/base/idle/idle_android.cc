@@ -4,20 +4,74 @@
 
 #include "ui/base/idle/idle.h"
 
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "base/memory/singleton.h"
+#include "jni/IdleDetector_jni.h"
+
+using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
+using base::android::ScopedJavaLocalRef;
 
 namespace ui {
 
+namespace {
+
+class AndroidIdleMonitor {
+ public:
+  AndroidIdleMonitor() {
+    JNIEnv* env = AttachCurrentThread();
+    j_idle_manager_.Reset(Java_IdleDetector_create(env));
+  }
+
+  ~AndroidIdleMonitor() {}
+
+  static AndroidIdleMonitor* GetInstance() {
+    // This class is constructed a single time whenever the
+    // first web page using the User Idle Detection API
+    // starts monitoring the idle state.
+    //
+    // Upon construction, a java object is instantiated and
+    // the Android broadcast receivers are registered to listen
+    // to the OS events.
+    //
+    // The singleton only gets destroyed when the browser exists,
+    // so the broadcast receivers never get unregistered. The
+    // events are rare and we respond very quickly to them.
+    //
+    // In addition to that, Android kills chrome regularly, so
+    // in practice the lifetime is reasonably scoped.
+    //
+    // This approach is consistent with the implementation on
+    // Macs.
+    return base::Singleton<AndroidIdleMonitor>::get();
+  }
+
+  int CalculateIdleTime() {
+    JNIEnv* env = AttachCurrentThread();
+    jlong result = Java_IdleDetector_getIdleTime(env, j_idle_manager_);
+    return result;
+  }
+
+  bool CheckIdleStateIsLocked() {
+    JNIEnv* env = AttachCurrentThread();
+    jboolean result = Java_IdleDetector_isScreenLocked(env, j_idle_manager_);
+    return result;
+  }
+
+ private:
+  base::android::ScopedJavaGlobalRef<jobject> j_idle_manager_;
+};
+
+}  // namespace
+
 int CalculateIdleTime() {
-  // TODO(crbug.com/878979): implementation pending.
-  NOTIMPLEMENTED();
-  return 0;
+  return AndroidIdleMonitor::GetInstance()->CalculateIdleTime();
 }
 
 bool CheckIdleStateIsLocked() {
-  // TODO(crbug.com/878979): implementation pending.
-  NOTIMPLEMENTED();
-  return false;
+  return AndroidIdleMonitor::GetInstance()->CheckIdleStateIsLocked();
 }
 
 IdleState CalculateIdleState(int idle_threshold) {
