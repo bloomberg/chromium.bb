@@ -107,9 +107,9 @@ TEST_P(GovernorTest, MaxVolume) {
   CompareBuffers();
 }
 
-INSTANTIATE_TEST_CASE_P(GovernorClampVolumeTest,
-                        GovernorTest,
-                        ::testing::Values(0.0f, 0.1f, 0.5f, 0.9f, 1.0f, 1.1f));
+INSTANTIATE_TEST_SUITE_P(GovernorClampVolumeTest,
+                         GovernorTest,
+                         ::testing::Values(0.0f, 0.1f, 0.5f, 0.9f, 1.0f, 1.1f));
 
 // Default tests from post_processor_test
 TEST_P(PostProcessorTest, GovernorDelay) {

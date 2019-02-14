@@ -439,10 +439,10 @@ TEST_P(SlewVolumeDynamicTest, FMACRampUpByParts) {
   CheckSlewMAC(start, end);
 }
 
-INSTANTIATE_TEST_CASE_P(SingleBufferSlew,
-                        SlewVolumeDynamicTest,
-                        ::testing::Combine(::testing::Values(44100, 48000),
-                                           ::testing::Values(0, 15, 100)));
+INSTANTIATE_TEST_SUITE_P(SingleBufferSlew,
+                         SlewVolumeDynamicTest,
+                         ::testing::Combine(::testing::Values(44100, 48000),
+                                            ::testing::Values(0, 15, 100)));
 
 class SlewVolumeInterleavedTest : public SlewVolumeDynamicTest {
  protected:
@@ -529,10 +529,10 @@ TEST_P(SlewVolumeInterleavedTest, FMULRampUp) {
   CheckSlewMUL(start, end);
 }
 
-INSTANTIATE_TEST_CASE_P(Interleaved,
-                        SlewVolumeInterleavedTest,
-                        ::testing::Combine(::testing::Values(2, 4),
-                                           ::testing::Values(0)));
+INSTANTIATE_TEST_SUITE_P(Interleaved,
+                         SlewVolumeInterleavedTest,
+                         ::testing::Combine(::testing::Values(2, 4),
+                                            ::testing::Values(0)));
 
 }  // namespace media
 }  // namespace chromecast
