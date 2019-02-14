@@ -25,48 +25,30 @@ class AccountsMutatorImpl : public AccountsMutator {
                                SigninManagerBase* signin_manager);
   ~AccountsMutatorImpl() override;
 
-  // Updates the information of the account associated with |gaia_id|, first
-  // adding that account to the system if it is not known.
+  // AccountsMutator:
   std::string AddOrUpdateAccount(
       const std::string& gaia_id,
       const std::string& email,
       const std::string& refresh_token,
       bool is_under_advanced_protection,
       signin_metrics::SourceForRefreshTokenOperation source) override;
-
-  // Updates the information about account identified by |account_id|.
   void UpdateAccountInfo(
       const std::string& account_id,
       base::Optional<bool> is_child_account,
       base::Optional<bool> is_under_advanced_protection) override;
-
-  // Removes the account given by |account_id|. Also revokes the token
-  // server-side if needed.
   void RemoveAccount(
       const std::string& account_id,
       signin_metrics::SourceForRefreshTokenOperation source) override;
-
-  // Removes all accounts.
   void RemoveAllAccounts(
       signin_metrics::SourceForRefreshTokenOperation source) override;
-
-  // Invalidates the refresh token of the primary account.
-  // The primary account must necessarily be set by the time this method
-  // is invoked.
   void InvalidateRefreshTokenForPrimaryAccount(
       signin_metrics::SourceForRefreshTokenOperation source) override;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // Removes the credentials associated to account_id from the internal storage,
-  // and moves them to |target|. The credentials are not revoked on the server,
-  // but the IdentityManager::Observer::OnRefreshTokenRemovedForAccount()
-  // notification is sent to the observers.
   void MoveAccount(AccountsMutator* target,
                    const std::string& account_id) override;
 #endif
 
-  // Updates the refresh token for the supervised user.
-  // TODO(860492): Remove this once supervised user support is removed.
   void LegacySetRefreshTokenForSupervisedUser(
       const std::string& refresh_token) override;
 
