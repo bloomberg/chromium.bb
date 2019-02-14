@@ -11,6 +11,7 @@ namespace blink {
 
 class LayoutBox;
 class LayoutBlock;
+struct NGStaticPosition;
 
 // This static class should be used for querying information from a |LayoutBox|.
 class LayoutBoxUtils {
@@ -24,6 +25,11 @@ class LayoutBoxUtils {
                                           const LayoutBlock* cb);
   static LayoutUnit AvailableLogicalHeight(const LayoutBox& box,
                                            const LayoutBlock* cb);
+
+  // Produces an |NGStaticPosition| for |box| from the layout-tree.
+  // |container_builder| is needed as not all information from current NG
+  // layout is copied to the layout-tree yet.
+  static NGStaticPosition ComputeStaticPositionFromLegacy(const LayoutBox& box);
 };
 
 }  // namespace blink

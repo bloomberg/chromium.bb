@@ -52,7 +52,7 @@ class CORE_EXPORT NGFragmentBuilder {
   }
   void SetBlockSize(LayoutUnit block_size) { size_.block_size = block_size; }
 
-  const LayoutObject* GetLayoutObject() { return layout_object_; }
+  const LayoutObject* GetLayoutObject() const { return layout_object_; }
 
  protected:
   NGFragmentBuilder(scoped_refptr<const ComputedStyle> style,

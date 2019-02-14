@@ -1813,6 +1813,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // See LayoutObject::maxPreferredLogicalWidth() for more details.
   LayoutUnit max_preferred_logical_width_;
 
+  // LayoutBoxUtils is used for the LayoutNG code querying protected methods on
+  // this class, e.g. determining the static-position of OOF elements.
+  friend class LayoutBoxUtils;
+
  private:
   LogicalToPhysicalSetter<LayoutUnit, LayoutBox> LogicalMarginToPhysicalSetter(
       const ComputedStyle* override_style) {

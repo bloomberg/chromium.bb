@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -59,7 +60,6 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   LayoutBox* container =
       css_container->IsBox() ? ToLayoutBox(css_container) : ContainingBlock();
   const ComputedStyle* container_style = container->Style();
-  const ComputedStyle* parent_style = Parent()->Style();
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
   NGBlockNode container_node(container);
@@ -108,79 +108,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   container_builder.SetPadding(
       ComputePadding(constraint_space, *container_style));
 
-  // Calculate the actual size of the containing block for this out-of-flow
-  // descendant. This is what's used to size and position us.
-  LayoutUnit containing_block_logical_width =
-      ContainingBlockLogicalWidthForPositioned(css_container);
-  LayoutUnit containing_block_logical_height =
-      ContainingBlockLogicalHeightForPositioned(css_container);
-
-  // Determine static position.
-
-  // static_inline and static_block are inline/block direction offsets
-  // from physical origin. This is an unexpected blend of logical and
-  // physical in a single variable.
-  LayoutUnit static_inline;
-  LayoutUnit static_block;
-
-  Length logical_left;
-  Length logical_right;
-  Length logical_top;
-  Length logical_bottom;
-
-  ComputeInlineStaticDistance(logical_left, logical_right, this, css_container,
-                              containing_block_logical_width);
-  ComputeBlockStaticDistance(logical_top, logical_bottom, this, css_container);
-  if (parent_style->IsLeftToRightDirection()) {
-    if (!logical_left.IsAuto()) {
-      static_inline =
-          ValueForLength(logical_left, containing_block_logical_width);
-    }
-  } else {
-    if (!logical_right.IsAuto()) {
-      static_inline =
-          ValueForLength(logical_right, containing_block_logical_width);
-    }
-  }
-  if (!logical_top.IsAuto())
-    static_block = ValueForLength(logical_top, containing_block_logical_height);
-
-  // Legacy static position is relative to padding box. Convert to border
-  // box. Also flip offsets as necessary to make them relative to to the
-  // left/top edges.
-
-  // First convert the static inline offset to a line-left offset, i.e. physical
-  // left or top.
-  LayoutUnit inline_left_or_top =
-      parent_style->IsLeftToRightDirection()
-          ? static_inline
-          : containing_block_logical_width - static_inline;
-  // Now make it relative to the left or top border edge of the containing
-  // block.
-  inline_left_or_top +=
-      borders_and_scrollbars.LineLeft(container_style->Direction());
-
-  // Make the static block offset relative to the start border edge of the
-  // containing block.
-  static_block += borders_and_scrollbars.block_start;
-  // Then convert it to a physical top or left offset. Since we're already
-  // border-box relative, flip it around the size of the border box, rather than
-  // the size of the containing block (padding box).
-  LayoutUnit block_top_or_left =
-      container_style->IsFlippedBlocksWritingMode()
-          ? container_border_box_logical_height - static_block
-          : static_block;
-
-  // Convert to physical direction. This can be done with a simple coordinate
-  // flip because the distances are relative to physical top/left origin.
-  NGPhysicalOffset static_location =
-      container_style->IsHorizontalWritingMode()
-          ? NGPhysicalOffset(inline_left_or_top, block_top_or_left)
-          : NGPhysicalOffset(block_top_or_left, inline_left_or_top);
   NGStaticPosition static_position =
-      NGStaticPosition::Create(container_style->GetWritingMode(),
-                               parent_style->Direction(), static_location);
-
+      LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this);
   // Set correct container for inline containing blocks.
   container_builder.AddOutOfFlowLegacyCandidate(
       NGBlockNode(this), static_position,
