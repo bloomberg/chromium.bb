@@ -17,8 +17,10 @@ import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Initializes our notification channels.
@@ -39,7 +41,9 @@ public class ChannelsInitializer {
      * channel settings from first launch onwards.
      */
     void initializeStartupChannels() {
-        ensureInitialized(ChannelDefinitions.getStartupChannelIds());
+        Set<String> groupIds = ChannelDefinitions.getStartupChannelGroupIds();
+        Set<String> channelIds = ChannelDefinitions.getStartupChannelIds();
+        ensureInitialized(groupIds, channelIds);
     }
 
     /**
@@ -49,13 +53,18 @@ public class ChannelsInitializer {
      */
     void updateLocale(Resources resources) {
         mResources = resources;
-        HashSet<String> channelIds = new HashSet<>();
+        Set<String> groupIds = new HashSet<>();
+        Set<String> channelIds = new HashSet<>();
+        for (NotificationChannelGroup group : mNotificationManager.getNotificationChannelGroups()) {
+            groupIds.add(group.getId());
+        }
         for (NotificationChannel channel : mNotificationManager.getNotificationChannels()) {
             channelIds.add(channel.getId());
         }
         // only re-initialize known channel ids, as we only want to update known & existing channels
+        groupIds.retainAll(ChannelDefinitions.getAllChannelGroupIds());
         channelIds.retainAll(ChannelDefinitions.getAllChannelIds());
-        ensureInitialized(channelIds);
+        ensureInitialized(groupIds, channelIds);
     }
 
     /**
@@ -88,10 +97,11 @@ public class ChannelsInitializer {
      *
      * Calling this is a (potentially lengthy) no-op if the channels have already been created.
      *
+     * @param groupIds The IDs of the channel groups to be initialized.
      * @param channelIds The IDs of the channel to be initialized.
      */
-    public void ensureInitialized(Collection<String> channelIds) {
-        ensureInitializedWithEnabledState(channelIds, true);
+    public void ensureInitialized(Collection<String> groupIds, Collection<String> channelIds) {
+        ensureInitializedWithEnabledState(groupIds, channelIds, true);
     }
 
     /**
@@ -120,12 +130,24 @@ public class ChannelsInitializer {
     }
 
     private void ensureInitializedWithEnabledState(String channelId, boolean enabled) {
-        ensureInitializedWithEnabledState(CollectionUtil.newArrayList(channelId), enabled);
+        Collection<String> groupIds = Collections.emptyList();
+        Collection<String> channelIds = CollectionUtil.newArrayList(channelId);
+        ensureInitializedWithEnabledState(groupIds, channelIds, enabled);
     }
 
-    private void ensureInitializedWithEnabledState(Collection<String> channelIds, boolean enabled) {
+    private void ensureInitializedWithEnabledState(
+            Collection<String> groupIds, Collection<String> channelIds, boolean enabled) {
         HashMap<String, NotificationChannelGroup> channelGroups = new HashMap<>();
         HashMap<String, NotificationChannel> channels = new HashMap<>();
+
+        for (String groupId : groupIds) {
+            ChannelDefinitions.PredefinedChannelGroup predefinedChannelGroup =
+                    ChannelDefinitions.getChannelGroup(groupId);
+            if (predefinedChannelGroup == null) continue;
+            NotificationChannelGroup channelGroup =
+                    predefinedChannelGroup.toNotificationChannelGroup(mResources);
+            channelGroups.put(channelGroup.getId(), channelGroup);
+        }
 
         for (String channelId : channelIds) {
             ChannelDefinitions.PredefinedChannel predefinedChannel =

@@ -37,6 +37,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -318,8 +319,11 @@ public class ChannelsInitializerTest {
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
     public void testEnsureInitialized_multipleIds() throws Exception {
-        mChannelsInitializer.ensureInitialized(CollectionUtil.newHashSet(
-                ChannelDefinitions.ChannelId.SITES, ChannelDefinitions.ChannelId.BROWSER));
+        Collection<String> groupIds = CollectionUtil.newHashSet(
+                ChannelDefinitions.ChannelGroupId.SITES, ChannelDefinitions.ChannelGroupId.GENERAL);
+        Collection<String> channelIds = CollectionUtil.newHashSet(
+                ChannelDefinitions.ChannelId.MEDIA, ChannelDefinitions.ChannelId.BROWSER);
+        mChannelsInitializer.ensureInitialized(groupIds, channelIds);
         assertThat(getChannelsIgnoringDefault(), hasSize(2));
     }
 
