@@ -88,6 +88,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool SyncStateAllowsExtensionUkm() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetAppPackageName() override;
+  std::string GetUploadSigningKey() override;
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
 

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -93,6 +94,7 @@
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "google_apis/google_api_keys.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -1090,4 +1092,10 @@ std::string ChromeMetricsServiceClient::GetAppPackageName() {
   return base::android::BuildInfo::GetInstance()->package_name();
 #endif
   return std::string();
+}
+
+std::string ChromeMetricsServiceClient::GetUploadSigningKey() {
+  std::string decoded_key;
+  base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
+  return decoded_key;
 }
