@@ -1652,9 +1652,6 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerNotFired) {
 // Verify that the timer to dispatch long queued requests starts only when there
 // are requests in-flight.
 TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerRunsOnRequestSchedule) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      features::kUnthrottleRequestsAfterLongQueuingDelay.name, "");
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
   InitializeMaxQueuingDelayExperiment(max_queuing_time);
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
