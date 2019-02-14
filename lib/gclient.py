@@ -169,7 +169,8 @@ def _GetGclientSolutions(internal, rev, template, managed):
   return solutions
 
 
-def _GetGclientSpec(internal, rev, template, use_cache, managed):
+def _GetGclientSpec(internal, rev, template, use_cache, managed,
+                    git_cache_dir):
   """Return a formatted gclient spec.
 
   See WriteConfigFile below.
@@ -179,19 +180,19 @@ def _GetGclientSpec(internal, rev, template, use_cache, managed):
 
   result += "target_os = ['chromeos']\n"
 
-  # Horrible hack, I will go to hell for this.  The bots need to have a git
-  # cache set up; but how can we tell whether this code is running on a bot
-  # or a developer's machine?
-  if cros_build_lib.HostIsCIBuilder() and use_cache:
-    if cros_build_lib.IsInsideChroot():
-      result += "cache_dir = '/tmp/b/git-cache'\n"
-    else:
-      result += "cache_dir = '/b/git-cache'\n"
+  if use_cache:
+    if not os.path.exists(git_cache_dir):
+      # Horrible hack, but we need a place to put the cache, and it can change
+      # dynamically (such as when inside the chroot).
+      git_cache_dir = '/tmp/git-cache'
+
+    result += "cache_dir = '%s'\n" % git_cache_dir
 
   return result
 
 def WriteConfigFile(gclient, cwd, internal, rev, template=None,
-                    use_cache=True, managed=True):
+                    use_cache=True, managed=True,
+                    git_cache_dir=None):
   """Initialize the specified directory as a gclient checkout.
 
   For gclient documentation, see:
@@ -214,8 +215,13 @@ def WriteConfigFile(gclient, cwd, internal, rev, template=None,
                be used when available (on a continuous-integration builder).
     managed: Default value of gclient config's 'managed' field. Default True
              (see crbug.com/624177).
+    git_cache_dir: Git Cache directory to use. If None will use /b /git-cache.
   """
-  spec = _GetGclientSpec(internal, rev, template, use_cache, managed)
+  if not git_cache_dir:
+    git_cache_dir = '/b/git-cache'
+
+  spec = _GetGclientSpec(internal, rev, template, use_cache, managed,
+                         git_cache_dir=git_cache_dir)
   cmd = [gclient, 'config', '--spec', spec]
   cros_build_lib.RunCommand(cmd, cwd=cwd)
 
