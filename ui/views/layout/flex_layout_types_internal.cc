@@ -54,7 +54,7 @@ void Span::Center(const Span& container, const Inset1D& margins) {
   // Case 1: no room for any margins. Just center the span in the container,
   // with equal overflow on each side.
   if (remaining <= 0) {
-    set_start(std::ceilf(remaining * 0.5f));
+    set_start(std::ceil(remaining * 0.5f));
     return;
   }
 
