@@ -59,8 +59,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -155,7 +153,8 @@ int UIDelegateStub::s_show_account_details_called_ = 0;
 
 class TestListener : public content::NotificationObserver {
  public:
-  TestListener(const std::string& message, const base::Closure& callback)
+  TestListener(const std::string& message,
+               const base::RepeatingClosure& callback)
       : message_(message), callback_(callback) {
     registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
@@ -172,7 +171,7 @@ class TestListener : public content::NotificationObserver {
 
  private:
   std::string message_;
-  base::Closure callback_;
+  base::RepeatingClosure callback_;
 
   content::NotificationRegistrar registrar_;
 
@@ -493,22 +492,6 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     return std::make_unique<TestNetworkingCastPrivateDelegate>();
   }
 
-  bool SetupCertificates() {
-    base::ScopedAllowBlockingForTesting allow_io;
-    net::ScopedCERTCertificateList cert_list =
-        net::CreateCERTCertificateListFromFile(
-            net::GetTestCertsDirectory(), "client_1_ca.pem",
-            net::X509Certificate::FORMAT_AUTO);
-    if (cert_list.empty())
-      return false;
-    // TODO(stevenjb): Figure out a simple way to import a test user cert.
-
-    chromeos::NetworkHandler::Get()
-        ->network_certificate_handler()
-        ->SetCertificatesForTest(cert_list);
-    return true;
-  }
-
  protected:
   NetworkPortalDetectorTestImpl* detector() { return detector_; }
 
@@ -820,11 +803,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
-  TestListener listener("eventListenerReady", base::Bind([]() {
-                          chromeos::NetworkHandler::Get()
-                              ->network_certificate_handler()
-                              ->NotifyCertificatsChangedForTest();
-                        }));
+  TestListener listener(
+      "eventListenerReady", base::BindRepeating([]() {
+        chromeos::NetworkHandler::Get()
+            ->network_certificate_handler()
+            ->AddAuthorityCertificateForTest("authority_cert");
+      }));
   EXPECT_TRUE(RunNetworkingSubtest("onCertificateListsChangedEvent"))
       << message_;
 }
@@ -969,7 +953,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetCertificateLists) {
-  ASSERT_TRUE(SetupCertificates());
+  chromeos::NetworkHandler::Get()
+      ->network_certificate_handler()
+      ->AddAuthorityCertificateForTest("authority_cert");
   EXPECT_TRUE(RunNetworkingSubtest("getCertificateLists")) << message_;
 }
 
