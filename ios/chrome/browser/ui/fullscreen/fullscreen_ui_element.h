@@ -31,13 +31,15 @@
 - (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
                            maxViewportInsets:(UIEdgeInsets)maxViewportInsets;
 
-// Tells the UI that fullscreen is enabled or disabled.  When disabled, the UI
-// should immediately be updated to the state corresponding with a progress
-// value of 1.0.
+// Tells the UI that fullscreen is enabled or disabled.  FullscreenUIUpdater's
+// default behavior if this selector is not implemented is to call
+// |-updateForFullscreenProgress:| with a progress value of 1.0.
 - (void)updateForFullscreenEnabled:(BOOL)enabled;
 
-// Called when fullscreen is about to initate an animation.  UI elements that
-// react to fullscreen events should configure |animator| with animations.
+// Called when fullscreen is about to initate an animation.
+// FullscreenUIUpdater's default behavior if this selector is not implemented is
+// to add an animation block calling |-updateForFullscreenProgress:| with a
+// progress value of |animator.finalProgress|.
 - (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator;
 
 @end

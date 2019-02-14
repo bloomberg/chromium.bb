@@ -9,7 +9,7 @@
 
 @protocol FullscreenUIElement;
 
-// Observer that updates UI elements for FullscreenController.
+// Observer that updates FullscreenUIElements for FullscreenController events.
 class FullscreenUIUpdater : public FullscreenControllerObserver {
  public:
   // Contructor for an observer that updates |ui_element|.  |ui_element| is not
