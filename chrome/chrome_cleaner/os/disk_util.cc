@@ -62,7 +62,7 @@ const wchar_t kWindowsCurrentVersionRegKeyName[] =
 // "C:\Program Files\Common Files\".
 const wchar_t kCommonProgramW6432[] = L"%CommonProgramW6432%";
 
-constexpr const base::char16* kCompanyWhiteList[] = {
+constexpr const base::char16* kCompanyIgnoredReportingList[] = {
     STRING16_LITERAL("Google LLC"),
     STRING16_LITERAL("Google Inc"),
     STRING16_LITERAL("Google Inc."),
@@ -502,31 +502,34 @@ base::string16 FileInformationToString(
   return content;
 }
 
-bool IsExecutableOnDefaultReportingWhiteList(const base::FilePath& file_path) {
+bool IsCompanyOnIgnoredReportingList(const base::string16& company_name) {
+  return base::ContainsValue(kCompanyIgnoredReportingList, company_name);
+}
+
+bool IsExecutableOnIgnoredReportingList(const base::FilePath& file_path) {
   std::unique_ptr<FileVersionInfo> file_information(
       FileVersionInfo::CreateFileVersionInfo(file_path));
   return file_information &&
-         base::ContainsValue(kCompanyWhiteList,
-                             file_information->company_name());
+         IsCompanyOnIgnoredReportingList(file_information->company_name());
 }
 
 bool RetrieveDetailedFileInformation(
     const base::FilePath& file_path,
     internal::FileInformation* file_information,
-    bool* white_listed,
-    ReportingWhiteListCallback white_list_callback) {
+    bool* ignored_reporting,
+    IgnoredReportingCallback ignored_reporting_callback) {
   DCHECK(file_information);
-  DCHECK(white_listed);
+  DCHECK(ignored_reporting);
 
   base::FilePath expanded_path;
   if (!TryToExpandPath(file_path, &expanded_path))
     return false;
 
-  if (std::move(white_list_callback).Run(file_path)) {
-    *white_listed = true;
+  if (std::move(ignored_reporting_callback).Run(file_path)) {
+    *ignored_reporting = true;
     return false;
   }
-  *white_listed = false;
+  *ignored_reporting = false;
 
   // Retrieve the basic file information.
   RetrievePathInformation(expanded_path, file_information);
@@ -570,9 +573,9 @@ bool RetrieveFileInformation(const base::FilePath& file_path,
                              bool include_details,
                              internal::FileInformation* file_information) {
   if (include_details) {
-    bool whitelisted_unused = false;
+    bool ignored_reporting_unused = false;
     return RetrieveDetailedFileInformation(file_path, file_information,
-                                           &whitelisted_unused);
+                                           &ignored_reporting_unused);
   } else {
     return RetrieveBasicFileInformation(file_path, file_information);
   }

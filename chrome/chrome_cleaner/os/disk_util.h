@@ -30,7 +30,7 @@ namespace chrome_cleaner {
 class LayeredServiceProviderAPI;
 
 typedef base::OnceCallback<bool(const base::FilePath&)>
-    ReportingWhiteListCallback;
+    IgnoredReportingCallback;
 
 // Return the full path of the relative path |input_path| when expanded to the
 // 64 bits program files path. Return an empty path when not running on 64 bits
@@ -97,20 +97,24 @@ void ExpandWow64Path(const base::FilePath& path, base::FilePath* expanded_path);
 base::string16 FileInformationToString(
     const internal::FileInformation& file_information);
 
-// Returns true if the given |path| refers to an executable which is
-// whitelisted so that its details should not be reported.
-bool IsExecutableOnDefaultReportingWhiteList(const base::FilePath& file_path);
+// Returns true if the given |company_name| is on the list of companies whose
+// executables' details should not be reported.
+bool IsCompanyOnIgnoredReportingList(const base::string16& company_name);
+
+// Returns true if the given |path| refers to an executable whose details
+// should not be reported.
+bool IsExecutableOnIgnoredReportingList(const base::FilePath& file_path);
 
 // Retrieve the detailed information for the executable |file_path| and append
-// the fields to |file_information|. If the executable is |white_listed|
-// according to the given |white_list_callback|, |file_information| stays
+// the fields to |file_information|. If the executable sets |ignored_reporting|
+// according to the given |ignored_reporting_callback|, |file_information| stays
 // unchanged.
 bool RetrieveDetailedFileInformation(
     const base::FilePath& file_path,
     internal::FileInformation* file_information,
-    bool* white_listed,
-    ReportingWhiteListCallback white_list_callback =
-        base::BindOnce(&IsExecutableOnDefaultReportingWhiteList));
+    bool* ignored_reporting,
+    IgnoredReportingCallback ignored_reporting_callback =
+        base::BindOnce(&IsExecutableOnIgnoredReportingList));
 
 // Retrieve the file information path, dates and size into |file_information|.
 bool RetrieveBasicFileInformation(const base::FilePath& file_path,
