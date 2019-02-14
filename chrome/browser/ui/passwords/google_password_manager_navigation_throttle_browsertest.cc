@@ -80,7 +80,7 @@ class GooglePasswordManagerNavigationThrottleTest : public SyncTest {
 #if defined(OS_CHROMEOS)
     // In browser tests, the profile may already be authenticated with stub
     // account |user_manager::kStubUserEmail|.
-    AccountInfo info =
+    CoreAccountInfo info =
         IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
     username = info.email;
 #endif
