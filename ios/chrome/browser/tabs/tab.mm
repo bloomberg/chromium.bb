@@ -83,7 +83,6 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
-#import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"

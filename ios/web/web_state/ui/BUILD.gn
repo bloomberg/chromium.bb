@@ -39,7 +39,6 @@ source_set("ui") {
   ]
 
   sources = [
-    "crw_generic_content_view.mm",
     "crw_swipe_recognizer_provider.h",
     "crw_touch_tracking_recognizer.h",
     "crw_touch_tracking_recognizer.mm",
