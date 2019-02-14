@@ -116,7 +116,7 @@ underlying_sink)JS";
   EXPECT_EQ(ToCoreString(result.As<v8::String>()), "a");
 }
 
-INSTANTIATE_TEST_CASE_P(, WritableStreamTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, WritableStreamTest, ::testing::Values(false, true));
 
 }  // namespace
 

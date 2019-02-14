@@ -1921,7 +1921,7 @@ TEST_P(HasGreaterFrescocencyTest, HasGreaterFrescocency) {
                 test_case.use_server_validation));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillProfileTest,
     HasGreaterFrescocencyTest,
     testing::Values(

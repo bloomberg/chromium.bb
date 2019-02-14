@@ -60,11 +60,11 @@ TEST_P(QueueWithSizesBadSizeTest, BadSizeThrowsException) {
   EXPECT_TRUE(queue->IsEmpty());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        QueueWithSizesBadSizeTest,
-                        Values(-1,
-                               std::numeric_limits<double>::quiet_NaN(),
-                               std::numeric_limits<double>::infinity()));
+INSTANTIATE_TEST_SUITE_P(,
+                         QueueWithSizesBadSizeTest,
+                         Values(-1,
+                                std::numeric_limits<double>::quiet_NaN(),
+                                std::numeric_limits<double>::infinity()));
 
 TEST(QueueWithSizesTest, DequeueReturnsSameObject) {
   V8TestingScope scope;

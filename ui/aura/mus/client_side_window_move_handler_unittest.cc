@@ -291,7 +291,7 @@ TEST_P(ClientSideWindowMoveHandlerTest, MouseExitDoesNotCancelResize) {
   EXPECT_FALSE(observer.in_window_move());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ClientSideWindowMoveHandlerTest,
-                        ::testing::Values("mouse", "touch"));
+INSTANTIATE_TEST_SUITE_P(,
+                         ClientSideWindowMoveHandlerTest,
+                         ::testing::Values("mouse", "touch"));
 }  // namespace aura

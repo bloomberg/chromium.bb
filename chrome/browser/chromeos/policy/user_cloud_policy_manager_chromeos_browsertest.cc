@@ -103,7 +103,7 @@ class UserCloudPolicyManagerTest
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
 // once it is enabled by default.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     UserCloudPolicyManagerTest,
     testing::Values(std::vector<base::Feature>(),
@@ -228,7 +228,7 @@ class UserCloudPolicyManagerNonEnterpriseTest
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
 // once it is enabled by default.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     UserCloudPolicyManagerNonEnterpriseTest,
     testing::Values(std::vector<base::Feature>(),
@@ -277,7 +277,7 @@ class UserCloudPolicyManagerChildTest
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
 // once it is enabled by default.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     UserCloudPolicyManagerChildTest,
     testing::Values(

@@ -275,14 +275,14 @@ TEST_P(GcpAssociatedUserRunnableGaiaCredentialTest,
 // 'username0' ... 'username8' before failing. At 'username9' the test should
 // fail.
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AvailableUsername,
     GcpAssociatedUserRunnableGaiaCredentialTest,
     ::testing::Combine(::testing::Range(0, kMaxUsernameAttempts - 2),
                        ::testing::Values(true),
                        ::testing::Values(true, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UnavailableUsername,
     GcpAssociatedUserRunnableGaiaCredentialTest,
     ::testing::Combine(::testing::Values(kMaxUsernameAttempts - 1),
