@@ -164,6 +164,9 @@
         '|content/browser/renderer_host/delegated' \
         '|content/common/gpu/client/' \
     },
+    'autoclick': {
+      'filepath': 'ash/autoclick/',
+    },
     'autofill': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/autofill/|'\
                   'chrome/browser/autofill/|'\
@@ -1440,6 +1443,9 @@
                   '|components/cbor/'\
                   '|AndroidManifest',
     },
+    'select_to_speak': {
+      'filepath': 'select_to_speak',
+    },
     'send_tab_to_self': {
       'filepath': 'components/send_tab_to_self' \
         '|chrome/android/java/src/org/chromium/chrome/browser/send_tab_to_self/',
@@ -1779,7 +1785,6 @@
                       'dougt+watch@chromium.org',
                       'dtseng+watch@chromium.org',
                       'je_julie.kim@chromium.org',
-                      'katie+watch@chromium.org',
                       'nektar+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'add_to_homescreen': ['dominickn+watch-a2hs@chromium.org',
@@ -1840,6 +1845,7 @@
                         'jbauman+watch@chromium.org',
                         'kalyan.kondapally@intel.com',
                         'piman+watch@chromium.org'],
+    'autoclick': ['katie+watch@chromium.org'],
     'autofill': ['anthonyvd+autofillwatch@chromium.org',
                  'dlkumar+autofillwatch@google.com',
                  'ftirelo+autofillwatch@chromium.org',
@@ -2380,6 +2386,7 @@
                       'vakh+watch@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'security': ['security-watchlist@chromium.org'],
+    'select_to_speak': ['katie+watch@chromium.org'],
     'send_tab_to_self': ['hansberry+watch-send_tab_to_self@chromium.org',
                          'jeffreycohen+watch-send_tab_to_self@chromium.org',
                          'jhawkins+watch-send_tab_to_self@chromium.org',
