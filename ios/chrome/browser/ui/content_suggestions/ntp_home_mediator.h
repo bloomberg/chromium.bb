@@ -24,6 +24,7 @@ class ContentSuggestionsService;
 @protocol LogoVendor;
 @protocol NTPHomeConsumer;
 @class NTPHomeMetrics;
+@protocol OmniboxFocuser;
 class TemplateURLService;
 @protocol SnackbarCommands;
 @protocol UrlLoader;
@@ -45,9 +46,12 @@ initWithWebStateList:(nonnull WebStateList*)webStateList
 - (nullable instancetype)init NS_UNAVAILABLE;
 
 // Dispatcher.
-@property(nonatomic, weak, nullable)
-    id<ApplicationCommands, BrowserCommands, SnackbarCommands, UrlLoader>
-        dispatcher;
+@property(nonatomic, weak, nullable) id<ApplicationCommands,
+                                        BrowserCommands,
+                                        OmniboxFocuser,
+                                        SnackbarCommands,
+                                        UrlLoader>
+    dispatcher;
 // Suggestions service used to get the suggestions.
 @property(nonatomic, assign, nonnull)
     ntp_snippets::ContentSuggestionsService* suggestionsService;
