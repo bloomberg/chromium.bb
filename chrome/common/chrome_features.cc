@@ -323,7 +323,7 @@ const base::Feature kHappinessTrackingSurveysForDesktop{
 #if !defined(OS_ANDROID)
 // Replaces the WebUI Cast dialog with a Views toolkit one.
 const base::Feature kViewsCastDialog{"ViewsCastDialog",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
