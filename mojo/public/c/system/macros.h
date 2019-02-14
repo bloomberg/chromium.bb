@@ -8,11 +8,15 @@
 #include <stddef.h>
 
 // Assert things at compile time. (|msg| should be a valid identifier name.)
-// This macro is currently C++-only, but we want to use it in the C core.h.
 // Use like:
-//   MOJO_STATIC_ASSERT(sizeof(Foo) == 12, "Foo has invalid size");
+//   MOJO_STATIC_ASSERT(sizeof(struct Foo) == 12, "Foo has invalid size");
 #if defined(__cplusplus)
 #define MOJO_STATIC_ASSERT(expr, msg) static_assert(expr, msg)
+#elif defined(__clang__)
+// TODO(thakis): Use #include <assert.h> and static_assert() in C11 mode
+// (__STDC_VERSION__>= 201112L) once https://reviews.llvm.org/D17444 made its
+// way into Chromium.
+#define MOJO_STATIC_ASSERT(expr, msg) _Static_assert(expr, msg)
 #else
 #define MOJO_STATIC_ASSERT(expr, msg)
 #endif
