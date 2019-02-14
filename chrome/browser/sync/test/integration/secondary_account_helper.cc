@@ -6,16 +6,13 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_test_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "content/public/browser/storage_partition.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -29,27 +26,17 @@ namespace secondary_account_helper {
 
 namespace {
 
-std::unique_ptr<KeyedService> BuildSigninClientWithURLLoader(
-    network::TestURLLoaderFactory* test_url_loader_factory,
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto signin_client = std::make_unique<ChromeSigninClient>(profile);
-  signin_client->SetURLLoaderFactoryForTest(
-      test_url_loader_factory->GetSafeWeakWrapper());
-  return signin_client;
-}
-
 void OnWillCreateBrowserContextServices(
     network::TestURLLoaderFactory* test_url_loader_factory,
     content::BrowserContext* context) {
-  ChromeSigninClientFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&BuildSigninClientWithURLLoader,
+  GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
+      context, base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
                                    test_url_loader_factory));
 }
 
 }  // namespace
 
-ScopedSigninClientFactory SetUpSigninClient(
+ScopedGaiaCookieManagerServiceFactory SetUpGaiaCookieManagerService(
     network::TestURLLoaderFactory* test_url_loader_factory) {
   return BrowserContextDependencyManager::GetInstance()
       ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
