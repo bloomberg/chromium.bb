@@ -110,9 +110,13 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   animation_->SetSlideDuration(kCycleDurationInMs * 2 + kCycleIntervalInMs);
   ResetHintingAnimation();
   // When side shelf or tablet mode is enabled, the peeking launcher won't be
-  // shown, so the hint animation is unnecessary.
-  if (!app_list_view_->is_side_shelf() && !app_list_view_->is_tablet_mode())
+  // shown, so the hint animation is unnecessary. Also, do not run the animation
+  // during test since we are not testing the animation and it might cause msan
+  // crash when spoken feedbacke is enabled (See https://crbug.com/926038).
+  if (!app_list_view_->is_side_shelf() && !app_list_view_->is_tablet_mode() &&
+      !AppListView::ShortAnimationsForTesting()) {
     ScheduleHintingAnimation(true);
+  }
 }
 
 ExpandArrowView::~ExpandArrowView() = default;
