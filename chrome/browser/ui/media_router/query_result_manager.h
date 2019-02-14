@@ -168,8 +168,16 @@ class QueryResultManager {
   // Holds registrations of MediaSources for cast modes.
   std::map<MediaCastMode, std::vector<MediaSource>> cast_mode_sources_;
 
-  // Holds all known sinks along with the cast modes and sources they support.
-  std::map<MediaSink::Id, CastModesWithMediaSources> all_sinks_;
+  // Holds sinks along with the cast modes and sources they support.
+  std::map<MediaSink::Id, CastModesWithMediaSources> sinks_with_sources_;
+
+  // Holds all known sinks, including those that do not support the sources in
+  // |cast_mode_sources_|.
+  // NOTE: Not all Media Route Providers support sink queries with an empty
+  // source, so |all_sinks_| may be missing some sinks that
+  // |sinks_with_sources_| has. Therefore the two collections must be tracked
+  // separately for now. crbug.com/929937 tracks this.
+  std::vector<MediaSink> all_sinks_;
 
   // Registered observers.
   base::ObserverList<Observer>::Unchecked observers_;

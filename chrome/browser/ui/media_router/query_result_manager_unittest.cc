@@ -75,14 +75,14 @@ class QueryResultManagerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(QueryResultManagerTest);
 };
 
-MATCHER_P(VectorEquals, expected, "") {
-  if (expected.size() != arg.size()) {
+// Requires that the elements of |expected| are unique.
+MATCHER_P(VectorSetEquals, expected, "") {
+  if (expected.size() != arg.size())
     return false;
-  }
+
   for (size_t i = 0; i < expected.size(); ++i) {
-    if (!(expected[i] == arg[i])) {
+    if (!base::ContainsValue(arg, expected[i]))
       return false;
-    }
   }
   return true;
 }
@@ -170,121 +170,88 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   DiscoverSinks(MediaCastMode::PRESENTATION, presentation_source1);
   DiscoverSinks(MediaCastMode::TAB_MIRROR, tab_source);
 
-  // Scenario (results in this order):
-  // Action: (all sinks) -> [1, 2, 3, 4]
-  // Expected result:
-  // Sinks: [1 -> {}, 2 -> {}, 3 -> {}, 4 -> {}]
-  std::vector<MediaSinkWithCastModes> expected_sinks;
-  expected_sinks.push_back(MediaSinkWithCastModes(sink1));
-  expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.push_back(MediaSinkWithCastModes(sink4));
-
+  // Action: (all sinks) -> [1, 2, 3, 4].
   std::vector<MediaSink> sinks_query_result = {sink1, sink2, sink3, sink4};
-
+  std::vector<MediaSinkWithCastModes> expected_sinks = {
+      {sink1, {}}, {sink2, {}}, {sink3, {}}, {sink4, {}}};
   const auto& sinks_observers = query_result_manager_.sinks_observers_;
   auto* any_sink_observer = sinks_observers.find(MediaSource())->second.get();
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   any_sink_observer->OnSinksUpdated(sinks_query_result, {});
 
-  // Action: PRESENTATION -> [1, 2, 3]
-  // Expected result:
-  // Sinks: [1 -> {PRESENTATION}, 2 -> {PRESENTATION}, 3 -> {PRESENTATION},
-  //         4 -> {}]
-  expected_sinks.clear();
-  expected_sinks.push_back(MediaSinkWithCastModes(sink1));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink4));
-
+  // Action: PRESENTATION -> [1, 2, 3].
   sinks_query_result = {sink1, sink2, sink3};
+  expected_sinks = {{sink1, {MediaCastMode::PRESENTATION}},
+                    {sink2, {MediaCastMode::PRESENTATION}},
+                    {sink3, {MediaCastMode::PRESENTATION}},
+                    {sink4, {}}};
   auto* presentation1_sinks_observer =
       sinks_observers.find(presentation_source1)->second.get();
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   presentation1_sinks_observer->OnSinksUpdated(sinks_query_result, {});
 
-  // Action: TAB_MIRROR -> [2, 3, 4]
-  // Expected result:
-  // Sinks: [1 -> {PRESENTATION}, 2 -> {PRESENTATION, TAB_MIRROR},
-  //         3 -> {PRESENTATION, TAB_MIRROR}, 4 -> {TAB_MIRROR}]
-  expected_sinks.clear();
-  expected_sinks.push_back(MediaSinkWithCastModes(sink1));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::PRESENTATION);
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink4));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-
+  // Action: TAB_MIRROR -> [2, 3, 4].
   sinks_query_result = {sink2, sink3, sink4};
+  expected_sinks = {
+      {sink1, {MediaCastMode::PRESENTATION}},
+      {sink2, {MediaCastMode::PRESENTATION, MediaCastMode::TAB_MIRROR}},
+      {sink3, {MediaCastMode::PRESENTATION, MediaCastMode::TAB_MIRROR}},
+      {sink4, {MediaCastMode::TAB_MIRROR}}};
   auto* tab_sinks_observer = sinks_observers.find(tab_source)->second.get();
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   tab_sinks_observer->OnSinksUpdated(sinks_query_result,
                                      {url::Origin::Create(GURL(kOrigin))});
 
-  // Action: Update presentation URL
-  // Expected result:
-  // Sinks: [1 -> {}, 2 -> {TAB_MIRROR}, 3 -> {TAB_MIRROR}, 4 -> {TAB_MIRROR}]
-  expected_sinks.clear();
-  expected_sinks.push_back(MediaSinkWithCastModes(sink1));
-  expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink4));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-
+  // Action: Update presentation URL.
+  expected_sinks = {{sink1, {}},
+                    {sink2, {MediaCastMode::TAB_MIRROR}},
+                    {sink3, {MediaCastMode::TAB_MIRROR}},
+                    {sink4, {MediaCastMode::TAB_MIRROR}}};
   // The observer for the old source will be unregistered.
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_));
   // The observer for the new source will be registered.
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   query_result_manager_.SetSourcesForCastMode(
       MediaCastMode::PRESENTATION, {presentation_source2},
       url::Origin::Create(GURL(kOrigin)));
 
-  // Action: PRESENTATION -> [1], origins don't match
-  // Expected result: [1 -> {}, 2 -> {TAB_MIRROR}, 3 -> {TAB_MIRROR},
-  //                   4 -> {TAB_MIRROR}] (No change)
+  // Action: PRESENTATION -> [1], origins don't match.
+  // Expect no change to the sinks.
   sinks_query_result = {sink1};
   auto* presentation2_sinks_observer =
       sinks_observers.find(presentation_source2)->second.get();
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   presentation2_sinks_observer->OnSinksUpdated(
       sinks_query_result,
       {url::Origin::Create(GURL("https://differentOrigin.com"))});
 
-  // Action: (all sinks) -> [2, 3]
-  // Expected result: [2 -> {TAB_MIRROR}, 3 -> {TAB_MIRROR}]
-  expected_sinks.clear();
-  expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-  expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  expected_sinks.back().cast_modes.insert(MediaCastMode::TAB_MIRROR);
-
+  // Action: (all sinks) -> [2, 3].
+  // |sink1| gets removed because none of the sink observers see it.
   sinks_query_result = {sink2, sink3};
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  expected_sinks = {{sink2, {MediaCastMode::TAB_MIRROR}},
+                    {sink3, {MediaCastMode::TAB_MIRROR}},
+                    {sink4, {MediaCastMode::TAB_MIRROR}}};
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   any_sink_observer->OnSinksUpdated(sinks_query_result, {});
 
-  // Action: Remove TAB_MIRROR observer
-  // Expected result:
-  // Sinks: [2 -> {}, 3 -> {}]
-  expected_sinks.clear();
-  expected_sinks.push_back(MediaSinkWithCastModes(sink2));
-  expected_sinks.push_back(MediaSinkWithCastModes(sink3));
-  EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)));
+  // Action: Remove TAB_MIRROR observer.
+  // |sink4| gets removed because none of the sink observers see it.
+  expected_sinks = {{sink2, {}}, {sink3, {}}};
+  EXPECT_CALL(mock_observer_,
+              OnResultsUpdated(VectorSetEquals(expected_sinks)));
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_));
   query_result_manager_.RemoveSourcesForCastMode(MediaCastMode::TAB_MIRROR);
 
   // Remaining observers: PRESENTATION observer, which will be removed on
-  // destruction
+  // destruction.
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_));
 }
 
