@@ -14,6 +14,12 @@ extern const char kDisableSyncTypes[];
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];
 
+// Returns whether sync is allowed to run based on command-line switches.
+// Profile::IsSyncAllowed() is probably a better signal than this function.
+// This function can be called from any thread, and the implementation doesn't
+// assume it's running on the UI thread.
+bool IsSyncAllowedByFlag();
+
 }  // namespace switches
 
 #endif  // COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_

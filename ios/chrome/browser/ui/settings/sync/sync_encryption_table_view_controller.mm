@@ -8,7 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/sync_prefs.h"
@@ -109,7 +109,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Returns an account item.
 - (TableViewItem*)accountItem {
-  DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
+  DCHECK(switches::IsSyncAllowedByFlag());
   NSString* text = l10n_util::GetNSString(IDS_SYNC_BASIC_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypeAccount
                        text:text
@@ -119,7 +119,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Returns a passphrase item.
 - (TableViewItem*)passphraseItem {
-  DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
+  DCHECK(switches::IsSyncAllowedByFlag());
   NSString* text = l10n_util::GetNSString(IDS_SYNC_FULL_ENCRYPTION_DATA);
   return [self itemWithType:ItemTypePassphrase
                        text:text
@@ -164,7 +164,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypePassphrase: {
-      DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
+      DCHECK(switches::IsSyncAllowedByFlag());
       syncer::SyncService* service =
           ProfileSyncServiceFactory::GetForBrowserState(_browserState);
       if (service->IsEngineInitialized() &&

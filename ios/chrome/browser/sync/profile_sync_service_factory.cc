@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -76,7 +77,7 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 // static
 syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  if (!browser_sync::ProfileSyncService::IsSyncAllowedByFlag())
+  if (!switches::IsSyncAllowedByFlag())
     return nullptr;
 
   return static_cast<syncer::SyncService*>(
@@ -86,7 +87,7 @@ syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserState(
 // static
 syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
-  if (!browser_sync::ProfileSyncService::IsSyncAllowedByFlag())
+  if (!switches::IsSyncAllowedByFlag())
     return nullptr;
 
   return static_cast<syncer::SyncService*>(

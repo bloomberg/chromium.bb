@@ -287,12 +287,6 @@ class ProfileSyncService : public syncer::SyncService,
     return crypto_.passphrase_required_reason();
   }
 
-  // Returns whether sync is allowed to run based on command-line switches.
-  // Profile::IsSyncAllowed() is probably a better signal than this function.
-  // This function can be called from any thread, and the implementation doesn't
-  // assume it's running on the UI thread.
-  static bool IsSyncAllowedByFlag();
-
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;

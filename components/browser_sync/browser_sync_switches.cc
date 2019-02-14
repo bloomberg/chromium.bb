@@ -4,6 +4,8 @@
 
 #include "components/browser_sync/browser_sync_switches.h"
 
+#include "base/command_line.h"
+
 namespace switches {
 
 // Disables syncing browser data to a Google Account.
@@ -23,5 +25,10 @@ const char kEnableLocalSyncBackend[] = "enable-local-sync-backend";
 // user-data-dir etc. This flag only matters if the enable-local-sync-backend
 // flag is present.
 const char kLocalSyncBackendDir[] = "local-sync-backend-dir";
+
+bool IsSyncAllowedByFlag() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSync);
+}
 
 }  // namespace switches
