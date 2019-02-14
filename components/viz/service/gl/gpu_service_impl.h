@@ -98,6 +98,66 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // accordingly. This can safely be called from any thread.
   void DisableGpuCompositing();
 
+  // mojom::GpuService:
+  void EstablishGpuChannel(int32_t client_id,
+                           uint64_t client_tracing_id,
+                           bool is_gpu_host,
+                           bool cache_shaders_on_disk,
+                           EstablishGpuChannelCallback callback) override;
+  void CloseChannel(int32_t client_id) override;
+#if defined(OS_CHROMEOS)
+  void CreateArcVideoDecodeAccelerator(
+      arc::mojom::VideoDecodeAcceleratorRequest vda_request) override;
+  void CreateArcVideoEncodeAccelerator(
+      arc::mojom::VideoEncodeAcceleratorRequest vea_request) override;
+  void CreateArcVideoProtectedBufferAllocator(
+      arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) override;
+  void CreateArcProtectedBufferManager(
+      arc::mojom::ProtectedBufferManagerRequest pbm_request) override;
+#endif  // defined(OS_CHROMEOS)
+  void CreateJpegDecodeAccelerator(
+      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
+  void CreateJpegEncodeAccelerator(
+      media::mojom::JpegEncodeAcceleratorRequest jea_request) override;
+  void CreateVideoEncodeAcceleratorProvider(
+      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
+      override;
+  void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                             const gfx::Size& size,
+                             gfx::BufferFormat format,
+                             gfx::BufferUsage usage,
+                             int client_id,
+                             gpu::SurfaceHandle surface_handle,
+                             CreateGpuMemoryBufferCallback callback) override;
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              int client_id,
+                              const gpu::SyncToken& sync_token) override;
+  void GetVideoMemoryUsageStats(
+      GetVideoMemoryUsageStatsCallback callback) override;
+#if defined(OS_WIN)
+  void RequestCompleteGpuInfo(RequestCompleteGpuInfoCallback callback) override;
+  void GetGpuSupportedRuntimeVersion(
+      GetGpuSupportedRuntimeVersionCallback callback) override;
+#endif
+  void RequestHDRStatus(RequestHDRStatusCallback callback) override;
+  void LoadedShader(int32_t client_id,
+                    const std::string& key,
+                    const std::string& data) override;
+  void WakeUpGpu() override;
+  void GpuSwitched() override;
+  void DestroyAllChannels() override;
+  void OnBackgroundCleanup() override;
+  void OnBackgrounded() override;
+  void OnForegrounded() override;
+#if defined(OS_MACOSX)
+  void BeginCATransaction() override;
+  void CommitCATransaction(CommitCATransactionCallback callback) override;
+#endif
+  void Crash() override;
+  void Hang() override;
+  void ThrowJavaException() override;
+  void Stop(StopCallback callback) override;
+
   bool is_initialized() const { return !!gpu_host_; }
 
   media::MediaGpuChannelManager* media_gpu_channel_manager() {
@@ -188,66 +248,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                               gpu::SurfaceHandle child_window) override;
 #endif
   void SetActiveURL(const GURL& url) override;
-
-  // mojom::GpuService:
-  void EstablishGpuChannel(int32_t client_id,
-                           uint64_t client_tracing_id,
-                           bool is_gpu_host,
-                           bool cache_shaders_on_disk,
-                           EstablishGpuChannelCallback callback) override;
-  void CloseChannel(int32_t client_id) override;
-#if defined(OS_CHROMEOS)
-  void CreateArcVideoDecodeAccelerator(
-      arc::mojom::VideoDecodeAcceleratorRequest vda_request) override;
-  void CreateArcVideoEncodeAccelerator(
-      arc::mojom::VideoEncodeAcceleratorRequest vea_request) override;
-  void CreateArcVideoProtectedBufferAllocator(
-      arc::mojom::VideoProtectedBufferAllocatorRequest pba_request) override;
-  void CreateArcProtectedBufferManager(
-      arc::mojom::ProtectedBufferManagerRequest pbm_request) override;
-#endif  // defined(OS_CHROMEOS)
-  void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
-  void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest jea_request) override;
-  void CreateVideoEncodeAcceleratorProvider(
-      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request)
-      override;
-  void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                             const gfx::Size& size,
-                             gfx::BufferFormat format,
-                             gfx::BufferUsage usage,
-                             int client_id,
-                             gpu::SurfaceHandle surface_handle,
-                             CreateGpuMemoryBufferCallback callback) override;
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              const gpu::SyncToken& sync_token) override;
-  void GetVideoMemoryUsageStats(
-      GetVideoMemoryUsageStatsCallback callback) override;
-#if defined(OS_WIN)
-  void RequestCompleteGpuInfo(RequestCompleteGpuInfoCallback callback) override;
-  void GetGpuSupportedRuntimeVersion(
-      GetGpuSupportedRuntimeVersionCallback callback) override;
-#endif
-  void RequestHDRStatus(RequestHDRStatusCallback callback) override;
-  void LoadedShader(int32_t client_id,
-                    const std::string& key,
-                    const std::string& data) override;
-  void WakeUpGpu() override;
-  void GpuSwitched() override;
-  void DestroyAllChannels() override;
-  void OnBackgroundCleanup() override;
-  void OnBackgrounded() override;
-  void OnForegrounded() override;
-#if defined(OS_MACOSX)
-  void BeginCATransaction() override;
-  void CommitCATransaction(CommitCATransactionCallback callback) override;
-#endif
-  void Crash() override;
-  void Hang() override;
-  void ThrowJavaException() override;
-  void Stop(StopCallback callback) override;
 
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAcceleratorOnMainThread(
