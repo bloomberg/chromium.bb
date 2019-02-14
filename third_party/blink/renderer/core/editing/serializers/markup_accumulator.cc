@@ -50,16 +50,53 @@ class MarkupAccumulator::NamespaceContext final {
 
  public:
   // https://w3c.github.io/DOM-Parsing/#dfn-add
+  //
+  // This function doesn't accept empty prefix and empty namespace URI.
+  //  - The default namespace is managed separately.
+  //  - Namespace URI never be empty if the prefix is not empty.
   void Add(const AtomicString& prefix, const AtomicString& namespace_uri) {
-    const AtomicString& non_null_prefix = prefix ? prefix : g_empty_atom;
-    prefix_ns_map_.Set(non_null_prefix, namespace_uri);
-    auto result = ns_prefixes_map_.insert(
-        namespace_uri ? namespace_uri : g_empty_atom, Vector<AtomicString>());
-    result.stored_value->value.push_back(non_null_prefix);
+    DCHECK(!prefix.IsEmpty())
+        << " prefix=" << prefix << " namespace_uri=" << namespace_uri;
+    DCHECK(!namespace_uri.IsEmpty())
+        << " prefix=" << prefix << " namespace_uri=" << namespace_uri;
+    prefix_ns_map_.Set(prefix, namespace_uri);
+    auto result =
+        ns_prefixes_map_.insert(namespace_uri, Vector<AtomicString>());
+    result.stored_value->value.push_back(prefix);
+  }
+
+  // https://w3c.github.io/DOM-Parsing/#dfn-recording-the-namespace-information
+  void RecordNamespaceInformation(const Element& element) {
+    local_default_namespace_ = AtomicString();
+    // 2. For each attribute attr in element's attributes, in the order they are
+    // specified in the element's attribute list:
+    for (const auto& attr : element.Attributes()) {
+      // We don't check xmlns namespace of attr here because xmlns attributes in
+      // HTML documents don't have namespace URI. Some web tests serialize
+      // HTML documents with XMLSerializer, and Firefox has the same behavior.
+      if (attr.Prefix().IsEmpty() && attr.LocalName() == g_xmlns_atom) {
+        // 3.1. If attribute prefix is null, then attr is a default namespace
+        // declaration. Set the default namespace attr value to attr's value
+        // and stop running these steps, returning to Main to visit the next
+        // attribute.
+        local_default_namespace_ = attr.Value();
+      } else if (attr.Prefix() == g_xmlns_atom) {
+        Add(attr.Prefix() ? attr.LocalName() : g_empty_atom, attr.Value());
+      }
+    }
   }
 
   AtomicString LookupNamespaceURI(const AtomicString& prefix) const {
     return prefix_ns_map_.at(prefix ? prefix : g_empty_atom);
+  }
+
+  const AtomicString& ContextNamespace() const { return context_namespace_; }
+  void SetContextNamespace(const AtomicString& context_ns) {
+    context_namespace_ = context_ns;
+  }
+
+  const AtomicString& LocalDefaultNamespace() const {
+    return local_default_namespace_;
   }
 
   const Vector<AtomicString> PrefixList(const AtomicString& ns) const {
@@ -75,9 +112,11 @@ class MarkupAccumulator::NamespaceContext final {
   using NamespaceToPrefixesMap = HashMap<AtomicString, Vector<AtomicString>>;
   NamespaceToPrefixesMap ns_prefixes_map_;
 
-  // TODO(tkent): Add 'context namespace' field. It is required to fix
-  // crbug.com/929035.
   // https://w3c.github.io/DOM-Parsing/#dfn-context-namespace
+  AtomicString context_namespace_;
+
+  // https://w3c.github.io/DOM-Parsing/#dfn-local-default-namespace
+  AtomicString local_default_namespace_;
 };
 
 MarkupAccumulator::MarkupAccumulator(EAbsoluteURLs resolve_urls_method,
@@ -126,22 +165,34 @@ bool MarkupAccumulator::ShouldIgnoreElement(const Element& element) const {
 }
 
 void MarkupAccumulator::AppendElement(const Element& element) {
-  // https://html.spec.whatwg.org/C/#html-fragment-serialisation-algorithm
-  RecordNamespaceInformation(element);
-  AppendStartTagOpen(element);
-
-  AttributeCollection attributes = element.Attributes();
   if (SerializeAsHTMLDocument(element)) {
+    // https://html.spec.whatwg.org/C/#html-fragment-serialisation-algorithm
+    AppendStartTagOpen(element);
+    AttributeCollection attributes = element.Attributes();
     // 3.2. Element: If current node's is value is not null, and the
     // element does not have an is attribute in its attribute list, ...
     const AtomicString& is_value = element.IsValue();
     if (!is_value.IsNull() && !attributes.Find(html_names::kIsAttr)) {
       AppendAttribute(element, Attribute(html_names::kIsAttr, is_value));
     }
-  }
-  for (const auto& attribute : attributes) {
-    if (!ShouldIgnoreAttribute(element, attribute))
-      AppendAttribute(element, attribute);
+    for (const auto& attribute : attributes) {
+      if (!ShouldIgnoreAttribute(element, attribute))
+        AppendAttribute(element, attribute);
+    }
+  } else {
+    // https://w3c.github.io/DOM-Parsing/#xml-serializing-an-element-node
+    namespace_stack_.back().RecordNamespaceInformation(element);
+    const bool ignore_namespace_definition_attribute =
+        AppendStartTagOpen(element);
+
+    for (const auto& attribute : element.Attributes()) {
+      if (ignore_namespace_definition_attribute &&
+          attribute.NamespaceURI() == xmlns_names::kNamespaceURI &&
+          attribute.Prefix().IsEmpty())
+        continue;
+      if (!ShouldIgnoreAttribute(element, attribute))
+        AppendAttribute(element, attribute);
+    }
   }
 
   // Give an opportunity to subclasses to add their own attributes.
@@ -150,11 +201,80 @@ void MarkupAccumulator::AppendElement(const Element& element) {
   AppendStartTagClose(element);
 }
 
-void MarkupAccumulator::AppendStartTagOpen(const Element& element) {
-  formatter_.AppendStartTagOpen(markup_, element);
-  if (!SerializeAsHTMLDocument(element) && ShouldAddNamespaceElement(element)) {
-    AppendNamespace(element.prefix(), element.namespaceURI());
+bool MarkupAccumulator::AppendStartTagOpen(const Element& element) {
+  if (SerializeAsHTMLDocument(element)) {
+    formatter_.AppendStartTagOpen(markup_, element);
+    return false;
   }
+
+  // https://w3c.github.io/DOM-Parsing/#xml-serializing-an-element-node
+
+  NamespaceContext& namespace_context = namespace_stack_.back();
+
+  // 5. Let ignore namespace definition attribute be a boolean flag with value
+  // false.
+  bool ignore_namespace_definition_attribute = false;
+  // 8. Let local default namespace be the result of recording the namespace
+  // information for node given map and local prefixes map.
+  AtomicString local_default_namespace =
+      namespace_stack_.back().LocalDefaultNamespace();
+  // 9. Let inherited ns be a copy of namespace.
+  AtomicString inherited_ns = namespace_context.ContextNamespace();
+  // 10. Let ns be the value of node's namespaceURI attribute.
+  AtomicString ns = element.namespaceURI();
+
+  // 11. If inherited ns is equal to ns, then:
+  if (inherited_ns == ns && element.prefix().IsEmpty()) {
+    // 11.1. If local default namespace is not null, then set ignore namespace
+    // definition attribute to true.
+    ignore_namespace_definition_attribute = !local_default_namespace.IsNull();
+    // 11.3. Otherwise, append to qualified name the value of node's
+    // localName. The node's prefix if it exists, is dropped.
+    // TODO(tkent): Implement prefix-rewriting for elements.
+
+    // 11.4. Append the value of qualified name to markup.
+    formatter_.AppendStartTagOpen(markup_, element);
+    return ignore_namespace_definition_attribute;
+  }
+
+  if (!element.prefix().IsEmpty()) {
+    formatter_.AppendStartTagOpen(markup_, element);
+    if (ShouldAddNamespaceElement(element))
+      AppendNamespace(element.prefix(), ns);
+    // 12.5.7. If local default namespace is not null (there exists a
+    // locally-defined default namespace declaration attribute), then let
+    // inherited ns get the value of local default namespace unless the local
+    // default namespace is the empty string in which case let it get null.
+    if (local_default_namespace) {
+      namespace_context.SetContextNamespace(local_default_namespace.IsEmpty()
+                                                ? g_null_atom
+                                                : local_default_namespace);
+    }
+    return ignore_namespace_definition_attribute;
+  }
+
+  // 12.6. Otherwise, if local default namespace is null, or local default
+  // namespace is not null and its value is not equal to ns, then:
+  if (local_default_namespace.IsNull() || local_default_namespace != ns) {
+    // 12.6.1. Set the ignore namespace definition attribute flag to true.
+    ignore_namespace_definition_attribute = true;
+    // 12.6.3. Let the value of inherited ns be ns.
+    namespace_context.SetContextNamespace(ns);
+    // 12.6.4. Append the value of qualified name to markup.
+    formatter_.AppendStartTagOpen(markup_, element);
+    // 12.6.5. Append the following to markup, in the order listed:
+    MarkupFormatter::AppendAttribute(markup_, g_null_atom, g_xmlns_atom, ns,
+                                     false);
+    return ignore_namespace_definition_attribute;
+  }
+
+  // 12.7. Otherwise, the node has a local default namespace that matches
+  // ns. Append to qualified name the value of node's localName, let the value
+  // of inherited ns be ns, and append the value of qualified name to markup.
+  DCHECK_EQ(local_default_namespace, ns);
+  namespace_context.SetContextNamespace(ns);
+  formatter_.AppendStartTagOpen(markup_, element);
+  return ignore_namespace_definition_attribute;
 }
 
 void MarkupAccumulator::AppendStartTagClose(const Element& element) {
@@ -275,16 +395,6 @@ void MarkupAccumulator::PopNamespaces(const Element& element) {
   if (SerializeAsHTMLDocument(element))
     return;
   namespace_stack_.pop_back();
-}
-
-// https://w3c.github.io/DOM-Parsing/#dfn-recording-the-namespace-information
-void MarkupAccumulator::RecordNamespaceInformation(const Element& element) {
-  if (SerializeAsHTMLDocument(element))
-    return;
-  for (const auto& attr : element.Attributes()) {
-    if (attr.NamespaceURI() == xmlns_names::kNamespaceURI)
-      AddPrefix(attr.Prefix() ? attr.LocalName() : g_empty_atom, attr.Value());
-  }
 }
 
 // https://w3c.github.io/DOM-Parsing/#dfn-retrieving-a-preferred-prefix-string
