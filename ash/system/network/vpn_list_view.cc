@@ -324,6 +324,10 @@ void VPNListView::AddNetwork(const NetworkState* network) {
   list_empty_ = false;
 }
 
+void VPNListView::AddProviderAndNetworks(const VPNProvider& vpn_provider) {
+  AddProviderAndNetworks(vpn_provider, NetworkStateHandler::NetworkStateList());
+}
+
 void VPNListView::AddProviderAndNetworks(
     const VPNProvider& vpn_provider,
     const NetworkStateHandler::NetworkStateList& networks) {
@@ -351,6 +355,21 @@ void VPNListView::AddProviderAndNetworks(
   }
 }
 
+bool VPNListView::ProcessProviderForNetwork(
+    const NetworkState* network,
+    const NetworkStateHandler::NetworkStateList& networks,
+    std::vector<VPNProvider>* providers) {
+  for (auto provider_iter = providers->begin();
+       provider_iter != providers->end(); ++provider_iter) {
+    if (!VpnProviderMatchesNetwork(*provider_iter, *network))
+      continue;
+    AddProviderAndNetworks(*provider_iter, networks);
+    providers->erase(provider_iter);
+    return true;
+  }
+  return false;
+}
+
 void VPNListView::AddProvidersAndNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
   // Get the list of VPN providers enabled in the primary user's profile.
@@ -364,56 +383,33 @@ void VPNListView::AddProvidersAndNetworks(
 
   // Add connected ARCVPN network. If we can find the correct provider, nest
   // the network under the provider. Otherwise list it unnested.
-  for (const NetworkState* const& network : networks) {
+  for (const NetworkState* network : networks) {
     if (!network->IsConnectingOrConnected())
       break;
     if (network->GetVpnProviderType() != shill::kProviderArcVpn)
       continue;
 
-    bool found_provider = false;
-    for (auto arc_provider_iter = arc_providers.begin();
-         arc_provider_iter != arc_providers.end(); ++arc_provider_iter) {
-      if (!VpnProviderMatchesNetwork(*arc_provider_iter, *network))
-        continue;
-      AddProviderAndNetworks(*arc_provider_iter, networks);
-      arc_providers.erase(arc_provider_iter);
-      found_provider = true;
-      break;
-    }
-    // No matched provider found for this network. Show it unnested.
+    // If no matched provider found for this network. Show it unnested.
     // TODO(lgcheng@) add UMA status to track this.
-    if (!found_provider)
+    if (!ProcessProviderForNetwork(network, networks, &arc_providers))
       AddNetwork(network);
   }
 
   // Add providers with at least one configured network along with their
   // networks. Providers are added in the order of their highest priority
   // network.
-  for (const NetworkState* const& network : networks) {
-    for (auto extension_provider_iter = extension_providers.begin();
-         extension_provider_iter != extension_providers.end();
-         ++extension_provider_iter) {
-      if (!VpnProviderMatchesNetwork(*extension_provider_iter, *network))
-        continue;
-      AddProviderAndNetworks(*extension_provider_iter, networks);
-      extension_providers.erase(extension_provider_iter);
-      break;
-    }
-  }
-
-  // Create a local networkstate list. Help AddProviderAndNetworks() by passing
-  // empty list of network states.
-  NetworkStateHandler::NetworkStateList networkstate_empty_list;
+  for (const NetworkState* network : networks)
+    ProcessProviderForNetwork(network, networks, &extension_providers);
 
   // Add providers without any configured networks, in the order that the
   // providers were returned by the extensions system.
-  for (const VPNProvider& provider : extension_providers)
-    AddProviderAndNetworks(provider, networkstate_empty_list);
+  for (const VPNProvider& extension_provider : extension_providers)
+    AddProviderAndNetworks(extension_provider);
 
   // Add Arc VPN providers without any connected or connecting networks. These
   // providers are sorted by last launch time.
   for (const VPNProvider& arc_provider : arc_providers) {
-    AddProviderAndNetworks(arc_provider, networkstate_empty_list);
+    AddProviderAndNetworks(arc_provider);
   }
 }
 
