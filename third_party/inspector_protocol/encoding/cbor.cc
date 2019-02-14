@@ -9,34 +9,9 @@
 #include "json_parser_handler.h"
 
 namespace inspector_protocol {
+using namespace cbor;
+
 namespace {
-using cbor_internals::MajorType;
-
-// Indicates the number of bits the "initial byte" needs to be shifted to the
-// right after applying |kMajorTypeMask| to produce the major type in the
-// lowermost bits.
-static constexpr uint8_t kMajorTypeBitShift = 5u;
-// Mask selecting the low-order 5 bits of the "initial byte", which is where
-// the additional information is encoded.
-static constexpr uint8_t kAdditionalInformationMask = 0x1f;
-// Mask selecting the high-order 3 bits of the "initial byte", which indicates
-// the major type of the encoded value.
-static constexpr uint8_t kMajorTypeMask = 0xe0;
-// Indicates the integer is in the following byte.
-static constexpr uint8_t kAdditionalInformation1Byte = 24u;
-// Indicates the integer is in the next 2 bytes.
-static constexpr uint8_t kAdditionalInformation2Bytes = 25u;
-// Indicates the integer is in the next 4 bytes.
-static constexpr uint8_t kAdditionalInformation4Bytes = 26u;
-// Indicates the integer is in the next 8 bytes.
-static constexpr uint8_t kAdditionalInformation8Bytes = 27u;
-
-// Encodes the initial byte, consisting of the |type| in the first 3 bits
-// followed by 5 bits of |additional_info|.
-constexpr uint8_t EncodeInitialByte(MajorType type, uint8_t additional_info) {
-  return (static_cast<uint8_t>(type) << kMajorTypeBitShift) |
-         (additional_info & kAdditionalInformationMask);
-}
 
 // See RFC 7049 Section 2.3, Table 2.
 static constexpr uint8_t kEncodedTrue =
@@ -47,37 +22,12 @@ static constexpr uint8_t kEncodedNull =
     EncodeInitialByte(MajorType::SIMPLE_VALUE, 22);
 static constexpr uint8_t kInitialByteForDouble =
     EncodeInitialByte(MajorType::SIMPLE_VALUE, 27);
+
 }  // namespace
 
 uint8_t EncodeTrue() { return kEncodedTrue; }
 uint8_t EncodeFalse() { return kEncodedFalse; }
 uint8_t EncodeNull() { return kEncodedNull; }
-
-namespace {
-// TAG 24 indicates that what follows is a byte string which is
-// encoded in CBOR format. We use this as a wrapper for
-// maps and arrays, allowing us to skip them, because the
-// byte string carries its size (byte length).
-// https://tools.ietf.org/html/rfc7049#section-2.4.4.1
-static constexpr uint8_t kInitialByteForEnvelope =
-    EncodeInitialByte(MajorType::TAG, 24);
-// The initial byte for a byte string with at most 2^32 bytes
-// of payload. This is used for envelope encoding, even if
-// the byte string is shorter.
-static constexpr uint8_t kInitialByteFor32BitLengthByteString =
-    EncodeInitialByte(MajorType::BYTE_STRING, 26);
-
-// See RFC 7049 Section 2.2.1, indefinite length arrays / maps have additional
-// info = 31.
-static constexpr uint8_t kInitialByteIndefiniteLengthArray =
-    EncodeInitialByte(MajorType::ARRAY, 31);
-static constexpr uint8_t kInitialByteIndefiniteLengthMap =
-    EncodeInitialByte(MajorType::MAP, 31);
-// See RFC 7049 Section 2.3, Table 1; this is used for finishing indefinite
-// length maps / arrays.
-static constexpr uint8_t kStopByte =
-    EncodeInitialByte(MajorType::SIMPLE_VALUE, 31);
-}  // namespace
 
 uint8_t EncodeIndefiniteLengthArrayStart() {
   return kInitialByteIndefiniteLengthArray;
@@ -202,7 +152,6 @@ int8_t ReadTokenStart(span<uint8_t> bytes, MajorType* type, uint64_t* value) {
 }
 }  // namespace cbor_internals
 
-using cbor_internals::MajorType;
 using cbor_internals::WriteTokenStart;
 using cbor_internals::ReadTokenStart;
 
