@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/testing/wait_for_event.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -82,36 +83,6 @@ class VideoWakeLockFrameClient : public test::MediaStubLocalFrameClient {
 
 class VideoWakeLockTest : public PageTestBase {
  public:
-  // Helper class that will block running the test until the given event is
-  // fired on the given element.
-  class WaitForEvent : public NativeEventListener {
-   public:
-    static WaitForEvent* Create(Element* element, const AtomicString& name) {
-      return MakeGarbageCollected<WaitForEvent>(element, name);
-    }
-
-    WaitForEvent(Element* element, const AtomicString& name)
-        : element_(element), name_(name) {
-      element_->addEventListener(name_, this);
-      run_loop_.Run();
-    }
-
-    void Invoke(ExecutionContext*, Event*) final {
-      run_loop_.Quit();
-      element_->removeEventListener(name_, this);
-    }
-
-    void Trace(Visitor* visitor) final {
-      NativeEventListener::Trace(visitor);
-      visitor->Trace(element_);
-    }
-
-   private:
-    base::RunLoop run_loop_;
-    Member<Element> element_;
-    AtomicString name_;
-  };
-
   void SetUp() override {
     PageTestBase::SetupPageWithClients(
         nullptr, VideoWakeLockFrameClient::Create(
