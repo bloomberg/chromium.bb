@@ -171,17 +171,17 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
   base::ElapsedTimer timer;
   {
     std::set<int> id_set;  // Ensure all ids are distinct.
-    std::unique_ptr<dnr_api::Rule> parsed_rule;
 
     const auto& rules_list = rules.GetList();
     for (size_t i = 0; i < rules_list.size(); i++) {
+      dnr_api::Rule parsed_rule;
       base::string16 parse_error;
-      parsed_rule = dnr_api::Rule::FromValue(rules_list[i], &parse_error);
 
       // Ignore rules which can't be successfully parsed and show an install
       // warning for them. A hard error is not thrown to maintain backwards
       // compatibility.
-      if (!parsed_rule || !parse_error.empty()) {
+      if (!dnr_api::Rule::Populate(rules_list[i], &parsed_rule, &parse_error) ||
+          !parse_error.empty()) {
         if (unparsed_warning_count < kMaxUnparsedRulesWarnings) {
           ++unparsed_warning_count;
           std::string rule_location;
@@ -205,7 +205,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::Value& rules,
         continue;
       }
 
-      int rule_id = parsed_rule->id;
+      int rule_id = parsed_rule.id;
       bool inserted = id_set.insert(rule_id).second;
       if (!inserted)
         return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, rule_id);
