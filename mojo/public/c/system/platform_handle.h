@@ -67,7 +67,7 @@ struct MOJO_ALIGNAS(8) MojoPlatformHandle {
   // treatment of this value by Mojo depends on the value of |type|.
   uint64_t value;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoPlatformHandle) == 16,
+MOJO_STATIC_ASSERT(sizeof(struct MojoPlatformHandle) == 16,
                    "MojoPlatformHandle has wrong size");
 
 // Flags passed to |MojoWrapPlatformHandle()| via
@@ -85,7 +85,7 @@ struct MOJO_ALIGNAS(8) MojoWrapPlatformHandleOptions {
   // See |MojoWrapPlatformHandleFlags|.
   MojoWrapPlatformHandleFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoWrapPlatformHandleOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoWrapPlatformHandleOptions) == 8,
                    "MojoWrapPlatformHandleOptions has wrong size");
 
 // Flags passed to |MojoUnwrapPlatformHandle()| via
@@ -103,7 +103,7 @@ struct MOJO_ALIGNAS(8) MojoUnwrapPlatformHandleOptions {
   // See |MojoUnwrapPlatformHandleFlags|.
   MojoUnwrapPlatformHandleFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoUnwrapPlatformHandleOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoUnwrapPlatformHandleOptions) == 8,
                    "MojoUnwrapPlatformHandleOptions has wrong size");
 
 // A GUID value used to identify the shared memory region backing a Mojo shared
@@ -164,7 +164,8 @@ struct MOJO_ALIGNAS(8) MojoWrapPlatformSharedMemoryRegionOptions {
   // See |MojoWrapPlatformSharedMemoryRegionFlags|.
   MojoWrapPlatformSharedMemoryRegionFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoWrapPlatformSharedMemoryRegionOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoWrapPlatformSharedMemoryRegionOptions) ==
+                       8,
                    "MojoWrapPlatformSharedMemoryRegionOptions has wrong size");
 
 // Flags passed to |MojoUnwrapPlatformSharedMemoryRegion()| via
@@ -184,7 +185,7 @@ struct MOJO_ALIGNAS(8) MojoUnwrapPlatformSharedMemoryRegionOptions {
   MojoUnwrapPlatformSharedMemoryRegionFlags flags;
 };
 MOJO_STATIC_ASSERT(
-    sizeof(MojoUnwrapPlatformSharedMemoryRegionOptions) == 8,
+    sizeof(struct MojoUnwrapPlatformSharedMemoryRegionOptions) == 8,
     "MojoUnwrapPlatformSharedMemoryRegionOptions has wrong size");
 
 // Wraps a native platform handle as a Mojo handle which can be transferred

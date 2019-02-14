@@ -63,7 +63,7 @@ struct MOJO_ALIGNAS(8) MojoTrapEvent {
   // time the trap was tripped.
   struct MojoHandleSignalsState signals_state;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoTrapEvent) == 32,
+MOJO_STATIC_ASSERT(sizeof(struct MojoTrapEvent) == 32,
                    "MojoTrapEvent has wrong size.");
 
 // Value given to |MojoAddTrigger| to configure what condition should cause it
@@ -103,7 +103,7 @@ struct MOJO_ALIGNAS(8) MojoCreateTrapOptions {
   // Flags. Currently unused.
   MojoCreateTrapFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoCreateTrapOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoCreateTrapOptions) == 8,
                    "MojoCreateTrapOptions has wrong size.");
 
 // Flags passed to |MojoAddTrigger()| via |MojoAddTriggerOptions|.
@@ -123,7 +123,7 @@ struct MOJO_ALIGNAS(8) MojoAddTriggerOptions {
   // Flags. Currently unused.
   MojoAddTriggerFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoAddTriggerOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoAddTriggerOptions) == 8,
                    "MojoAddTriggerOptions has wrong size.");
 
 // Flags passed to |MojoRemoveTrigger()| via |MojoRemoveTriggerOptions|.
@@ -143,7 +143,7 @@ struct MOJO_ALIGNAS(8) MojoRemoveTriggerOptions {
   // Flags. Currently unused.
   MojoRemoveTriggerFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoRemoveTriggerOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoRemoveTriggerOptions) == 8,
                    "MojoRemoveTriggerOptions has wrong size.");
 
 // Flags passed to |MojoArmTrap()| via |MojoArmTrapOptions|.
@@ -163,7 +163,7 @@ struct MOJO_ALIGNAS(8) MojoArmTrapOptions {
   // Flags. Currently unused.
   MojoArmTrapFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoArmTrapOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoArmTrapOptions) == 8,
                    "MojoArmTrapOptions has wrong size.");
 
 #ifdef __cplusplus
