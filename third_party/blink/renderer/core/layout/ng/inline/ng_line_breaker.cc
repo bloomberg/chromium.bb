@@ -62,6 +62,21 @@ LayoutUnit ComputeInlineEndSize(const NGConstraintSpace& space,
   return margins.inline_end + borders.inline_end + paddings.inline_end;
 }
 
+bool NeedsAccurateEndPosition(const NGInlineItem& line_end_item) {
+  DCHECK(line_end_item.Type() == NGInlineItem::kText ||
+         line_end_item.Type() == NGInlineItem::kControl);
+  DCHECK(line_end_item.Style());
+  const ComputedStyle& line_end_style = *line_end_item.Style();
+  return line_end_style.HasBoxDecorationBackground() ||
+         !line_end_style.AppliedTextDecorations().IsEmpty();
+}
+
+inline bool NeedsAccurateEndPosition(const NGLineInfo& line_info,
+                                     const NGInlineItem& line_end_item) {
+  return line_info.NeedsAccurateEndPosition() ||
+         NeedsAccurateEndPosition(line_end_item);
+}
+
 }  // namespace
 
 NGLineBreaker::NGLineBreaker(
@@ -521,11 +536,18 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   if (item_result->start_offset != line_info_->StartOffset())
     options |= ShapingLineBreaker::kDontReshapeStart;
 
+  // Reshaping between the last character and trailing spaces is needed only
+  // when we need accurate end position, because kerning between trailing spaces
+  // is not visible.
+  if (!NeedsAccurateEndPosition(*line_info_, item))
+    options |= ShapingLineBreaker::kDontReshapeEndIfAtSpace;
+
   // Use kNoResultIfOverflow if 'break-word' and we're trying to break normally
   // because if this item overflows, we will rewind and break line again. The
   // overflowing ShapeResult is not needed.
   if (break_anywhere_if_overflow_ && !override_break_anywhere_)
     options |= ShapingLineBreaker::kNoResultIfOverflow;
+
   ShapingLineBreaker::Result result;
   scoped_refptr<const ShapeResultView> shape_result = breaker.ShapeLine(
       item_result->start_offset, available_width, options, &result);
@@ -707,33 +729,39 @@ scoped_refptr<ShapeResultView> NGLineBreaker::TruncateLineEndResult(
     const NGInlineItemResult& item_result,
     unsigned end_offset) {
   DCHECK(item_result.item);
+  const NGInlineItem& item = *item_result.item;
   DCHECK(item_result.shape_result);
   // TODO(layout-dev): Add support for subsetting a ShapeResultView thereby
   // avoiding extra copy to create a new full ShapeResult here.
-  auto source_result = item_result.shape_result->CreateShapeResult();
+  scoped_refptr<ShapeResult> source_result =
+      item_result.shape_result->CreateShapeResult();
   const unsigned start_offset = item_result.start_offset;
   DCHECK_GE(start_offset, source_result->StartIndex());
   DCHECK_LE(end_offset, source_result->EndIndex());
   DCHECK(start_offset > source_result->StartIndex() ||
          end_offset < source_result->EndIndex());
 
-  ShapeResultView::Segment segments[2];
-  unsigned count = 0;
+  if (!NeedsAccurateEndPosition(*line_info_, item)) {
+    return ShapeResultView::Create(source_result.get(), start_offset,
+                                   end_offset);
+  }
 
   unsigned last_safe = source_result->PreviousSafeToBreakOffset(end_offset);
   DCHECK_LE(last_safe, end_offset);
-  if (last_safe > start_offset)
-    segments[count++] = {source_result.get(), start_offset, last_safe};
-
-  scoped_refptr<ShapeResult> end_result;
-  if (last_safe < end_offset) {
-    end_result = ShapeText(*item_result.item, std::max(last_safe, start_offset),
-                           end_offset);
-    segments[count++] = {end_result.get(), 0, end_offset};
-    DCHECK_EQ(end_result->Direction(), source_result->Direction());
+  if (last_safe == end_offset || last_safe <= start_offset) {
+    return ShapeResultView::Create(source_result.get(), start_offset,
+                                   end_offset);
   }
-  DCHECK_GE(count, 1u);
-  return ShapeResultView::Create(&segments[0], count);
+
+  ShapeResultView::Segment segments[2];
+  segments[0] = {source_result.get(), start_offset, last_safe};
+
+  scoped_refptr<ShapeResult> end_result =
+      ShapeText(item, std::max(last_safe, start_offset), end_offset);
+  DCHECK_EQ(end_result->Direction(), source_result->Direction());
+  segments[1] = {end_result.get(), 0, end_offset};
+
+  return ShapeResultView::Create(&segments[0], 2);
 }
 
 // Update |ShapeResult| in |item_result| to match to its |start_offset| and
