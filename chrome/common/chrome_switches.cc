@@ -551,6 +551,9 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 
+// Sets the Reporting API delay to under a second to allow much quicker reports.
+const char kShortReportingDelay[] = "short-reporting-delay";
+
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
 
