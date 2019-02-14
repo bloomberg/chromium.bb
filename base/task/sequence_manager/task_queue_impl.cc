@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -144,6 +145,7 @@ scoped_refptr<SingleThreadTaskRunner> TaskQueueImpl::CreateTaskRunner(
 }
 
 void TaskQueueImpl::UnregisterTaskQueue() {
+  TRACE_EVENT0("base", "TaskQueueImpl::UnregisterTaskQueue");
   // Detach task runners.
   {
     ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
