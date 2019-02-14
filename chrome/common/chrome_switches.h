@@ -163,6 +163,7 @@ extern const char kProxyPacUrl[];
 extern const char kRemoteDebuggingTargets[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];
+extern const char kShortReportingDelay[];
 extern const char kShowAppList[];
 extern const char kSilentDebuggerExtensionAPI[];
 extern const char kSilentLaunch[];

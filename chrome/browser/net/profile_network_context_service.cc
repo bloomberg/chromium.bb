@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -377,6 +379,12 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   network_context_params->accept_language = ComputeAcceptLanguage();
   network_context_params->enable_referrers = enable_referrers_.GetValue();
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kShortReportingDelay)) {
+    network_context_params->reporting_delivery_interval =
+        base::TimeDelta::FromMilliseconds(100);
+  }
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
