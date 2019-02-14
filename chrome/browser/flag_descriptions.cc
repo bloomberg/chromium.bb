@@ -30,11 +30,6 @@ const char kAllowInsecureLocalhostDescription[] =
     "Allows requests to localhost over HTTPS even when an invalid certificate "
     "is presented.";
 
-const char kAllowNaclSocketApiName[] = "NaCl Socket API.";
-const char kAllowNaclSocketApiDescription[] =
-    "Allows applications to use NaCl Socket API. Use only to test NaCl "
-    "plugins.";
-
 const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[] =
     "Allow Signed HTTP Exchange certificates without extension";
 const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[] =
@@ -3694,36 +3689,6 @@ const char kXRSandboxDescription[] =
 #endif  // ENABLE_ISOLATED_XR_SERVICE
 
 #endif  // ENABLE_VR
-
-#if BUILDFLAG(ENABLE_NACL)
-
-const char kNaclDebugMaskName[] =
-    "Restrict Native Client GDB-based debugging by pattern";
-const char kNaclDebugMaskDescription[] =
-    "Restricts Native Client application GDB-based debugging by URL of "
-    "manifest file. Native Client GDB-based debugging must be enabled for this "
-    "option to work.";
-const char kNaclDebugMaskChoiceDebugAll[] = "Debug everything.";
-const char kNaclDebugMaskChoiceExcludeUtilsPnacl[] =
-    "Debug everything except secure shell and the PNaCl translator.";
-const char kNaclDebugMaskChoiceIncludeDebug[] =
-    "Debug only if manifest URL ends with debug.nmf.";
-
-const char kNaclDebugName[] = "Native Client GDB-based debugging";
-const char kNaclDebugDescription[] =
-    "Enable GDB debug stub. This will stop a Native Client application on "
-    "startup and wait for nacl-gdb (from the NaCl SDK) to attach to it.";
-
-const char kNaclName[] = "Native Client";
-const char kNaclDescription[] =
-    "Support Native Client for all web applications, even those that were not "
-    "installed from the Chrome Web Store.";
-
-const char kPnaclSubzeroName[] = "Force PNaCl Subzero";
-const char kPnaclSubzeroDescription[] =
-    "Force the use of PNaCl's fast Subzero translator for all pexe files.";
-
-#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 

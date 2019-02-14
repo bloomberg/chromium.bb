@@ -66,8 +66,6 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
-#include "components/nacl/common/buildflags.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
@@ -270,22 +268,6 @@ const FeatureEntry::Choice kTraceUploadURL[] = {
      "https://performance-insights.appspot.com/upload?tags=flags,QA"},
     {flag_descriptions::kTraceUploadUrlChoiceTesting, switches::kTraceUploadURL,
      "https://performance-insights.appspot.com/upload?tags=flags,TestingTeam"}};
-
-#if BUILDFLAG(ENABLE_NACL)
-const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
-    // Secure shell can be used on ChromeOS for forwarding the TCP port opened
-    // by
-    // debug stub to a remote machine. Since secure shell uses NaCl, we usually
-    // want to avoid debugging that. The PNaCl translator is also a NaCl module,
-    // so by default we want to avoid debugging that.
-    // NOTE: As the default value must be the empty string, the mask excluding
-    // the PNaCl translator and secure shell is substituted elsewhere.
-    {flag_descriptions::kNaclDebugMaskChoiceExcludeUtilsPnacl, "", ""},
-    {flag_descriptions::kNaclDebugMaskChoiceDebugAll, switches::kNaClDebugMask,
-     "*://*"},
-    {flag_descriptions::kNaclDebugMaskChoiceIncludeDebug,
-     switches::kNaClDebugMask, "*://*/*debug.nmf"}};
-#endif  // ENABLE_NACL
 
 const FeatureEntry::Choice kPassiveListenersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1277,21 +1259,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAndroidSurfaceControl)},
 #endif  // OS_ANDROID
-// Native client is compiled out if ENABLE_NACL is not set.
-#if BUILDFLAG(ENABLE_NACL)
-    {"enable-nacl", flag_descriptions::kNaclName,
-     flag_descriptions::kNaclDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableNaCl)},
-    {"enable-nacl-debug", flag_descriptions::kNaclDebugName,
-     flag_descriptions::kNaclDebugDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)},
-    {"force-pnacl-subzero", flag_descriptions::kPnaclSubzeroName,
-     flag_descriptions::kPnaclSubzeroDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kForcePNaClSubzero)},
-    {"nacl-debug-mask", flag_descriptions::kNaclDebugMaskName,
-     flag_descriptions::kNaclDebugMaskDescription, kOsDesktop,
-     MULTI_VALUE_TYPE(kNaClDebugMaskChoices)},
-#endif  // ENABLE_NACL
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {"extension-apis", flag_descriptions::kExperimentalExtensionApisName,
      flag_descriptions::kExperimentalExtensionApisDescription, kOsDesktop,
@@ -1482,11 +1449,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableExplicitDmaFencesDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableExplicitDmaFences)},
 #endif  // OS_CHROMEOS
-#if BUILDFLAG(ENABLE_PLUGINS)
-    {"allow-nacl-socket-api", flag_descriptions::kAllowNaclSocketApiName,
-     flag_descriptions::kAllowNaclSocketApiDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
-#endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
     {"allow-touchpad-three-finger-click",
      flag_descriptions::kAllowTouchpadThreeFingerClickName,

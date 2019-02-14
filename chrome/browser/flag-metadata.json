@@ -68,11 +68,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "allow-nacl-socket-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "allow-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
@@ -1428,16 +1423,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-nacl",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-nacl-debug",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-native-controls",
     "owners": [ "chrome-media-ux@google.com" ],
     "expiry_milestone": 75
@@ -2189,11 +2174,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "force-pnacl-subzero",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "force-show-update-menu-badge",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/omaha/OWNERS" ],
     // This is required by test teams to verify functionality on devices which
@@ -2403,11 +2383,6 @@
   },
   {
     "name": "modal-permission-prompts",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "nacl-debug-mask",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
