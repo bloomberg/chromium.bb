@@ -94,6 +94,8 @@ source_set("test_support") {
     "cookies/cookie_store_ios_test_util.h",
     "cookies/cookie_store_ios_test_util.mm",
     "cookies/system_cookie_store_unittest_template.h",
+    "url_test_util.cc",
+    "url_test_util.h",
   ]
 }
 

@@ -15,13 +15,6 @@ namespace web {
 // for a page with that URL.
 base::string16 GetDisplayTitleForUrl(const GURL& url);
 
-// Returns the content and frament of |url| concatenated together. For example:
-//
-//  http://www.example.com/some/content.html?param1=foo#fragment_data
-//
-//  Returns "www.example.com/some/content.html?param1=foo#fragment_data".
-std::string GetContentAndFragmentForUrl(const GURL& url);
-
 }  // namespace web
 
 #endif  // IOS_WEB_PUBLIC_TEST_URL_TEST_UTIL_H_
