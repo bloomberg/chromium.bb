@@ -11,7 +11,6 @@
 #include "build/buildflag.h"
 #include "chrome/common/buildflags.h"
 #include "components/feature_engagement/buildflags.h"
-#include "components/nacl/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -51,9 +50,6 @@ extern const char kAffiliationBasedMatchingDescription[];
 
 extern const char kAllowInsecureLocalhostName[];
 extern const char kAllowInsecureLocalhostDescription[];
-
-extern const char kAllowNaclSocketApiName[];
-extern const char kAllowNaclSocketApiDescription[];
 
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
@@ -2237,25 +2233,6 @@ extern const char kXRSandboxDescription[];
 #endif  // ENABLE_ISOLATED_XR_SERVICE
 
 #endif  // ENABLE_VR
-
-#if BUILDFLAG(ENABLE_NACL)
-
-extern const char kNaclDebugMaskName[];
-extern const char kNaclDebugMaskDescription[];
-extern const char kNaclDebugMaskChoiceDebugAll[];
-extern const char kNaclDebugMaskChoiceExcludeUtilsPnacl[];
-extern const char kNaclDebugMaskChoiceIncludeDebug[];
-
-extern const char kNaclDebugName[];
-extern const char kNaclDebugDescription[];
-
-extern const char kNaclName[];
-extern const char kNaclDescription[];
-
-extern const char kPnaclSubzeroName[];
-extern const char kPnaclSubzeroDescription[];
-
-#endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 
