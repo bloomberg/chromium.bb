@@ -401,8 +401,10 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
 
 void FrameFetchContext::PrepareRequest(
     ResourceRequest& request,
+    const FetchInitiatorInfo& initiator_info,
     WebScopedVirtualTimePauser& virtual_time_pauser,
-    RedirectType redirect_type) {
+    RedirectType redirect_type,
+    ResourceType resource_type) {
   // TODO(yhirano): Clarify which statements are actually needed when
   // |redirect_type| is |kForRedirect|.
 
@@ -423,6 +425,9 @@ void FrameFetchContext::PrepareRequest(
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   }
 
+  probe::prepareRequest(GetFrame()->GetDocument(), MasterDocumentLoader(),
+                        request, initiator_info, resource_type);
+
   // ServiceWorker hook ups.
   if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
     WrappedResourceRequest webreq(request);
@@ -440,7 +445,7 @@ void FrameFetchContext::PrepareRequest(
 
 void FrameFetchContext::DispatchWillSendRequest(
     unsigned long identifier,
-    ResourceRequest& request,
+    const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {

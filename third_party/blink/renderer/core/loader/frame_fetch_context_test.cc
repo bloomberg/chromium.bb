@@ -1175,8 +1175,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   ResourceRequest request(KURL("https://localhost/"));
   WebScopedVirtualTimePauser virtual_time_pauser;
   GetFetchContext()->PrepareRequest(
-      request, virtual_time_pauser,
-      FetchContext::RedirectType::kNotForRedirect);
+      request, FetchInitiatorInfo(), virtual_time_pauser,
+      FetchContext::RedirectType::kNotForRedirect, ResourceType::kRaw);
 
   EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
 }

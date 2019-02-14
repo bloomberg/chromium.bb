@@ -88,11 +88,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                          ResourceLoadPriority,
                                          int intra_priority_value) override;
   void PrepareRequest(ResourceRequest&,
+                      const FetchInitiatorInfo&,
                       WebScopedVirtualTimePauser&,
-                      RedirectType) override;
+                      RedirectType,
+                      ResourceType) override;
   void DispatchWillSendRequest(
       unsigned long identifier,
-      ResourceRequest&,
+      const ResourceRequest&,
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;

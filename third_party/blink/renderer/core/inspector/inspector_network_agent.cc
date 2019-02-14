@@ -845,12 +845,10 @@ void InspectorNetworkAgent::WillSendNavigationRequest(
                                    InspectorPageAgent::kDocumentResource);
 }
 
-void InspectorNetworkAgent::WillSendRequest(
+void InspectorNetworkAgent::PrepareRequest(
     ExecutionContext* execution_context,
-    unsigned long identifier,
     DocumentLoader* loader,
     ResourceRequest& request,
-    const ResourceResponse& redirect_response,
     const FetchInitiatorInfo& initiator_info,
     ResourceType resource_type) {
   // Ignore the request initiated internally.
@@ -891,6 +889,19 @@ void InspectorNetworkAgent::WillSendRequest(
   }
   if (bypass_service_worker_.Get())
     request.SetSkipServiceWorker(true);
+}
+
+void InspectorNetworkAgent::WillSendRequest(
+    ExecutionContext* execution_context,
+    unsigned long identifier,
+    DocumentLoader* loader,
+    const ResourceRequest& request,
+    const ResourceResponse& redirect_response,
+    const FetchInitiatorInfo& initiator_info,
+    ResourceType resource_type) {
+  // Ignore the request initiated internally.
+  if (initiator_info.name == fetch_initiator_type_names::kInternal)
+    return;
 
   InspectorPageAgent::ResourceType type =
       InspectorPageAgent::ToResourceType(resource_type);

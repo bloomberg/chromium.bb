@@ -105,7 +105,7 @@ void InspectorTraceEvents::WillSendRequest(
     ExecutionContext*,
     unsigned long identifier,
     DocumentLoader* loader,
-    ResourceRequest& request,
+    const ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo&,
     ResourceType) {

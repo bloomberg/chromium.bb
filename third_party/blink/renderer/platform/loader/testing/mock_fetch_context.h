@@ -42,7 +42,7 @@ class MockFetchContext : public FetchContext {
   // FetchContext:
   void DispatchWillSendRequest(
       unsigned long identifier,
-      ResourceRequest& request,
+      const ResourceRequest& request,
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override {

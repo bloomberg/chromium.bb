@@ -91,7 +91,8 @@ interface CoreProbes {
   void applyUserAgentOverride(CoreProbeSink*, String* userAgent);
   void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
   void didChangeResourcePriority(LocalFrame*, DocumentLoader*, unsigned long identifier, ResourceLoadPriority loadPriority);
-  void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, ResourceType);
+  void prepareRequest([Keep] ExecutionContext*, DocumentLoader*, ResourceRequest&, const FetchInitiatorInfo&, ResourceType);
+  void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, ResourceType);
   void willSendNavigationRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, const KURL&, const AtomicString& http_method, EncodedFormData*);
   void markResourceAsCached(LocalFrame*, DocumentLoader*, unsigned long identifier);
   void didReceiveResourceResponse(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);

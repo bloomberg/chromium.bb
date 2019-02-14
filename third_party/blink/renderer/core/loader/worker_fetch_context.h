@@ -68,11 +68,13 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   // FetchContext implementation:
   void PrepareRequest(ResourceRequest&,
+                      const FetchInitiatorInfo&,
                       WebScopedVirtualTimePauser&,
-                      RedirectType) override;
+                      RedirectType,
+                      ResourceType) override;
   void AddAdditionalRequestHeaders(ResourceRequest&) override;
   void DispatchWillSendRequest(unsigned long,
-                               ResourceRequest&,
+                               const ResourceRequest&,
                                const ResourceResponse&,
                                ResourceType,
                                const FetchInitiatorInfo&) override;
