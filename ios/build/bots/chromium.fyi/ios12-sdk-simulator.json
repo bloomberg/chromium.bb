@@ -29,7 +29,8 @@
       "os": "12.1",
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
-      "shards": 4
+      "shards": 4,
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -37,7 +38,8 @@
       "device type": "iPhone X",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -46,7 +48,8 @@
       "os": "12.1",
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
-      "shards": 4
+      "shards": 4,
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -54,7 +57,8 @@
       "device type": "iPad Air 2",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -63,7 +67,8 @@
       "os": "12.1",
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
-      "shards": 4
+      "shards": 4,
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -71,7 +76,8 @@
       "device type": "iPhone 7",
       "os": "12.1",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -80,7 +86,8 @@
       "os": "11.4",
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
-      "shards": 4
+      "shards": 4,
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -88,7 +95,8 @@
       "device type": "iPhone 7",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -97,7 +105,8 @@
       "os": "11.4",
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
-      "shards": 4
+      "shards": 4,
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -105,7 +114,8 @@
       "device type": "iPad Air 2",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -114,7 +124,8 @@
       "os": "11.4",
       "host os": "Mac-10.13.6",
       "pool": "Chrome",
-      "shards": 4
+      "shards": 4,
+      "priority": 35
     },
     {
       "xcode parallelization": true,
@@ -122,7 +133,8 @@
       "device type": "iPhone X",
       "os": "11.4",
       "host os": "Mac-10.13.6",
-      "pool": "Chrome"
+      "pool": "Chrome",
+      "priority": 35
     }
   ]
 }
