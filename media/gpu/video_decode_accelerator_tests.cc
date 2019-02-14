@@ -46,13 +46,13 @@ class VideoDecoderTest : public ::testing::Test {
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
     // Validate decoded video frames.
-    if (g_env->output_frames_) {
+    if (g_env->enable_validator_) {
       frame_processors.push_back(
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
 
     // Write decoded video frames to the 'video_frames/<test_name/>' folder.
-    if (g_env->enable_validator_) {
+    if (g_env->output_frames_) {
       const ::testing::TestInfo* const test_info =
           ::testing::UnitTest::GetInstance()->current_test_info();
       base::FilePath output_folder =
