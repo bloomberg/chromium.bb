@@ -221,6 +221,10 @@ class CORE_EXPORT NGLineInfo {
     base_direction_ = direction;
   }
 
+  // Whether an accurate end position is needed, typically for end, center, and
+  // justify alignment.
+  bool NeedsAccurateEndPosition() const { return needs_accurate_end_position_; }
+
   // Fragment to append to the line end. Used by 'text-overflow: ellipsis'.
   scoped_refptr<const NGPhysicalTextFragment>& LineEndFragment() {
     return line_end_fragment_;
@@ -228,6 +232,8 @@ class CORE_EXPORT NGLineInfo {
   void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>);
 
  private:
+  bool ComputeNeedsAccurateEndPosition() const;
+
   const NGInlineItemsData* items_data_ = nullptr;
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
@@ -249,6 +255,7 @@ class CORE_EXPORT NGLineInfo {
   bool is_empty_line_ = false;
   bool has_overflow_ = false;
   bool has_trailing_spaces_ = false;
+  bool needs_accurate_end_position_ = false;
 };
 
 }  // namespace blink

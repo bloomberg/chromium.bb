@@ -69,11 +69,15 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
     kDefaultOptions = 0,
     // Disable reshpaing the start edge even if the start offset is not safe-
     // to-break. Set if this is not at the start edge of a wrapped line.
-    kDontReshapeStart = 1,
+    kDontReshapeStart = 1 << 0,
+    // Disable reshaping the end edge if it is at a breakable space, even if it
+    // is not safe-to-break. Good for performance if accurate width is not
+    // critical.
+    kDontReshapeEndIfAtSpace = 1 << 1,
     // Returns nullptr if this line overflows. When the word is very long, such
     // as URL or data, creating ShapeResult is expensive. Set this option to
     // suppress if ShapeResult is not needed when this line overflows.
-    kNoResultIfOverflow = 2,
+    kNoResultIfOverflow = 1 << 2,
   };
   scoped_refptr<const ShapeResultView> ShapeLine(unsigned start_offset,
                                                  LayoutUnit available_space,

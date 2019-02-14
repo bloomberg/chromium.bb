@@ -34,6 +34,51 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
   use_first_line_style_ = use_first_line_style;
   items_data_ = &items_data;
   line_style_ = node.GetLayoutBox()->Style(use_first_line_style_);
+  needs_accurate_end_position_ = ComputeNeedsAccurateEndPosition();
+}
+
+bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
+  // Some 'text-align' values need accurate end position. At this point, we
+  // don't know if this is the last line or not, and thus we don't know whether
+  // 'text-align' is used or 'text-align-last' is used.
+  const ComputedStyle& line_style = LineStyle();
+  switch (line_style.GetTextAlign()) {
+    case ETextAlign::kStart:
+      break;
+    case ETextAlign::kEnd:
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
+    case ETextAlign::kJustify:
+      return true;
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
+      if (IsRtl(BaseDirection()))
+        return true;
+      break;
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
+      if (IsLtr(BaseDirection()))
+        return true;
+      break;
+  }
+  switch (line_style.TextAlignLast()) {
+    case ETextAlignLast::kStart:
+    case ETextAlignLast::kAuto:
+      return false;
+    case ETextAlignLast::kEnd:
+    case ETextAlignLast::kCenter:
+    case ETextAlignLast::kJustify:
+      return true;
+    case ETextAlignLast::kLeft:
+      if (IsRtl(BaseDirection()))
+        return true;
+      break;
+    case ETextAlignLast::kRight:
+      if (IsLtr(BaseDirection()))
+        return true;
+      break;
+  }
+  return false;
 }
 
 #if DCHECK_IS_ON()

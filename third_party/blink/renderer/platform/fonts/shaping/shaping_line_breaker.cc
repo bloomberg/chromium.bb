@@ -48,6 +48,10 @@ LayoutUnit SnapEnd(float value, TextDirection direction) {
                           : LayoutUnit::FromFloatFloor(value);
 }
 
+inline bool IsBreakableSpace(UChar ch) {
+  return LazyLineBreakIterator::IsBreakableSpace(ch);
+}
+
 bool IsAllSpaces(const String& text, unsigned start, unsigned end) {
   return StringView(text, start, end - start)
       .IsAllSpecialCharacters<LazyLineBreakIterator::IsBreakableSpace>();
@@ -257,6 +261,7 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
   }
   // It is critical to move forward, or callers may end up in an infinite loop.
   CHECK_GT(break_opportunity.offset, start);
+  DCHECK_LE(break_opportunity.offset, range_end);
 
   // If the start offset is not at a safe-to-break boundary the content between
   // the start and the next safe-to-break boundary needs to be reshaped and the
@@ -282,55 +287,62 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
 
   scoped_refptr<const ShapeResult> line_end_result;
   unsigned last_safe = break_opportunity.offset;
-  // If the previous valid break opportunity is not at a safe-to-break
-  // boundary reshape between the safe-to-break offset and the valid break
-  // offset. If the resulting width exceeds the available space the
-  // preceding boundary is tried until the available space is sufficient.
-  while (true) {
-    DCHECK_LE(first_safe, break_opportunity.offset);
-    last_safe = std::max(
-        result_->CachedPreviousSafeToBreakOffset(break_opportunity.offset),
-        first_safe);
-    DCHECK_LE(last_safe, break_opportunity.offset);
-    DCHECK_GE(last_safe, first_safe);
-    if (last_safe == break_opportunity.offset)
-      break;
-    DCHECK_LE(break_opportunity.offset, range_end);
-    if (is_overflow) {
-      line_end_result = Shape(last_safe, break_opportunity.offset);
-      break;
-    }
-    LayoutUnit safe_position = SnapStart(
-        result_->CachedPositionForOffset(last_safe - range_start), direction);
-    line_end_result = Shape(last_safe, break_opportunity.offset);
-    if (line_end_result->SnappedWidth() <=
-        FlipRtl(end_position - safe_position, direction))
-      break;
-
-    // Doesn't fit after the reshape. Try the previous break opportunity.
-    line_end_result = nullptr;
-    break_opportunity =
-        PreviousBreakOpportunity(break_opportunity.offset - 1, start);
-    if (break_opportunity.offset > start)
-      continue;
-
-    // No suitable break opportunity, not exceeding the available space,
-    // found. Any break opportunities beyond candidate_break won't fit
-    // either because the ShapeResult has the full context.
-    // This line will overflow, but there are multiple choices to break,
-    // because none can fit. The one after candidate_break is better for
-    // ligatures, but the one before is better for kernings.
-    break_opportunity = PreviousBreakOpportunity(candidate_break, start);
-    if (break_opportunity.offset <= start) {
-      break_opportunity = NextBreakOpportunity(
-          std::max(candidate_break, start + 1), start, range_end);
-      if (break_opportunity.offset >= range_end) {
-        result_out->break_offset = range_end;
-        return ShapeToEnd(start, first_safe, range_start, range_end);
+  bool reshape_line_end = true;
+  if (options & kDontReshapeEndIfAtSpace) {
+    if (IsBreakableSpace(text[break_opportunity.offset]))
+      reshape_line_end = false;
+  }
+  if (reshape_line_end) {
+    // If the previous valid break opportunity is not at a safe-to-break
+    // boundary reshape between the safe-to-break offset and the valid break
+    // offset. If the resulting width exceeds the available space the
+    // preceding boundary is tried until the available space is sufficient.
+    while (true) {
+      DCHECK_LE(first_safe, break_opportunity.offset);
+      last_safe = std::max(
+          result_->CachedPreviousSafeToBreakOffset(break_opportunity.offset),
+          first_safe);
+      DCHECK_LE(last_safe, break_opportunity.offset);
+      DCHECK_GE(last_safe, first_safe);
+      if (last_safe == break_opportunity.offset)
+        break;
+      DCHECK_LE(break_opportunity.offset, range_end);
+      if (is_overflow) {
+        line_end_result = Shape(last_safe, break_opportunity.offset);
+        break;
       }
+      LayoutUnit safe_position = SnapStart(
+          result_->CachedPositionForOffset(last_safe - range_start), direction);
+      line_end_result = Shape(last_safe, break_opportunity.offset);
+      if (line_end_result->SnappedWidth() <=
+          FlipRtl(end_position - safe_position, direction))
+        break;
+
+      // Doesn't fit after the reshape. Try the previous break opportunity.
+      line_end_result = nullptr;
+      break_opportunity =
+          PreviousBreakOpportunity(break_opportunity.offset - 1, start);
+      if (break_opportunity.offset > start)
+        continue;
+
+      // No suitable break opportunity, not exceeding the available space,
+      // found. Any break opportunities beyond candidate_break won't fit
+      // either because the ShapeResult has the full context.
+      // This line will overflow, but there are multiple choices to break,
+      // because none can fit. The one after candidate_break is better for
+      // ligatures, but the one before is better for kernings.
+      break_opportunity = PreviousBreakOpportunity(candidate_break, start);
+      if (break_opportunity.offset <= start) {
+        break_opportunity = NextBreakOpportunity(
+            std::max(candidate_break, start + 1), start, range_end);
+        if (break_opportunity.offset >= range_end) {
+          result_out->break_offset = range_end;
+          return ShapeToEnd(start, first_safe, range_start, range_end);
+        }
+      }
+      // Loop once more to compute last_safe for the new break opportunity.
+      is_overflow = true;
     }
-    // Loop once more to compute last_safe for the new break opportunity.
-    is_overflow = true;
   }
   // It is critical to move forward, or callers may end up in an infinite loop.
   CHECK_GT(break_opportunity.offset, start);
