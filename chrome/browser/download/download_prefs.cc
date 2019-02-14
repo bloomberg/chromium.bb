@@ -143,6 +143,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
     } else if (file_manager::util::MigrateFromDownloadsToMyFiles(
                    profile_, current, &migrated)) {
       prefs->SetFilePath(path_pref[i], migrated);
+    } else if (file_manager::util::MigrateToDriveFs(profile_, current,
+                                                    &migrated)) {
+      prefs->SetFilePath(path_pref[i], migrated);
     }
   }
 
@@ -450,6 +453,14 @@ void DownloadPrefs::SaveAutoOpenState() {
 base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     const base::FilePath& path) const {
 #if defined(OS_CHROMEOS)
+  base::FilePath migrated_drive_path;
+  // Managed prefs may force a legacy Drive path as the download path. Ensure
+  // the path is valid when DriveFS is enabled.
+  if (file_manager::util::MigrateToDriveFs(profile_, path,
+                                           &migrated_drive_path)) {
+    return SanitizeDownloadTargetPath(migrated_drive_path);
+  }
+
   // If |path| isn't absolute, fall back to the default directory.
   base::FilePath profile_myfiles_path =
       file_manager::util::GetMyFilesFolderForProfile(profile_);

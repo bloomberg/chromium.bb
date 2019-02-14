@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -369,11 +369,8 @@ void SelectFileDialogExtension::SelectFileImpl(
   if (PendingExists(routing_id))
     return;
 
-  const PrefService* pref_service = profile_->GetPrefs();
-  DCHECK(pref_service);
-
   base::FilePath download_default_path(
-      pref_service->GetFilePath(prefs::kDownloadDefaultDirectory));
+      DownloadPrefs::FromBrowserContext(profile_)->DownloadPath());
 
   base::FilePath selection_path = default_path.IsAbsolute() ?
       default_path : download_default_path.Append(default_path.BaseName());
