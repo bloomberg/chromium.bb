@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -77,11 +78,12 @@ class PLATFORM_EXPORT ParkableStringManager {
   void Remove(ParkableStringImpl*, StringImpl*);
 
   void OnParked(ParkableStringImpl*, StringImpl*);
-  void OnUnparked(ParkableStringImpl*, StringImpl*);
+  void OnUnparked(ParkableStringImpl*, StringImpl*, base::TimeDelta);
 
   void ParkAll(ParkableStringImpl::ParkingMode mode);
   void ParkAllIfRendererBackgrounded(ParkableStringImpl::ParkingMode mode);
   void DropStringsWithCompressedDataAndRecordStatistics();
+  void RecordUnparkingCpuCost() const;
   void AgeStringsAndPark();
   void ScheduleAgingTaskIfNeeded();
 
@@ -93,7 +95,9 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool waiting_to_record_stats_;
   bool has_pending_aging_task_;
   bool should_record_stats_;
+  bool has_posted_unparking_time_accounting_task_;
   bool did_register_memory_pressure_listener_;
+  base::TimeDelta total_unparking_time_;
   HashMap<StringImpl*, ParkableStringImpl*, PtrHash<StringImpl>>
       unparked_strings_;
   HashSet<ParkableStringImpl*, PtrHash<ParkableStringImpl>> parked_strings_;
