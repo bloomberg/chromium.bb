@@ -11,9 +11,18 @@ namespace blink {
 // the UA style sheet (setting the text color to white instead of black on the
 // root element for kDark), the frame backdrop color (black instead of white for
 // kDark), theming form controls and scrollbars, etc.
-enum class ColorScheme {
-  kLight,
-  kDark,
+enum ColorScheme {
+  kLight = 1,
+  kDark = 2,
+};
+
+class ColorSchemeSet {
+ public:
+  void Set(ColorScheme scheme) { schemes_ |= scheme; }
+  bool Contains(ColorScheme scheme) const { return schemes_ & scheme; }
+
+ private:
+  unsigned schemes_ = 0;
 };
 
 }  // namespace blink
