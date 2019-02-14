@@ -1,8 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
 
 #include <oleacc.h>
 #include <wrl/client.h>
@@ -15,8 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/platform/ax_platform_node_base.h"
-#include "ui/accessibility/platform/ax_platform_node_unittest.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 #include "ui/base/win/atl_module.h"
@@ -82,124 +80,148 @@ ScopedVariant SELF(CHILDID_SELF);
     EXPECT_EQ(expectedVariant.ptr()->intVal, actual.ptr()->intVal); \
   } while (false)
 
-class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
- public:
-  AXPlatformNodeWinTest() {}
-  ~AXPlatformNodeWinTest() override {}
+AXPlatformNodeWinTest::AXPlatformNodeWinTest() {}
+AXPlatformNodeWinTest::~AXPlatformNodeWinTest() {}
 
-  void SetUp() override { win::CreateATLModuleIfNeeded(); }
+void AXPlatformNodeWinTest::SetUp() {
+  win::CreateATLModuleIfNeeded();
+}
 
-  void TearDown() override {
-    // Destroy the tree and make sure we're not leaking any objects.
-    tree_.reset(nullptr);
-    ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
-  }
+void AXPlatformNodeWinTest::TearDown() {
+  // Destroy the tree and make sure we're not leaking any objects.
+  ax_fragment_root_.reset(nullptr);
+  tree_.reset(nullptr);
+  ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
+}
 
- protected:
-  template <typename T>
-  ComPtr<T> QueryInterfaceFromNode(AXNode* node) {
-    const TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
-    if (!wrapper)
-      return ComPtr<T>();
+template <typename T>
+ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNode(AXNode* node) {
+  const TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+  if (!wrapper)
+    return ComPtr<T>();
 
-    AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
-    ComPtr<T> result;
-    EXPECT_HRESULT_SUCCEEDED(
-        ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
-                                                                    &result));
+  AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
+  ComPtr<T> result;
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
+                                                                  &result));
 
-    return result;
-  }
+  return result;
+}
 
-  ComPtr<IRawElementProviderSimple> GetRootIRawElementProviderSimple() {
-    return QueryInterfaceFromNode<IRawElementProviderSimple>(GetRootNode());
-  }
+ComPtr<IRawElementProviderSimple>
+AXPlatformNodeWinTest::GetRootIRawElementProviderSimple() {
+  return QueryInterfaceFromNode<IRawElementProviderSimple>(GetRootNode());
+}
 
-  ComPtr<IAccessible> IAccessibleFromNode(AXNode* node) {
-    TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
-    if (!wrapper)
-      return ComPtr<IAccessible>();
-    AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
-    IAccessible* iaccessible = ax_platform_node->GetNativeViewAccessible();
-    return ComPtr<IAccessible>(iaccessible);
-  }
+ComPtr<IRawElementProviderFragment>
+AXPlatformNodeWinTest::GetRootIRawElementProviderFragment() {
+  return QueryInterfaceFromNode<IRawElementProviderFragment>(GetRootNode());
+}
 
-  ComPtr<IAccessible> GetRootIAccessible() {
-    return IAccessibleFromNode(GetRootNode());
-  }
+ComPtr<IAccessible> AXPlatformNodeWinTest::IAccessibleFromNode(AXNode* node) {
+  TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+  if (!wrapper)
+    return ComPtr<IAccessible>();
+  AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
+  IAccessible* iaccessible = ax_platform_node->GetNativeViewAccessible();
+  return ComPtr<IAccessible>(iaccessible);
+}
 
-  ComPtr<IAccessible2> ToIAccessible2(ComPtr<IUnknown> unknown) {
-    CHECK(unknown);
-    ComPtr<IServiceProvider> service_provider;
-    unknown.CopyTo(service_provider.GetAddressOf());
-    ComPtr<IAccessible2> result;
-    CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2,
-                                                   result.GetAddressOf())));
-    return result;
-  }
+ComPtr<IAccessible> AXPlatformNodeWinTest::GetRootIAccessible() {
+  return IAccessibleFromNode(GetRootNode());
+}
 
-  ComPtr<IAccessible2> ToIAccessible2(ComPtr<IAccessible> accessible) {
-    CHECK(accessible);
-    ComPtr<IServiceProvider> service_provider;
-    accessible.CopyTo(service_provider.GetAddressOf());
-    ComPtr<IAccessible2> result;
-    CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2,
-                                                   result.GetAddressOf())));
-    return result;
-  }
+ComPtr<IAccessible2> AXPlatformNodeWinTest::ToIAccessible2(
+    ComPtr<IUnknown> unknown) {
+  CHECK(unknown);
+  ComPtr<IServiceProvider> service_provider;
+  unknown.As(&service_provider);
+  ComPtr<IAccessible2> result;
+  CHECK(SUCCEEDED(
+      service_provider->QueryService(IID_IAccessible2, IID_PPV_ARGS(&result))));
+  return result;
+}
 
-  ComPtr<IAccessible2_2> ToIAccessible2_2(ComPtr<IAccessible> accessible) {
-    CHECK(accessible);
-    ComPtr<IServiceProvider> service_provider;
-    accessible.CopyTo(service_provider.GetAddressOf());
-    ComPtr<IAccessible2_2> result;
-    CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2_2,
-                                                   result.GetAddressOf())));
-    return result;
-  }
+ComPtr<IAccessible2> AXPlatformNodeWinTest::ToIAccessible2(
+    ComPtr<IAccessible> accessible) {
+  CHECK(accessible);
+  ComPtr<IServiceProvider> service_provider;
+  accessible.As(&service_provider);
+  ComPtr<IAccessible2> result;
+  CHECK(SUCCEEDED(
+      service_provider->QueryService(IID_IAccessible2, IID_PPV_ARGS(&result))));
+  return result;
+}
 
-  void CheckVariantHasName(ScopedVariant& variant,
-                           const wchar_t* expected_name) {
-    ASSERT_NE(nullptr, variant.ptr());
-    ComPtr<IAccessible> accessible;
-    ASSERT_HRESULT_SUCCEEDED(
-        V_DISPATCH(variant.ptr())
-            ->QueryInterface(IID_PPV_ARGS(accessible.GetAddressOf())));
-    ScopedBstr name;
-    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(expected_name, name);
-  }
+ComPtr<IAccessible2_2> AXPlatformNodeWinTest::ToIAccessible2_2(
+    ComPtr<IAccessible> accessible) {
+  CHECK(accessible);
+  ComPtr<IServiceProvider> service_provider;
+  accessible.As(&service_provider);
+  ComPtr<IAccessible2_2> result;
+  CHECK(SUCCEEDED(service_provider->QueryService(IID_IAccessible2_2,
+                                                 IID_PPV_ARGS(&result))));
+  return result;
+}
 
-  void CheckIUnknownHasName(ComPtr<IUnknown> unknown,
-                            const wchar_t* expected_name) {
-    ComPtr<IAccessible2> accessible = ToIAccessible2(unknown);
-    ASSERT_NE(nullptr, accessible.Get());
+void AXPlatformNodeWinTest::CheckVariantHasName(ScopedVariant& variant,
+                                                const wchar_t* expected_name) {
+  ASSERT_NE(nullptr, variant.ptr());
+  ComPtr<IAccessible> accessible;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_DISPATCH(variant.ptr())->QueryInterface(IID_PPV_ARGS(&accessible)));
+  ScopedBstr name;
+  EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(expected_name, name);
+}
 
-    ScopedBstr name;
-    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
-    EXPECT_STREQ(expected_name, name);
-  }
+void AXPlatformNodeWinTest::CheckIUnknownHasName(ComPtr<IUnknown> unknown,
+                                                 const wchar_t* expected_name) {
+  ComPtr<IAccessible2> accessible = ToIAccessible2(unknown);
+  ASSERT_NE(nullptr, accessible.Get());
 
-  ComPtr<IAccessibleTableCell> GetCellInTable() {
-    ComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ScopedBstr name;
+  EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(expected_name, name);
+}
 
-    ComPtr<IAccessibleTable2> table;
-    root_obj.CopyTo(table.GetAddressOf());
-    if (!table)
-      return ComPtr<IAccessibleTableCell>();
+ComPtr<IAccessibleTableCell> AXPlatformNodeWinTest::GetCellInTable() {
+  ComPtr<IAccessible> root_obj(GetRootIAccessible());
 
-    ComPtr<IUnknown> cell;
-    table->get_cellAt(1, 1, cell.GetAddressOf());
-    if (!cell)
-      return ComPtr<IAccessibleTableCell>();
+  ComPtr<IAccessibleTable2> table;
+  root_obj.As(&table);
+  if (!table)
+    return ComPtr<IAccessibleTableCell>();
 
-    ComPtr<IAccessibleTableCell> table_cell;
-    cell.CopyTo(table_cell.GetAddressOf());
-    return table_cell;
-  }
-};
+  ComPtr<IUnknown> cell;
+  table->get_cellAt(1, 1, &cell);
+  if (!cell)
+    return ComPtr<IAccessibleTableCell>();
+
+  ComPtr<IAccessibleTableCell> table_cell;
+  cell.As(&table_cell);
+  return table_cell;
+}
+
+void AXPlatformNodeWinTest::InitFragmentRoot() {
+  TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+
+  ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
+      gfx::kMockAcceleratedWidget,
+      static_cast<ui::AXPlatformNodeWin*>(wrapper->ax_platform_node()));
+}
+
+ComPtr<IRawElementProviderFragmentRoot>
+AXPlatformNodeWinTest::GetFragmentRoot() {
+  ComPtr<IRawElementProviderFragmentRoot> fragment_root_provider;
+  ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
+      IID_PPV_ARGS(&fragment_root_provider));
+  return fragment_root_provider;
+}
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   AXNodeData root;
@@ -734,6 +756,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleLocation) {
   ScopedVariant bad_id(999);
   EXPECT_EQ(E_INVALIDARG, GetRootIAccessible()->accLocation(
                               &x_left, &y_top, &width, &height, bad_id));
+
+  // Un-set the global offset so that it doesn't affect subsequent tests.
+  TestAXNodeWrapper::SetGlobalCoordinateOffset(gfx::Vector2d(0, 0));
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
@@ -2649,6 +2674,7 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   AXNodeData root;
   root.SetName("fake name");
   root.AddStringAttribute(ax::mojom::StringAttribute::kAccessKey, "Ctrl+Q");
+  root.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "en-us");
   root.AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts, "Alt+F4");
   root.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                           "fake description");
@@ -2672,12 +2698,198 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaPropertiesPropertyId,
                      L"expanded=false;multiline=false;multiselectable=false;"
                      L"posinset=1;required=false;setsize=2");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_ClassNamePropertyId, L"fake name");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_CulturePropertyId, L"en-us");
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_NamePropertyId, L"fake name");
   EXPECT_UIA_INT_EQ(root_node, UIA_ControlTypePropertyId,
                     int{UIA_TextControlTypeId});
   EXPECT_UIA_INT_EQ(root_node, UIA_OrientationPropertyId,
                     int{OrientationType_None});
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_HasKeyboardFocusPropertyId, false);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsRequiredForFormPropertyId, false);
   EXPECT_UIA_BOOL_EQ(root_node, UIA_IsDataValidForFormPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(root_node, UIA_IsKeyboardFocusablePropertyId, false);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
+  AXNodeData root_data;
+  Init(root_data);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  ProviderOptions provider_options = static_cast<ProviderOptions>(0);
+  EXPECT_HRESULT_SUCCEEDED(root_node->get_ProviderOptions(&provider_options));
+  EXPECT_EQ(
+      ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading,
+      provider_options);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetHostRawElementProvider) {
+  AXNodeData root_data;
+  Init(root_data);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  ComPtr<IRawElementProviderSimple> host_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node->get_HostRawElementProvider(&host_provider));
+  EXPECT_EQ(nullptr, host_provider.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetBoundingRectangle) {
+  AXNodeData root_data;
+  root_data.id = 0;
+  root_data.relative_bounds.bounds = gfx::RectF(10, 20, 30, 50);
+  Init(root_data);
+
+  ComPtr<IRawElementProviderFragment> root_node =
+      GetRootIRawElementProviderFragment();
+
+  UiaRect bounding_rectangle;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_node->get_BoundingRectangle(&bounding_rectangle));
+  EXPECT_EQ(10, bounding_rectangle.left);
+  EXPECT_EQ(20, bounding_rectangle.top);
+  EXPECT_EQ(30, bounding_rectangle.width);
+  EXPECT_EQ(50, bounding_rectangle.height);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetFragmentRoot) {
+  // This test needs to be run on a child node since AXPlatformRootNodeWin
+  // overrides the method.
+  AXNodeData root_data;
+  root_data.id = 0;
+  root_data.child_ids.push_back(1);
+
+  AXNodeData element1_data;
+  element1_data.id = 1;
+
+  Init(root_data, element1_data);
+  InitFragmentRoot();
+
+  AXNode* root_node = GetRootNode();
+  AXNode* element1_node = root_node->children()[0];
+
+  ComPtr<IRawElementProviderFragment> element1_provider =
+      QueryInterfaceFromNode<IRawElementProviderFragment>(element1_node);
+  ComPtr<IRawElementProviderFragmentRoot> expected_fragment_root =
+      GetFragmentRoot();
+
+  ComPtr<IRawElementProviderFragmentRoot> actual_fragment_root;
+  EXPECT_HRESULT_SUCCEEDED(
+      element1_provider->get_FragmentRoot(&actual_fragment_root));
+  EXPECT_EQ(expected_fragment_root.Get(), actual_fragment_root.Get());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetEmbeddedFragmentRoots) {
+  AXNodeData root_data;
+  root_data.id = 0;
+  Init(root_data);
+
+  ComPtr<IRawElementProviderFragment> root_provider =
+      GetRootIRawElementProviderFragment();
+
+  SAFEARRAY* embedded_fragment_roots;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_provider->GetEmbeddedFragmentRoots(&embedded_fragment_roots));
+  EXPECT_EQ(nullptr, embedded_fragment_roots);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetRuntimeId) {
+  AXNodeData root_data;
+  root_data.id = 0;
+  Init(root_data);
+
+  ComPtr<IRawElementProviderFragment> root_provider =
+      GetRootIRawElementProviderFragment();
+
+  SAFEARRAY* runtime_id;
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetRuntimeId(&runtime_id));
+
+  long array_lower_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetLBound(runtime_id, 1, &array_lower_bound));
+  EXPECT_EQ(0, array_lower_bound);
+
+  long array_upper_bound;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayGetUBound(runtime_id, 1, &array_upper_bound));
+  EXPECT_EQ(1, array_upper_bound);
+
+  int* array_data;
+  EXPECT_HRESULT_SUCCEEDED(
+      ::SafeArrayAccessData(runtime_id, reinterpret_cast<void**>(&array_data)));
+  EXPECT_EQ(UiaAppendRuntimeId, array_data[0]);
+  EXPECT_NE(-1, array_data[1]);
+
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(runtime_id));
+  EXPECT_HRESULT_SUCCEEDED(::SafeArrayDestroy(runtime_id));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIANavigate) {
+  AXNodeData root_data;
+  root_data.id = 0;
+  root_data.child_ids.push_back(1);
+  root_data.child_ids.push_back(2);
+
+  AXNodeData element1_data;
+  element1_data.id = 1;
+  element1_data.child_ids.push_back(3);
+
+  AXNodeData element2_data;
+  element2_data.id = 2;
+
+  AXNodeData element3_data;
+  element3_data.id = 3;
+
+  Init(root_data, element1_data, element2_data, element3_data);
+
+  AXNode* root_node = GetRootNode();
+  AXNode* element1_node = root_node->children()[0];
+  AXNode* element2_node = root_node->children()[1];
+  AXNode* element3_node = element1_node->children()[0];
+
+  auto TestNavigate = [this](AXNode* element_node, AXNode* parent,
+                             AXNode* next_sibling, AXNode* prev_sibling,
+                             AXNode* first_child, AXNode* last_child) {
+    ComPtr<IRawElementProviderFragment> element_provider =
+        QueryInterfaceFromNode<IRawElementProviderFragment>(element_node);
+
+    auto TestNavigateSingle = [&](NavigateDirection direction,
+                                  AXNode* expected_node) {
+      ComPtr<IRawElementProviderFragment> expected_provider =
+          QueryInterfaceFromNode<IRawElementProviderFragment>(expected_node);
+
+      ComPtr<IRawElementProviderFragment> navigated_to_fragment;
+      EXPECT_HRESULT_SUCCEEDED(
+          element_provider->Navigate(direction, &navigated_to_fragment));
+      EXPECT_EQ(expected_provider.Get(), navigated_to_fragment.Get());
+    };
+
+    TestNavigateSingle(NavigateDirection_Parent, parent);
+    TestNavigateSingle(NavigateDirection_NextSibling, next_sibling);
+    TestNavigateSingle(NavigateDirection_PreviousSibling, prev_sibling);
+    TestNavigateSingle(NavigateDirection_FirstChild, first_child);
+    TestNavigateSingle(NavigateDirection_LastChild, last_child);
+  };
+
+  TestNavigate(root_node,
+               nullptr,         // Parent
+               nullptr,         // NextSibling
+               nullptr,         // PreviousSibling
+               element1_node,   // FirstChild
+               element2_node);  // LastChild
+
+  TestNavigate(element1_node, root_node, element2_node, nullptr, element3_node,
+               element3_node);
+
+  TestNavigate(element2_node, root_node, nullptr, element1_node, nullptr,
+               nullptr);
+
+  TestNavigate(element3_node, element1_node, nullptr, nullptr, nullptr,
+               nullptr);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
@@ -2686,6 +2898,8 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
 
   ComPtr<IRawElementProviderSimple> simple_provider =
       GetRootIRawElementProviderSimple();
+  ComPtr<IRawElementProviderFragment> fragment_provider =
+      GetRootIRawElementProviderFragment();
   ComPtr<IGridItemProvider> grid_item_provider =
       QueryInterfaceFromNode<IGridItemProvider>(GetRootNode());
   ComPtr<IGridProvider> grid_provider =
@@ -2804,6 +3018,7 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
   // IRawElementProviderSimple
   ScopedVariant variant;
   ComPtr<IUnknown> unknown;
+  ComPtr<IRawElementProviderSimple> host_provider;
   ProviderOptions options;
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             simple_provider->GetPatternProvider(UIA_WindowPatternId,
@@ -2813,6 +3028,27 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
                                               variant.Receive()));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             simple_provider->get_ProviderOptions(&options));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            simple_provider->get_HostRawElementProvider(&host_provider));
+
+  // IRawElementProviderFragment
+  ComPtr<IRawElementProviderFragment> navigated_to_fragment;
+  SAFEARRAY* safearray = nullptr;
+  UiaRect bounding_rectangle;
+  ComPtr<IRawElementProviderFragmentRoot> fragment_root;
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            fragment_provider->Navigate(NavigateDirection_Parent,
+                                        &navigated_to_fragment));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            fragment_provider->GetRuntimeId(&safearray));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            fragment_provider->get_BoundingRectangle(&bounding_rectangle));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            fragment_provider->GetEmbeddedFragmentRoots(&safearray));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            fragment_provider->get_FragmentRoot(&fragment_root));
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            fragment_provider->SetFocus());
 
   // IValueProvider
   ScopedBstr bstr_value;

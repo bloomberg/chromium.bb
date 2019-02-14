@@ -15,7 +15,9 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -252,6 +254,21 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     const std::vector<ui::AXTreeObserver::Change>& changes) {
   BrowserAccessibilityManager::OnAtomicUpdateFinished(
       tree, root_changed, changes);
+
+  if (root_changed &&
+      switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    // If a fragment root has been created, inform it that the content root has
+    // changed.
+    BrowserAccessibilityDelegate* root_delegate = GetDelegateFromRootManager();
+    if (root_delegate) {
+      ui::AXFragmentRootWin* fragment_root =
+          ui::AXFragmentRootWin::GetForAcceleratedWidget(
+              root_delegate->AccessibilityGetAcceleratedWidget());
+      if (fragment_root) {
+        fragment_root->SetChild(ToBrowserAccessibilityWin(GetRoot())->GetCOM());
+      }
+    }
+  }
 
   // Do a sequence of Windows-specific updates on each node. Each one is
   // done in a single pass that must complete before the next step starts.

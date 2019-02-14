@@ -97,6 +97,8 @@ jumbo_component("accessibility") {
 
   if (has_native_accessibility) {
     sources += [
+      "platform/ax_fragment_root_win.cc",
+      "platform/ax_fragment_root_win.h",
       "platform/ax_platform_node_mac.h",
       "platform/ax_platform_node_mac.mm",
       "platform/ax_platform_node_win.cc",
@@ -123,7 +125,10 @@ jumbo_component("accessibility") {
 
   if (is_win) {
     public_deps += [ "//third_party/iaccessible2" ]
-    libs = [ "oleacc.lib" ]
+    libs = [
+      "oleacc.lib",
+      "uiautomationcore.lib",
+    ]
   }
 
   if (is_mac) {
@@ -222,9 +227,11 @@ test("accessibility_unittests") {
     "mojom/ax_tree_data_mojom_traits_unittest.cc",
     "mojom/ax_tree_id_mojom_traits_unittest.cc",
     "mojom/ax_tree_update_mojom_traits_unittest.cc",
+    "platform/ax_fragment_root_win_unittest.cc",
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",
     "platform/ax_platform_node_win_unittest.cc",
+    "platform/ax_platform_node_win_unittest.h",
     "platform/ax_unique_id_unittest.cc",
     "run_all_unittests.cc",
   ]

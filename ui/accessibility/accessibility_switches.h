@@ -27,10 +27,10 @@ AX_EXPORT bool AreExperimentalAccessibilityLanguageDetectionEnabled();
 
 #if defined(OS_WIN)
 AX_EXPORT extern const char kEnableExperimentalUIAutomation[];
+#endif
 
 // Returns true if experimental support for UIAutomation is enabled.
 AX_EXPORT bool IsExperimentalAccessibilityPlatformUIAEnabled();
-#endif
 
 }  // namespace switches
 

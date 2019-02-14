@@ -8,10 +8,17 @@
 #include <set>
 #include <vector>
 
+#include "build/build_config.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
+
+#if defined(OS_WIN)
+namespace gfx {
+const AcceleratedWidget kMockAcceleratedWidget = reinterpret_cast<HWND>(-1);
+}
+#endif
 
 namespace ui {
 
@@ -40,6 +47,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::Rect GetClippedScreenBoundsRect() const override;
   gfx::Rect GetUnclippedScreenBoundsRect() const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
+  gfx::NativeViewAccessible GetFocus() override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
   int GetIndexInParent() const override;
   bool IsTable() const override;
@@ -66,6 +74,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   int GetTableCellAriaRowIndex() const override;
   int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
+  gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;

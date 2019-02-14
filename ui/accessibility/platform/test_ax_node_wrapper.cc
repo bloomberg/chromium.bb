@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
+#include <unordered_map>
+
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_table_info.h"
@@ -19,6 +21,13 @@ std::unordered_map<AXNode*, TestAXNodeWrapper*> g_node_to_wrapper_map;
 
 // A global coordinate offset.
 gfx::Vector2d g_offset;
+
+// A global map that stores which node is focused on a determined tree.
+//   - If a tree has no node being focused, there shouldn't be any entry on the
+//     map associated with such tree, i.e. a pair {tree, nullptr} is invalid.
+//   - For testing purposes, assume there is a single node being focused in the
+//     entire tree and if such node is deleted, focus is completely lost.
+std::unordered_map<AXTree*, AXNode*> g_focused_node_in_tree;
 
 // A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their wrappers.
@@ -108,7 +117,7 @@ TestAXNodeWrapper* TestAXNodeWrapper::HitTestSyncInternal(int x, int y) {
   // Here we find the deepest child whose bounding box contains the given point.
   // The assuptions are that there are no overlapping bounding rects and that
   // all children have smaller bounding rects than their parents.
-  if (!GetClippedScreenBoundsRect().Contains(gfx::Rect(x, y)))
+  if (!GetClippedScreenBoundsRect().Contains(gfx::Rect(x, y, 0, 0)))
     return nullptr;
 
   for (int i = 0; i < GetChildCount(); i++) {
@@ -128,6 +137,17 @@ gfx::NativeViewAccessible TestAXNodeWrapper::HitTestSync(int x, int y) {
   TestAXNodeWrapper* wrapper = HitTestSyncInternal(x, y);
   return wrapper ? wrapper->ax_platform_node()->GetNativeViewAccessible()
                  : nullptr;
+}
+
+gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
+  auto focused = g_focused_node_in_tree.find(tree_);
+  if (focused != g_focused_node_in_tree.end() &&
+      focused->second->IsDescendantOf(node_)) {
+    return GetOrCreate(tree_, focused->second)
+        ->ax_platform_node()
+        ->GetNativeViewAccessible();
+  }
+  return nullptr;
 }
 
 // Walk the AXTree and ensure that all wrappers are created
@@ -293,6 +313,15 @@ int32_t TestAXNodeWrapper::GetCellId(int32_t row_index,
   return -1;
 }
 
+gfx::AcceleratedWidget
+TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
+#if defined(OS_WIN)
+  return gfx::kMockAcceleratedWidget;
+#else
+  return AXPlatformNodeDelegateBase::GetTargetForNativeAccessibilityEvent();
+#endif
+}
+
 int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
   ui::AXNode* cell = node_->GetTableCellFromIndex(cell_index);
   if (cell)
@@ -327,6 +356,11 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
     ReplaceIntAttribute(data.anchor_node_id,
                         ax::mojom::IntAttribute::kTextSelEnd,
                         data.focus_offset);
+    return true;
+  }
+
+  if (data.action == ax::mojom::Action::kFocus) {
+    g_focused_node_in_tree[tree_] = node_;
     return true;
   }
 
