@@ -1136,7 +1136,7 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrationsByKeyPrefix(
 
       std::vector<std::string> parts = base::SplitString(
           user_data_name_with_id,
-          base::StringPrintf("%c", service_worker_internals::kKeySeparator),
+          std::string(1, service_worker_internals::kKeySeparator),
           base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       if (parts.size() != 2) {
         status = STATUS_ERROR_CORRUPTED;
@@ -1165,6 +1165,59 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrationsByKeyPrefix(
 
   HandleReadResult(FROM_HERE, status);
   return status;
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::DeleteUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& user_data_name_prefix) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_OK;
+  if (status != STATUS_OK)
+    return status;
+
+  leveldb::WriteBatch batch;
+  std::string key_prefix = service_worker_internals::kRegHasUserDataKeyPrefix +
+                           user_data_name_prefix;
+
+  std::unique_ptr<leveldb::Iterator> itr(
+      db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(key_prefix); itr->Valid(); itr->Next()) {
+    status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
+    if (status != STATUS_OK)
+      return status;
+
+    if (!itr->key().starts_with(key_prefix)) {
+      // |itr| reached the end of the range of keys prefixed by |key_prefix|.
+      break;
+    }
+
+    std::string user_data_name_with_id;
+    bool did_remove_prefix =
+        RemovePrefix(itr->key().ToString(),
+                     service_worker_internals::kRegHasUserDataKeyPrefix,
+                     &user_data_name_with_id);
+    DCHECK(did_remove_prefix);
+
+    std::vector<std::string> parts = base::SplitString(
+        user_data_name_with_id,
+        std::string(1, service_worker_internals::kKeySeparator),
+        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (parts.size() != 2)
+      return STATUS_ERROR_CORRUPTED;
+
+    int64_t registration_id;
+    status = ParseId(parts[1], &registration_id);
+    if (status != STATUS_OK)
+      return status;
+
+    batch.Delete(itr->key());
+    batch.Delete(CreateUserDataKey(registration_id, parts[0]));
+  }
+
+  return WriteBatch(&batch);
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUncommittedResourceIds(

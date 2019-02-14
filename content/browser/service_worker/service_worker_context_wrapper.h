@@ -265,6 +265,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void GetUserDataForAllRegistrationsByKeyPrefix(
       const std::string& key_prefix,
       GetUserDataForAllRegistrationsCallback callback);
+  void ClearUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix,
+      StatusCallback callback);
 
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
