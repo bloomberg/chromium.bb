@@ -192,13 +192,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   using FrameSinkIdOwnerMap = std::unordered_map<viz::FrameSinkId,
                                                  RenderWidgetHostViewBase*,
                                                  viz::FrameSinkIdHash>;
-  struct TargetData {
-    RenderWidgetHostViewBase* target;
-    gfx::Transform transform;
-
-    TargetData() : target(nullptr) {}
-  };
-  using TargetMap = std::map<uint32_t, TargetData>;
+  using TargetMap = std::map<uint32_t, RenderWidgetHostViewBase*>;
 
   void ClearAllObserverRegistrations();
   RenderWidgetTargetResult FindViewAtLocation(
@@ -330,8 +324,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;
-  TargetData touch_target_;
-  TargetData touchscreen_gesture_target_;
+  RenderWidgetHostViewBase* touch_target_ = nullptr;
+  RenderWidgetHostViewBase* touchscreen_gesture_target_ = nullptr;
   // The following variable is temporary, for diagnosis of
   // https://crbug.com/824774.
   bool touchscreen_gesture_target_in_map_;

@@ -283,11 +283,9 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
 #endif
   }
 
-  RenderWidgetHostViewBase* touch_target() {
-    return rwhier()->touch_target_.target;
-  }
+  RenderWidgetHostViewBase* touch_target() { return rwhier()->touch_target_; }
   RenderWidgetHostViewBase* touchscreen_gesture_target() {
-    return rwhier()->touchscreen_gesture_target_.target;
+    return rwhier()->touchscreen_gesture_target_;
   }
   RenderWidgetHostViewChildFrame* bubbling_gesture_scroll_origin() {
     return rwhier()->bubbling_gesture_scroll_origin_;
