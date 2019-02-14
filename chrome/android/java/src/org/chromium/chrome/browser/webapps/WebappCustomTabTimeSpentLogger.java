@@ -9,8 +9,6 @@ import android.os.SystemClock;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Logs to UMA the amount of time user spends in a CCT for CCTs launched from webapps.
  *
@@ -55,6 +53,6 @@ public class WebappCustomTabTimeSpentLogger {
                 break;
         }
         RecordHistogram.recordLongTimesHistogram(
-                "CustomTab.SessionDuration" + umaSuffix, timeSpent, TimeUnit.MILLISECONDS);
+                "CustomTab.SessionDuration" + umaSuffix, timeSpent);
     }
 }

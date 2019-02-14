@@ -41,8 +41,6 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * App Menu helper that handles hiding and showing menu items based on activity state.
  */
@@ -265,7 +263,7 @@ public class AppMenuPropertiesDelegate {
             ResolveInfo resolveInfo =
                     WebApkValidator.queryFirstWebApkResolveInfo(context, currentTab.getUrl());
             RecordHistogram.recordTimesHistogram("Android.PrepareMenu.OpenWebApkVisibilityCheck",
-                    SystemClock.elapsedRealtime() - addToHomeScreenStart, TimeUnit.MILLISECONDS);
+                    SystemClock.elapsedRealtime() - addToHomeScreenStart);
 
             boolean openWebApkItemVisible =
                     resolveInfo != null && resolveInfo.activityInfo.packageName != null;

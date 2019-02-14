@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
 import android.support.annotation.StringRes;
+import android.text.format.DateUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -21,8 +22,6 @@ import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
  * in state changes control its visibility.
@@ -32,7 +31,7 @@ public class SignInPromo extends OptionalLeaf {
      * Period for which promos are suppressed if signin is refused in FRE.
      */
     @VisibleForTesting
-    static final long SUPPRESSION_PERIOD_MS = TimeUnit.DAYS.toMillis(1);
+    static final long SUPPRESSION_PERIOD_MS = DateUtils.DAY_IN_MILLIS;
 
     private static boolean sDisablePromoForTests;
 

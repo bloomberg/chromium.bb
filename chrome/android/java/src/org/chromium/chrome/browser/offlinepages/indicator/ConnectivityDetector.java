@@ -30,7 +30,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class that detects the network connectivity. We will get the connectivity info from Android
@@ -498,8 +497,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
                         : PROBE_WITH_FALLBACK_URL,
                 PROBE_WITH_URL_COUNT);
         RecordHistogram.recordLongTimesHistogram("ConnectivityDetector.Probe.ValidationTime",
-                SystemClock.elapsedRealtime() - mConnectivityCheckStartTimeMs,
-                TimeUnit.MILLISECONDS);
+                SystemClock.elapsedRealtime() - mConnectivityCheckStartTimeMs);
     }
 
     @VisibleForTesting

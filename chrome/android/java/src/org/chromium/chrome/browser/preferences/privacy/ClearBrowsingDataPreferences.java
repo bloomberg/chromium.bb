@@ -45,7 +45,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Preference screen that allows the user to clear browsing data.
@@ -334,7 +333,7 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
         }
 
         RecordHistogram.recordMediumTimesHistogram("History.ClearBrowsingData.TimeSpentInDialog",
-                SystemClock.elapsedRealtime() - mDialogOpened, TimeUnit.MILLISECONDS);
+                SystemClock.elapsedRealtime() - mDialogOpened);
 
         final @CookieOrCacheDeletionChoice int choice;
         if (dataTypes.contains(BrowsingDataType.COOKIES)) {

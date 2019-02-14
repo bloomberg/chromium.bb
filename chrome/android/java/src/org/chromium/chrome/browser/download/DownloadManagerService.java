@@ -67,7 +67,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Chrome implementation of the {@link DownloadController.DownloadNotificationService} interface.
@@ -1207,15 +1206,14 @@ public class DownloadManagerService
             case DownloadStatus.COMPLETE:
                 if (useDownloadManager) {
                     RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.DownloadManager.Success",
-                            totalDuration, TimeUnit.MILLISECONDS);
+                            "MobileDownload.DownloadTime.DownloadManager.Success", totalDuration);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.DownloadManager.Success",
                             (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
                 } else {
                     RecordHistogram.recordLongTimesHistogram(
                             "MobileDownload.DownloadTime.ChromeNetworkStack.Success",
-                            totalDuration, TimeUnit.MILLISECONDS);
+                            totalDuration);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.ChromeNetworkStack.Success",
                             (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
@@ -1229,15 +1227,14 @@ public class DownloadManagerService
             case DownloadStatus.FAILED:
                 if (useDownloadManager) {
                     RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.DownloadManager.Failure",
-                            totalDuration, TimeUnit.MILLISECONDS);
+                            "MobileDownload.DownloadTime.DownloadManager.Failure", totalDuration);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.DownloadManager.Failure",
                             (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
                 } else {
                     RecordHistogram.recordLongTimesHistogram(
                             "MobileDownload.DownloadTime.ChromeNetworkStack.Failure",
-                            totalDuration, TimeUnit.MILLISECONDS);
+                            totalDuration);
                     RecordHistogram.recordCount1000Histogram(
                             "MobileDownload.BytesDownloaded.ChromeNetworkStack.Failure",
                             (int) ConversionUtils.bytesToKilobytes(bytesDownloaded));
@@ -1251,8 +1248,7 @@ public class DownloadManagerService
             case DownloadStatus.CANCELLED:
                 if (!useDownloadManager) {
                     RecordHistogram.recordLongTimesHistogram(
-                            "MobileDownload.DownloadTime.ChromeNetworkStack.Cancel",
-                            totalDuration, TimeUnit.MILLISECONDS);
+                            "MobileDownload.DownloadTime.ChromeNetworkStack.Cancel", totalDuration);
                     RecordHistogram.recordCountHistogram(
                             "MobileDownload.InterruptionsCount.ChromeNetworkStack.Cancel",
                             numInterruptions);

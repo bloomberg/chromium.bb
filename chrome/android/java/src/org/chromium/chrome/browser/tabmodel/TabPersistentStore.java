@@ -53,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class handles saving and loading tab state from the persistent storage.
@@ -269,7 +268,7 @@ public class TabPersistentStore extends TabPersister {
     private static void logExecutionTime(String name, long time) {
         if (LibraryLoader.getInstance().isInitialized()) {
             RecordHistogram.recordTimesHistogram("Android.StrictMode.TabPersistentStore." + name,
-                    SystemClock.uptimeMillis() - time, TimeUnit.MILLISECONDS);
+                    SystemClock.uptimeMillis() - time);
         }
     }
 
@@ -1241,9 +1240,7 @@ public class TabPersistentStore extends TabPersister {
                     long timePerTab = (SystemClock.uptimeMillis() - mRestoreMergedTabsStartTime)
                             / mMergeTabCount;
                     RecordHistogram.recordTimesHistogram(
-                            "Android.TabPersistentStore.MergeStateTimePerTab",
-                            timePerTab,
-                            TimeUnit.MILLISECONDS);
+                            "Android.TabPersistentStore.MergeStateTimePerTab", timePerTab);
                 }
 
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {

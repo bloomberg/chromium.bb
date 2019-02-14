@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
@@ -23,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Singleton class which tracks web apps backed by a SharedPreferences file (abstracted by the
@@ -47,10 +47,10 @@ public class WebappRegistry {
     static final String KEY_LAST_CLEANUP = "last_cleanup";
 
     /** Represents a period of 4 weeks in milliseconds */
-    static final long FULL_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(4L * 7L);
+    static final long FULL_CLEANUP_DURATION = DateUtils.WEEK_IN_MILLIS * 4;
 
     /** Represents a period of 13 weeks in milliseconds */
-    static final long WEBAPP_UNOPENED_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(13L * 7L);
+    static final long WEBAPP_UNOPENED_CLEANUP_DURATION = DateUtils.WEEK_IN_MILLIS * 13;
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {

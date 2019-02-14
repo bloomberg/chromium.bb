@@ -19,7 +19,6 @@ import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * When suggestions cards are displayed on a white background, thumbnails with white backgrounds
@@ -71,8 +70,8 @@ public class ThumbnailGradient {
         // We want to keep an eye on how long this takes.
         long time = SystemClock.elapsedRealtime();
         boolean lightImage = hasLightCorner(bitmap, direction);
-        RecordHistogram.recordTimesHistogram("Thumbnails.Gradient.ImageDetectionTime",
-                SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram(
+                "Thumbnails.Gradient.ImageDetectionTime", SystemClock.elapsedRealtime() - time);
 
         RecordHistogram.recordBooleanHistogram(
                 "Thumbnails.Gradient.ImageRequiresGradient", lightImage);

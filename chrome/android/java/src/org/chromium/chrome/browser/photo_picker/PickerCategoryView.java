@@ -35,7 +35,6 @@ import org.chromium.ui.UiUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class for keeping track of common data associated with showing photos in
@@ -232,8 +231,7 @@ public class PickerCategoryView extends RelativeLayout
         // Calculate the rate of files enumerated per tenth of a second.
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mEnumStartTime;
         int rate = (int) (100 * files.size() / elapsedTimeMs);
-        RecordHistogram.recordTimesHistogram(
-                "Android.PhotoPicker.EnumerationTime", elapsedTimeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("Android.PhotoPicker.EnumerationTime", elapsedTimeMs);
         RecordHistogram.recordCustomCountHistogram(
                 "Android.PhotoPicker.EnumeratedFiles", files.size(), 1, 10000, 50);
         RecordHistogram.recordCount1000Histogram("Android.PhotoPicker.EnumeratedRate", rate);

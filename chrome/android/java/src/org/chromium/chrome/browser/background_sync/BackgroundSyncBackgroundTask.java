@@ -13,8 +13,6 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Handles servicing of Background Sync background tasks coming via
  * background_task_scheduler component.
@@ -36,7 +34,7 @@ public class BackgroundSyncBackgroundTask extends NativeBackgroundTask {
                 - taskParameters.getExtras().getLong(
                         BackgroundSyncBackgroundTaskScheduler.SOONEST_EXPECTED_WAKETIME);
         RecordHistogram.recordLongTimesHistogram(
-                "BackgroundSync.Wakeup.DelayTime", delayFromExpectedMs, TimeUnit.MILLISECONDS);
+                "BackgroundSync.Wakeup.DelayTime", delayFromExpectedMs);
 
         // Now that Chrome has been started, BackgroundSyncManager will
         // eventually be created, and it'll fire any ready sync events.

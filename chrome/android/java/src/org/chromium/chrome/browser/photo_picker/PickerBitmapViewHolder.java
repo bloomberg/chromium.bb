@@ -15,7 +15,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Holds on to a {@link PickerBitmapView} that displays information about a picker bitmap.
@@ -103,7 +102,7 @@ public class PickerBitmapViewHolder
             placeholder = BitmapUtils.scale(placeholder, size, false);
             long scaleTime = SystemClock.elapsedRealtime() - begin;
             RecordHistogram.recordTimesHistogram(
-                    "Android.PhotoPicker.UpscaleLowResBitmap", scaleTime, TimeUnit.MILLISECONDS);
+                    "Android.PhotoPicker.UpscaleLowResBitmap", scaleTime);
 
             mItemView.initialize(mBitmapDetails, placeholder, true);
         } else {

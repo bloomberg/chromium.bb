@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.text.format.DateUtils;
 import android.util.LruCache;
 
 import org.chromium.base.Callback;
@@ -29,7 +30,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class AppIndexingUtil {
     private static final int CACHE_SIZE = 100;
-    private static final int CACHE_VISIT_CUTOFF_MS = 60 * 60 * 1000; // 1 hour
+    private static final int CACHE_VISIT_CUTOFF_MS = (int) DateUtils.HOUR_IN_MILLIS;
     // Cache of recently seen urls. If a url is among the CACHE_SIZE most recent pages visited, and
     // the parse was in the last CACHE_VISIT_CUTOFF_MS milliseconds, then we don't parse the page,
     // and instead just report the view (not the content) to App Indexing.

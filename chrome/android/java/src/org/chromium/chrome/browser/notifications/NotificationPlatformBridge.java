@@ -48,7 +48,6 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Provides the ability for the NotificationPlatformBridgeAndroid to talk to the Android platform
@@ -209,7 +208,7 @@ public class NotificationPlatformBridge {
                     - intent.getLongExtra(NotificationConstants.EXTRA_JOB_SCHEDULED_TIME_MS, -1);
             if (duration < 0) return; // Possible if device rebooted before job started.
             RecordHistogram.recordMediumTimesHistogram(
-                    "Notifications.Android.JobStartDelay", duration, TimeUnit.MILLISECONDS);
+                    "Notifications.Android.JobStartDelay", duration);
         }
     }
 

@@ -28,8 +28,6 @@ import org.chromium.components.gcm_driver.GCMDriver;
 import org.chromium.components.gcm_driver.GCMMessage;
 import org.chromium.components.gcm_driver.LazySubscriptionsManager;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Receives Downstream messages and status of upstream messages from GCM.
  */
@@ -115,9 +113,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
 
             // Use {@link CachedMetrics} so this gets reported when native is
             // loaded instead of calling native right away.
-            new CachedMetrics
-                    .TimesHistogramSample(
-                            "PushMessaging.TimeToCheckIfSubscriptionLazy", TimeUnit.MILLISECONDS)
+            new CachedMetrics.TimesHistogramSample("PushMessaging.TimeToCheckIfSubscriptionLazy")
                     .record(SystemClock.elapsedRealtime() - time);
 
             if (isSubscriptionLazy) {

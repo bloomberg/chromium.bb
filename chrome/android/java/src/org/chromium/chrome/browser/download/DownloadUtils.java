@@ -24,6 +24,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -87,7 +88,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class containing some utility static methods.
@@ -119,13 +119,6 @@ public class DownloadUtils {
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
     public static final String EXTRA_SHOW_PREFETCHED_CONTENT =
             "org.chromium.chrome.browser.download.SHOW_PREFETCHED_CONTENT";
-
-    @VisibleForTesting
-    static final long SECONDS_PER_MINUTE = TimeUnit.MINUTES.toSeconds(1);
-    @VisibleForTesting
-    static final long SECONDS_PER_HOUR = TimeUnit.HOURS.toSeconds(1);
-    @VisibleForTesting
-    static final long SECONDS_PER_DAY = TimeUnit.DAYS.toSeconds(1);
 
     @VisibleForTesting
     static final String ELLIPSIS = "\u2026";
@@ -796,17 +789,17 @@ public class DownloadUtils {
         int days = 0;
         int hours = 0;
         int minutes = 0;
-        if (secondsLong >= SECONDS_PER_DAY) {
-            days = (int) (secondsLong / SECONDS_PER_DAY);
-            secondsLong -= days * SECONDS_PER_DAY;
+        if (secondsLong >= TimeUtils.SECONDS_PER_DAY) {
+            days = (int) (secondsLong / TimeUtils.SECONDS_PER_DAY);
+            secondsLong -= days * TimeUtils.SECONDS_PER_DAY;
         }
-        if (secondsLong >= SECONDS_PER_HOUR) {
-            hours = (int) (secondsLong / SECONDS_PER_HOUR);
-            secondsLong -= hours * SECONDS_PER_HOUR;
+        if (secondsLong >= TimeUtils.SECONDS_PER_HOUR) {
+            hours = (int) (secondsLong / TimeUtils.SECONDS_PER_HOUR);
+            secondsLong -= hours * TimeUtils.SECONDS_PER_HOUR;
         }
-        if (secondsLong >= SECONDS_PER_MINUTE) {
-            minutes = (int) (secondsLong / SECONDS_PER_MINUTE);
-            secondsLong -= minutes * SECONDS_PER_MINUTE;
+        if (secondsLong >= TimeUtils.SECONDS_PER_MINUTE) {
+            minutes = (int) (secondsLong / TimeUtils.SECONDS_PER_MINUTE);
+            secondsLong -= minutes * TimeUtils.SECONDS_PER_MINUTE;
         }
         int seconds = (int) secondsLong;
 

@@ -16,7 +16,6 @@ import org.chromium.base.task.AsyncTask;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is the Java counterpart to the C++ GCMDriverAndroid class.
@@ -72,8 +71,8 @@ public class GCMDriver {
             // Call RecordHistogram.recordTimesHistogram() on a background thread to avoid expensive
             // JNI calls in the critical path.
             AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-                RecordHistogram.recordTimesHistogram("PushMessaging.TimeToReadPersistedMessages",
-                        duration, TimeUnit.MILLISECONDS);
+                RecordHistogram.recordTimesHistogram(
+                        "PushMessaging.TimeToReadPersistedMessages", duration);
             });
         }
         return sInstance;

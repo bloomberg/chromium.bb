@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.WorkerThread;
+import android.text.format.DateUtils;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -90,7 +91,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Handles the initialization dependences of the browser process.  This is meant to handle the
@@ -498,7 +498,7 @@ public class ProcessInitializationHandler {
 
                 RecordHistogram.recordLongTimesHistogram(
                         "UMA.Debug.EnableCrashUpload.DeferredStartUpAsyncTaskDuration",
-                        SystemClock.uptimeMillis() - mAsyncTaskStartTime, TimeUnit.MILLISECONDS);
+                        SystemClock.uptimeMillis() - mAsyncTaskStartTime);
             }
 
             /**
@@ -613,7 +613,7 @@ public class ProcessInitializationHandler {
                 if (!CrashFileManager.isMinidumpSansLogcat(minidump.getName())) return false;
 
                 long ageInMillis = new Date().getTime() - minidump.lastModified();
-                long ageInHours = TimeUnit.HOURS.convert(ageInMillis, TimeUnit.MILLISECONDS);
+                long ageInHours = ageInMillis / DateUtils.HOUR_IN_MILLIS;
                 return ageInHours < LOGCAT_RELEVANCE_THRESHOLD_IN_HOURS;
             }
         }

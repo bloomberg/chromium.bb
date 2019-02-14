@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.format.DateUtils;
 import android.util.Rational;
 
 import org.chromium.base.Callback;
@@ -35,7 +36,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A controller for entering Android O Picture in Picture mode with fullscreen videos.
@@ -232,8 +232,7 @@ public class PictureInPictureController {
             public void onResult(ChromeActivity activity2) {
                 long pipTimeMs = SystemClock.elapsedRealtime() - startTimeMs;
                 RecordHistogram.recordCustomTimesHistogram(METRICS_DURATION, pipTimeMs,
-                        TimeUnit.SECONDS.toMillis(7), TimeUnit.HOURS.toMillis(10),
-                        TimeUnit.MILLISECONDS, 50);
+                        DateUtils.SECOND_IN_MILLIS * 7, DateUtils.HOUR_IN_MILLIS * 10, 50);
             }
         });
     }

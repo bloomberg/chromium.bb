@@ -42,7 +42,6 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Manages UI effects for reader mode including hiding and showing the
@@ -403,8 +402,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
      * @param timeMs The amount of time in ms that the user spent in Reader Mode.
      */
     private void recordReaderModeViewDuration(long timeMs) {
-        RecordHistogram.recordLongTimesHistogram(
-                "DomDistiller.Time.ViewingReaderModePage", timeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordLongTimesHistogram("DomDistiller.Time.ViewingReaderModePage", timeMs);
     }
 
     /**

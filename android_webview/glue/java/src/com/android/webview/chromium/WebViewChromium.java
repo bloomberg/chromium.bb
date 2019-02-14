@@ -79,7 +79,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is the delegate to which WebViewProxy forwards all API calls.
@@ -361,8 +360,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         if (mFactory.hasStarted()) {
             TimesHistogramSample histogram = new TimesHistogramSample(
                     "Android.WebView.Startup.CreationTime.Stage2.ProviderInit."
-                            + (isFirstWebViewInit ? "Cold" : "Warm"),
-                    TimeUnit.MILLISECONDS);
+                    + (isFirstWebViewInit ? "Cold" : "Warm"));
             histogram.record(SystemClock.elapsedRealtime() - startTime);
         }
     }

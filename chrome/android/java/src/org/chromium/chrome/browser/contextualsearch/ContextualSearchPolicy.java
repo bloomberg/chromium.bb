@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.VisibleForTesting;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-
 /**
  * Handles policy decisions for the {@code ContextualSearchManager}.
  */
@@ -34,7 +34,6 @@ class ContextualSearchPolicy {
     private static final String DOMAIN_GOOGLE = "google";
     private static final String PATH_AMP = "/amp/";
     private static final int REMAINING_NOT_APPLICABLE = -1;
-    private static final int ONE_DAY_IN_MILLIS = 24 * 60 * 60 * 1000;
     private static final int TAP_TRIGGERED_PROMO_LIMIT = 50;
 
     private static final HashSet<String> PREDOMINENTLY_ENGLISH_SPEAKING_COUNTRIES =
@@ -329,7 +328,7 @@ class ContextualSearchPolicy {
             long currentTimeMillis = System.currentTimeMillis();
             long lastAnimatedTimeMillis =
                     mPreferenceManager.getContextualSearchLastAnimationTime();
-            if (Math.abs(currentTimeMillis - lastAnimatedTimeMillis) > ONE_DAY_IN_MILLIS) {
+            if (Math.abs(currentTimeMillis - lastAnimatedTimeMillis) > DateUtils.DAY_IN_MILLIS) {
                 mPreferenceManager.setContextualSearchLastAnimationTime(currentTimeMillis);
                 return true;
             } else {

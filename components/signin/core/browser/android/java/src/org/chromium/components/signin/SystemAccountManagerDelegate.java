@@ -40,7 +40,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of {@link AccountManagerDelegate} which delegates all calls to the
@@ -183,7 +182,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     /**
      * Records a histogram value for how long time an action has taken using
-     * {@link RecordHistogram#recordTimesHistogram(String, long, TimeUnit))} iff the browser
+     * {@link RecordHistogram#recordTimesHistogram(String, long))} if the browser
      * process has been initialized.
      *
      * @param histogramName the name of the histogram.
@@ -191,7 +190,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
      */
     protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
         if (!LibraryLoader.getInstance().isInitialized()) return;
-        RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram(histogramName, elapsedMs);
     }
 
     // No permission is needed on 23+ and Chrome always has MANAGE_ACCOUNTS permission on lower APIs

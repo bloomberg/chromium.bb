@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
@@ -29,7 +30,6 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * WebApkUpdateManager manages when to check for updates to the WebAPK's Web Manifest, and sends
@@ -39,7 +39,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     private static final String TAG = "WebApkUpdateManager";
 
     // Maximum wait time for WebAPK update to be scheduled.
-    private static final long UPDATE_TIMEOUT_MILLISECONDS = TimeUnit.SECONDS.toMillis(30);
+    private static final long UPDATE_TIMEOUT_MILLISECONDS = DateUtils.SECOND_IN_MILLIS * 30;
 
     /** Whether updates are enabled. Some tests disable updates. */
     private static boolean sUpdatesEnabled = true;
@@ -182,7 +182,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         // The task deadline should be before {@link WebappDataStorage#RETRY_UPDATE_DURATION}
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID, WebApkUpdateTask.class,
-                                TimeUnit.HOURS.toMillis(1), TimeUnit.HOURS.toMillis(23))
+                                DateUtils.HOUR_IN_MILLIS, DateUtils.HOUR_IN_MILLIS * 23)
                         .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
                         .setUpdateCurrent(true)
                         .setIsPersisted(true)

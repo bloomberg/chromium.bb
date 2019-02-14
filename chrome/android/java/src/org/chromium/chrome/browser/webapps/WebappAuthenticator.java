@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.concurrent.TimeUnit;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
@@ -47,8 +46,8 @@ public class WebappAuthenticator {
 
     private static SecretKey sKey;
 
-    private static final TimesHistogramSample sWebappValidationTimes = new TimesHistogramSample(
-            "Android.StrictMode.WebappAuthenticatorMac", TimeUnit.MILLISECONDS);
+    private static final TimesHistogramSample sWebappValidationTimes =
+            new TimesHistogramSample("Android.StrictMode.WebappAuthenticatorMac");
 
     /**
      * @see #getMacForUrl

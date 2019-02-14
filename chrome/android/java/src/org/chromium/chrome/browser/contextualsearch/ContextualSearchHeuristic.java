@@ -8,9 +8,6 @@ package org.chromium.chrome.browser.contextualsearch;
  * A piece of conditional behavior that supports experimentation and logging.
  */
 abstract class ContextualSearchHeuristic {
-    // Conversion from nanoseconds to milliseconds.
-    public static final int NANOSECONDS_IN_A_MILLISECOND = 1000000;
-
     /**
      * Gets whether this heuristic's condition was satisfied or not if it is enabled.
      * In the case of a Tap heuristic, if the condition is satisfied the Tap is suppressed.

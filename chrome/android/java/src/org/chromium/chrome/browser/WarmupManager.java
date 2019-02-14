@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a singleton that holds utilities for warming up Chrome and prerendering urls
@@ -80,7 +79,7 @@ public class WarmupManager {
         public void renderProcessGone(boolean wasOomProtected) {
             long elapsed = SystemClock.elapsedRealtime() - mWebContentsCreationTimeMs;
             RecordHistogram.recordLongTimesHistogram(
-                    "CustomTabs.SpareWebContents.TimeBeforeDeath", elapsed, TimeUnit.MILLISECONDS);
+                    "CustomTabs.SpareWebContents.TimeBeforeDeath", elapsed);
             recordWebContentsStatus(WebContentsStatus.KILLED);
             destroySpareWebContentsInternal();
         }

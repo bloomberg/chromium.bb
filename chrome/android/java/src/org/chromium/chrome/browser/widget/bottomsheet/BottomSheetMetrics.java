@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeRea
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Records user actions and histograms related to the {@link BottomSheet}.
@@ -35,16 +34,14 @@ public class BottomSheetMetrics extends EmptyBottomSheetObserver {
     }
 
     private static final CachedMetrics.TimesHistogramSample TIMES_FIRST_OPEN =
-            new CachedMetrics.TimesHistogramSample(
-                    "Android.ChromeHome.TimeToFirstOpen", TimeUnit.MILLISECONDS);
+            new CachedMetrics.TimesHistogramSample("Android.ChromeHome.TimeToFirstOpen");
 
     private static final CachedMetrics.TimesHistogramSample TIMES_BETWEEN_CLOSE_AND_NEXT_OPEN =
             new CachedMetrics.TimesHistogramSample(
-                    "Android.ChromeHome.TimeBetweenCloseAndNextOpen", TimeUnit.MILLISECONDS);
+                    "Android.ChromeHome.TimeBetweenCloseAndNextOpen");
 
     private static final CachedMetrics.TimesHistogramSample TIMES_DURATION_OPEN =
-            new CachedMetrics.TimesHistogramSample(
-                    "Android.ChromeHome.DurationOpen", TimeUnit.MILLISECONDS);
+            new CachedMetrics.TimesHistogramSample("Android.ChromeHome.DurationOpen");
 
     private static final CachedMetrics.EnumeratedHistogramSample ENUMERATED_OPEN_REASON =
             new CachedMetrics.EnumeratedHistogramSample(

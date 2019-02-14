@@ -9,13 +9,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.SparseArray;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -38,8 +38,8 @@ class RequestThrottler {
     // These are for (b)
     private static final float MAX_SCORE = 10;
     // TODO(lizeb): Control this value using Finch.
-    private static final long BAN_DURATION_MS = TimeUnit.DAYS.toMillis(7);
-    private static final long FORGET_AFTER_MS = TimeUnit.DAYS.toMillis(14);
+    private static final long BAN_DURATION_MS = DateUtils.DAY_IN_MILLIS * 7;
+    private static final long FORGET_AFTER_MS = DateUtils.DAY_IN_MILLIS * 14;
     private static final float ALPHA = MAX_SCORE / BAN_DURATION_MS;
     private static final String PREFERENCES_NAME = "customtabs_client_bans";
     private static final String SCORE = "score_";
