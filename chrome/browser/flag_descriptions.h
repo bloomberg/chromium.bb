@@ -1564,9 +1564,6 @@ extern const char kOfflinePagesResourceBasedSnapshotDescription[];
 extern const char kOfflinePagesRenovationsName[];
 extern const char kOfflinePagesRenovationsDescription[];
 
-extern const char kOfflinePagesSharingName[];
-extern const char kOfflinePagesSharingDescription[];
-
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
 

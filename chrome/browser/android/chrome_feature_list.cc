@@ -180,7 +180,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &offline_pages::kOfflinePagesCTV2Feature,  // See crbug.com/734753.
     &offline_pages::kOfflinePagesDescriptiveFailStatusFeature,
     &offline_pages::kOfflinePagesDescriptivePendingStatusFeature,
-    &offline_pages::kOfflinePagesSharingFeature,
     &offline_pages::kOfflinePagesLivePageSharingFeature,
     &offline_pages::kPrefetchingOfflinePagesFeature,
     &omnibox::kHideSteadyStateUrlScheme,

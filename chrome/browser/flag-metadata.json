@@ -2537,11 +2537,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "offline-pages-sharing",
-    "owners": [ "petewil", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "offlining-recent-pages",
     "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76

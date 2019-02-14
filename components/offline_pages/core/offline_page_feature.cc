@@ -26,9 +26,6 @@ const base::Feature kOffliningRecentPagesFeature{
 const base::Feature kOfflinePagesCTFeature{"OfflinePagesCT",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kOfflinePagesSharingFeature{
-    "OfflinePagesSharing", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kOfflinePagesLivePageSharingFeature{
     "OfflinePagesLivePageSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -90,10 +87,6 @@ bool IsOfflinePagesSvelteConcurrentLoadingEnabled() {
 
 bool IsOfflinePagesCTEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesCTFeature);
-}
-
-bool IsOfflinePagesSharingEnabled() {
-  return base::FeatureList::IsEnabled(kOfflinePagesSharingFeature);
 }
 
 bool IsOfflinePagesLivePageSharingEnabled() {

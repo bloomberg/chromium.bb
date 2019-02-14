@@ -470,9 +470,6 @@ public class DownloadUtils {
      */
     private static Uri getUriToShareOfflinePage(
             OfflineItemWrapper wrappedOfflineItem, Map<String, String> newOfflineFilePathMap) {
-        if (!OfflinePageBridge.isPageSharingEnabled()) {
-            return null;
-        }
         String newFilePath = wrappedOfflineItem.getFilePath();
 
         if (wrappedOfflineItem.isSuggested()) {
@@ -513,8 +510,6 @@ public class DownloadUtils {
      */
     public static boolean prepareForSharing(
             List<DownloadHistoryItemWrapper> items, Callback<Map<String, String>> callback) {
-        if (!OfflinePageBridge.isPageSharingEnabled()) return true;
-
         OfflinePageBridge offlinePageBridge =
                 OfflinePageBridge.getForProfile(Profile.getLastUsedProfile().getOriginalProfile());
 

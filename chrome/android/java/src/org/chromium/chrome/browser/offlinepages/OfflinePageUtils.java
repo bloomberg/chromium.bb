@@ -401,8 +401,6 @@ public class OfflinePageUtils {
      */
     public static boolean maybeShareOfflinePage(
             final Activity activity, Tab tab, final Callback<ShareParams> shareCallback) {
-        if (!OfflinePageBridge.isPageSharingEnabled()) return false;
-
         if (tab == null) return false;
 
         boolean isOfflinePage = OfflinePageUtils.isOfflinePage(tab);

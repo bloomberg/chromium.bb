@@ -20,16 +20,6 @@ TEST(OfflinePageFeatureTest, OffliningRecentPages) {
   EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
 }
 
-TEST(OfflinePageFeatureTest, OfflinePagesSharing) {
-  // Enabled by default.
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
-
-  // Check if helper method works correctly when the features is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
-}
-
 TEST(OfflinePageFeatureTest, OfflinePagesLivePageSharing) {
   // Disabled by default.
   EXPECT_FALSE(

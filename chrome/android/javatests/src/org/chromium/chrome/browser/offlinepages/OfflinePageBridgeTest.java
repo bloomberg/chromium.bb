@@ -179,21 +179,6 @@ public class OfflinePageBridgeTest {
     }
 
     @Test
-    @CommandLineFlags.Add("disable-features=OfflinePagesSharing")
-    @SmallTest
-    @RetryOnFailure
-    public void testPageSharingSwitch() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse(
-                        "If offline page sharing is off, we should see the feature disabled",
-                        OfflinePageBridge.isPageSharingEnabled());
-            }
-        });
-    }
-
-    @Test
     @SmallTest
     @RetryOnFailure
     public void testGetRequestsInQueue() throws Exception {
