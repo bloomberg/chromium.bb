@@ -40,7 +40,9 @@ const int kZlibMemoryLevel = 8;
 int GzipCompressHelper(Bytef* dest,
                        uLongf* dest_length,
                        const Bytef* source,
-                       uLong source_length) {
+                       uLong source_length,
+                       void* (*malloc_fn)(size_t),
+                       void (*free_fn)(void*)) {
   z_stream stream;
 
   stream.next_in = bit_cast<Bytef*>(source);
@@ -50,9 +52,31 @@ int GzipCompressHelper(Bytef* dest,
   if (static_cast<uLong>(stream.avail_out) != *dest_length)
     return Z_BUF_ERROR;
 
-  stream.zalloc = static_cast<alloc_func>(0);
-  stream.zfree = static_cast<free_func>(0);
-  stream.opaque = static_cast<voidpf>(0);
+  // Cannot convert capturing lambdas to function pointers directly, hence the
+  // structure.
+  struct MallocFreeFunctions {
+    void* (*malloc_fn)(size_t);
+    void (*free_fn)(void*);
+  } malloc_free = {malloc_fn, free_fn};
+
+  if (malloc_fn) {
+    DCHECK(free_fn);
+    auto zalloc = [](void* opaque, uInt items, uInt size) {
+      return reinterpret_cast<MallocFreeFunctions*>(opaque)->malloc_fn(items *
+                                                                       size);
+    };
+    auto zfree = [](void* opaque, void* address) {
+      return reinterpret_cast<MallocFreeFunctions*>(opaque)->free_fn(address);
+    };
+
+    stream.zalloc = static_cast<alloc_func>(zalloc);
+    stream.zfree = static_cast<free_func>(zfree);
+    stream.opaque = static_cast<voidpf>(&malloc_free);
+  } else {
+    stream.zalloc = static_cast<alloc_func>(0);
+    stream.zfree = static_cast<free_func>(0);
+    stream.opaque = static_cast<voidpf>(0);
+  }
 
   gz_header gzip_header;
   memset(&gzip_header, 0, sizeof(gzip_header));
@@ -126,14 +150,17 @@ namespace compression {
 bool GzipCompress(base::StringPiece input,
                   char* output_buffer,
                   size_t output_buffer_size,
-                  size_t* compressed_size) {
+                  size_t* compressed_size,
+                  void* (*malloc_fn)(size_t),
+                  void (*free_fn)(void*)) {
   static_assert(sizeof(Bytef) == 1, "");
 
   // uLongf can be larger than size_t.
   uLongf compressed_size_long = static_cast<uLongf>(output_buffer_size);
   if (GzipCompressHelper(bit_cast<Bytef*>(output_buffer), &compressed_size_long,
                          bit_cast<const Bytef*>(input.data()),
-                         static_cast<uLongf>(input.size())) != Z_OK) {
+                         static_cast<uLongf>(input.size()), malloc_fn,
+                         free_fn) != Z_OK) {
     return false;
   }
   // No overflow, as compressed_size_long <= output.size() which is a size_t.
@@ -156,8 +183,8 @@ bool GzipCompress(base::StringPiece input, std::string* output) {
   }
 
   if (GzipCompressHelper(compressed_data, &compressed_data_size,
-                         bit_cast<const Bytef*>(input.data()),
-                         input_size) != Z_OK) {
+                         bit_cast<const Bytef*>(input.data()), input_size,
+                         nullptr, nullptr) != Z_OK) {
     free(compressed_data);
     return false;
   }

@@ -498,8 +498,14 @@ void ParkableStringImpl::CompressInBackground(
     ok = buffer.data();
     size_t compressed_size;
     if (ok) {
+      // Use partition alloc for zlib's temporary data. This is crucial to avoid
+      // leaking memory on Android, see the details in crbug.com/931553.
+      auto fast_malloc = [](size_t size) {
+        return WTF::Partitions::FastMalloc(size, "ZlibTemporaryData");
+      };
       ok = compression::GzipCompress(data, buffer.data(), buffer.size(),
-                                     &compressed_size);
+                                     &compressed_size, fast_malloc,
+                                     WTF::Partitions::FastFree);
     }
 
 #if defined(ADDRESS_SANITIZER)
