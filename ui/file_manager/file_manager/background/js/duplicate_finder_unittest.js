@@ -53,7 +53,7 @@ function setUp() {
         const result = {};
         hashes.forEach(
             /** @param {string} hash */
-            function(hash) {
+            hash => {
               result[hash] = fileUrls[hash] || [];
             });
         callback(result);
@@ -88,7 +88,7 @@ function testCheckDuplicateTrue(callback) {
   reportPromise(
       duplicateFinder.isDuplicate(files[0])
           .then(
-              function(isDuplicate) {
+              isDuplicate => {
                 assertTrue(isDuplicate);
               }),
       callback);
@@ -108,7 +108,7 @@ function testCheckDuplicateFalse(callback) {
   reportPromise(
       duplicateFinder.isDuplicate(newFile)
           .then(
-              function(isDuplicate) {
+              isDuplicate => {
                 assertFalse(isDuplicate);
               }),
       callback);
@@ -123,7 +123,7 @@ function testDispositionChecker_ContentDupe(callback) {
       getDisposition(
           files[0], importer.Destination.GOOGLE_DRIVE,
           importer.ScanMode.CONTENT)
-          .then(function(disposition) {
+          .then(disposition => {
             assertEquals(importer.Disposition.CONTENT_DUPLICATE, disposition);
           }),
       callback);
@@ -141,7 +141,7 @@ function testDispositionChecker_HistoryDupe(callback) {
       getDisposition(
           files[0], importer.Destination.GOOGLE_DRIVE,
           importer.ScanMode.CONTENT)
-          .then(function(disposition) {
+          .then(disposition => {
             assertEquals(importer.Disposition.HISTORY_DUPLICATE, disposition);
           }),
       callback);
@@ -159,7 +159,7 @@ function testDispositionChecker_Original(callback) {
   reportPromise(
       getDisposition(
           newFile, importer.Destination.GOOGLE_DRIVE, importer.ScanMode.CONTENT)
-          .then(function(disposition) {
+          .then(disposition => {
             assertEquals(importer.Disposition.ORIGINAL, disposition);
           }),
       callback);
@@ -175,11 +175,11 @@ function setupHashes(filePaths, fileHashes) {
   fileSystem.populate(filePaths);
 
   const files = filePaths.map(
-      function(filename) {
+      filename => {
         return fileSystem.entries[filename];
       });
 
-  files.forEach(function(file, index) {
+  files.forEach((file, index) => {
     hashes[file.toURL()] = fileHashes[index];
     fileUrls[fileHashes[index]] = file.toURL();
   });

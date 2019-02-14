@@ -52,7 +52,7 @@ AppWindowWrapper.MAXIMIZED_KEY_ = 'isMaximized';
  * @param {string} url Initialize URL that the window has.
  * @return {string} Key of window geometry preferences.
  */
-AppWindowWrapper.makeGeometryKey = function(url) {
+AppWindowWrapper.makeGeometryKey = url => {
   return 'windowGeometry' + ':' + url;
 };
 
@@ -99,10 +99,10 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
 
   // Restore maximized windows, to avoid hiding them to tray, which can be
   // confusing for users.
-  this.queue.run(function(callback) {
+  this.queue.run(callback => {
     for (let index = 0; index < similarWindows.length; index++) {
       if (similarWindows[index].isMaximized()) {
-        const createWindowAndRemoveListener = function() {
+        const createWindowAndRemoveListener = () => {
           similarWindows[index].onRestored.removeListener(
               createWindowAndRemoveListener);
           callback();
@@ -120,20 +120,20 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
   // Obtains the last geometry and window state (maximized or not).
   let lastBounds;
   let isMaximized = false;
-  this.queue.run(function(callback) {
+  this.queue.run(callback => {
     const boundsKey = AppWindowWrapper.makeGeometryKey(this.url_);
     const maximizedKey = AppWindowWrapper.MAXIMIZED_KEY_;
-    chrome.storage.local.get([boundsKey, maximizedKey], function(preferences) {
+    chrome.storage.local.get([boundsKey, maximizedKey], preferences => {
       if (!chrome.runtime.lastError) {
         lastBounds = preferences[boundsKey];
         isMaximized = preferences[maximizedKey];
       }
       callback();
     });
-  }.bind(this));
+  });
 
   // Closure creating the window, once all preprocessing tasks are finished.
-  this.queue.run(function(callback) {
+  this.queue.run(callback => {
     // Apply the last bounds.
     if (lastBounds) {
       this.options_.bounds = lastBounds;
@@ -145,7 +145,7 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     }
 
     // Create a window.
-    chrome.app.window.create(this.url_, this.options_, function(appWindow) {
+    chrome.app.window.create(this.url_, this.options_, appWindow => {
       // Exit full screen state if it's created as a full screen window.
       if (appWindow.isFullscreen()) {
         appWindow.restore();
@@ -159,13 +159,13 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
       }
       this.window_ = appWindow;
       callback();
-    }.bind(this));
-  }.bind(this));
+    });
+  });
 
   // After creating.
-  this.queue.run(function(callback) {
+  this.queue.run(callback => {
     // If there is another window in the same position, shift the window.
-    const makeBoundsKey = function(bounds) {
+    const makeBoundsKey = bounds => {
       return bounds.left + '/' + bounds.top;
     };
     const notAvailablePositions = {};
@@ -215,7 +215,7 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
       opt_callback();
     }
     callback();
-  }.bind(this));
+  });
 };
 
 /**
@@ -239,7 +239,7 @@ AppWindowWrapper.prototype.onClosed_ = function() {
 
   // Updates preferences.
   if (contentWindow.saveOnExit) {
-    contentWindow.saveOnExit.forEach(function(entry) {
+    contentWindow.saveOnExit.forEach(entry => {
       appUtil.AppCache.update(entry.key, entry.value);
     });
   }
@@ -304,7 +304,7 @@ SingletonAppWindowWrapper.prototype.launch =
 
   // If the window is already opened, reload the window.
   // The queue is used to wait until the window is opened.
-  this.queue.run(function(nextStep) {
+  this.queue.run(nextStep => {
     this.window_.contentWindow.appState = appState;
     this.window_.contentWindow.appReopen = reopen;
     if (!this.window_.contentWindow.reload) {
@@ -320,7 +320,7 @@ SingletonAppWindowWrapper.prototype.launch =
       opt_callback();
     }
     nextStep();
-  }.bind(this));
+  });
 };
 
 /**
@@ -328,7 +328,7 @@ SingletonAppWindowWrapper.prototype.launch =
  * @param {function()=} opt_callback Completion callback.
  */
 SingletonAppWindowWrapper.prototype.reopen = function(opt_callback) {
-  chrome.storage.local.get(this.id_, function(items) {
+  chrome.storage.local.get(this.id_, items => {
     const value = items[this.id_];
     if (!value) {
       opt_callback && opt_callback();
@@ -343,5 +343,5 @@ SingletonAppWindowWrapper.prototype.reopen = function(opt_callback) {
       return;
     }
     this.launch(appState, true, opt_callback);
-  }.bind(this));
+  });
 };

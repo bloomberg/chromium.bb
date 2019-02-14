@@ -119,7 +119,7 @@ ProgressCenterImpl.Notifications_.prototype.updateItem = function(
     if (item.state === ProgressItemState.CANCELED ||
         item.state === ProgressItemState.COMPLETED) {
       if (previousState === NotificationState.VISIBLE) {
-        this.queue_.run(function(proceed) {
+        this.queue_.run(proceed => {
           chrome.notifications.clear(item.id, proceed);
         });
       }
@@ -128,7 +128,7 @@ ProgressCenterImpl.Notifications_.prototype.updateItem = function(
   }
 
   // Create/update the notification with the item.
-  this.queue_.run(function(proceed) {
+  this.queue_.run(proceed => {
     const params = {
       title: chrome.runtime.getManifest().name,
       iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
@@ -144,7 +144,7 @@ ProgressCenterImpl.Notifications_.prototype.updateItem = function(
     } else {
       chrome.notifications.update(item.id, params, proceed);
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -158,7 +158,7 @@ ProgressCenterImpl.Notifications_.prototype.dismissErrorItem = function(id) {
 
   delete this.ids_[id];
 
-  this.queue_.run(function(proceed) {
+  this.queue_.run(proceed => {
     chrome.notifications.clear(id, proceed);
   });
 };

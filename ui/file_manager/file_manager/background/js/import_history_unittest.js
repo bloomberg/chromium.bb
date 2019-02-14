@@ -75,7 +75,7 @@ function testWasCopied_FalseForUnknownEntry(callback) {
   // TestRecordWriter is pre-configured with a Space Cloud entry
   // but not for this file.
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         return history.wasCopied(testFileEntry, SPACE_CAMP).then(assertFalse);
       });
 
@@ -85,7 +85,7 @@ function testWasCopied_FalseForUnknownEntry(callback) {
 function testWasCopied_TrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         return history.wasCopied(testFileEntry, GOOGLE_DRIVE).then(assertTrue);
       });
 
@@ -95,14 +95,14 @@ function testWasCopied_TrueForKnownEntryLoadedFromStorage(callback) {
 
 function testMarkCopied_FiresChangedEvent(callback) {
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         const recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
         return history.markCopied(testFileEntry, SPACE_CAMP, 'url1').then(
-            function() {
+            () => {
               return Promise.resolve()
                   .then(
-                      function() {
+                      () => {
                         recorder.assertCallCount(1);
                         assertEquals(
                             importer.ImportHistoryState.COPIED,
@@ -117,13 +117,13 @@ function testMarkCopied_FiresChangedEvent(callback) {
 function testMarkImported_ByUrl(callback) {
   const destinationUrl = 'filesystem:chrome-extension://abc/photos/splosion.jpg';
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         return history.markCopied(testFileEntry, SPACE_CAMP, destinationUrl)
             .then(
-                function() {
+                () => {
                   return history.markImportedByUrl(destinationUrl)
                       .then(
-                          function() {
+                          () => {
                             return history.wasImported(
                                 testFileEntry,
                                 SPACE_CAMP)
@@ -139,7 +139,7 @@ function testWasImported_FalseForUnknownEntry(callback) {
   // TestRecordWriter is pre-configured with a Space Cloud entry
   // but not for this file.
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         return history.wasImported(testFileEntry, SPACE_CAMP).then(assertFalse);
       });
 
@@ -149,7 +149,7 @@ function testWasImported_FalseForUnknownEntry(callback) {
 function testWasImported_TrueForKnownEntryLoadedFromStorage(callback) {
   // TestRecordWriter is pre-configured with this entry.
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         return history.wasImported(testFileEntry, GOOGLE_DRIVE)
             .then(assertTrue);
       });
@@ -159,9 +159,9 @@ function testWasImported_TrueForKnownEntryLoadedFromStorage(callback) {
 
 function testWasImported_TrueForKnownEntrySetAtRuntime(callback) {
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         return history.markImported(testFileEntry, SPACE_CAMP).then(
-            function() {
+            () => {
               return history.wasImported(testFileEntry, SPACE_CAMP)
                   .then(assertTrue);
             });
@@ -172,14 +172,14 @@ function testWasImported_TrueForKnownEntrySetAtRuntime(callback) {
 
 function testMarkImport_FiresChangedEvent(callback) {
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         const recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
         return history.markImported(testFileEntry, SPACE_CAMP).then(
-            function() {
+            () => {
               return Promise.resolve()
                   .then(
-                      function() {
+                      () => {
                         recorder.assertCallCount(1);
                         assertEquals(
                             importer.ImportHistoryState.IMPORTED,
@@ -193,7 +193,7 @@ function testMarkImport_FiresChangedEvent(callback) {
 
 function testHistoryObserver_Unsubscribe(callback) {
   testPromise = historyProvider.then(
-      function(history) {
+      history => {
         const recorder = new TestCallRecorder();
         history.addObserver(recorder.callback);
         history.removeObserver(recorder.callback);
@@ -202,10 +202,10 @@ function testHistoryObserver_Unsubscribe(callback) {
         promises.push(history.markCopied(testFileEntry, SPACE_CAMP, 'url2'));
         promises.push(history.markImported(testFileEntry, SPACE_CAMP));
         return Promise.all(promises).then(
-            function() {
+            () => {
               return Promise.resolve()
                   .then(
-                      function() {
+                      () => {
                         recorder.assertCallCount(0);
                       });
             });
@@ -218,11 +218,11 @@ function testRecordStorage_RemembersPreviouslyWrittenRecords(callback) {
   const recorder = new TestCallRecorder();
   testPromise = createRealStorage(['recordStorageTest.data'])
       .then(
-          function(storage) {
+          storage => {
             return storage.write(['abc', '123']).then(
-                function() {
+                () => {
                   return storage.readAll(recorder.callback).then(
-                      function() {
+                      () => {
                         recorder.assertCallCount(1);
                       });
                 });
@@ -236,31 +236,31 @@ function testRecordStorage_LoadsRecordsFromMultipleHistoryFiles(callback) {
 
   const remoteData = createRealStorage(['multiStorage-1.data'])
       .then(
-          function(storage) {
+          storage => {
             return storage.write(['remote-data', '98765432']);
           });
   const moreRemoteData = createRealStorage(['multiStorage-2.data'])
       .then(
-          function(storage) {
+          storage => {
             return storage.write(['antarctica-data', '777777777777']);
           });
 
   testPromise = Promise.all([remoteData, moreRemoteData]).then(
-    function() {
+    () => {
       return createRealStorage([
         'multiStorage-0.data',
         'multiStorage-1.data',
         'multiStorage-2.data'])
         .then(
-            function(storage) {
+            storage => {
               const writePromises = [
                 storage.write(['local-data', '111'])
               ];
               return Promise.all(writePromises)
                   .then(
-                      function() {
+                      () => {
                         return storage.readAll(recorder.callback).then(
-                            function() {
+                            () => {
                               recorder.assertCallCount(3);
                               assertEquals(
                                   'local-data',
@@ -283,14 +283,14 @@ function testRecordStorage_SerializingOperations(callback) {
   const recorder = new TestCallRecorder();
   testPromise = createRealStorage(['recordStorageTestForSerializing.data'])
       .then(
-          function(storage) {
+          storage => {
             const writePromises = [];
             const WRITES_COUNT = 20;
             for (let i = 0; i < WRITES_COUNT; i++) {
               writePromises.push(storage.write(['abc', '123']));
             }
             const readAllPromise = storage.readAll(recorder.callback).then(
-              function() {
+              () => {
                 recorder.assertCallCount(WRITES_COUNT);
               });
             // Write an extra record, which must be executed afte reading is
@@ -304,7 +304,7 @@ function testRecordStorage_SerializingOperations(callback) {
 
 function testCreateMetadataHashcode(callback) {
   const promise =
-      importer.createMetadataHashcode(testFileEntry).then(function(hashcode) {
+      importer.createMetadataHashcode(testFileEntry).then(hashcode => {
         // Note that the expression matches at least 4 numbers
         // in the last segment, since we hard code the byte
         // size in our test file to a four digit size.
@@ -329,7 +329,7 @@ function setupChromeApis() {
  */
 function installTestLogger() {
   testLogger = new importer.TestLogger();
-  importer.getLogger = function() {
+  importer.getLogger = () => {
     return testLogger;
   };
 }
@@ -340,7 +340,7 @@ function installTestLogger() {
  */
 function createRealStorage(fileNames) {
   const filePromises = fileNames.map(createFileEntry);
-  return Promise.all(filePromises).then(function(fileEntries) {
+  return Promise.all(filePromises).then(fileEntries => {
     return new importer.FileBasedRecordStorage(fileEntries);
   });
 }
@@ -353,8 +353,8 @@ function createRealStorage(fileNames) {
  */
 function createFileEntry(fileName) {
   return new Promise(
-      function(resolve, reject) {
-        const onFileSystemReady = function(fileSystem) {
+      (resolve, reject) => {
+        const onFileSystemReady = fileSystem => {
           fileSystem.root.getFile(
               fileName,
               {

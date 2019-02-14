@@ -102,32 +102,32 @@ function FileBrowserBackgroundImpl() {
       this.onContextMenuClicked_.bind(this));
 
   // Initialize string and volume manager related stuffs.
-  this.initializationPromise_.then(function(strings) {
+  this.initializationPromise_.then(strings => {
     this.stringData = strings;
     this.initContextMenu_();
 
-    volumeManagerFactory.getInstance().then(function(volumeManager) {
+    volumeManagerFactory.getInstance().then(volumeManager => {
       volumeManager.addEventListener(
           VolumeManagerCommon.VOLUME_ALREADY_MOUNTED,
           this.handleViewEvent_.bind(this));
 
       this.crostini.init(volumeManager);
       this.crostini.listen();
-    }.bind(this));
+    });
 
     this.fileOperationManager = new FileOperationManagerImpl();
     this.fileOperationHandler_ = new FileOperationHandler(
         this.fileOperationManager, this.progressCenter);
-  }.bind(this));
+  });
 
   // Handle newly mounted FSP file systems. Workaround for crbug.com/456648.
   // TODO(mtomasz): Replace this hack with a proper solution.
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
 
-  launcher.queue.run(function(callback) {
+  launcher.queue.run(callback => {
     this.initializationPromise_.then(callback);
-  }.bind(this));
+  });
 }
 
 FileBrowserBackgroundImpl.prototype.__proto__ = BackgroundBase.prototype;
@@ -163,12 +163,12 @@ FileBrowserBackgroundImpl.prototype.handleViewEvent_ = function(event) {
 FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
   volumeManagerFactory.getInstance()
       .then(
-          (/**
-           * Retrieves the root file entry of the volume on the requested
-           * device.
-           * @param {!VolumeManager} volumeManager
-           */
-          function(volumeManager) {
+          /**
+          * Retrieves the root file entry of the volume on the requested
+          * device.
+          * @param {!VolumeManager} volumeManager
+          */
+          volumeManager => {
             if (event.devicePath) {
               let volume = volumeManager.findByDevicePath(event.devicePath);
               if (volume) {
@@ -186,7 +186,7 @@ FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
             } else {
               console.error('Got view event with no actionable destination.');
             }
-          }).bind(this));
+          });
 };
 
 /**
@@ -196,7 +196,7 @@ FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
  * @return {!Promise<!VolumeInfo>}
  * @private
  */
-FileBrowserBackgroundImpl.prototype.retrieveVolumeInfo_ = function(volumeId) {
+FileBrowserBackgroundImpl.prototype.retrieveVolumeInfo_ = volumeId => {
   return volumeManagerFactory.getInstance().then(
       (/**
         * @param {!VolumeManager} volumeManager
@@ -219,9 +219,9 @@ FileBrowserBackgroundImpl.prototype.retrieveVolumeInfo_ = function(volumeId) {
  */
 FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ = function(
     volumeId, opt_directoryPath) {
-  this.retrieveVolumeInfo_(volumeId).then(function(volume) {
+  this.retrieveVolumeInfo_(volumeId).then(volume => {
     this.navigateToVolumeRoot_(volume, opt_directoryPath);
-  }.bind(this));
+  });
 };
 
 /**
@@ -234,9 +234,9 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ = function(
  */
 FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindowWhenReady_ =
     function(volumeId, opt_directoryPath) {
-  this.retrieveVolumeInfo_(volumeId).then(function(volume) {
+  this.retrieveVolumeInfo_(volumeId).then(volume => {
     this.navigateToVolumeInFocusedWindow_(volume, opt_directoryPath);
-  }.bind(this));
+  });
 };
 
 /**
@@ -248,9 +248,8 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindowWhenReady_ =
  * @return {!Promise<!DirectoryEntry>}
  * @private
  */
-FileBrowserBackgroundImpl.prototype.retrieveEntryInVolume_ = function(
-    volume, opt_directoryPath) {
-  return volume.resolveDisplayRoot().then(function(root) {
+FileBrowserBackgroundImpl.prototype.retrieveEntryInVolume_ = (volume, opt_directoryPath) => {
+  return volume.resolveDisplayRoot().then(root => {
     if (opt_directoryPath) {
       return new Promise(
           root.getDirectory.bind(root, opt_directoryPath, {create: false}));
@@ -275,7 +274,7 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeRoot_ = function(
            * Launches app opened on {@code directory}.
            * @param {DirectoryEntry} directory
            */
-          function(directory) {
+          directory => {
             launcher.launchFileManager(
                 {currentDirectoryURL: directory.toURL()},
                 /* App ID */ undefined, LaunchType.FOCUS_SAME_OR_CREATE);
@@ -295,10 +294,10 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeInFocusedWindow_ = function(
   this.retrieveEntryInVolume_(volume, opt_directoryPath)
       .then(function(directoryEntry) {
         if (directoryEntry) {
-          volumeManagerFactory.getInstance().then(function(volumeManager) {
+          volumeManagerFactory.getInstance().then(volumeManager => {
             volumeManager.dispatchEvent(
                 VolumeManagerCommon.createArchiveOpenedEvent(directoryEntry));
-          }.bind(this));
+          });
         }
       });
 };
@@ -327,7 +326,7 @@ function registerDialog(dialogWindow) {
   if (window.IN_TEST) {
     dialogWindow.IN_TEST = true;
   }
-  dialogWindow.addEventListener('pagehide', function() {
+  dialogWindow.addEventListener('pagehide', () => {
     delete window.background.dialogs[id];
   });
 }
@@ -339,7 +338,7 @@ function registerDialog(dialogWindow) {
  * @param {Object} details Details object.
  * @private
  */
-FileBrowserBackgroundImpl.prototype.onExecute_ = function(action, details) {
+FileBrowserBackgroundImpl.prototype.onExecute_ = (action, details) => {
   const appState = {
     params: {action: action},
     // It is not allowed to call getParent() here, since there may be
@@ -365,11 +364,11 @@ FileBrowserBackgroundImpl.prototype.onExecute_ = function(action, details) {
  */
 FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
   metrics.startInterval('Load.BackgroundLaunch');
-  this.initializationPromise_.then(function() {
+  this.initializationPromise_.then(() => {
     if (nextFileManagerWindowID == 0) {
       // The app just launched. Remove window state records that are not needed
       // any more.
-      chrome.storage.local.get(function(items) {
+      chrome.storage.local.get(items => {
         for (const key in items) {
           if (items.hasOwnProperty(key)) {
             if (key.match(FILES_ID_PATTERN)) {
@@ -380,7 +379,7 @@ FileBrowserBackgroundImpl.prototype.onLaunched_ = function() {
       });
     }
     launcher.launchFileManager(
-        null, undefined, LaunchType.FOCUS_ANY_OR_CREATE, function() {
+        null, undefined, LaunchType.FOCUS_ANY_OR_CREATE, () => {
           metrics.recordInterval('Load.BackgroundLaunch');
         });
   });
@@ -396,7 +395,7 @@ const GPLUS_PHOTOS_APP_ID = 'efjnaogkjbogokcnohkmnjdojkikgobo';
  * @param {MessageSender} sender
  */
 FileBrowserBackgroundImpl.prototype.onExternalMessageReceived_ =
-    function(message, sender) {
+    (message, sender) => {
   if ('id' in sender && sender.id === GPLUS_PHOTOS_APP_ID) {
     importer.handlePhotosAppMessage(message);
   }
@@ -407,9 +406,9 @@ FileBrowserBackgroundImpl.prototype.onExternalMessageReceived_ =
  * @private
  * @override
  */
-FileBrowserBackgroundImpl.prototype.onRestarted_ = function() {
+FileBrowserBackgroundImpl.prototype.onRestarted_ = () => {
   // Reopen file manager windows.
-  chrome.storage.local.get(function(items) {
+  chrome.storage.local.get(items => {
     for (const key in items) {
       if (items.hasOwnProperty(key)) {
         const match = key.match(FILES_ID_PATTERN);
@@ -418,7 +417,7 @@ FileBrowserBackgroundImpl.prototype.onRestarted_ = function() {
           const id = Number(match[1]);
           try {
             const appState = /** @type {Object} */ (JSON.parse(items[key]));
-            launcher.launchFileManager(appState, id, undefined, function() {
+            launcher.launchFileManager(appState, id, undefined, () => {
               metrics.recordInterval('Load.BackgroundRestart');
             });
           } catch (e) {
@@ -439,7 +438,7 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
     // Find the focused window (if any) and use it's current url for the
     // new window. If not found, then launch with the default url.
-    this.findFocusedWindow_().then(function(key) {
+    this.findFocusedWindow_().then(key => {
       if (!key) {
         launcher.launchFileManager();
         return;
@@ -450,7 +449,7 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
             contentWindow.appState.currentDirectoryURL
       };
       launcher.launchFileManager(appState);
-    }).catch(function(error) {
+    }).catch(error => {
       console.error(error.stack || error);
     });
   }
@@ -463,8 +462,8 @@ FileBrowserBackgroundImpl.prototype.onContextMenuClicked_ = function(info) {
  *     window, or null if not found.
  * @private
  */
-FileBrowserBackgroundImpl.prototype.findFocusedWindow_ = function() {
-  return new Promise(function(fulfill, reject) {
+FileBrowserBackgroundImpl.prototype.findFocusedWindow_ = () => {
+  return new Promise((fulfill, reject) => {
     for (const key in window.appWindows) {
       try {
         if (window.appWindows[key].contentWindow.isFocused()) {
@@ -501,7 +500,7 @@ FileBrowserBackgroundImpl.prototype.onMountCompletedInternal_ = function(
   // If there is no focused window, then create a new one opened on the
   // mounted volume.
   this.findFocusedWindow_()
-      .then(function(key) {
+      .then(key => {
         let statusOK = event.status === 'success' ||
             event.status === 'error_path_already_mounted';
         let volumeTypeOK = event.volumeMetadata.volumeType ===
@@ -511,8 +510,8 @@ FileBrowserBackgroundImpl.prototype.onMountCompletedInternal_ = function(
             event.volumeMetadata.mountContext === 'user' && volumeTypeOK) {
           this.navigateToVolumeWhenReady_(event.volumeMetadata.volumeId);
         }
-      }.bind(this))
-      .catch(function(error) {
+      })
+      .catch(error => {
         console.error(error.stack || error);
       });
 };
@@ -521,7 +520,7 @@ FileBrowserBackgroundImpl.prototype.onMountCompletedInternal_ = function(
  * Initializes the context menu. Recreates if already exists.
  * @private
  */
-FileBrowserBackgroundImpl.prototype.initContextMenu_ = function() {
+FileBrowserBackgroundImpl.prototype.initContextMenu_ = () => {
   try {
     // According to the spec [1], the callback is optional. But no callback
     // causes an error for some reason, so we call it with null-callback to
@@ -529,7 +528,7 @@ FileBrowserBackgroundImpl.prototype.initContextMenu_ = function() {
     // Also, we read the runtime.lastError here not to output the message on the
     // console as an unchecked error.
     // - [1] https://developer.chrome.com/extensions/contextMenus#method-remove
-    chrome.contextMenus.remove('new-window', function() {
+    chrome.contextMenus.remove('new-window', () => {
       const ignore = chrome.runtime.lastError;
     });
   } catch (ignore) {

@@ -34,11 +34,11 @@ MockProgressCenter.prototype.getItemById = function(id) {
   return this.items[id];
 };
 
-MockProgressCenter.prototype.requestCancel = function() {};
+MockProgressCenter.prototype.requestCancel = () => {};
 
-MockProgressCenter.prototype.addPanel = function() {};
+MockProgressCenter.prototype.addPanel = () => {};
 
-MockProgressCenter.prototype.removePanel = function() {};
+MockProgressCenter.prototype.removePanel = () => {};
 
 /**
  * Returns the number of unique keys in |this.items|.

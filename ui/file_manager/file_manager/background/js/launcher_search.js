@@ -50,10 +50,10 @@ function LauncherSearch() {
  * Handles onPreferencesChanged event.
  */
 LauncherSearch.prototype.onPreferencesChanged_ = function() {
-  chrome.fileManagerPrivate.getPreferences(function(preferences) {
+  chrome.fileManagerPrivate.getPreferences(preferences => {
     this.initializeEventListeners_(
         preferences.driveEnabled, preferences.searchSuggestEnabled);
-  }.bind(this));
+  });
 };
 
 /**
@@ -154,8 +154,8 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
   // Request an instance of volume manager to ensure that all volumes are
   // initialized. webkitResolveLocalFileSystemURL in util.urlToEntry fails if
   // filesystem of the url is not initialized.
-  volumeManagerFactory.getInstance().then(function() {
-    util.urlToEntry(itemId).then(function(entry) {
+  volumeManagerFactory.getInstance().then(() => {
+    util.urlToEntry(itemId).then(entry => {
       if (entry.isDirectory) {
         // If it's directory, open the directory with file manager.
         launcher.launchFileManager(
@@ -168,7 +168,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
           return;
         }
         // If the file is not directory, try to execute default task.
-        chrome.fileManagerPrivate.getFileTasks([entry], function(tasks) {
+        chrome.fileManagerPrivate.getFileTasks([entry], tasks => {
           // Select default task.
           let defaultTask = null;
           for (var i = 0; i < tasks.length; i++) {
@@ -195,22 +195,22 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
           if (defaultTask) {
             // Execute default task.
             chrome.fileManagerPrivate.executeTask(
-                defaultTask.taskId, [entry], function(result) {
+                defaultTask.taskId, [entry], result => {
                   if (result === 'opened' || result === 'message_sent') {
                     return;
                   }
                   this.openFileManagerWithSelectionURL_(entry.toURL());
-                }.bind(this));
+                });
           } else {
             // If there is no default task for the url, open a file manager with
             // selecting it.
             // TODO(yawano): Add fallback to view-in-browser as file_tasks.js do
             this.openFileManagerWithSelectionURL_(entry.toURL());
           }
-        }.bind(this));
+        });
       }
-    }.bind(this));
-  }.bind(this));
+    });
+  });
 };
 
 /**
@@ -218,8 +218,7 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
  * @param {string} selectionURL A url to be selected.
  * @private
  */
-LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
-    selectionURL) {
+LauncherSearch.prototype.openFileManagerWithSelectionURL_ = selectionURL => {
   launcher.launchFileManager(
       {selectionURL: selectionURL},
       undefined, /* App ID */
@@ -234,10 +233,10 @@ LauncherSearch.prototype.openFileManagerWithSelectionURL_ = function(
  * @return {!Promise<!Array<!Entry>>}
  * @private
  */
-LauncherSearch.prototype.queryDriveEntries_ = function(queryId, query, limit) {
+LauncherSearch.prototype.queryDriveEntries_ = (queryId, query, limit) => {
   const param = {query: query, types: 'ALL', maxResults: limit};
   return new Promise((resolve, reject) => {
-    chrome.fileManagerPrivate.searchDriveMetadata(param, function(results) {
+    chrome.fileManagerPrivate.searchDriveMetadata(param, results => {
       resolve(results.map(result => result.entry));
     });
   });
@@ -273,7 +272,7 @@ LauncherSearch.prototype.queryLocalEntries_ = function(queryId, query) {
  * @return {!Promise<!DirectoryEntry>}
  * @private
  */
-LauncherSearch.prototype.getDownloadsEntry_ = function() {
+LauncherSearch.prototype.getDownloadsEntry_ = () => {
   return volumeManagerFactory.getInstance().then((volumeManager) => {
     const downloadsVolumeInfo = volumeManager.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DOWNLOADS);
@@ -320,7 +319,7 @@ LauncherSearch.prototype.queryEntriesRecursively_ = function(
  * @return {!Array<!Entry>}
  * @private
  */
-LauncherSearch.prototype.chooseEntries_ = function(entries, query, limit) {
+LauncherSearch.prototype.chooseEntries_ = (entries, query, limit) => {
   query = query.toLowerCase();
   const scoreEntry = (entry) => {
     // Prefer entry which has the query string as a prefix.
@@ -341,7 +340,7 @@ LauncherSearch.prototype.chooseEntries_ = function(entries, query, limit) {
  * @return {!Object}
  * @private
  */
-LauncherSearch.prototype.createSearchResult_ = function(entry) {
+LauncherSearch.prototype.createSearchResult_ = entry => {
   // TODO(yawano): Use filetype_folder_shared.png for a shared
   //     folder.
   // TODO(yawano): Add archive launcher filetype icon.

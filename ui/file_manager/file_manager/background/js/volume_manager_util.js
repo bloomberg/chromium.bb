@@ -40,7 +40,7 @@ volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES =
  *
  * @param {string} error Status string usually received from APIs.
  */
-volumeManagerUtil.validateError = function(error) {
+volumeManagerUtil.validateError = error => {
   for (const key in VolumeManagerCommon.VolumeError) {
     if (error === VolumeManagerCommon.VolumeError[key]) {
       return;
@@ -56,7 +56,7 @@ volumeManagerUtil.validateError = function(error) {
  * instance for the volume.
  * @return {!Promise<!VolumeInfo>} Promise settled with the VolumeInfo instance.
  */
-volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
+volumeManagerUtil.createVolumeInfo = volumeMetadata => {
   let localizedLabel;
   switch (volumeMetadata.volumeType) {
     case VolumeManagerCommon.VolumeType.DOWNLOADS:
@@ -102,13 +102,13 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
       volumeMetadata.volumeId);
   return util
       .timeoutPromise(
-          new Promise(function(resolve, reject) {
+          new Promise((resolve, reject) => {
             chrome.fileSystem.requestFileSystem(
                 {
                   volumeId: volumeMetadata.volumeId,
                   writable: !volumeMetadata.isReadOnly
                 },
-                function(isolatedFileSystem) {
+                isolatedFileSystem => {
                   if (chrome.runtime.lastError) {
                     reject(chrome.runtime.lastError.message);
                   } else {
@@ -121,14 +121,14 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
               volumeMetadata.volumeId)
       .then(
           /** @param {!FileSystem} isolatedFileSystem */
-          function(isolatedFileSystem) {
+          isolatedFileSystem => {
             // Since File System API works on isolated entries only, we need to
             // convert it back to external one.
             // TODO(mtomasz): Make Files app work on isolated entries.
             return util.timeoutPromise(
-                new Promise(function(resolve, reject) {
+                new Promise((resolve, reject) => {
                   chrome.fileManagerPrivate.resolveIsolatedEntries(
-                      [isolatedFileSystem.root], function(entries) {
+                      [isolatedFileSystem.root], entries => {
                         if (chrome.runtime.lastError) {
                           reject(chrome.runtime.lastError.message);
                         } else if (!entries[0]) {
@@ -144,7 +144,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
           })
       .then(
           /** @param {!FileSystem} fileSystem */
-          function(fileSystem) {
+          fileSystem => {
             console.debug('File system obtained: ' + volumeMetadata.volumeId);
             if (volumeMetadata.volumeType ===
                 VolumeManagerCommon.VolumeType.DRIVE) {
@@ -154,8 +154,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
               // it fails, accessing to some path later will just become
               // a fast-fetch and it re-triggers full-feed fetch.
               fileSystem.root.createReader().readEntries(
-                  function() { /* do nothing */ },
-                  function(error) {
+                  () => { /* do nothing */ },
+                  error => {
                     console.warn(
                         'Triggering full feed fetch has failed: ' + error.name);
                   });
@@ -178,7 +178,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
           })
       .catch(
           /** @param {*} error */
-          function(error) {
+          error => {
             console.warn(
                 'Failed to mount a file system: ' + volumeMetadata.volumeId +
                 ' because of: ' + (error.stack || error));

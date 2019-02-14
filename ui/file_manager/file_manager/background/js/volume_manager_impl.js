@@ -51,12 +51,12 @@ function VolumeManagerImpl() {
  * @private
  */
 VolumeManagerImpl.prototype.onDriveConnectionStatusChanged_ = function() {
-  chrome.fileManagerPrivate.getDriveConnectionState(function(state) {
+  chrome.fileManagerPrivate.getDriveConnectionState(state => {
     // TODO(crbug.com/931971): Convert private API to use enum.
     this.driveConnectionState_ =
         /** @type {VolumeManagerCommon.DriveConnectionState} */ (state);
     cr.dispatchSimpleEvent(this, 'drive-connection-changed');
-  }.bind(this));
+  });
 };
 
 /** @override */
@@ -78,11 +78,11 @@ VolumeManagerImpl.prototype.__proto__ = cr.EventTarget.prototype;
  */
 VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
   return volumeManagerUtil.createVolumeInfo(volumeMetadata).then(
-      (/**
-       * @param {!VolumeInfo} volumeInfo
-       * @return {!VolumeInfo}
-       */
-      function(volumeInfo) {
+      /**
+      * @param {!VolumeInfo} volumeInfo
+      * @return {!VolumeInfo}
+      */
+      volumeInfo => {
         // We don't show Downloads and Drive on volume list if they have mount
         // error, since users can do nothing in this situation.
         // We show Removable and Provided volumes regardless of mount error so
@@ -118,7 +118,7 @@ VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
           this.volumeInfoList.add(volumeInfo);
         }
         return volumeInfo;
-      }).bind(this));
+      });
 };
 
 /**
@@ -131,25 +131,25 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
   chrome.fileManagerPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
   console.debug('Requesting volume list.');
-  chrome.fileManagerPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+  chrome.fileManagerPrivate.getVolumeMetadataList(volumeMetadataList => {
     console.debug(
         'Volume list fetched with: ' + volumeMetadataList.length + ' items.');
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList. crbug.com/330061.
     // But volumes reported by onMountCompleted events must be added after the
     // volumes in the volumeMetadataList are mounted. crbug.com/135477.
-    this.mountQueue_.run(function(inCallback) {
+    this.mountQueue_.run(inCallback => {
       // Create VolumeInfo for each volume.
       Promise.all(
-          volumeMetadataList.map(function(volumeMetadata) {
+          volumeMetadataList.map(volumeMetadata => {
             console.debug(
                 'Initializing volume: ' + volumeMetadata.volumeId);
             return this.addVolumeMetadata_(volumeMetadata).then(
-                function(volumeInfo) {
+                volumeInfo => {
                   console.debug('Initialized volume: ' + volumeInfo.volumeId);
                 });
-          }.bind(this)))
-          .then(function() {
+          }))
+          .then(() => {
             console.debug('Initialized all volumes.');
             // Call the callback of the initialize function.
             callback();
@@ -157,8 +157,8 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
             // registered by mountCompleted events.
             inCallback();
           });
-    }.bind(this));
-  }.bind(this));
+    });
+  });
 };
 
 /**
@@ -167,7 +167,7 @@ VolumeManagerImpl.prototype.initialize_ = function(callback) {
  * @private
  */
 VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
-  this.mountQueue_.run(function(callback) {
+  this.mountQueue_.run(callback => {
     switch (event.eventType) {
       case 'mount':
         var requestKey = this.makeRequestKey_(
@@ -180,10 +180,10 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
             event.status ===
                 VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
           this.addVolumeMetadata_(event.volumeMetadata).then(
-              function(volumeInfo) {
+              volumeInfo => {
                 this.finishRequest_(requestKey, event.status, volumeInfo);
                 callback();
-              }.bind(this));
+              });
         } else if (event.status ===
             VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
           const navigationEvent =
@@ -223,7 +223,7 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
         callback();
         break;
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -235,19 +235,19 @@ VolumeManagerImpl.prototype.onMountCompleted_ = function(event) {
  * @return {string} Key for |this.requests_|.
  * @private
  */
-VolumeManagerImpl.prototype.makeRequestKey_ = function(requestType, argument) {
+VolumeManagerImpl.prototype.makeRequestKey_ = (requestType, argument) => {
   return requestType + ':' + argument;
 };
 
 /** @override */
 VolumeManagerImpl.prototype.mountArchive = function(
     fileUrl, successCallback, errorCallback) {
-  chrome.fileManagerPrivate.addMount(fileUrl, function(sourcePath) {
+  chrome.fileManagerPrivate.addMount(fileUrl, sourcePath => {
     console.info(
         'Mount request: url=' + fileUrl + '; sourcePath=' + sourcePath);
     const requestKey = this.makeRequestKey_('mount', sourcePath);
     this.startRequest_(requestKey, successCallback, errorCallback);
-  }.bind(this));
+  });
 };
 
 /** @override */
@@ -260,9 +260,9 @@ VolumeManagerImpl.prototype.unmount = function(volumeInfo,
 };
 
 /** @override */
-VolumeManagerImpl.prototype.configure = function(volumeInfo) {
-  return new Promise(function(fulfill, reject) {
-    chrome.fileManagerPrivate.configureVolume(volumeInfo.volumeId, function() {
+VolumeManagerImpl.prototype.configure = volumeInfo => {
+  return new Promise((fulfill, reject) => {
+    chrome.fileManagerPrivate.configureVolume(volumeInfo.volumeId, () => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError.message);
       } else {
@@ -439,7 +439,7 @@ VolumeManagerImpl.prototype.whenVolumeInfoReady = function(volumeId) {
 };
 
 /** @override */
-VolumeManagerImpl.prototype.getDefaultDisplayRoot = function(callback) {
+VolumeManagerImpl.prototype.getDefaultDisplayRoot = callback => {
   console.error('Unexpectedly called VolumeManagerImpl.getDefaultDisplayRoot.');
   callback(null);
 };
@@ -508,7 +508,7 @@ VolumeManagerImpl.prototype.finishRequest_ =
  */
 VolumeManagerImpl.prototype.invokeRequestCallbacks_ = function(
     request, status, opt_volumeInfo) {
-  const callEach = function(callbacks, self, args) {
+  const callEach = (callbacks, self, args) => {
     for (let i = 0; i < callbacks.length; i++) {
       callbacks[i].apply(self, args);
     }

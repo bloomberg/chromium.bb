@@ -52,14 +52,14 @@ importer.TaskQueue.UpdateType = {
 importer.TaskQueue.prototype.queueTask = function(task) {
   // The Tasks that are pushed onto the queue aren't required to be inherently
   // asynchronous.  This code force task execution to occur asynchronously.
-  Promise.resolve().then(function() {
+  Promise.resolve().then(() => {
     task.addObserver(this.onTaskUpdate_.bind(this, task));
     this.tasks_.push(task);
     // If more than one task is queued, then the queue is already running.
     if (this.tasks_.length === 1) {
       this.runPending_();
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -98,7 +98,7 @@ importer.TaskQueue.prototype.setIdleCallback = function(callback) {
  */
 importer.TaskQueue.prototype.onTaskUpdate_ = function(task, updateType) {
   // Send a task update to clients.
-  this.updateCallbacks_.forEach(function(callback) {
+  this.updateCallbacks_.forEach(callback => {
     callback.call(null, updateType, task);
   });
 
@@ -213,7 +213,7 @@ importer.TaskQueue.BaseTask.prototype.addObserver = function(observer) {
 };
 
 /** @override */
-importer.TaskQueue.BaseTask.prototype.run = function() {};
+importer.TaskQueue.BaseTask.prototype.run = () => {};
 
 /**
  * @param {importer.TaskQueue.UpdateType} updateType
@@ -228,7 +228,7 @@ importer.TaskQueue.BaseTask.prototype.notify = function(updateType, opt_data) {
   }
 
   this.observers_.forEach(
-      function(callback) {
+      callback => {
         callback.call(null, updateType, opt_data);
-      }.bind(this));
+      });
 };

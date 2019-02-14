@@ -99,7 +99,7 @@ importer.TestImportHistory.prototype.markCopied =
 
 /** @override */
 importer.TestImportHistory.prototype.listUnimportedUrls =
-    function(destination) {
+    destination => {
   return Promise.resolve([]);
 };
 
@@ -145,13 +145,13 @@ importer.TestImportHistory.prototype.markImported =
 };
 
 /** @override */
-importer.TestImportHistory.prototype.whenReady = function() {};
+importer.TestImportHistory.prototype.whenReady = () => {};
 
 /** @override */
-importer.TestImportHistory.prototype.markImportedByUrl = function() {};
+importer.TestImportHistory.prototype.markImportedByUrl = () => {};
 
 /** @override */
-importer.TestImportHistory.prototype.addObserver = function() {};
+importer.TestImportHistory.prototype.addObserver = () => {};
 
 /** @override */
-importer.TestImportHistory.prototype.removeObserver = function() {};
+importer.TestImportHistory.prototype.removeObserver = () => {};

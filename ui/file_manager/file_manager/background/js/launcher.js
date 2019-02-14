@@ -67,8 +67,7 @@ launcher.queue = new AsyncUtil.Queue();
  * @param {LaunchType=} opt_type Launch type. Default: ALWAYS_CREATE.
  * @param {function(string)=} opt_callback Completion callback with the App ID.
  */
-launcher.launchFileManager = function(
-    opt_appState, opt_id, opt_type, opt_callback) {
+launcher.launchFileManager = (opt_appState, opt_id, opt_type, opt_callback) => {
   const type = opt_type || LaunchType.ALWAYS_CREATE;
   opt_appState =
       /**
@@ -79,7 +78,7 @@ launcher.launchFileManager = function(
       (opt_appState);
 
   // Wait until all windows are created.
-  launcher.queue.run(function(onTaskCompleted) {
+  launcher.queue.run(onTaskCompleted => {
     // Check if there is already a window with the same URL. If so, then
     // reuse it instead of opening a new one.
     if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
@@ -177,7 +176,7 @@ launcher.launchFileManager = function(
         'main.html',
         appId,
         FILE_MANAGER_WINDOW_CREATE_OPTIONS);
-    appWindow.launch(opt_appState || {}, false, function() {
+    appWindow.launch(opt_appState || {}, false, () => {
       appWindow.rawAppWindow.focus();
       if (opt_callback) {
         opt_callback(appId);

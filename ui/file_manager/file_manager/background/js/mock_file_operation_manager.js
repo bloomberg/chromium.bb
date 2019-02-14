@@ -73,9 +73,9 @@ MockFileOperationManager.prototype.whenPasteCalled = function() {
     throw new Error('Only one paste call can be waited on at a time.');
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     this.pasteResolver = resolve;
-  }.bind(this));
+  });
 };
 
 /**
@@ -96,10 +96,10 @@ MockFileOperationManager.prototype.isKnownTaskId = function(id) {
   return this.generatedTaskIds.indexOf(id) !== -1;
 };
 
-MockFileOperationManager.prototype.hasQueuedTasks = function() {};
+MockFileOperationManager.prototype.hasQueuedTasks = () => {};
 
-MockFileOperationManager.prototype.filterSameDirectoryEntry = function() {};
+MockFileOperationManager.prototype.filterSameDirectoryEntry = () => {};
 
-MockFileOperationManager.prototype.deleteEntries = function() {};
+MockFileOperationManager.prototype.deleteEntries = () => {};
 
-MockFileOperationManager.prototype.zipSelection = function() {};
+MockFileOperationManager.prototype.zipSelection = () => {};
