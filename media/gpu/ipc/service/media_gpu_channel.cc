@@ -108,7 +108,9 @@ void MediaGpuChannel::OnCreateVideoDecoder(
   TRACE_EVENT0("gpu", "MediaGpuChannel::OnCreateVideoDecoder");
   gpu::CommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);
-  if (!stub) {
+  // Only allow stubs that have a ContextGroup, that is, the GLES2 ones. Later
+  // code assumes the ContextGroup is valid.
+  if (!stub || !stub->decoder_context()->GetContextGroup()) {
     reply_message->set_reply_error();
     Send(reply_message);
     return;

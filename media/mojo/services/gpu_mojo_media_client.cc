@@ -68,7 +68,16 @@ gpu::CommandBufferStub* GetCommandBufferStub(
   if (!channel)
     return nullptr;
 
-  return channel->LookupCommandBuffer(route_id);
+  gpu::CommandBufferStub* stub = channel->LookupCommandBuffer(route_id);
+  if (!stub)
+    return nullptr;
+
+  // Only allow stubs that have a ContextGroup, that is, the GLES2 ones. Later
+  // code assumes the ContextGroup is valid.
+  if (!stub->decoder_context()->GetContextGroup())
+    return nullptr;
+
+  return stub;
 }
 #endif
 

@@ -491,8 +491,7 @@ CommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
 
 bool GpuChannel::HasActiveWebGLContext() const {
   for (auto& kv : stubs_) {
-    ContextType context_type =
-        kv.second->context_group()->feature_info()->context_type();
+    ContextType context_type = kv.second->context_type();
     if (context_type == CONTEXT_TYPE_WEBGL1 ||
         context_type == CONTEXT_TYPE_WEBGL2) {
       return true;
