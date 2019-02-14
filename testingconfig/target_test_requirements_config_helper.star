@@ -103,14 +103,10 @@ def gce_sanity_test_config():
 
 def _hw_test_config(
     suite_name,
-    blocking,
     minimum_duts,
     timeout_sec=5400,
-    pool='cq',
-    async=False,
     warn_only=False,
     critical=False,
-    priority='CQ',
     file_bugs=False,
     retry=True,
     max_retries=5,
@@ -122,14 +118,10 @@ def _hw_test_config(
 
   Args:
     suite_name: string
-    blocking: bool
     minimum_duts: int
     timeout_sec: int
-    pool: string
-    async: bool
     warn_only: bool
     critical: bool
-    priority: bool
     file_bugs: bool
     retry: bool
     max_retries: int
@@ -141,14 +133,10 @@ def _hw_test_config(
   """
   return config_pb.HwTestCfg.HwTest(
     suite=suite_name,
-    blocking=blocking,
     minimum_duts=minimum_duts,
     timeout_sec=timeout_sec,
-    pool=pool,
-    async=async,
     warn_only=warn_only,
     critical=critical,
-    priority=priority,
     file_bugs=file_bugs,
     retry=retry,
     max_retries=max_retries,
@@ -164,7 +152,6 @@ def standard_bvt_inline():
   """
   return _hw_test_config(
     suite_name='bvt-inline',
-    blocking=False,
     minimum_duts=4)
 
 
@@ -176,7 +163,6 @@ def standard_bvt_cq():
   """
   return _hw_test_config(
     suite_name='bvt-cq',
-    blocking=False,
     minimum_duts=4)
 
 
@@ -188,7 +174,6 @@ def standard_bvt_tast_cq():
   """
   return _hw_test_config(
     suite_name='bvt-tast-cq',
-    blocking=False,
     minimum_duts=1)
 
 
@@ -200,7 +185,6 @@ def standard_bvt_arc():
   """
   return _hw_test_config(
     suite_name='bvt-arc',
-    blocking=False,
     minimum_duts=4)
 
 
