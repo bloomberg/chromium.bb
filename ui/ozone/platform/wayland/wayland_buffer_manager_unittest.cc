@@ -141,11 +141,11 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
   EXPECT_FALSE(manager->DestroyBuffer(kBufferId2));
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandBufferManagerTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandBufferManagerTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandBufferManagerTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandBufferManagerTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

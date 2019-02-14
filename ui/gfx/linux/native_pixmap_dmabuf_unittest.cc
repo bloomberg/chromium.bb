@@ -34,10 +34,10 @@ class NativePixmapDmaBufTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(ConvertTest,
-                        NativePixmapDmaBufTest,
-                        ::testing::Values(gfx::BufferFormat::RGBX_8888,
-                                          gfx::BufferFormat::YVU_420));
+INSTANTIATE_TEST_SUITE_P(ConvertTest,
+                         NativePixmapDmaBufTest,
+                         ::testing::Values(gfx::BufferFormat::RGBX_8888,
+                                           gfx::BufferFormat::YVU_420));
 
 // Verifies NativePixmapDmaBuf conversion from and to NativePixmapHandle.
 TEST_P(NativePixmapDmaBufTest, Convert) {

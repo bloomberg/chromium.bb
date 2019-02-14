@@ -266,9 +266,9 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
 
 // All tests are run with three different proxy types: HTTP, HTTPS (non-SPDY)
 // and SPDY.
-INSTANTIATE_TEST_CASE_P(HttpProxyType,
-                        HttpProxyConnectJobTest,
-                        ::testing::Values(HTTP, HTTPS, SPDY));
+INSTANTIATE_TEST_SUITE_P(HttpProxyType,
+                         HttpProxyConnectJobTest,
+                         ::testing::Values(HTTP, HTTPS, SPDY));
 
 TEST_P(HttpProxyConnectJobTest, NoTunnel) {
   InitProxyDelegate();

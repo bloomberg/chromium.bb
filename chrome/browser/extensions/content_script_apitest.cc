@@ -969,10 +969,10 @@ IN_PROC_BROWSER_TEST_P(ContentScriptMessagingApiTest, Test) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/messaging")) << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ContentScriptMessagingApiTest,
-                        testing::Values(BindingsType::kNative,
-                                        BindingsType::kJavaScript));
+INSTANTIATE_TEST_SUITE_P(,
+                         ContentScriptMessagingApiTest,
+                         testing::Values(BindingsType::kNative,
+                                         BindingsType::kJavaScript));
 
 // Test fixture which sets a custom NTP Page.
 // TODO(karandeepb): Similar logic to set up a custom NTP is used elsewhere as

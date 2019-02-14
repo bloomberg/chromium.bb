@@ -225,10 +225,10 @@ TEST_P(CanMakePaymentTest, ReturnCanMakePayment) {
   EXPECT_EQ("true", captor);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticCanMakePaymentTest,
-                        CanMakePaymentTest,
-                        ::testing::Values(HasEnrolledInstrumentEnabled::kYes,
-                                          HasEnrolledInstrumentEnabled::kNo));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticCanMakePaymentTest,
+                         CanMakePaymentTest,
+                         ::testing::Values(HasEnrolledInstrumentEnabled::kYes,
+                                           HasEnrolledInstrumentEnabled::kNo));
 
 }  // namespace
 }  // namespace blink
