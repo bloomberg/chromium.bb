@@ -19,12 +19,24 @@
 #include "ui/views/layout/box_layout.h"
 
 // static
+IncognitoWindowCountView*
+    IncognitoWindowCountView::incognito_window_counter_bubble_ = nullptr;
+
+// static
 void IncognitoWindowCountView::ShowBubble(views::Button* anchor_button,
                                           Browser* browser,
                                           int incognito_window_count) {
   // The IncognitoWindowCountView is self-owned, it deletes itself when the
   // widget is closed or the parent browser is destroyed.
-  new IncognitoWindowCountView(anchor_button, browser, incognito_window_count);
+  if (!IsShowing()) {
+    new IncognitoWindowCountView(anchor_button, browser,
+                                 incognito_window_count);
+  }
+}
+
+// static
+bool IncognitoWindowCountView::IsShowing() {
+  return incognito_window_counter_bubble_ != nullptr;
 }
 
 IncognitoWindowCountView::IncognitoWindowCountView(views::Button* anchor_button,
@@ -35,6 +47,8 @@ IncognitoWindowCountView::IncognitoWindowCountView(views::Button* anchor_button,
       browser_(browser),
       browser_list_observer_(this),
       weak_ptr_factory_(this) {
+  DCHECK(incognito_window_counter_bubble_ == nullptr);
+  incognito_window_counter_bubble_ = this;
   browser_list_observer_.Add(BrowserList::GetInstance());
 
   // The lifetime of this bubble is tied to the lifetime of the browser.
@@ -47,7 +61,9 @@ IncognitoWindowCountView::IncognitoWindowCountView(views::Button* anchor_button,
       chrome::DialogIdentifier::INCOGNITO_WINDOW_COUNTER);
 }
 
-IncognitoWindowCountView::~IncognitoWindowCountView() {}
+IncognitoWindowCountView::~IncognitoWindowCountView() {
+  incognito_window_counter_bubble_ = nullptr;
+}
 
 void IncognitoWindowCountView::OnBrowserRemoved(Browser* browser) {
   if (browser_ == browser)

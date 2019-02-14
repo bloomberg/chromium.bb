@@ -25,6 +25,8 @@ class IncognitoWindowCountView : public views::BubbleDialogDelegateView,
                          Browser* browser,
                          int incognito_window_count);
 
+  static bool IsShowing();
+
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
   void Init() override;
@@ -45,6 +47,8 @@ class IncognitoWindowCountView : public views::BubbleDialogDelegateView,
 
   int incognito_window_count_;
   Browser* const browser_;
+
+  static IncognitoWindowCountView* incognito_window_counter_bubble_;
 
   ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
   base::WeakPtrFactory<IncognitoWindowCountView> weak_ptr_factory_{this};

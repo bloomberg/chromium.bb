@@ -162,10 +162,14 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
   if (IsIncognitoCounterActive()) {
-    IncognitoWindowCountView::ShowBubble(
-        this, browser_,
-        BrowserList::GetIncognitoSessionsActiveForProfile(profile_));
+    if (!IncognitoWindowCountView::IsShowing()) {
+      IncognitoWindowCountView::ShowBubble(
+          this, browser_,
+          BrowserList::GetIncognitoSessionsActiveForProfile(profile_));
+    }
   } else {
+    // TODO(https://crbug.com/896235): Call IncognitoWindowCountView::ShowBubble
+    // from this ShowAvatarBubbleFromAvatarButton.
     browser_->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
         signin::ManageAccountsParams(),
