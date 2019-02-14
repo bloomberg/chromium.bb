@@ -122,6 +122,14 @@ void NudgeTracker::RecordSuccessfulSyncCycle(ModelTypeSet types) {
   }
 }
 
+void NudgeTracker::RecordInitialSyncDone(ModelTypeSet types) {
+  for (ModelType type : types) {
+    TypeTrackerMap::const_iterator tracker_it = type_trackers_.find(type);
+    DCHECK(tracker_it != type_trackers_.end()) << ModelTypeToString(type);
+    tracker_it->second->RecordInitialSyncDone();
+  }
+}
+
 base::TimeDelta NudgeTracker::RecordLocalChange(ModelTypeSet types) {
   // Start with the longest delay.
   base::TimeDelta delay =
