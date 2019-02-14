@@ -78,7 +78,7 @@
 // To use MAYBE_EME in a parameterized test fixture, don't directly use TEST_P
 // (because "MAYBE_EME" will literally be used as part of the test name).
 // Instead, use this wrapper macro to ensure that this first level of  parameter
-// expansion is done before the INSTANTIATE_TEST_CASE_P macro is processed.
+// expansion is done before the INSTANTIATE_TEST_SUITE_P macro is processed.
 // For precedent, see similar IN_PROC_BROWSER_TEST_P definition.
 #define MAYBE_EME_TEST_P(fixture, test) TEST_P(fixture, test)
 
@@ -582,9 +582,9 @@ TEST_P(BasicMSEPlaybackTest, NewByPts_PlayToEnd) {
 
 const PlaybackTestData kOpenCodecsTests[] = {{"bear-vp9-i422.webm", 0, 2736}};
 
-INSTANTIATE_TEST_CASE_P(OpenCodecs,
-                        BasicPlaybackTest,
-                        testing::ValuesIn(kOpenCodecsTests));
+INSTANTIATE_TEST_SUITE_P(OpenCodecs,
+                         BasicPlaybackTest,
+                         testing::ValuesIn(kOpenCodecsTests));
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
@@ -596,9 +596,9 @@ const PlaybackTestData kADTSTests[] = {
 };
 
 // TODO(chcunningham): Migrate other basic playback tests to TEST_P.
-INSTANTIATE_TEST_CASE_P(ProprietaryCodecs,
-                        BasicPlaybackTest,
-                        testing::ValuesIn(kADTSTests));
+INSTANTIATE_TEST_SUITE_P(ProprietaryCodecs,
+                         BasicPlaybackTest,
+                         testing::ValuesIn(kADTSTests));
 
 const MSEPlaybackTestData kMediaSourceADTSTests[] = {
     {"bear-audio-main-aac.aac", kAppendWholeFile, 2773},
@@ -608,9 +608,9 @@ const MSEPlaybackTestData kMediaSourceADTSTests[] = {
 };
 
 // TODO(chcunningham): Migrate other basic MSE playback tests to TEST_P.
-INSTANTIATE_TEST_CASE_P(ProprietaryCodecs,
-                        BasicMSEPlaybackTest,
-                        testing::ValuesIn(kMediaSourceADTSTests));
+INSTANTIATE_TEST_SUITE_P(ProprietaryCodecs,
+                         BasicMSEPlaybackTest,
+                         testing::ValuesIn(kMediaSourceADTSTests));
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
@@ -766,14 +766,14 @@ const MSEPlaybackTestData kMediaSourceVideoFiles[] = {
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioOnly,
     MSEChangeTypeTest,
     testing::Combine(testing::ValuesIn(kMediaSourceAudioFiles),
                      testing::ValuesIn(kMediaSourceAudioFiles)),
     MSEChangeTypeTest::PrintToStringParamName());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VideoOnly,
     MSEChangeTypeTest,
     testing::Combine(testing::ValuesIn(kMediaSourceVideoFiles),
@@ -1993,26 +1993,26 @@ TEST_P(Mp3FastSeekIntegrationTest, FastSeekAccuracy_MP3) {
 }
 
 // CBR seeks should always be fast and accurate.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CBRSeek_HasTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-has-TOC.mp3",
                                         "-0.58,0.61,3.08,2.55,0.90,-1.20,")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CBRSeeks_NoTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-no-TOC.mp3",
                                         "1.16,0.68,1.25,0.60,1.66,0.93,")));
 
 // VBR seeks can be fast *OR* accurate, but not both. We chose fast.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VBRSeeks_HasTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-has-TOC.mp3",
                                         "-0.08,-0.53,0.75,0.89,2.44,0.73,")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VBRSeeks_NoTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-no-TOC.mp3",
@@ -3041,11 +3041,11 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackPositiveStartTime) {
             demuxer_->GetStartTime());
 }
 
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        MSEPipelineIntegrationTest,
-                        ::testing::Values(BufferingApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        MSEPipelineIntegrationTest,
-                        ::testing::Values(BufferingApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         MSEPipelineIntegrationTest,
+                         ::testing::Values(BufferingApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         MSEPipelineIntegrationTest,
+                         ::testing::Values(BufferingApi::kNewByPts));
 
 }  // namespace media

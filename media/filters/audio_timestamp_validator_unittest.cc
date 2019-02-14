@@ -246,7 +246,7 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
 // Test with cartesian product of various output delay, codec delay, and front
 // discard values. These simulate configurations for different containers/codecs
 // which present different challenges when building timestamp expectations.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AudioTimestampValidatorTest,
     ::testing::Combine(

@@ -4727,11 +4727,11 @@ TEST_P(ChunkDemuxerTest, ZeroLengthFramesDropped) {
 
 // Though most of these ChunkDemuxerTests use WebM (where PTS==DTS), we still
 // need to ensure that both versions of the buffering API work.
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        ChunkDemuxerTest,
-                        Values(BufferingApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        ChunkDemuxerTest,
-                        Values(BufferingApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         ChunkDemuxerTest,
+                         Values(BufferingApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         ChunkDemuxerTest,
+                         Values(BufferingApi::kNewByPts));
 
 }  // namespace media

@@ -1210,11 +1210,12 @@ TEST_P(Mp3SeekFFmpegDemuxerTest, TestFastSeek) {
 // MP3s should seek quickly without sequentially reading up to the seek point.
 // VBR vs CBR and the presence/absence of TOC influence the seeking algorithm.
 // See http://crbug.com/530043 and FFmpeg flag AVFMT_FLAG_FAST_SEEK.
-INSTANTIATE_TEST_CASE_P(, Mp3SeekFFmpegDemuxerTest,
-                        ::testing::Values("bear-audio-10s-CBR-has-TOC.mp3",
-                                          "bear-audio-10s-CBR-no-TOC.mp3",
-                                          "bear-audio-10s-VBR-has-TOC.mp3",
-                                          "bear-audio-10s-VBR-no-TOC.mp3"));
+INSTANTIATE_TEST_SUITE_P(,
+                         Mp3SeekFFmpegDemuxerTest,
+                         ::testing::Values("bear-audio-10s-CBR-has-TOC.mp3",
+                                           "bear-audio-10s-CBR-no-TOC.mp3",
+                                           "bear-audio-10s-VBR-has-TOC.mp3",
+                                           "bear-audio-10s-VBR-no-TOC.mp3"));
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 static void ValidateAnnexB(DemuxerStream* stream,

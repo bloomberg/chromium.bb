@@ -227,7 +227,7 @@ static const char* kDemuxerTestFiles[] {
 
 // For simplicity we only test containers with above 2% daily usage as measured
 // by the Media.DetectedContainer histogram.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     DemuxerPerfTest,
     testing::ValuesIn(kDemuxerTestFiles));

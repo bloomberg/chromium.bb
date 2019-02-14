@@ -161,7 +161,7 @@ TEST_P(AudioLatencyTest, ExactBufferSizes) {
   TestExactBufferSizes();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     AudioLatencyTest,
 #if defined(OS_WIN)
@@ -187,5 +187,5 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(std::make_tuple(44100, 256, 0, 0),
                     std::make_tuple(44100, 440, 0, 0))
 #endif
-        );
+);
 }  // namespace media

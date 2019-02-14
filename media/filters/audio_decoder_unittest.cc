@@ -642,15 +642,15 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
   EXPECT_EQ(DecodeStatus::DECODE_ERROR, last_decode_status());
 }
 
-INSTANTIATE_TEST_CASE_P(FFmpeg,
-                        AudioDecoderTest,
-                        Combine(Values(FFMPEG), ValuesIn(kFFmpegTestParams)));
+INSTANTIATE_TEST_SUITE_P(FFmpeg,
+                         AudioDecoderTest,
+                         Combine(Values(FFMPEG), ValuesIn(kFFmpegTestParams)));
 
 #if defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(MediaCodec,
-                        AudioDecoderTest,
-                        Combine(Values(MEDIA_CODEC),
-                                ValuesIn(kMediaCodecTestParams)));
+INSTANTIATE_TEST_SUITE_P(MediaCodec,
+                         AudioDecoderTest,
+                         Combine(Values(MEDIA_CODEC),
+                                 ValuesIn(kMediaCodecTestParams)));
 #endif  // defined(OS_ANDROID)
 
 }  // namespace media

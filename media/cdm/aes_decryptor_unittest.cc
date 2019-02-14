@@ -1083,14 +1083,14 @@ TEST_P(AesDecryptorTest, RandomSessionIDs) {
   EXPECT_EQ(kNumIterations, seen_sessions.size());
 }
 
-INSTANTIATE_TEST_CASE_P(AesDecryptor,
-                        AesDecryptorTest,
-                        testing::Values(TestType::kAesDecryptor));
+INSTANTIATE_TEST_SUITE_P(AesDecryptor,
+                         AesDecryptorTest,
+                         testing::Values(TestType::kAesDecryptor));
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-INSTANTIATE_TEST_CASE_P(CdmAdapter,
-                        AesDecryptorTest,
-                        testing::Values(TestType::kCdmAdapter));
+INSTANTIATE_TEST_SUITE_P(CdmAdapter,
+                         AesDecryptorTest,
+                         testing::Values(TestType::kCdmAdapter));
 #endif
 
 // TODO(jrummell): Once MojoCdm/MojoCdmService/MojoDecryptor/

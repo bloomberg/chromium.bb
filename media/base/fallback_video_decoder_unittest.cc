@@ -82,9 +82,9 @@ class FallbackVideoDecoderUnittest : public ::testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(FallbackVideoDecoderUnittest);
 };
 
-INSTANTIATE_TEST_CASE_P(DoesPreferredInitFail,
-                        FallbackVideoDecoderUnittest,
-                        testing::ValuesIn({true, false}));
+INSTANTIATE_TEST_SUITE_P(DoesPreferredInitFail,
+                         FallbackVideoDecoderUnittest,
+                         testing::ValuesIn({true, false}));
 
 #define EXPECT_ON_CORRECT_DECODER(method)     \
   if (PreferredShouldSucceed())               \

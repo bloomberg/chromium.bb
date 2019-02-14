@@ -1031,18 +1031,18 @@ static std::vector<VideoCodec> GetVp8IfAvailable() {
              : std::vector<VideoCodec>();
 }
 
-INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderTest,
-                        MediaCodecVideoDecoderTest,
-                        testing::ValuesIn(GetTestList()));
+INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderTest,
+                         MediaCodecVideoDecoderTest,
+                         testing::ValuesIn(GetTestList()));
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderH264Test,
-                        MediaCodecVideoDecoderH264Test,
-                        testing::ValuesIn(GetH264IfAvailable()));
+INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderH264Test,
+                         MediaCodecVideoDecoderH264Test,
+                         testing::ValuesIn(GetH264IfAvailable()));
 #endif
 
-INSTANTIATE_TEST_CASE_P(MediaCodecVideoDecoderVp8Test,
-                        MediaCodecVideoDecoderVp8Test,
-                        testing::ValuesIn(GetVp8IfAvailable()));
+INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderVp8Test,
+                         MediaCodecVideoDecoderVp8Test,
+                         testing::ValuesIn(GetVp8IfAvailable()));
 
 }  // namespace media

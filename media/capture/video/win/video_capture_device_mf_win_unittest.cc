@@ -1275,9 +1275,9 @@ const DepthDeviceParams kDepthCamerasParams[] = {
     {kMediaSubTypeINVZ, true, false},
     {MFVideoFormat_D16, true, true}};
 
-INSTANTIATE_TEST_CASE_P(DepthCameraDeviceMFWinTests,
-                        DepthCameraDeviceMFWinTest,
-                        testing::ValuesIn(kDepthCamerasParams));
+INSTANTIATE_TEST_SUITE_P(DepthCameraDeviceMFWinTests,
+                         DepthCameraDeviceMFWinTest,
+                         testing::ValuesIn(kDepthCamerasParams));
 
 // Given an |IMFCaptureSource| offering a video stream with subtype Y16, Z16,
 // INVZ or D16, when allocating and starting |VideoCaptureDevice| expect the MF

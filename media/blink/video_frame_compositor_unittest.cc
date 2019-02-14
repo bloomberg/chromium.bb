@@ -341,8 +341,8 @@ TEST_P(VideoFrameCompositorTest, UpdateCurrentFrameIfStale) {
   StopVideoRendererSink(false);
 }
 
-INSTANTIATE_TEST_CASE_P(SubmitterEnabled,
-                        VideoFrameCompositorTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(SubmitterEnabled,
+                         VideoFrameCompositorTest,
+                         ::testing::Bool());
 
 }  // namespace media

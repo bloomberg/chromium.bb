@@ -753,9 +753,9 @@ MatrixRotationTestCaseParam rotation_test_cases[6] = {
     {1, 1, VIDEO_ROTATION_0},     // Error case
     {5, 5, VIDEO_ROTATION_0},     // Error case
 };
-INSTANTIATE_TEST_CASE_P(CheckMath,
-                        MP4StreamParserRotationMatrixEvaluatorTest,
-                        testing::ValuesIn(rotation_test_cases));
+INSTANTIATE_TEST_SUITE_P(CheckMath,
+                         MP4StreamParserRotationMatrixEvaluatorTest,
+                         testing::ValuesIn(rotation_test_cases));
 
 }  // namespace mp4
 }  // namespace media

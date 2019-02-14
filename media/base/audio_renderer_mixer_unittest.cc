@@ -525,7 +525,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   mixer_inputs_[0]->Stop();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     AudioRendererMixerTest,
     testing::Values(
@@ -559,7 +559,7 @@ INSTANTIATE_TEST_CASE_P(
 // Test cases for behavior which is independent of parameters.  Values() doesn't
 // support single item lists and we don't want these test cases to run for every
 // parameter set.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     AudioRendererMixerBehavioralTest,
     testing::ValuesIn(std::vector<AudioRendererMixerTestData>(

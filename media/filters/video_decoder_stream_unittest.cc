@@ -496,7 +496,7 @@ class VideoDecoderStreamTest
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderStreamTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Clear,
     VideoDecoderStreamTest,
     ::testing::Values(VideoDecoderStreamTestParams(false, false, false, 0, 1),
@@ -505,19 +505,19 @@ INSTANTIATE_TEST_CASE_P(
                       VideoDecoderStreamTestParams(false, false, true, 0, 1),
                       VideoDecoderStreamTestParams(false, false, true, 3, 1)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     EncryptedWithDecryptor,
     VideoDecoderStreamTest,
     ::testing::Values(VideoDecoderStreamTestParams(true, true, false, 7, 1),
                       VideoDecoderStreamTestParams(true, true, true, 7, 1)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     EncryptedWithoutDecryptor,
     VideoDecoderStreamTest,
     ::testing::Values(VideoDecoderStreamTestParams(true, false, false, 7, 1),
                       VideoDecoderStreamTestParams(true, false, true, 7, 1)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Clear_Parallel,
     VideoDecoderStreamTest,
     ::testing::Values(VideoDecoderStreamTestParams(false, false, false, 0, 3),

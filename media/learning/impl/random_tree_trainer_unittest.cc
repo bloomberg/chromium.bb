@@ -227,10 +227,10 @@ TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(RandomTreeTest,
-                        RandomTreeTest,
-                        testing::ValuesIn({LearningTask::Ordering::kUnordered,
-                                           LearningTask::Ordering::kNumeric}));
+INSTANTIATE_TEST_SUITE_P(RandomTreeTest,
+                         RandomTreeTest,
+                         testing::ValuesIn({LearningTask::Ordering::kUnordered,
+                                            LearningTask::Ordering::kNumeric}));
 
 }  // namespace learning
 }  // namespace media

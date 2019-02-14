@@ -225,7 +225,7 @@ static const int64_t kTwoBigUnderruns[] = {10, 10, 10,    10, -712, 10,
 static const int64_t kMixedUnderruns[] = {31, -64, 4, 15, 9,  26, -53, 5,   8,
                                           -9, 7,   9, 32, 38, -4, 62,  -64, 3};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioEncoderTestScenarios,
     AudioEncoderTest,
     ::testing::Values(

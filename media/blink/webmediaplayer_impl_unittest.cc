@@ -1788,7 +1788,7 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   EXPECT_TRUE(IsDisableVideoTrackPending());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BackgroundBehaviorTestInstances,
     WebMediaPlayerImplBackgroundBehaviorTest,
     ::testing::Combine(

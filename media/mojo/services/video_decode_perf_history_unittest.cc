@@ -736,8 +736,8 @@ TEST_P(VideoDecodePerfHistoryParamTest, SmoothThresholdFinchOverride) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(VaryDBInitTiming,
-                        VideoDecodePerfHistoryParamTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(VaryDBInitTiming,
+                         VideoDecodePerfHistoryParamTest,
+                         ::testing::Values(true, false));
 
 }  // namespace media

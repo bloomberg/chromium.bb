@@ -5904,11 +5904,11 @@ TEST_P(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        SourceBufferStreamTest,
-                        Values(BufferingApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        SourceBufferStreamTest,
-                        Values(BufferingApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         SourceBufferStreamTest,
+                         Values(BufferingApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         SourceBufferStreamTest,
+                         Values(BufferingApi::kNewByPts));
 
 }  // namespace media
