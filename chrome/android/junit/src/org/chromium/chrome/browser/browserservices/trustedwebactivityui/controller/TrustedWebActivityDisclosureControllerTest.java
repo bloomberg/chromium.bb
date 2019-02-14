@@ -14,8 +14,6 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_FAILURE;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_SUCCESS;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +30,7 @@ import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 
@@ -108,11 +107,11 @@ public class TrustedWebActivityDisclosureControllerTest {
     }
 
     private void enterVerifiedOrigin() {
-        setVerificationState(new VerificationState(ORIGIN, VERIFICATION_SUCCESS));
+        setVerificationState(new VerificationState(ORIGIN, VerificationStatus.SUCCESS));
     }
 
     private void exitVerifiedOrigin() {
-        setVerificationState(new VerificationState(ORIGIN, VERIFICATION_FAILURE));
+        setVerificationState(new VerificationState(ORIGIN, VerificationStatus.FAILURE));
     }
 
     private void setVerificationState(VerificationState state) {

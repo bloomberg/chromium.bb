@@ -18,11 +18,11 @@ import java.util.concurrent.TimeUnit;
  * Class to contain metrics recording constants and behaviour for Browser Services.
  */
 public class BrowserServicesMetrics {
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({VerificationResult.ONLINE_SUCCESS, VerificationResult.ONLINE_FAILURE,
             VerificationResult.OFFLINE_SUCCESS, VerificationResult.OFFLINE_FAILURE,
             VerificationResult.HTTPS_FAILURE, VerificationResult.REQUEST_FAILURE,
             VerificationResult.CACHED_SUCCESS})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface VerificationResult {
         // Don't reuse values or reorder values. If you add something new, change NUM_ENTRIES as
         // well.

@@ -16,10 +16,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_FAILURE;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_PENDING;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_SUCCESS;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,6 +33,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
@@ -112,7 +109,7 @@ public class TrustedWebActivityVerifierTest {
     public void statusIsPending_UntilVerificationFinished() {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
-        assertStatus(VERIFICATION_PENDING);
+        assertStatus(VerificationStatus.PENDING);
     }
 
     @Test
@@ -120,7 +117,7 @@ public class TrustedWebActivityVerifierTest {
         setInitialUrl(TRUSTED_ORIGIN_PAGE1);
         mVerifier.onFinishNativeInitialization();
         mOriginVerifier.finishCurrentVerification();
-        assertStatus(VERIFICATION_SUCCESS);
+        assertStatus(VerificationStatus.SUCCESS);
     }
 
     @Test
@@ -128,7 +125,7 @@ public class TrustedWebActivityVerifierTest {
         setInitialUrl(UNTRUSTED_PAGE);
         mVerifier.onFinishNativeInitialization();
         mOriginVerifier.finishCurrentVerification();
-        assertStatus(VERIFICATION_FAILURE);
+        assertStatus(VerificationStatus.FAILURE);
     }
 
     @Test
@@ -197,7 +194,7 @@ public class TrustedWebActivityVerifierTest {
         mVerifier.onFinishNativeInitialization();
         navigateToUrl(UNTRUSTED_PAGE);
         mOriginVerifier.finishCurrentVerification();
-        assertStatus(VERIFICATION_FAILURE);
+        assertStatus(VerificationStatus.FAILURE);
     }
 
     @Test
@@ -208,7 +205,7 @@ public class TrustedWebActivityVerifierTest {
         mOriginVerifier.finishCurrentVerification();
         navigateToUrl(TRUSTED_ORIGIN_PAGE1);
         mOriginVerifier.finishCurrentVerification();
-        assertStatus(VERIFICATION_SUCCESS);
+        assertStatus(VerificationStatus.SUCCESS);
     }
 
     private void assertStatus(@TrustedWebActivityVerifier.VerificationStatus int status) {
@@ -276,7 +273,5 @@ public class TrustedWebActivityVerifierTest {
             mCurrentListener = null;
             mCurrentOrigin = null;
         }
-
     }
-
 }

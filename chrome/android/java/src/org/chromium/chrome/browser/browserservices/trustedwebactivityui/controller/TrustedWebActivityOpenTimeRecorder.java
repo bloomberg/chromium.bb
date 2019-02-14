@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_PENDING;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_SUCCESS;
-
 import android.os.SystemClock;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
@@ -61,10 +59,10 @@ public class TrustedWebActivityOpenTimeRecorder implements PauseResumeWithNative
 
     private void onVerificationStateChanged() {
         VerificationState state = mVerifier.getState();
-        if (state == null || state.status == VERIFICATION_PENDING) {
+        if (state == null || state.status == VerificationStatus.PENDING) {
             return;
         }
-        boolean inVerifiedOrigin = state.status == VERIFICATION_SUCCESS;
+        boolean inVerifiedOrigin = state.status == VerificationStatus.SUCCESS;
         if (inVerifiedOrigin == mInVerifiedOrigin) {
             return;
         }

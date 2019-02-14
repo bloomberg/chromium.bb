@@ -58,13 +58,13 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
 
     private final ObserverList<Runnable> mObservers = new ObserverList<>();
 
+    @IntDef({VerificationStatus.PENDING, VerificationStatus.SUCCESS, VerificationStatus.FAILURE})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({VERIFICATION_PENDING, VERIFICATION_SUCCESS, VERIFICATION_FAILURE})
-    public @interface VerificationStatus {}
-
-    public static final int VERIFICATION_PENDING = 0;
-    public static final int VERIFICATION_SUCCESS = 1;
-    public static final int VERIFICATION_FAILURE = 2;
+    public @interface VerificationStatus {
+        int PENDING = 0;
+        int SUCCESS = 1;
+        int FAILURE = 2;
+    }
 
     /** Represents the verification state of currently viewed web page. */
     public static class VerificationState {
@@ -146,7 +146,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         Origin initialOrigin = new Origin(mIntentDataProvider.getUrlToLoad());
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
             mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
-            updateState(initialOrigin, VERIFICATION_FAILURE);
+            updateState(initialOrigin, VerificationStatus.FAILURE);
             return;
         }
 
@@ -183,13 +183,13 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
     private void verify(Origin origin) {
         if (mOriginsToVerify.contains(origin)) {
             // Do verification bypassing the cache.
-            updateState(origin, VERIFICATION_PENDING);
+            updateState(origin, VerificationStatus.PENDING);
             mOriginVerifier.start((packageName2, origin2, verified, online) ->
                     onVerificationResult(origin, verified), origin);
         } else {
             // Look into cache only
             boolean verified = mOriginVerifier.wasPreviouslyVerified(origin);
-            updateState(origin, verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
+            updateState(origin, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
         }
     }
 
@@ -199,7 +199,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         boolean stillOnSameOrigin =
                 origin.equals(new Origin(mActivityTabProvider.getActivityTab().getUrl()));
         if (stillOnSameOrigin) {
-            updateState(origin, verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
+            updateState(origin, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
         }
     }
 
