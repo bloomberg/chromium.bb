@@ -950,6 +950,7 @@
         'VirtualMachinesAllowed',
         'CrostiniAllowed',
         'DeviceUnaffiliatedCrostiniAllowed',
+        'CrostiniExportImportUIAllowed',
       ]
     },
     {
@@ -12769,6 +12770,21 @@
       When this policy is changed to false, it applies to starting new Crostini containers but does not shut down containers which are already running.''',
     },
     {
+      'name': 'CrostiniExportImportUIAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:74-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 523,
+      'caption': '''User is enabled to export / import Crostini containers via the UI''',
+      'tags': ['system-security'],
+      'desc': '''If the policy is set to false, the export / import UI will not be available to users, however it is still possible to use 'lxc' commands directly in the virtual machine to export and import container images.''',
+    },
+    {
       'name': 'SafeBrowsingWhitelistDomains',
       'type': 'list',
       'schema': {
@@ -14821,5 +14837,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  522
+  'highest_id_currently_used':  523
 }
