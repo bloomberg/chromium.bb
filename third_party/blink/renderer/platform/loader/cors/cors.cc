@@ -94,6 +94,11 @@ class HTTPHeaderNameListParser {
     while (true) {
       ConsumeSpaces();
 
+      if (pos_ == value_.length() && !output.empty()) {
+        output.insert(std::string());
+        return;
+      }
+
       size_t token_start = pos_;
       ConsumeTokenChars();
       size_t token_size = pos_ - token_start;

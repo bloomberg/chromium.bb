@@ -35,6 +35,8 @@ TEST_F(CorsExposedHeadersTest, ValidInput) {
 
   EXPECT_EQ(Parse(CredentialsMode::kOmit, " \t   \t\t a"),
             WebHTTPHeaderSet({"a"}));
+
+  EXPECT_EQ(Parse(CredentialsMode::kOmit, "a , "), WebHTTPHeaderSet({"a", ""}));
 }
 
 TEST_F(CorsExposedHeadersTest, DuplicatedEntries) {
@@ -56,8 +58,6 @@ TEST_F(CorsExposedHeadersTest, InvalidInput) {
   EXPECT_TRUE(Parse(CredentialsMode::kOmit, " , ").empty());
 
   EXPECT_TRUE(Parse(CredentialsMode::kOmit, " , a").empty());
-
-  EXPECT_TRUE(Parse(CredentialsMode::kOmit, "a , ").empty());
 
   EXPECT_TRUE(Parse(CredentialsMode::kOmit, "").empty());
 
