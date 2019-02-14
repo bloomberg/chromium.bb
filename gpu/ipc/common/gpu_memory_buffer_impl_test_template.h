@@ -81,7 +81,7 @@ class GpuMemoryBufferImplCreateTest : public testing::Test {
   GpuMemoryBufferSupport gpu_memory_buffer_support_;
 };
 
-TYPED_TEST_CASE_P(GpuMemoryBufferImplTest);
+TYPED_TEST_SUITE_P(GpuMemoryBufferImplTest);
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
   const gfx::Size kBufferSize(8, 8);
@@ -298,13 +298,13 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
 
 // The GpuMemoryBufferImplTest test case verifies behavior that is expected
 // from a GpuMemoryBuffer implementation in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplTest,
-                           CreateFromHandle,
-                           Map,
-                           PersistentMap,
-                           SerializeAndDeserialize);
+REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferImplTest,
+                            CreateFromHandle,
+                            Map,
+                            PersistentMap,
+                            SerializeAndDeserialize);
 
-TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest);
+TYPED_TEST_SUITE_P(GpuMemoryBufferImplCreateTest);
 
 TYPED_TEST_P(GpuMemoryBufferImplCreateTest, Create) {
   const gfx::GpuMemoryBufferId kBufferId(1);
@@ -332,7 +332,7 @@ TYPED_TEST_P(GpuMemoryBufferImplCreateTest, Create) {
 // The GpuMemoryBufferImplCreateTest test case verifies behavior that is
 // expected from a GpuMemoryBuffer Create() implementation in order to be
 // conformant.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest, Create);
+REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferImplCreateTest, Create);
 
 }  // namespace gpu
 

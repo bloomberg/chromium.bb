@@ -439,15 +439,15 @@ TEST_F(GpuMemoryBufferTestEGL, GLCreateImageCHROMIUMFromNativePixmap) {
 }
 #endif  // defined(OS_LINUX)
 
-INSTANTIATE_TEST_CASE_P(GpuMemoryBufferTests,
-                        GpuMemoryBufferTest,
-                        ::testing::Values(gfx::BufferFormat::R_8,
-                                          gfx::BufferFormat::BGR_565,
-                                          gfx::BufferFormat::RGBA_4444,
-                                          gfx::BufferFormat::RGBA_8888,
-                                          gfx::BufferFormat::RGBX_1010102,
-                                          gfx::BufferFormat::BGRA_8888,
-                                          gfx::BufferFormat::RGBA_F16));
+INSTANTIATE_TEST_SUITE_P(GpuMemoryBufferTests,
+                         GpuMemoryBufferTest,
+                         ::testing::Values(gfx::BufferFormat::R_8,
+                                           gfx::BufferFormat::BGR_565,
+                                           gfx::BufferFormat::RGBA_4444,
+                                           gfx::BufferFormat::RGBA_8888,
+                                           gfx::BufferFormat::RGBX_1010102,
+                                           gfx::BufferFormat::BGRA_8888,
+                                           gfx::BufferFormat::RGBA_F16));
 
 }  // namespace gles2
 }  // namespace gpu

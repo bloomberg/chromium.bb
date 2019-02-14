@@ -8,9 +8,9 @@
 namespace gpu {
 namespace {
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryNativePixmap,
-                              GpuMemoryBufferFactoryTest,
-                              GpuMemoryBufferFactoryNativePixmap);
+INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryNativePixmap,
+                               GpuMemoryBufferFactoryTest,
+                               GpuMemoryBufferFactoryNativePixmap);
 
 }  // namespace
 }  // namespace gpu
