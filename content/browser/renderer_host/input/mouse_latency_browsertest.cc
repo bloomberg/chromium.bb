@@ -274,6 +274,24 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
     return trace_data_;
   }
 
+  std::string ShowTraceEventsWithId(const std::string& id_to_show,
+                                    const base::ListValue* traceEvents) {
+    std::stringstream stream;
+    for (size_t i = 0; i < traceEvents->GetSize(); ++i) {
+      const base::DictionaryValue* traceEvent;
+      if (!traceEvents->GetDictionary(i, &traceEvent))
+        continue;
+
+      std::string id;
+      if (!traceEvent->GetString("id", &id))
+        continue;
+
+      if (id == id_to_show)
+        stream << *traceEvent;
+    }
+    return stream.str();
+  }
+
   void AssertTraceIdsBeginAndEnd(const base::Value& trace_data,
                                  const std::string& trace_event_name) {
     const base::DictionaryValue* trace_data_dict;
@@ -301,7 +319,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 
     for (auto i : trace_ids) {
       // Each trace id should show up once for the begin, and once for the end.
-      EXPECT_EQ(2, i.second);
+      EXPECT_EQ(2, i.second) << ShowTraceEventsWithId(i.first, traceEvents);
     }
   }
 
@@ -387,16 +405,8 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
   AssertTraceIdsBeginAndEnd(trace_data, "InputLatency::MouseMove");
 }
 
-// TODO(crbug.com/923627): This test is flaky on Windows and Android.
-#if defined(OS_WIN) || defined(OS_ANDROID)
-#define MAYBE_CoalescedMouseWheelsCorrectlyTerminated \
-  DISABLED_CoalescedMouseWheelsCorrectlyTerminated
-#else
-#define MAYBE_CoalescedMouseWheelsCorrectlyTerminated \
-  CoalescedMouseWheelsCorrectlyTerminated
-#endif
 IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
-                       MAYBE_CoalescedMouseWheelsCorrectlyTerminated) {
+                       CoalescedMouseWheelsCorrectlyTerminated) {
   LoadURL();
 
   StartTracing();
