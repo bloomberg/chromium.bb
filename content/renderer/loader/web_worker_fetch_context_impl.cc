@@ -262,7 +262,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
       mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
 
   blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+  if (service_worker_container_host_) {
     service_worker_container_host_->CloneContainerHost(
         mojo::MakeRequest(&host_ptr_info));
   }
@@ -317,8 +317,10 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
     preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    service_worker_container_host_.Bind(
-        std::move(service_worker_container_host_info_));
+    if (service_worker_container_host_info_) {
+      service_worker_container_host_.Bind(
+          std::move(service_worker_container_host_info_));
+    }
 
     blink::mojom::BlobRegistryPtr blob_registry_ptr;
     service_manager_connection_->BindInterface(
@@ -533,6 +535,8 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
     web_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
     return;
   }
+  if (!service_worker_container_host_)
+    return;
 
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
   blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;

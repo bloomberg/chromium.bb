@@ -203,6 +203,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   // S13nServiceWorker:
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
+  // May be nullptr if the creating context was already being destructed, see
+  // ServiceWorkerProviderContext::OnNetworkProviderDestroyed().
   blink::mojom::ServiceWorkerContainerHostPtr service_worker_container_host_;
 
   // S13nServiceWorker:
