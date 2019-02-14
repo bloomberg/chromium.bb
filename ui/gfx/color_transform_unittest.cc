@@ -531,9 +531,9 @@ TEST_P(TransferTest, basicTest) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ColorSpace,
-                        TransferTest,
-                        testing::ValuesIn(simple_transfers));
+INSTANTIATE_TEST_SUITE_P(ColorSpace,
+                         TransferTest,
+                         testing::ValuesIn(simple_transfers));
 
 class NonInvertibleTransferTest
     : public testing::TestWithParam<ColorSpace::TransferID> {};
@@ -561,9 +561,9 @@ TEST_P(NonInvertibleTransferTest, basicTest) {
   from_linear->Transform(&tristim, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(ColorSpace,
-                        NonInvertibleTransferTest,
-                        testing::ValuesIn(noninvertible_transfers));
+INSTANTIATE_TEST_SUITE_P(ColorSpace,
+                         NonInvertibleTransferTest,
+                         testing::ValuesIn(noninvertible_transfers));
 
 class ExtendedTransferTest
     : public testing::TestWithParam<ColorSpace::TransferID> {};
@@ -592,9 +592,9 @@ TEST_P(ExtendedTransferTest, extendedTest) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ColorSpace,
-                        ExtendedTransferTest,
-                        testing::ValuesIn(extended_transfers));
+INSTANTIATE_TEST_SUITE_P(ColorSpace,
+                         ExtendedTransferTest,
+                         testing::ValuesIn(extended_transfers));
 
 typedef std::tuple<ColorSpace::PrimaryID,
                    ColorSpace::TransferID,
@@ -640,7 +640,7 @@ TEST_P(ColorSpaceTest, toXYZandBack) {
   EXPECT_NEAR(tristim.z(), 0.6f, 0.001f);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     A,
     ColorSpaceTest,
     testing::Combine(testing::ValuesIn(all_primaries),
@@ -649,7 +649,7 @@ INSTANTIATE_TEST_CASE_P(
                      testing::Values(ColorSpace::RangeID::LIMITED),
                      testing::ValuesIn(intents)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     B,
     ColorSpaceTest,
     testing::Combine(testing::Values(ColorSpace::PrimaryID::BT709),
@@ -658,7 +658,7 @@ INSTANTIATE_TEST_CASE_P(
                      testing::ValuesIn(all_ranges),
                      testing::ValuesIn(intents)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C,
     ColorSpaceTest,
     testing::Combine(testing::ValuesIn(all_primaries),

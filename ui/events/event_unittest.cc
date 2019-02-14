@@ -984,12 +984,12 @@ TEST_P(AltGraphEventTest, KeyEventAltGraphModifer) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WM_KEY,
     AltGraphEventTest,
     ::testing::Combine(::testing::Values(WM_KEYDOWN, WM_KEYUP),
                        ::testing::ValuesIn(kAltGraphEventTestCases)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     WM_CHAR,
     AltGraphEventTest,
     ::testing::Combine(::testing::Values(WM_CHAR),

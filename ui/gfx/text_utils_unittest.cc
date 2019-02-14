@@ -76,7 +76,7 @@ const RemoveAcceleratorCharData RemoveAcceleratorCharTest::kCases[] = {
      "MultibyteAccelerator_AfterMultibyteAccelerator"},
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     RemoveAcceleratorCharTest,
     testing::ValuesIn(RemoveAcceleratorCharTest::kCases),
@@ -157,7 +157,7 @@ const FindValidBoundaryData FindValidBoundaryBeforeTest::kCases[] = {
      "MiddleOfString_AfterCombiningSurrogate"},
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FindValidBoundaryBeforeTest,
     testing::ValuesIn(FindValidBoundaryBeforeTest::kCases),
@@ -230,7 +230,7 @@ const FindValidBoundaryData FindValidBoundaryAfterTest::kCases[] = {
      "MiddleOfString_AfterCombiningSurrogate"},
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FindValidBoundaryAfterTest,
     testing::ValuesIn(FindValidBoundaryAfterTest::kCases),

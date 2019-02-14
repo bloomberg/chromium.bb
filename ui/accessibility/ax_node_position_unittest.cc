@@ -1681,7 +1681,7 @@ TEST_P(AXPositionTestWithParam, TraverseTreeStartingWithAffinityUpstream) {
 // Instantiations of parameterized tests.
 //
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextWordStartPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -1746,7 +1746,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=Line <2>",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextWordStartPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -1812,7 +1812,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextWordStartPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -1859,7 +1859,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=5 "
                    "affinity=downstream annotated_text=Line <2>"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousWordStartPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -1947,7 +1947,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousWordStartPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2018,7 +2018,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousWordStartPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2063,7 +2063,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextWordEndPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2135,7 +2135,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=Line 2<>",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextWordEndPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2208,7 +2208,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextWordEndPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2253,7 +2253,7 @@ INSTANTIATE_TEST_CASE_P(
                   {"TextPosition anchor_id=9 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousWordEndPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2334,7 +2334,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=Button<>",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousWordEndPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2398,7 +2398,7 @@ INSTANTIATE_TEST_CASE_P(
                   {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousWordEndPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2438,7 +2438,7 @@ INSTANTIATE_TEST_CASE_P(
                   {"TextPosition anchor_id=9 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextLineStartPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2481,7 +2481,7 @@ INSTANTIATE_TEST_CASE_P(
                   4 /* text_offset */,
                   {"NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextLineStartPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2527,7 +2527,7 @@ INSTANTIATE_TEST_CASE_P(
                   {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextLineStartPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2566,7 +2566,7 @@ INSTANTIATE_TEST_CASE_P(
                   4 /* text_offset */,
                   {"NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineStartPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2624,7 +2624,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineStartPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2679,7 +2679,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineStartPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2726,7 +2726,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextLineEndPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2778,7 +2778,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=Line 2<>",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextLineEndPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2833,7 +2833,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreateNextLineEndPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2880,7 +2880,7 @@ INSTANTIATE_TEST_CASE_P(
                    "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineEndPositionWithBoundaryBehaviorCrossBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -2956,7 +2956,7 @@ INSTANTIATE_TEST_CASE_P(
                    "affinity=downstream annotated_text=Check box<>",
                    "NullPosition"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineEndPositionWithBoundaryBehaviorStopAtAnchorBoundary,
     AXPositionTestWithParam,
     testing::Values(
@@ -3025,7 +3025,7 @@ INSTANTIATE_TEST_CASE_P(
                   {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreatePreviousLineEndPositionWithBoundaryBehaviorStopIfAlreadyAtBoundary,
     AXPositionTestWithParam,
     testing::Values(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Note: This header doesn't use REGISTER_TYPED_TEST_CASE_P like most
+// Note: This header doesn't use REGISTER_TYPED_TEST_SUITE_P like most
 // type-parameterized gtests. There are lot of test cases in here that are only
 // enabled on certain platforms. However, preprocessor directives in macro
 // arguments result in undefined behavior (and don't work on MSVC). Instead,

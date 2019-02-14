@@ -102,21 +102,21 @@ using GLImageRGBTestTypes = testing::Types<
 // the test bots don't generally have that yet. For manual testing,
 // add: --gtest_also_run_disabled_tests -f 'GLImageAHardwareBuffer/*'
 
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageAHardwareBuffer,
-                              GLImageTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageAHardwareBuffer,
+                               GLImageTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageAHardwareBuffer,
-                              GLImageOddSizeTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageAHardwareBuffer,
+                               GLImageOddSizeTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageAHardwareBuffer,
-                              GLImageBindTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageAHardwareBuffer,
+                               GLImageBindTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageAHardwareBuffer,
-                              GLImageZeroInitializeTest,
-                              GLImageRGBTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageAHardwareBuffer,
+                               GLImageZeroInitializeTest,
+                               GLImageRGBTestTypes);
 
 }  // namespace
 }  // namespace gl

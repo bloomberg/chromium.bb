@@ -188,12 +188,15 @@ TEST(DataPackTest, LoadFromBufferV5) {
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
-INSTANTIATE_TEST_CASE_P(WriteBINARY, DataPackTest, ::testing::Values(
-    DataPack::BINARY));
-INSTANTIATE_TEST_CASE_P(WriteUTF8, DataPackTest, ::testing::Values(
-    DataPack::UTF8));
-INSTANTIATE_TEST_CASE_P(WriteUTF16, DataPackTest, ::testing::Values(
-    DataPack::UTF16));
+INSTANTIATE_TEST_SUITE_P(WriteBINARY,
+                         DataPackTest,
+                         ::testing::Values(DataPack::BINARY));
+INSTANTIATE_TEST_SUITE_P(WriteUTF8,
+                         DataPackTest,
+                         ::testing::Values(DataPack::UTF8));
+INSTANTIATE_TEST_SUITE_P(WriteUTF16,
+                         DataPackTest,
+                         ::testing::Values(DataPack::UTF16));
 
 TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   base::FilePath data_path;
