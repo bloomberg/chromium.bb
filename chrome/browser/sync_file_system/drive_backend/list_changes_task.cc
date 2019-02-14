@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -80,14 +81,10 @@ void ListChangesTask::DidListChanges(
   // google_apis::ChangeList can contain both FileResource and TeamDriveResource
   // entries. We only care about FileResource entries, so filter out any entries
   // that are TeamDriveReasource.
-  mutable_items->erase(
-      std::remove_if(
-          mutable_items->begin(), mutable_items->end(),
-          [](const auto& change_resource) {
-            return change_resource->type() ==
-                   google_apis::ChangeResource::ChangeType::TEAM_DRIVE;
-          }),
-      mutable_items->end());
+  base::EraseIf(*mutable_items, [](const auto& change_resource) {
+    return change_resource->type() ==
+           google_apis::ChangeResource::ChangeType::TEAM_DRIVE;
+  });
 
   change_list_.reserve(change_list_.size() + mutable_items->size());
 
