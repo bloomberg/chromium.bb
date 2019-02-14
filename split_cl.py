@@ -75,7 +75,7 @@ def AddUploadedByGitClSplitToDescription(description):
 
 def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
              description, comment, reviewers, changelist, cmd_upload,
-             cq_dry_run):
+             cq_dry_run, enable_auto_submit):
   """Uploads a CL with all changes to |files| in |refactor_branch|.
 
   Args:
@@ -90,6 +90,7 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
     changelist: The Changelist class.
     cmd_upload: The function associated with the git cl upload command.
     cq_dry_run: If CL uploads should also do a cq dry run.
+    enable_auto_submit: If CL uploads should also enable auto submit.
   """
   # Create a branch.
   if not CreateBranchForDirectory(
@@ -121,6 +122,8 @@ def UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
     upload_args.append('--cq-dry-run')
   if not comment:
     upload_args.append('--send-mail')
+  if enable_auto_submit:
+    upload_args.append('--enable-auto-submit')
   print 'Uploading CL for ' + directory + '.'
   cmd_upload(upload_args)
   if comment:
@@ -168,7 +171,7 @@ def PrintClInfo(cl_index, num_cls, directory, file_paths, description,
 
 
 def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
-            cq_dry_run):
+            cq_dry_run, enable_auto_submit):
   """"Splits a branch into smaller branches and uploads CLs.
 
   Args:
@@ -178,6 +181,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
     cmd_upload: The function associated with the git cl upload command.
     dry_run: Whether this is a dry run (no branches or CLs created).
     cq_dry_run: If CL uploads should also do a cq dry run.
+    enable_auto_submit: If CL uploads should also enable auto submit.
 
   Returns:
     0 in case of success. 1 in case of error.
@@ -236,7 +240,7 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload, dry_run,
       else:
         UploadCl(refactor_branch, refactor_branch_upstream, directory, files,
                  description, comment, reviewers, changelist, cmd_upload,
-                 cq_dry_run)
+                 cq_dry_run, enable_auto_submit)
 
     # Go back to the original branch.
     git.run('checkout', refactor_branch)

@@ -4604,6 +4604,11 @@ def CMDsplit(parser, args):
                          "infrastructure. Try to upload these not during high "
                          "load times (usually 11-3 Mountain View time). Email "
                          "infra-dev@chromium.org with any questions.")
+  parser.add_option('-a', '--enable-auto-submit', action='store_true',
+                    default=True,
+                    help='Sends your change to the CQ after an approval. Only '
+                         'works on repos that have the Auto-Submit label '
+                         'enabled')
   options, _ = parser.parse_args(args)
 
   if not options.description_file:
@@ -4614,7 +4619,7 @@ def CMDsplit(parser, args):
 
   return split_cl.SplitCl(options.description_file, options.comment_file,
                           Changelist, WrappedCMDupload, options.dry_run,
-                          options.cq_dry_run)
+                          options.cq_dry_run, options.enable_auto_submit)
 
 
 @subcommand.usage('DEPRECATED')
