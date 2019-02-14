@@ -116,7 +116,7 @@ void XmlDownloader::DoneParsing(ParsedXml xml) {
 }
 
 BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
-    : prefs_(profile->GetPrefs()),
+    : prefs_(profile),
       driver_(new AlternativeBrowserDriverImpl(&prefs_)),
       sitelist_(new BrowserSwitcherSitelistImpl(&prefs_)),
       weak_ptr_factory_(this) {
@@ -129,7 +129,11 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
   }
 }
 
-BrowserSwitcherService::~BrowserSwitcherService() {}
+BrowserSwitcherService::~BrowserSwitcherService() = default;
+
+void BrowserSwitcherService::Shutdown() {
+  prefs_.Shutdown();
+}
 
 AlternativeBrowserDriver* BrowserSwitcherService::driver() {
   return driver_.get();

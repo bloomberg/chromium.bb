@@ -59,6 +59,9 @@ class BrowserSwitcherService : public KeyedService {
   explicit BrowserSwitcherService(Profile* profile);
   ~BrowserSwitcherService() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   AlternativeBrowserDriver* driver();
   BrowserSwitcherSitelist* sitelist();
   const BrowserSwitcherPrefs& prefs() const;

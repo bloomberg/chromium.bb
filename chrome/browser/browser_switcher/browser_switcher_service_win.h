@@ -19,6 +19,8 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
   explicit BrowserSwitcherServiceWin(Profile* profile);
   ~BrowserSwitcherServiceWin() override;
 
+  void OnBrowserSwitcherPrefsChanged(BrowserSwitcherPrefs* prefs);
+
   static void SetIeemSitelistUrlForTesting(const std::string& url);
 
  private:
@@ -29,7 +31,18 @@ class BrowserSwitcherServiceWin : public BrowserSwitcherService {
 
   void OnIeemSitelistParsed(ParsedXml xml);
 
+  // Save the current prefs' state to the "cache.dat" file, to be read & used by
+  // the Internet Explorer BHO. This call does not block, it only posts a task
+  // to a worker thread.
+  void SavePrefsToFile() const;
+  // Delete the "cache.dat" file created by |SavePrefsToFile()|. This call does
+  // not block, it only posts a task to a worker thread.
+  void DeletePrefsFile() const;
+
   std::unique_ptr<XmlDownloader> ieem_downloader_;
+
+  std::unique_ptr<BrowserSwitcherPrefs::CallbackSubscription>
+      prefs_subscription_;
 
   base::WeakPtrFactory<BrowserSwitcherServiceWin> weak_ptr_factory_;
 
