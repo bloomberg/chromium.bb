@@ -164,13 +164,8 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
 #endif  // defined(OS_FUCHSIA)
 }
 
-// WebGPUInterface clients should not manipulate the front buffer.
-void WebGPUCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
-  LOG(ERROR) << "Called WebGPUCommandBufferStub::OnTakeFrontBuffer";
-}
-void WebGPUCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                                  bool is_lost) {
-  LOG(ERROR) << "Called WebGPUCommandBufferStub::OnReturnFrontBuffer";
+bool WebGPUCommandBufferStub::HandleMessage(const IPC::Message& message) {
+  return false;
 }
 
 void WebGPUCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}

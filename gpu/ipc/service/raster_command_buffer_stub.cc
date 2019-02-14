@@ -193,13 +193,8 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   return gpu::ContextResult::kSuccess;
 }
 
-// RasterInterface clients should not manipulate the front buffer.
-void RasterCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
-  NOTREACHED();
-}
-void RasterCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                                  bool is_lost) {
-  NOTREACHED();
+bool RasterCommandBufferStub::HandleMessage(const IPC::Message& message) {
+  return false;
 }
 
 void RasterCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}
