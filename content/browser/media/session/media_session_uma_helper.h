@@ -48,7 +48,8 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
   MediaSessionUmaHelper();
   ~MediaSessionUmaHelper();
 
-  static void RecordMediaSessionUserAction(MediaSessionUserAction action);
+  static void RecordMediaSessionUserAction(MediaSessionUserAction action,
+                                           bool focused);
 
   void RecordSessionSuspended(MediaSessionSuspendedSource source) const;
 

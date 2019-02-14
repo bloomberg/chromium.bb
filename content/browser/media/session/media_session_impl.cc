@@ -185,6 +185,14 @@ void MediaSessionImpl::DidFinishNavigation(
   RebuildAndNotifyMetadataChanged();
 }
 
+void MediaSessionImpl::OnWebContentsFocused(RenderWidgetHost*) {
+  focused_ = true;
+}
+
+void MediaSessionImpl::OnWebContentsLostFocus(RenderWidgetHost*) {
+  focused_ = false;
+}
+
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
                                  int player_id,
                                  media::MediaContentType media_content_type) {
@@ -350,7 +358,7 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
     }
 
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
-        MediaSessionUmaHelper::MediaSessionUserAction::PlayDefault);
+        MediaSessionUmaHelper::MediaSessionUserAction::PlayDefault, focused_);
   }
 
   // When the resume requests comes from another source than system, audio focus
@@ -386,7 +394,7 @@ void MediaSessionImpl::Suspend(SuspendType suspend_type) {
     }
 
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
-        MediaSessionUserAction::PauseDefault);
+        MediaSessionUserAction::PauseDefault, focused_);
   }
 
   OnSuspendInternal(suspend_type, State::SUSPENDED);
@@ -399,7 +407,7 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
 
   if (suspend_type == SuspendType::kUI) {
     MediaSessionUmaHelper::RecordMediaSessionUserAction(
-        MediaSessionUmaHelper::MediaSessionUserAction::StopDefault);
+        MediaSessionUmaHelper::MediaSessionUserAction::StopDefault, focused_);
   }
 
   // TODO(mlamouri): merge the logic between UI and SYSTEM.
@@ -615,6 +623,9 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)
+
+  if (web_contents->GetMainFrame() && web_contents->GetMainFrame()->GetView())
+    focused_ = web_contents->GetMainFrame()->GetView()->HasFocus();
 
   RebuildAndNotifyMetadataChanged();
 }
@@ -902,7 +913,7 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
 void MediaSessionImpl::DidReceiveAction(
     media_session::mojom::MediaSessionAction action) {
   MediaSessionUmaHelper::RecordMediaSessionUserAction(
-      MediaSessionActionToUserAction(action));
+      MediaSessionActionToUserAction(action), focused_);
 
   // Pause all players in non-routed frames if the action is PAUSE.
   //

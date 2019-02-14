@@ -132,6 +132,8 @@ class MediaSessionImpl : public MediaSession,
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* rfh) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void OnWebContentsFocused(RenderWidgetHost*) override;
+  void OnWebContentsLostFocus(RenderWidgetHost*) override;
 
   // MediaSessionService-related methods
 
@@ -369,6 +371,9 @@ class MediaSessionImpl : public MediaSession,
   base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
 
   double ducking_volume_multiplier_;
+
+  // True if the WebContents associated with this MediaSessionImpl is focused.
+  bool focused_ = false;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<MediaSessionAndroid> session_android_;
