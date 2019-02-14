@@ -21,9 +21,24 @@
 
 namespace {
 
-constexpr int kExpectedPincodeCharLength = 6;
-constexpr int kPreferredTextfieldCharLength = 20;
-constexpr int kTextfieldBottomBorderThickness = 2;
+std::unique_ptr<views::Textfield> MakePinTextField(
+    views::TextfieldController* controller,
+    views::View* label) {
+  constexpr int kMinWidthInChars = 6;
+  constexpr int kDefaultWidthInChars = 20;
+  constexpr int kBottomBorderThickness = 2;
+
+  auto field = std::make_unique<views::Textfield>();
+  field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD);
+  field->SetBackgroundColor(gfx::kGoogleGrey100);
+  field->SetMinimumWidthInChars(kMinWidthInChars);
+  field->SetDefaultWidthInChars(kDefaultWidthInChars);
+  field->SetBorder(views::CreateSolidSidedBorder(0, 0, kBottomBorderThickness,
+                                                 0, gfx::kGoogleBlue500));
+  field->set_controller(controller);
+  field->SetAssociatedLabel(label);
+  return field;
+}
 
 }  // namespace
 
@@ -67,31 +82,14 @@ AuthenticatorClientPinEntryView::AuthenticatorClientPinEntryView(
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-  auto pin_text_field = std::make_unique<views::Textfield>();
-  pin_text_field->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD);
-  pin_text_field->SetBackgroundColor(gfx::kGoogleGrey100);
-  pin_text_field->SetMinimumWidthInChars(kExpectedPincodeCharLength);
-  pin_text_field->SetDefaultWidthInChars(kPreferredTextfieldCharLength);
-  pin_text_field->SetBorder(views::CreateSolidSidedBorder(
-      0, 0, kTextfieldBottomBorderThickness, 0, gfx::kGoogleBlue500));
-  pin_text_field->set_controller(this);
-  pin_text_field->SetAssociatedLabel(pin_label_ptr);
+  auto pin_text_field = MakePinTextField(this, pin_label_ptr);
   pin_text_field_ = pin_text_field.get();
   layout->AddView(pin_text_field.release());
 
   if (show_confirmation_text_field_) {
     DCHECK(confirmation_label_ptr);
-    auto confirmation_text_field = std::make_unique<views::Textfield>();
-    confirmation_text_field->SetTextInputType(
-        ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD);
-    confirmation_text_field->SetBackgroundColor(gfx::kGoogleGrey100);
-    confirmation_text_field->SetMinimumWidthInChars(kExpectedPincodeCharLength);
-    confirmation_text_field->SetDefaultWidthInChars(
-        kPreferredTextfieldCharLength);
-    confirmation_text_field->SetBorder(views::CreateSolidSidedBorder(
-        0, 0, kTextfieldBottomBorderThickness, 0, gfx::kGoogleBlue500));
-    confirmation_text_field->set_controller(this);
-    confirmation_text_field->SetAssociatedLabel(confirmation_label_ptr);
+    auto confirmation_text_field =
+        MakePinTextField(this, confirmation_label_ptr);
     confirmation_text_field_ = confirmation_text_field.get();
     layout->AddView(confirmation_text_field.release());
   }
