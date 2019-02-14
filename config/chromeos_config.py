@@ -1741,7 +1741,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.build_external_chrome,
           boards=['amd64-generic'],
           internal=True,
-          manifest_repo_url=config_lib.GetSiteParams().MANIFEST_URL,
+          manifest_repo_url=config_lib.GetSiteParams().MANIFEST_INT_URL,
           overlays=constants.PUBLIC_OVERLAYS,
           prebuilts=False,
           build_all_with_goma=True,
