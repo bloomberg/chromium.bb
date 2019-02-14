@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -60,7 +61,7 @@ class FeedLoggingMetrics {
                               base::Time publish_date,
                               float score);
 
-  void OnSuggestionDismissed(int position, const GURL& url);
+  void OnSuggestionDismissed(int position, const GURL& url, bool committed);
 
   void OnSuggestionSwiped();
 
@@ -75,13 +76,17 @@ class FeedLoggingMetrics {
 
   void OnMoreButtonClicked(int position);
 
+  void OnNotInterestedInSource(int position, bool committed);
+
+  void OnNotInterestedInTopic(int position, bool committed);
+
   void OnSpinnerShown(base::TimeDelta shown_time);
+
+  void OnPietFrameRenderingEvent(std::vector<int> piet_error_codes);
 
   void ReportScrolledAfterOpen();
 
  private:
-  void CheckURLVisitedDone(int position, bool visited);
-
   const HistoryURLCheckCallback history_url_check_callback_;
 
   // Used to access current time, injected for testing.

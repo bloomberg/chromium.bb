@@ -52,6 +52,7 @@ void RecordContentSuggestionsUsage(base::Time now) {
   std::string histogram_name(
       base::StringPrintf("%s.%s", kHistogramArticlesUsageTimeLocal,
                          kWeekdayNames[now_exploded.day_of_week]));
+  // Since the |histogram_name| is dynamic, we can't use the regular macro.
   base::UmaHistogramExactLinear(histogram_name, bucket, kNumBuckets);
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramArticlesUsageTimeLocal, bucket,
                              kNumBuckets);
@@ -75,6 +76,26 @@ void RecordSuggestionPageVisited(bool return_to_ntp) {
         base::UserMetricsAction("MobileNTP.Snippets.VisitEndBackInNTP"));
   }
   base::RecordAction(base::UserMetricsAction("MobileNTP.Snippets.VisitEnd"));
+}
+
+void RecordUndoableActionUMA(const std::string& histogram_base,
+                             int position,
+                             bool committed) {
+  std::string histogram_name =
+      histogram_base + (committed ? ".Commit" : ".Undo");
+
+  // Since the |histogram_name| is dynamic, we can't use the regular macro.
+  base::UmaHistogramExactLinear(histogram_name, position, kMaxSuggestionsTotal);
+}
+
+void CheckURLVisitedDone(int position, bool committed, bool visited) {
+  if (visited) {
+    RecordUndoableActionUMA("NewTabPage.ContentSuggestions.DismissedVisited",
+                            position, committed);
+  } else {
+    RecordUndoableActionUMA("NewTabPage.ContentSuggestions.DismissedUnvisited",
+                            position, committed);
+  }
 }
 
 }  // namespace
@@ -179,10 +200,11 @@ void FeedLoggingMetrics::OnSuggestionMenuOpened(int position,
       ToUMAScore(score), 11);
 }
 
-void FeedLoggingMetrics::OnSuggestionDismissed(int position, const GURL& url) {
+void FeedLoggingMetrics::OnSuggestionDismissed(int position,
+                                               const GURL& url,
+                                               bool committed) {
   history_url_check_callback_.Run(
-      url, base::BindOnce(&FeedLoggingMetrics::CheckURLVisitedDone,
-                          weak_ptr_factory_.GetWeakPtr(), position));
+      url, base::BindOnce(&CheckURLVisitedDone, position, committed));
 
   base::RecordAction(base::UserMetricsAction("Suggestions.Content.Dismissed"));
 }
@@ -222,25 +244,34 @@ void FeedLoggingMetrics::OnMoreButtonClicked(int position) {
       kMaxSuggestionsForArticle + 1);
 }
 
+void FeedLoggingMetrics::OnNotInterestedInSource(int position, bool committed) {
+  RecordUndoableActionUMA(
+      "ContentSuggestions.Feed.InterestHeader.NotInterestedInSource", position,
+      committed);
+}
+
+void FeedLoggingMetrics::OnNotInterestedInTopic(int position, bool committed) {
+  RecordUndoableActionUMA(
+      "ContentSuggestions.Feed.InterestHeader.NotInterestedInTopic", position,
+      committed);
+}
+
 void FeedLoggingMetrics::OnSpinnerShown(base::TimeDelta shown_time) {
   base::UmaHistogramTimes(
       "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration",
       shown_time);
 }
 
-void FeedLoggingMetrics::ReportScrolledAfterOpen() {
-  base::RecordAction(base::UserMetricsAction("Suggestions.ScrolledAfterOpen"));
+void FeedLoggingMetrics::OnPietFrameRenderingEvent(
+    std::vector<int> piet_error_codes) {
+  for (auto error_code : piet_error_codes) {
+    base::UmaHistogramSparse(
+        "ContentSuggestions.Feed.Piet.FrameRenderingErrorCode", error_code);
+  }
 }
 
-void FeedLoggingMetrics::CheckURLVisitedDone(int position, bool visited) {
-  if (visited) {
-    UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.DismissedVisited",
-                               position, kMaxSuggestionsTotal);
-  } else {
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        "NewTabPage.ContentSuggestions.DismissedUnvisited", position,
-        kMaxSuggestionsTotal);
-  }
+void FeedLoggingMetrics::ReportScrolledAfterOpen() {
+  base::RecordAction(base::UserMetricsAction("Suggestions.ScrolledAfterOpen"));
 }
 
 }  // namespace feed

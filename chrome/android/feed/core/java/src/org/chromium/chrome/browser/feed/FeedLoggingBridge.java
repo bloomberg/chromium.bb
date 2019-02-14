@@ -67,9 +67,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        // TODO(https://crbug.com/924739): Emit wasCommitted as well.
-        nativeOnContentDismissed(
-                mNativeFeedLoggingBridge, data.getPositionInStream(), data.getRepresentationUri());
+        nativeOnContentDismissed(mNativeFeedLoggingBridge, data.getPositionInStream(),
+                data.getRepresentationUri(), wasCommitted);
     }
 
     @Override
@@ -135,7 +134,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        // TODO(https://crbug.com/924739): Implementation.
+        nativeOnNotInterestedInSource(
+                mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
     }
 
     @Override
@@ -144,7 +144,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        // TODO(https://crbug.com/924739): Implementation.
+        nativeOnNotInterestedInTopic(
+                mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
     }
 
     @Override
@@ -185,7 +186,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onPietFrameRenderingEvent(List<Integer> pietErrorCodes) {
-        // TODO(https://crbug.com/924739): Implementation.
+        int[] pietErrorCodesArray = new int[pietErrorCodes.size()];
+        for (int i = 0; i < pietErrorCodes.size(); ++i) {
+            pietErrorCodesArray[i] = pietErrorCodes.get(i);
+        }
+        nativeOnPietFrameRenderingEvent(mNativeFeedLoggingBridge, pietErrorCodesArray);
     }
 
     @Override
@@ -290,7 +295,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
             long publishedTimeMs, long timeContentBecameAvailableMs, float score);
     private native void nativeOnContentDismissed(
-            long nativeFeedLoggingBridge, int position, String uri);
+            long nativeFeedLoggingBridge, int position, String uri, boolean wasCommitted);
     private native void nativeOnContentSwiped(long nativeFeedLoggingBridge);
     private native void nativeOnClientAction(long nativeFeedLoggingBridge,
             int windowOpenDisposition, int position, long publishedTimeMs, float score);
@@ -298,11 +303,17 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
     private native void nativeOnMoreButtonViewed(long nativeFeedLoggingBridge, int position);
     private native void nativeOnMoreButtonClicked(long nativeFeedLoggingBridge, int position);
+    private native void nativeOnNotInterestedInSource(
+            long nativeFeedLoggingBridge, int position, boolean wasCommitted);
+    private native void nativeOnNotInterestedInTopic(
+            long nativeFeedLoggingBridge, int position, boolean wasCommitted);
     private native void nativeOnOpenedWithContent(
             long nativeFeedLoggingBridge, int timeToPopulateMs, int contentCount);
     private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
     private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
     private native void nativeOnSpinnerShown(long nativeFeedLoggingBridge, long spinnerShownTimeMs);
+    private native void nativeOnPietFrameRenderingEvent(
+            long nativeFeedLoggingBridge, int[] pietErrorCodes);
     private native void nativeOnContentTargetVisited(
             long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline, boolean returnToNtp);
     private native void nativeReportScrolledAfterOpen(long nativeFeedLoggingBridge);
