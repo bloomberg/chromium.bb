@@ -32,7 +32,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chromeos/constants/chromeos_constants.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
@@ -223,7 +223,7 @@ bool IsDriveEnabledForProfile(Profile* profile) {
 
   // Disable drive if sync is disabled by command line flag. Outside tests, this
   // only occurs in cases already handled by the gaia account check above.
-  if (!browser_sync::ProfileSyncService::IsSyncAllowedByFlag())
+  if (!switches::IsSyncAllowedByFlag())
     return false;
 
   return true;

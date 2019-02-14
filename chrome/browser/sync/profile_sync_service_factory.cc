@@ -41,6 +41,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -115,7 +116,7 @@ ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
 // static
 syncer::SyncService* ProfileSyncServiceFactory::GetSyncServiceForProfile(
     Profile* profile) {
-  if (!ProfileSyncService::IsSyncAllowedByFlag()) {
+  if (!switches::IsSyncAllowedByFlag()) {
     return nullptr;
   }
 

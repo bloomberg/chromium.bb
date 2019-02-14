@@ -201,7 +201,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't be instantiated.
-  DCHECK(IsSyncAllowedByFlag());
+  DCHECK(switches::IsSyncAllowedByFlag());
 
   std::string last_version = sync_prefs_.GetLastRunVersion();
   std::string current_version = PRODUCT_VERSION;
@@ -706,7 +706,7 @@ int ProfileSyncService::GetDisableReasons() const {
 
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't even be instantiated.
-  DCHECK(IsSyncAllowedByFlag());
+  DCHECK(switches::IsSyncAllowedByFlag());
 
   int result = DISABLE_REASON_NONE;
   if (!user_settings_->IsSyncAllowedByPlatform()) {
@@ -1883,12 +1883,6 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
 base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_js_controller_.AsWeakPtr();
-}
-
-// static
-bool ProfileSyncService::IsSyncAllowedByFlag() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSync);
 }
 
 void ProfileSyncService::StopAndClear() {

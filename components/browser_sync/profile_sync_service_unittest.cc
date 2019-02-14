@@ -1111,12 +1111,12 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
 // Verify that the disable sync flag disables sync.
 TEST_F(ProfileSyncServiceTest, DisableSyncFlag) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
-  EXPECT_FALSE(ProfileSyncService::IsSyncAllowedByFlag());
+  EXPECT_FALSE(switches::IsSyncAllowedByFlag());
 }
 
 // Verify that no disable sync flag enables sync.
 TEST_F(ProfileSyncServiceTest, NoDisableSyncFlag) {
-  EXPECT_TRUE(ProfileSyncService::IsSyncAllowedByFlag());
+  EXPECT_TRUE(switches::IsSyncAllowedByFlag());
 }
 
 // Test Sync will stop after receive memory pressure
