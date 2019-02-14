@@ -491,8 +491,8 @@ class HDMIRediscoverWaiter {
   DISALLOW_COPY_AND_ASSIGN(HDMIRediscoverWaiter);
 };
 
-INSTANTIATE_TEST_CASE_P(StableIdV1, CrasAudioHandlerTest, testing::Values(1));
-INSTANTIATE_TEST_CASE_P(StableIdV2, CrasAudioHandlerTest, testing::Values(2));
+INSTANTIATE_TEST_SUITE_P(StableIdV1, CrasAudioHandlerTest, testing::Values(1));
+INSTANTIATE_TEST_SUITE_P(StableIdV2, CrasAudioHandlerTest, testing::Values(2));
 
 TEST_P(CrasAudioHandlerTest, InitializeWithOnlyDefaultAudioDevices) {
   AudioNodeList audio_nodes =
