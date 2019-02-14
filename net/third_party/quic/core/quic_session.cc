@@ -583,16 +583,13 @@ void QuicSession::SendRstStreamInner(QuicStreamId id,
       // Send a RST_STREAM frame plus, if version 99, an IETF
       // QUIC STOP_SENDING frame. Both sre sent to emulate
       // the two-way close that Google QUIC's RST_STREAM does.
-      QuicConnection::ScopedPacketFlusher* flusher =
-          (connection_->transport_version() == QUIC_VERSION_99)
-              ? new QuicConnection::ScopedPacketFlusher(
-                    connection(), QuicConnection::SEND_ACK_IF_QUEUED)
-              : nullptr;
-      control_frame_manager_.WriteOrBufferRstStreamStopSending(id, error,
-                                                               bytes_written);
-      if (flusher) {
-        delete flusher;
-        flusher = nullptr;
+      if (connection_->transport_version() == QUIC_VERSION_99) {
+        QuicConnection::ScopedPacketFlusher flusher(
+            connection(), QuicConnection::SEND_ACK_IF_QUEUED);
+        control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
+        control_frame_manager_.WriteOrBufferStopSending(error, id);
+      } else {
+        control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
       }
     }
     connection_->OnStreamReset(id, error);
