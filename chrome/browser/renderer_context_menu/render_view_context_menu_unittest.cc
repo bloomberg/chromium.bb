@@ -690,6 +690,8 @@ const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
     {"file://stuff.host.co/my%2Dshare/foo.txt",
      "file://stuff.host.co/my-share/foo.txt", "FileSafeUnescapes"},
     {"mailto:me@foo.com", "me@foo.com", "MailToNoEscapes"},
+    {"mailto:me@foo.com,you@bar.com?subject=Hello%20world",
+     "me@foo.com,you@bar.com", "MailToWithQuery"},
     {"mailto:me@%66%6F%6F.com", "me@foo.com", "MailToSafeEscapes"},
     {"mailto:me%2Bsorting-tag@foo.com", "me+sorting-tag@foo.com",
      "MailToEscapedSpecialCharacters"},
