@@ -8,15 +8,20 @@ import sys
 
 import collections
 import json
+import logging
 import multiprocessing
 import os
 import plistlib
 import re
 import shutil
 import subprocess
+import threading
 import time
 
 import test_runner
+
+LOGGER = logging.getLogger(__name__)
+READLINE_TIMEOUT = 300
 
 
 class LaunchCommandCreationError(test_runner.TestRunnerError):
@@ -31,6 +36,20 @@ class LaunchCommandPoolCreationError(test_runner.TestRunnerError):
 
   def __init__(self, message):
     super(LaunchCommandPoolCreationError, self).__init__(message)
+
+
+def terminate_process(proc):
+  """Terminates the process.
+
+  If an error occurs ignore it, just print out a message.
+
+  Args:
+    proc: A subprocess.
+  """
+  try:
+    proc.terminate()
+  except OSError as ex:
+    print 'Error while killing a process: %s' % ex
 
 
 def test_status_summary(summary_plist):
@@ -355,8 +374,18 @@ class LaunchCommand(object):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
+
     while True:
+      # It seems that subprocess.stdout.readline() is stuck from time to time
+      # and tests fail because of TIMEOUT.
+      # Try to fix the issue by adding timer-thread for 5 mins
+      # that will kill `frozen` running process if no new line is read
+      # and will finish test attempt.
+      # If new line appears in 5 mins, just cancel timer.
+      timer = threading.Timer(READLINE_TIMEOUT, terminate_process, [proc])
+      timer.start()
       line = proc.stdout.readline()
+      timer.cancel()
       if not line:
         break
       line = line.rstrip()
@@ -598,8 +627,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       self.logs[' '.join(result['cmd'])] = result['test_results']
       self.test_results['commands'].append(
           {'cmd': ' '.join(result['cmd']), 'logs': result['logs']})
-
     self.test_results['end_run'] = int(time.time())
+    LOGGER.debug('Test ended.')
     # Test is failed if there are failures for the last run.
     return not self.test_results['commands'][-1]['logs']['failed']
 
