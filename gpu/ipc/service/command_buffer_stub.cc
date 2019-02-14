@@ -20,14 +20,9 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/decoder_context.h"
-#include "gpu/command_buffer/service/gl_context_virtual.h"
-#include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
-#include "gpu/command_buffer/service/gpu_fence_manager.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -35,17 +30,13 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "gpu/ipc/service/image_transport_surface.h"
-#include "ui/gfx/gpu_fence.h"
-#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -185,35 +176,30 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
     have_context = true;
   }
 
-  // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message handlers
-  // here. This is so the reply can be delayed if the scheduler is unscheduled.
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(CommandBufferStub, message)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetGetBuffer, OnSetGetBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_TakeFrontBuffer, OnTakeFrontBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ReturnFrontBuffer,
-                        OnReturnFrontBuffer);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForTokenInRange,
-                                    OnWaitForTokenInRange);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForGetOffsetInRange,
-                                    OnWaitForGetOffsetInRange);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
-                        OnRegisterTransferBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
-                        OnDestroyTransferBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncToken, OnSignalSyncToken)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery, OnSignalQuery)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyImage, OnDestroyImage);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateStreamTexture,
-                        OnCreateStreamTexture)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateGpuFenceFromHandle,
-                        OnCreateGpuFenceFromHandle)
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetGpuFenceHandle,
-                        OnGetGpuFenceHandle)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+  bool handled = HandleMessage(message);
+  if (!handled) {
+    handled = true;
+    // Always use IPC_MESSAGE_HANDLER_DELAY_REPLY for synchronous message
+    // handlers here. This is so the reply can be delayed if the scheduler is
+    // unscheduled.
+    IPC_BEGIN_MESSAGE_MAP(CommandBufferStub, message)
+      IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetGetBuffer, OnSetGetBuffer);
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_WaitForTokenInRange,
+                                      OnWaitForTokenInRange);
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(
+          GpuCommandBufferMsg_WaitForGetOffsetInRange,
+          OnWaitForGetOffsetInRange);
+      IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_AsyncFlush, OnAsyncFlush);
+      IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RegisterTransferBuffer,
+                          OnRegisterTransferBuffer);
+      IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
+                          OnDestroyTransferBuffer);
+      IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncToken,
+                          OnSignalSyncToken)
+      IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery, OnSignalQuery)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+  }
 
   CheckCompleteWaits();
 
@@ -416,16 +402,6 @@ void CommandBufferStub::Destroy() {
   }
 
   command_buffer_.reset();
-}
-
-void CommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,
-                                              int32_t stream_id,
-                                              bool* succeeded) {
-#if defined(OS_ANDROID)
-  *succeeded = StreamTexture::Create(this, texture_id, stream_id);
-#else
-  *succeeded = false;
-#endif
 }
 
 void CommandBufferStub::OnSetGetBuffer(int32_t shm_id) {
@@ -634,50 +610,6 @@ void CommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
     OnSignalAck(id);
   }
 }
-
-void CommandBufferStub::OnCreateGpuFenceFromHandle(
-    uint32_t gpu_fence_id,
-    const gfx::GpuFenceHandle& handle) {
-  if (!context_group_->feature_info()->feature_flags().chromium_gpu_fence) {
-    DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
-    command_buffer_->SetParseError(error::kLostContext);
-    return;
-  }
-
-  if (decoder_context_->GetGpuFenceManager()->CreateGpuFenceFromHandle(
-          gpu_fence_id, handle))
-    return;
-
-  // The insertion failed. This shouldn't happen, force context loss to avoid
-  // inconsistent state.
-  command_buffer_->SetParseError(error::kLostContext);
-  CheckContextLost();
-}
-
-void CommandBufferStub::OnGetGpuFenceHandle(uint32_t gpu_fence_id) {
-  if (!context_group_->feature_info()->feature_flags().chromium_gpu_fence) {
-    DLOG(ERROR) << "CHROMIUM_gpu_fence unavailable";
-    command_buffer_->SetParseError(error::kLostContext);
-    return;
-  }
-
-  auto* manager = decoder_context_->GetGpuFenceManager();
-  gfx::GpuFenceHandle handle;
-  if (manager->IsValidGpuFence(gpu_fence_id)) {
-    std::unique_ptr<gfx::GpuFence> gpu_fence =
-        manager->GetGpuFence(gpu_fence_id);
-    handle = gfx::CloneHandleForIPC(gpu_fence->GetGpuFenceHandle());
-  } else {
-    // Retrieval failed. This shouldn't happen, force context loss to avoid
-    // inconsistent state.
-    DLOG(ERROR) << "GpuFence not found";
-    command_buffer_->SetParseError(error::kLostContext);
-    CheckContextLost();
-  }
-  Send(new GpuCommandBufferMsg_GetGpuFenceHandleComplete(route_id_,
-                                                         gpu_fence_id, handle));
-}
-
 void CommandBufferStub::OnFenceSyncRelease(uint64_t release) {
   SyncToken sync_token(CommandBufferNamespace::GPU_IO, command_buffer_id_,
                        release);
@@ -706,55 +638,6 @@ void CommandBufferStub::OnRescheduleAfterFinished() {
 
 void CommandBufferStub::ScheduleGrContextCleanup() {
   channel_->gpu_channel_manager()->ScheduleGrContextCleanup();
-}
-
-void CommandBufferStub::OnCreateImage(
-    GpuCommandBufferMsg_CreateImage_Params params) {
-  TRACE_EVENT0("gpu", "CommandBufferStub::OnCreateImage");
-  const int32_t id = params.id;
-  const gfx::Size& size = params.size;
-  const gfx::BufferFormat& format = params.format;
-  const uint64_t image_release_count = params.image_release_count;
-
-  gles2::ImageManager* image_manager = channel_->image_manager();
-  DCHECK(image_manager);
-  if (image_manager->LookupImage(id)) {
-    LOG(ERROR) << "Image already exists with same ID.";
-    return;
-  }
-
-  if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
-          format, decoder_context_->GetCapabilities())) {
-    LOG(ERROR) << "Format is not supported.";
-    return;
-  }
-
-  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, format)) {
-    LOG(ERROR) << "Invalid image size for format.";
-    return;
-  }
-
-  scoped_refptr<gl::GLImage> image = channel()->CreateImageForGpuMemoryBuffer(
-      std::move(params.gpu_memory_buffer), size, format, surface_handle_);
-  if (!image.get())
-    return;
-
-  image_manager->AddImage(image.get(), id);
-  if (image_release_count)
-    sync_point_client_state_->ReleaseFenceSync(image_release_count);
-}
-
-void CommandBufferStub::OnDestroyImage(int32_t id) {
-  TRACE_EVENT0("gpu", "CommandBufferStub::OnDestroyImage");
-
-  gles2::ImageManager* image_manager = channel_->image_manager();
-  DCHECK(image_manager);
-  if (!image_manager->LookupImage(id)) {
-    LOG(ERROR) << "Image with ID doesn't exist.";
-    return;
-  }
-
-  image_manager->RemoveImage(id);
 }
 
 void CommandBufferStub::OnConsoleMessage(int32_t id,
