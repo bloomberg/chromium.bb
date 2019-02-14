@@ -1689,15 +1689,6 @@
       ]
     },
     {
-      "id": 158,
-      "cr_bugs": [829435],
-      "description": "OOP rasterization on top of ANGLE not supported",
-      "gl_renderer": "ANGLE.*",
-      "features": [
-        "oop_rasterization"
-      ]
-    },
-    {
       "id": 159,
       "cr_bugs": [902247],
       "description": "Disallow OpenGL use on Mac with old NVIDIA GPUs",
