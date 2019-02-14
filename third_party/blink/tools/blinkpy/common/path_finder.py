@@ -35,19 +35,19 @@ from blinkpy.common.memoized import memoized
 def add_typ_dir_to_sys_path():
     path_to_typ = get_typ_dir()
     if path_to_typ not in sys.path:
-        sys.path.append(path_to_typ)
+        sys.path.insert(0, path_to_typ)
 
 
 def add_bindings_scripts_dir_to_sys_path():
     path_to_bindings_scripts = get_bindings_scripts_dir()
     if path_to_bindings_scripts not in sys.path:
-        sys.path.append(path_to_bindings_scripts)
+        sys.path.insert(0, path_to_bindings_scripts)
 
 
 def add_blinkpy_thirdparty_dir_to_sys_path():
     path = get_blinkpy_thirdparty_dir()
     if path not in sys.path:
-        sys.path.append(path)
+        sys.path.insert(0, path)
 
 
 def add_depot_tools_dir_to_os_path():
@@ -92,7 +92,7 @@ def get_blink_tools_dir():
 def add_blink_tools_dir_to_sys_path():
     path = get_blink_tools_dir()
     if path not in sys.path:
-        sys.path.append(path)
+        sys.path.insert(0, path)
 
 
 def _does_blink_web_tests_exist():
