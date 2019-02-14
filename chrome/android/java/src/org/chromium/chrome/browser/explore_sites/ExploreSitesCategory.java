@@ -30,15 +30,14 @@ public class ExploreSitesCategory {
     static final int MAX_COLUMNS = 4;
 
     // This enum must match the numbering for ExploreSites.CategoryClick in histograms.xml.  Do not
-    // reorder or remove items, only add new items before COUNT.
-    @Retention(RetentionPolicy.SOURCE)
+    // reorder or remove items, only add new items before NUM_ENTRIES.
     @IntDef({CategoryType.MORE_BUTTON, CategoryType.DEFAULT, CategoryType.SOCIAL,
             CategoryType.ENTERTAINMENT, CategoryType.SPORT, CategoryType.NEWS,
             CategoryType.SHOPPING, CategoryType.REFERENCE, CategoryType.BANKING,
             CategoryType.GOVERNMENT, CategoryType.TRAVEL, CategoryType.EDUCATION, CategoryType.JOBS,
             CategoryType.APPS_GAMES, CategoryType.FAVORITE, CategoryType.GOOGLE, CategoryType.FOOD,
-            CategoryType.HEALTH, CategoryType.BOOKS, CategoryType.TECHNOLOGY, CategoryType.SCIENCE,
-            CategoryType.COUNT})
+            CategoryType.HEALTH, CategoryType.BOOKS, CategoryType.TECHNOLOGY, CategoryType.SCIENCE})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface CategoryType {
         int MORE_BUTTON = -1; // This is not included in histograms.xml.
         int DEFAULT = 0;
@@ -62,7 +61,7 @@ public class ExploreSitesCategory {
         int TECHNOLOGY = 18;
         int SCIENCE = 19;
         // This must always be one higher than the last category number.
-        int COUNT = 20;
+        int NUM_ENTRIES = 20;
     }
 
     public static ExploreSitesCategory createPlaceholder(

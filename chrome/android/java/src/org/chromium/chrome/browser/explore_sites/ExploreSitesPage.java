@@ -161,7 +161,7 @@ public class ExploreSitesPage extends BasicNativePage {
                     mProfile, /* isImmediateFetch =*/true, this::onUpdatedCatalog);
             RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
                     ExploreSitesEnums.CatalogUpdateRequestSource.EXPLORE_SITES_PAGE,
-                    ExploreSitesEnums.CatalogUpdateRequestSource.COUNT);
+                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);

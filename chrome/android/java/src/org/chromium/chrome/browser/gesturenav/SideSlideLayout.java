@@ -36,7 +36,7 @@ public class SideSlideLayout extends ViewGroup {
     @IntDef({UmaNavigationType.NAVIGATION_TYPE_NONE, UmaNavigationType.FORWARD_TOUCHPAD,
             UmaNavigationType.BACK_TOUCHPAD, UmaNavigationType.FORWARD_TOUCHSCREEN,
             UmaNavigationType.BACK_TOUCHSCREEN, UmaNavigationType.RELOAD_TOUCHPAD,
-            UmaNavigationType.RELOAD_TOUCHSCREEN, UmaNavigationType.NAVIGATION_TYPE_COUNT})
+            UmaNavigationType.RELOAD_TOUCHSCREEN})
     @Retention(RetentionPolicy.SOURCE)
     private @interface UmaNavigationType {
         int NAVIGATION_TYPE_NONE = 0;
@@ -46,7 +46,7 @@ public class SideSlideLayout extends ViewGroup {
         int BACK_TOUCHSCREEN = 4;
         int RELOAD_TOUCHPAD = 5;
         int RELOAD_TOUCHSCREEN = 6;
-        int NAVIGATION_TYPE_COUNT = 7;
+        int NUM_ENTRIES = 7;
     }
 
     /**
@@ -379,6 +379,6 @@ public class SideSlideLayout extends ViewGroup {
         RecordHistogram.recordEnumeratedHistogram(name,
                 forward ? UmaNavigationType.FORWARD_TOUCHSCREEN
                         : UmaNavigationType.BACK_TOUCHSCREEN,
-                UmaNavigationType.NAVIGATION_TYPE_COUNT);
+                UmaNavigationType.NUM_ENTRIES);
     }
 }
