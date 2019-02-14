@@ -174,9 +174,8 @@ size_t VP8Decoder::GetRequiredNumOfPictures() const {
 }
 
 size_t VP8Decoder::GetNumReferenceFrames() const {
-  // Maximum number of reference frames needed plus one for the one being
-  // currently egressed.
-  return kVP8NumFramesActive + 1;
+  // Maximum number of reference frames.
+  return kVP8NumFramesActive;
 }
 
 }  // namespace media

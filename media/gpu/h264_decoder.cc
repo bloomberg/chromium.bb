@@ -1423,9 +1423,8 @@ size_t H264Decoder::GetRequiredNumOfPictures() const {
 }
 
 size_t H264Decoder::GetNumReferenceFrames() const {
-  // Use the maximum number of pictures in the Decoded Picture Buffer plus one
-  // for the one being currently egressed.
-  return dpb_.max_num_pics() + 1;
+  // Use the maximum number of pictures in the Decoded Picture Buffer.
+  return dpb_.max_num_pics();
 }
 
 // static

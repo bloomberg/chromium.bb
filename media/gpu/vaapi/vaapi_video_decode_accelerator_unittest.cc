@@ -278,7 +278,10 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
           MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
           .Times(num_pictures);
     } else {
-      const size_t kNumReferenceFrames = num_pictures / 2;
+      EXPECT_EQ(
+          vda_.buffer_allocation_mode_,
+          VaapiVideoDecodeAccelerator::BufferAllocationMode::kSuperReduced);
+      const size_t kNumReferenceFrames = 1 + num_pictures / 2;
       EXPECT_CALL(
           *mock_vaapi_wrapper_,
           CreateContextAndSurfaces(_, picture_size, kNumReferenceFrames, _))
