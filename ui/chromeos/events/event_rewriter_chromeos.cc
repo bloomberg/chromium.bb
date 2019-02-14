@@ -765,11 +765,10 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
 
   // Remapping based on DomCode.
   switch (incoming.code) {
-    // On Chrome OS, XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock
-    // is pressed (with one exception: when
-    // IsISOLevel5ShiftUsedByCurrentInputMethod() is true, the key generates
-    // XK_ISO_Level3_Shift with Mod3Mask, not XF86XK_Launch7).
-    case ui::DomCode::F16:
+    // On Chrome OS, Caps_Lock with Mod3Mask is sent when Caps Lock is pressed
+    // (with one exception: when IsISOLevel5ShiftUsedByCurrentInputMethod() is
+    // true, the key generates XK_ISO_Level3_Shift with Mod3Mask, not
+    // Caps_Lock).
     case ui::DomCode::CAPS_LOCK:
       // This key is already remapped to Mod3 in remapping based on DomKey. Skip
       // more remapping.
@@ -817,13 +816,10 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
     state->key = remapped_key->result.key;
     incoming.flags |= characteristic_flag;
     characteristic_flag = remapped_key->flag;
-    if (incoming.key_code == ui::VKEY_CAPITAL ||
-        incoming.key_code == ui::VKEY_F16) {
+    if (incoming.key_code == ui::VKEY_CAPITAL) {
       // Caps Lock is rewritten to another key event, remove EF_CAPS_LOCK_ON
       // flag to prevent the keyboard's Caps Lock state being synced to the
-      // rewritten key event's flag in InputMethodChromeOS. (Caps Lock key on an
-      // external keyboard generates F16 which is treated as Caps Lock and then
-      // rewritten.)
+      // rewritten key event's flag in InputMethodChromeOS.
       incoming.flags &= ~ui::EF_CAPS_LOCK_ON;
     }
     if (remapped_key->remap_to == ui::chromeos::ModifierKey::kCapsLockKey)
