@@ -2202,7 +2202,6 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
 }
 
 scoped_refptr<ComputedStyle> Element::OriginalStyleForLayoutObject() {
-  DCHECK(GetDocument().InStyleRecalc());
   return GetDocument().EnsureStyleResolver().StyleForElement(this);
 }
 
@@ -3830,8 +3829,21 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // values returned for the ":selection" pseudo-element will be correct.
   ComputedStyle* element_style = MutableComputedStyle();
   if (!element_style) {
+    StyleEngine::IgnoringPendingStylesheet ignoring(
+        GetDocument().GetStyleEngine());
+    if (CanParticipateInFlatTree()) {
+      ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
+      if (parent)
+        parent->EnsureComputedStyle();
+
+      ContainerNode* layout_parent =
+          parent ? LayoutTreeBuilderTraversal::LayoutParent(*this) : nullptr;
+      if (layout_parent)
+        layout_parent->EnsureComputedStyle();
+    }
     scoped_refptr<ComputedStyle> new_style =
-        GetDocument().StyleForElementIgnoringPendingStylesheets(this);
+        HasCustomStyleCallbacks() ? CustomStyleForLayoutObject()
+                                  : OriginalStyleForLayoutObject();
     element_style = new_style.get();
     element_style->SetIsEnsuredInDisplayNone();
     SetComputedStyle(std::move(new_style));

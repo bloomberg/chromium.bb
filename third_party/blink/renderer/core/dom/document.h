@@ -525,8 +525,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes(
       RunPostLayoutTasks = kRunPostLayoutTasksAsynchronously);
   void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
-  scoped_refptr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(
-      Element*);
   scoped_refptr<ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.

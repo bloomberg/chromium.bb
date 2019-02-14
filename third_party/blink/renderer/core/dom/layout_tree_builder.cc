@@ -78,7 +78,6 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
     : LayoutTreeBuilder(element, nullptr), style_(style) {
   DCHECK(element.CanParticipateInFlatTree());
   DCHECK(style_);
-  DCHECK(!style_->IsEnsuredInDisplayNone());
   // TODO(ecobos): Move the first-letter logic inside ParentLayoutObject too?
   // It's an extra (unnecessary) check for text nodes, though.
   if (element.IsFirstLetterPseudoElement()) {

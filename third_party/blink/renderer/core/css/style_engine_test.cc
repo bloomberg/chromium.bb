@@ -1823,4 +1823,42 @@ TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
   EXPECT_FALSE(span_inner->GetComputedStyle());
 }
 
+TEST_F(StyleEngineTest, EnsureCustomComputedStyle) {
+  GetDocument().body()->SetInnerHTMLFromString("");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id=div>
+      <progress id=progress>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  // Note: <progress> is chosen because it creates ProgressShadowElement
+  // instances, which override CustomStyleForLayoutObject with
+  // display:none.
+  Element* div = GetDocument().getElementById("div");
+  Element* progress = GetDocument().getElementById("progress");
+  ASSERT_TRUE(div);
+  ASSERT_TRUE(progress);
+
+  // This causes ProgressShadowElements to get ComputedStyles with
+  // IsEnsuredInDisplayNone==true.
+  for (Node* node = progress; node;
+       node = FlatTreeTraversal::Next(*node, progress)) {
+    node->EnsureComputedStyle();
+  }
+
+  // This triggers layout tree building.
+  div->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  UpdateAllLifecyclePhases();
+
+  // We must not create LayoutObjects for Nodes with
+  // IsEnsuredInDisplayNone==true
+  for (Node* node = progress; node;
+       node = FlatTreeTraversal::Next(*node, progress)) {
+    ASSERT_TRUE(!node->GetComputedStyle() ||
+                !node->ComputedStyleRef().IsEnsuredInDisplayNone() ||
+                !node->GetLayoutObject());
+  }
+}
+
 }  // namespace blink
