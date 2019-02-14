@@ -177,6 +177,10 @@ size_t TestTaskManager::GetNumberOfTasksOnSameProcess(TaskId task_id) const {
   return 1;
 }
 
+bool TestTaskManager::IsRunningInVM(TaskId task_id) const {
+  return false;
+}
+
 TaskId TestTaskManager::GetTaskIdForWebContents(
     content::WebContents* web_contents) const {
   return -1;

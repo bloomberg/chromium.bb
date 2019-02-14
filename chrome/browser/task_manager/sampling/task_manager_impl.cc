@@ -335,7 +335,10 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
                              b->task_id());
     };
 
-    const size_t num_groups = task_groups_by_proc_id_.size();
+    const size_t num_groups =
+        task_groups_by_proc_id_.size() + arc_vm_task_groups_by_proc_id_.size();
+
+    // |task_groups_by_task_id_| contains all tasks, both VM and non-VM.
     const size_t num_tasks = task_groups_by_task_id_.size();
 
     // Populate |tasks_to_visit| with one task from each group.
@@ -357,6 +360,13 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
         else
           DCHECK(!group_task->HasParentTask());
       }
+    }
+
+    for (const auto& groups_pair : arc_vm_task_groups_by_proc_id_) {
+      const std::vector<Task*>& tasks = groups_pair.second->tasks();
+      Task* group_task =
+          *std::min_element(tasks.begin(), tasks.end(), comparator);
+      tasks_to_visit.push_back(group_task);
     }
 
     // Now sort |tasks_to_visit| in reverse order (putting the browser process
@@ -429,6 +439,10 @@ size_t TaskManagerImpl::GetNumberOfTasksOnSameProcess(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->num_tasks();
 }
 
+bool TaskManagerImpl::IsRunningInVM(TaskId task_id) const {
+  return GetTaskByTaskId(task_id)->IsRunningInVM();
+}
+
 TaskId TaskManagerImpl::GetTaskIdForWebContents(
     content::WebContents* web_contents) const {
   if (!web_contents)
@@ -445,10 +459,16 @@ void TaskManagerImpl::TaskAdded(Task* task) {
 
   const base::ProcessId proc_id = task->process_id();
   const TaskId task_id = task->task_id();
+  const bool is_running_in_vm = task->IsRunningInVM();
 
-  std::unique_ptr<TaskGroup>& task_group = task_groups_by_proc_id_[proc_id];
+  TaskManagerImpl::PidToTaskGroupMap& task_group_map =
+      is_running_in_vm ? arc_vm_task_groups_by_proc_id_
+                       : task_groups_by_proc_id_;
+
+  std::unique_ptr<TaskGroup>& task_group = task_group_map[proc_id];
   if (!task_group) {
     task_group.reset(new TaskGroup(task->process_handle(), proc_id,
+                                   is_running_in_vm,
                                    on_background_data_ready_callback_,
                                    shared_sampler_, blocking_pool_runner_));
 #if defined(OS_CHROMEOS)
@@ -472,8 +492,13 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
 
   const base::ProcessId proc_id = task->process_id();
   const TaskId task_id = task->task_id();
+  const bool is_running_in_vm = task->IsRunningInVM();
 
-  DCHECK(task_groups_by_proc_id_.count(proc_id));
+  TaskManagerImpl::PidToTaskGroupMap& task_group_map =
+      is_running_in_vm ? arc_vm_task_groups_by_proc_id_
+                       : task_groups_by_proc_id_;
+
+  DCHECK(task_group_map.count(proc_id));
 
   NotifyObserversOnTaskToBeRemoved(task_id);
 
@@ -482,7 +507,7 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
   task_groups_by_task_id_.erase(task_id);
 
   if (task_group->empty())
-    task_groups_by_proc_id_.erase(proc_id);  // Deletes |task_group|.
+    task_group_map.erase(proc_id);  // Deletes |task_group|.
 
   // Invalidate the cached sorted IDs by clearing the list.
   sorted_task_ids_.clear();
@@ -612,6 +637,11 @@ void TaskManagerImpl::Refresh() {
                                enabled_resources_flags());
   }
 
+  for (auto& groups_itr : arc_vm_task_groups_by_proc_id_) {
+    groups_itr.second->Refresh(gpu_memory_stats_, GetCurrentRefreshTime(),
+                               enabled_resources_flags());
+  }
+
 #if defined(OS_CHROMEOS)
   if (TaskManagerObserver::IsResourceRefreshEnabled(
           REFRESH_TYPE_MEMORY_FOOTPRINT, enabled_resources_flags())) {
@@ -652,6 +682,7 @@ void TaskManagerImpl::StopUpdating() {
     provider->ClearObserver();
 
   task_groups_by_proc_id_.clear();
+  arc_vm_task_groups_by_proc_id_.clear();
   task_groups_by_task_id_.clear();
   sorted_task_ids_.clear();
 }

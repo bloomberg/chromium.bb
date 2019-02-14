@@ -83,11 +83,13 @@ int GetNaClDebugStubPortOnIoThread(int process_id) {
 TaskGroup::TaskGroup(
     base::ProcessHandle proc_handle,
     base::ProcessId proc_id,
+    bool is_running_in_vm,
     const base::Closure& on_background_calculations_done,
     const scoped_refptr<SharedSampler>& shared_sampler,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner)
     : process_handle_(proc_handle),
       process_id_(proc_id),
+      is_running_in_vm_(is_running_in_vm),
       on_background_calculations_done_(on_background_calculations_done),
       worker_thread_sampler_(nullptr),
       shared_sampler_(shared_sampler),
@@ -119,7 +121,7 @@ TaskGroup::TaskGroup(
       gpu_memory_has_duplicates_(false),
       is_backgrounded_(false),
       weak_ptr_factory_(this) {
-  if (process_id_ != base::kNullProcessId) {
+  if (process_id_ != base::kNullProcessId && !is_running_in_vm_) {
     worker_thread_sampler_ = base::MakeRefCounted<TaskGroupSampler>(
         base::Process::Open(process_id_), blocking_pool_runner,
         base::Bind(&TaskGroup::OnCpuRefreshDone,
@@ -164,6 +166,9 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
                         int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!empty());
+  if (is_running_in_vm_)
+    refresh_flags &= ~kUnsupportedVMRefreshFlags;
+
   expected_on_bg_done_flags_ = refresh_flags & kBackgroundRefreshTypesMask;
   // If a refresh type was recently disabled, we need to account for that too.
   current_on_bg_done_flags_ &= expected_on_bg_done_flags_;
