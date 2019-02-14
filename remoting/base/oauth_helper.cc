@@ -29,11 +29,6 @@ std::string GetOauthScope() {
          "https://www.googleapis.com/auth/userinfo.email ";
 }
 
-std::string GetDefaultOauthRedirectUrl() {
-  return "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
-         "chrome-remote-desktop/rel/kgngmbheleoaphbjbaiobfdepmghbfah";
-}
-
 std::string GetOauthStartUrl(const std::string& redirect_url) {
   return base::StringPrintf(
       "https://accounts.google.com/o/oauth2/auth"

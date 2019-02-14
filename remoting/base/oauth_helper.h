@@ -12,9 +12,6 @@ namespace remoting {
 // Gets the OAuth scope of the host's refresh token.
 std::string GetOauthScope();
 
-// Gets the default redirect URL for the OAuth dance.
-std::string GetDefaultOauthRedirectUrl();
-
 // Gets a URL at which the OAuth dance starts.
 std::string GetOauthStartUrl(const std::string& redirect_url);
 
