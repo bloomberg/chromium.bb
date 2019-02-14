@@ -121,6 +121,11 @@
       </settings-credit-card-list>
     </template>
 
+    <div id="manageLink" class="settings-box first">
+      <!-- This span lays out the URL correctly, relative to the label. -->
+      <span>$i18nRaw{manageCreditCardsLabel}</span>
+    </div>
+
     <cr-action-menu id="creditCardSharedMenu">
       <button id="menuEditCreditCard" class="dropdown-item"
           on-click="onMenuEditCreditCardTap_">$i18n{edit}</button>
