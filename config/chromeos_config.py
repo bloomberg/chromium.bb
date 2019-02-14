@@ -2309,7 +2309,11 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       master=True,
       manifest_version=True,
       slave_configs=[],
-      schedule='with 2m interval',
+      schedule='triggered',
+      triggered_gitiles=[[
+          'https://chromium.googlesource.com/chromiumos/manifest',
+          ['refs/heads/snapshot']
+      ]],
   )
 
   for board in boards_dict['all_boards']:
