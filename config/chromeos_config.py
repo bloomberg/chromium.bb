@@ -2313,7 +2313,7 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       slave_configs=[],
       schedule='triggered',
       triggered_gitiles=[[
-          'https://chromium.googlesource.com/chromiumos/manifest',
+          'https://chrome-internal.googlesource.com/chromeos/manifest-internal',
           ['refs/heads/snapshot']
       ]],
   )
