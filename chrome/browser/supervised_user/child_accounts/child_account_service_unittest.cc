@@ -6,13 +6,16 @@
 
 #include "base/bind.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -31,27 +34,35 @@ class ChildAccountServiceTest : public ::testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
                               base::BindRepeating(&BuildTestSigninClient));
-    profile_ = builder.Build();
-    gaia_cookie_manager_service_ =
-        GaiaCookieManagerServiceFactory::GetForProfile(profile_.get());
+    profile_ = IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment(builder);
   }
 
  protected:
-  network::TestURLLoaderFactory* url_loader_factory() {
+  network::TestURLLoaderFactory* GetTestURLLoaderFactory() {
     auto* signin_client =
         ChromeSigninClientFactory::GetForProfile(profile_.get());
     return static_cast<TestSigninClient*>(signin_client)
         ->test_url_loader_factory();
   }
 
+  identity::AccountsCookieMutator* GetAccountsCookieMutator() {
+    IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
+        profile_.get());
+    return identity_test_env_profile_adaptor.identity_test_env()
+        ->identity_manager()
+        ->GetAccountsCookieMutator();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestingProfile> profile_;
-  GaiaCookieManagerService* gaia_cookie_manager_service_;
 };
 
 TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
-  network::TestURLLoaderFactory* test_url_loader_factory = url_loader_factory();
+  auto* accounts_cookie_mutator = GetAccountsCookieMutator();
+  auto* test_url_loader_factory = GetTestURLLoaderFactory();
+
   signin::SetListAccountsResponseNoAccounts(test_url_loader_factory);
 
   ChildAccountService* child_account_service =
@@ -75,7 +86,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
        /* is_signed_out = */ false,
        /* verified = */ true},
       test_url_loader_factory);
-  gaia_cookie_manager_service_->TriggerListAccounts();
+  accounts_cookie_mutator->TriggerCookieJarUpdate();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
@@ -87,7 +98,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
        /* is_signed_out = */ false,
        /* verified = */ true},
       test_url_loader_factory);
-  gaia_cookie_manager_service_->TriggerListAccounts();
+  accounts_cookie_mutator->TriggerCookieJarUpdate();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
@@ -99,7 +110,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
        /* is_signed_out = */ true,
        /* verified = */ true},
       test_url_loader_factory);
-  gaia_cookie_manager_service_->TriggerListAccounts();
+  accounts_cookie_mutator->TriggerCookieJarUpdate();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
