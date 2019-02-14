@@ -487,20 +487,6 @@ class PDFPluginDisabledTest : public PDFExtensionTest {
         content::BrowserContext::GetDownloadManager(browser_context);
     download_awaiter_ = std::make_unique<DownloadAwaiter>();
     download_manager->AddObserver(download_awaiter_.get());
-
-    // TODO(tommycli): PDFIFrameNavigationThrottle currently doesn't wait for
-    // the plugin list to be loaded, and this causes some unpredictable (but not
-    // catastrophic) behavior on startup. Remove this after we fix that.
-    base::RunLoop run_loop;
-    content::PluginService::GetInstance()->GetPlugins(base::BindOnce(
-        &PDFPluginDisabledTest::PluginsLoadedCallback, run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
-  static void PluginsLoadedCallback(
-      base::OnceClosure callback,
-      const std::vector<content::WebPluginInfo>& plugins) {
-    std::move(callback).Run();
   }
 
   void TearDownOnMainThread() override {
