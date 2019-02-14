@@ -12,6 +12,7 @@
     <script src="../js/util.js"></script>
     <script src="../js/toast.js"></script>
     <script src="../js/tooltip.js"></script>
+    <script src="../js/state.js"></script>
     <script src="../js/sound.js"></script>
     <script src="../js/scrollbar.js"></script>
     <script src="../js/gallerybutton.js"></script>
@@ -56,8 +57,8 @@
       </div>
       <div class="top-stripe right-stripe buttons">
         <input type="checkbox" id="toggle-mic" tabindex="0"
-               i18n-label="toggle_mic_button" data-css="mic" data-key="toggleMic"
-               checked>
+               i18n-label="toggle_mic_button" data-state="mic"
+               data-key="toggleMic" checked>
       </div>
       <div class="top-stripe left-stripe buttons">
         <button id="open-settings" tabindex="0"
@@ -65,12 +66,12 @@
       </div>
       <div class="left-stripe options-group buttons">
         <input type="checkbox" id="toggle-mirror" tabindex="0"
-               i18n-label="toggle_mirror_button" data-css="mirror" checked>
+               i18n-label="toggle_mirror_button" data-state="mirror" checked>
         <input type="checkbox" id="toggle-grid" tabindex="0"
-               i18n-label="toggle_grid_button" data-css="grid"
+               i18n-label="toggle_grid_button" data-state="grid"
                data-key="toggleGrid">
         <input type="checkbox" id="toggle-timer" tabindex="0"
-               i18n-label="toggle_timer_button" data-css="timer"
+               i18n-label="toggle_timer_button" data-state="timer"
                data-key="toggleTimer">
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
@@ -139,17 +140,17 @@
         </div>
         <label class="menu-item circle" for="grid-3x3">
           <input class="icon" id="grid-3x3" type="radio" tabindex="0"
-                 name="gridtype" data-css="_3x3" data-key="toggle3x3" checked>
+                 name="gridtype" data-state="_3x3" data-key="toggle3x3" checked>
           <span i18n-content="label_grid_3x3" i18n-aria="aria_grid_3x3"></span>
         </label>
         <label class="menu-item circle" for="grid-4x4">
           <input class="icon" id="grid-4x4" type="radio" tabindex="0"
-                 name="gridtype" data-css="_4x4" data-key="toggle4x4">
+                 name="gridtype" data-state="_4x4" data-key="toggle4x4">
           <span i18n-content="label_grid_4x4" i18n-aria="aria_grid_4x4"></span>
         </label>
         <label class="menu-item circle" for="grid-golden">
           <input class="icon" id="grid-golden" type="radio" tabindex="0"
-                 name="gridtype" data-css="golden" data-key="toggleGolden">
+                 name="gridtype" data-state="golden" data-key="toggleGolden">
           <span i18n-content="label_grid_golden"></span>
         </label>
       </div>
@@ -162,12 +163,13 @@
         </div>
         <label class="menu-item circle" for="timer-3s">
           <input class="icon" id="timer-3s" type="radio" tabindex="0"
-                 name="timerdur" data-css="_3sec" data-key="toggle3sec" checked>
+                 name="timerdur" data-state="_3sec" data-key="toggle3sec"
+                 checked>
           <span i18n-content="label_timer_3s"></span>
         </label>
         <label class="menu-item circle" for="timer-10s">
           <input class="icon" id="timer-10s" type="radio" tabindex="0"
-                 name="timerdur" data-css="_10sec" data-key="toggle10sec">
+                 name="timerdur" data-state="_10sec" data-key="toggle10sec">
           <span i18n-content="label_timer_10s"></span>
         </label>
       </div>
