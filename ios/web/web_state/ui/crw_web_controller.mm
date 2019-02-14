@@ -5011,7 +5011,8 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (context) {
     web::NavigationManager* navigationManager =
         _webStateImpl->GetNavigationManager();
-    if ((navigationManager->GetPendingItem()) ||
+    if ((navigationManager->GetPendingItem() &&
+         navigationManager->GetPendingItem()->GetURL() == webViewURL) ||
         (context->IsLoadingHtmlString()) ||
         (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
          ui::PageTransitionCoreTypeIs(context->GetPageTransition(),
