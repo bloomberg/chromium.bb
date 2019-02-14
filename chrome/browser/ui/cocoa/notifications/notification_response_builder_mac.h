@@ -25,7 +25,8 @@ enum NotificationOperation {
 // notification response action, clicking on it, clicking on a button etc.
 @interface NotificationResponseBuilder : NSObject
 
-+ (NSDictionary*)buildDictionary:(NSUserNotification*)notification;
++ (NSDictionary*)buildActivatedDictionary:(NSUserNotification*)notification;
++ (NSDictionary*)buildDismissedDictionary:(NSUserNotification*)notification;
 
 @end
 
