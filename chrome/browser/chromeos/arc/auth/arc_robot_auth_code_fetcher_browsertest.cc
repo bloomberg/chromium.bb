@@ -105,19 +105,9 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
             cloud_policy_manager->core()->client());
     cloud_policy_client->SetDMToken("fake-dm-token");
     cloud_policy_client->client_id_ = "client-id";
-
-    test_url_loader_factory_ =
-        std::make_unique<network::TestURLLoaderFactory>();
-    test_shared_loader_factory_ =
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            test_url_loader_factory_.get());
   }
 
-  void TearDownOnMainThread() override {
-    if (test_shared_loader_factory_)
-      test_shared_loader_factory_->Detach();
-    user_manager_enabler_.reset();
-  }
+  void TearDownOnMainThread() override { user_manager_enabler_.reset(); }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
     return static_cast<chromeos::FakeChromeUserManager*>(
@@ -128,7 +118,8 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
                      bool* output_fetch_success,
                      std::string* output_auth_code) {
     base::RunLoop run_loop;
-    fetcher->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
+    fetcher->SetURLLoaderFactoryForTesting(
+        test_url_loader_factory_.GetSafeWeakWrapper());
     fetcher->Fetch(base::Bind(
         [](bool* output_fetch_success, std::string* output_auth_code,
            base::RunLoop* run_loop, bool fetch_success,
@@ -145,16 +136,14 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
-    return test_url_loader_factory_.get();
+    return &test_url_loader_factory_;
   }
 
  private:
   // Whether to connect the CloudPolicyClient.
   CloudPolicyClientSetup cloud_policy_client_setup_;
 
-  std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcRobotAuthCodeFetcherBrowserTest);
