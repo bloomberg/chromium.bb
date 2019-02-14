@@ -99,8 +99,6 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 }
 
 PluginServiceImpl::PluginServiceImpl() : filter_(nullptr) {
-  plugin_list_sequence_checker_.DetachFromSequence();
-
   // Collect the total number of browser processes (which create
   // PluginServiceImpl objects, to be precise). The number is used to normalize
   // the number of processes which start at least one NPAPI/PPAPI Flash process.
@@ -119,6 +117,9 @@ void PluginServiceImpl::Init() {
   plugin_list_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+
+  // Setup the sequence checker right after setting up the task runner.
+  plugin_list_sequence_checker_.DetachFromSequence();
   PluginList::Singleton()->set_will_load_plugins_callback(base::BindRepeating(
       &WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 
