@@ -890,7 +890,7 @@ fileOperationUtil.CopyTask.prototype.run = function(
         }
         progressCallback();
         this.processEntry_(
-            entry, this.targetDirEntry,
+            assert(entry), assert(this.targetDirEntry),
             function(sourceEntryUrl, destinationEntry) {
               updateProgress(index, sourceEntryUrl);
               // The destination entry may be null, if the copied file got
@@ -1066,7 +1066,7 @@ fileOperationUtil.MoveTask.prototype.run = function(
         }
         progressCallback();
         fileOperationUtil.MoveTask.processEntry_(
-            entry, this.targetDirEntry, entryChangedCallback,
+            assert(entry), assert(this.targetDirEntry), entryChangedCallback,
             function() {
               // Update current source index.
               this.processingSourceIndex_ = index + 1;

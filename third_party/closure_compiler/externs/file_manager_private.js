@@ -635,7 +635,7 @@ chrome.fileManagerPrivate.ensureFileDownloaded = function(entry, callback) {};
  * backend. If resolving entry fails, the entry will be just ignored and the
  * corresponding entry does not appear in the result.
  * @param {!Array<!Entry>} entries
- * @param {function((!Array<!Entry>|undefined))} callback Completion callback
+ * @param {function(!Array<!Entry>):void} callback Completion callback
  *     with resolved entries.
  */
 chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
@@ -645,7 +645,7 @@ chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
  * Mount a resource or a file. |source| Mount point source. For compressed
  * files it is relative file path     within external file system |callback|
  * @param {string} source
- * @param {function((string|undefined))} callback Callback with source path of
+ * @param {function(string):void} callback callback Callback with source path of
  *     the mount.
  */
 chrome.fileManagerPrivate.addMount = function(source, callback) {};
@@ -785,7 +785,8 @@ chrome.fileManagerPrivate.zipSelection = function(entries, parentEntry,
 
 /**
  * Retrieves the state of the current drive connection. |callback|
- * @param {function((!chrome.fileManagerPrivate.DriveConnectionState|undefined))} callback
+ * @param {function(!chrome.fileManagerPrivate.DriveConnectionState):void}
+ *     callback
  */
 chrome.fileManagerPrivate.getDriveConnectionState = function(callback) {};
 

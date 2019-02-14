@@ -216,7 +216,7 @@ importer.TaskQueue.BaseTask.prototype.addObserver = function(observer) {
 importer.TaskQueue.BaseTask.prototype.run = function() {};
 
 /**
- * @param {string} updateType
+ * @param {importer.TaskQueue.UpdateType} updateType
  * @param {Object=} opt_data
  * @protected
  */

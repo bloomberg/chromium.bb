@@ -190,7 +190,9 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
       candidateBounds.top = nextBottom >= screen.availHeight ?
           nextBottom % screen.availHeight : nextTop;
     }
-    this.window_.moveTo(candidateBounds.left, candidateBounds.top);
+    this.window_.moveTo(
+        /** @type {number} */ (candidateBounds.left),
+        /** @type {number} */ (candidateBounds.top));
 
     // Save the properties.
     const appWindow = this.window_;

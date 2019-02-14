@@ -193,7 +193,7 @@ FileBrowserBackgroundImpl.prototype.handleViewEventInternal_ = function(event) {
  * Retrieves the root file entry of the volume on the requested device.
  *
  * @param {!string} volumeId ID of the volume to navigate to.
- * @return {!Promise<VolumeInfo>}
+ * @return {!Promise<!VolumeInfo>}
  * @private
  */
 FileBrowserBackgroundImpl.prototype.retrieveVolumeInfo_ = function(volumeId) {

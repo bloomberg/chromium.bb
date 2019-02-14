@@ -425,7 +425,6 @@ importer.MediaImportHandler.ImportTask.prototype.markDuplicatesImported_ =
   this.historyLoader_.getHistory().then(
       (/**
        * @param {!importer.ImportHistory} history
-       * @this {importer.MediaImportHandler.ImportTask}
        */
       function(history) {
         this.scanResult_.getDuplicateFileEntries().forEach(
@@ -463,7 +462,6 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ = function(
       .then((/**
               * @param {!importer.Disposition} disposition The disposition
               *     of the entry. Either some sort of dupe, or an original.
-              * @this {importer.MediaImportHandler.ImportTask}
               */
              function(disposition) {
                if (disposition === importer.Disposition.ORIGINAL) {
@@ -527,7 +525,8 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
     this.processedBytes_ += entry.size;
     destinationEntry.size = entry.size;
     this.notify(
-        importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED,
+        /** @type {importer.TaskQueue.UpdateType} */
+        (importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED),
         {
           sourceUrl: sourceUrl,
           destination: destinationEntry
@@ -566,7 +565,6 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
           (/**
            * Performs the copy using the given deduped filename.
            * @param {string} destinationFilename
-           * @this {importer.MediaImportHandler.ImportTask}
            */
           function(destinationFilename) {
             this.cancelCallback_ = fileOperationUtil.copyTo(
@@ -594,7 +592,6 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
   this.historyLoader_.getHistory().then(
       (/**
        * @param {!importer.ImportHistory} history
-       * @this {importer.MediaImportHandler.ImportTask}
        */
       function(history) {
         history.markCopied(
