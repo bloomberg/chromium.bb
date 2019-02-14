@@ -46,12 +46,6 @@ void OfflinePageShareHelper::GetShareInfo(const ContentId& id,
   content_id_ = id;
   result_cb_ = std::move(result_cb);
 
-  if (!offline_pages::IsOfflinePagesSharingEnabled()) {
-    // Continue to share without share info.
-    NotifyCompletion(ShareResult::kSuccess, nullptr);
-    return;
-  }
-
   model_->GetPageByGuid(
       content_id_.id, base::BindOnce(&OfflinePageShareHelper::OnPageGetForShare,
                                      weak_ptr_factory_.GetWeakPtr()));

@@ -33,8 +33,7 @@ const std::string GetDisplayName(
 }
 
 const std::string GetMimeType() {
-  return offline_pages::IsOfflinePagesSharingEnabled() ? "multipart/related"
-                                                       : "text/html";
+  return "multipart/related";
 }
 
 }  // namespace

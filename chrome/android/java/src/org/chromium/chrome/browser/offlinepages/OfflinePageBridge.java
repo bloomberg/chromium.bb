@@ -119,14 +119,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * @return True if offline pages sharing is enabled.
-     */
-    @VisibleForTesting
-    public static boolean isPageSharingEnabled() {
-        return nativeIsPageSharingEnabled();
-    }
-
-    /**
      * @return True if an offline copy of the given URL can be saved.
      */
     public static boolean canSavePage(String url) {
@@ -812,7 +804,6 @@ public class OfflinePageBridge {
         return loadUrlParams;
     }
 
-    private static native boolean nativeIsPageSharingEnabled();
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
     @VisibleForTesting

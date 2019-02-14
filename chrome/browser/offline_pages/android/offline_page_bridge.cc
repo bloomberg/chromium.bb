@@ -290,10 +290,6 @@ void PublishPageDone(
 
 }  // namespace
 
-static jboolean JNI_OfflinePageBridge_IsPageSharingEnabled(JNIEnv* env) {
-  return offline_pages::IsOfflinePagesSharingEnabled();
-}
-
 static jboolean JNI_OfflinePageBridge_CanSavePage(
     JNIEnv* env,
     const JavaParamRef<jstring>& j_url) {

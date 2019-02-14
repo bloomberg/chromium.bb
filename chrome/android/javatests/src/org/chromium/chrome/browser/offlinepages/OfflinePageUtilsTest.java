@@ -272,30 +272,6 @@ public class OfflinePageUtilsTest {
         Assert.assertTrue(mockSnackbarController.getDismissed());
     }
 
-    /**
-     * This tests that the offline page can't be shared if the sharing flag turned off.
-     */
-    @Test
-    @MediumTest
-    @CommandLineFlags
-            .Remove({"enable-features=OfflinePagesSharing"})
-            @CommandLineFlags.Add({"disable-features=OfflinePagesSharing"})
-            public void testDoNotShareOfflinePageWhenFeatureDisabled() throws Exception {
-        loadOfflinePage(ASYNC_ID);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                boolean shared =
-                        OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
-                                mActivityTestRule.getActivity().getActivityTab(), null);
-                // Since the sharing flag is off, we do not share the page.  This allows
-                // normal URL-as-text sharing mechanisms to proceed.
-                Assert.assertFalse(shared);
-            }
-        });
-    }
-
     @Test
     @MediumTest
     @CommandLineFlags.Add({"enable-features=OfflinePagesSharing"})

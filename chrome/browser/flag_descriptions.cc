@@ -2645,10 +2645,6 @@ const char kOfflinePagesRenovationsDescription[] =
     "Enables offline page renovations which correct issues with dynamic "
     "content that occur when offlining pages that use JavaScript.";
 
-const char kOfflinePagesSharingName[] = "Enables offline pages to be shared.";
-const char kOfflinePagesSharingDescription[] =
-    "Enables the saved offline pages to be shared via other applications.";
-
 const char kOfflinePagesLivePageSharingName[] =
     "Enables live page sharing of offline pages";
 const char kOfflinePagesLivePageSharingDescription[] =

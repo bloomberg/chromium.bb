@@ -520,8 +520,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     offline_page.original_url = save_page_params.original_url;
   }
 
-  if (IsOfflinePagesSharingEnabled() &&
-      policy_controller_->IsUserRequestedDownload(
+  if (policy_controller_->IsUserRequestedDownload(
           offline_page.client_id.name_space)) {
     // If the user intentionally downloaded the page, move it to a public place.
     // Note: Moving the archiver instance into the callback so it won't be
@@ -772,9 +771,6 @@ void OfflinePageModelTaskified::OnClearCachedPagesDone(
 void OfflinePageModelTaskified::PostSelectItemsMarkedForUpgrade() {
   // TODO(fgorski): Make storage permission check. Here or later?
   // TODO(fgorski): Check disk space here.
-  if (!IsOfflinePagesSharingEnabled())
-    return;
-
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindRepeating(
