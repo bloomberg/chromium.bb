@@ -477,7 +477,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkPlayFilesContextMenu"),
         TestCase("checkPlayFilesContextMenu").EnableMyFilesVolume(),
         TestCase("checkLinuxFilesContextMenu"),
-        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume()));
+        TestCase("checkLinuxFilesContextMenu").EnableMyFilesVolume(),
+        TestCase("checkRemovableRootContextMenu"),
+        TestCase("checkUsbContextMenu"),
+        TestCase("checkPartitionContextMenu")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Delete, /* delete.js */
