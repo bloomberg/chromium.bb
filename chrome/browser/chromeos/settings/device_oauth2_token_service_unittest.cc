@@ -54,21 +54,16 @@ class MockOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
   MOCK_METHOD1(OnRefreshTokenAvailable, void(const std::string&));
 };
 
-MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {
-}
+MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {}
 
-MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {
-}
+MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {}
 
 }  // namespace
 
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
   DeviceOAuth2TokenServiceTest()
-      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
-        test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   // Most tests just want a noop crypto impl with a dummy refresh token value in
   // Local State (if the value is an empty string, it will be ignored).
@@ -97,8 +92,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   std::unique_ptr<OAuth2TokenService::Request> StartTokenRequest() {
     return oauth2_service_->StartRequest(oauth2_service_->GetRobotAccountId(),
-                                         std::set<std::string>(),
-                                         &consumer_);
+                                         std::set<std::string>(), &consumer_);
   }
 
   void SetUp() override {
@@ -121,7 +115,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   void TearDown() override {
     oauth2_service_.reset();
-    test_shared_loader_factory_->Detach();
     base::TaskScheduler::GetInstance()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
     SystemSaltGetter::Shutdown();
@@ -131,7 +124,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   void CreateService() {
     auto delegate = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
-        test_shared_loader_factory_, scoped_testing_local_state_.Get());
+        test_url_loader_factory_.GetSafeWeakWrapper(),
+        scoped_testing_local_state_.Get());
     delegate->max_refresh_token_validation_retries_ = 0;
     oauth2_service_.reset(new DeviceOAuth2TokenService(std::move(delegate)));
     oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
@@ -196,9 +190,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   // base::DefaultDeleter therefore doesn't work. However, the test class is
   // declared friend in DeviceOAuth2TokenService, so this deleter works.
   struct TokenServiceDeleter {
-    inline void operator()(DeviceOAuth2TokenService* ptr) const {
-      delete ptr;
-    }
+    inline void operator()(DeviceOAuth2TokenService* ptr) const { delete ptr; }
   };
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -208,8 +200,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   ScopedTestCrosSettings scoped_test_cros_settings_{
       scoped_testing_local_state_.Get()};
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
   FakeCryptohomeClient* fake_cryptohome_client_;
   FakeSessionManagerClient session_manager_client_;
   policy::DevicePolicyBuilder device_policy_;
