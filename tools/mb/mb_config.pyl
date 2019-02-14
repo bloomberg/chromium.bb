@@ -647,6 +647,10 @@
       'win_angle_x64_rel_ng': 'gpu_fyi_tests_release_trybot',
     },
 
+    'tryserver.chromium.chrome': {
+      'google-chrome-chromeos': 'official_goma_chromeos',
+    },
+
     'tryserver.chromium.chromiumos': {
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # when the PFQ has it enabled.
