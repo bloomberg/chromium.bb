@@ -112,7 +112,6 @@ InlineLoginHandlerChromeOS::~InlineLoginHandlerChromeOS() = default;
 void InlineLoginHandlerChromeOS::SetExtraInitParams(
     base::DictionaryValue& params) {
   const GaiaUrls* const gaia_urls = GaiaUrls::GetInstance();
-  params.SetKey("service", base::Value("chromiumsync"));
   params.SetKey("isNewGaiaFlow", base::Value(true));
   params.SetKey("clientId", base::Value(gaia_urls->oauth2_chrome_client_id()));
 
@@ -120,7 +119,7 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
   params.SetKey("gaiaPath", base::Value(url.path().substr(1)));
 
   params.SetKey("constrained", base::Value("1"));
-  params.SetKey("flow", base::Value("addaccount"));
+  params.SetKey("flow", base::Value("crosAddAccount"));
 }
 
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
