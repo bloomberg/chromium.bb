@@ -38,6 +38,10 @@ public class TabProperties {
 
     public static final WritableBooleanPropertyKey IS_SELECTED = new WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER,
-            TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_PROVIDER, THUMBNAIL_KEY, TITLE, IS_SELECTED};
+    public static final PropertyKey[] ALL_KEYS_TAB_GRID =
+            new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,
+                    THUMBNAIL_PROVIDER, THUMBNAIL_KEY, TITLE, IS_SELECTED};
+
+    public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
+            TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED};
 }
