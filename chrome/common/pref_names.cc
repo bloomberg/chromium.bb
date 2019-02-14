@@ -239,10 +239,6 @@ const char kAllowedLanguages[] = "intl.allowed_languages";
 // absence of MIME charset specification
 const char kDefaultCharset[] = "intl.charset_default";
 
-// The value to use for Accept-Languages HTTP header when making an HTTP
-// request.
-const char kAcceptLanguages[] = "intl.accept_languages";
-
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
 const char* const kWebKitScriptsForFontFamilyMaps[] = {
@@ -537,13 +533,6 @@ const char kLanguagePreviousInputMethod[] =
 // "AllowedInputMethods").
 const char kLanguageAllowedInputMethods[] =
     "settings.language.allowed_input_methods";
-
-// A string pref (comma-separated list) set to the preferred language IDs
-// (ex. "en-US,fr,ko").
-const char kLanguagePreferredLanguages[] =
-    "settings.language.preferred_languages";
-const char kLanguagePreferredLanguagesSyncable[] =
-    "settings.language.preferred_languages_syncable";
 
 // A string pref (comma-separated list) set to the preloaded (active) input
 // method IDs (ex. "pinyin,mozc").
