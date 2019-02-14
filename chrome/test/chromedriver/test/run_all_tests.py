@@ -215,23 +215,6 @@ def main():
     return code
   else:
     versions = {'HEAD': archive.GetLatestRevision()}
-    # Linux64 build numbers
-    if util.IsLinux():
-      versions['73'] = '625894'
-      versions['72'] = '612434'
-      versions['71'] = '599034'
-
-    # Mac build numbers
-    elif util.IsMac():
-      versions['73'] = '625897'
-      versions['72'] = '612451'
-      versions['71'] = '599028'
-
-    # Windows build numbers
-    elif util.IsWindows():
-      versions['73'] = '625885'
-      versions['72'] = '612432'
-      versions['71'] = '598927'
 
     code = 0
     for version, revision in versions.iteritems():
