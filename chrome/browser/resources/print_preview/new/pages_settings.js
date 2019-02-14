@@ -113,8 +113,13 @@ Polymer({
     'input-change': 'onInputChange_',
   },
 
-  /** @private {string} */
-  lastInput_: '',
+  /**
+   * True if the user's last valid input should be restored to the custom input
+   * field. Cleared when the input is set automatically, or the user manually
+   * clears the field.
+   * @private {boolean}
+   */
+  restoreLastInput_: true,
 
   /**
    * Initialize |selectedValue| in attached() since this doesn't observe
@@ -135,6 +140,9 @@ Polymer({
    * @private
    */
   onInputChange_: function(e) {
+    if (this.inputString_ !== e.detail) {
+      this.restoreLastInput_ = true;
+    }
     this.inputString_ = e.detail;
   },
 
@@ -253,7 +261,6 @@ Polymer({
         }
       }
     }
-    this.lastInput_ = this.inputString_;
     this.errorState_ = PagesInputErrorState.NO_ERROR;
     this.pagesToPrint_ = pages;
   },
@@ -358,7 +365,11 @@ Polymer({
   onCustomInputBlur_: function() {
     this.resetAndUpdate();
     if (this.errorState_ === PagesInputErrorState.EMPTY) {
-      this.$$('cr-input').value = this.lastInput_;
+      // Update with all pages.
+      this.$$('cr-input').value = this.getAllPagesString_();
+      this.inputString_ = this.getAllPagesString_();
+      this.resetString();
+      this.restoreLastInput_ = false;
     }
   },
 
@@ -411,13 +422,22 @@ Polymer({
     return !this.customSelected_ || this.controlsDisabled_;
   },
 
+  /**
+   * @return {string} A string representing the full page range.
+   * @private
+   */
+  getAllPagesString_: function() {
+    return this.pageCount === 1 ? '1' : `1-${this.pageCount}`;
+  },
+
   /** @private */
   onCustomSelectedChange_: function() {
-    if (!this.customSelected_ &&
-        (this.errorState_ == PagesInputErrorState.INVALID_SYNTAX ||
-         this.errorState_ == PagesInputErrorState.OUT_OF_BOUNDS)) {
-      this.$$('cr-input').value = '';
+    if ((this.customSelected_ && !this.restoreLastInput_) ||
+        this.errorState_ !== PagesInputErrorState.NO_ERROR) {
+      this.restoreLastInput_ = true;
       this.inputString_ = '';
+      this.$$('cr-input').value = '';
+      this.resetString();
     }
     this.updatePagesToPrint_();
   }

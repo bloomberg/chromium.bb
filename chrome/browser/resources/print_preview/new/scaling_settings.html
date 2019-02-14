@@ -30,7 +30,8 @@
         </select>
       </div>
     </print-preview-settings-section>
-    <iron-collapse opened="[[customSelected_]]">
+    <iron-collapse opened="[[customSelected_]]"
+        on-transitionend="onCollapseChanged_">
       <print-preview-number-settings-section
           max-value="200" min-value="10" default-value="100"
           disabled$="[[inputDisabled_(disabled, inputValid_, customSelected_)]]"

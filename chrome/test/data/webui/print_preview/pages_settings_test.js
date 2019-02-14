@@ -244,8 +244,8 @@ cr.define('pages_settings_test', function() {
 
     // Tests that the clearing a valid input has no effect, clearing an invalid
     // input does not show an error message but does not reset the preview, and
-    // changing focus from an empty input in either case automatically reselects
-    // the "all" radio button.
+    // changing focus from an empty input in either case fills in the dropdown
+    // with the full page range.
     test(assert(TestNames.ClearInput), function() {
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
       const select = pagesSection.$$('select');
@@ -266,28 +266,56 @@ cr.define('pages_settings_test', function() {
             return whenBlurred;
           })
           .then(function() {
-            // Blurring does not change the state.
+            // Blurring a blank field sets the full page range.
             assertEquals(customValue, select.value);
-            validateState([1, 2], '', false);
-            assertEquals('1-2', input.value);
+            validateState([1, 2, 3], '', false);
+            assertEquals('1-3', input.value);
             return setupInput('5', 3);
           })
           .then(function() {
             assertEquals(customValue, select.value);
-            validateState([1, 2], limitError + '3', true);
+            // Invalid input doesn't change the preview.
+            validateState([1, 2, 3], limitError + '3', true);
             return setupInput('', 3);
           })
           .then(function() {
             assertEquals(customValue, select.value);
-            validateState([1, 2], '', false);
+            validateState([1, 2, 3], '', false);
             const whenBlurred = test_util.eventToPromise('blur', input);
             input.blur();
+            // Blurring an invalid value that has been cleared should reset the
+            // value to all pages.
             return whenBlurred;
           })
           .then(function() {
             assertEquals(customValue, select.value);
-            validateState([1, 2], '', false);
-            assertEquals('1-2', input.value);
+            validateState([1, 2, 3], '', false);
+            assertEquals('1-3', input.value);
+
+            // Clear the input and then select "All" in the dropdown.
+            input.focus();
+            return setupInput('', 3);
+          })
+          .then(function() {
+            select.focus();
+            select.value = pagesSection.pagesValueEnum_.ALL.toString();
+            select.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'process-select-change', pagesSection);
+          })
+          .then(function() {
+            Polymer.dom.flush();
+            assertEquals(allValue, select.value);
+            validateState([1, 2, 3], '', false);
+            // Reselect custom.
+            select.value = pagesSection.pagesValueEnum_.CUSTOM.toString();
+            select.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise('focus', input);
+          })
+          .then(function() {
+            // Input has been cleared.
+            assertEquals('', input.value);
+            validateState([1, 2, 3], '', false);
           });
     });
 

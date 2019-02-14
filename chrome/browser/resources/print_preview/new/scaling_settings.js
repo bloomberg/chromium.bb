@@ -162,4 +162,11 @@ Polymer({
   computeCustomSelected_: function() {
     return this.selectedValue === ScalingValue.CUSTOM.toString();
   },
+
+  /** @private */
+  onCollapseChanged_: function() {
+    if (this.customSelected_) {
+      this.$$('print-preview-number-settings-section').getInput().focus();
+    }
+  },
 });
