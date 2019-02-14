@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
@@ -51,6 +52,8 @@ class CORE_EXPORT DisplayLockContext final
 
   // See GetScopedPendingFrameRect() for description.
   class ScopedPendingFrameRect {
+    STACK_ALLOCATED();
+
    public:
     ScopedPendingFrameRect(ScopedPendingFrameRect&&);
     ~ScopedPendingFrameRect();
@@ -65,6 +68,8 @@ class CORE_EXPORT DisplayLockContext final
 
   // See GetScopedForcedUpdate() for description.
   class ScopedForcedUpdate {
+    DISALLOW_NEW();
+
    public:
     ScopedForcedUpdate(ScopedForcedUpdate&&);
     ~ScopedForcedUpdate();
@@ -159,8 +164,10 @@ class CORE_EXPORT DisplayLockContext final
   };
 
   class StateChangeHelper {
+    DISALLOW_NEW();
+
    public:
-    StateChangeHelper(DisplayLockContext*);
+    explicit StateChangeHelper(DisplayLockContext*);
 
     operator State() const { return state_; }
     StateChangeHelper& operator=(State);
