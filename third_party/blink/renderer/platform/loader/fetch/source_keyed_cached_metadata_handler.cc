@@ -58,7 +58,6 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
     return parent_->IsServedFromCacheStorage();
   }
 
-  // No memory to report here because it is attributed to |parent_|.
   void OnMemoryDump(WebProcessMemoryDump* pmd,
                     const String& dump_prefix) const override {
     // No memory to report here because it is attributed to |parent_|.
