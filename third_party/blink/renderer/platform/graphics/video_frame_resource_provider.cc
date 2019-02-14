@@ -9,7 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/client/client_resource_provider.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -32,7 +32,7 @@ VideoFrameResourceProvider::~VideoFrameResourceProvider() {
 }
 
 void VideoFrameResourceProvider::Initialize(
-    viz::ContextProvider* media_context_provider,
+    viz::RasterContextProvider* media_context_provider,
     viz::SharedBitmapReporter* shared_bitmap_reporter) {
   context_provider_ = media_context_provider;
   resource_provider_ = std::make_unique<viz::ClientResourceProvider>(
@@ -48,8 +48,8 @@ void VideoFrameResourceProvider::Initialize(
   }
 
   resource_updater_ = std::make_unique<media::VideoResourceUpdater>(
-      media_context_provider, shared_bitmap_reporter, resource_provider_.get(),
-      settings_.use_stream_video_draw_quad,
+      nullptr, media_context_provider, shared_bitmap_reporter,
+      resource_provider_.get(), settings_.use_stream_video_draw_quad,
       settings_.resource_settings.use_gpu_memory_buffer_resources,
       settings_.resource_settings.use_r16_texture, max_texture_size);
 }

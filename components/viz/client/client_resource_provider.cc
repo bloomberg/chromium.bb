@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -94,6 +95,35 @@ void ClientResourceProvider::PrepareSendToParent(
     const std::vector<ResourceId>& export_ids,
     std::vector<TransferableResource>* list,
     ContextProvider* context_provider) {
+  auto cb = base::BindOnce(
+      [](scoped_refptr<ContextProvider> context_provider,
+         std::vector<GLbyte*>* tokens) {
+        context_provider->ContextGL()->VerifySyncTokensCHROMIUM(tokens->data(),
+                                                                tokens->size());
+      },
+      base::WrapRefCounted(context_provider));
+  PrepareSendToParentInternal(export_ids, list, std::move(cb));
+}
+
+void ClientResourceProvider::PrepareSendToParent(
+    const std::vector<ResourceId>& export_ids,
+    std::vector<TransferableResource>* list,
+    RasterContextProvider* context_provider) {
+  PrepareSendToParentInternal(
+      export_ids, list,
+      base::BindOnce(
+          [](scoped_refptr<RasterContextProvider> context_provider,
+             std::vector<GLbyte*>* tokens) {
+            context_provider->RasterInterface()->VerifySyncTokensCHROMIUM(
+                tokens->data(), tokens->size());
+          },
+          base::WrapRefCounted(context_provider)));
+}
+
+void ClientResourceProvider::PrepareSendToParentInternal(
+    const std::vector<ResourceId>& export_ids,
+    std::vector<TransferableResource>* list,
+    base::OnceCallback<void(std::vector<GLbyte*>* tokens)> verify_sync_tokens) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This function goes through the array multiple times, store the resources
@@ -122,9 +152,8 @@ void ClientResourceProvider::PrepareSendToParent(
 
   if (!unverified_sync_tokens.empty()) {
     DCHECK(verified_sync_tokens_required_);
-    DCHECK(context_provider);
-    context_provider->ContextGL()->VerifySyncTokensCHROMIUM(
-        unverified_sync_tokens.data(), unverified_sync_tokens.size());
+    DCHECK(verify_sync_tokens);
+    std::move(verify_sync_tokens).Run(&unverified_sync_tokens);
   }
 
   for (ImportedResource* imported : imports) {

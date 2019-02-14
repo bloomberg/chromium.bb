@@ -385,8 +385,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // video frame compositing. The ContextProvider given as an argument is
   // one that has been lost, and is a hint to the RenderThreadImpl to clear
   // it's |video_frame_compositor_context_provider_| if it matches.
-  scoped_refptr<viz::ContextProvider> GetVideoFrameCompositorContextProvider(
-      scoped_refptr<viz::ContextProvider>);
+  scoped_refptr<viz::RasterContextProvider>
+      GetVideoFrameCompositorContextProvider(
+          scoped_refptr<viz::RasterContextProvider>);
 
   // Returns a worker context provider that will be bound on the compositor
   // thread.
@@ -676,7 +677,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
-  scoped_refptr<viz::ContextProvider> video_frame_compositor_context_provider_;
+  scoped_refptr<viz::RasterContextProvider>
+      video_frame_compositor_context_provider_;
 
   scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
 

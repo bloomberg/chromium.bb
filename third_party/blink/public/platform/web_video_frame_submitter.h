@@ -18,19 +18,19 @@ enum VideoRotation : int;
 }
 
 namespace viz {
-class ContextProvider;
+class RasterContextProvider;
 }  // namespace viz
 
 namespace blink {
 
 // Sets the proper context_provider and compositing mode onto the Submitter.
 using WebSubmitterConfigurationCallback =
-    base::OnceCallback<void(bool, scoped_refptr<viz::ContextProvider>)>;
+    base::OnceCallback<void(bool, scoped_refptr<viz::RasterContextProvider>)>;
 
-// Callback to obtain the media ContextProvider and a bool indicating whether
-// we are in software compositing mode.
+// Callback to obtain the media RasterContextProvider and a bool indicating
+// whether we are in software compositing mode.
 using WebContextProviderCallback =
-    base::RepeatingCallback<void(scoped_refptr<viz::ContextProvider>,
+    base::RepeatingCallback<void(scoped_refptr<viz::RasterContextProvider>,
                                  WebSubmitterConfigurationCallback)>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing

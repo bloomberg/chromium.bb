@@ -32,6 +32,7 @@ class RasterInterface;
 
 namespace viz {
 class ContextProvider;
+class RasterContextProvider;
 
 // This class is used to give an integer name (ResourceId) to a gpu or software
 // resource (shipped as a TransferableResource), in order to use that name in
@@ -55,6 +56,13 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
   // mailboxes and serializing meta-data into TransferableResources.
   // Resources are not removed from the ResourceProvider, but are marked as
   // "in use".
+  void PrepareSendToParent(
+      const std::vector<ResourceId>& resource_ids,
+      std::vector<TransferableResource>* transferable_resources,
+      RasterContextProvider* context_provider);
+
+  // TODO(sergeyu): Remove after updating all callers to use the above version
+  // of this method.
   void PrepareSendToParent(
       const std::vector<ResourceId>& resource_ids,
       std::vector<TransferableResource>* transferable_resources,
@@ -125,6 +133,12 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
 
  private:
   struct ImportedResource;
+
+  void PrepareSendToParentInternal(
+      const std::vector<ResourceId>& export_ids,
+      std::vector<TransferableResource>* list,
+      base::OnceCallback<void(std::vector<GLbyte*>* tokens)>
+          verify_sync_tokens);
 
   THREAD_CHECKER(thread_checker_);
   const bool verified_sync_tokens_required_;

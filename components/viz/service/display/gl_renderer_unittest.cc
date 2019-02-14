@@ -2226,8 +2226,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   std::vector<ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
-                                               child_context_provider.get());
+  child_resource_provider->PrepareSendToParent(
+      resource_ids_to_transfer, &list,
+      static_cast<RasterContextProvider*>(child_context_provider.get()));
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -2438,8 +2439,9 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   std::vector<ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
-                                               child_context_provider.get());
+  child_resource_provider->PrepareSendToParent(
+      resource_ids_to_transfer, &list,
+      static_cast<RasterContextProvider*>(child_context_provider.get()));
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -2824,8 +2826,9 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   std::vector<ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
-                                               child_context_provider.get());
+  child_resource_provider->PrepareSendToParent(
+      resource_ids_to_transfer, &list,
+      static_cast<RasterContextProvider*>(child_context_provider.get()));
   parent_resource_provider->ReceiveFromChild(child_id, list);
   // In DisplayResourceProvider's namespace, use the mapped resource id.
   std::unordered_map<ResourceId, ResourceId> resource_map =

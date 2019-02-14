@@ -1370,9 +1370,9 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   return gpu_factories_.back().get();
 }
 
-scoped_refptr<viz::ContextProvider>
+scoped_refptr<viz::RasterContextProvider>
 RenderThreadImpl::GetVideoFrameCompositorContextProvider(
-    scoped_refptr<viz::ContextProvider> unwanted_context_provider) {
+    scoped_refptr<viz::RasterContextProvider> unwanted_context_provider) {
   DCHECK(video_frame_compositor_task_runner_);
   if (video_frame_compositor_context_provider_ &&
       video_frame_compositor_context_provider_ != unwanted_context_provider) {
@@ -1396,7 +1396,7 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
 
   bool support_locking = false;
   bool support_gles2_interface = true;
-  bool support_raster_interface = false;
+  bool support_raster_interface = true;
   bool support_oop_rasterization = false;
   bool support_grcontext = false;
   bool automatic_flushes = false;

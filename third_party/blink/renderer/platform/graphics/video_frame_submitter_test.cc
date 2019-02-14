@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -113,7 +114,7 @@ class MockVideoFrameResourceProvider
     : public blink::VideoFrameResourceProvider {
  public:
   MockVideoFrameResourceProvider(
-      viz::ContextProvider* context_provider,
+      viz::RasterContextProvider* context_provider,
       viz::SharedBitmapReporter* shared_bitmap_reporter)
       : blink::VideoFrameResourceProvider(cc::LayerTreeSettings(), false) {
     blink::VideoFrameResourceProvider::Initialize(context_provider,
@@ -122,7 +123,7 @@ class MockVideoFrameResourceProvider
   ~MockVideoFrameResourceProvider() override = default;
 
   MOCK_METHOD2(Initialize,
-               void(viz::ContextProvider*, viz::SharedBitmapReporter*));
+               void(viz::RasterContextProvider*, viz::SharedBitmapReporter*));
   MOCK_METHOD4(AppendQuads,
                void(viz::RenderPass*,
                     scoped_refptr<media::VideoFrame>,
@@ -158,10 +159,7 @@ class VideoFrameSubmitterTest : public testing::Test {
     resource_provider_ = new StrictMock<MockVideoFrameResourceProvider>(
         context_provider_.get(), nullptr);
     submitter_ = std::make_unique<VideoFrameSubmitter>(
-        base::BindRepeating(
-            [](scoped_refptr<viz::ContextProvider>,
-               base::OnceCallback<void(
-                   bool, scoped_refptr<viz::ContextProvider>)>) {}),
+        base::DoNothing(),
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
     submitter_->Initialize(video_frame_provider_.get());
@@ -207,7 +205,7 @@ class VideoFrameSubmitterTest : public testing::Test {
 
   void OnReceivedContextProvider(
       bool use_gpu_compositing,
-      scoped_refptr<viz::ContextProvider> context_provider) {
+      scoped_refptr<viz::RasterContextProvider> context_provider) {
     submitter_->OnReceivedContextProvider(use_gpu_compositing,
                                           std::move(context_provider));
   }

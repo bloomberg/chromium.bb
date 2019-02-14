@@ -242,7 +242,7 @@ void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
 
 void VideoFrameSubmitter::OnReceivedContextProvider(
     bool use_gpu_compositing,
-    scoped_refptr<viz::ContextProvider> context_provider) {
+    scoped_refptr<viz::RasterContextProvider> context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!use_gpu_compositing) {
     resource_provider_->Initialize(nullptr, this);
