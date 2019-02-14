@@ -138,6 +138,8 @@ class CORE_EXPORT ChromeClient
   virtual bool HadFormInteraction() const = 0;
 
   virtual void BeginLifecycleUpdates() = 0;
+  virtual void StartDeferringCommits() = 0;
+  virtual void StopDeferringCommits() = 0;
 
   // Start a system drag and drop operation.
   virtual void StartDragging(LocalFrame*,

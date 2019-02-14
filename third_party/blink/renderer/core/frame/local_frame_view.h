@@ -768,6 +768,10 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
+  // The callback invoked when the timer triggers to stop deferring commits
+  // on navigation.
+  void DeferredCommitsTimerFired();
+
   // Returns whether the lifecycle was succesfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,

@@ -555,6 +555,14 @@ LayerTreeHost::DeferMainFrameUpdate() {
   return std::make_unique<ScopedDeferMainFrameUpdate>(this);
 }
 
+void LayerTreeHost::StartDeferringCommits() {
+  proxy_->SetDeferCommits(true);
+}
+
+void LayerTreeHost::StopDeferringCommits() {
+  proxy_->SetDeferCommits(false);
+}
+
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();

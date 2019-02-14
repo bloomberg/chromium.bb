@@ -30,9 +30,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -189,6 +192,25 @@ void LogCursorSizeCounter(LocalFrame* frame, const Cursor& cursor) {
   } else {
     UseCounter::Count(frame, WebFeature::kCursorImageLE32x32);
   }
+}
+
+// Default value and parameter name for how long we want to delay the
+// compositor commit beyond the start of document lifdecycle updates to avoid
+// flash between navigations. The delay should be small enough so that it won't
+// confuse users expecting a new page to appear after navigation and the omnibar
+// has updated the url display.
+constexpr int kAvoidFlashCommitDelayDefaultInMs = 200;
+constexpr char kAvoidFlashCommitDelayParameterName[] = "commit_delay";
+
+// Get the field trial parameter value for AvoidFlashBetweenNavigation.
+base::TimeDelta GetCommitDelayForAvoidFlashBetweenNavigation() {
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kAvoidFlashBetweenNavigation));
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kAvoidFlashBetweenNavigation,
+          kAvoidFlashCommitDelayParameterName,
+          kAvoidFlashCommitDelayDefaultInMs));
 }
 
 }  // namespace
@@ -4046,10 +4068,37 @@ void LocalFrameView::BeginLifecycleUpdates() {
 
   SetupRenderThrottling();
   UpdateRenderThrottlingStatus(hidden_for_throttling_, subtree_throttled_);
+
   // The compositor will "defer commits" for the main frame until we
   // explicitly request them.
-  if (GetFrame().IsMainFrame())
-    GetFrame().GetPage()->GetChromeClient().BeginLifecycleUpdates();
+  if (!GetFrame().IsMainFrame())
+    return;
+
+  // Determine if we want to defer commits to the compositor once lifecycle
+  // updates start. Doing so allows us to update the page lifecycle but not
+  // present the results to screen until we see first contentful paint is
+  // available or until a timer expires.
+  // This is enabled only if kAvoidFlashBetweenNavigation is enabled, and
+  // the document loading is a regular HTML served over HTTP/HTTPs.
+  Document* document = GetFrame().GetDocument();
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAvoidFlashBetweenNavigation) &&
+      document && document->Url().ProtocolIsInHTTPFamily() &&
+      document->IsHTMLDocument()) {
+    GetFrame()
+        .GetTaskRunner(TaskType::kInternalDefault)
+        ->PostDelayedTask(FROM_HERE,
+                          WTF::Bind(&LocalFrameView::DeferredCommitsTimerFired,
+                                    WrapWeakPersistent(this)),
+                          GetCommitDelayForAvoidFlashBetweenNavigation());
+    GetFrame().GetPage()->GetChromeClient().StartDeferringCommits();
+  }
+  GetFrame().GetPage()->GetChromeClient().BeginLifecycleUpdates();
+}
+
+void LocalFrameView::DeferredCommitsTimerFired() {
+  if (GetFrame().GetPage())
+    GetFrame().GetPage()->GetChromeClient().StopDeferringCommits();
 }
 
 void LocalFrameView::SetInitialViewportSize(const IntSize& viewport_size) {
