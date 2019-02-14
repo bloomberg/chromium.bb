@@ -181,6 +181,11 @@ const char kPasswordManagerLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_password";
 #endif
 
+const char kPaymentMethodsURL[] =
+    "https://pay.google.com/payments/"
+    "home?utm_source=chrome&utm_medium=settings&utm_campaign=chrome-payment#"
+    "paymentMethods";
+
 const char kPaymentMethodsLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook/?p=settings_autofill";

@@ -42,6 +42,10 @@
         width: 70px;
       }
 
+      #saved-to-this-device-only-label {
+        margin-top: var(--cr-form-field-bottom-spacing);
+      }
+
       #year {
         width: 100px;
       }
@@ -81,6 +85,9 @@
             >
           $i18n{creditCardExpired}
         </span>
+        <div id="saved-to-this-device-only-label">
+          $i18n{savedToThisDeviceOnly}
+        </div>
       </div>
       <div slot="button-container">
         <paper-button id="cancelButton" class="cancel-button"

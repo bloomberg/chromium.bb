@@ -1508,7 +1508,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"exportPasswordsFailTipsEnoughSpace",
        IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ENOUGH_SPACE},
       {"exportPasswordsFailTipsAnotherFolder",
-       IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ANOTHER_FOLDER}};
+       IDS_SETTINGS_PASSWORDS_EXPORTING_FAILURE_TIP_ANOTHER_FOLDER},
+      {"savedToThisDeviceOnly",
+       IDS_SETTINGS_PAYMENTS_SAVED_TO_THIS_DEVICE_ONLY}};
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
@@ -1524,6 +1526,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                          chrome::kPasswordManagerLearnMoreURL);
   html_source->AddString("manageAddressesUrl",
                          autofill::payments::GetManageAddressesUrl(0).spec());
+  html_source->AddString("manageCreditCardsLabel",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS,
+                             base::UTF8ToUTF16(chrome::kPaymentMethodsURL)));
   html_source->AddString("manageCreditCardsUrl",
                          autofill::payments::GetManageInstrumentsUrl(0).spec());
   html_source->AddString("paymentMethodsLearnMoreURL",
