@@ -2155,6 +2155,25 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
     bool& need_animation) {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
+  TopDocumentRootScrollerController& controller =
+      GetPage()->GlobalRootScrollerController();
+  Node* root_scroller = controller.GlobalRootScroller();
+
+  IntRect element_bounds_in_content = element_bounds_in_document;
+  IntRect caret_bounds_in_content = caret_bounds_in_document;
+
+  // If the page has a non-default root scroller then we need to scroll that
+  // rather than the "real" viewport. However, the given coordinates are in the
+  // real viewport's document space rather than the root scroller's so we
+  // perform the conversion here.  TODO(bokan): Convert this function to take
+  // coordinates in absolute/root-frame coordinates to make this more
+  // consistent. https://crbug.com/931447.
+  if (root_scroller != MainFrameImpl()->GetFrame()->GetDocument()) {
+    ScrollOffset offset = controller.RootScrollerArea()->GetScrollOffset();
+    element_bounds_in_content.Move(FlooredIntSize(offset));
+    caret_bounds_in_content.Move(FlooredIntSize(offset));
+  }
+
   if (!zoom_into_legible_scale) {
     new_scale = PageScaleFactor();
   } else {
@@ -2162,14 +2181,14 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
     // the caret height will become minReadableCaretHeightForNode (adjusted
     // for dpi and font scale factor).
     const int min_readable_caret_height_for_node =
-        (element_bounds_in_document.Height() >=
-                 2 * caret_bounds_in_document.Height()
+        (element_bounds_in_content.Height() >=
+                 2 * caret_bounds_in_content.Height()
              ? minReadableCaretHeightForTextArea
              : minReadableCaretHeight) *
         MainFrameImpl()->GetFrame()->PageZoomFactor();
     new_scale = ClampPageScaleFactorToLimits(
         MaximumLegiblePageScale() * min_readable_caret_height_for_node /
-        caret_bounds_in_document.Height());
+        caret_bounds_in_content.Height());
     new_scale = std::max(new_scale, PageScaleFactor());
   }
   const float delta_scale = new_scale / PageScaleFactor();
@@ -2184,17 +2203,17 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
 
   // If the caret is offscreen, then animate.
   if (!visual_viewport.VisibleRectInDocument().Contains(
-          caret_bounds_in_document))
+          caret_bounds_in_content))
     need_animation = true;
 
   // If the box is partially offscreen and it's possible to bring it fully
   // onscreen, then animate.
   if (visual_viewport.VisibleRect().Width() >=
-          element_bounds_in_document.Width() &&
+          element_bounds_in_content.Width() &&
       visual_viewport.VisibleRect().Height() >=
-          element_bounds_in_document.Height() &&
+          element_bounds_in_content.Height() &&
       !visual_viewport.VisibleRectInDocument().Contains(
-          element_bounds_in_document))
+          element_bounds_in_content))
     need_animation = true;
 
   if (!need_animation)
@@ -2203,36 +2222,36 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
   FloatSize target_viewport_size(visual_viewport.Size());
   target_viewport_size.Scale(1 / new_scale);
 
-  if (element_bounds_in_document.Width() <= target_viewport_size.Width()) {
+  if (element_bounds_in_content.Width() <= target_viewport_size.Width()) {
     // Field is narrower than screen. Try to leave padding on left so field's
     // label is visible, but it's more important to ensure entire field is
     // onscreen.
     int ideal_left_padding = target_viewport_size.Width() * leftBoxRatio;
     int max_left_padding_keeping_box_onscreen =
-        target_viewport_size.Width() - element_bounds_in_document.Width();
-    new_scroll.SetX(element_bounds_in_document.X() -
+        target_viewport_size.Width() - element_bounds_in_content.Width();
+    new_scroll.SetX(element_bounds_in_content.X() -
                     std::min<int>(ideal_left_padding,
                                   max_left_padding_keeping_box_onscreen));
   } else {
     // Field is wider than screen. Try to left-align field, unless caret would
     // be offscreen, in which case right-align the caret.
     new_scroll.SetX(std::max<int>(
-        element_bounds_in_document.X(),
-        caret_bounds_in_document.X() + caret_bounds_in_document.Width() +
+        element_bounds_in_content.X(),
+        caret_bounds_in_content.X() + caret_bounds_in_content.Width() +
             caretPadding - target_viewport_size.Width()));
   }
-  if (element_bounds_in_document.Height() <= target_viewport_size.Height()) {
+  if (element_bounds_in_content.Height() <= target_viewport_size.Height()) {
     // Field is shorter than screen. Vertically center it.
     new_scroll.SetY(
-        element_bounds_in_document.Y() -
-        (target_viewport_size.Height() - element_bounds_in_document.Height()) /
+        element_bounds_in_content.Y() -
+        (target_viewport_size.Height() - element_bounds_in_content.Height()) /
             2);
   } else {
     // Field is taller than screen. Try to top align field, unless caret would
     // be offscreen, in which case bottom-align the caret.
     new_scroll.SetY(std::max<int>(
-        element_bounds_in_document.Y(),
-        caret_bounds_in_document.Y() + caret_bounds_in_document.Height() +
+        element_bounds_in_content.Y(),
+        caret_bounds_in_content.Y() + caret_bounds_in_content.Height() +
             caretPadding - target_viewport_size.Height()));
   }
 }

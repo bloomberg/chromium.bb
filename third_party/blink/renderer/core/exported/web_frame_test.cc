@@ -134,6 +134,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -11723,6 +11724,88 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
+}
+
+// Ensures scrolling a focused editable text into view that's located in the
+// root scroller works by scrolling the root scroller.
+TEST_F(WebFrameSimTest, TestScrollFocusedEditableInRootScroller) {
+  WebView().MainFrameWidget()->Resize(WebSize(500, 300));
+  WebView().SetDefaultPageScaleLimits(1.f, 4);
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+  WebView().GetPage()->GetSettings().SetViewportEnabled(false);
+  WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        ::-webkit-scrollbar {
+          width: 0px;
+          height: 0px;
+        }
+        body,html {
+          width: 100%;
+          height: 100%;
+          margin: 0px;
+        }
+        input {
+          border: 0;
+          padding: 0;
+          margin-left: 200px;
+          margin-top: 700px;
+          width: 100px;
+          height: 20px;
+        }
+        #scroller {
+          background: silver;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+        }
+      </style>
+      <div id="scroller" tabindex="-1">
+        <input type="text">
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  TopDocumentRootScrollerController& rs_controller =
+      GetDocument().GetPage()->GlobalRootScrollerController();
+
+  Element* scroller = GetDocument().getElementById("scroller");
+  ASSERT_EQ(scroller, rs_controller.GlobalRootScroller());
+
+  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
+
+  WebView().AdvanceFocus(false);
+
+  rs_controller.RootScrollerArea()->SetScrollOffset(ScrollOffset(0, 300),
+                                                    kProgrammaticScroll);
+
+  FloatRect inputRect(200, 700, 100, 20);
+  ASSERT_EQ(1, visual_viewport.Scale());
+  ASSERT_EQ(FloatPoint(0, 300),
+            visual_viewport.VisibleRectInDocument().Location());
+  ASSERT_FALSE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
+
+  WebView()
+      .MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
+
+  EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
+
+  ScrollOffset target_offset = ToFloatSize(
+      FloatPoint(WebView().FakePageScaleAnimationTargetPositionForTesting()));
+
+  rs_controller.RootScrollerArea()->SetScrollOffset(target_offset,
+                                                    kProgrammaticScroll);
+
+  EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
 }
 
 TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
