@@ -535,6 +535,13 @@ static EdgeInfo edge_info(const struct buf_2d *ref, const BLOCK_SIZE bsize,
   return av1_edge_exists(ref->buf, ref->stride, width, height, high_bd, bd);
 }
 
+static int use_pb_simple_motion_pred_sse(const AV1_COMP *const cpi) {
+  // TODO(debargha, yuec): Not in use, need to implement a speed feature
+  // utilizing this data point, and replace '0' by the corresponding speed
+  // feature flag.
+  return 0 && !frame_is_intra_only(&cpi->common);
+}
+
 static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
                           MACROBLOCK *const x, int mi_row, int mi_col,
                           RD_STATS *rd_cost, PARTITION_TYPE partition,
@@ -623,6 +630,13 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->source_variance =
         av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
   }
+  if (use_pb_simple_motion_pred_sse(cpi)) {
+    const MV ref_mv_full = { .row = 0, .col = 0 };
+    unsigned int var = 0;
+    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full, 0,
+                              &x->simple_motion_pred_sse, &var);
+  }
+
   // If the threshold for disabling wedge search is zero, it means the feature
   // should not be used. Use a value that will always succeed in the check.
   if (cpi->sf.disable_wedge_search_edge_thresh == 0) {
@@ -2309,6 +2323,8 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
                                  int use_subpixel) {
   assert(num_planes == 1 &&
          "Currently simple_motion_search only supports luma plane");
+  assert(!frame_is_intra_only(&cpi->common) &&
+         "Simple motion search only enabled for non-key frames");
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
 
@@ -4222,6 +4238,11 @@ BEGIN_PARTITION_SEARCH:
   // Partition block source pixel variance.
   unsigned int pb_source_variance = UINT_MAX;
 
+  // Partition block sse after simple motion compensation, not in use now,
+  // but will be used for upcoming speed features
+  unsigned int pb_simple_motion_pred_sse = UINT_MAX;
+  (void)pb_simple_motion_pred_sse;
+
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8) {
     if (block_size_high[bsize] <= 8) partition_horz_allowed = 0;
@@ -4252,6 +4273,7 @@ BEGIN_PARTITION_SEARCH:
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_NONE,
                   bsize, ctx_none, best_remain_rdcost, 0);
     pb_source_variance = x->source_variance;
+    pb_simple_motion_pred_sse = x->simple_motion_pred_sse;
     if (none_rd) *none_rd = this_rdc.rdcost;
     cur_none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
@@ -4724,6 +4746,15 @@ BEGIN_PARTITION_SEARCH:
       pb_source_variance =
           av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
     }
+  }
+
+  if (use_pb_simple_motion_pred_sse(cpi) &&
+      pb_simple_motion_pred_sse == UINT_MAX) {
+    const MV ref_mv_full = { .row = 0, .col = 0 };
+    unsigned int var = 0;
+
+    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full, 0,
+                              &pb_simple_motion_pred_sse, &var);
   }
 
   assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !do_rectangular_split));
@@ -5438,6 +5469,7 @@ static void first_partition_search_pass(AV1_COMP *cpi, ThreadData *td,
   x->cb_partition_scan = 0;
 
   x->source_variance = UINT_MAX;
+  x->simple_motion_pred_sse = UINT_MAX;
   if (sf->adaptive_pred_interp_filter) {
     const int leaf_nodes = 256;
     for (int i = 0; i < leaf_nodes; ++i) {
@@ -5799,6 +5831,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     const int idx_str = cm->mi_stride * mi_row + mi_col;
     MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
     x->source_variance = UINT_MAX;
+    x->simple_motion_pred_sse = UINT_MAX;
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
       set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
       const BLOCK_SIZE bsize = seg_skip ? sb_size : sf->always_this_block_size;
