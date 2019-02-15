@@ -14,6 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -102,6 +103,13 @@ void SadTabTabHelper::WasHidden(web::WebState* web_state) {
 
 void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
+
+  // Don't present a sad tab on top of an NTP.
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(web_state);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    return;
+  }
+
   if (!web_state->IsVisible()) {
     requires_reload_on_becoming_visible_ = true;
     return;

@@ -8,6 +8,9 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -140,6 +143,25 @@ TEST_F(SadTabTabHelperTest, AppInBackground) {
   EXPECT_TRUE(PagePlaceholderTabHelper::FromWebState(&web_state_)
                   ->will_add_placeholder_for_next_navigation());
   EXPECT_TRUE(navigation_manager_->LoadIfNecessaryWasCalled());
+}
+
+// Tests that SadTab is not presented if app is displaying the NTP.
+TEST_F(SadTabTabHelperTest, AppOnNTP) {
+  web_state_.WasShown();
+
+  web_state_.SetVisibleURL(GURL(kChromeUINewTabURL));
+  id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+  NewTabPageTabHelper::CreateForWebState(&web_state_, delegate);
+
+  // Delegate and TabHelper should not present a SadTab.
+  EXPECT_FALSE(tab_helper()->is_showing_sad_tab());
+  EXPECT_FALSE(sad_tab_delegate_.showingSadTab);
+
+  // Helper should get notified of render process failure,
+  // but Sad Tab should not be presented, because application is on the NTP.
+  web_state_.OnRenderProcessGone();
+  EXPECT_FALSE(tab_helper()->is_showing_sad_tab());
+  EXPECT_FALSE(sad_tab_delegate_.showingSadTab);
 }
 
 // Tests that SadTab is not presented if app is in inactive  and navigation
