@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
-import org.chromium.chrome.browser.vr.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.RenderTestUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
@@ -165,7 +164,6 @@ public class VrBrowserDialogTest {
      */
     @Test
     @LargeTest
-    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     @Feature({"Browser", "RenderTest"})
     public void testMicrophonePermissionPrompt()
             throws InterruptedException, TimeoutException, IOException {
@@ -180,7 +178,6 @@ public class VrBrowserDialogTest {
      */
     @Test
     @LargeTest
-    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     @Feature({"Browser", "RenderTest"})
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testCameraPermissionPrompt()
@@ -195,7 +192,6 @@ public class VrBrowserDialogTest {
      */
     @Test
     @LargeTest
-    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     @Feature({"Browser", "RenderTest"})
     public void testLocationPermissionPrompt()
             throws InterruptedException, TimeoutException, IOException {
@@ -210,7 +206,6 @@ public class VrBrowserDialogTest {
      */
     @Test
     @LargeTest
-    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     @Feature({"Browser", "RenderTest"})
     public void testNotificationPermissionPrompt()
             throws InterruptedException, TimeoutException, IOException {

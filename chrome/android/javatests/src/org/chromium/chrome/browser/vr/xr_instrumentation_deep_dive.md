@@ -117,8 +117,7 @@ blank page and implement a method that allows it to work with
 `XrActivityRestrictionRule`.
 
 Rules that implement `VrTestRule` do the same, but also perform some additional
-VR-specific setup such as ensuring that the test is not started in VR and
-allowing the use of the experimental/broken VrCore head tracking service.
+VR-specific setup such as ensuring that the test is not started in VR.
 
 ## Dynamic VrCore Settings
 

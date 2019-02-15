@@ -66,7 +66,6 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
         TestVrShellDelegate.setDescription(desc);
 
         VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
-        HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(rule, desc);
         launcher.launch();
         // Must be called after Chrome is started, as otherwise startService fails with an
         // IllegalStateException for being used from a backgrounded app.
@@ -83,11 +82,7 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
             VrFeedbackStatus.setUserExitedAndEntered2DCount(0);
         }
 
-        try {
-            base.evaluate();
-        } finally {
-            if (rule.isTrackerDirty()) HeadTrackingUtils.revertTracker();
-        }
+        base.evaluate();
     }
 
     /**
