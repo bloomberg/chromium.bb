@@ -185,7 +185,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // may be null.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
-  HistoryBackend(Delegate* delegate,
+  HistoryBackend(std::unique_ptr<Delegate> delegate,
                  std::unique_ptr<HistoryBackendClient> backend_client,
                  scoped_refptr<base::SequencedTaskRunner> task_runner);
 

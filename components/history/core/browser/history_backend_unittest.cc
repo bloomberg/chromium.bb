@@ -254,9 +254,10 @@ class HistoryBackendTestBase : public testing::Test {
     if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
                                       &test_dir_))
       return;
-    backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                  history_client_.CreateBackendClient(),
-                                  base::ThreadTaskRunnerHandle::Get());
+    backend_ = base::MakeRefCounted<HistoryBackend>(
+        std::make_unique<HistoryBackendTestDelegate>(this),
+        history_client_.CreateBackendClient(),
+        base::ThreadTaskRunnerHandle::Get());
     backend_->Init(false, TestHistoryDatabaseParamsForPath(test_dir_));
   }
 
@@ -1666,9 +1667,10 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
-  backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                history_client_.CreateBackendClient(),
-                                base::ThreadTaskRunnerHandle::Get());
+  backend_ = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<HistoryBackendTestDelegate>(this),
+      history_client_.CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = nullptr;
@@ -3360,9 +3362,10 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
 
-  backend_ = new HistoryBackend(new HistoryBackendTestDelegate(this),
-                                history_client_.CreateBackendClient(),
-                                base::ThreadTaskRunnerHandle::Get());
+  backend_ = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<HistoryBackendTestDelegate>(this),
+      history_client_.CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   backend_->Init(false, TestHistoryDatabaseParamsForPath(new_history_path));
   backend_->Closing();
   backend_ = nullptr;

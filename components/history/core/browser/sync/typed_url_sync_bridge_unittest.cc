@@ -234,7 +234,7 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
 class TestHistoryBackend : public HistoryBackend {
  public:
   TestHistoryBackend()
-      : HistoryBackend(new TestHistoryBackendDelegate(),
+      : HistoryBackend(std::make_unique<TestHistoryBackendDelegate>(),
                        nullptr,
                        base::ThreadTaskRunnerHandle::Get()) {}
 
