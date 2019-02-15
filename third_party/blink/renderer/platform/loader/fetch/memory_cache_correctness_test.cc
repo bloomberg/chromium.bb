@@ -187,9 +187,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshFromMaxAge) {
   EXPECT_EQ(fresh200, fetched);
 }
 
-// The strong validator causes a revalidation to be launched, and the proxy and
-// original resources leak because of their reference loop.
-TEST_F(MemoryCacheCorrectnessTest, DISABLED_ExpiredFromLastModified) {
+TEST_F(MemoryCacheCorrectnessTest, ExpiredFromLastModified) {
   ResourceResponse expired200_response;
   expired200_response.SetHTTPStatusCode(200);
   expired200_response.SetHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -201,8 +199,13 @@ TEST_F(MemoryCacheCorrectnessTest, DISABLED_ExpiredFromLastModified) {
   // Advance the clock beyond the implicit freshness period.
   AdvanceClock(24. * 60. * 60. * 0.2);
 
+  EXPECT_FALSE(expired200->ErrorOccurred());
   MockResource* fetched = FetchMockResource();
-  EXPECT_NE(expired200, fetched);
+  // We want to make sure that revalidation happens, and we are checking the
+  // ResourceStatus because in this case the revalidation request fails
+  // synchronously.
+  EXPECT_EQ(expired200, fetched);
+  EXPECT_TRUE(expired200->ErrorOccurred());
 }
 
 TEST_F(MemoryCacheCorrectnessTest, ExpiredFromExpires) {
