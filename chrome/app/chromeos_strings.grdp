@@ -3518,7 +3518,28 @@
     Install <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph>
   </message>
   <message name="IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_DETAILS_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder description details for surfaced Crostini Repository Search results in the app launcher">
-    Crostini Application
+    Linux Application
+  </message>
+
+  <!-- Crostini app install dialog messages-->
+  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_INSTALL_BUTTON" desc="Label for the button in the Crostini app install dialog to begin installing a Linux app.">
+    Install
+  </message>
+  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_TITLE_TEXT" desc="Title text for the Crostini app install dialog">
+    Install <ph name="APP_NAME">$1<ex>GIMP</ex></ph> (Linux App)
+  </message>
+  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_BODY_TEXT" desc="General body text for the Crostini app install dialog">
+    Are you sure you want to install <ph name="APP_NAME">$1<ex>GIMP</ex></ph>?
+  </message>
+  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_PACKAGE_TEXT" desc="Body text for the package information in the Crostini app install dialog">
+    Version:
+    <ph name="LINUX_VERSION">$1<ex>0.8-1</ex></ph>
+
+    Description:
+    <ph name="LINUX_DESCRIPTION">$2<ex>GIMP is a really great text editor</ex></ph>
+  </message>
+  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_NO_DESCRIPTION_TEXT" desc="Body text for when their is no description to display in the Crostini app install dialog">
+    No description is available.
   </message>
 
   <!-- Time limit notification -->

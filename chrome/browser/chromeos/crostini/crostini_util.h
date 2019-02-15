@@ -26,6 +26,8 @@ class Profile;
 
 namespace crostini {
 
+struct LinuxPackageInfo;
+
 // A unique identifier for our containers. This is <vm_name, container_name>.
 using ContainerId = std::pair<std::string, std::string>;
 
@@ -108,6 +110,9 @@ void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
 // Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
+// Shows the Crostini App installer dialog.
+void ShowCrostiniAppInstallerView(Profile* profile,
+                                  const LinuxPackageInfo& package_info);
 // Shows the Crostini App Uninstaller dialog.
 void ShowCrostiniAppUninstallerView(Profile* profile,
                                     const std::string& app_id);
