@@ -61,10 +61,10 @@
 #include "ui/gfx/image/image_family.h"
 
 // A TerminationObserver observes a NSRunningApplication for when it
-// terminates. On termination, it will run the specified callback, and then
-// release itself.
+// terminates. On termination, it will run the specified callback on the UI
+// thread and release itself.
 @interface TerminationObserver : NSObject {
-  NSRunningApplication* app_;
+  base::scoped_nsobject<NSRunningApplication> app_;
   base::OnceClosure callback_;
 }
 - (id)initWithRunningApplication:(NSRunningApplication*)app
@@ -75,25 +75,38 @@
 - (id)initWithRunningApplication:(NSRunningApplication*)app
                         callback:(base::OnceClosure)callback {
   if (self = [super init]) {
-    app_ = app;
     callback_ = std::move(callback);
-    [app_ retain];
+    app_.reset(app, base::scoped_policy::RETAIN);
+    // Note that |observeValueForKeyPath| will be called with the initial value
+    // within the |addObserver| call.
     [app_ addObserver:self
            forKeyPath:@"isTerminated"
-              options:NSKeyValueObservingOptionNew
+              options:NSKeyValueObservingOptionNew |
+                      NSKeyValueObservingOptionInitial
               context:nullptr];
   }
   return self;
 }
+
 - (void)observeValueForKeyPath:(NSString*)keyPath
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
+  NSNumber* newNumberValue = [change objectForKey:NSKeyValueChangeNewKey];
+  BOOL newValue = [newNumberValue boolValue];
+  if (newValue) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            [](TerminationObserver* observer) { [observer onTerminated]; },
+            self));
+  }
+}
+
+- (void)onTerminated {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::move(callback_).Run();
   [app_ removeObserver:self forKeyPath:@"isTerminated" context:nullptr];
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           std::move(callback_));
-  [app_ release];
-  app_ = nil;
   [self release];
 }
 @end
