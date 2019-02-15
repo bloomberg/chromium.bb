@@ -370,6 +370,16 @@ def AddGnuWinToPath():
     f.write('group: files\n')
 
 
+def SetMacXcodePath():
+  """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
+  if sys.platform != 'darwin':
+    return
+
+  xcode_path = os.path.join(CHROMIUM_DIR, 'build', 'mac_files', 'Xcode.app')
+  if os.path.exists(xcode_path):
+    os.environ['DEVELOPER_DIR'] = xcode_path
+
+
 win_sdk_dir = None
 dia_dll = None
 def GetWinSDKDir():
@@ -511,6 +521,7 @@ def UpdateClang(args):
 
   AddCMakeToPath(args)
   AddGnuWinToPath()
+  SetMacXcodePath()
 
   DeleteChromeToolsShim()
 
