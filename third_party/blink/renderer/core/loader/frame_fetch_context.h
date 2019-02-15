@@ -60,6 +60,7 @@ class ResourceError;
 class ResourceResponse;
 class Settings;
 class WebContentSettingsClient;
+struct UserAgentMetadata;
 struct WebEnabledClientHints;
 
 class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
@@ -204,6 +205,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   WebContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
+  UserAgentMetadata GetUserAgentMetadata() const;
   const ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,

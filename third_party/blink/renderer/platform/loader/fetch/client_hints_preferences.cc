@@ -48,6 +48,26 @@ void ParseAcceptChHeader(const String& header_value,
       mojom::WebClientHintsType::kLang,
       enabled_hints.IsEnabled(mojom::WebClientHintsType::kLang) &&
           RuntimeEnabledFeatures::LangClientHintHeaderEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kUA,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUA) &&
+          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kUAArch,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAArch) &&
+          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kUAPlatform,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAPlatform) &&
+          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kUAModel,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kUAModel) &&
+          RuntimeEnabledFeatures::UserAgentClientHintEnabled());
 }
 
 }  // namespace

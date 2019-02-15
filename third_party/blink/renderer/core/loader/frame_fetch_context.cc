@@ -106,6 +106,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -180,6 +181,7 @@ struct FrameFetchContext::FrozenState final
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
               const String& user_agent,
+              const UserAgentMetadata& user_agent_metadata,
               bool is_svg_image_chrome_client)
       : url(url),
         parent_security_origin(std::move(parent_security_origin)),
@@ -189,6 +191,7 @@ struct FrameFetchContext::FrozenState final
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
+        user_agent_metadata(user_agent_metadata),
         is_svg_image_chrome_client(is_svg_image_chrome_client) {}
 
   const KURL url;
@@ -199,6 +202,7 @@ struct FrameFetchContext::FrozenState final
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
+  const UserAgentMetadata user_agent_metadata;
   const bool is_svg_image_chrome_client;
 
   void Trace(blink::Visitor* visitor) {
@@ -723,6 +727,33 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
     return;
 
+  // Sec-CH-UA is special: we always send the header to all origins that are
+  // eligible for client hints (e.g. secure transport, JavaScript enabled). We
+  // alter the header's value based on whether or not the site has opted into
+  // additional detail.
+  //
+  // https://github.com/WICG/ua-client-hints
+  blink::UserAgentMetadata ua = GetUserAgentMetadata();
+  if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
+    StringBuilder result;
+    result.Append(ua.brand.data());
+    if (!ua.version.empty()) {
+      result.Append(' ');
+      if (ShouldSendClientHint(mojom::WebClientHintsType::kUA,
+                               hints_preferences, enabled_hints)) {
+        result.Append(ua.version.data());
+      } else {
+        // TODO(mkwst): This should only send the major version, but we haven't
+        // piped that through yet.
+        result.Append(ua.version.data());
+      }
+    }
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kUA)],
+        result.ToAtomicString());
+  }
+
   bool is_1p_origin = IsFirstPartyOrigin(request.Url());
 
   if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
@@ -829,6 +860,30 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             ->DomWindow()
             ->navigator()
             ->SerializeLanguagesForClientHintHeader());
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kUAArch,
+                           hints_preferences, enabled_hints)) {
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kUAArch)],
+        AtomicString(ua.architecture.data()));
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kUAPlatform,
+                           hints_preferences, enabled_hints)) {
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kUAPlatform)],
+        AtomicString(ua.platform.data()));
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kUAModel,
+                           hints_preferences, enabled_hints)) {
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kUAModel)],
+        AtomicString(ua.model.data()));
   }
 }
 
@@ -1072,6 +1127,12 @@ String FrameFetchContext::GetUserAgent() const {
   return GetFrame()->Loader().UserAgent();
 }
 
+UserAgentMetadata FrameFetchContext::GetUserAgentMetadata() const {
+  if (GetResourceFetcherProperties().IsDetached())
+    return frozen_state_->user_agent_metadata;
+  return GetLocalFrameClient()->UserAgentMetadata();
+}
+
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
     const {
   if (GetResourceFetcherProperties().IsDetached())
@@ -1114,13 +1175,15 @@ FetchContext* FrameFetchContext::Detach() {
     frozen_state_ = MakeGarbageCollected<FrozenState>(
         Url(), GetParentSecurityOrigin(), GetContentSecurityPolicy(),
         GetSiteForCookies(), GetTopFrameOrigin(), GetClientHintsPreferences(),
-        GetDevicePixelRatio(), GetUserAgent(), IsSVGImageChromeClient());
+        GetDevicePixelRatio(), GetUserAgent(), GetUserAgentMetadata(),
+        IsSVGImageChromeClient());
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = MakeGarbageCollected<FrozenState>(
         NullURL(), GetParentSecurityOrigin(), GetContentSecurityPolicy(),
         GetSiteForCookies(), GetTopFrameOrigin(), GetClientHintsPreferences(),
-        GetDevicePixelRatio(), GetUserAgent(), IsSVGImageChromeClient());
+        GetDevicePixelRatio(), GetUserAgent(), GetUserAgentMetadata(),
+        IsSVGImageChromeClient());
   }
 
   frame_or_imported_document_ = nullptr;

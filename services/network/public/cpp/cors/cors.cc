@@ -359,21 +359,38 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
   static const char* const safe_names[] = {
-      "accept", "accept-language", "content-language", "intervention",
-      "content-type", "save-data",
+      "accept",
+      "accept-language",
+      "content-language",
+      "intervention",
+      "content-type",
+      "save-data",
       // The Device Memory header field is a number that indicates the client’s
       // device memory i.e. approximate amount of ram in GiB. The header value
       // must satisfy ABNF  1*DIGIT [ "." 1*DIGIT ]
       // See
       // https://w3c.github.io/device-memory/#sec-device-memory-client-hint-header
       // for more details.
-      "device-memory", "dpr", "width", "viewport-width",
+      "device-memory",
+      "dpr",
+      "width",
+      "viewport-width",
 
       // The `Sec-CH-Lang` header field is a proposed replacement for
       // `Accept-Language`, using the Client Hints infrastructure.
       //
       // https://tools.ietf.org/html/draft-west-lang-client-hint
-      "sec-ch-lang"};
+      "sec-ch-lang",
+
+      // The `Sec-CH-UA-*` header fields are proposed replacements for
+      // `User-Agent`, using the Client Hints infrastructure.
+      //
+      // https://tools.ietf.org/html/draft-west-ua-client-hints
+      "sec-ch-ua",
+      "sec-ch-ua-platform",
+      "sec-ch-ua-arch",
+      "sec-ch-ua-model",
+  };
   const std::string lower_name = base::ToLowerASCII(name);
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))

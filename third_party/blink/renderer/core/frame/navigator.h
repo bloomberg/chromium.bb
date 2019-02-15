@@ -71,8 +71,12 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
 
   String GetAcceptLanguages() override;
   UserAgentMetadata GetUserAgentMetadata() const override;
+  void SetUserAgentMetadataForTesting(UserAgentMetadata);
 
   void Trace(blink::Visitor*) override;
+
+ private:
+  UserAgentMetadata metadata_;
 };
 
 }  // namespace blink

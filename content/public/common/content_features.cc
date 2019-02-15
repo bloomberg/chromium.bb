@@ -498,6 +498,11 @@ const base::Feature kUserActivationSameOriginVisibility{
 const base::Feature kUserActivationV2{"UserActivationV2",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// An experimental replacement for the `User-Agent` header, defined in
+// https://tools.ietf.org/html/draft-west-ua-client-hints.
+const base::Feature kUserAgentClientHint{"UserAgentClientHint",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables V8's low memory mode for subframes. This is used only
 // in conjunction with the --site-per-process feature.
 const base::Feature kV8LowMemoryModeForSubframes{
