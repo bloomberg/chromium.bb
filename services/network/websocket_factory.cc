@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/url_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -63,10 +64,7 @@ class WebSocketFactory::Delegate final : public WebSocket::Delegate {
 
   bool CanReadRawCookies(const GURL& url) override {
     DCHECK(url.SchemeIsWSOrWSS());
-    GURL::Replacements replace_scheme;
-    replace_scheme.SetSchemeStr(
-        url.SchemeIs(url::kWssScheme) ? url::kHttpsScheme : url::kHttpScheme);
-    GURL url_to_check = url.ReplaceComponents(replace_scheme);
+    GURL url_to_check = net::ChangeWebSocketSchemeToHttpScheme(url);
     return factory_->context_->network_service()->HasRawHeadersAccess(
         process_id_, url_to_check);
   }

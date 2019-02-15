@@ -156,6 +156,12 @@ NET_EXPORT bool HostStringIsLocalhost(base::StringPiece host);
 //   - reference section
 NET_EXPORT GURL SimplifyUrlForRequest(const GURL& url);
 
+// Changes scheme "ws" to "http" and "wss" to "https". This is useful for origin
+// checks and authentication, where WebSocket URLs are treated as if they were
+// HTTP. It is an error to call this function with a url with a scheme other
+// than "ws" or "wss".
+NET_EXPORT GURL ChangeWebSocketSchemeToHttpScheme(const GURL& url);
+
 // Extracts the unescaped username/password from |url|, saving the results
 // into |*username| and |*password|.
 NET_EXPORT_PRIVATE void GetIdentityFromURL(const GURL& url,
