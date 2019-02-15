@@ -140,19 +140,6 @@ google_apis::CancelCallback RunResumeUploadFile(
                                     params.progress_callback);
 }
 
-// Collects information about sizes of files copied or moved from or to Drive
-// Otherwise does nothing. Temporary for crbug.com/229650.
-void CollectCopyHistogramSample(const std::string& histogram_name,
-                                int64_t size) {
-  base::HistogramBase* const counter =
-      base::Histogram::FactoryGet(histogram_name,
-                                  1,
-                                  1024 * 1024 /* 1 GB */,
-                                  50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(size / 1024);
-}
-
 }  // namespace
 
 // Metadata jobs are cheap, so we run them concurrently. File jobs run serially.
@@ -617,10 +604,6 @@ JobID JobScheduler::DownloadFile(
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample("Drive.DownloadFromDriveFileSize",
-                             expected_file_size);
-
   JobEntry* new_job = CreateNewJob(TYPE_DOWNLOAD_FILE);
   new_job->job_info.file_path = virtual_path;
   new_job->job_info.num_total_bytes = expected_file_size;
@@ -659,9 +642,6 @@ void JobScheduler::UploadNewFile(
   new_job->job_info.file_path = drive_file_path;
   new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
-
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample("Drive.UploadToDriveFileSize", expected_file_size);
 
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
@@ -702,9 +682,6 @@ void JobScheduler::UploadExistingFile(
   new_job->job_info.file_path = drive_file_path;
   new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
-
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample("Drive.UploadToDriveFileSize", expected_file_size);
 
   UploadExistingFileParams params;
   params.resource_id = resource_id;
@@ -779,20 +756,6 @@ void JobScheduler::QueueJob(JobID job_id) {
                          job_info.job_type == TYPE_UPLOAD_NEW_FILE;
   queue_[queue_type]->Push(job_id, job_entry->context.type, batchable,
                            job_info.num_total_bytes);
-
-  // Temporary histogram for crbug.com/229650.
-  if (job_info.job_type == TYPE_DOWNLOAD_FILE ||
-      job_info.job_type == TYPE_UPLOAD_EXISTING_FILE ||
-      job_info.job_type == TYPE_UPLOAD_NEW_FILE) {
-    std::vector<JobID> jobs_with_the_same_priority;
-    queue_[queue_type]->GetQueuedJobs(job_entry->context.type,
-                                      &jobs_with_the_same_priority);
-    DCHECK(!jobs_with_the_same_priority.empty());
-
-    const size_t blocking_jobs_count = jobs_with_the_same_priority.size() - 1;
-    UMA_HISTOGRAM_COUNTS_10000("Drive.TransferBlockedOnJobs",
-                               blocking_jobs_count);
-  }
 
   const std::string retry_prefix = job_entry->retry_count > 0 ?
       base::StringPrintf(" (retry %d)", job_entry->retry_count) : "";
