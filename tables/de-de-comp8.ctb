@@ -278,7 +278,7 @@ sign \x00fd 24568
 sign \x00fe 12348
 sign \x00ff 134568
 sign \x25e6 67		# white bullet
-sign \x25fe 3678        # black square
+sign \x25fe 3678  # black square
 sign \x2022 35		# •
 sign \x2014 36		# —
 sign \x2013 36		# –
@@ -286,6 +286,7 @@ sign \x201e 1268	# „
 sign \x201c 138		# “
 sign \x201a 3678	# ‚
 sign \x2018 2367	# ‘
+noback sign \X25CF 35	# 9679 black circle
 
 # those symbols should be ignored because there is no one character mapping in the actual braille table
 sign \x2192 0	# →
