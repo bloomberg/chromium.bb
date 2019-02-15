@@ -95,6 +95,10 @@ class ArcAppTest {
     wait_default_apps_ = wait_default_apps;
   }
 
+  void set_activate_arc_on_start(bool activate_arc_on_start) {
+    activate_arc_on_start_ = activate_arc_on_start;
+  }
+
  private:
   const user_manager::User* CreateUserAndLogin();
   bool FindPackage(const std::string& package_name);
@@ -106,6 +110,9 @@ class ArcAppTest {
   ArcAppListPrefs* arc_app_list_pref_ = nullptr;
 
   bool wait_default_apps_ = true;
+
+  // If set to true ARC would be automatically enabled on test start up.
+  bool activate_arc_on_start_ = true;
 
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;

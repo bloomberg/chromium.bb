@@ -513,13 +513,20 @@ class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
  protected:
   // Simulates ARC restart.
   void RestartArc() {
-    arc_test()->TearDown();
-    ResetBuilder();
+    StopArc();
+    StartArc();
+  }
 
+  void StartArc() {
     ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
         profile_.get());
     arc_test()->SetUp(profile_.get());
     CreateBuilder();
+  }
+
+  void StopArc() {
+    arc_test()->TearDown();
+    ResetBuilder();
   }
 
   // ArcAppModelBuilderTest:
@@ -1475,6 +1482,39 @@ TEST_P(ArcAppModelBuilderRecreate, AppModelRestart) {
   app_instance()->SendRefreshAppList(fake_apps());
   ValidateHaveApps(fake_apps());
   EXPECT_EQ(fake_apps().size(), GetArcItemCount());
+}
+
+// Verifies that no OnAppRegistered/OnAppRemoved is called in case ARC++ started
+// next time disabled.
+TEST_P(ArcAppModelBuilderRecreate, AppsNotReportedNextSessionDisabled) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  // Register one app first.
+  const arc::mojom::AppInfo& app = fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList({app});
+
+  // We will wait for default apps manually once observer is set.
+  arc_test()->set_wait_default_apps(false);
+  arc_test()->set_activate_arc_on_start(false);
+  StopArc();
+  // Disable ARC in beetwen sessions.
+  arc::SetArcPlayStoreEnabledForProfile(profile(), false);
+  StartArc();
+
+  prefs = ArcAppListPrefs::Get(profile_.get());
+
+  arc::MockArcAppListPrefsObserver observer;
+  prefs->AddObserver(&observer);
+  EXPECT_CALL(observer,
+              OnAppRegistered(
+                  app_id, GetAppInfoExpectation(app, true /* launchable */)))
+      .Times(0);
+  EXPECT_CALL(observer, OnAppRemoved(app_id)).Times(0);
+
+  arc_test()->WaitForDefaultApps();
 }
 
 TEST_P(ArcPlayStoreAppTest, PlayStore) {

@@ -1182,7 +1182,14 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   const bool removed = apps->Remove(app_id, nullptr);
   DCHECK(removed);
 
-  DCHECK(tracked_apps_.count(app_id));
+  // |tracked_apps_| contains apps that are reported externally as available.
+  // However, in case ARC++ appears as disbled on next start and had some apps
+  // left in prefs from the previous session, app clean up is performed on very
+  // early stage. Don't report |OnAppRemoved| in this case once the app was not
+  // reported as available for the current session.
+  if (!tracked_apps_.count(app_id))
+    return;
+
   for (auto& observer : observer_list_)
     observer.OnAppRemoved(app_id);
   tracked_apps_.erase(app_id);
