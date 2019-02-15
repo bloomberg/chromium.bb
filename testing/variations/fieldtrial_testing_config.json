@@ -4382,12 +4382,26 @@
     "ServiceWorkerForegroundPriority": [
         {
             "platforms": [
-                "android",
-                "android_webview",
                 "chromeos",
                 "linux",
                 "mac",
                 "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceWorkerForegroundPriority"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ServiceWorkerForegroundPriorityAndroid": [
+        {
+            "platforms": [
+                "android",
+                "android_webview"
             ],
             "experiments": [
                 {
