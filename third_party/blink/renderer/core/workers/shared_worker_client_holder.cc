@@ -63,9 +63,11 @@ SharedWorkerClientHolder* SharedWorkerClientHolder::From(Document& document) {
 }
 
 SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
-    : ContextLifecycleObserver(&document) {
+    : ContextLifecycleObserver(&document),
+      task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
-  document.GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&connector_));
+  document.GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&connector_, task_runner_));
 }
 
 void SharedWorkerClientHolder::Connect(
@@ -97,7 +99,8 @@ void SharedWorkerClientHolder::Connect(
 
   mojom::blink::SharedWorkerClientPtr client_ptr;
   client_set_.AddBinding(std::make_unique<SharedWorkerClient>(worker),
-                         mojo::MakeRequest(&client_ptr));
+                         mojo::MakeRequest(&client_ptr, task_runner_),
+                         task_runner_);
 
   connector_->Connect(
       std::move(info), std::move(client_ptr),

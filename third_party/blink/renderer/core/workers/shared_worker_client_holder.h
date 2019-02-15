@@ -87,6 +87,8 @@ class CORE_EXPORT SharedWorkerClientHolder final
   mojom::blink::SharedWorkerConnectorPtr connector_;
   mojo::StrongBindingSet<mojom::blink::SharedWorkerClient> client_set_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerClientHolder);
 };
 
