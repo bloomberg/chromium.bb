@@ -523,6 +523,10 @@ const char kEnableCSSFragmentIdentifiersDescription[] =
     "Enable support for specifying a target element using a css selector in "
     "the fragment identifier.";
 
+const char kEnableFilesystemInIncognitoName[] = "Filesystem API in Incognito";
+const char kEnableFilesystemInIncognitoDescription[] =
+    "Enable Filesystem API in incognito mode.";
+
 const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 
 const char kEnableNoScriptPreviewsDescription[] =

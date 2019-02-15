@@ -31478,6 +31478,7 @@ from previous Chrome versions.
   <int value="-757946835"
       label="OmniboxUIExperimentShowSuggestionFavicons:enabled"/>
   <int value="-757379927" label="Canvas2DImageChromium:enabled"/>
+  <int value="-757282194" label="EnableFilesystemInIncognito:enabled"/>
   <int value="-750175757" label="ClientLoFi:enabled"/>
   <int value="-749048160" label="enable-panels"/>
   <int value="-747463111" label="ContentSuggestionsNotifications:disabled"/>
@@ -32145,6 +32146,7 @@ from previous Chrome versions.
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>
+  <int value="452955571" label="EnableFilesystemInIncognito:disabled"/>
   <int value="453102772" label="OfflinePagesLoadSignalCollecting:disabled"/>
   <int value="455698038"
       label="disable-gesture-requirement-for-media-playback"/>
@@ -32307,6 +32309,7 @@ from previous Chrome versions.
   <int value="720931007" label="WebAuthenticationBle:enabled"/>
   <int value="721225492" label="PolicyTool:enabled"/>
   <int value="723619383" label="TopSitesFromSiteEngagement:enabled"/>
+  <int value="724052572" label="EnableFilesystemInIncognito"/>
   <int value="724208771" label="TabsInCBD:enabled"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
