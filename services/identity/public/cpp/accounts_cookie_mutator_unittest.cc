@@ -57,9 +57,7 @@ enum class AccountsCookiesMutatorAction {
 namespace identity {
 class AccountsCookieMutatorTest : public testing::Test {
  public:
-  AccountsCookieMutatorTest()
-      : identity_test_env_(&test_url_loader_factory_),
-        identity_manager_observer_(identity_test_env_.identity_manager()) {}
+  AccountsCookieMutatorTest() : identity_test_env_(&test_url_loader_factory_) {}
 
   ~AccountsCookieMutatorTest() override {}
 
@@ -121,7 +119,7 @@ class AccountsCookieMutatorTest : public testing::Test {
   }
 
   TestIdentityManagerObserver* identity_manager_observer() {
-    return &identity_manager_observer_;
+    return identity_test_env_.identity_manager_observer();
   }
 
   AccountsCookieMutator* accounts_cookie_mutator() {
@@ -132,7 +130,6 @@ class AccountsCookieMutatorTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
-  TestIdentityManagerObserver identity_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorTest);
 };

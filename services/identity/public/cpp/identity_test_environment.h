@@ -35,9 +35,8 @@ using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
 }  // namespace
 
-// Internal class that creates and owns dependencies of IdentityManager
-// when those dependencies are not passed in externally.
 class IdentityManagerDependenciesOwner;
+class TestIdentityManagerObserver;
 
 // Class that creates an IdentityManager for use in testing contexts and
 // provides facilities for driving that IdentityManager. The IdentityManager
@@ -94,6 +93,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // The IdentityManager instance associated with this instance.
   IdentityManager* identity_manager();
+
+  // Returns the |TestIdentityManagerObserver| watching the IdentityManager.
+  TestIdentityManagerObserver* identity_manager_observer();
 
   // Sets the primary account for the given email address, generating a GAIA ID
   // that corresponds uniquely to that email address. On non-ChromeOS, results
@@ -379,6 +381,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // is passed in for required lifetime invariants in that case.
   std::unique_ptr<IdentityManager> owned_identity_manager_;
   IdentityManager* raw_identity_manager_ = nullptr;
+
+  std::unique_ptr<TestIdentityManagerObserver> test_identity_manager_observer_;
 
   base::OnceClosure on_access_token_requested_callback_;
   std::vector<AccessTokenRequestState> requesters_;
