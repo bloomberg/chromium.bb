@@ -58,7 +58,7 @@ void U2fRegisterOperation::TryRegistration(bool is_duplicate_registration) {
 void U2fRegisterOperation::OnRegisterResponseReceived(
     bool is_duplicate_registration,
     base::Optional<std::vector<uint8_t>> device_response) {
-  const auto& apdu_response =
+  const auto apdu_response =
       device_response
           ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
           : base::nullopt;
@@ -103,7 +103,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
     ExcludeListIterator it,
     base::Optional<std::vector<uint8_t>> device_response) {
-  const auto& apdu_response =
+  const auto apdu_response =
       device_response
           ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
           : base::nullopt;

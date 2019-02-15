@@ -130,7 +130,7 @@ void U2fSignOperation::OnCheckForKeyHandlePresence(
     AllowedListIterator it,
     base::Optional<std::vector<uint8_t>> device_response) {
   DCHECK(request().allow_list());
-  const auto& apdu_response =
+  const auto apdu_response =
       device_response
           ? apdu::ApduResponse::CreateFromMessage(std::move(*device_response))
           : base::nullopt;
