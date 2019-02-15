@@ -11,9 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocator/buildflags.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/metrics/perf/heap_collector.h"
 #include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -275,6 +278,86 @@ TEST_F(ProfileProviderTest, OnSessionRestoreDone) {
   std::vector<SampledProfile> stored_profiles;
   EXPECT_TRUE(profile_provider_->GetSampledProfiles(&stored_profiles));
   ExpectTwoStoredPerfProfiles<SampledProfile::RESTORE_SESSION>(stored_profiles);
+}
+
+namespace {
+
+class TestParamsProfileProvider : public ProfileProvider {
+ public:
+  TestParamsProfileProvider() {}
+
+  using ProfileProvider::collectors_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestParamsProfileProvider);
+};
+
+}  // namespace
+
+class ProfileProviderFeatureParamsTest : public testing::Test {
+ public:
+  ProfileProviderFeatureParamsTest()
+      : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
+        task_runner_handle_(task_runner_) {}
+
+  void SetUp() override {
+    // ProfileProvider requires chromeos::LoginState and
+    // chromeos::DBusThreadManager to be initialized.
+    chromeos::LoginState::Initialize();
+    chromeos::DBusThreadManager::Initialize();
+  }
+
+  void TearDown() override {
+    chromeos::DBusThreadManager::Shutdown();
+    chromeos::LoginState::Shutdown();
+  }
+
+ private:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileProviderFeatureParamsTest);
+};
+
+TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorDisabled) {
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("SamplingFactorForEnablingHeapCollector", "0"));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(kCWPHeapCollection,
+                                                         params);
+
+  TestParamsProfileProvider profile_provider;
+  // We should have one collector registered.
+  EXPECT_EQ(1u, profile_provider.collectors_.size());
+
+  // After initialization, we should still have a single collector, because the
+  // sampling factor param is set to 0.
+  profile_provider.Init();
+  EXPECT_EQ(1u, profile_provider.collectors_.size());
+}
+
+TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
+  std::map<std::string, std::string> params;
+  params.insert(std::make_pair("SamplingFactorForEnablingHeapCollector", "1"));
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(kCWPHeapCollection,
+                                                         params);
+
+  TestParamsProfileProvider profile_provider;
+  // We should have one collector registered.
+  EXPECT_EQ(1u, profile_provider.collectors_.size());
+
+  // After initialization, if the new tcmalloc is enabled, we should have two
+  // collectors, because the sampling factor param is set to 1. Otherwise, we
+  // must still have one collector only.
+  profile_provider.Init();
+#if BUILDFLAG(USE_NEW_TCMALLOC)
+  EXPECT_EQ(2u, profile_provider.collectors_.size());
+#else
+  EXPECT_EQ(1u, profile_provider.collectors_.size());
+#endif
 }
 
 }  // namespace metrics
