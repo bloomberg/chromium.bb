@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/network_change_notifier_chromeos.h"
+#include "net/base/network_change_notifier_posix.h"
 
 #include "base/test/scoped_task_environment.h"
 #include "net/base/network_change_notifier.h"
@@ -10,23 +10,23 @@
 
 namespace net {
 
-class NetworkChangeNotifierChromeosTest : public testing::Test {
+class NetworkChangeNotifierPosixTest : public testing::Test {
  public:
-  NetworkChangeNotifierChromeosTest()
+  NetworkChangeNotifierPosixTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        notifier_(new NetworkChangeNotifierChromeos()) {}
+        notifier_(new NetworkChangeNotifierPosix()) {}
 
   void FastForwardUntilIdle() {
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
 
-  NetworkChangeNotifierChromeos* notifier() { return notifier_.get(); }
+  NetworkChangeNotifierPosix* notifier() { return notifier_.get(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::NetworkChangeNotifier::DisableForTest mock_notifier_disabler_;
-  std::unique_ptr<NetworkChangeNotifierChromeos> notifier_;
+  std::unique_ptr<NetworkChangeNotifierPosix> notifier_;
 };
 
 class MockIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
@@ -34,7 +34,7 @@ class MockIPAddressObserver : public NetworkChangeNotifier::IPAddressObserver {
   MOCK_METHOD0(OnIPAddressChanged, void());
 };
 
-TEST_F(NetworkChangeNotifierChromeosTest, OnIPAddressChanged) {
+TEST_F(NetworkChangeNotifierPosixTest, OnIPAddressChanged) {
   testing::StrictMock<MockIPAddressObserver> observer;
   NetworkChangeNotifier::AddIPAddressObserver(&observer);
 
@@ -51,7 +51,7 @@ class MockNetworkChangeObserver
   MOCK_METHOD1(OnNetworkChanged, void(NetworkChangeNotifier::ConnectionType));
 };
 
-TEST_F(NetworkChangeNotifierChromeosTest, OnNetworkChanged) {
+TEST_F(NetworkChangeNotifierPosixTest, OnNetworkChanged) {
   testing::StrictMock<MockNetworkChangeObserver> observer;
   NetworkChangeNotifier::AddNetworkChangeObserver(&observer);
 
@@ -71,7 +71,7 @@ class MockMaxBandwidthObserver
                void(double, NetworkChangeNotifier::ConnectionType));
 };
 
-TEST_F(NetworkChangeNotifierChromeosTest, OnMaxBandwidthChanged) {
+TEST_F(NetworkChangeNotifierPosixTest, OnMaxBandwidthChanged) {
   testing::StrictMock<MockMaxBandwidthObserver> observer;
   NetworkChangeNotifier::AddMaxBandwidthObserver(&observer);
 

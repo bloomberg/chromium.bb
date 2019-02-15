@@ -210,7 +210,7 @@ source_set("host_resolver_impl") {
   # Whitelist-only access so we can keep track of all usage external to the
   # network stack.
   friend = [
-    # chromeos/network/network_change_notifier_chromeos.cc
+    # chromeos/network/network_change_notifier_posix.cc
     # ChromeOS-specific change notifier with some overrides for DnsConfigService
     # TODO(crbug.com/882610): Remove/cleanup once we figure out servicification.
     "//chromeos/network",

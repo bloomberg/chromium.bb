@@ -172,7 +172,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_chromeos.h"
+#include "net/base/network_change_notifier_posix.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "printing/backend/print_backend.h"
@@ -607,7 +607,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   network_change_manager_client_.reset(new NetworkChangeManagerClient(
-      static_cast<net::NetworkChangeNotifierChromeos*>(
+      static_cast<net::NetworkChangeNotifierPosix*>(
           content::GetNetworkChangeNotifier())));
 
   // Set the crypto thread after the IO thread has been created/started.

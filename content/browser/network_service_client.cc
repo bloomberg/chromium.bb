@@ -443,12 +443,38 @@ NetworkServiceClient::NetworkServiceClient(
     memory_pressure_listener_ =
         std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
             &NetworkServiceClient::OnMemoryPressure, base::Unretained(this)));
+
+#if defined(OS_ANDROID)
+    DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+    GetNetworkService()->GetNetworkChangeManager(
+        mojo::MakeRequest(&network_change_manager_));
+    // Sync the initial network state.
+    network_change_manager_->OnNetworkChanged(
+        true /* dns_changed */, true /* ip_address_changed */,
+        true /* connection_type_changed */,
+        network::mojom::ConnectionType(
+            net::NetworkChangeNotifier::GetConnectionType()),
+        true /* connection_subtype_changed */,
+        network::mojom::ConnectionSubtype(
+            net::NetworkChangeNotifier::GetConnectionSubtype()));
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddDNSObserver(this);
+#endif
   }
 }
 
 NetworkServiceClient::~NetworkServiceClient() {
-  if (IsOutOfProcessNetworkService())
+  if (IsOutOfProcessNetworkService()) {
     net::CertDatabase::GetInstance()->RemoveObserver(this);
+#if defined(OS_ANDROID)
+    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::RemoveMaxBandwidthObserver(this);
+    net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    net::NetworkChangeNotifier::RemoveDNSObserver(this);
+#endif
+  }
 }
 
 void NetworkServiceClient::OnAuthRequired(
@@ -618,6 +644,62 @@ void NetworkServiceClient::OnMemoryPressure(
 void NetworkServiceClient::OnApplicationStateChange(
     base::android::ApplicationState state) {
   GetNetworkService()->OnApplicationStateChange(state);
+}
+
+void NetworkServiceClient::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  network_change_manager_->OnNetworkChanged(
+      false /* dns_changed */, false /* ip_address_changed */,
+      true /* connection_type_changed */, network::mojom::ConnectionType(type),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnMaxBandwidthChanged(
+    double max_bandwidth_mbps,
+    net::NetworkChangeNotifier::ConnectionType type) {
+  // The connection subtype change will trigger a max bandwidth change in the
+  // network service notifier.
+  network_change_manager_->OnNetworkChanged(
+      false /* dns_changed */, false /* ip_address_changed */,
+      false /* connection_type_changed */, network::mojom::ConnectionType(type),
+      true /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnIPAddressChanged() {
+  network_change_manager_->OnNetworkChanged(
+      false /* dns_changed */, true /* ip_address_changed */,
+      false /* connection_type_changed */,
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnDNSChanged() {
+  network_change_manager_->OnNetworkChanged(
+      true /* dns_changed */, false /* ip_address_changed */,
+      false /* connection_type_changed */,
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
+}
+
+void NetworkServiceClient::OnInitialDNSConfigRead() {
+  network_change_manager_->OnNetworkChanged(
+      true /* dns_changed */, false /* ip_address_changed */,
+      false /* connection_type_changed */,
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType()),
+      false /* connection_subtype_changed */,
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype()));
 }
 #endif
 

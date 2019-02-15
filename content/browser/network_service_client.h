@@ -22,6 +22,12 @@ namespace content {
 
 class CONTENT_EXPORT NetworkServiceClient
     : public network::mojom::NetworkServiceClient,
+#if defined(OS_ANDROID)
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::MaxBandwidthObserver,
+      public net::NetworkChangeNotifier::IPAddressObserver,
+      public net::NetworkChangeNotifier::DNSObserver,
+#endif
       public net::CertDatabase::Observer {
  public:
   explicit NetworkServiceClient(network::mojom::NetworkServiceClientRequest
@@ -103,6 +109,22 @@ class CONTENT_EXPORT NetworkServiceClient
 
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
+
+  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation:
+  void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // net::NetworkChangeNotifier::MaxBandwidthObserver implementation:
+  void OnMaxBandwidthChanged(
+      double max_bandwidth_mbps,
+      net::NetworkChangeNotifier::ConnectionType type) override;
+
+  // net::NetworkChangeNotifier::IPAddressObserver implementation:
+  void OnIPAddressChanged() override;
+
+  // net::NetworkChangeNotifier::DNSObserver implementation:
+  void OnDNSChanged() override;
+  void OnInitialDNSConfigRead() override;
 #endif
 
  private:
@@ -113,6 +135,7 @@ class CONTENT_EXPORT NetworkServiceClient
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>
       app_status_listener_;
+  network::mojom::NetworkChangeManagerPtr network_change_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceClient);

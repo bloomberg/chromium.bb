@@ -75,6 +75,8 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   // delegate class.
   using NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype;
 
+  static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
+
  protected:
   void OnFinalizingMetricsLogRecord() override;
 
@@ -89,8 +91,6 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   explicit NetworkChangeNotifierAndroid(
       NetworkChangeNotifierDelegateAndroid* delegate);
-
-  static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
 
   NetworkChangeNotifierDelegateAndroid* const delegate_;
   std::unique_ptr<DnsConfigServiceThread> dns_config_service_thread_;

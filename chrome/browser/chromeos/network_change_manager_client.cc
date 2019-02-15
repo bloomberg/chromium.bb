@@ -12,13 +12,13 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
-#include "net/base/network_change_notifier_chromeos.h"
+#include "net/base/network_change_notifier_posix.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace chromeos {
 
 NetworkChangeManagerClient::NetworkChangeManagerClient(
-    net::NetworkChangeNotifierChromeos* network_change_notifier)
+    net::NetworkChangeNotifierPosix* network_change_notifier)
     : connection_type_(net::NetworkChangeNotifier::CONNECTION_NONE),
       connection_subtype_(net::NetworkChangeNotifier::SUBTYPE_NONE),
       network_change_notifier_(network_change_notifier) {
