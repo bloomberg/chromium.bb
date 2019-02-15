@@ -33,8 +33,6 @@
 #include "base/optional.h"
 #include "cc/layers/picture_layer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
@@ -100,6 +98,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/media/remote_playback_controller.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -2500,20 +2499,18 @@ void Internals::mediaPlayerRemoteRouteAvailabilityChanged(
     HTMLMediaElement* media_element,
     bool available) {
   DCHECK(media_element);
-  DCHECK(media_element->remote_playback_client_);
-  media_element->remote_playback_client_->AvailabilityChanged(
-      available ? WebRemotePlaybackAvailability::kDeviceAvailable
-                : WebRemotePlaybackAvailability::kDeviceNotAvailable);
+
+  RemotePlaybackController::From(*media_element)
+      ->AvailabilityChangedForTesting(available);
 }
 
 void Internals::mediaPlayerPlayingRemotelyChanged(
     HTMLMediaElement* media_element,
     bool remote) {
   DCHECK(media_element);
-  if (remote)
-    media_element->ConnectedToRemoteDevice();
-  else
-    media_element->DisconnectedFromRemoteDevice();
+
+  RemotePlaybackController::From(*media_element)
+      ->StateChangedForTesting(remote);
 }
 
 void Internals::setPersistent(HTMLVideoElement* video_element,

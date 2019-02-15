@@ -26,6 +26,10 @@ class CORE_EXPORT RemotePlaybackController
   virtual void AddObserver(RemotePlaybackObserver*) = 0;
   virtual void RemoveObserver(RemotePlaybackObserver*) = 0;
 
+  // Exposes simplified internal methods for testing purposes.
+  virtual void AvailabilityChangedForTesting(bool screen_is_available) = 0;
+  virtual void StateChangedForTesting(bool is_connected) = 0;
+
   void Trace(Visitor*) override;
 
  protected:

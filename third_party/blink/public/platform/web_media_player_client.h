@@ -46,8 +46,6 @@ class WebInbandTextTrack;
 class WebMediaSource;
 class WebRemotePlaybackClient;
 
-enum class WebRemotePlaybackAvailability;
-
 class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
  public:
   enum VideoTrackKind {
@@ -93,12 +91,6 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void RemoveTextTrack(WebInbandTextTrack*) = 0;
   virtual void MediaSourceOpened(WebMediaSource*) = 0;
   virtual void RequestSeek(double) = 0;
-  virtual void RemoteRouteAvailabilityChanged(
-      WebRemotePlaybackAvailability) = 0;
-  virtual void ConnectedToRemoteDevice() = 0;
-  virtual void DisconnectedFromRemoteDevice() = 0;
-  virtual void CancelledRemotePlaybackRequest() = 0;
-  virtual void RemotePlaybackStarted() = 0;
   virtual void RemotePlaybackCompatibilityChanged(const WebURL&,
                                                   bool is_compatible) = 0;
 

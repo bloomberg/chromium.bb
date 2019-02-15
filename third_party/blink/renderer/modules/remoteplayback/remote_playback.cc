@@ -86,10 +86,8 @@ RemotePlayback& RemotePlayback::From(HTMLMediaElement& element) {
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
     : ContextLifecycleObserver(element.GetExecutionContext()),
       RemotePlaybackController(element),
-      state_(element.IsPlayingRemotely()
-                 ? WebRemotePlaybackState::kConnected
-                 : WebRemotePlaybackState::kDisconnected),
-      availability_(WebRemotePlaybackAvailability::kUnknown),
+      state_(WebRemotePlaybackState::kDisconnected),
+      availability_(mojom::ScreenAvailability::UNKNOWN),
       media_element_(&element),
       is_listening_(false),
       presentation_connection_binding_(this) {}
@@ -212,13 +210,13 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  if (availability_ == WebRemotePlaybackAvailability::kDeviceNotAvailable) {
+  if (availability_ == mojom::ScreenAvailability::UNAVAILABLE) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kNotFoundError,
                                           "No remote playback devices found."));
     return promise;
   }
 
-  if (availability_ == WebRemotePlaybackAvailability::kSourceNotCompatible) {
+  if (availability_ == mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,
         "The currentSrc is not compatible with remote playback"));
@@ -380,24 +378,6 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
     observer->OnRemotePlaybackStateChanged(state_);
 }
 
-void RemotePlayback::AvailabilityChanged(
-    WebRemotePlaybackAvailability availability) {
-  if (availability_ == availability)
-    return;
-
-  bool old_availability = RemotePlaybackAvailable();
-  availability_ = availability;
-  bool new_availability = RemotePlaybackAvailable();
-  if (new_availability == old_availability)
-    return;
-
-  for (auto& callback : availability_callbacks_.Values())
-    callback->Run(this, new_availability);
-
-  for (auto observer : observers_)
-    observer->OnRemotePlaybackAvailabilityChanged(availability_);
-}
-
 void RemotePlayback::PromptCancelled() {
   if (!prompt_promise_resolver_)
     return;
@@ -442,6 +422,19 @@ void RemotePlayback::RemoveObserver(RemotePlaybackObserver* observer) {
   observers_.erase(observer);
 }
 
+void RemotePlayback::AvailabilityChangedForTesting(bool screen_is_available) {
+  // AvailabilityChanged() is only normally called when |is_listening_| is true.
+  is_listening_ = true;
+  AvailabilityChanged(screen_is_available
+                          ? mojom::blink::ScreenAvailability::AVAILABLE
+                          : mojom::blink::ScreenAvailability::UNAVAILABLE);
+}
+
+void RemotePlayback::StateChangedForTesting(bool is_connected) {
+  StateChanged(is_connected ? WebRemotePlaybackState::kConnected
+                            : WebRemotePlaybackState::kDisconnected);
+}
+
 bool RemotePlayback::RemotePlaybackAvailable() const {
   if (IsBackgroundAvailabilityMonitoringDisabled() &&
       RuntimeEnabledFeatures::RemotePlaybackBackendEnabled() &&
@@ -449,7 +442,7 @@ bool RemotePlayback::RemotePlaybackAvailable() const {
     return true;
   }
 
-  return availability_ == WebRemotePlaybackAvailability::kDeviceAvailable;
+  return availability_ == mojom::ScreenAvailability::AVAILABLE;
 }
 
 void RemotePlayback::RemotePlaybackDisabled() {
@@ -481,31 +474,20 @@ void RemotePlayback::CleanupConnections() {
 void RemotePlayback::AvailabilityChanged(
     mojom::blink::ScreenAvailability availability) {
   DCHECK(is_listening_);
+  DCHECK_NE(availability, mojom::ScreenAvailability::UNKNOWN);
+  DCHECK_NE(availability, mojom::ScreenAvailability::DISABLED);
 
-  // TODO(avayvod): Use mojom::ScreenAvailability directly once
-  // WebRemotePlaybackAvailability is gone with the old pipeline.
-  WebRemotePlaybackAvailability remote_playback_availability =
-      WebRemotePlaybackAvailability::kUnknown;
-  switch (availability) {
-    case mojom::ScreenAvailability::UNKNOWN:
-    case mojom::ScreenAvailability::DISABLED:
-      NOTREACHED();
-      remote_playback_availability = WebRemotePlaybackAvailability::kUnknown;
-      break;
-    case mojom::ScreenAvailability::UNAVAILABLE:
-      remote_playback_availability =
-          WebRemotePlaybackAvailability::kDeviceNotAvailable;
-      break;
-    case mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED:
-      remote_playback_availability =
-          WebRemotePlaybackAvailability::kSourceNotCompatible;
-      break;
-    case mojom::ScreenAvailability::AVAILABLE:
-      remote_playback_availability =
-          WebRemotePlaybackAvailability::kDeviceAvailable;
-      break;
-  }
-  AvailabilityChanged(remote_playback_availability);
+  if (availability_ == availability)
+    return;
+
+  bool old_availability = RemotePlaybackAvailable();
+  availability_ = availability;
+  bool new_availability = RemotePlaybackAvailable();
+  if (new_availability == old_availability)
+    return;
+
+  for (auto& callback : availability_callbacks_.Values())
+    callback->Run(this, new_availability);
 }
 
 const Vector<KURL>& RemotePlayback::Urls() const {
@@ -581,7 +563,7 @@ void RemotePlayback::StopListeningForAvailability() {
   if (!is_listening_)
     return;
 
-  availability_ = WebRemotePlaybackAvailability::kUnknown;
+  availability_ = mojom::ScreenAvailability::UNKNOWN;
   PresentationController* controller =
       PresentationController::FromContext(GetExecutionContext());
   if (!controller)

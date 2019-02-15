@@ -7,7 +7,6 @@
 
 namespace blink {
 
-enum class WebRemotePlaybackAvailability;
 enum class WebRemotePlaybackState;
 
 // Interface to be implemented by objects that intend to be notified by remote
@@ -18,11 +17,6 @@ class RemotePlaybackObserver : public GarbageCollectedMixin {
   // Called when the remote playback state is changed. The state is related to
   // the connection to a remote device.
   virtual void OnRemotePlaybackStateChanged(WebRemotePlaybackState) = 0;
-
-  // Called when the remote playback availability is changed. The availabality
-  // is realted to the presence of a compatible remote device on the network.
-  virtual void OnRemotePlaybackAvailabilityChanged(
-      WebRemotePlaybackAvailability) = 0;
 };
 
 }  // namespace blink
