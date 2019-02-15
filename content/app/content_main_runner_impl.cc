@@ -900,11 +900,11 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     }
 #endif
 
-    // Create a MessageLoop if one does not already exist for the current
-    // thread. This thread won't be promoted as BrowserThread::UI until
-    // BrowserMainLoop::MainMessageLoopStart().
-    if (!base::MessageLoopCurrentForUI::IsSet())
-      main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
+    // Register the TaskExecutor for posting task to the BrowserThreads. It is
+    // incorrect to post to a BrowserThread before this point. This instantiates
+    // and binds the MessageLoopForUI on the main thread (but it's only labeled
+    // as BrowserThread::UI in BrowserMainLoop::MainMessageLoopStart).
+    BrowserTaskExecutor::Create();
 
     delegate_->PostEarlyInitialization(main_params.ui_task != nullptr);
 
@@ -913,9 +913,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       StartBrowserTaskScheduler();
     }
 
-    // Register the TaskExecutor for posting task to the BrowserThreads. It is
-    // incorrect to post to a BrowserThread before this point.
-    BrowserTaskExecutor::Create();
+    BrowserTaskExecutor::PostFeatureListSetup();
 
     if (!base::FeatureList::IsEnabled(
             features::kAllowStartingServiceManagerOnly)) {
@@ -968,8 +966,8 @@ void ContentMainRunnerImpl::Shutdown() {
   }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
-  // The message loop needs to be destroyed before |exit_manager_|.
-  main_message_loop_.reset();
+  // The BrowserTaskExecutor needs to be destroyed before |exit_manager_|.
+  BrowserTaskExecutor::Shutdown();
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 #if defined(OS_WIN)

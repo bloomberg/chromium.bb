@@ -681,10 +681,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
   // PostMainMessageLoopStart() below.
 
   TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
-
-  if (!base::MessageLoopCurrentForUI::IsSet())
-    main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
-
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   InitializeMainThread();
 }
 

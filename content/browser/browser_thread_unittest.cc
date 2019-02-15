@@ -13,12 +13,14 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/scheduler/browser_task_executor.h"
+#include "content/browser/startup_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,10 +42,20 @@ class BrowserThreadTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    BrowserTaskExecutor::Create();
-
     ui_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::UI);
-    ui_thread_->Start();
+    std::unique_ptr<base::sequence_manager::internal::SequenceManagerImpl>
+        sequence_manager = base::sequence_manager::internal::
+            SequenceManagerImpl::CreateUnbound(
+                base::sequence_manager::SequenceManager::Settings());
+    default_task_queue_ =
+        sequence_manager
+            ->CreateTaskQueueWithType<base::sequence_manager::TaskQueue>(
+                base::sequence_manager::TaskQueue::Spec("default_tq"));
+    sequence_manager->SetTaskRunner(default_task_queue_->task_runner());
+    BrowserTaskExecutor::CreateForTesting(default_task_queue_->task_runner());
+    base::Thread::Options ui_options;
+    ui_options.message_loop_base = sequence_manager.release();
+    ui_thread_->StartWithOptions(ui_options);
 
     io_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
     base::Thread::Options io_options;
@@ -97,6 +109,7 @@ class BrowserThreadTest : public testing::Test {
  private:
   std::unique_ptr<BrowserProcessSubThread> ui_thread_;
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
+  scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   // Must be set before Release() to verify the deletion is intentional. Will be

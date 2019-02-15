@@ -9,7 +9,12 @@
 #include "base/bind.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/no_destructor.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/task_scheduler/post_task_android.h"
+#endif
 
 namespace content {
 namespace {
@@ -144,19 +149,74 @@ scoped_refptr<AfterStartupTaskRunner> GetAfterStartupTaskRunnerForThreadImpl(
 
 }  // namespace
 
-BrowserTaskExecutor::BrowserTaskExecutor() = default;
+BrowserTaskExecutor::BrowserTaskExecutor(
+    std::unique_ptr<base::MessageLoopForUI> message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
+    : message_loop_(std::move(message_loop)),
+      ui_thread_task_runner_(std::move(ui_thread_task_runner)) {}
+
 BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 
 // static
 void BrowserTaskExecutor::Create() {
   DCHECK(!g_browser_task_executor);
-  g_browser_task_executor = new BrowserTaskExecutor();
+  DCHECK(!base::ThreadTaskRunnerHandle::IsSet());
+  std::unique_ptr<base::MessageLoopForUI> message_loop =
+      std::make_unique<base::MessageLoopForUI>();
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner =
+      message_loop->task_runner();
+  g_browser_task_executor = new BrowserTaskExecutor(
+      std::move(message_loop), std::move(ui_thread_task_runner));
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
+#if defined(OS_ANDROID)
+  base::PostTaskAndroid::SignalNativeSchedulerReady();
+#endif
+}
+
+// static
+void BrowserTaskExecutor::CreateForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner) {
+  DCHECK(!g_browser_task_executor);
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
+  DCHECK(ui_thread_task_runner);
+  g_browser_task_executor =
+      new BrowserTaskExecutor(nullptr, std::move(ui_thread_task_runner));
+  base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
+                             g_browser_task_executor);
+#if defined(OS_ANDROID)
+  base::PostTaskAndroid::SignalNativeSchedulerReady();
+#endif
+}
+
+// static
+void BrowserTaskExecutor::PostFeatureListSetup() {
+  DCHECK(g_browser_task_executor);
+  // TODO(alexclarke): Forward to the BrowserUIThreadScheduler.
+}
+
+// static
+void BrowserTaskExecutor::Shutdown() {
+  if (!g_browser_task_executor)
+    return;
+
+  DCHECK(g_browser_task_executor->message_loop_);
+  // We don't delete either |g_browser_task_executor| or because other threads
+  // may PostTask or call BrowserTaskExecutor::GetTaskRunner while  we're
+  // tearing things down. We don't want to add locks so we just leak instead of
+  // dealing with that.For similar reasons we don't need to call
+  // PostTaskAndroid::SignalNativeSchedulerShutdown on Android. In tests however
+  // we need to clean up, so BrowserTaskExecutor::ResetForTesting should be
+  // called.
+  g_browser_task_executor->message_loop_.reset();
 }
 
 // static
 void BrowserTaskExecutor::ResetForTesting() {
+#if defined(OS_ANDROID)
+  base::PostTaskAndroid::SignalNativeSchedulerShutdown();
+#endif
+
   for (int i = 0; i < BrowserThread::ID_COUNT; ++i) {
     GetAfterStartupTaskRunnerForThreadImpl(static_cast<BrowserThread::ID>(i))
         ->Reset();
@@ -232,6 +292,8 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
   // policies instead.
   if (traits.priority() == base::TaskPriority::BEST_EFFORT)
     return GetAfterStartupTaskRunnerForThread(thread_id);
+  if (thread_id == BrowserThread::UI)
+    return ui_thread_task_runner_;
   return GetProxyTaskRunnerForThread(thread_id);
 }
 
