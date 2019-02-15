@@ -72,7 +72,6 @@ namespace {
 // that support the Security DevTools domain on the browser target.
 const char* const kCommonSwitches[] = {
     "disable-popup-blocking", "enable-automation", "ignore-certificate-errors",
-    "metrics-recording-only",
 };
 
 const char* const kDesktopSwitches[] = {
