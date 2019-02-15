@@ -70,6 +70,7 @@ const struct {
     {autofill::kUnionPay, IDR_AUTOFILL_CC_UNIONPAY, IDS_AUTOFILL_CC_UNION_PAY},
     {autofill::kVisaCard, IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
     {"googlePay", IDR_AUTOFILL_GOOGLE_PAY, kResourceNotFoundId},
+    {"googlePayDark", IDR_AUTOFILL_GOOGLE_PAY_DARK, kResourceNotFoundId},
 #if defined(OS_ANDROID)
     {"httpWarning", IDR_AUTOFILL_HTTP_WARNING, kResourceNotFoundId},
     {"httpsInvalid", IDR_AUTOFILL_HTTPS_INVALID_WARNING, kResourceNotFoundId},

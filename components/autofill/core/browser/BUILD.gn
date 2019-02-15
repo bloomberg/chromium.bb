@@ -349,6 +349,13 @@ jumbo_static_library("browser") {
     ]
   }
 
+  if (!is_android && !is_ios) {
+    deps += [
+      "//ui/native_theme",
+      "//ui/native_theme:native_theme_browser",
+    ]
+  }
+
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
