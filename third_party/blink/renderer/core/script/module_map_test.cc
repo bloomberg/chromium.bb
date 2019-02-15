@@ -115,7 +115,7 @@ class ModuleMapTestModulator final : public DummyModulator {
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(
           ModuleScriptCreationParams(
-              request.Url(), ParkableString(String("").ReleaseImpl()),
+              request.Url(), ParkableString(String("").ReleaseImpl()), nullptr,
               request.GetResourceRequest().GetFetchCredentialsMode()),
           client);
       modulator_->test_requests_.push_back(test_request);
@@ -148,13 +148,13 @@ class ModuleMapTestModulator final : public DummyModulator {
                 ModuleScriptFetcher::Client* client)
         : params_(params), client_(client) {}
     void NotifyFetchFinished() {
-      client_->NotifyFetchFinished(params_,
+      client_->NotifyFetchFinished(*params_,
                                    HeapVector<Member<ConsoleMessage>>());
     }
     void Trace(blink::Visitor* visitor) { visitor->Trace(client_); }
 
    private:
-    ModuleScriptCreationParams params_;
+    base::Optional<ModuleScriptCreationParams> params_;
     Member<ModuleScriptFetcher::Client> client_;
   };
   HeapVector<Member<TestRequest>> test_requests_;

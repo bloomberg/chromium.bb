@@ -41,6 +41,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
 
   ModuleScriptCreationParams params(
       fetch_params.Url(), ParkableString(script->TakeSourceText().Impl()),
+      nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
 }
