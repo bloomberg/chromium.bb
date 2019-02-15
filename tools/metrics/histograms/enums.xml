@@ -21582,6 +21582,10 @@ Called by update_net_error_codes.py.-->
   <int value="2786" label="V8UserActivation_IsActive_AttributeGetter"/>
   <int value="2787" label="TextEncoderEncodeInto"/>
   <int value="2788" label="InvalidBasicCardMethodData"/>
+  <int value="2789" label="ClientHintsUA"/>
+  <int value="2790" label="ClientHintsUAArch"/>
+  <int value="2791" label="ClientHintsUAPlatform"/>
+  <int value="2792" label="ClientHintsUAModel"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

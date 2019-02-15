@@ -24,6 +24,10 @@ enum WebClientHintsType {
   kDownlink = 5,
   kEct = 6,
   kLang = 7,
+  kUA = 8,
+  kUAArch = 9,
+  kUAPlatform = 10,
+  kUAModel = 11,
 
   // Warning: Before adding a new client hint, read the warning at the top.
 };

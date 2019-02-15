@@ -22,6 +22,10 @@ static constexpr WebFeature kWebFeatureMapping[] = {
     WebFeature::kClientHintsDownlink,
     WebFeature::kClientHintsEct,
     WebFeature::kClientHintsLang,
+    WebFeature::kClientHintsUA,
+    WebFeature::kClientHintsUAArch,
+    WebFeature::kClientHintsUAPlatform,
+    WebFeature::kClientHintsUAModel,
 };
 
 static_assert(static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1 ==

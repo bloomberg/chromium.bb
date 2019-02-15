@@ -484,6 +484,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableMimeHandlerViewInCrossProcessFrame(
       base::FeatureList::IsEnabled(
           features::kMimeHandlerViewInCrossProcessFrame));
+
+  if (base::FeatureList::IsEnabled(features::kUserAgentClientHint))
+    WebRuntimeFeatures::EnableFeatureFromString("UserAgentClientHint", true);
 }
 
 }  // namespace

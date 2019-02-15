@@ -643,6 +643,7 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
                     bool is_present,
                     const char* header_value,
                     float width = 0) {
+    SCOPED_TRACE(testing::Message() << header_name);
     ClientHintsPreferences hints_preferences;
 
     FetchParameters::ResourceWidth resource_width;
@@ -822,6 +823,69 @@ TEST_F(FrameFetchContextHintsTest, MonitorLangHint) {
   ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
 }
 
+TEST_F(FrameFetchContextHintsTest, MonitorUAHints) {
+  // `Sec-CH-UA` is always sent for secure requests
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA", true, "");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA", false, "");
+
+  // `Sec-CH-UA-*` requires opt-in.
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+               "");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Platform", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+
+  {
+    ClientHintsPreferences preferences;
+    preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAArch);
+    document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", true, "");
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+                 "");
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+                 "");
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+  }
+
+  {
+    ClientHintsPreferences preferences;
+    preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAPlatform);
+    document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform", true,
+                 "");
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+                 "");
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+  }
+
+  {
+    ClientHintsPreferences preferences;
+    preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAModel);
+    document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+                 "");
+    ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", true, "");
+
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+                 "");
+    ExpectHeader("http://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+  }
+}
+
 TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
@@ -831,6 +895,13 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "downlink", false, "");
   ExpectHeader("https://www.example.com/1.gif", "ect", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform", false,
+               "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", false, "");
+
+  // `Sec-CH-UA` is special.
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA", true, "");
 
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -843,6 +914,10 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDownlink);
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kEct);
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kLang);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUA);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAArch);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAPlatform);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kUAModel);
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", true, "4");
@@ -853,6 +928,11 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
   ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
                "\"en\", \"de\", \"fr\"");
+
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA", true, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Arch", true, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Platform", true, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-UA-Model", true, "");
 
   // Value of network quality client hints may vary, so only check if the
   // header is present and the values are non-negative/non-empty.
