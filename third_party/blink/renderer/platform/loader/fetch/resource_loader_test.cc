@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
+#include <string>
 #include <utility>
+
 #include "mojo/public/c/system/data_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +18,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
@@ -261,6 +264,282 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
     data.append(String(span.data(), span.size()));
   }
   EXPECT_EQ(data, "hello");
+}
+
+TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+
+  // Fetch a data url.
+  KURL url("data:text/plain,Hello%20World!");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  FetchParameters params(request);
+  Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+
+  // The resource has a parsed body.
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  String data;
+  for (const auto& span : *buffer) {
+    data.append(String(span.data(), span.size()));
+  }
+  EXPECT_EQ(data, "Hello World!");
+}
+
+// Helper class which stores a BytesConsumer passed by RawResource and reads the
+// bytes when ReadThroughBytesConsumer is called.
+class TestRawResourceClient final
+    : public GarbageCollectedFinalized<TestRawResourceClient>,
+      public RawResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(TestRawResourceClient);
+
+ public:
+  TestRawResourceClient() = default;
+
+  // Implements RawResourceClient.
+  void ResponseBodyReceived(Resource* resource,
+                            BytesConsumer& bytes_consumer) override {
+    body_ = &bytes_consumer;
+  }
+  String DebugName() const override { return "TestRawResourceClient"; }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(body_);
+    RawResourceClient::Trace(visitor);
+  }
+
+  BytesConsumer* body() { return body_; }
+
+ private:
+  Member<BytesConsumer> body_;
+};
+
+TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndStream) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+  scheduler::FakeTaskRunner* task_runner =
+      static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get());
+
+  // Fetch a data url as a stream on response.
+  KURL url("data:text/plain,Hello%20World!");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  request.SetUseStreamOnResponse(true);
+  FetchParameters params(request);
+  auto* raw_resource_client = MakeGarbageCollected<TestRawResourceClient>();
+  Resource* resource = RawResource::Fetch(params, fetcher, raw_resource_client);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  task_runner->RunUntilIdle();
+
+  // It's still pending because we don't read the body yet.
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+
+  // Read through the bytes consumer passed back from the ResourceLoader.
+  auto* test_reader = MakeGarbageCollected<BytesConsumerTestReader>(
+      raw_resource_client->body());
+  Vector<char> body;
+  BytesConsumer::Result result;
+  std::tie(result, body) = test_reader->Run(task_runner);
+  EXPECT_EQ(result, BytesConsumer::Result::kDone);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  EXPECT_EQ(std::string(body.data(), body.size()), "Hello World!");
+
+  // The body is not set to ResourceBuffer since the response body is requested
+  // as a stream.
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  EXPECT_FALSE(buffer);
+}
+
+TEST_F(ResourceLoaderTest, LoadDataURL_AsyncEmptyData) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+
+  // Fetch an empty data url.
+  KURL url("data:text/html,");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  FetchParameters params(request);
+  Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+
+  // It successfully finishes, and no buffer is propagated.
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  EXPECT_FALSE(buffer);
+}
+
+TEST_F(ResourceLoaderTest, LoadDataURL_Sync) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+
+  // Fetch a data url synchronously.
+  KURL url("data:text/plain,Hello%20World!");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  FetchParameters params(request);
+  Resource* resource =
+      RawResource::FetchSynchronously(params, fetcher, nullptr);
+
+  // The resource has a parsed body.
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  String data;
+  for (const auto& span : *buffer) {
+    data.append(String(span.data(), span.size()));
+  }
+  EXPECT_EQ(data, "Hello World!");
+}
+
+TEST_F(ResourceLoaderTest, LoadDataURL_SyncEmptyData) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+
+  // Fetch an empty data url synchronously.
+  KURL url("data:text/html,");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  FetchParameters params(request);
+  Resource* resource =
+      RawResource::FetchSynchronously(params, fetcher, nullptr);
+
+  // It successfully finishes, and no buffer is propagated.
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  EXPECT_FALSE(buffer);
+}
+
+TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndNonStream) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+  scheduler::FakeTaskRunner* task_runner =
+      static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get());
+
+  // Fetch a data url.
+  KURL url("data:text/plain,Hello%20World!");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  FetchParameters params(request);
+  Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+
+  // The resource should still be pending since it's deferred.
+  fetcher->SetDefersLoading(true);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+
+  // The resource should still be pending since it's deferred again.
+  fetcher->SetDefersLoading(true);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+
+  // The resource should still be pending if it's unset and set in a single
+  // task.
+  fetcher->SetDefersLoading(false);
+  fetcher->SetDefersLoading(true);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+
+  // The resource has a parsed body.
+  fetcher->SetDefersLoading(false);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  String data;
+  for (const auto& span : *buffer) {
+    data.append(String(span.data(), span.size()));
+  }
+  EXPECT_EQ(data, "Hello World!");
+}
+
+TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+  scheduler::FakeTaskRunner* task_runner =
+      static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get());
+
+  // Fetch a data url as a stream on response.
+  KURL url("data:text/plain,Hello%20World!");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+  request.SetUseStreamOnResponse(true);
+  FetchParameters params(request);
+  auto* raw_resource_client = MakeGarbageCollected<TestRawResourceClient>();
+  Resource* resource = RawResource::Fetch(params, fetcher, raw_resource_client);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  fetcher->SetDefersLoading(true);
+  task_runner->RunUntilIdle();
+
+  // It's still pending because the body should not provided yet.
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  EXPECT_FALSE(raw_resource_client->body());
+
+  // The body should be provided since not deferring now, but it's still pending
+  // since we haven't read the body yet.
+  fetcher->SetDefersLoading(false);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  EXPECT_TRUE(raw_resource_client->body());
+
+  // The resource should still be pending when it's set to deferred again. No
+  // body is provided when deferred.
+  fetcher->SetDefersLoading(true);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  const char* buffer;
+  size_t available;
+  BytesConsumer::Result result =
+      raw_resource_client->body()->BeginRead(&buffer, &available);
+  EXPECT_EQ(BytesConsumer::Result::kShouldWait, result);
+
+  // The resource should still be pending if it's unset and set in a single
+  // task. No body is provided when deferred.
+  fetcher->SetDefersLoading(false);
+  fetcher->SetDefersLoading(true);
+  task_runner->RunUntilIdle();
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+  result = raw_resource_client->body()->BeginRead(&buffer, &available);
+  EXPECT_EQ(BytesConsumer::Result::kShouldWait, result);
+
+  // Read through the bytes consumer passed back from the ResourceLoader.
+  fetcher->SetDefersLoading(false);
+  task_runner->RunUntilIdle();
+  auto* test_reader = MakeGarbageCollected<BytesConsumerTestReader>(
+      raw_resource_client->body());
+  Vector<char> body;
+  std::tie(result, body) = test_reader->Run(task_runner);
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  EXPECT_EQ(std::string(body.data(), body.size()), "Hello World!");
+
+  // The body is not set to ResourceBuffer since the response body is requested
+  // as a stream.
+  EXPECT_FALSE(resource->ResourceBuffer());
 }
 
 class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {

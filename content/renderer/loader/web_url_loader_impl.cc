@@ -176,37 +176,6 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
   }
 }
 
-// Extracts info from a data scheme URL |url| into |info| and |data|. Returns
-// net::OK if successful. Returns a net error code otherwise.
-int GetInfoFromDataURL(const GURL& url,
-                       network::ResourceResponseInfo* info,
-                       std::string* data) {
-  // Assure same time for all time fields of data: URLs.
-  Time now = Time::Now();
-  info->load_timing.request_start = TimeTicks::Now();
-  info->load_timing.request_start_time = now;
-  info->request_time = now;
-  info->response_time = now;
-
-  std::string mime_type;
-  std::string charset;
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
-  int result = net::URLRequestDataJob::BuildResponse(
-      url, &mime_type, &charset, data, headers.get());
-  if (result != net::OK)
-    return result;
-
-  info->headers = headers;
-  info->mime_type.swap(mime_type);
-  info->charset.swap(charset);
-  info->content_length = data->length();
-  info->encoded_data_length = 0;
-  info->encoded_body_length = 0;
-
-  return net::OK;
-}
-
 // Convert a net::SignedCertificateTimestampAndStatus object to a
 // blink::WebURLResponse::SignedCertificateTimestamp object.
 blink::WebURLResponse::SignedCertificateTimestamp NetSCTToBlinkSCT(
@@ -451,7 +420,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void CancelBodyStreaming();
   // We can optimize the handling of data URLs in most cases.
   bool CanHandleDataURLRequestLocally(const WebURLRequest& request) const;
-  void HandleDataURL();
 
   void OnBodyAvailable(MojoResult, const mojo::HandleSignalsState&);
   void OnBodyHasBeenRead(uint32_t read_bytes);
@@ -483,7 +451,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   mojom::KeepAliveHandlePtr keep_alive_handle_;
-  enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
+  enum DeferState { NOT_DEFERRING, SHOULD_DEFER };
   DeferState defers_loading_;
   int request_id_;
 
@@ -606,10 +574,6 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
   if (value && defers_loading_ == NOT_DEFERRING) {
     defers_loading_ = SHOULD_DEFER;
   } else if (!value && defers_loading_ != NOT_DEFERRING) {
-    if (defers_loading_ == DEFERRED_DATA) {
-      task_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&Context::HandleDataURL, this));
-    }
     defers_loading_ = NOT_DEFERRING;
 
     if (body_watcher_.IsWatching()) {
@@ -644,19 +608,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   report_raw_headers_ = request.ReportRawHeaders();
   pass_response_pipe_to_client_ = request.PassResponsePipeToClient();
 
-  if (CanHandleDataURLRequestLocally(request)) {
-    if (sync_load_response) {
-      // This is a sync load. Do the work now.
-      sync_load_response->url = url_;
-      sync_load_response->error_code =
-          GetInfoFromDataURL(sync_load_response->url, &sync_load_response->info,
-                             &sync_load_response->data);
-    } else {
-      task_runner_->PostTask(FROM_HERE,
-                             base::BindOnce(&Context::HandleDataURL, this));
-    }
-    return;
-  }
+  // TODO(https://crbug.com/923779): Remove this once after we can confirm it's
+  // working well.
+  CHECK(!CanHandleDataURLRequestLocally(request));
 
   std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
@@ -1032,31 +986,6 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
     return true;
 
   return false;
-}
-
-void WebURLLoaderImpl::Context::HandleDataURL() {
-  DCHECK_NE(defers_loading_, DEFERRED_DATA);
-  if (defers_loading_ == SHOULD_DEFER) {
-      defers_loading_ = DEFERRED_DATA;
-      return;
-  }
-
-  network::ResourceResponseInfo info;
-  std::string data;
-
-  int error_code = GetInfoFromDataURL(url_, &info, &data);
-
-  if (error_code == net::OK) {
-    OnReceivedResponse(info);
-    auto size = data.size();
-    if (size != 0)
-      OnReceivedData(std::make_unique<FixedReceivedData>(data.data(), size));
-  }
-
-  network::URLLoaderCompletionStatus status(error_code);
-  status.encoded_body_length = data.size();
-  status.decoded_body_length = data.size();
-  OnCompletedRequest(status);
 }
 
 void WebURLLoaderImpl::Context::OnBodyAvailable(

@@ -149,9 +149,13 @@ void WebURLLoaderMockFactoryImpl::FillNavigationParamsResponse(
   KURL kurl = params->url;
   if (kurl.ProtocolIsData()) {
     ResourceResponse response;
-    scoped_refptr<SharedBuffer> buffer =
-        network_utils::ParseDataURLAndPopulateResponse(kurl, response);
+    scoped_refptr<SharedBuffer> buffer;
+    int result;
+    std::tie(result, response, buffer) =
+        network_utils::ParseDataURLAndPopulateResponse(
+            kurl, true /* verify_mime_type */);
     DCHECK(buffer);
+    DCHECK_EQ(net::OK, result);
     params->response = WrappedResourceResponse(response);
     auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
     body_loader->Write(*buffer);

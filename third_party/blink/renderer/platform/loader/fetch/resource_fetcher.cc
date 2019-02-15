@@ -616,8 +616,11 @@ Resource* ResourceFetcher::ResourceForStaticData(
   ResourceResponse response;
   scoped_refptr<SharedBuffer> data;
   if (url.ProtocolIsData()) {
-    data = network_utils::ParseDataURLAndPopulateResponse(url, response);
-    if (!data)
+    int result;
+    std::tie(result, response, data) =
+        network_utils::ParseDataURLAndPopulateResponse(
+            url, true /* verify_mime_type */);
+    if (result != net::OK)
       return nullptr;
     // |response| is modified by parseDataURLAndPopulateResponse() and is
     // ready to be used.

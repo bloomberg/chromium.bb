@@ -186,10 +186,18 @@ class PLATFORM_EXPORT ResourceLoader final
 
   FetchContext& Context() const;
 
+  // Returns true during resource load is happening. Methods as
+  // a WebURLLoaderClient should not be invoked if this returns false.
+  bool IsLoading() const;
+
   void CancelForRedirectAccessCheckError(const KURL&,
                                          ResourceRequestBlockedReason);
   void RequestSynchronously(const ResourceRequest&);
+  void RequestAsynchronously(const ResourceRequest&);
   void Dispose();
+
+  void DidReceiveResponseInternal(const ResourceResponse&,
+                                  std::unique_ptr<WebDataConsumerHandle>);
 
   void CancelTimerFired(TimerBase*);
 
@@ -201,6 +209,9 @@ class PLATFORM_EXPORT ResourceLoader final
   base::Optional<ResourceRequestBlockedReason> CheckResponseNosniff(
       mojom::RequestContextType,
       const ResourceResponse&);
+
+  // Processes Data URL in ResourceLoader instead of using |loader_|.
+  void HandleDataUrl();
 
   bool ShouldCheckCorsInResourceLoader() const;
 
@@ -238,6 +249,12 @@ class PLATFORM_EXPORT ResourceLoader final
     std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
+
+  // True if loading is deferred.
+  bool defers_ = false;
+  // True if the next call of SetDefersLoading(false) needs to invoke
+  // HandleDataURL().
+  bool defers_handling_data_url_ = false;
 
   TaskRunnerTimer<ResourceLoader> cancel_timer_;
 };
