@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
 
 namespace base {
@@ -25,6 +26,7 @@ class IOBuffer;
 namespace storage {
 class FileSystemContext;
 class FileSystemURL;
+class ObfuscatedFileUtilMemoryDelegate;
 }
 
 namespace storage {
@@ -44,6 +46,22 @@ class FileStreamReader {
   COMPONENT_EXPORT(STORAGE_BROWSER)
   static FileStreamReader* CreateForLocalFile(
       base::TaskRunner* task_runner,
+      const base::FilePath& file_path,
+      int64_t initial_offset,
+      const base::Time& expected_modification_time);
+
+  // Creates a new FileReader for a memory file |file_path|.
+  // |initial_offset| specifies the offset in the file where the first read
+  // should start.  If the given offset is out of the file range any
+  // read operation may error out with net::ERR_REQUEST_RANGE_NOT_SATISFIABLE.
+  // |expected_modification_time| specifies the expected last modification
+  // If the value is non-null, the reader will check the underlying file's
+  // actual modification time to see if the file has been modified, and if
+  // it does any succeeding read operations should fail with
+  // ERR_UPLOAD_FILE_CHANGED error.
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static FileStreamReader* CreateForMemoryFile(
+      base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
       const base::FilePath& file_path,
       int64_t initial_offset,
       const base::Time& expected_modification_time);

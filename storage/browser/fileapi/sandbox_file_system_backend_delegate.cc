@@ -26,6 +26,7 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
+#include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/fileapi/quota/quota_backend_impl.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "storage/browser/fileapi/quota/quota_reservation_manager.h"
@@ -710,6 +711,14 @@ void SandboxFileSystemBackendDelegate::CopyFileSystem(
 
 ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
   return static_cast<ObfuscatedFileUtil*>(sync_file_util());
+}
+
+base::WeakPtr<ObfuscatedFileUtilMemoryDelegate>
+SandboxFileSystemBackendDelegate::memory_file_util_delegate() {
+  DCHECK(obfuscated_file_util()->is_incognito());
+  return static_cast<ObfuscatedFileUtilMemoryDelegate*>(
+             obfuscated_file_util()->delegate())
+      ->GetWeakPtr();
 }
 
 // Declared in obfuscated_file_util.h.

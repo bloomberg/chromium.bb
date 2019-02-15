@@ -265,16 +265,17 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
     : special_storage_policy_(special_storage_policy),
       file_system_directory_(file_system_directory),
       env_override_(env_override),
+      is_incognito_(is_incognito),
       db_flush_delay_seconds_(10 * 60),  // 10 mins.
       get_type_string_for_url_(std::move(get_type_string_for_url)),
       known_type_strings_(known_type_strings),
       sandbox_delegate_(sandbox_delegate) {
   DCHECK(!get_type_string_for_url_.is_null());
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(!is_incognito ||
+  DCHECK(!is_incognito_ ||
          (env_override && leveldb_chrome::IsMemEnv(env_override)));
 
-  if (is_incognito &&
+  if (is_incognito_ &&
       base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
     delegate_ = std::make_unique<ObfuscatedFileUtilMemoryDelegate>();
   } else {

@@ -6,8 +6,9 @@
 
 namespace storage {
 
-ObfuscatedFileUtilMemoryDelegate::ObfuscatedFileUtilMemoryDelegate() {}
-ObfuscatedFileUtilMemoryDelegate::~ObfuscatedFileUtilMemoryDelegate() {}
+ObfuscatedFileUtilMemoryDelegate::ObfuscatedFileUtilMemoryDelegate()
+    : weak_factory_(this) {}
+ObfuscatedFileUtilMemoryDelegate::~ObfuscatedFileUtilMemoryDelegate() = default;
 
 bool ObfuscatedFileUtilMemoryDelegate::DirectoryExists(
     const base::FilePath& path) {
