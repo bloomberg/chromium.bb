@@ -68,11 +68,13 @@ class MarkupAccumulator {
   void AppendString(const String&);
   // Serialize a Node, without its children and its end tag.
   void AppendStartMarkup(const Node&);
-  // Returns the pair of 'ignore namespace definition attribute' flag and the
-  // serialized prefix.
+
+  class ElementSerializationData;
+  // Returns 'ignore namespace definition attribute' flag and the serialized
+  // prefix.
   // If the flag is true, we should not serialize xmlns="..." on the element.
   // The prefix should be used in end tag serialization.
-  std::pair<bool, AtomicString> AppendStartTagOpen(const Element&);
+  ElementSerializationData AppendStartTagOpen(const Element&);
   void AppendStartTagClose(const Element&);
   void AppendNamespace(const AtomicString& prefix,
                        const AtomicString& namespace_uri);
