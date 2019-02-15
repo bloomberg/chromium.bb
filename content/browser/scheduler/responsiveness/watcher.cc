@@ -13,6 +13,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace content {
 namespace responsiveness {
 
@@ -187,6 +191,16 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   if (UNLIKELY(currently_running_metadata->empty() ||
                (task != currently_running_metadata->back().identifier))) {
     *mismatched_task_identifiers += 1;
+#if defined(OS_CHROMEOS)
+    // Mismatches can happen often on ChromeOS with window service when
+    // tab-dragging is involved. Simply ignore the mismatches for now. See
+    // https://crbug.com/929813 for the details of why the mismatch happens.
+    // TODO(mukai): fix the event order issue.
+    if (features::IsUsingWindowService()) {
+      currently_running_metadata_ui_.clear();
+      return;
+    }
+#endif
     DCHECK_LE(*mismatched_task_identifiers, 1);
     return;
   }
@@ -242,6 +256,16 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
                (opaque_identifier !=
                 currently_running_metadata_ui_.back().identifier))) {
     mismatched_event_identifiers_ui_ += 1;
+#if defined(OS_CHROMEOS)
+    // Mismatches can happen often on ChromeOS with window service when
+    // tab-dragging is involved. Simply ignore the mismatches for now. See
+    // https://crbug.com/929813 for the details of why the mismatch happens.
+    // TODO(mukai): fix the event order issue.
+    if (features::IsUsingWindowService()) {
+      currently_running_metadata_ui_.clear();
+      return;
+    }
+#endif
     DCHECK_LE(mismatched_event_identifiers_ui_, 1);
     return;
   }
