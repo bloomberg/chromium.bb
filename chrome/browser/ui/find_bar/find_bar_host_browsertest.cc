@@ -339,6 +339,31 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoAudibleAlertOnFrameChange) {
   EXPECT_EQ(1u, GetFindBarAudibleAlertsForBrowser(browser()));
 }
 
+// This test navigates to a different page after a successful search and
+// verifies this doesn't cause any extraneous dings.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoAudibleAlertOnNavigation) {
+  // First we navigate to our frames page.
+  GURL url = GetURL(kFramePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  int ordinal = 0;
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(0u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  // Search for a string in the page.
+  EXPECT_EQ(
+      1, FindInPageASCII(web_contents, "google", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
+  EXPECT_EQ(0u, GetFindBarAudibleAlertsForBrowser(browser()));
+
+  // Navigate to a different page.
+  ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
+
+  // Ensure that there was no audible alert.
+  EXPECT_EQ(0u, GetFindBarAudibleAlertsForBrowser(browser()));
+}
+
 // Verify search selection coordinates. The data file used is set-up such that
 // the text occurs on the same line, and we verify their positions by verifying
 // their relative positions.
