@@ -8,6 +8,7 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
+#include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -858,42 +859,26 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
   const NGConstraintSpace* old_space =
       block ? block->CachedConstraintSpace() : nullptr;
   if (!old_space || box_->NeedsLayout() || *old_space != constraint_space) {
-    LayoutUnit inline_size =
+    BoxLayoutExtraInput input(*box_);
+    input.containing_block_content_inline_size =
         CalculateAvailableInlineSizeForLegacy(*box_, constraint_space);
-    LayoutUnit block_size =
+    input.containing_block_content_block_size =
         CalculateAvailableBlockSizeForLegacy(*box_, constraint_space);
 
-    LayoutObject* containing_block = box_->ContainingBlock();
-    bool parallel_writing_mode;
-    if (!containing_block) {
-      parallel_writing_mode = true;
-    } else {
-      parallel_writing_mode = IsParallelWritingMode(
-          containing_block->StyleRef().GetWritingMode(), writing_mode);
+    if (LayoutObject* containing_block = box_->ContainingBlock()) {
+      if (!IsParallelWritingMode(containing_block->StyleRef().GetWritingMode(),
+                                 writing_mode)) {
+        // The sizes should be in the containing block writing mode.
+        std::swap(input.containing_block_content_block_size,
+                  input.containing_block_content_inline_size);
+      }
     }
-    if (parallel_writing_mode) {
-      box_->SetOverrideContainingBlockContentLogicalWidth(inline_size);
-      box_->SetOverrideContainingBlockContentLogicalHeight(block_size);
-    } else {
-      // OverrideContainingBlock should be in containing block writing mode.
-      box_->SetOverrideContainingBlockContentLogicalWidth(block_size);
-      box_->SetOverrideContainingBlockContentLogicalHeight(inline_size);
-    }
+    input.available_inline_size = constraint_space.AvailableSize().inline_size;
 
-    if (constraint_space.IsFixedSizeInline()) {
-      box_->SetOverrideLogicalWidth(
-          constraint_space.AvailableSize().inline_size);
-    } else {
-      box_->ClearOverrideLogicalWidth();
-    }
-    if (constraint_space.IsFixedSizeBlock()) {
-      box_->SetOverrideLogicalHeight(
-          constraint_space.AvailableSize().block_size);
-    } else {
-      box_->ClearOverrideLogicalHeight();
-    }
-    box_->SetOverrideAvailableInlineSize(
-        constraint_space.AvailableSize().inline_size);
+    if (constraint_space.IsFixedSizeInline())
+      input.override_inline_size = constraint_space.AvailableSize().inline_size;
+    if (constraint_space.IsFixedSizeBlock())
+      input.override_block_size = constraint_space.AvailableSize().block_size;
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,
@@ -904,11 +889,6 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     else
       box_->ForceChildLayout();
 
-    // Reset the containing block size override size, now that we're done with
-    // subtree layout. Min/max calculation that depends on the block size of the
-    // container (e.g. objects with intrinsic ratio and percentage block size)
-    // in a subsequent layout pass might otherwise become wrong.
-    box_->ClearOverrideContainingBlockContentSize();
     if (block)
       block->SetCachedConstraintSpace(constraint_space);
   }

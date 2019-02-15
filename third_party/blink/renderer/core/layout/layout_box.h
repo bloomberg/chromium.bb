@@ -39,6 +39,7 @@ namespace blink {
 class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
+struct BoxLayoutExtraInput;
 struct NGPhysicalBoxStrut;
 class ShapeOutsideInfo;
 
@@ -72,7 +73,6 @@ struct LayoutBoxRareData {
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
         has_override_percentage_resolution_block_size_(false),
-        has_override_available_inline_size_(false),
         has_previous_content_box_rect_and_layout_overflow_rect_(false),
         percent_height_container_(nullptr),
         snap_container_(nullptr),
@@ -88,22 +88,11 @@ struct LayoutBoxRareData {
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
   bool has_override_percentage_resolution_block_size_ : 1;
-  bool has_override_available_inline_size_ : 1;
   bool has_previous_content_box_rect_and_layout_overflow_rect_ : 1;
 
   LayoutUnit override_containing_block_content_logical_width_;
   LayoutUnit override_containing_block_content_logical_height_;
-
-  // Put two members that aren't used at the same time inside a union, to save
-  // space. There are DCHECKs to make sure that they aren't actually used at the
-  // same time. Currently, the percentage resolution block size is only used by
-  // custom layout children, while the available inline size is only used by
-  // LayoutNG. So, since custom layout containers are laid out by legacy, this
-  // should be safe.
-  union {
-    LayoutUnit override_percentage_resolution_block_size_;
-    LayoutUnit override_available_inline_size_;
-  };
+  LayoutUnit override_percentage_resolution_block_size_;
 
   LayoutUnit offset_to_next_page_;
 
@@ -746,6 +735,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                      MapCoordinatesFlags mode = 0) const override;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
+  void SetBoxLayoutExtraInput(const BoxLayoutExtraInput* input) {
+    extra_input_ = input;
+  }
+
   void UpdateLayout() override;
   void Paint(const PaintInfo&) const override;
 
@@ -802,9 +795,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // available inline size, rather than deducing it from the containing block
   // (and then subtract space taken up by adjacent floats).
   LayoutUnit OverrideAvailableInlineSize() const;
-  bool HasOverrideAvailableInlineSize() const;
-  void SetOverrideAvailableInlineSize(LayoutUnit);
-  void ClearOverrideAvailableInlineSize();
+  bool HasOverrideAvailableInlineSize() const { return extra_input_; }
 
   LayoutUnit AdjustBorderBoxLogicalWidthForBoxSizing(float width) const;
   LayoutUnit AdjustBorderBoxLogicalHeightForBoxSizing(float height) const;
@@ -1828,6 +1819,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   std::unique_ptr<BoxOverflowModel> overflow_;
+
+  // Extra layout input data. This one may be set during layout, and cleared
+  // afterwards. Always nullptr when this object isn't in the process of being
+  // laid out.
+  const BoxLayoutExtraInput* extra_input_ = nullptr;
 
   union {
     // The inline box containing this LayoutBox, for atomic inline elements.

@@ -31,6 +31,7 @@ blink_core_sources("layout") {
     "bidi_run.h",
     "bidi_run_for_line.cc",
     "bidi_run_for_line.h",
+    "box_layout_extra_input.h",
     "collapsed_border_value.cc",
     "collapsed_border_value.h",
     "column_balancer.cc",

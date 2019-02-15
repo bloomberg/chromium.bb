@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
@@ -96,11 +97,19 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
   LayoutUnit intrinsic_content_logical_height;
   LayoutRectOutsets margin_box_outsets;
   LayoutUnit preferred_logical_width[2];
-  void* pointers[3];
+  void* pointers[4];
 };
 
 static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
               "LayoutBox should stay small");
+
+BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& box) : box(box) {
+  box.SetBoxLayoutExtraInput(this);
+}
+
+BoxLayoutExtraInput::~BoxLayoutExtraInput() {
+  box.SetBoxLayoutExtraInput(nullptr);
+}
 
 LayoutBox::LayoutBox(ContainerNode* node)
     : LayoutBoxModelObject(node),
@@ -1334,38 +1343,50 @@ LayoutUnit LayoutBox::MaxPreferredLogicalWidth() const {
 
 LayoutUnit LayoutBox::OverrideLogicalWidth() const {
   DCHECK(HasOverrideLogicalWidth());
+  if (extra_input_ && extra_input_->override_inline_size)
+    return *extra_input_->override_inline_size;
   return rare_data_->override_logical_width_;
 }
 
 LayoutUnit LayoutBox::OverrideLogicalHeight() const {
   DCHECK(HasOverrideLogicalHeight());
+  if (extra_input_ && extra_input_->override_block_size)
+    return *extra_input_->override_block_size;
   return rare_data_->override_logical_height_;
 }
 
 bool LayoutBox::HasOverrideLogicalHeight() const {
+  if (extra_input_ && extra_input_->override_block_size)
+    return true;
   return rare_data_ && rare_data_->override_logical_height_ != -1;
 }
 
 bool LayoutBox::HasOverrideLogicalWidth() const {
+  if (extra_input_ && extra_input_->override_inline_size)
+    return true;
   return rare_data_ && rare_data_->override_logical_width_ != -1;
 }
 
 void LayoutBox::SetOverrideLogicalHeight(LayoutUnit height) {
+  DCHECK(!extra_input_);
   DCHECK_GE(height, 0);
   EnsureRareData().override_logical_height_ = height;
 }
 
 void LayoutBox::SetOverrideLogicalWidth(LayoutUnit width) {
+  DCHECK(!extra_input_);
   DCHECK_GE(width, 0);
   EnsureRareData().override_logical_width_ = width;
 }
 
 void LayoutBox::ClearOverrideLogicalHeight() {
+  DCHECK(!extra_input_);
   if (rare_data_)
     rare_data_->override_logical_height_ = LayoutUnit(-1);
 }
 
 void LayoutBox::ClearOverrideLogicalWidth() {
+  DCHECK(!extra_input_);
   if (rare_data_)
     rare_data_->override_logical_width_ = LayoutUnit(-1);
 }
@@ -1390,40 +1411,41 @@ LayoutUnit LayoutBox::OverrideContentLogicalHeight() const {
 LayoutUnit LayoutBox::OverrideContainingBlockContentWidth() const {
   DCHECK(HasOverrideContainingBlockContentWidth());
   return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
-             ? rare_data_->override_containing_block_content_logical_width_
-             : rare_data_->override_containing_block_content_logical_height_;
+             ? OverrideContainingBlockContentLogicalWidth()
+             : OverrideContainingBlockContentLogicalHeight();
 }
 
 LayoutUnit LayoutBox::OverrideContainingBlockContentHeight() const {
   DCHECK(HasOverrideContainingBlockContentHeight());
   return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
-             ? rare_data_->override_containing_block_content_logical_height_
-             : rare_data_->override_containing_block_content_logical_width_;
+             ? OverrideContainingBlockContentLogicalHeight()
+             : OverrideContainingBlockContentLogicalWidth();
 }
 
 bool LayoutBox::HasOverrideContainingBlockContentWidth() const {
-  if (!rare_data_ || !ContainingBlock())
+  if (!ContainingBlock())
     return false;
 
   return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
-             ? rare_data_->has_override_containing_block_content_logical_width_
-             : rare_data_
-                   ->has_override_containing_block_content_logical_height_;
+             ? HasOverrideContainingBlockContentLogicalWidth()
+             : HasOverrideContainingBlockContentLogicalHeight();
 }
 
 bool LayoutBox::HasOverrideContainingBlockContentHeight() const {
-  if (!rare_data_ || !ContainingBlock())
+  if (!ContainingBlock())
     return false;
 
   return ContainingBlock()->StyleRef().IsHorizontalWritingMode()
-             ? rare_data_->has_override_containing_block_content_logical_height_
-             : rare_data_->has_override_containing_block_content_logical_width_;
+             ? HasOverrideContainingBlockContentLogicalHeight()
+             : HasOverrideContainingBlockContentLogicalWidth();
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
   DCHECK(HasOverrideContainingBlockContentLogicalWidth());
+  if (extra_input_)
+    return extra_input_->containing_block_content_inline_size;
   return rare_data_->override_containing_block_content_logical_width_;
 }
 
@@ -1431,12 +1453,16 @@ LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
 // direction ?.
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalHeight() const {
   DCHECK(HasOverrideContainingBlockContentLogicalHeight());
+  if (extra_input_)
+    return extra_input_->containing_block_content_block_size;
   return rare_data_->override_containing_block_content_logical_height_;
 }
 
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 bool LayoutBox::HasOverrideContainingBlockContentLogicalWidth() const {
+  if (extra_input_)
+    return true;
   return rare_data_ &&
          rare_data_->has_override_containing_block_content_logical_width_;
 }
@@ -1444,6 +1470,8 @@ bool LayoutBox::HasOverrideContainingBlockContentLogicalWidth() const {
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 bool LayoutBox::HasOverrideContainingBlockContentLogicalHeight() const {
+  if (extra_input_)
+    return true;
   return rare_data_ &&
          rare_data_->has_override_containing_block_content_logical_height_;
 }
@@ -1452,6 +1480,7 @@ bool LayoutBox::HasOverrideContainingBlockContentLogicalHeight() const {
 // direction ?.
 void LayoutBox::SetOverrideContainingBlockContentLogicalWidth(
     LayoutUnit logical_width) {
+  DCHECK(!extra_input_);
   DCHECK_GE(logical_width, LayoutUnit(-1));
   EnsureRareData().override_containing_block_content_logical_width_ =
       logical_width;
@@ -1462,6 +1491,7 @@ void LayoutBox::SetOverrideContainingBlockContentLogicalWidth(
 // direction ?.
 void LayoutBox::SetOverrideContainingBlockContentLogicalHeight(
     LayoutUnit logical_height) {
+  DCHECK(!extra_input_);
   DCHECK_GE(logical_height, LayoutUnit(-1));
   EnsureRareData().override_containing_block_content_logical_height_ =
       logical_height;
@@ -1471,6 +1501,7 @@ void LayoutBox::SetOverrideContainingBlockContentLogicalHeight(
 // TODO (lajava) Shouldn't we implement these functions based on physical
 // direction ?.
 void LayoutBox::ClearOverrideContainingBlockContentSize() {
+  DCHECK(!extra_input_);
   if (!rare_data_)
     return;
   EnsureRareData().has_override_containing_block_content_logical_width_ = false;
@@ -1492,11 +1523,6 @@ void LayoutBox::SetOverridePercentageResolutionBlockSize(
     LayoutUnit logical_height) {
   DCHECK_GE(logical_height, LayoutUnit(-1));
   auto& rare_data = EnsureRareData();
-
-  // The actual data field is shared with override available inline size. They
-  // cannot be in use at the same time.
-  DCHECK(!rare_data.has_override_available_inline_size_);
-
   rare_data.override_percentage_resolution_block_size_ = logical_height;
   rare_data.has_override_percentage_resolution_block_size_ = true;
 }
@@ -1509,29 +1535,9 @@ void LayoutBox::ClearOverridePercentageResolutionBlockSize() {
 
 LayoutUnit LayoutBox::OverrideAvailableInlineSize() const {
   DCHECK(HasOverrideAvailableInlineSize());
-  return rare_data_->override_percentage_resolution_block_size_;
-}
-
-bool LayoutBox::HasOverrideAvailableInlineSize() const {
-  return rare_data_ && rare_data_->has_override_available_inline_size_;
-}
-
-void LayoutBox::SetOverrideAvailableInlineSize(LayoutUnit inline_size) {
-  DCHECK_GE(inline_size, LayoutUnit());
-  auto& rare_data = EnsureRareData();
-
-  // The actual data field is shared with override block percentage resolution
-  // size. They cannot be in use at the same time.
-  DCHECK(!rare_data.has_override_percentage_resolution_block_size_);
-
-  rare_data.override_available_inline_size_ = inline_size;
-  rare_data.has_override_available_inline_size_ = true;
-}
-
-void LayoutBox::ClearOverrideAvailableInlineSize() {
-  if (!rare_data_)
-    return;
-  EnsureRareData().has_override_available_inline_size_ = false;
+  if (extra_input_)
+    return extra_input_->available_inline_size;
+  return LayoutUnit();
 }
 
 LayoutUnit LayoutBox::AdjustBorderBoxLogicalWidthForBoxSizing(
