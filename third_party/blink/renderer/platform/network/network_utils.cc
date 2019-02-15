@@ -65,9 +65,8 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   return String(domain.data(), domain.length());
 }
 
-scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
-    const KURL& url,
-    ResourceResponse& response) {
+std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>>
+ParseDataURLAndPopulateResponse(const KURL& url, bool verify_mime_type) {
   // The following code contains duplication of GetInfoFromDataURL() and
   // WebURLLoaderImpl::PopulateURLResponse() in
   // content/child/web_url_loader_impl.cc. Merge them once content/child is
@@ -81,18 +80,18 @@ scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
   int result = net::URLRequestDataJob::BuildResponse(
       GURL(url), &utf8_mime_type, &utf8_charset, &data_string, headers.get());
   if (result != net::OK)
-    return nullptr;
+    return std::make_tuple(result, ResourceResponse(), nullptr);
 
-  if (!blink::IsSupportedMimeType(utf8_mime_type))
-    return nullptr;
+  if (verify_mime_type && !blink::IsSupportedMimeType(utf8_mime_type))
+    return std::make_tuple(net::ERR_FAILED, ResourceResponse(), nullptr);
 
-  scoped_refptr<SharedBuffer> data =
-      SharedBuffer::Create(data_string.data(), data_string.size());
+  auto buffer = SharedBuffer::Create(data_string.data(), data_string.size());
+  ResourceResponse response;
   response.SetHTTPStatusCode(200);
   response.SetHTTPStatusText("OK");
   response.SetCurrentRequestUrl(url);
   response.SetMimeType(WebString::FromUTF8(utf8_mime_type));
-  response.SetExpectedContentLength(data->size());
+  response.SetExpectedContentLength(buffer->size());
   response.SetTextEncodingName(WebString::FromUTF8(utf8_charset));
 
   size_t iter = 0;
@@ -102,7 +101,7 @@ scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
     response.AddHTTPHeaderField(WebString::FromLatin1(name),
                                 WebString::FromLatin1(value));
   }
-  return data;
+  return std::make_tuple(net::OK, std::move(response), std::move(buffer));
 }
 
 bool IsDataURLMimeTypeSupported(const KURL& url) {

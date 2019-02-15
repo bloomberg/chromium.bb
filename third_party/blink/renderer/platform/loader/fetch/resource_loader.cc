@@ -47,6 +47,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
@@ -57,11 +58,13 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/shared_buffer_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_instrumentation.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -102,6 +105,39 @@ void LogMixedAutoupgradeMetrics(blink::MixedContentAutoupgradeStatus status,
     builder.SetCode(response_or_error_code.value());
   }
   builder.Record(recorder);
+}
+
+bool CanHandleDataURLRequestLocally(const ResourceRequest& request) {
+  if (!request.Url().ProtocolIsData())
+    return false;
+
+  // The fast paths for data URL, Start() and HandleDataURL(), don't support
+  // the DownloadToBlob option.
+  if (request.DownloadToBlob())
+    return false;
+
+  // Data url requests from object tags may need to be intercepted as streams
+  // and so need to be sent to the browser.
+  if (request.GetRequestContext() == mojom::RequestContextType::OBJECT)
+    return false;
+
+  // Optimize for the case where we can handle a data URL locally.  We must
+  // skip this for data URLs targeted at frames since those could trigger a
+  // download.
+  //
+  // NOTE: We special case MIME types we can render both for performance
+  // reasons as well as to support unit tests.
+  if (request.GetFrameType() !=
+          network::mojom::RequestContextFrameType::kTopLevel &&
+      request.GetFrameType() !=
+          network::mojom::RequestContextFrameType::kNested) {
+    return true;
+  }
+
+  if (network_utils::IsDataURLMimeTypeSupported(request.Url()))
+    return true;
+
+  return false;
 }
 
 }  // namespace
@@ -485,24 +521,14 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
     ResourceRequest cache_aware_request(request);
     cache_aware_request.SetCacheMode(
         mojom::FetchCacheMode::kUnspecifiedOnlyIfCachedStrict);
-    loader_->LoadAsynchronously(WrappedResourceRequest(cache_aware_request),
-                                this);
-    if (code_cache_request_) {
-      // Sets defers loading and initiates a fetch from code cache.
-      code_cache_request_->FetchFromCodeCache(loader_.get(), this);
-    }
+    RequestAsynchronously(cache_aware_request);
     return;
   }
 
   if (resource_->Options().synchronous_policy == kRequestSynchronously) {
     RequestSynchronously(request);
   } else {
-    loader_->LoadAsynchronously(WrappedResourceRequest(request), this);
-
-    if (code_cache_request_) {
-      // Sets defers loading and initiates a fetch from code cache.
-      code_cache_request_->FetchFromCodeCache(loader_.get(), this);
-    }
+    RequestAsynchronously(request);
   }
 }
 
@@ -523,6 +549,7 @@ void ResourceLoader::Restart(const ResourceRequest& request) {
 
 void ResourceLoader::SetDefersLoading(bool defers) {
   DCHECK(loader_);
+  defers_ = defers;
   // If CodeCacheRequest handles this, then no need to handle here.
   if (code_cache_request_ && code_cache_request_->SetDefersLoading(defers))
     return;
@@ -533,6 +560,15 @@ void ResourceLoader::SetDefersLoading(bool defers) {
     }
     if (!defers && response_body_loader_->IsSuspended()) {
       response_body_loader_->Resume();
+    }
+  }
+
+  if (defers_handling_data_url_) {
+    if (!defers_) {
+      defers_handling_data_url_ = false;
+      GetLoadingTaskRunner()->PostTask(
+          FROM_HERE,
+          WTF::Bind(&ResourceLoader::HandleDataUrl, WrapWeakPersistent(this)));
     }
   }
 
@@ -571,6 +607,10 @@ void ResourceLoader::CancelTimerFired(TimerBase*) {
 void ResourceLoader::Cancel() {
   HandleError(
       ResourceError::CancelledError(resource_->LastResourceRequest().Url()));
+}
+
+bool ResourceLoader::IsLoading() const {
+  return !!loader_;
 }
 
 void ResourceLoader::CancelForRedirectAccessCheckError(
@@ -822,22 +862,27 @@ void ResourceLoader::DidReceiveResponse(
     const WebURLResponse& web_url_response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!web_url_response.IsNull());
+  DidReceiveResponseInternal(web_url_response.ToResourceResponse(),
+                             std::move(handle));
+}
 
+void ResourceLoader::DidReceiveResponseInternal(
+    const ResourceResponse& response,
+    std::unique_ptr<WebDataConsumerHandle> handle) {
   const ResourceRequest& request = resource_->GetResourceRequest();
 
   if (request.IsAutomaticUpgrade()) {
     auto recorder =
         ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
     LogMixedAutoupgradeMetrics(MixedContentAutoupgradeStatus::kResponseReceived,
-                               web_url_response.HttpStatusCode(),
+                               response.HttpStatusCode(),
                                request.GetUkmSourceId(), recorder.get());
   }
 
   if (fetcher_->GetProperties().IsDetached()) {
     // If the fetch context is already detached, we don't need further signals,
     // so let's cancel the request.
-    HandleError(
-        ResourceError::CancelledError(web_url_response.CurrentRequestUrl()));
+    HandleError(ResourceError::CancelledError(response.CurrentRequestUrl()));
     return;
   }
 
@@ -851,8 +896,6 @@ void ResourceLoader::DidReceiveResponse(
       initial_request.GetFetchRequestMode();
 
   const ResourceLoaderOptions& options = resource_->Options();
-
-  const ResourceResponse& response = web_url_response.ToResourceResponse();
 
   should_use_isolated_code_cache_ =
       ShouldUseIsolatedCodeCache(request_context, response);
@@ -1159,13 +1202,32 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
   int64_t encoded_body_length = 0;
   WebBlobInfo downloaded_blob;
-  loader_->LoadSynchronously(request_in, this, response_out, error_out,
-                             data_out, encoded_data_length, encoded_body_length,
-                             downloaded_blob);
 
+  if (CanHandleDataURLRequestLocally(request)) {
+    ResourceResponse response;
+    scoped_refptr<SharedBuffer> data;
+    int result;
+    // It doesn't have to verify mime type again since it's allowed to handle
+    // the data url with invalid mime type in some cases.
+    // CanHandleDataURLRequestLocally() has already checked if the data url can
+    // be handled here.
+    std::tie(result, response, data) =
+        network_utils::ParseDataURLAndPopulateResponse(
+            resource_->Url(), false /* verify_mime_type */);
+    if (result != net::OK) {
+      error_out = WebURLError(result, resource_->Url());
+    } else {
+      response_out = WrappedResourceResponse(response);
+      data_out = WebData(std::move(data));
+    }
+  } else {
+    loader_->LoadSynchronously(request_in, this, response_out, error_out,
+                               data_out, encoded_data_length,
+                               encoded_body_length, downloaded_blob);
+  }
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
-  if (!loader_)
+  if (!IsLoading())
     return;
   int64_t decoded_body_length = data_out.size();
   if (error_out) {
@@ -1174,7 +1236,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     return;
   }
   DidReceiveResponse(response_out);
-  if (!loader_)
+  if (!IsLoading())
     return;
   DCHECK_GE(response_out.ToResourceResponse().EncodedBodyLength(), 0);
 
@@ -1199,6 +1261,24 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,
                    decoded_body_length, false,
                    std::vector<network::cors::PreflightTimingInfo>());
+}
+
+void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {
+  DCHECK(loader_);
+  if (CanHandleDataURLRequestLocally(request)) {
+    DCHECK(!code_cache_request_);
+    // Handle DataURL in another task instead of using |loader_|.
+    GetLoadingTaskRunner()->PostTask(
+        FROM_HERE,
+        WTF::Bind(&ResourceLoader::HandleDataUrl, WrapWeakPersistent(this)));
+    return;
+  }
+
+  loader_->LoadAsynchronously(WrappedResourceRequest(request), this);
+  if (code_cache_request_) {
+    // Sets defers loading and initiates a fetch from code cache.
+    code_cache_request_->FetchFromCodeCache(loader_.get(), this);
+  }
 }
 
 void ResourceLoader::Dispose() {
@@ -1311,6 +1391,49 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
   // here alongside the style checks, and put its use counters somewhere else.
 
   return base::nullopt;
+}
+
+void ResourceLoader::HandleDataUrl() {
+  if (!IsLoading())
+    return;
+  if (defers_) {
+    defers_handling_data_url_ = true;
+    return;
+  }
+
+  // Extract a ResourceResponse from the data url.
+  ResourceResponse response;
+  scoped_refptr<SharedBuffer> data;
+  int result;
+  // We doesn't have to verify mime type again since it's allowed to handle the
+  // data url with invalid mime type in some cases.
+  // CanHandleDataURLRequestLocally() has already checked if the data url can be
+  // handled here.
+  std::tie(result, response, data) =
+      network_utils::ParseDataURLAndPopulateResponse(
+          resource_->Url(), false /* verify_mime_type */);
+  if (result != net::OK) {
+    HandleError(ResourceError(result, resource_->Url(), base::nullopt));
+    return;
+  }
+  DCHECK(data);
+  const size_t data_size = data->size();
+
+  DidReceiveResponseInternal(response, nullptr);
+  if (!IsLoading())
+    return;
+
+  auto* bytes_consumer =
+      MakeGarbageCollected<SharedBufferBytesConsumer>(std::move(data));
+  DidStartLoadingResponseBodyInternal(*bytes_consumer);
+  if (!IsLoading())
+    return;
+
+  // DidFinishLoading() may deferred until the response body loader reaches to
+  // end.
+  DidFinishLoading(base::TimeTicks::Now(), data_size, data_size, data_size,
+                   false /* should_report_corb_blocking */,
+                   {} /* cors_preflight_timing_info */);
 }
 
 bool ResourceLoader::ShouldCheckCorsInResourceLoader() const {
