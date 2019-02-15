@@ -80,13 +80,21 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
                                base::TimeDelta interval,
                                BeginFrameArgsType type);
 
-  // This is the default delta that will be used to adjust the deadline when
-  // proper draw-time estimations are not yet available.
-  static base::TimeDelta DefaultEstimatedParentDrawTime();
+  // This is the default interval assuming 60Hz to use to avoid sprinkling the
+  // code with magic numbers.
+  static constexpr base::TimeDelta DefaultInterval() {
+    return base::TimeDelta::FromMicroseconds(16666);
+  }
 
-  // This is the default interval to use to avoid sprinkling the code with
-  // magic numbers.
-  static base::TimeDelta DefaultInterval();
+  // This is a hard-coded deadline adjustment that assumes 60Hz, to be used in
+  // cases where a good estimated draw time is not known. Using 1/3 of the vsync
+  // as the default adjustment gives the Browser the last 1/3 of a frame to
+  // produce output, the Renderer Impl thread the middle 1/3 of a frame to
+  // produce ouput, and the Renderer Main thread the first 1/3 of a frame to
+  // produce output.
+  static constexpr base::TimeDelta DefaultEstimatedParentDrawTime() {
+    return base::TimeDelta::FromMicroseconds(16666 / 3);
+  }
 
   bool IsValid() const { return interval >= base::TimeDelta(); }
 

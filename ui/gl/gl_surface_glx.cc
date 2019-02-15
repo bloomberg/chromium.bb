@@ -266,8 +266,7 @@ class SGIVideoSyncProviderThreadShim {
     }
   }
 
-  void GetVSyncParameters(
-      const gfx::VSyncProvider::UpdateVSyncCallback& callback) {
+  void GetVSyncParameters(gfx::VSyncProvider::UpdateVSyncCallback callback) {
     base::TimeTicks now;
     {
       // Don't allow |window_| destruction while we're probing vsync.
@@ -291,8 +290,8 @@ class SGIVideoSyncProviderThreadShim {
     const base::TimeDelta kDefaultInterval =
         base::TimeDelta::FromSeconds(1) / 60;
 
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(callback, now, kDefaultInterval));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), now, kDefaultInterval));
   }
 
  private:
@@ -344,11 +343,11 @@ class SGIVideoSyncVSyncProvider
   }
 
   void GetVSyncParameters(
-      const gfx::VSyncProvider::UpdateVSyncCallback& callback) override {
+      gfx::VSyncProvider::UpdateVSyncCallback callback) override {
     // Only one outstanding request per surface.
     if (!pending_callback_) {
       DCHECK(callback);
-      pending_callback_ = callback;
+      pending_callback_ = std::move(callback);
       vsync_thread_->task_runner()->PostTask(
           FROM_HERE,
           base::BindOnce(&SGIVideoSyncProviderThreadShim::GetVSyncParameters,

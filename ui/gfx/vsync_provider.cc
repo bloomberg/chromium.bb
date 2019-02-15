@@ -6,9 +6,8 @@
 
 namespace gfx {
 
-void FixedVSyncProvider::GetVSyncParameters(
-    const UpdateVSyncCallback& callback) {
-  callback.Run(timebase_, interval_);
+void FixedVSyncProvider::GetVSyncParameters(UpdateVSyncCallback callback) {
+  std::move(callback).Run(timebase_, interval_);
 }
 
 bool FixedVSyncProvider::GetVSyncParametersIfAvailable(

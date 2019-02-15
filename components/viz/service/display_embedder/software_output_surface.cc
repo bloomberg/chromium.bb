@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/software_output_device.h"
@@ -21,8 +22,11 @@
 namespace viz {
 
 SoftwareOutputSurface::SoftwareOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)), weak_factory_(this) {}
+    std::unique_ptr<SoftwareOutputDevice> software_device,
+    SyntheticBeginFrameSource* synthetic_begin_frame_source)
+    : OutputSurface(std::move(software_device)),
+      synthetic_begin_frame_source_(synthetic_begin_frame_source),
+      weak_factory_(this) {}
 
 SoftwareOutputSurface::~SoftwareOutputSurface() = default;
 
@@ -72,14 +76,15 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
       << "arrive before the previous latency info is processed.";
   stored_latency_info_ = std::move(frame.latency_info);
 
-  // TODO(danakj): Update vsync params.
-  // gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
-  // if (vsync_provider)
-  //  vsync_provider->GetVSyncParameters(update_vsync_parameters_callback_);
-  // Update refresh_interval_ as well.
-
   software_device()->OnSwapBuffers(base::BindOnce(
       &SoftwareOutputSurface::SwapBuffersCallback, weak_factory_.GetWeakPtr()));
+
+  gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
+  if (vsync_provider && synthetic_begin_frame_source_) {
+    vsync_provider->GetVSyncParameters(
+        base::BindOnce(&SoftwareOutputSurface::UpdateVSyncParametersCallback,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
@@ -117,8 +122,22 @@ void SoftwareOutputSurface::SwapBuffersCallback() {
   client_->DidFinishLatencyInfo(stored_latency_info_);
   std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
   client_->DidReceiveSwapBuffersAck();
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta interval_to_next_refresh =
+      now.SnappedToNextTick(refresh_timebase_, refresh_interval_) - now;
+
   client_->DidReceivePresentationFeedback(
-      gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
+      gfx::PresentationFeedback(now, interval_to_next_refresh, 0u));
+}
+
+void SoftwareOutputSurface::UpdateVSyncParametersCallback(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  DCHECK(synthetic_begin_frame_source_);
+  refresh_timebase_ = timebase;
+  refresh_interval_ = interval;
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)

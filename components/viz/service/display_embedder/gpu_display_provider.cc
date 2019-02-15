@@ -122,7 +122,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
-        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
+        CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client),
+        synthetic_begin_frame_source);
   } else if (renderer_settings.use_skia_renderer) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
     // TODO(penghuang): Support DDL for all platforms.

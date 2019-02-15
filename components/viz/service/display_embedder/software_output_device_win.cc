@@ -19,6 +19,7 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/win/hwnd_util.h"
+#include "ui/gl/vsync_provider_win.h"
 
 namespace viz {
 namespace {
@@ -26,7 +27,10 @@ namespace {
 // Shared base class for Windows SoftwareOutputDevice implementations.
 class SoftwareOutputDeviceWinBase : public SoftwareOutputDevice {
  public:
-  explicit SoftwareOutputDeviceWinBase(HWND hwnd) : hwnd_(hwnd) {}
+  explicit SoftwareOutputDeviceWinBase(HWND hwnd) : hwnd_(hwnd) {
+    vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(hwnd);
+  }
+
   ~SoftwareOutputDeviceWinBase() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(!in_paint_);
