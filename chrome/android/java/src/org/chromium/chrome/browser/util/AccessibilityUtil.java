@@ -57,8 +57,9 @@ public class AccessibilityUtil {
      * @return        Whether or not accessibility and touch exploration are enabled.
      */
     public static boolean isAccessibilityEnabled() {
-        TraceEvent.begin("AccessibilityManager::isAccessibilityEnabled");
         if (sIsAccessibilityEnabled != null) return sIsAccessibilityEnabled;
+
+        TraceEvent.begin("AccessibilityManager::isAccessibilityEnabled");
 
         AccessibilityManager manager =
                 (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
