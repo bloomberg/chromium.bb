@@ -164,10 +164,6 @@ static const InterpFilters filter_sets[DUAL_FILTER_SET_SIZE] = {
   0x00000002, 0x00010002, 0x00020002,  // y = 2
 };
 
-#define SECOND_REF_FRAME_MASK                                         \
-  ((1 << ALTREF_FRAME) | (1 << ALTREF2_FRAME) | (1 << BWDREF_FRAME) | \
-   (1 << GOLDEN_FRAME) | (1 << LAST2_FRAME) | 0x01)
-
 static const double ADST_FLIP_SVM[8] = {
   /* vertical */
   -6.6623, -2.8062, -3.2531, 3.1671,
@@ -11077,13 +11073,35 @@ static void sf_refine_fast_tx_type_search(
   }
 }
 
-// Contains information on which modes to skip. The last entry contains
-// information on whether the reference frames should should be skipped.
-typedef struct mode_skip_mask_struct {
-  uint32_t mode[REF_FRAMES];
-  uint16_t ref_frame1;
-  uint16_t ref_frame2;
+typedef struct {
+  // Mask for each reference frame, specifying which prediction modes to NOT try
+  // during search.
+  uint32_t pred_modes[REF_FRAMES];
+  // If ref_combo[i][j + 1] is true, do NOT try prediction using combination of
+  // reference frames (i, j).
+  // Note: indexing with 'j + 1' is due to the fact that 2nd reference can be -1
+  // (NONE_FRAME).
+  bool ref_combo[REF_FRAMES][REF_FRAMES + 1];
 } mode_skip_mask_t;
+
+// Update 'ref_combo' mask to disable given 'ref' in single and compound modes.
+static void disable_reference(MV_REFERENCE_FRAME ref,
+                              bool ref_combo[REF_FRAMES][REF_FRAMES + 1]) {
+  for (MV_REFERENCE_FRAME ref2 = NONE_FRAME; ref2 < REF_FRAMES; ++ref2) {
+    ref_combo[ref][ref2 + 1] = true;
+  }
+}
+
+// Update 'ref_combo' mask to disable all inter references except ALTREF.
+static void disable_inter_references_except_altref(
+    bool ref_combo[REF_FRAMES][REF_FRAMES + 1]) {
+  disable_reference(LAST_FRAME, ref_combo);
+  disable_reference(LAST2_FRAME, ref_combo);
+  disable_reference(LAST3_FRAME, ref_combo);
+  disable_reference(GOLDEN_FRAME, ref_combo);
+  disable_reference(BWDREF_FRAME, ref_combo);
+  disable_reference(ALTREF2_FRAME, ref_combo);
+}
 
 static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
                                 MACROBLOCK *x, BLOCK_SIZE bsize) {
@@ -11103,41 +11121,33 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
-      // Skip checking missing references in both single and compound reference
-      // modes. Note that a mode will be skipped iff both reference frames
-      // are masked out.
-      mask->ref_frame1 |= (1 << ref_frame);
-      mask->ref_frame2 |= SECOND_REF_FRAME_MASK;
+      // Skip checking missing reference in both single and compound reference
+      // modes.
+      disable_reference(ref_frame, mask->ref_combo);
     } else {
       // Skip fixed mv modes for poor references
       if ((x->pred_mv_sad[ref_frame] >> 2) > min_pred_mv_sad) {
-        mask->mode[ref_frame] |= INTER_NEAREST_NEAR_ZERO;
+        mask->pred_modes[ref_frame] |= INTER_NEAREST_NEAR_ZERO;
       }
     }
-    // If the segment reference frame feature is enabled....
-    // then do nothing if the current ref frame is not allowed..
     if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
         get_segdata(seg, segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame) {
-      mask->ref_frame1 |= (1 << ref_frame);
-      mask->ref_frame2 |= SECOND_REF_FRAME_MASK;
+      // Reference not used for the segment.
+      disable_reference(ref_frame, mask->ref_combo);
     }
   }
-  // Disable this drop out case if the ref frame
-  // segment level feature is enabled for this segment. This is to
-  // prevent the possibility that we end up unable to pick any mode.
+  // Note: We use the following drop-out only if the SEG_LVL_REF_FRAME feature
+  // is disabled for this segment. This is to prevent the possibility that we
+  // end up unable to pick any mode.
   if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
     // Only consider GLOBALMV/ALTREF_FRAME for alt ref frame,
     // unless ARNR filtering is enabled in which case we want
     // an unfiltered alternative. We allow near/nearest as well
     // because they may result in zero-zero MVs but be cheaper.
     if (cpi->rc.is_src_frame_alt_ref && (cpi->oxcf.arnr_max_frames == 0)) {
-      mask->ref_frame1 = (1 << LAST_FRAME) | (1 << LAST2_FRAME) |
-                         (1 << LAST3_FRAME) | (1 << BWDREF_FRAME) |
-                         (1 << ALTREF2_FRAME) | (1 << GOLDEN_FRAME);
-      mask->ref_frame2 = SECOND_REF_FRAME_MASK;
-      // TODO(zoeliu): To further explore whether following needs to be done for
-      //               BWDREF_FRAME as well.
-      mask->mode[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
+      disable_inter_references_except_altref(mask->ref_combo);
+
+      mask->pred_modes[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
       const MV_REFERENCE_FRAME tmp_ref_frames[2] = { ALTREF_FRAME, NONE_FRAME };
       int_mv near_mv, nearest_mv, global_mv;
       get_this_mv(&nearest_mv, NEARESTMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
@@ -11145,39 +11155,39 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
       get_this_mv(&global_mv, GLOBALMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
 
       if (near_mv.as_int != global_mv.as_int)
-        mask->mode[ALTREF_FRAME] |= (1 << NEARMV);
+        mask->pred_modes[ALTREF_FRAME] |= (1 << NEARMV);
       if (nearest_mv.as_int != global_mv.as_int)
-        mask->mode[ALTREF_FRAME] |= (1 << NEARESTMV);
+        mask->pred_modes[ALTREF_FRAME] |= (1 << NEARESTMV);
     }
   }
 
   if (cpi->rc.is_src_frame_alt_ref) {
     if (sf->alt_ref_search_fp) {
       assert(cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
-      mask->mode[ALTREF_FRAME] = 0;
-      mask->ref_frame1 = ~(1 << ALTREF_FRAME);
-      mask->ref_frame2 = SECOND_REF_FRAME_MASK;
+      mask->pred_modes[ALTREF_FRAME] = 0;
+      disable_inter_references_except_altref(mask->ref_combo);
+      disable_reference(INTRA_FRAME, mask->ref_combo);
     }
   }
 
   if (sf->alt_ref_search_fp)
     if (!cm->show_frame && x->pred_mv_sad[GOLDEN_FRAME] < INT_MAX)
       if (x->pred_mv_sad[ALTREF_FRAME] > (x->pred_mv_sad[GOLDEN_FRAME] << 1))
-        mask->mode[ALTREF_FRAME] |= INTER_ALL;
+        mask->pred_modes[ALTREF_FRAME] |= INTER_ALL;
 
   if (sf->adaptive_mode_search) {
     if (cm->show_frame && !cpi->rc.is_src_frame_alt_ref &&
         cpi->rc.frames_since_golden >= 3)
       if ((x->pred_mv_sad[GOLDEN_FRAME] >> 1) > x->pred_mv_sad[LAST_FRAME])
-        mask->mode[GOLDEN_FRAME] |= INTER_ALL;
+        mask->pred_modes[GOLDEN_FRAME] |= INTER_ALL;
   }
 
   if (bsize > sf->max_intra_bsize) {
-    mask->ref_frame1 |= (1 << INTRA_FRAME);
-    mask->ref_frame2 |= (1 << INTRA_FRAME);
+    disable_reference(INTRA_FRAME, mask->ref_combo);
   }
 
-  mask->mode[INTRA_FRAME] |= ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
+  mask->pred_modes[INTRA_FRAME] |=
+      ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
 }
 
 // Please add/modify parameter setting in this function, making it consistent
@@ -11624,12 +11634,11 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
 bool mask_says_skip(const mode_skip_mask_t *mode_skip_mask,
                     const MV_REFERENCE_FRAME *ref_frame,
                     const PREDICTION_MODE this_mode) {
-  if (mode_skip_mask->mode[ref_frame[0]] & (1 << this_mode)) {
+  if (mode_skip_mask->pred_modes[ref_frame[0]] & (1 << this_mode)) {
     return true;
   }
 
-  return (mode_skip_mask->ref_frame1 & (1 << ref_frame[0])) &&
-         (mode_skip_mask->ref_frame2 & (1 << AOMMAX(0, ref_frame[1])));
+  return mode_skip_mask->ref_combo[ref_frame[0]][ref_frame[1] + 1];
 }
 
 static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
