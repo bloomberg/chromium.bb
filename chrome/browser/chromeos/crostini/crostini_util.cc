@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -258,6 +259,13 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy) {
     return IsCrostiniAllowedForProfile(profile);
   }
   return IsCrostiniAllowedForProfileImpl(profile);
+}
+
+bool IsCrostiniExportImportUIAllowedForProfile(Profile* profile) {
+  return IsCrostiniUIAllowedForProfile(profile, true) &&
+         base::FeatureList::IsEnabled(chromeos::features::kCrostiniBackup) &&
+         profile->GetPrefs()->GetBoolean(
+             crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy);
 }
 
 bool IsCrostiniEnabled(Profile* profile) {

@@ -76,10 +76,16 @@ void CrostiniExportImport::Shutdown() {
 }
 
 void CrostiniExportImport::ExportContainer(content::WebContents* web_contents) {
+  if (!IsCrostiniExportImportUIAllowedForProfile(profile_)) {
+    return;
+  }
   OpenFileDialog(ExportImportType::EXPORT, web_contents);
 }
 
 void CrostiniExportImport::ImportContainer(content::WebContents* web_contents) {
+  if (!IsCrostiniExportImportUIAllowedForProfile(profile_)) {
+    return;
+  }
   OpenFileDialog(ExportImportType::IMPORT, web_contents);
 }
 
