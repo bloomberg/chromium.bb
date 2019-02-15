@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.omaha.inline.FakeAppUpdateManagerWrapper.Type
 
 /** A factory that creates an {@link AppUpdateManager} instance. */
 public class InlineAppUpdateManagerFactory {
-    private static final boolean sTest = false;
+    private static final boolean sTest = true;
 
     /** @return A new {@link AppUpdateManager} to use to interact with Play for inline updates. */
     public static AppUpdateManager create() {
