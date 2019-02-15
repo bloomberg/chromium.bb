@@ -620,6 +620,7 @@
     "script": "//testing/xvfb.py",
     "args": [
       "../../chrome/test/chromedriver/test/run_webdriver_tests.py",
+      "-v",
       "--chromedriver=chromedriver",
       "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
       "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/navigate_to/navigate.py",
