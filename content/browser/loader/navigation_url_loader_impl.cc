@@ -632,10 +632,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
-      bool needs_loader_factory_interceptor) {
+      bool needs_loader_factory_interceptor,
+      base::Time ui_post_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!started_);
+    ui_to_io_time_ += (base::Time::Now() - ui_post_time);
     global_request_id_ = MakeGlobalRequestID();
     frame_tree_node_id_ = frame_tree_node_id;
     started_ = true;
@@ -1049,9 +1051,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
-                      PreviewsState new_previews_state) {
+                      PreviewsState new_previews_state,
+                      base::Time ui_post_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
+    ui_to_io_time_ += (base::Time::Now() - ui_post_time);
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       auto* common_params =
           const_cast<CommonNavigationParams*>(&request_info_->common_params);
@@ -1305,11 +1309,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // response. https://crbug.com/416050
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
-                       response->DeepCopy(),
-                       std::move(url_loader_client_endpoints),
-                       std::move(cloned_navigation_data), global_request_id_,
-                       is_download, is_stream));
+        base::BindOnce(
+            &NavigationURLLoaderImpl::OnReceiveResponse, owner_,
+            response->DeepCopy(), std::move(url_loader_client_endpoints),
+            std::move(cloned_navigation_data), global_request_id_, is_download,
+            is_stream, ui_to_io_time_, base::Time::Now()));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1345,7 +1349,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveRedirect, owner_,
-                       redirect_info, response->DeepCopy()));
+                       redirect_info, response->DeepCopy(), base::Time::Now()));
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -1576,6 +1580,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // SignedExchangeRequestHandler will handle the response.
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
 
+  // Counts the time overhead of all the hops from the UI to the IO threads.
+  base::TimeDelta ui_to_io_time_;
+
   mutable base::WeakPtrFactory<URLLoaderRequestController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
@@ -1761,7 +1768,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
                      std::move(signed_exchange_prefetch_metric_recorder),
                      std::move(request_info), std::move(navigation_ui_data),
                      std::move(factory_for_webui), frame_tree_node_id,
-                     needs_loader_factory_interceptor));
+                     needs_loader_factory_interceptor, base::Time::Now()));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
@@ -1777,7 +1784,8 @@ void NavigationURLLoaderImpl::FollowRedirect(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderRequestController::FollowRedirect,
                      base::Unretained(request_controller_.get()),
-                     removed_headers, modified_headers, new_previews_state));
+                     removed_headers, modified_headers, new_previews_state,
+                     base::Time::Now()));
 }
 
 void NavigationURLLoaderImpl::ProceedWithResponse() {}
@@ -1788,7 +1796,17 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
-    bool is_stream) {
+    bool is_stream,
+    base::TimeDelta total_ui_to_io_time,
+    base::Time io_post_time) {
+  const base::TimeDelta kMinTime = base::TimeDelta::FromMicroseconds(1);
+  const base::TimeDelta kMaxTime = base::TimeDelta::FromMilliseconds(100);
+  const int kBuckets = 50;
+  io_to_ui_time_ += (base::Time::Now() - io_post_time);
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Navigation.NavigationURLLoaderImplIOPostTime",
+      io_to_ui_time_ + total_ui_to_io_time, kMinTime, kMaxTime, kBuckets);
+
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderImpl", this, "success", true);
 
@@ -1807,8 +1825,10 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
 
 void NavigationURLLoaderImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    scoped_refptr<network::ResourceResponse> response) {
+    scoped_refptr<network::ResourceResponse> response,
+    base::Time io_post_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  io_to_ui_time_ += (base::Time::Now() - io_post_time);
   delegate_->OnRequestRedirected(redirect_info, std::move(response));
 }
 

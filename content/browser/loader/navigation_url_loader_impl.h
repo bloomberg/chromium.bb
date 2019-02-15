@@ -57,9 +57,12 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& global_request_id,
       bool is_download,
-      bool is_stream);
+      bool is_stream,
+      base::TimeDelta total_ui_to_io_time,
+      base::Time io_post_time);
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         scoped_refptr<network::ResourceResponse> response);
+                         scoped_refptr<network::ResourceResponse> response,
+                         base::Time io_post_time);
   void OnComplete(const network::URLLoaderCompletionStatus& status);
 
   // Overrides loading of frame requests when the network service is disabled.
@@ -106,6 +109,9 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // Factories to handle navigation requests for non-network resources.
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
+
+  // Counts the time overhead of all the hops from the IO to the UI threads.
+  base::TimeDelta io_to_ui_time_;
 
   base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_;
 
