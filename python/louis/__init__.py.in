@@ -44,7 +44,16 @@ import sys
 # Some general utility functions
 def _createTablesString(tablesList):
     """Creates a tables string for liblouis calls"""
-    return b",".join([x.encode("ASCII") if isinstance(x, str) else bytes(x) for x in tablesList])
+    if sys.version_info.major == 2:
+        if sys.platform == "win32":
+            return b",".join([x.decode("UTF-8") if isinstance(x, str) else bytes(x) for x in tablesList])
+        else:
+            return b",".join([x.decode("UTF-8").encode("UTF-8") if isinstance(x, str) else bytes(x) for x in tablesList])
+    else:
+        if sys.platform == "win32":
+            return b",".join([x.encode("mbcs") if isinstance(x, str) else bytes(x) for x in tablesList])
+        else:
+            return b",".join([x.encode("UTF-8") if isinstance(x, str) else bytes(x) for x in tablesList])
 
 def _createTypeformbuf(length, typeform=None):
     """Creates a typeform buffer for liblouis calls"""
