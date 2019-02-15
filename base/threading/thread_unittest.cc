@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/test/gtest_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -574,4 +575,30 @@ TEST_F(ThreadTest, ExternalMessageLoop) {
   // (e.g. https://codereview.chromium.org/2135413003/#ps300001 crashed if
   // StopSoon() posted Thread::ThreadQuitHelper() while |run_loop_| was null).
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ThreadTest, ProvidedMessageLoopBase) {
+  Thread thread("ProvidedMessageLoopBase");
+  std::unique_ptr<base::sequence_manager::internal::SequenceManagerImpl>
+      sequence_manager =
+          base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
+              base::sequence_manager::SequenceManager::Settings());
+  scoped_refptr<base::sequence_manager::TaskQueue> task_queue =
+      sequence_manager
+          ->CreateTaskQueueWithType<base::sequence_manager::TaskQueue>(
+              base::sequence_manager::TaskQueue::Spec("default_tq"));
+  sequence_manager->SetTaskRunner(task_queue->task_runner());
+
+  base::Thread::Options options;
+  options.message_loop_base = sequence_manager.release();
+  thread.StartWithOptions(options);
+
+  base::WaitableEvent event;
+
+  task_queue->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
+  event.Wait();
+
+  thread.Stop();
 }

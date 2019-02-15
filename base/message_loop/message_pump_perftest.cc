@@ -31,7 +31,7 @@ class ThreadForTest : public Thread {
  public:
   ThreadForTest() : Thread("test") {}
 
-  using Thread::message_loop;
+  using Thread::message_loop_base;
 };
 
 class ScheduleWorkTest : public testing::Test {
@@ -56,10 +56,7 @@ class ScheduleWorkTest : public testing::Test {
     uint64_t schedule_calls = 0u;
     do {
       for (size_t i = 0; i < kBatchSize; ++i) {
-        target_message_loop()
-            ->GetMessageLoopBase()
-            ->GetMessagePump()
-            ->ScheduleWork();
+        target_message_loop_base()->GetMessagePump()->ScheduleWork();
         schedule_calls++;
       }
       now = base::TimeTicks::Now();
@@ -75,7 +72,7 @@ class ScheduleWorkTest : public testing::Test {
           base::ThreadTicks::Now() - thread_start;
     min_batch_times_[index] = minimum;
     max_batch_times_[index] = maximum;
-    target_message_loop()->task_runner()->PostTask(
+    target_message_loop_base()->GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ScheduleWorkTest::Increment,
                                   base::Unretained(this), schedule_calls));
   }
@@ -177,12 +174,12 @@ class ScheduleWorkTest : public testing::Test {
     }
   }
 
-  MessageLoop* target_message_loop() {
+  MessageLoopBase* target_message_loop_base() {
 #if defined(OS_ANDROID)
     if (java_thread_)
-      return java_thread_->message_loop();
+      return java_thread_->message_loop()->GetMessageLoopBase();
 #endif
-    return target_->message_loop();
+    return target_->message_loop_base();
   }
 
  private:

@@ -191,6 +191,7 @@ class BASE_EXPORT MessageLoopBase {
   friend class MessageLoopCurrent;
   friend class MessageLoopCurrentForIO;
   friend class MessageLoopCurrentForUI;
+  friend class Thread;
   friend class sequence_manager::internal::ThreadControllerImpl;
 
   // Explicitly allow or disallow task execution. Task execution is disallowed
@@ -203,6 +204,8 @@ class BASE_EXPORT MessageLoopBase {
 #if defined(OS_IOS)
   virtual void AttachToMessagePump() = 0;
 #endif
+
+  virtual Type GetType() const = 0;
 
   // Set the timer slack for this message loop.
   // TODO(alexclarke): Remove this as part of https://crbug.com/891670.
@@ -226,7 +229,7 @@ class BASE_EXPORT MessageLoop {
   explicit MessageLoop(Type type = TYPE_DEFAULT);
   // Creates a TYPE_CUSTOM MessageLoop with the supplied MessagePump, which must
   // be non-NULL.
-  explicit MessageLoop(std::unique_ptr<MessagePump> pump);
+  explicit MessageLoop(std::unique_ptr<MessagePump> custom_pump);
 
   virtual ~MessageLoop();
 
@@ -297,7 +300,7 @@ class BASE_EXPORT MessageLoop {
   // specific type with a custom loop. The implementation does not call
   // BindToCurrentThread. If this constructor is invoked directly by a subclass,
   // then the subclass must subsequently bind the message loop.
-  MessageLoop(Type type, MessagePumpFactoryCallback pump_factory);
+  MessageLoop(Type type, std::unique_ptr<MessagePump> pump);
 
   // Configure various members and bind this message loop to the current thread.
   void BindToCurrentThread();
@@ -324,9 +327,6 @@ class BASE_EXPORT MessageLoop {
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
   // Creates a MessageLoop without binding to a thread.
-  // If |type| is TYPE_CUSTOM non-null |pump_factory| must be also given
-  // to create a message pump for this message loop.  Otherwise a default
-  // message pump for the |type| is created.
   //
   // It is valid to call this to create a new message loop on one thread,
   // and then pass it to the thread where the message loop actually runs.
@@ -334,9 +334,7 @@ class BASE_EXPORT MessageLoop {
   // thread the message loop runs on, before calling Run().
   // Before BindToCurrentThread() is called, only Post*Task() functions can
   // be called on the message loop.
-  static std::unique_ptr<MessageLoop> CreateUnbound(
-      Type type,
-      MessagePumpFactoryCallback pump_factory);
+  static std::unique_ptr<MessageLoop> CreateUnbound(Type type);
 
   scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
@@ -344,9 +342,9 @@ class BASE_EXPORT MessageLoop {
 
   const Type type_;
 
-  // pump_factory_.Run() is called to create a message pump for this loop
-  // if |type_| is TYPE_CUSTOM and |pump_| is null.
-  MessagePumpFactoryCallback pump_factory_;
+  // If set this will be returned by the next call to CreateMessagePump().
+  // This is only set if |type_| is TYPE_CUSTOM and |pump_| is null.
+  std::unique_ptr<MessagePump> custom_pump_;
 
   // Id of the thread this message loop is bound to. Initialized once when the
   // MessageLoop is bound to its thread and constant forever after.

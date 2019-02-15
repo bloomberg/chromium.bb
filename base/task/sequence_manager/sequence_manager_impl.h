@@ -155,6 +155,7 @@ class BASE_EXPORT SequenceManagerImpl
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
   void DeletePendingTasks() override;
   bool HasTasks() override;
+  MessageLoop::Type GetType() const override;
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();

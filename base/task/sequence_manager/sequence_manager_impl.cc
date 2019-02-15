@@ -882,6 +882,10 @@ bool SequenceManagerImpl::HasTasks() {
   return false;
 }
 
+MessageLoop::Type SequenceManagerImpl::GetType() const {
+  return type_;
+}
+
 void SequenceManagerImpl::SetTaskExecutionAllowed(bool allowed) {
   controller_->SetTaskExecutionAllowed(allowed);
 }
