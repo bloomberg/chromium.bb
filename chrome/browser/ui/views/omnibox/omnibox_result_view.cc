@@ -429,8 +429,17 @@ void OmniboxResultView::ProvideButtonFocusHint() {
 // OmniboxResultView, private:
 
 gfx::Image OmniboxResultView::GetIcon() const {
-  return popup_contents_view_->GetMatchIcon(
-      match_, GetColor(OmniboxPart::RESULTS_ICON));
+  SkColor color = GetColor(OmniboxPart::RESULTS_ICON);
+
+  // If the blue search loop experiment is enabled, set the color of search
+  // match icons to be the same as result URLs (conventionally blue).
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentBlueSearchLoopAndSearchQuery) &&
+      AutocompleteMatch::IsSearchType(match_.type)) {
+    color = GetColor(OmniboxPart::RESULTS_TEXT_URL);
+  }
+
+  return popup_contents_view_->GetMatchIcon(match_, color);
 }
 
 void OmniboxResultView::SetHovered(bool hovered) {

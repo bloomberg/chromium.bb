@@ -8,15 +8,17 @@
 #include <set>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/url_formatter/url_fixer.h"
 #include "url/gurl.h"
 
@@ -110,12 +112,23 @@ ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
 
   base::string16 text_lowercase(base::i18n::ToLower(text));
 
-  const ACMatchClassification::Style& class_of_find_text =
+  ACMatchClassification::Style class_of_find_text =
       text_is_search_query ? ACMatchClassification::NONE
                            : ACMatchClassification::MATCH;
-  const ACMatchClassification::Style& class_of_additional_text =
+  ACMatchClassification::Style class_of_additional_text =
       text_is_search_query ? ACMatchClassification::MATCH
                            : ACMatchClassification::NONE;
+
+  // For this experiment, we want to color the search query text blue like URLs.
+  // Therefore, we add the URL class to the find and additional text.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentBlueSearchLoopAndSearchQuery) &&
+      text_is_search_query) {
+    class_of_find_text = (ACMatchClassification::Style)(
+        class_of_find_text | ACMatchClassification::URL);
+    class_of_additional_text = (ACMatchClassification::Style)(
+        class_of_additional_text | ACMatchClassification::URL);
+  }
 
   ACMatchClassifications match_class;
   size_t current_position = 0;
