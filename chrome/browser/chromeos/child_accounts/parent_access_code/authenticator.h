@@ -14,12 +14,22 @@
 #include "base/time/time.h"
 #include "crypto/hmac.h"
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace chromeos {
 namespace parent_access {
 
 // Configuration used to generate and verify parent access code.
 class AccessCodeConfig {
  public:
+  // Returns AccessCodeConfig created from a |dictionary|, if the |dictionary|
+  // contains valid config data.
+  static base::Optional<AccessCodeConfig> FromDictionary(
+      const base::DictionaryValue& value);
+
+  // TODO(agawronska): Make constructor private.
   // To create valid AccessCodeConfig:
   // * |shared_secret| cannot be empty
   // * |code_validity| needs to be in between 30s and 3600s

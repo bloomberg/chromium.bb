@@ -9,9 +9,51 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 
 namespace chromeos {
 namespace parent_access {
+
+namespace {
+
+// Value ranges for access code config data.
+constexpr base::TimeDelta kMinCodeValidity = base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kMaxCodeValidity = base::TimeDelta::FromMinutes(60);
+constexpr base::TimeDelta kMinClockDriftTolerance =
+    base::TimeDelta::FromMinutes(0);
+constexpr base::TimeDelta kMaxClockDriftTolerance =
+    base::TimeDelta::FromMinutes(30);
+
+// Dictionary keys used to serialize access code config data.
+constexpr char kSharedSecretDictKey[] = "shared_secret";
+constexpr char kCodeValidityDictKey[] = "access_code_ttl";
+constexpr char kClockDriftDictKey[] = "clock_drift_tolerance";
+
+}  // namespace
+
+// static
+base::Optional<AccessCodeConfig> AccessCodeConfig::FromDictionary(
+    const base::DictionaryValue& dict) {
+  const std::string* secret = dict.FindStringKey(kSharedSecretDictKey);
+  if (!secret || secret->empty())
+    return base::nullopt;
+
+  base::Optional<int> validity = dict.FindIntKey(kCodeValidityDictKey);
+  if (!(validity.has_value() && *validity >= kMinCodeValidity.InSeconds() &&
+        *validity <= kMaxCodeValidity.InSeconds())) {
+    return base::nullopt;
+  }
+
+  base::Optional<int> clock_drift = dict.FindIntKey(kClockDriftDictKey);
+  if (!(clock_drift.has_value() &&
+        *clock_drift >= kMinClockDriftTolerance.InSeconds() &&
+        *clock_drift <= kMaxClockDriftTolerance.InSeconds())) {
+    return base::nullopt;
+  }
+
+  return AccessCodeConfig(*secret, base::TimeDelta::FromSeconds(*validity),
+                          base::TimeDelta::FromSeconds(*clock_drift));
+}
 
 AccessCodeConfig::AccessCodeConfig(const std::string& shared_secret,
                                    base::TimeDelta code_validity,
@@ -20,9 +62,10 @@ AccessCodeConfig::AccessCodeConfig(const std::string& shared_secret,
       code_validity_(code_validity),
       clock_drift_tolerance_(clock_drift_tolerance) {
   DCHECK(!shared_secret_.empty());
-  DCHECK(code_validity_ >= base::TimeDelta::FromSeconds(60));
-  DCHECK(code_validity_ <= base::TimeDelta::FromMinutes(60));
-  DCHECK(clock_drift_tolerance_ <= base::TimeDelta::FromMinutes(30));
+  DCHECK(code_validity_ >= kMinCodeValidity);
+  DCHECK(code_validity_ <= kMaxCodeValidity);
+  DCHECK(clock_drift_tolerance_ >= kMinClockDriftTolerance);
+  DCHECK(clock_drift_tolerance_ <= kMaxClockDriftTolerance);
 }
 
 AccessCodeConfig::AccessCodeConfig(const AccessCodeConfig& rhs) = default;

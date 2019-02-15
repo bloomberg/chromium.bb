@@ -10,40 +10,11 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace parent_access {
-
-namespace {
-
-constexpr char kTestSharedSecret[] = "AIfVJHITSar8keeq3779V70dWiS1xbPv8g";
-constexpr base::TimeDelta kDefaultValidity = base::TimeDelta::FromMinutes(10);
-constexpr base::TimeDelta kDefaultClockDrift = base::TimeDelta::FromMinutes(5);
-
-// Configuration that is currently used for PAC.
-AccessCodeConfig DefaultConfig() {
-  return AccessCodeConfig(kTestSharedSecret, kDefaultValidity,
-                          kDefaultClockDrift);
-}
-
-// Populates |test_values| with test Parent Access Code data (timestamp - code
-// value pairs) generated in Family Link Android app.
-void GetTestValues(std::map<base::Time, std::string>* test_values) {
-  base::Time timestamp;
-  ASSERT_TRUE(base::Time::FromString("8 Jan 2019 16:58:07 PST", &timestamp));
-  (*test_values)[timestamp] = "734261";
-  ASSERT_TRUE(base::Time::FromString("14 Jan 2019 15:35:05 PST", &timestamp));
-  (*test_values)[timestamp] = "472150";
-  ASSERT_TRUE(base::Time::FromString("14 Jan 2019 15:42:49 PST", &timestamp));
-  (*test_values)[timestamp] = "204984";
-  ASSERT_TRUE(base::Time::FromString("14 Jan 2019 15:53:01 PST", &timestamp));
-  (*test_values)[timestamp] = "157758";
-  ASSERT_TRUE(base::Time::FromString("14 Jan 2019 16:00:00 PST", &timestamp));
-  (*test_values)[timestamp] = "524186";
-}
-
-}  // namespace
 
 class ParentAccessCodeAuthenticatorTest : public testing::Test {
  protected:
@@ -65,9 +36,9 @@ TEST_F(ParentAccessCodeAuthenticatorTest, GenerateHardcodedCodeValues) {
   // Test generation against Parent Access Code values generated in Family
   // Link Android app.
   std::map<base::Time, std::string> test_values;
-  ASSERT_NO_FATAL_FAILURE(GetTestValues(&test_values));
+  ASSERT_NO_FATAL_FAILURE(GetTestAccessCodeValues(&test_values));
 
-  Authenticator gen(DefaultConfig());
+  Authenticator gen(GetDefaultTestConfig());
   for (const auto& it : test_values) {
     base::Optional<AccessCode> code = gen.Generate(it.first);
     ASSERT_NO_FATAL_FAILURE(Verify(code, it.first));
@@ -80,7 +51,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest, GenerateInTheSameTimeBucket) {
   // validity period.
   base::Time timestamp;
   ASSERT_TRUE(base::Time::FromString("14 Jan 2019 15:00:00 PST", &timestamp));
-  const AccessCodeConfig config = DefaultConfig();
+  const AccessCodeConfig config = GetDefaultTestConfig();
 
   Authenticator gen(config);
   base::Optional<AccessCode> first_code = gen.Generate(timestamp);
@@ -103,21 +74,21 @@ TEST_F(ParentAccessCodeAuthenticatorTest, GenerateInDifferentTimeBuckets) {
   ASSERT_TRUE(
       base::Time::FromString("14 Jan 2019 15:00:00 PST", &initial_timestamp));
 
-  Authenticator gen(DefaultConfig());
+  Authenticator gen(GetDefaultTestConfig());
   base::Optional<AccessCode> first_code = gen.Generate(initial_timestamp);
   ASSERT_NO_FATAL_FAILURE(Verify(first_code, initial_timestamp));
 
   for (int i = 1; i < 10; ++i) {
     // "Earlier" time bucket.
     {
-      const base::Time timestamp = initial_timestamp - i * kDefaultValidity;
+      const base::Time timestamp = initial_timestamp - i * kDefaultCodeValidity;
       base::Optional<AccessCode> code = gen.Generate(timestamp);
       ASSERT_NO_FATAL_FAILURE(Verify(code, timestamp));
       EXPECT_NE(*first_code, *code);
     }
     // "Later" time bucket.
     {
-      const base::Time timestamp = initial_timestamp + i * kDefaultValidity;
+      const base::Time timestamp = initial_timestamp + i * kDefaultCodeValidity;
       base::Optional<AccessCode> code = gen.Generate(timestamp);
       ASSERT_NO_FATAL_FAILURE(Verify(code, timestamp));
       EXPECT_NE(*first_code, *code);
@@ -127,7 +98,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest, GenerateInDifferentTimeBuckets) {
 
 TEST_F(ParentAccessCodeAuthenticatorTest, GenerateWithSameTimestamp) {
   // Test that codes generated with the same timestamp and config are the same.
-  const AccessCodeConfig config = DefaultConfig();
+  const AccessCodeConfig config = GetDefaultTestConfig();
   const base::Time timestamp = base::Time::Now();
 
   Authenticator gen1(config);
@@ -145,13 +116,13 @@ TEST_F(ParentAccessCodeAuthenticatorTest, GenerateWithDifferentSharedSecret) {
   // Test that codes generated with the different secrets are not the same.
   const base::Time timestamp = base::Time::Now();
 
-  Authenticator gen1(AccessCodeConfig("AAAAAAAAAAAAAAAAAAA", kDefaultValidity,
-                                      kDefaultClockDrift));
+  Authenticator gen1(AccessCodeConfig(
+      "AAAAAAAAAAAAAAAAAAA", kDefaultCodeValidity, kDefaultClockDrift));
   base::Optional<AccessCode> code1 = gen1.Generate(timestamp);
   ASSERT_NO_FATAL_FAILURE(Verify(code1, timestamp));
 
-  Authenticator gen2(AccessCodeConfig("AAAAAAAAAAAAAAAAAAB", kDefaultValidity,
-                                      kDefaultClockDrift));
+  Authenticator gen2(AccessCodeConfig(
+      "AAAAAAAAAAAAAAAAAAB", kDefaultCodeValidity, kDefaultClockDrift));
   base::Optional<AccessCode> code2 = gen2.Generate(timestamp);
   ASSERT_NO_FATAL_FAILURE(Verify(code2, timestamp));
 
@@ -180,12 +151,12 @@ TEST_F(ParentAccessCodeAuthenticatorTest,
   // Test that clock drift tolerance does not affect code generation.
   const base::Time timestamp = base::Time::Now();
 
-  Authenticator gen1(AccessCodeConfig(kTestSharedSecret, kDefaultValidity,
+  Authenticator gen1(AccessCodeConfig(kTestSharedSecret, kDefaultCodeValidity,
                                       base::TimeDelta::FromMinutes(1)));
   base::Optional<AccessCode> code1 = gen1.Generate(timestamp);
   ASSERT_NO_FATAL_FAILURE(Verify(code1, timestamp));
 
-  Authenticator gen2(AccessCodeConfig(kTestSharedSecret, kDefaultValidity,
+  Authenticator gen2(AccessCodeConfig(kTestSharedSecret, kDefaultCodeValidity,
                                       base::TimeDelta::FromMinutes(10)));
   base::Optional<AccessCode> code2 = gen2.Generate(timestamp);
   ASSERT_NO_FATAL_FAILURE(Verify(code2, timestamp));
@@ -197,9 +168,9 @@ TEST_F(ParentAccessCodeAuthenticatorTest, ValidateHardcodedCodeValues) {
   // Test validation against Parent Access Code values generated in Family Link
   // Android app.
   std::map<base::Time, std::string> test_values;
-  ASSERT_NO_FATAL_FAILURE(GetTestValues(&test_values));
+  ASSERT_NO_FATAL_FAILURE(GetTestAccessCodeValues(&test_values));
 
-  Authenticator gen(AccessCodeConfig(kTestSharedSecret, kDefaultValidity,
+  Authenticator gen(AccessCodeConfig(kTestSharedSecret, kDefaultCodeValidity,
                                      base::TimeDelta::FromMinutes(0)));
   for (const auto& it : test_values) {
     base::Optional<AccessCode> code = gen.Validate(it.second, it.first);
@@ -213,7 +184,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest,
   // Test validation against codes generated by separate
   // Authenticator object in and outside of the valid time
   // bucket.
-  const AccessCodeConfig config(kTestSharedSecret, kDefaultValidity,
+  const AccessCodeConfig config(kTestSharedSecret, kDefaultCodeValidity,
                                 base::TimeDelta::FromMinutes(0));
   Authenticator generator(config);
   Authenticator validator(config);
@@ -252,7 +223,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest,
        ValidationAndGenerationOnSameAuthenticator) {
   // Test generation and validation on the same Authenticator
   // object in and outside of the valid time bucket.
-  const AccessCodeConfig config(kTestSharedSecret, kDefaultValidity,
+  const AccessCodeConfig config(kTestSharedSecret, kDefaultCodeValidity,
                                 base::TimeDelta::FromMinutes(0));
   Authenticator authenticator(config);
 
@@ -288,10 +259,11 @@ TEST_F(ParentAccessCodeAuthenticatorTest,
 
 TEST_F(ParentAccessCodeAuthenticatorTest, ValidationWithClockDriftTolerance) {
   // Test validation with clock drift tolerance.
-  Authenticator generator(DefaultConfig());
-  Authenticator validator_with_tolerance(DefaultConfig());
-  Authenticator validator_no_tolerance(AccessCodeConfig(
-      kTestSharedSecret, kDefaultValidity, base::TimeDelta::FromMinutes(0)));
+  Authenticator generator(GetDefaultTestConfig());
+  Authenticator validator_with_tolerance(GetDefaultTestConfig());
+  Authenticator validator_no_tolerance(
+      AccessCodeConfig(kTestSharedSecret, kDefaultCodeValidity,
+                       base::TimeDelta::FromMinutes(0)));
 
   // By default code will be valid [15:30:00-15:40:00).
   // With clock drift tolerance code will be valid [15:25:00-15:45:00).
@@ -304,7 +276,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest, ValidationWithClockDriftTolerance) {
   ASSERT_NO_FATAL_FAILURE(Verify(generated_code, generation_timestamp));
 
   // Both validators accept the code in valid period.
-  int range = kDefaultValidity / Authenticator::kAccessCodeGranularity;
+  int range = kDefaultCodeValidity / Authenticator::kAccessCodeGranularity;
   base::Time timestamp;
   base::Optional<AccessCode> validated_code_no_tolerance;
   base::Optional<AccessCode> validated_code_with_tolerance;
@@ -345,7 +317,8 @@ TEST_F(ParentAccessCodeAuthenticatorTest, ValidationWithClockDriftTolerance) {
   EXPECT_FALSE(validated_code_with_tolerance);
 
   // Validator's device clock ahead by tolerated drift.
-  timestamp = generation_timestamp + kDefaultValidity + kDefaultClockDrift / 2;
+  timestamp =
+      generation_timestamp + kDefaultCodeValidity + kDefaultClockDrift / 2;
   validated_code_no_tolerance =
       validator_no_tolerance.Validate(generated_code->code(), timestamp);
   EXPECT_FALSE(validated_code_no_tolerance);
@@ -355,7 +328,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest, ValidationWithClockDriftTolerance) {
   EXPECT_TRUE(validated_code_with_tolerance);
 
   // Validator's device clock ahead outside of tolerated drift.
-  timestamp = generation_timestamp + kDefaultValidity + kDefaultClockDrift;
+  timestamp = generation_timestamp + kDefaultCodeValidity + kDefaultClockDrift;
   validated_code_no_tolerance =
       validator_no_tolerance.Validate(generated_code->code(), timestamp);
   EXPECT_FALSE(validated_code_no_tolerance);
@@ -369,7 +342,7 @@ TEST_F(ParentAccessCodeAuthenticatorTest, UnixEpoch) {
   // Test authenticator with Unix Epoch timestamp.
   const base::Time unix_epoch = base::Time::UnixEpoch();
 
-  Authenticator authenticator(DefaultConfig());
+  Authenticator authenticator(GetDefaultTestConfig());
   base::Optional<AccessCode> generated = authenticator.Generate(unix_epoch);
   ASSERT_NO_FATAL_FAILURE(Verify(generated, unix_epoch));
   base::Optional<AccessCode> validated =
