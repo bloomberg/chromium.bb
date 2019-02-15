@@ -926,6 +926,7 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   }
 
   ParkableStringManager::Instance().SetRendererBackgrounded(backgrounded);
+  memory_purge_manager_.SetRendererBackgrounded(backgrounded);
 }
 
 void MainThreadSchedulerImpl::SetSchedulerKeepActive(bool keep_active) {
@@ -2268,6 +2269,14 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
   DCHECK(main_thread_only().page_schedulers.find(page_scheduler) !=
          main_thread_only().page_schedulers.end());
   main_thread_only().page_schedulers.erase(page_scheduler);
+}
+
+void MainThreadSchedulerImpl::OnPageFrozen() {
+  memory_purge_manager_.PageFrozen();
+}
+
+void MainThreadSchedulerImpl::OnPageUnfrozen() {
+  memory_purge_manager_.PageUnfrozen();
 }
 
 void MainThreadSchedulerImpl::BroadcastIntervention(

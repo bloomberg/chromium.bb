@@ -238,7 +238,7 @@ void PageSchedulerImpl::SetPageFrozenImpl(
   if (frozen) {
     page_lifecycle_state_tracker_->SetPageLifecycleState(
         PageLifecycleState::kFrozen);
-    Platform::Current()->RequestPurgeMemory();
+    main_thread_scheduler_->OnPageFrozen();
   } else {
     // The new state may have already been set if unfreezing through the
     // renderer, but that's okay - duplicate state changes won't be recorded.
@@ -252,7 +252,7 @@ void PageSchedulerImpl::SetPageFrozenImpl(
       page_lifecycle_state_tracker_->SetPageLifecycleState(
           PageLifecycleState::kHiddenForegrounded);
     }
-    Platform::Current()->SetMemoryPressureNotificationsSuppressed(false);
+    main_thread_scheduler_->OnPageUnfrozen();
   }
 }
 
