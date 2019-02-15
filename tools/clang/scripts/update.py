@@ -521,7 +521,6 @@ def UpdateClang(args):
 
   AddCMakeToPath(args)
   AddGnuWinToPath()
-  SetMacXcodePath()
 
   DeleteChromeToolsShim()
 
@@ -1000,6 +999,12 @@ def main():
         VERSION, args.verify_version)
     print 'clang_version in build/toolchain/toolchain.gni is likely outdated.'
     return 1
+
+  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
+  # and xcode-select wasn't run.  This is needed for running clang and ld
+  # for the build done by this script, but it's also needed for running
+  # macOS system svn, so this needs to happen before calling functions using svn.
+  SetMacXcodePath()
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
