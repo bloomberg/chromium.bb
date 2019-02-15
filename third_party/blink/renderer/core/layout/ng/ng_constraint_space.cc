@@ -34,58 +34,52 @@ static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
 }  // namespace
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
-    const LayoutBox& box) {
-  const LayoutBlock* cb = box.ContainingBlock();
+    const LayoutBlock& block) {
+  // We should only ever create a constraint space from legacy layout if the
+  // object is a new formatting context.
+  DCHECK(block.CreatesNewFormattingContext());
 
+  const LayoutBlock* cb = block.ContainingBlock();
   LayoutUnit available_logical_width =
-      LayoutBoxUtils::AvailableLogicalWidth(box, cb);
+      LayoutBoxUtils::AvailableLogicalWidth(block, cb);
   LayoutUnit available_logical_height =
-      LayoutBoxUtils::AvailableLogicalHeight(box, cb);
+      LayoutBoxUtils::AvailableLogicalHeight(block, cb);
   NGLogicalSize percentage_size = {available_logical_width,
                                    available_logical_height};
   NGLogicalSize available_size = percentage_size;
 
   bool fixed_inline = false, fixed_block = false;
   bool fixed_block_is_definite = true;
-  if (box.HasOverrideLogicalWidth()) {
-    available_size.inline_size = box.OverrideLogicalWidth();
+  if (block.HasOverrideLogicalWidth()) {
+    available_size.inline_size = block.OverrideLogicalWidth();
     fixed_inline = true;
   }
-  if (box.HasOverrideLogicalHeight()) {
-    available_size.block_size = box.OverrideLogicalHeight();
+  if (block.HasOverrideLogicalHeight()) {
+    available_size.block_size = block.OverrideLogicalHeight();
     fixed_block = true;
   }
-  if (box.IsFlexItem() && fixed_block) {
+  if (block.IsFlexItem() && fixed_block) {
     // The flexbox-specific behavior is in addition to regular definite-ness, so
     // if the flex item would normally have a definite height it should keep it.
     fixed_block_is_definite =
-        ToLayoutFlexibleBox(box.Parent())
-            ->UseOverrideLogicalHeightForPerentageResolution(box) ||
-        (box.IsLayoutBlock() && ToLayoutBlock(box).HasDefiniteLogicalHeight());
+        ToLayoutFlexibleBox(block.Parent())
+            ->UseOverrideLogicalHeightForPerentageResolution(block) ||
+        block.HasDefiniteLogicalHeight();
   }
 
-  bool is_new_fc = true;
-  // TODO(ikilpatrick): This DCHECK needs to be enabled once we've switched
-  // LayoutTableCell, etc over to LayoutNG.
-  //
-  // We currently need to "force" LayoutNG roots to be formatting contexts so
-  // that floats have layout performed on them.
-  //
-  // DCHECK(is_new_fc,
-  //  box.IsLayoutBlock() && ToLayoutBlock(box).CreatesNewFormattingContext());
-
-  auto writing_mode = box.StyleRef().GetWritingMode();
+  const ComputedStyle& style = block.StyleRef();
+  auto writing_mode = style.GetWritingMode();
   bool parallel_containing_block = IsParallelWritingMode(
       cb ? cb->StyleRef().GetWritingMode() : writing_mode, writing_mode);
-  NGConstraintSpaceBuilder builder(writing_mode, writing_mode, is_new_fc,
+  NGConstraintSpaceBuilder builder(writing_mode, writing_mode,
+                                   /* is_new_fc */ true,
                                    !parallel_containing_block);
 
-  if (!box.IsWritingModeRoot() || box.IsGridItem()) {
+  if (!block.IsWritingModeRoot() || block.IsGridItem()) {
     // Add all types because we don't know which baselines will be requested.
-    FontBaseline baseline_type = box.StyleRef().GetFontBaseline();
+    FontBaseline baseline_type = style.GetFontBaseline();
     bool synthesize_inline_block_baseline =
-        box.IsLayoutBlock() &&
-        ToLayoutBlock(box).UseLogicalBottomMarginEdgeForInlineBlockBaseline();
+        block.UseLogicalBottomMarginEdgeForInlineBlockBaseline();
     if (!synthesize_inline_block_baseline) {
       builder.AddBaselineRequest(
           {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
@@ -100,8 +94,8 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
       .SetIsFixedSizeBlock(fixed_block)
       .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
       .SetIsShrinkToFit(
-          box.SizesLogicalWidthToFitContent(box.StyleRef().LogicalWidth()))
-      .SetTextDirection(box.StyleRef().Direction())
+          block.SizesLogicalWidthToFitContent(style.LogicalWidth()))
+      .SetTextDirection(style.Direction())
       .ToConstraintSpace();
 }
 
