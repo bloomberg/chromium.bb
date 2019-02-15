@@ -44,9 +44,6 @@ std::string GetErrorMessage() {
       &net::test_server::HandlePrefixedRequest, "/echo-query",
       base::BindRepeating(&testing::HandleEchoQueryOrCloseSocket,
                           base::ConstRef(_serverRespondsWithContent))));
-  self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/iframe",
-                          base::BindRepeating(&testing::HandleIFrame)));
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
