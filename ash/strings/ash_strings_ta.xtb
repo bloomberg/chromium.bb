@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">உடனடி இணைப்பு முறை</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
+<translation id="5465662442746197494">உதவி தேவையா?</translation>
 <translation id="5496819745535887422">உங்கள் நிர்வாகி உங்கள் சாதனத்தை மீட்டமைக்கிறார். சாதனம் மீண்டும் தொடங்கும்போது அனைத்துத் தரவும் நீக்கப்படும்.</translation>
 <translation id="553675580533261935">அமர்விலிருந்து வெளியேறுதல்</translation>
 <translation id="5537725057119320332">அலைபரப்பு</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">வைஃபை இயக்கத்தில் உள்ளது.</translation>
 <translation id="847056008324733326">திரை அளவு அமைப்புகள்</translation>
 <translation id="8477270416194247200">ரத்துசெய்ய, Alt+தேடல் அல்லது Shift விசையை அழுத்தவும்.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: மீண்டும் இணைக்கிறது...</translation>
 <translation id="8513108775083588393">தானாகச் சுழற்று</translation>
 <translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE" /> இல் சார்ஜ் ஏறாது.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> உடன் இணைக்கப்பட்டுள்ளது</translation>

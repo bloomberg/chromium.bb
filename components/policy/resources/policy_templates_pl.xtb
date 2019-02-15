@@ -482,17 +482,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Ta zasada jest stosowana tylko wtedy, gdy włączone jest <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a komputer jest zarejestrowany w <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Zezwalaj na powiadomienia w tych witrynach.</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>
-<translation id="2132732175597591362">Określa białą listę wzorców adresów URL, w przypadku których zawsze będzie działać autoodtwarzanie.
-
-      Jeśli autoodtwarzanie jest włączone, w <ph name="PRODUCT_NAME" /> filmy mogą odtwarzać się z dźwiękiem automatycznie (bez zgody użytkownika).
-
-      Wzorzec adresu URL musi być sformatowany zgodnie z zasadami określonymi na https://www.chromium.org/administrators/url-blacklist-filter-format
-
-      Jeśli zasada AutoplayAllowed ma wartość Prawda, to ta zasada jest ignorowana.
-
-      Jeśli zasada AutoplayAllowed ma wartość Fałsz, to dowolne wzorce adresów URL w tej zasadzie będą mogły uruchamiać odtwarzanie.
-
-      Jeśli zmienisz tę zasadę, gdy <ph name="PRODUCT_NAME" /> działa, zmieniona zasada będzie obowiązywać tylko w nowych kartach. Karty otwarte wcześniej mogą działać jak dawniej.</translation>
 <translation id="2134437727173969994">Zezwól na blokowanie ekranu</translation>
 <translation id="2137064848866899664">Kiedy ta zasada jest skonfigurowana, każdy ekran jest obracany do określonej
       orientacji po każdym ponownym uruchomieniu urządzenia

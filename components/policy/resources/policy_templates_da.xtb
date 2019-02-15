@@ -473,17 +473,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Denne politik gælder kun, når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er aktiveret, og maskinen er tilmeldt <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillad notifikationer på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
-<translation id="2132732175597591362">Styrer hvidlisten over webadressemønstre, hvor automatisk afspilning altid er aktiveret.
-
-      Hvis automatisk afspilning er aktiveret, kan videoerne afspilles automatisk (uden brugernes samtykke) med lydindhold i <ph name="PRODUCT_NAME" />.
-
-      Et webadressemønstrer skal formateres i overensstemmelse med https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Hvis politikken AutoplayAllowed er angivet som Sand, har denne politik ikke nogen effekt.
-
-      Hvis politikken AutoplayAllowed er angivet som Falsk, vil alle webadressemønstre, der er angivet i politikken, stadig kunne afspille.
-
-      Bemærk! Hvis <ph name="PRODUCT_NAME" /> kører, og denne politik ændres, anvendes ændringerne kun i nye, åbne faner. Nogle faner kan derfor stadig have den tidligere adfærd.</translation>
 <translation id="2134437727173969994">Tillad låsning af skærmen</translation>
 <translation id="2137064848866899664">Hvis denne politik er angivet, roteres hver visning i den
       angivne retning ved hver genstart og første gang, der oprettes forbindelse,

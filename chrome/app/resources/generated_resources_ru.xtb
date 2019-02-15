@@ -1033,6 +1033,7 @@
 <translation id="2542049655219295786">Таблица Google</translation>
 <translation id="2544853746127077729">Сертификат аутентификации отклонен сетью</translation>
 <translation id="2547921442987553570">Добавить в расширение "<ph name="EXTENSION_NAME" />"</translation>
+<translation id="2549985041256363841">Начать запись</translation>
 <translation id="2550212893339833758">Память подкачки</translation>
 <translation id="2550596535588364872">Разрешить <ph name="EXTENSION_NAME" /> открыть файл <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> не удалось подключиться к <ph name="NETWORK_ID" />. Выберите другую сеть или повторите попытку.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">USER-дескрипторы</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Все данные указанных сайтов будут удалены с устройства. Продолжить?</translation>
-<translation id="3127919023693423797">Проверка подлинности...</translation>
 <translation id="3129173833825111527">Левое поле</translation>
 <translation id="3130528281680948470">Настройки устройства будут сброшены, а локальные данные и аккаунты пользователей – удалены. Это действие нельзя отменить.</translation>
 <translation id="313205617302240621">Забыли пароль?</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">Здесь можно управлять всеми аккаунтами Google, в которые вы вошли в приложениях и на сайтах. Некоторым сервисам для корректной работы требуется разрешение на доступ к данным аккаунта.</translation>
 <translation id="4044612648082411741">Введите пароль сертификата</translation>
 <translation id="404493185430269859">Поисковая система по умолчанию</translation>
+<translation id="4046123991198612571">Следующий трек</translation>
 <translation id="4052120076834320548">Мелкий</translation>
 <translation id="4055023634561256217">Необходимо перезагрузить устройство, прежде чем восстанавливать заводские настройки с помощью Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3352,6 +3353,7 @@
 <translation id="6069671174561668781">Выбор обоев</translation>
 <translation id="6071181508177083058">подтвердите пароль</translation>
 <translation id="6071576563962215370">Системе не удалось заблокировать атрибуты устройства на время установки.</translation>
+<translation id="6073451960410192870">Остановить запись</translation>
 <translation id="6073903501322152803">Добавить специальные возможности</translation>
 <translation id="6074825444536523002">Форма Google</translation>
 <translation id="6075731018162044558">Системе не удалось получить токен доступа для API на этом устройстве.</translation>
@@ -3575,7 +3577,6 @@
 <translation id="6410328738210026208">Выбрать другой канал и включить Powerwash</translation>
 <translation id="6410668567036790476">Добавить поисковую систему</translation>
 <translation id="641081527798843608">Совпадение тем</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{Открыто # окно}few{Открыто # окна}many{Открыто # окон}other{Открыто # окна}}</translation>
 <translation id="6412931879992742813">Новое окно в режиме инкогнито</translation>
 <translation id="6415900369006735853">Подключайтесь к Интернету через телефон.</translation>
 <translation id="6417265370957905582">Google Ассистент</translation>
@@ -3900,7 +3901,6 @@
 <translation id="6915804003454593391">Пользователь:</translation>
 <translation id="6916590542764765824">Управление расширениями</translation>
 <translation id="6920989436227028121">Открыть в обычной вкладке</translation>
-<translation id="6921104647315081813">Очистить журнал активности</translation>
 <translation id="6921709132208495314">Остановить загрузку страницы</translation>
 <translation id="6922128026973287222">Расширение "Экономия трафика" от Google помогает быстрее просматривать веб-страницы и расходовать меньше трафика. Нажмите здесь, чтобы узнать подробности.</translation>
 <translation id="6923132443355966645">Прокрутить/нажать</translation>

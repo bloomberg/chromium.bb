@@ -481,17 +481,6 @@
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
-<translation id="2132732175597591362">Pārvalda URL rakstu balto sarakstu ar vietnēm, kurās atskaņošana vienmēr būs iespējota.
-
-      Ja automātiskā atskaņošana ir iespējota, videoklipi tiks atskaņoti automātiski (bez lietotāja piekrišanas), izmantojot pārlūkā <ph name="PRODUCT_NAME" /> ietverto audio saturu.
-
-      URL rakstam ir jābūt formatētam atbilstīgi norādījumiem vietnē https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Ja politikai AutoplayAllowed ir iestatīta vērtība “True”, tad šī politika nedarbosies.
-
-      Ja politikai AutoplayAllowed ir iestatīta vērtība “False”, tad šai politikai iestatītajiem URL rakstiem atskaņošana tiks atļauta.
-
-      Ņemiet vērā: ja darbojas <ph name="PRODUCT_NAME" /> un šīs politikas vērtība tiek mainīta, tā tiks piemērota tikai jaunākajām atvērtajām cilnēm. Tādējādi dažās cilnēs joprojām var tikt novērota iepriekšējā rīcība.</translation>
 <translation id="2134437727173969994">Atļaut ekrāna bloķēšanu</translation>
 <translation id="2137064848866899664">Ja šī politika ir iestatīta, katrs ekrāns tiek pagriezts
       iestatītajā virzienā ikreiz, kad ierīce tiek atkārtoti palaista,

@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Tabela do Google</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
 <translation id="2547921442987553570">Adicionar à extensão <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Iniciar gravação</translation>
 <translation id="2550212893339833758">Memória trocada</translation>
 <translation id="2550596535588364872">Permitir que <ph name="EXTENSION_NAME" /> abra <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> não pôde se conectar a <ph name="NETWORK_ID" />. Selecione outra rede ou tente novamente.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">Processamentos do USUÁRIO</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Essa ação excluirá todos os dados armazenados no seu dispositivo para todos os sites exibidos. Quer continuar?</translation>
-<translation id="3127919023693423797">Autenticando...</translation>
 <translation id="3129173833825111527">Margem esquerda</translation>
 <translation id="3130528281680948470">Seu dispositivo será redefinido, e todas as contas de usuário final e dados locais serão removidos. Esta ação não pode ser desfeita.</translation>
 <translation id="313205617302240621">Esqueceu a senha?</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">É possível gerenciar todas as suas Contas do Google conectadas em apps e sites aqui. Os apps e sites que têm sua permissão podem acessar as informações da conta necessárias para o funcionamento adequado.</translation>
 <translation id="4044612648082411741">Digite a senha do certificado</translation>
 <translation id="404493185430269859">Mecanismo de pesquisa padrão</translation>
+<translation id="4046123991198612571">Próxima faixa</translation>
 <translation id="4052120076834320548">Minúscula</translation>
 <translation id="4055023634561256217">Para que seu dispositivo possa ser redefinido com o Powerwash, é necessário reiniciá-lo.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3353,6 +3354,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6069671174561668781">Defina o plano de fundo</translation>
 <translation id="6071181508177083058">confirmar senha</translation>
 <translation id="6071576563962215370">Falha do sistema ao estabelecer o bloqueio de atributos do tempo de instalação do dispositivo.</translation>
+<translation id="6073451960410192870">Parar de gravar</translation>
 <translation id="6073903501322152803">Adicionar recursos de acessibilidade</translation>
 <translation id="6074825444536523002">Formulário do Google</translation>
 <translation id="6075731018162044558">Ops! O sistema encontrou uma falha ao conseguir um token de acesso de longo prazo à API para este dispositivo.</translation>
@@ -3577,7 +3579,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6410328738210026208">Mudar de canal e executar PowerWash</translation>
 <translation id="6410668567036790476">Adicionar mecanismo de pesquisa</translation>
 <translation id="641081527798843608">Correspondência de assunto</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# janela está aberta}other{# janelas estão abertas}}</translation>
 <translation id="6412931879992742813">Nova janela anônima</translation>
 <translation id="6415900369006735853">Conecte-se à internet pelo smartphone</translation>
 <translation id="6417265370957905582">Google Assistente</translation>
@@ -3901,7 +3902,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6915804003454593391">Usuário:</translation>
 <translation id="6916590542764765824">Gerenciar extensões</translation>
 <translation id="6920989436227028121">Abrir como guia normal</translation>
-<translation id="6921104647315081813">Limpar atividades</translation>
 <translation id="6921709132208495314">Parar de usar dados nesta página</translation>
 <translation id="6922128026973287222">Economize dados e navegue mais rápido usando a Economia de dados do Google. Clique para saber mais.</translation>
 <translation id="6923132443355966645">Rolar / Clicar</translation>

@@ -478,17 +478,6 @@
       ይህ መመሪያ ተግባራዊ የሚሆነው <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ከነቃ እና ማሽኑ ከ<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ጋር የተመዘገበ ከሆነ ነው።</translation>
 <translation id="2127599828444728326">በእነዚህ ጣቢያዎች ላይ ማሳወቂያዎችን ፍቀድ</translation>
 <translation id="2131902621292742709">በባትሪ ኃይል ላይ ሲሆን የማያ ገጽ መፍዘዝ መዘግየት</translation>
-<translation id="2132732175597591362">በራስ-የሚያጫውቱ የተፈቀዱ የዩአርኤል ስርዓተ-ጥለቶች ዝርዝር ሁልጊዜ ይነቃ እንደሆነ ይቆጣጠራል።
-
-      ራስ-ማጫወት ከነቃ ቪዲዮዎች በ<ph name="PRODUCT_NAME" /> ውስጥ በራስ-ሰር ከኦድዮ ይዘት ጋር ሊጫወቱ ይችላሉ (ያለተጠቃሚ ፈቃድ)።
-
-      የዩአርኤል ስርዓተ-ጥለት በ https://www.chromium.org/administrators/url-blacklist-filter-format መሠረት ቅርጸት ሊሰራለት ይገባል።
-
-      የAutoplayAllowed መመሪያው ወደ እውነት ከተዋቀረ ይህ መመሪያ ምንም ተጽዕኖ አይኖረውም።
-
-      የAutoplayAllowed መመሪያው ወደ ሐሰት ከተዋቀረ በዚህ መመሪያ ውስጥ የተቀናበሩ ማናቸውም የዩአርኤል ስርዓተ-ጥለቶች አሁንም እንዲጫወቱ ይፈቀድላቸዋል።
-
-      <ph name="PRODUCT_NAME" /> እያሄደ ከሆነ እና ይህ መመሪያ ከተቀየረ አዲስ በተከፈቱ ትሮች ላይ ብቻ የሚተገበር መሆኑን ልብ ይበሉ። ስለዚህ አንዳንድ ትሮች አሁንም ቀዳሚውን ባህሪ እንደያዙ ሊሆኑ ይችላሉ።</translation>
 <translation id="2134437727173969994">ማያ ገጹን መቆለፍ ይፍቀዱ</translation>
 <translation id="2137064848866899664">ይህ መመሪያ ከተዋቀረ እያንዳንዱ ማሳያ
       በእያንዳንዱ ዳግም ማስነሳት ጊዜ እና ለመጀመሪያ ጊዜ ሲገናኝ የመመሪያው እሴት ከተለወጠ በኋላ 

@@ -486,17 +486,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
-<translation id="2132732175597591362">Controla la lista blanca de patrones de URL con los que la reproducción automática siempre estará habilitada.
-
-      Si la reproducción automática está habilitada, los vídeos se reproducirán automáticamente con audio en <ph name="PRODUCT_NAME" /> (sin el consentimiento del usuario).
-
-      Hay que formatear un patrón de URL según lo especificado en https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Si se le asigna el valor "True" a la política AutoplayAllowed, esta política no tendrá ningún efecto.
-
-      Si se le asigna el valor "False" a la política AutoplayAllowed, los patrones de URL establecidos en esta política seguirán teniendo permiso para reproducirse.
-
-      Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando y esta política cambia, dichos cambios se aplicarán a las pestañas que se abran a partir de ese momento. Por tanto, es posible que algunas pestañas aún conserven el comportamiento anterior.</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
 <translation id="2137064848866899664">Si se establece esta política, se girará cada pantalla a la
       orientación especificada cada vez que se reinicie el dispositivo y la primera vez que se conecte

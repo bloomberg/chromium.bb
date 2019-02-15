@@ -471,17 +471,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Kebijakan ini hanya berlaku jika <ph name="CHROME_REPORTING_EXTENSION_NAME" /> diaktifkan, dan mesin didaftarkan ke <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
-<translation id="2132732175597591362">Mengontrol pola URL yang diizinkan dengan pemutaran otomatis yang akan selalu diaktifkan.
-
-      Jika pemutaran otomatis diaktifkan, video dapat diputar otomatis (tanpa persetujuan pengguna) dengan konten audio di <ph name="PRODUCT_NAME" />.
-
-      Pola URL harus diformat menurut https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Jika kebijakan AutoplayAllowed policy disetel ke True, kebijakan ini tidak akan memiliki dampak.
-
-      Jika kebijakan AutoplayAllowed disetel ke False, pola URL yang disetel di kebijakan ini akan tetap diizinkan untuk diputar.
-
-      Perlu diperhatikan bahwa jika <ph name="PRODUCT_NAME" /> berjalan dan kebijakan ini berubah, kebijakan ini hanya akan diterapkan pada tab baru yang terbuka. Oleh karena itu, beberapa tab mungkin masih mengalami perilaku sebelumnya.</translation>
 <translation id="2134437727173969994">Mengizinkan penguncian layar</translation>
 <translation id="2137064848866899664">Jika kebijakan ini disetel, tiap layar akan diputar dengan orientasi tertentu
       setiap kali melakukan boot ulang dan pertama kalinya layar tersambung

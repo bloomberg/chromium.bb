@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">Tethering instantâneo</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
+<translation id="5465662442746197494">Precisa de ajuda?</translation>
 <translation id="5496819745535887422">O administrador está revertendo seu dispositivo. Todos os dados serão excluídos quando o dispositivo for reiniciado.</translation>
 <translation id="553675580533261935">Saindo da sessão</translation>
 <translation id="5537725057119320332">Transmitir</translation>
@@ -451,7 +452,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="847056008324733326">Exibir configurações de escala</translation>
 <translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: reconectando…</translation>
 <translation id="8513108775083588393">Girar automaticamente</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
 <translation id="8627191004499078455">Conectado a <ph name="DEVICE_NAME" /></translation>

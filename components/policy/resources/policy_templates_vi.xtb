@@ -488,17 +488,6 @@
       Chính sách này chỉ có hiệu lực khi <ph name="CHROME_REPORTING_EXTENSION_NAME" /> ở trạng thái bật và bạn đã đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
-<translation id="2132732175597591362">Kiểm soát danh sách cho phép gồm các mẫu URL mà chế độ tự động phát luôn được bật.
-
-      Nếu bạn bật chế độ tự động phát, thì video có thể phát tự động (không cần có sự đồng ý của người dùng) với nội dung âm thanh trong <ph name="PRODUCT_NAME" />.
-
-      Bạn cần phải định dạng mẫu URL theo https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Nếu bạn đặt chính sách AutoplayAllowed thành True, thì chính sách này sẽ không có hiệu lực.
-
-      Nếu bạn đặt chính sách AutoplayAllowed thành False, thì mọi mẫu URL đã đặt trong chính sách này sẽ vẫn được phép phát.
-
-      Xin lưu ý rằng nếu <ph name="PRODUCT_NAME" /> đang chạy và chính sách này thay đổi thì chính sách này sẽ chỉ được áp dụng cho những tab mới mở. Do vậy, một số tab có thể vẫn hoạt động như cũ.</translation>
 <translation id="2134437727173969994">Cho phép khóa màn hình</translation>
 <translation id="2137064848866899664">Nếu chính sách này được đặt, mỗi màn hình sẽ được xoay theo
       hướng đã chỉ định mỗi khi khởi động lại và lần đầu tiên màn hình được kết nối

@@ -477,17 +477,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen gjelder bare når <ph name="CHROME_REPORTING_EXTENSION_NAME" /> er slått på og maskinen er registrert med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
-<translation id="2132732175597591362">Kontrollerer godkjenningslisten for nettadresser hvor autoavspilling alltid er aktivert.
-
-      Hvis autoavspilling er aktivert, kan videoer spilles av automatisk (uten brukernes samtykke) med lydinnhold i <ph name="PRODUCT_NAME" />.
-
-      Nettadressemønstrene må formateres i henhold til informasjonen på https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Hvis AutoplayAllowed-regelen er satt til «true» (sann), har denne regelen ingen effekt.
-
-      Hvis AutoplayAllowed-regelen er satt til «false» (usann), kan alle nettadressemønstre angitt i denne regelen fortsatt spille av.
-
-      Vær obs på at hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, gjelder endringen bare for nye faner som åpnes. Det kan derfor hende at enkelte faner fortsatt følger den tidligere regelen.</translation>
 <translation id="2134437727173969994">Tillat låsing av skjermen</translation>
 <translation id="2137064848866899664">Hvis denne regelen er angitt, roteres alle skjermer til den
       spesifiserte retningen hver gang enheten starter, og første gang den kobles

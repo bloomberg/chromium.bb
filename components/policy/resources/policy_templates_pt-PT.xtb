@@ -487,17 +487,6 @@
       A presente política apenas entra em vigor quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e a máquina está associada à <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permitir notificações nestes Web sites</translation>
 <translation id="2131902621292742709">Atraso do escurecimento do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
-<translation id="2132732175597591362">Controla a lista de autorizações dos padrões de URL nos quais a reprodução automática estará sempre ativada.
-
-      Se a reprodução automática estiver ativada, os vídeos podem ser reproduzidos automaticamente (sem autorização do utilizador) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
-
-      Os padrões de URL devem ser formatados de acordo com as indicações em https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Se a política AutoplayAllowed estiver definida como verdadeira, esta política não tem qualquer efeito.
-
-      Se a política AutoplayAllowed estiver definida como falsa, quaisquer padrões de URL definidos nesta política continuam a ter autorização de reprodução.
-
-      Tenha em atenção que, se o <ph name="PRODUCT_NAME" /> estiver em execução e esta política for alterada, a alteração aplica-se apenas aos novos separadores abertos. Por conseguinte, é possível que alguns separadores continuem a seguir o comportamento anterior.</translation>
 <translation id="2134437727173969994">Permitir o bloqueio do ecrã</translation>
 <translation id="2137064848866899664">Se esta política estiver definida, cada ecrã é rodado para a
       orientação especificada em todos os reinícios e da primeira vez que for ligado

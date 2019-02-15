@@ -470,17 +470,6 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
-<translation id="2132732175597591362">Controla la llista blanca de patrons d'URL en què la reproducció automàtica estarà sempre activada.
-
-      Si la reproducció automàtica està activada, els vídeos es poden reproduir automàticament (sense el consentiment de l'usuari) amb contingut d'àudio a <ph name="PRODUCT_NAME" />.
-
-      Els patrons d'URL han de tenir el format que s'indica a la pàgina https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Si la política AutoplayAllowed s'estableix en "true", aquesta política no tindrà efecte.
-
-      Si la política AutoplayAllowed s'estableix en "false", es podran continuar reproduint vídeos en qualsevol patró d'URL establert en aquesta política.
-
-      Tingues en compte que si <ph name="PRODUCT_NAME" /> s'està executant i aquesta política es modifica, només s'aplicarà a les noves pestanyes obertes. Per tant, és possible que algunes pestanyes continuïn presentant el comportament anterior.</translation>
 <translation id="2134437727173969994">Permet bloquejar la pantalla</translation>
 <translation id="2137064848866899664">Si aquesta política s'estableix, després de cada reinici es giren totes les
       visualitzacions segons l'orientació especificada. També es giren la primera vegada

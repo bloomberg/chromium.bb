@@ -262,6 +262,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo portátil</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
+<translation id="5465662442746197494">¿Necesitas ayuda?</translation>
 <translation id="5496819745535887422">El administrador está restableciendo tu dispositivo. Cuando se reinicie, se borrarán todos los datos.</translation>
 <translation id="553675580533261935">Salir de la sesión</translation>
 <translation id="5537725057119320332">Transmitir</translation>
@@ -450,7 +451,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8454013096329229812">Wi-Fi activada</translation>
 <translation id="847056008324733326">Configuración de escala de visualización</translation>
 <translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelarlo.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
 <translation id="8513108775083588393">Giro automático</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8627191004499078455">Conectado a <ph name="DEVICE_NAME" /></translation>

@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">প্রাথমিক</translation>
 <translation id="1671236975893690980">ডাউনলোড মুলতবি হয়ে আছে...</translation>
 <translation id="1672586136351118594">আর দেখতে চাই না</translation>
+<translation id="1692118695553449118">সিঙ্ক চালু রয়েছে</translation>
 <translation id="1709438864123551175">ডেটা সেভার</translation>
 <translation id="1718835860248848330">শেষ ঘণ্টা</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - আপডেট হয়েছে <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1004,7 +1005,6 @@
 <translation id="8445448999790540984">পাসওয়ার্ড এক্সপোর্ট করা যাচ্ছে না</translation>
 <translation id="8447861592752582886">ডিভাইসের অনুমতি প্রত্যাহার করুন</translation>
 <translation id="8461694314515752532">আপনার নিজস্ব সিঙ্ক পাসফ্রেজ দিয়ে সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>
-<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" />-এর জন্য সিঙ্ক বন্ধ করা আছে</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8489271220582375723">ইতিহাস পৃষ্ঠাটি খুলুন</translation>

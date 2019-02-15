@@ -473,17 +473,6 @@
       To se pravilo primjenjuje samo kada je omogućeno pravilo <ph name="CHROME_REPORTING_EXTENSION_NAME" />, a računalo je prijavljeno tokenom <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
-<translation id="2132732175597591362">Određuje hoće li popis dopuštenih uzoraka URL-a koji se automatski reproduciraju uvijek biti omogućen.
-
-      Ako je automatska reprodukcija omogućena, videozapisi se mogu reproducirati automatski (bez korisnikova pristanka) s audiosadržajem u pregledniku <ph name="PRODUCT_NAME" />.
-
-      Uzorak URL-a mora biti oblikovan prema uputama na ovoj stranici https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Ako je pravilo AutoplayAllowed postavljeno na True, ovo pravilo neće imati učinka.
-
-      Ako je pravilo AutoplayAllowed postavljeno na False, svi uzorci URL-a postavljeni u ovom pravilu i dalje će se moći reproducirati.
-
-      Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.</translation>
 <translation id="2134437727173969994">Dopusti zaključavanje zaslona</translation>
 <translation id="2137064848866899664">Ako se to pravilo postavi, svaki se zaslon zakreće na navedeno
       usmjerenje pri svakom ponovnom pokretanju i prilikom prvog povezivanja

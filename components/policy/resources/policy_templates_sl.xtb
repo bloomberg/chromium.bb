@@ -494,17 +494,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Ta pravilnik se uporablja samo, če je omogočena razširitev <ph name="CHROME_REPORTING_EXTENSION_NAME" />, računalnik pa je včlanjen v pravilnik <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
-<translation id="2132732175597591362">Nadzira seznam dovoljenih vzorcev URL, na katerih bo vedno vklopljeno samodejno predvajanje.
-
-      Če je omogočeno samodejno predvajanje, se lahko videoposnetki samodejno predvajajo (brez soglasja uporabnika) z zvočno vsebino v izdelku <ph name="PRODUCT_NAME" />.
-
-      Vzorec URL mora biti oblikovan, kot je določeno tukaj: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Če je pravilnik AutoplayAllowed omogočen, ta pravilnik ne bo imel nobenega vpliva.
-
-      Če je pravilnik AutoplayAllowed onemogočen, se bodo lahko še vedno predvajali morebitni vzorci URL, nastavljeni v tem pravilniku.
-
-      Opomba: če se <ph name="PRODUCT_NAME" /> izvaja in se ta pravilnik spremeni, bo uporabljen samo za novoodprte zavihke. Nekateri zavihki bodo zato morda še vedno delovali po starem.</translation>
 <translation id="2134437727173969994">Dovoli zaklepanje zaslona</translation>
 <translation id="2137064848866899664">Če je ta pravilnik nastavljen, je vsak zaslon zasukan na
       določeno postavitev pri vsakem vnovičnem zagonu in pri prvi povezavi

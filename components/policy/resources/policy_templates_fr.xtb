@@ -495,17 +495,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activé et que l'ordinateur est enregistré pour suivre la règle "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />".</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
-<translation id="2132732175597591362">Permet de contrôler la lecture automatique pour tous les formats d'URL de la liste blanche.
-
-      Si la lecture automatique est activée, les vidéos et leur contenu audio pourront être lus automatiquement (sans demander l'autorisation de l'utilisateur) dans <ph name="PRODUCT_NAME" />.
-
-      Un format d'URL doit correspondre aux critères mentionnés sur cette page : https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Si la règle AutoplayAllowed est définie sur "True", cette règle sera sans effet.
-
-      Si la règle AutoplayAllowed est définie sur "False", tous les formats d'URL définis par cette règle bénéficieront de la lecture automatique.
-
-      Notez que si cette règle est modifiée pendant que <ph name="PRODUCT_NAME" /> est en cours d'utilisation, elle ne s'applique qu'aux onglets ouverts après cette modification. Il est donc possible que les autres onglets appliquent encore l'ancien paramètre.</translation>
 <translation id="2134437727173969994">Autoriser le verrouillage de l'écran</translation>
 <translation id="2137064848866899664">Si cette règle est définie, chaque écran pivote en fonction de
       l'orientation spécifiée à chaque redémarrage et lors de sa première

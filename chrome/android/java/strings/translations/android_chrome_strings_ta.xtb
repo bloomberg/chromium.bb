@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">அடிப்படை</translation>
 <translation id="1671236975893690980">பதிவிறக்கம் நிலுவையில் உள்ளது…</translation>
 <translation id="1672586136351118594">மீண்டும் காட்டாதே</translation>
+<translation id="1692118695553449118">ஒத்திசைவு இயக்கத்தில்</translation>
 <translation id="1709438864123551175">டேட்டா சேமிப்பான்</translation>
 <translation id="1718835860248848330">கடந்த ஒரு மணிநேரம்</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> புதுப்பிக்கப்பட்டது</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8445448999790540984">கடவுச்சொற்களை ஏற்ற முடியவில்லை</translation>
 <translation id="8447861592752582886">சாதன அனுமதியை ரத்துசெய்யும்</translation>
 <translation id="8461694314515752532">ஒத்திசைக்கப்பட்ட தரவை எனது ஒத்திசைவுக் கடவுச்சொற்றொடர் மூலம் என்கிரிப்ட் செய்</translation>
-<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" />க்கான ஒத்திசைவு முடக்கப்பட்டுள்ளது</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">ஆஃப்லைனில் இருக்கிறது</translation>
 <translation id="8489271220582375723">வரலாறு பக்கத்தைத் திறக்கும்</translation>
