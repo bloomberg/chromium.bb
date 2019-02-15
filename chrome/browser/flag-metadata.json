@@ -1424,8 +1424,8 @@
   },
   {
     "name": "enable-navigation-tracing",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "tracing" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-network-logging-to-file",
@@ -3006,8 +3006,8 @@
   },
   {
     "name": "trace-upload-url",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "tracing" ],
+    "expiry_milestone": 80
   },
   {
     "name": "translate-android-manual-trigger",
