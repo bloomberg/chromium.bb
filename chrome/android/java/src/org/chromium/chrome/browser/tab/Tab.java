@@ -128,12 +128,6 @@ public class Tab
 
     private static final long INVALID_TIMESTAMP = -1;
 
-    /**
-     * The required page load percentage for the page to be considered ready assuming the
-     * TextureView is also ready.
-     */
-    private static final int CONSIDERED_READY_LOAD_PERCENTAGE = 100;
-
     /** Used for logging. */
     private static final String TAG = "Tab";
 
@@ -836,15 +830,6 @@ public class Tab
         if (getWebContents() != null) {
             getWebContents().getNavigationController().reloadBypassingCache(true);
         }
-    }
-
-    /**
-     * @return Whether or not the loading and rendering of the page is done.
-     * TODO(jinsukkim): Delete this method once the refactoring is finished.
-     */
-    @VisibleForTesting
-    public boolean isLoadingAndRenderingDone() {
-        return isReady() && getProgress() >= CONSIDERED_READY_LOAD_PERCENTAGE;
     }
 
     /** Stop the current navigation. */
