@@ -46,6 +46,9 @@ bool IsCrostiniAllowedForProfile(Profile* profile);
 // UI uses this to indicate that crostini is available but disabled by policy.
 bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy = true);
 
+// Returns true if policy allows export import UI.
+bool IsCrostiniExportImportUIAllowedForProfile(Profile* profile);
+
 // Returns whether if Crostini has been enabled, i.e. the user has launched it
 // at least once and not deleted it.
 bool IsCrostiniEnabled(Profile* profile);
