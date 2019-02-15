@@ -481,9 +481,14 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
 }
 
-void ChromeAppListModelUpdater::SetDelegate(
-    AppListModelUpdaterDelegate* delegate) {
-  delegate_ = delegate;
+void ChromeAppListModelUpdater::AddObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ChromeAppListModelUpdater::RemoveObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -503,18 +508,22 @@ void ChromeAppListModelUpdater::OnFolderCreated(
   chrome_item = AddChromeItem(std::move(new_item));
   chrome_item->SetMetadata(std::move(item));
 
-  if (delegate_)
-    delegate_->OnAppListItemAdded(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemAdded(chrome_item);
 }
 
 void ChromeAppListModelUpdater::OnFolderDeleted(
     ash::mojom::AppListItemMetadataPtr item) {
   DCHECK(item->is_folder);
+
+  ChromeAppListItem* chrome_item = FindItem(item->id);
+  if (!chrome_item)
+    return;
+
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemWillBeDeleted(chrome_item);
+
   items_.erase(item->id);
-  // We don't need to notify |delegate_| here. Currently |delegate_| sends this
-  // event to AppListSyncableService only, and AppListSyncableService doesn't
-  // do anything when a folder is deleted. For more details, refer to
-  // AppListSyncableService::ModelUpdaterDelegate::OnAppListItemWillBeDeleted.
 }
 
 void ChromeAppListModelUpdater::OnItemUpdated(
@@ -531,8 +540,8 @@ void ChromeAppListModelUpdater::OnItemUpdated(
   item->icon = chrome_item->icon();
 
   chrome_item->SetMetadata(std::move(item));
-  if (delegate_)
-    delegate_->OnAppListItemUpdated(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemUpdated(chrome_item);
 }
 
 void ChromeAppListModelUpdater::OnPageBreakItemAdded(
@@ -550,8 +559,8 @@ void ChromeAppListModelUpdater::OnPageBreakItemAdded(
   new_item->SetIsPageBreak(true);
   chrome_item = AddChromeItem(std::move(new_item));
 
-  if (delegate_)
-    delegate_->OnAppListItemAdded(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemAdded(chrome_item);
 }
 
 void ChromeAppListModelUpdater::OnPageBreakItemDeleted(const std::string& id) {
@@ -563,7 +572,7 @@ void ChromeAppListModelUpdater::OnPageBreakItemDeleted(const std::string& id) {
   }
 
   DCHECK(chrome_item->is_page_break());
-  if (delegate_)
-    delegate_->OnAppListItemWillBeDeleted(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemWillBeDeleted(chrome_item);
   items_.erase(id);
 }

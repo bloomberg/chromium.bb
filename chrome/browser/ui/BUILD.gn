@@ -3121,7 +3121,7 @@ jumbo_split_static_library("ui") {
       "app_list/app_list_model_builder.h",
       "app_list/app_list_model_updater.cc",
       "app_list/app_list_model_updater.h",
-      "app_list/app_list_model_updater_delegate.h",
+      "app_list/app_list_model_updater_observer.h",
       "app_list/app_list_syncable_service.cc",
       "app_list/app_list_syncable_service.h",
       "app_list/app_list_syncable_service_factory.cc",

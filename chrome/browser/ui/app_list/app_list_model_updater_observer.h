@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_DELEGATE_H_
-#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_OBSERVER_H_
+#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_OBSERVER_H_
+
+#include "base/observer_list_types.h"
 
 class ChromeAppListItem;
 
-// A delegate interface of AppListModelUpdater to perform
-// additional work on ChromeAppListItem changes.
-class AppListModelUpdaterDelegate {
+// An observer interface for AppListModelUpdater to perform additional work on
+// ChromeAppListItem changes.
+class AppListModelUpdaterObserver : public base::CheckedObserver {
  public:
   // Triggered after an item has been added to the model.
   virtual void OnAppListItemAdded(ChromeAppListItem* item) {}
@@ -19,9 +21,6 @@ class AppListModelUpdaterDelegate {
 
   // Triggered after an item has moved, changed folders, or changed properties.
   virtual void OnAppListItemUpdated(ChromeAppListItem* item) {}
-
- protected:
-  virtual ~AppListModelUpdaterDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_MODEL_UPDATER_OBSERVER_H_
