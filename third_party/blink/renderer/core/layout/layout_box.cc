@@ -3638,10 +3638,10 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
     return AdjustContentBoxLogicalWidthForBoxSizing(LayoutUnit());
 
   switch (logical_width.GetType()) {
-    case kFixed:
+    case Length::kFixed:
       return AdjustContentBoxLogicalWidthForBoxSizing(logical_width.Value());
-    case kMinContent:
-    case kMaxContent: {
+    case Length::kMinContent:
+    case Length::kMaxContent: {
       // MinContent/MaxContent don't need the availableLogicalWidth argument.
       LayoutUnit available_logical_width;
       return ComputeIntrinsicLogicalWidthUsing(logical_width,
@@ -3649,10 +3649,10 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
                                                BorderAndPaddingLogicalWidth()) -
              BorderAndPaddingLogicalWidth();
     }
-    case kFitContent:
-    case kFillAvailable:
-    case kPercent:
-    case kCalculated: {
+    case Length::kFitContent:
+    case Length::kFillAvailable:
+    case Length::kPercent:
+    case Length::kCalculated: {
       LayoutUnit cw;
       if (IsOutOfFlowPositioned()) {
         cw = ContainingBlockLogicalWidthForPositioned(
@@ -3677,12 +3677,12 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
             MinimumValueForLength(logical_width, cw));
       return LayoutUnit();
     }
-    case kAuto:
-    case kMaxSizeNone:
+    case Length::kAuto:
+    case Length::kMaxSizeNone:
       return IntrinsicLogicalWidth();
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
       break;
   }
 
@@ -3748,10 +3748,10 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
     return AdjustContentBoxLogicalHeightForBoxSizing(LayoutUnit());
 
   switch (logical_height.GetType()) {
-    case kFixed:
+    case Length::kFixed:
       return AdjustContentBoxLogicalHeightForBoxSizing(logical_height.Value());
-    case kPercent:
-    case kCalculated: {
+    case Length::kPercent:
+    case Length::kCalculated: {
       // TODO(rego): Check if we can somehow reuse
       // LayoutBox::computePercentageLogicalHeight() and/or
       // LayoutBlock::availableLogicalHeightForPercentageComputation() (see
@@ -3817,10 +3817,10 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
       return AdjustContentBoxLogicalHeightForBoxSizing(
           ValueForLength(logical_height, available_height));
     }
-    case kMinContent:
-    case kMaxContent:
-    case kFitContent:
-    case kFillAvailable:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFitContent:
+    case Length::kFillAvailable:
       return AdjustContentBoxLogicalHeightForBoxSizing(
           ComputeIntrinsicLogicalContentHeightUsing(logical_height,
                                                     IntrinsicLogicalHeight(),

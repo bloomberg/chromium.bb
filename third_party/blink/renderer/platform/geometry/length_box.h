@@ -34,7 +34,7 @@ class PLATFORM_EXPORT LengthBox {
  public:
   LengthBox() = default;
 
-  LengthBox(LengthType t) : left_(t), right_(t), top_(t), bottom_(t) {}
+  LengthBox(Length::Type t) : left_(t), right_(t), top_(t), bottom_(t) {}
 
   LengthBox(int v)
       : left_(Length::Fixed(v)),

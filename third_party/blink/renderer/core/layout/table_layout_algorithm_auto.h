@@ -57,9 +57,9 @@ class TableLayoutAlgorithmAuto final : public TableLayoutAlgorithm {
   void RecalcColumn(unsigned eff_col);
 
   int CalcEffectiveLogicalWidth();
-  void ShrinkColumnWidth(const LengthType&, int& available);
+  void ShrinkColumnWidth(const Length::Type&, int& available);
   template <typename Total,
-            LengthType,
+            Length::Type,
             CellsToProcess,
             DistributionMode,
             DistributionDirection>

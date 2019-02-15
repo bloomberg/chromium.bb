@@ -29,23 +29,6 @@
 
 namespace blink {
 
-// FIXME: This enum makes it hard to tell in general what values may be
-// appropriate for any given Length.
-enum LengthType {
-  kAuto,
-  kPercent,
-  kFixed,
-  kMinContent,
-  kMaxContent,
-  kFillAvailable,
-  kFitContent,
-  kCalculated,
-  kExtendToZoom,
-  kDeviceWidth,
-  kDeviceHeight,
-  kMaxSizeNone
-};
-
 enum ValueRange { kValueRangeAll, kValueRangeNonNegative };
 
 struct PixelsAndPercent {
@@ -62,29 +45,46 @@ class PLATFORM_EXPORT Length {
   DISALLOW_NEW();
 
  public:
+  // FIXME: This enum makes it hard to tell in general what values may be
+  // appropriate for any given Length.
+  enum Type : unsigned char {
+    kAuto,
+    kPercent,
+    kFixed,
+    kMinContent,
+    kMaxContent,
+    kFillAvailable,
+    kFitContent,
+    kCalculated,
+    kExtendToZoom,
+    kDeviceWidth,
+    kDeviceHeight,
+    kMaxSizeNone
+  };
+
   Length() : int_value_(0), quirk_(false), type_(kAuto), is_float_(false) {}
 
-  explicit Length(LengthType t)
+  explicit Length(Length::Type t)
       : int_value_(0), quirk_(false), type_(t), is_float_(false) {
     DCHECK_NE(t, kCalculated);
   }
 
-  Length(int v, LengthType t, bool q = false)
+  Length(int v, Length::Type t, bool q = false)
       : int_value_(v), quirk_(q), type_(t), is_float_(false) {
     DCHECK_NE(t, kCalculated);
   }
 
-  Length(LayoutUnit v, LengthType t, bool q = false)
+  Length(LayoutUnit v, Length::Type t, bool q = false)
       : float_value_(v.ToFloat()), quirk_(q), type_(t), is_float_(true) {
     DCHECK_NE(t, kCalculated);
   }
 
-  Length(float v, LengthType t, bool q = false)
+  Length(float v, Length::Type t, bool q = false)
       : float_value_(v), quirk_(q), type_(t), is_float_(true) {
     DCHECK_NE(t, kCalculated);
   }
 
-  Length(double v, LengthType t, bool q = false)
+  Length(double v, Length::Type t, bool q = false)
       : quirk_(q), type_(t), is_float_(true) {
     float_value_ = static_cast<float>(v);
   }
@@ -180,7 +180,7 @@ class PLATFORM_EXPORT Length {
 
   CalculationValue& GetCalculationValue() const;
 
-  LengthType GetType() const { return static_cast<LengthType>(type_); }
+  Length::Type GetType() const { return static_cast<Length::Type>(type_); }
   bool Quirk() const { return quirk_; }
 
   void SetQuirk(bool quirk) { quirk_ = quirk; }

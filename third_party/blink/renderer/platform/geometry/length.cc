@@ -109,7 +109,7 @@ Length Length::BlendMixedTypes(const Length& from,
 Length Length::BlendSameTypes(const Length& from,
                               double progress,
                               ValueRange range) const {
-  LengthType result_type = GetType();
+  Length::Type result_type = GetType();
   if (IsZero())
     result_type = from.GetType();
 

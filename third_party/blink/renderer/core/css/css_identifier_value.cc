@@ -34,30 +34,30 @@ CSSIdentifierValue::CSSIdentifierValue(CSSValueID value_id)
 CSSIdentifierValue::CSSIdentifierValue(const Length& length)
     : CSSValue(kIdentifierClass) {
   switch (length.GetType()) {
-    case kAuto:
+    case Length::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kMinContent:
+    case Length::kMinContent:
       value_id_ = CSSValueMinContent;
       break;
-    case kMaxContent:
+    case Length::kMaxContent:
       value_id_ = CSSValueMaxContent;
       break;
-    case kFillAvailable:
+    case Length::kFillAvailable:
       value_id_ = CSSValueWebkitFillAvailable;
       break;
-    case kFitContent:
+    case Length::kFitContent:
       value_id_ = CSSValueFitContent;
       break;
-    case kExtendToZoom:
+    case Length::kExtendToZoom:
       value_id_ = CSSValueInternalExtendToZoom;
       break;
-    case kPercent:
-    case kFixed:
-    case kCalculated:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kPercent:
+    case Length::kFixed:
+    case Length::kCalculated:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       break;
   }

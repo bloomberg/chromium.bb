@@ -165,7 +165,7 @@ FloatRect BlurFilterOperation::MapRect(const FloatRect& rect) const {
 
 FilterOperation* BlurFilterOperation::Blend(const FilterOperation* from,
                                             double progress) const {
-  LengthType length_type = std_deviation_.GetType();
+  Length::Type length_type = std_deviation_.GetType();
   if (!from)
     return BlurFilterOperation::Create(std_deviation_.Blend(
         Length(length_type), progress, kValueRangeNonNegative));
