@@ -521,6 +521,21 @@
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a crostini shared folder.">
       Remove sharing
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_EXPORT_IMPORT_TITLE" desc="Title for crostini container export and imoprt (backup and restore) section">
+      Backup &amp; restore
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_EXPORT" desc="Tile for exporting (backing up) the crostini container.">
+      Backup
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_EXPORT_LABEL" desc="Description shown next to the button to export (backup) Crostini.">
+      Backup Linux apps and files
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_IMPORT" desc="Title for importing (restoring) the crostini container.">
+      Restore
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_IMPORT_LABEL" desc="Description shown next to the button to import (restore) Crostini.">
+      Replace your Linux apps and files with a previous backup
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
       USB Device preferences
     </message>

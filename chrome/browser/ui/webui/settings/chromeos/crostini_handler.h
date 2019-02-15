@@ -36,6 +36,10 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler {
   void HandleGetCrostiniSharedPathsDisplayText(const base::ListValue* args);
   // Remove a specified path from being shared.
   void HandleRemoveCrostiniSharedPath(const base::ListValue* args);
+  // Export the crostini container.
+  void HandleExportCrostiniContainer(const base::ListValue* args);
+  // Import the crostini container.
+  void HandleImportCrostiniContainer(const base::ListValue* args);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

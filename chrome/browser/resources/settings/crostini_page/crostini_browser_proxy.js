@@ -29,6 +29,12 @@ cr.define('settings', function() {
 
     /** @param {string} path Path to stop sharing. */
     removeCrostiniSharedPath(path) {}
+
+    /* Export crostini container. */
+    exportCrostiniContainer() {}
+
+    /* Import crostini container. */
+    importCrostiniContainer() {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -51,6 +57,16 @@ cr.define('settings', function() {
     /** @override */
     removeCrostiniSharedPath(path) {
       chrome.send('removeCrostiniSharedPath', [path]);
+    }
+
+    /** @override */
+    exportCrostiniContainer() {
+      chrome.send('exportCrostiniContainer');
+    }
+
+    /** @override */
+    importCrostiniContainer() {
+      chrome.send('importCrostiniContainer');
     }
   }
 

@@ -27,6 +27,23 @@
         </paper-icon-button-light>
       </div>
     </template>
+    <template is="dom-if" if="[[showCrostiniExportImport_]]">
+      <div class="settings-box">$i18n{crostiniExportImportTitle}</div>
+      <div class="list-frame vertical-list">
+        <div id="export" class="list-item">
+          <div class="start secondary">$i18n{crostiniExportLabel}</div>
+          <paper-button on-click="onExportClick_">
+             $i18n{crostiniExport}
+          </paper-button>
+        </div>
+        <div id="import" class="list-item">
+          <div class="start secondary">$i18n{crostiniImportLabel}</div>
+          <paper-button on-click="onImportClick_">
+             $i18n{crostiniImport}
+          </paper-button>
+        </div>
+      </div>
+    </template>
     <div id="remove" class="settings-box"
         actionable on-click="onRemoveTap_">
       <div class="start">$i18n{crostiniRemove}</div>

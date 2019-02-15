@@ -80,6 +80,10 @@ suite('CrostiniPageTests', function() {
 
     setup(function() {
       setCrostiniPrefs(true);
+      loadTimeData.overrideValues({
+        showCrostiniExportImport: true,
+      });
+
       settings.navigateTo(settings.routes.CROSTINI);
       crostiniPage.$$('#crostini').click();
       return flushAsync().then(() => {
@@ -90,6 +94,8 @@ suite('CrostiniPageTests', function() {
 
     test('Sanity', function() {
       assertTrue(!!subpage.$$('#crostini-shared-paths'));
+      assertTrue(!!subpage.$$('#export'));
+      assertTrue(!!subpage.$$('#import'));
       assertTrue(!!subpage.$$('#remove'));
     });
 
@@ -102,6 +108,19 @@ suite('CrostiniPageTests', function() {
       });
     });
 
+    test('Export', function() {
+      assertTrue(!!subpage.$$('#export paper-button'));
+      subpage.$$('#export paper-button').click();
+      assertEquals(
+          1, crostiniBrowserProxy.getCallCount('exportCrostiniContainer'));
+    });
+
+    test('Import', function() {
+      assertTrue(!!subpage.$$('#import paper-button'));
+      subpage.$$('#import paper-button').click();
+      assertEquals(
+          1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
+    });
 
     test('Remove', function() {
       assertTrue(!!subpage.$$('#remove .subpage-arrow'));
