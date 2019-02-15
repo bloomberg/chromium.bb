@@ -8,11 +8,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/test/gtest_util.h"
+#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -125,10 +128,13 @@ namespace identity {
 class AccountsMutatorTest : public testing::Test {
  public:
   AccountsMutatorTest()
-      : identity_manager_observer_(identity_manager()),
+      : identity_test_env_(&test_url_loader_factory_, &prefs_),
+        identity_manager_observer_(identity_manager()),
         identity_manager_diagnostics_observer_(identity_manager()) {}
 
   ~AccountsMutatorTest() override {}
+
+  PrefService* pref_service() { return &prefs_; }
 
   identity::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
@@ -149,6 +155,8 @@ class AccountsMutatorTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
   TestIdentityManagerObserver identity_manager_observer_;
   TestIdentityManagerDiagnosticsObserver identity_manager_diagnostics_observer_;
@@ -650,9 +658,18 @@ TEST_F(AccountsMutatorTest, MoveAccount) {
   auto* other_accounts_mutator =
       other_identity_test_env.identity_manager()->GetAccountsMutator();
 
+  std::string device_id_1 = signin::GetOrCreateScopedDeviceId(pref_service());
+  EXPECT_FALSE(device_id_1.empty());
+
   accounts_mutator()->MoveAccount(other_accounts_mutator,
                                   account_info.account_id);
   EXPECT_EQ(0U, identity_manager()->GetAccountsWithRefreshTokens().size());
+
+  std::string device_id_2 = signin::GetOrCreateScopedDeviceId(pref_service());
+  EXPECT_FALSE(device_id_2.empty());
+  // |device_id_1| and |device_id_2| should be different as the divice ID is
+  // recreated in MoveAccount().
+  EXPECT_NE(device_id_1, device_id_2);
 
   auto other_accounts_with_refresh_token =
       other_identity_test_env.identity_manager()

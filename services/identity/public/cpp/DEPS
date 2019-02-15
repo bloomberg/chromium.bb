@@ -30,12 +30,12 @@ specific_include_rules = {
     "+services/network/test/test_url_loader_factory.h",
     "+services/network/test/test_utils.h",
   ],
+  "accounts_mutator_unittest.cc": [
+    "+services/network/test/test_url_loader_factory.h",
+  ],
   "identity_manager_unittest.cc": [
     "+google_apis/gaia/oauth2_token_service_delegate.h",
     "+services/network/test/test_cookie_manager.h",
     "+services/network/test/test_url_loader_factory.h",
   ],
-  "accounts_mutator_impl_unittest.cc": [
-    "+components/image_fetcher"
-  ]
 }
