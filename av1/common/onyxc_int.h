@@ -136,8 +136,6 @@ typedef struct RefCntBuffer {
   // - Total 'n' of the variables / array elements above have value 'k' (that
   // is, they are pointing to buffer at index 'k').
   // Then, pool->frame_bufs[k].ref_count = n.
-  // TODO(david.turner@argondesign.com) Check whether this helpful comment is
-  // still correct after we finish restructuring
   int ref_count;
 
   unsigned int order_hint;
@@ -160,6 +158,10 @@ typedef struct RefCntBuffer {
   YV12_BUFFER_CONFIG buf;
   hash_table hash_table;
   FRAME_TYPE frame_type;
+
+  // This is only used in the encoder but needs to be indexed per ref frame
+  // so it's extremely convenient to keep it here.
+  int interp_filter_selected[SWITCHABLE];
 
   // Inter frame reference frame delta for loop filter
   int8_t ref_deltas[REF_FRAMES];
@@ -643,6 +645,7 @@ static INLINE RefCntBuffer *assign_cur_frame_new_fb(AV1_COMMON *const cm) {
 
   cm->cur_frame = &cm->buffer_pool->frame_bufs[new_fb_idx];
   cm->cur_frame->buf.buf_8bit_valid = 0;
+  av1_zero(cm->cur_frame->interp_filter_selected);
   return cm->cur_frame;
 }
 

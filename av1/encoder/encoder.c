@@ -358,10 +358,8 @@ static void setup_frame(AV1_COMP *cpi) {
   }
 
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
-    av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else if (frame_is_sframe(cm)) {
-    av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else {
     const RefCntBuffer *const primary_ref_buf = get_primary_ref_frame_buf(cm);
@@ -372,9 +370,9 @@ static void setup_frame(AV1_COMP *cpi) {
     } else {
       *cm->fc = primary_ref_buf->frame_context;
     }
-    av1_zero(cpi->interp_filter_selected[0]);
   }
 
+  av1_zero(cm->cur_frame->interp_filter_selected);
   cm->prev_frame = get_primary_ref_frame_buf(cm);
   cpi->vaq_refresh = 0;
 }
@@ -4621,32 +4619,45 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
-static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
-  InterpFilters ifilter;
-  int ref_total[REF_FRAMES] = { 0 };
-  MV_REFERENCE_FRAME ref;
-  int mask = 0;
-  int arf_idx = ALTREF_FRAME;
-  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
-    return mask;
-  for (ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref)
-    for (ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP; ++ifilter)
-      ref_total[ref] += cpi->interp_filter_selected[ref][ifilter];
+static int get_interp_filter_selected(const AV1_COMMON *const cm,
+                                      MV_REFERENCE_FRAME ref,
+                                      InterpFilters ifilter) {
+  const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref);
+  if (buf == NULL) return 0;
+  return buf->interp_filter_selected[ifilter];
+}
 
-  for (ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP; ++ifilter) {
-    if ((ref_total[LAST_FRAME] &&
-         cpi->interp_filter_selected[LAST_FRAME][ifilter] * 30 <=
-             ref_total[LAST_FRAME]) &&
-        (((cpi->interp_filter_selected[LAST2_FRAME][ifilter] * 20) +
-          (cpi->interp_filter_selected[LAST3_FRAME][ifilter] * 20) +
-          (cpi->interp_filter_selected[GOLDEN_FRAME][ifilter] * 20) +
-          (cpi->interp_filter_selected[BWDREF_FRAME][ifilter] * 10) +
-          (cpi->interp_filter_selected[ALTREF2_FRAME][ifilter] * 10) +
-          (cpi->interp_filter_selected[arf_idx][ifilter] * 10)) <
-         (ref_total[LAST2_FRAME] + ref_total[LAST3_FRAME] +
-          ref_total[GOLDEN_FRAME] + ref_total[BWDREF_FRAME] +
-          ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME])))
-      mask |= 1 << ifilter;
+static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+  int ref_total[REF_FRAMES] = { 0 };
+
+  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
+    return 0;
+
+  for (MV_REFERENCE_FRAME ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
+    for (InterpFilters ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
+         ++ifilter) {
+      ref_total[ref] += get_interp_filter_selected(cm, ref, ifilter);
+    }
+  }
+  int ref_total_total = (ref_total[LAST2_FRAME] + ref_total[LAST3_FRAME] +
+                         ref_total[GOLDEN_FRAME] + ref_total[BWDREF_FRAME] +
+                         ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME]);
+
+  int mask = 0;
+  for (InterpFilters ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
+       ++ifilter) {
+    int last_score = get_interp_filter_selected(cm, LAST_FRAME, ifilter) * 30;
+    if (ref_total[LAST_FRAME] && last_score <= ref_total[LAST_FRAME]) {
+      int filter_score =
+          get_interp_filter_selected(cm, LAST2_FRAME, ifilter) * 20 +
+          get_interp_filter_selected(cm, LAST3_FRAME, ifilter) * 20 +
+          get_interp_filter_selected(cm, GOLDEN_FRAME, ifilter) * 20 +
+          get_interp_filter_selected(cm, BWDREF_FRAME, ifilter) * 10 +
+          get_interp_filter_selected(cm, ALTREF2_FRAME, ifilter) * 10 +
+          get_interp_filter_selected(cm, ALTREF_FRAME, ifilter) * 10;
+      if (filter_score < ref_total_total) mask |= 1 << ifilter;
+    }
   }
   return mask;
 }

@@ -814,12 +814,6 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
     const int ref_idx = ref_frame - LAST_FRAME;
     cpi->common.remapped_ref_idx[ref_idx] =
         cpi->common.remapped_ref_idx[ref_idx - 1];
-
-    if (!cpi->rc.is_src_frame_alt_ref) {
-      memcpy(cpi->interp_filter_selected[ref_frame],
-             cpi->interp_filter_selected[ref_frame - 1],
-             sizeof(cpi->interp_filter_selected[ref_frame - 1]));
-    }
   }
 }
 
@@ -833,11 +827,6 @@ static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
                                       EXTREF_FRAME };
 
   for (int i = 2; i > 0; --i) {
-    // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
-           cpi->interp_filter_selected[ordered_bwd[i - 1]],
-           sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1]]));
-
     cpi->common.remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
         cpi->common.remapped_ref_idx[ordered_bwd[i - 1] - LAST_FRAME];
   }
@@ -853,11 +842,6 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
                                       EXTREF_FRAME };
 
   for (int i = 0; i < 2; ++i) {
-    // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
-           cpi->interp_filter_selected[ordered_bwd[i + 1]],
-           sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1]]));
-
     cpi->common.remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
         cpi->common.remapped_ref_idx[ordered_bwd[i + 1] - LAST_FRAME];
   }
@@ -901,9 +885,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cm->remapped_ref_idx[ALTREF_FRAME - LAST_FRAME] =
         get_ref_frame_map_idx(cm, GOLDEN_FRAME);
     cm->remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] = tmp;
-
-    // TODO(zoeliu): Do we need to copy cpi->interp_filter_selected[0] over to
-    // cpi->interp_filter_selected[GOLDEN_FRAME]?
   } else if (cpi->rc.is_src_frame_ext_arf && encode_show_existing_frame(cm)) {
     const int bwdref_to_show =
         (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
@@ -916,9 +897,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
         get_ref_frame_map_idx(cm, bwdref_to_show);
 
-    memcpy(cpi->interp_filter_selected[LAST_FRAME],
-           cpi->interp_filter_selected[bwdref_to_show],
-           sizeof(cpi->interp_filter_selected[bwdref_to_show]));
     if (cpi->new_bwdref_update_rule == 1) {
       lshift_bwd_ref_frames(cpi);
       // pass outdated forward reference frame (previous LAST3) to the
@@ -928,39 +906,19 @@ static void update_reference_frames(AV1_COMP *cpi) {
       cm->remapped_ref_idx[bwdref_to_show - LAST_FRAME] = last3_remapped_idx;
     }
   } else { /* For non key/golden frames */
-    if (cpi->refresh_alt_ref_frame && !cm->show_existing_frame) {
-      // === ALTREF_FRAME ===
-      memcpy(cpi->interp_filter_selected[ALTREF_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-    } else if (cpi->refresh_golden_frame && !cm->show_existing_frame) {
-      // === GOLDEN_FRAME ===
-      memcpy(cpi->interp_filter_selected[GOLDEN_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-
-    } else if (cpi->refresh_bwd_ref_frame && !cm->show_existing_frame) {
-      if (cpi->new_bwdref_update_rule) {
-        // === BWDREF_FRAME ===
-        // (Nothing to do for BWDREF_FRAME show_existing_frame because the
-        // reference frame update has been done previously when handling the
-        // LAST_BIPRED_FRAME right before BWDREF_FRAME (in the display order))
-        // We shift the backward reference frame as follows:
-        // BWDREF -> ALTREF2 -> EXTREF
-        // and assign the newly coded frame to BWDREF so that it always
-        // keeps the nearest future frame
-        const int tmp = get_ref_frame_map_idx(cm, EXTREF_FRAME);
-        rshift_bwd_ref_frames(cpi);
-        cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = tmp;
-      }
-      memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-    } else if (cpi->refresh_alt2_ref_frame && !cm->show_existing_frame) {
-      // === ALTREF2_FRAME ===
-      memcpy(cpi->interp_filter_selected[ALTREF2_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
+    if (cpi->refresh_bwd_ref_frame && !cm->show_existing_frame &&
+        cpi->new_bwdref_update_rule) {
+      // === BWDREF_FRAME ===
+      // (Nothing to do for BWDREF_FRAME show_existing_frame because the
+      // reference frame update has been done previously when handling the
+      // LAST_BIPRED_FRAME right before BWDREF_FRAME (in the display order))
+      // We shift the backward reference frame as follows:
+      // BWDREF -> ALTREF2 -> EXTREF
+      // and assign the newly coded frame to BWDREF so that it always
+      // keeps the nearest future frame
+      const int tmp = get_ref_frame_map_idx(cm, EXTREF_FRAME);
+      rshift_bwd_ref_frames(cpi);
+      cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = tmp;
     }
   }
 
@@ -1002,11 +960,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     shift_last_ref_frames(cpi);
     cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] = last3_remapped_idx;
 
-    // TODO(dwt): This copy should actually follow the assign_frame_buffer.
-    memcpy(cpi->interp_filter_selected[LAST_FRAME],
-           cpi->interp_filter_selected[0],
-           sizeof(cpi->interp_filter_selected[0]));
-
     // If the new structure is used, we will always have overlay frames coupled
     // with bwdref frames. Therefore, we won't have to perform this update
     // in advance (we do this update when the overlay frame shows up).
@@ -1026,10 +979,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
       cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
           get_ref_frame_map_idx(cm, BWDREF_FRAME);
       cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = last3_remapped_idx;
-
-      memcpy(cpi->interp_filter_selected[LAST_FRAME],
-             cpi->interp_filter_selected[BWDREF_FRAME],
-             sizeof(cpi->interp_filter_selected[BWDREF_FRAME]));
     }
   }
 
