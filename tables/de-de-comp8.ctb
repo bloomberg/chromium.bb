@@ -19,6 +19,9 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+# A part of these mappings do not correspond to a standard as not all of German 8-dot 
+# braille is properly standardized
+
 include braille-patterns.cti
 
 sign \x0000 0
@@ -292,6 +295,8 @@ noback sign \X25CF 35	# 9679 black circle
 sign \x2192 0	# →
 sign \x2190 0	# ←
 sign \x25bc 0	# ▼
+
+# The following mappings are not standards compliant as there is no standard for these.
 
 sign \x0100 1678
 sign \x0101 168
