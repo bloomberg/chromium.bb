@@ -315,6 +315,7 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
 // Stack scanning may overrun the bounds of local objects and/or race with
 // other threads that use this stack.
 NO_SANITIZE_ADDRESS
+NO_SANITIZE_HWADDRESS
 NO_SANITIZE_THREAD
 void ThreadState::VisitStack(MarkingVisitor* visitor) {
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
