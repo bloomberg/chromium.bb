@@ -66,6 +66,9 @@ class XRCompositorCommon : public base::Thread,
 #endif
   int16_t next_frame_id_ = 0;
 
+  // Allow derived classes to call methods on the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
  private:
   // base::Thread overrides:
   void Init() final;
@@ -136,7 +139,6 @@ class XRCompositorCommon : public base::Thread,
   gfx::RectF right_webxr_bounds_;
   gfx::Size source_size_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   mojom::XRPresentationClientPtr submit_client_;
   SubmitOverlayTextureCallback overlay_submit_callback_;
   base::OnceCallback<void()> on_presentation_ended_;

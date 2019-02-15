@@ -1063,6 +1063,16 @@ void VRDisplay::OnPresentingVSync(
   if (!doc)
     return;
 
+  if (frame_data->left_eye) {
+    eye_parameters_left_ =
+        MakeGarbageCollected<VREyeParameters>(frame_data->left_eye, 1);
+  }
+
+  if (frame_data->right_eye) {
+    eye_parameters_right_ =
+        MakeGarbageCollected<VREyeParameters>(frame_data->right_eye, 1);
+  }
+
   // Post a task to handle scheduled animations after the current
   // execution context finishes, so that we yield to non-mojo tasks in
   // between frames. Executing mojo tasks back to back within the same

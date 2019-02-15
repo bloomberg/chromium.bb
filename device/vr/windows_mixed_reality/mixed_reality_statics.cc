@@ -31,9 +31,10 @@ class DEVICE_VR_EXPORT MixedRealityDeviceStaticsImpl
   bool IsApiAvailable() override;
 
  private:
+  base::win::ScopedWinrtInitializer initializer_;
+
   // Adds get_IsAvailable and get_IsSupported to HolographicSpaceStatics.
   ComPtr<IHolographicSpaceStatics2> holographic_space_statics_;
-  base::win::ScopedWinrtInitializer initializer_;
 };
 
 std::unique_ptr<MixedRealityDeviceStatics>

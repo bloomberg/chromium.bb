@@ -143,7 +143,10 @@ void MixedRealityDevice::Shutdown() {
 }
 
 void MixedRealityDevice::CreateRenderLoop() {
-  render_loop_ = std::make_unique<MixedRealityRenderLoop>();
+  auto on_info_changed = base::BindRepeating(
+      &MixedRealityDevice::SetVRDisplayInfo, weak_ptr_factory_.GetWeakPtr());
+  render_loop_ =
+      std::make_unique<MixedRealityRenderLoop>(std::move(on_info_changed));
 }
 
 void MixedRealityDevice::OnPresentationEnded() {}
