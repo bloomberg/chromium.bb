@@ -391,7 +391,7 @@ BaseFetchContext::CanRequestInternal(
   // Loading of a subresource may be blocked by previews resource loading hints.
   if (GetPreviewsResourceLoadingHints() &&
       !GetPreviewsResourceLoadingHints()->AllowLoad(
-          url, resource_request.Priority())) {
+          type, url, resource_request.Priority())) {
     return ResourceRequestBlockedReason::kOther;
   }
 

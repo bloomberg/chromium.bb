@@ -93,6 +93,11 @@ const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable limiting previews loading hints to specific resource types.
+const base::Feature kPreviewsResourceLoadingHintsSpecificResourceTypes{
+    "PreviewsResourceLoadingHintsSpecificResourceTypes",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Implicit Root Scroller. https://crbug.com/903260.
 const base::Feature kImplicitRootScroller{"ImplicitRootScroller",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
