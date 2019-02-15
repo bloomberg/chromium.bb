@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+import re
+import time
+import urllib
 from common import ParseFlags
 from common import TestDriver
 from common import IntegrationTest
@@ -138,6 +142,52 @@ class HttpsPreviews(IntegrationTest):
       except TimeoutException:
         histogram = t.GetHistogram('SB2.ResourceTypes2.Unsafe')
         self.assertEqual(1, histogram['count'])
+
+
+  # Verifies that a Lite Page is served, an intervention report has been
+  # sent to the correct reporting endpoint, and the content of this report
+  # is expected.
+  @ChromeVersionEqualOrAfterM(72)
+  def testLitePageWebReport(self):
+    with TestDriver() as t:
+      enableLitePageServerPreviews(t)
+      t.AddChromeArg('--short-reporting-delay')
+      t.UseNetLog()
+
+      t.LoadURL('https://mobilespeed-test.appspot.com/snapshot-test/')
+
+      # Verify that the request is served by a Lite Page.
+      lite_page_responses = 0
+      lite_page_regexp = re.compile('https://\w+\.litepages\.googlezip\.net/p')
+      for response in t.GetHTTPResponses():
+        if lite_page_regexp.search(response.url) and response.status == 200:
+          lite_page_responses += 1
+      self.assertEqual(1, lite_page_responses)
+
+      # Wait for intervention report to be attempted.
+      t.SleepUntilHistogramHasEntry("Net.Reporting.ReportDeliveredAttempts", 120)
+      events = t.StopAndGetNetLog()["events"]
+
+      # Collect IDs of expected reporting requests.
+      report_request_id = []
+      for event in events:
+        if not "params" in event or not "headers" in event["params"]:
+          continue
+        header = event["params"]["headers"]
+        if ":path: /webreports?u=%s"%(urllib.quote_plus("https://mobilespeed-test.appspot.com/web-reports")) in header and "content-type: application/reports+json" in header:
+          report_request_id.append(event["source"]["id"])
+      self.assertNotEqual(0, len(report_request_id))
+
+      # Verify that at least one reporting request got 200.
+      ok_responses = 0
+      for id in report_request_id:
+        for event in events:
+          if event["source"]["id"] != id or not "params" in event or not "headers" in event["params"]:
+            continue
+          for value in event["params"]["headers"]:
+            if ":status: 200" in value:
+              ok_responses += 1
+      self.assertNotEqual(0, ok_responses)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
