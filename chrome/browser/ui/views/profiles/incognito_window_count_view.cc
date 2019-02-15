@@ -82,7 +82,7 @@ void IncognitoWindowCountView::Init() {
   const SkColor icon_color = ThemeProperties::GetDefaultColor(
       ThemeProperties::COLOR_NTP_BACKGROUND, true /* incognito */);
   incognito_icon->SetImage(
-      gfx::CreateVectorIcon(kIncognitoIcon, 40, icon_color));
+      gfx::CreateVectorIcon(kIncognitoProfileIcon, icon_color));
 
   // TODO(https://crbug.com/915120): This Button is never clickable. Replace
   // by an alternative list item.
