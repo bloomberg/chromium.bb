@@ -46,14 +46,13 @@ FloatPoint ContentsOffset(LocalFrame* frame) {
 }
 
 LayoutPoint PageToAbsolute(LocalFrame* frame, const FloatPoint& page_pos) {
-  FloatPoint converted_point;
-  if (frame && frame->View())
-    converted_point = frame->View()->DocumentToFrame(page_pos);
-  else
-    converted_point = page_pos;
-
   float scale_factor = frame ? frame->PageZoomFactor() : 1.0f;
-  return LayoutPoint(converted_point.ScaledBy(scale_factor));
+  FloatPoint converted_point = page_pos.ScaledBy(scale_factor);
+
+  if (frame && frame->View())
+    converted_point = frame->View()->DocumentToFrame(converted_point);
+
+  return LayoutPoint(converted_point);
 }
 
 }  // namespace
