@@ -75,7 +75,6 @@ Polymer({
       this.displayedApps_ = this.collapsedApps_;
       this.collapsedApps_ = [];
     }
-    this.$['expander-row'].hidden = this.collapsedApps_.length === 0;
   },
 
   /**
@@ -128,25 +127,6 @@ Polymer({
     return newApps;
   },
 
-  /**
-   * @param {boolean} listExpanded
-   * @param {Array<App>} collapsedApps
-   * @return {string}
-   * @private
-   */
-  moreAppsString_: function(listExpanded, collapsedApps) {
-    return listExpanded ?
-        loadTimeData.getString('lessApps') :
-        loadTimeData.getStringF('moreApps', collapsedApps.length);
-  },
-
-  /**
-   * @private
-   */
-  toggleListExpanded_: function() {
-    this.listExpanded_ = !this.listExpanded_;
-  },
-
   /** @private */
   onClickBackButton_: function() {
     this.listExpanded_ = false;
@@ -155,15 +135,6 @@ Polymer({
     } else {
       window.history.back();
     }
-  },
-
-  /**
-   * @param {boolean} listExpanded
-   * @return {string}
-   * @private
-   */
-  getCollapsedIcon_: function(listExpanded) {
-    return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 
   /**

@@ -1,0 +1,85 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="app_item.html">
+<link rel="import" href="shared_style.html">
+<link rel="import" href="store_client.html">
+<link rel="import" href="permission_toggle.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+
+<dom-module id="app-management-expandable-app-list">
+  <template>
+    <style include="app-management-shared-css">
+      .app-management-item-arrow {
+        margin-inline-end: 8px;
+        padding: 12px;
+      }
+
+      #app-list-title {
+        padding: 16px 24px;
+      }
+
+      app-management-permission-toggle {
+        margin-inline-end: 24px;
+      }
+    </style>
+    <!-- TODO(ceciliani) Avoid using dom-if, and use slot by getting |items|
+    from dom-repeat -->
+    <!-- TODO(calamity) Make a more generic polymer element for expandable
+    list. -->
+    <div class="card-container">
+      <div id="app-list-title" class="header-text">[[listTitle]]</div>
+      <template is="dom-repeat" items="[[displayedApps]]">
+        <template is="dom-if" if="[[!notificationsViewSelected_()]]">
+          <app-management-app-item app="[[item]]">
+            <paper-icon-button-light slot="right-content"
+                class="subpage-arrow app-management-item-arrow" actionable>
+              <button></button>
+            </paper-icon-button-light>
+          </app-management-app-item>
+        </template>
+        <template is="dom-if" if="[[notificationsViewSelected_()]]">
+          <app-management-app-item app="[[item]]">
+            <app-management-permission-toggle slot="right-content"
+                app="[[item]]"
+                permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
+            </app-management-permission-toggle>
+          </app-management-app-item>
+        </template>
+      </template>
+
+      <iron-collapse opened="[[listExpanded_]]">
+        <template is="dom-repeat" items="[[collapsedApps]]">
+          <template is="dom-if" if="[[!notificationsViewSelected_()]]">
+            <app-management-app-item app="[[item]]">
+              <paper-icon-button-light slot="right-content"
+                  class="subpage-arrow app-management-item-arrow" actionable>
+                <button></button>
+              </paper-icon-button-light>
+            </app-management-app-item>
+          </template>
+          <template is="dom-if" if="[[notificationsViewSelected_()]]">
+            <app-management-app-item app="[[item]]">
+              <app-management-permission-toggle slot="right-content"
+                  app="[[item]]"
+                  permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
+              </app-management-permission-toggle>
+            </app-management-app-item>
+          </template>
+        </template>
+      </iron-collapse>
+
+      <div id="expander-row" class="expander-list-row"
+          on-click="toggleListExpanded_">
+        <span>[[moreAppsString_(collapsedApps.length,listExpanded_)]]</span>
+        <paper-icon-button-light class="expand-button">
+          <button>
+            <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]">
+            </iron-icon>
+          </button>
+        </paper-icon-button-light>
+      </div>
+    </div>
+  </template>
+  <script src="expandable_app_list.js"></script>
+</dom-module>

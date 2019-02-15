@@ -17,6 +17,7 @@ if (!is_android) {
       ":chrome_app_permission_view",
       ":constants",
       ":dom_switch",
+      ":expandable_app_list",
       ":fake_page_handler",
       ":main_view",
       ":metadata_view",
@@ -110,6 +111,13 @@ if (!is_android) {
   }
 
   js_library("dom_switch") {
+  }
+
+  js_library("expandable_app_list") {
+    deps = [
+      ":app_item",
+      ":store_client",
+    ]
   }
 
   js_library("fake_page_handler") {
