@@ -29,7 +29,7 @@
 #include "components/omnibox/browser/autocomplete_controller_delegate.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/builtin_provider.h"
-#include "components/omnibox/browser/clipboard_url_provider.h"
+#include "components/omnibox/browser/clipboard_provider.h"
 #include "components/omnibox/browser/document_provider.h"
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
@@ -247,7 +247,7 @@ AutocompleteController::AutocompleteController(
     document_provider_ = DocumentProvider::Create(provider_client_.get(), this);
     providers_.push_back(document_provider_);
   }
-  if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD_URL) {
+  if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD) {
 #if !defined(OS_IOS)
     // On iOS, a global ClipboardRecentContent should've been created by now
     // (if enabled).  If none has been created (e.g., we're on a different
@@ -263,7 +263,7 @@ AutocompleteController::AutocompleteController(
     // ClipboardRecentContent can be null in iOS tests.  For non-iOS, we
     // create a ClipboardRecentContent as above (for both Chrome and tests).
     if (ClipboardRecentContent::GetInstance()) {
-      providers_.push_back(new ClipboardURLProvider(
+      providers_.push_back(new ClipboardProvider(
           provider_client_.get(), this, history_url_provider_,
           ClipboardRecentContent::GetInstance()));
     }
