@@ -84,7 +84,8 @@ void NodeBase::SetProperty(
 
 // static
 NodeBase* NodeBase::PassOwnershipToGraph(std::unique_ptr<NodeBase> new_cu) {
-  return new_cu->graph()->AddNewNode(std::move(new_cu));
+  auto *graph = new_cu->graph();
+  return graph->AddNewNode(std::move(new_cu));
 }
 
 }  // namespace performance_manager
