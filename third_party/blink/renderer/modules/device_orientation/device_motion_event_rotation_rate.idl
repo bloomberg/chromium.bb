@@ -25,9 +25,7 @@
 
 // https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
 
-[
-    NoInterfaceObject
-] interface DeviceRotationRate {
+interface DeviceMotionEventRotationRate {
     readonly attribute double? alpha;
     readonly attribute double? beta;
     readonly attribute double? gamma;
