@@ -60,6 +60,24 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
     kMaxValue = kFixedTimer
   };
 
+  // Enum for the status of the refresh, reported through UMA.
+  // If any new values are added, update the corresponding definition in
+  // enums.xml.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum ShouldRefreshResult {
+    kShouldRefresh = 0,
+    kDontRefreshOutstandingRequest = 1,
+    kDontRefreshTriggerDisabled = 2,
+    kDontRefreshNetworkOffline = 3,
+    kDontRefreshEulaNotAccepted = 4,
+    kDontRefreshArticlesHidden = 5,
+    kDontRefreshRefreshSuppressed = 6,
+    kDontRefreshNotStale = 7,
+    kDontRefreshRefreshThrottled = 8,
+    kMaxValue = kDontRefreshRefreshThrottled,
+  };
+
   FeedSchedulerHost(PrefService* profile_prefs,
                     PrefService* local_state,
                     base::Clock* clock);
@@ -126,7 +144,7 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // If this method is called and returns true we presume the refresh will
   // happen, therefore we report metrics respectively and update
   // |tracking_oustanding_request_|.
-  bool ShouldRefresh(TriggerType trigger);
+  ShouldRefreshResult ShouldRefresh(TriggerType trigger);
 
   // Decides if content whose age is the difference between now and
   // |content_creation_date_time| is old enough to be considered stale.
