@@ -382,8 +382,8 @@ BOOL WINAPI HostService::ConsoleControlHandler(DWORD event) {
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
       self->main_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&HostService::StopDaemonProcess,
-                                self->weak_ptr_));
+          FROM_HERE,
+          base::BindOnce(&HostService::StopDaemonProcess, self->weak_ptr_));
       return TRUE;
 
     default:
@@ -404,14 +404,17 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
     case SERVICE_CONTROL_SHUTDOWN:
     case SERVICE_CONTROL_STOP:
       self->main_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&HostService::StopDaemonProcess,
-                                self->weak_ptr_));
+          FROM_HERE,
+          base::BindOnce(&HostService::StopDaemonProcess, self->weak_ptr_));
       return NO_ERROR;
 
     case SERVICE_CONTROL_SESSIONCHANGE:
-      self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-          &HostService::OnSessionChange, self->weak_ptr_, event_type,
-          reinterpret_cast<WTSSESSION_NOTIFICATION*>(event_data)->dwSessionId));
+      self->main_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&HostService::OnSessionChange, self->weak_ptr_,
+                         event_type,
+                         reinterpret_cast<WTSSESSION_NOTIFICATION*>(event_data)
+                             ->dwSessionId));
       return NO_ERROR;
 
     default:

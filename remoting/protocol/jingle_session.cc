@@ -230,9 +230,9 @@ void JingleSession::StartConnection(
 
   // Delay sending session-initiate message to ensure SessionPlugin can be
   // attached before the message.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-      base::Bind(&JingleSession::SendSessionInitiateMessage,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&JingleSession::SendSessionInitiateMessage,
+                                weak_factory_.GetWeakPtr()));
 
   SetState(CONNECTING);
 }

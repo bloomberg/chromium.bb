@@ -110,16 +110,17 @@ int32_t WebrtcDummyVideoEncoder::Encode(
   // be called only from VCMGenericEncoder::RequestFrame() to request a key
   // frame.
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnKeyFrameRequested,
-                            video_channel_state_observer_));
+      FROM_HERE, base::BindOnce(&VideoChannelStateObserver::OnKeyFrameRequested,
+                                video_channel_state_observer_));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int32_t WebrtcDummyVideoEncoder::SetRates(uint32_t bitrate,
                                           uint32_t framerate) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoChannelStateObserver::OnTargetBitrateChanged,
-                            video_channel_state_observer_, bitrate));
+      FROM_HERE,
+      base::BindOnce(&VideoChannelStateObserver::OnTargetBitrateChanged,
+                     video_channel_state_observer_, bitrate));
   // framerate is not expected to be valid given we never report captured
   // frames.
   return WEBRTC_VIDEO_CODEC_OK;
@@ -248,8 +249,8 @@ WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
   base::AutoLock lock(lock_);
   encoders_.push_back(encoder.get());
   if (encoder_created_callback_) {
-    main_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(encoder_created_callback_, type));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(encoder_created_callback_, type));
   }
   return encoder;
 }

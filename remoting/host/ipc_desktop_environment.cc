@@ -178,9 +178,9 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
-                   base::Unretained(this), terminal_id, session_id,
-                   desktop_pipe));
+        base::BindOnce(
+            &IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
+            base::Unretained(this), terminal_id, session_id, desktop_pipe));
     return;
   }
 
@@ -195,9 +195,10 @@ void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
 
 void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &IpcDesktopEnvironmentFactory::OnTerminalDisconnected,
-        base::Unretained(this), terminal_id));
+    caller_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IpcDesktopEnvironmentFactory::OnTerminalDisconnected,
+                       base::Unretained(this), terminal_id));
     return;
   }
 

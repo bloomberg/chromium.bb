@@ -180,26 +180,26 @@ InputInjectorChromeos::~InputInjectorChromeos() {
 
 void InputInjectorChromeos::InjectClipboardEvent(const ClipboardEvent& event) {
   input_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::InjectClipboardEvent,
-                            base::Unretained(core_.get()), event));
+      FROM_HERE, base::BindOnce(&Core::InjectClipboardEvent,
+                                base::Unretained(core_.get()), event));
 }
 
 void InputInjectorChromeos::InjectKeyEvent(const KeyEvent& event) {
   input_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::InjectKeyEvent, base::Unretained(core_.get()), event));
+      FROM_HERE, base::BindOnce(&Core::InjectKeyEvent,
+                                base::Unretained(core_.get()), event));
 }
 
 void InputInjectorChromeos::InjectTextEvent(const TextEvent& event) {
   input_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::InjectTextEvent, base::Unretained(core_.get()), event));
+      FROM_HERE, base::BindOnce(&Core::InjectTextEvent,
+                                base::Unretained(core_.get()), event));
 }
 
 void InputInjectorChromeos::InjectMouseEvent(const MouseEvent& event) {
   input_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::InjectMouseEvent,
-                            base::Unretained(core_.get()), event));
+      FROM_HERE, base::BindOnce(&Core::InjectMouseEvent,
+                                base::Unretained(core_.get()), event));
 }
 
 void InputInjectorChromeos::InjectTouchEvent(const TouchEvent& event) {
@@ -209,8 +209,8 @@ void InputInjectorChromeos::InjectTouchEvent(const TouchEvent& event) {
 void InputInjectorChromeos::Start(
     std::unique_ptr<protocol::ClipboardStub> client_clipboard) {
   input_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::Start, base::Unretained(core_.get()),
-                            base::Passed(&client_clipboard)));
+      FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get()),
+                                std::move(client_clipboard)));
 }
 
 // static

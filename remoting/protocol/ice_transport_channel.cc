@@ -132,8 +132,8 @@ void IceTransportChannel::Connect(const std::string& name,
                          this, &IceTransportChannel::TryReconnect);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&IceTransportChannel::NotifyConnected,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&IceTransportChannel::NotifyConnected,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void IceTransportChannel::NotifyConnected() {

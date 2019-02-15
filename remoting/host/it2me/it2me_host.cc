@@ -100,14 +100,14 @@ void It2MeHost::Connect(
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::ConnectOnNetworkThread, this, username,
-                            directory_bot_jid, ice_config));
+      FROM_HERE, base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this,
+                                username, directory_bot_jid, ice_config));
 }
 
 void It2MeHost::Disconnect() {
   DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
   host_context_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::DisconnectOnNetworkThread, this));
+      FROM_HERE, base::BindOnce(&It2MeHost::DisconnectOnNetworkThread, this));
 }
 
 void It2MeHost::ConnectOnNetworkThread(const std::string& username,
@@ -241,8 +241,8 @@ void It2MeHost::OnClientConnected(const std::string& jid) {
 
   // Pass the client user name to the script object before changing state.
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
-                            observer_, client_username));
+      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnClientAuthenticated,
+                                observer_, client_username));
 
   SetState(kConnected, ErrorCode::OK);
 }
@@ -264,7 +264,7 @@ void It2MeHost::OnPolicyUpdate(
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     host_context_->network_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&It2MeHost::OnPolicyUpdate, this, base::Passed(&policies)));
+        base::BindOnce(&It2MeHost::OnPolicyUpdate, this, std::move(policies)));
     return;
   }
 
@@ -314,8 +314,8 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
 
   // Notify the web-app of the policy setting.
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnNatPolicyChanged, observer_,
-                            nat_traversal_enabled_));
+      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnNatPolicyChanged,
+                                observer_, nat_traversal_enabled_));
 }
 
 void It2MeHost::UpdateHostDomainListPolicy(
@@ -409,8 +409,8 @@ void It2MeHost::SetState(It2MeHostState state, ErrorCode error_code) {
 
   // Post a state-change notification to the web-app.
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStateChanged, observer_,
-                            state, error_code));
+      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnStateChanged, observer_,
+                                state, error_code));
 }
 
 bool It2MeHost::IsRunning() const {
@@ -451,8 +451,8 @@ void It2MeHost::OnReceivedSupportID(const std::string& support_id,
 
   // Pass the Access Code to the script object before changing state.
   host_context_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer_,
-                            access_code, lifetime));
+      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnStoreAccessCode,
+                                observer_, access_code, lifetime));
 
   SetState(kReceivedAccessCode, ErrorCode::OK);
 }

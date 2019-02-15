@@ -138,9 +138,9 @@ class FakeSocket : public P2PDatagramSocket {
     if (peer_socket_) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&FakeSocket::AppendInputPacket,
-                     base::Unretained(peer_socket_),
-                     std::vector<char>(buf->data(), buf->data() + buf_len)),
+          base::BindOnce(&FakeSocket::AppendInputPacket,
+                         base::Unretained(peer_socket_),
+                         std::vector<char>(buf->data(), buf->data() + buf_len)),
           base::TimeDelta::FromMilliseconds(latency_ms_));
     }
 
@@ -173,7 +173,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 
   void Start() {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&TCPChannelTester::DoStart, this));
+                           base::BindOnce(&TCPChannelTester::DoStart, this));
   }
 
   void CheckResults() {

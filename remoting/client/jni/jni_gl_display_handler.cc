@@ -87,8 +87,8 @@ JniGlDisplayHandler::Core::Core(base::WeakPtr<JniGlDisplayHandler> shell)
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniGlDisplayHandler::Core::Initialize,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&JniGlDisplayHandler::Core::Initialize,
+                                base::Unretained(this)));
 
   // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
   owned_frame_consumer_.reset(new DualBufferFrameConsumer(
@@ -109,14 +109,14 @@ void JniGlDisplayHandler::Core::OnFrameRendered() {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   egl_context_->SwapBuffers();
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniGlDisplayHandler::OnRenderDone, shell_));
+      FROM_HERE, base::BindOnce(&JniGlDisplayHandler::OnRenderDone, shell_));
 }
 
 void JniGlDisplayHandler::Core::OnSizeChanged(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniGlDisplayHandler::OnCanvasSizeChanged, shell_,
-                            width, height));
+      FROM_HERE, base::BindOnce(&JniGlDisplayHandler::OnCanvasSizeChanged,
+                                shell_, width, height));
 }
 
 void JniGlDisplayHandler::Core::SetCursorShape(
@@ -153,8 +153,9 @@ void JniGlDisplayHandler::Core::SurfaceCreated(
       static_cast<int>(egl_context_->client_version())));
 
   runtime_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DualBufferFrameConsumer::RequestFullDesktopFrame,
-                            frame_consumer_));
+      FROM_HERE,
+      base::BindOnce(&DualBufferFrameConsumer::RequestFullDesktopFrame,
+                     frame_consumer_));
 }
 
 void JniGlDisplayHandler::Core::SurfaceChanged(int width, int height) {
@@ -249,9 +250,9 @@ void JniGlDisplayHandler::OnSurfaceCreated(
     const base::android::JavaParamRef<jobject>& surface) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::SurfaceCreated, core_->GetWeakPtr(),
-                 base::android::ScopedJavaGlobalRef<jobject>(env, surface)));
+      FROM_HERE, base::BindOnce(&Core::SurfaceCreated, core_->GetWeakPtr(),
+                                base::android::ScopedJavaGlobalRef<jobject>(
+                                    env, surface)));
 }
 
 void JniGlDisplayHandler::OnSurfaceChanged(
@@ -261,8 +262,8 @@ void JniGlDisplayHandler::OnSurfaceChanged(
     int height) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::SurfaceChanged, core_->GetWeakPtr(), width, height));
+      FROM_HERE, base::BindOnce(&Core::SurfaceChanged, core_->GetWeakPtr(),
+                                width, height));
 }
 
 void JniGlDisplayHandler::OnSurfaceDestroyed(
@@ -270,7 +271,7 @@ void JniGlDisplayHandler::OnSurfaceDestroyed(
     const base::android::JavaParamRef<jobject>& caller) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Core::SurfaceDestroyed, core_->GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&Core::SurfaceDestroyed, core_->GetWeakPtr()));
 }
 
 void JniGlDisplayHandler::OnPixelTransformationChanged(

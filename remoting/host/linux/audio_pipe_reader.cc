@@ -43,7 +43,8 @@ scoped_refptr<AudioPipeReader> AudioPipeReader::Create(
   scoped_refptr<AudioPipeReader> pipe_reader =
       new AudioPipeReader(task_runner, pipe_path);
   task_runner->PostTask(
-      FROM_HERE, base::Bind(&AudioPipeReader::StartOnAudioThread, pipe_reader));
+      FROM_HERE,
+      base::BindOnce(&AudioPipeReader::StartOnAudioThread, pipe_reader));
   return pipe_reader;
 }
 

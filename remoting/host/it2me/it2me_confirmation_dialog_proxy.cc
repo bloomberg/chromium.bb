@@ -72,8 +72,8 @@ void It2MeConfirmationDialogProxy::Core::ReportResult(
     It2MeConfirmationDialog::Result result) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   caller_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&It2MeConfirmationDialogProxy::ReportResult, parent_, result));
+      FROM_HERE, base::BindOnce(&It2MeConfirmationDialogProxy::ReportResult,
+                                parent_, result));
 }
 
 It2MeConfirmationDialogProxy::It2MeConfirmationDialogProxy(
@@ -98,8 +98,8 @@ void It2MeConfirmationDialogProxy::Show(
 
   callback_ = callback;
   core_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Core::Show, base::Unretained(core_.get()),
-                            remote_user_email));
+      FROM_HERE, base::BindOnce(&Core::Show, base::Unretained(core_.get()),
+                                remote_user_email));
 }
 
 void It2MeConfirmationDialogProxy::ReportResult(

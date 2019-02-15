@@ -77,8 +77,8 @@ int FakeDatagramSocket::Send(const scoped_refptr<net::IOBuffer>& buf,
     send_pending_ = true;
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FakeDatagramSocket::DoAsyncSend, weak_factory_.GetWeakPtr(),
-                   buf, buf_len, callback));
+        base::BindOnce(&FakeDatagramSocket::DoAsyncSend,
+                       weak_factory_.GetWeakPtr(), buf, buf_len, callback));
     return net::ERR_IO_PENDING;
   } else {
     return DoSend(buf, buf_len);
@@ -111,8 +111,8 @@ int FakeDatagramSocket::DoSend(const scoped_refptr<net::IOBuffer>& buf,
   if (peer_socket_.get()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FakeDatagramSocket::AppendInputPacket, peer_socket_,
-                   std::string(buf->data(), buf->data() + buf_len)));
+        base::BindOnce(&FakeDatagramSocket::AppendInputPacket, peer_socket_,
+                       std::string(buf->data(), buf->data() + buf_len)));
   }
 
   return buf_len;
@@ -171,9 +171,9 @@ void FakeDatagramChannelFactory::CreateChannel(
   if (asynchronous_create_) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FakeDatagramChannelFactory::NotifyChannelCreated,
-                   weak_factory_.GetWeakPtr(), base::Passed(&channel),
-                   name, callback));
+        base::BindOnce(&FakeDatagramChannelFactory::NotifyChannelCreated,
+                       weak_factory_.GetWeakPtr(), std::move(channel), name,
+                       callback));
   } else {
     NotifyChannelCreated(std::move(channel), name, callback);
   }

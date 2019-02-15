@@ -144,7 +144,8 @@ IqRequest::~IqRequest() {
 
 void IqRequest::SetTimeout(base::TimeDelta timeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&IqRequest::OnTimeout, weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&IqRequest::OnTimeout, weak_factory_.GetWeakPtr()),
       timeout);
 }
 
@@ -163,8 +164,8 @@ void IqRequest::OnResponse(const jingle_xmpp::XmlElement* stanza) {
   std::unique_ptr<jingle_xmpp::XmlElement> stanza_copy(new jingle_xmpp::XmlElement(*stanza));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&IqRequest::DeliverResponse, weak_factory_.GetWeakPtr(),
-                 base::Passed(&stanza_copy)));
+      base::BindOnce(&IqRequest::DeliverResponse, weak_factory_.GetWeakPtr(),
+                     std::move(stanza_copy)));
 }
 
 void IqRequest::DeliverResponse(std::unique_ptr<jingle_xmpp::XmlElement> stanza) {

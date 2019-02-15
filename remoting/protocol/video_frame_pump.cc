@@ -85,16 +85,18 @@ void VideoFramePump::SetLosslessEncode(bool want_lossless) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoEncoder::SetLosslessEncode,
-                            base::Unretained(encoder_.get()), want_lossless));
+      FROM_HERE,
+      base::BindOnce(&VideoEncoder::SetLosslessEncode,
+                     base::Unretained(encoder_.get()), want_lossless));
 }
 
 void VideoFramePump::SetLosslessColor(bool want_lossless) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   encode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoEncoder::SetLosslessColor,
-                            base::Unretained(encoder_.get()), want_lossless));
+      FROM_HERE,
+      base::BindOnce(&VideoEncoder::SetLosslessColor,
+                     base::Unretained(encoder_.get()), want_lossless));
 }
 
 void VideoFramePump::SetObserver(Observer* observer) {

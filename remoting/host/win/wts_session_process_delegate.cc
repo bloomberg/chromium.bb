@@ -212,7 +212,7 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32_t session_id) {
     // MessageLoopForIO::RegisterJobObject() can only be called via
     // MessageLoopCurrentForIO::Get().
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InitializeJob, this, base::Passed(&job)));
+        FROM_HERE, base::BindOnce(&Core::InitializeJob, this, std::move(job)));
   }
 
   // Create a session token for the launched process.
@@ -301,7 +301,7 @@ void WtsSessionProcessDelegate::Core::OnIOCompleted(
   switch (bytes_transferred) {
     case JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO: {
       caller_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&Core::OnActiveProcessZero, this));
+          FROM_HERE, base::BindOnce(&Core::OnActiveProcessZero, this));
       break;
     }
     case JOB_OBJECT_MSG_NEW_PROCESS: {
@@ -334,8 +334,8 @@ void WtsSessionProcessDelegate::Core::OnIOCompleted(
         }
 
         caller_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&Core::OnProcessLaunchDetected, this,
-                                  worker_process_pid_));
+            FROM_HERE, base::BindOnce(&Core::OnProcessLaunchDetected, this,
+                                      worker_process_pid_));
       }
       break;
     }
@@ -464,8 +464,8 @@ void WtsSessionProcessDelegate::Core::DrainJobNotifications() {
   // DrainJobNotifications() is posted after the job object is destroyed, so
   // by this time all notifications from the job object have been processed
   // already. Let the main thread know that the queue has been drained.
-  caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Core::DrainJobNotificationsCompleted, this));
+  caller_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Core::DrainJobNotificationsCompleted, this));
 }
 
 void WtsSessionProcessDelegate::Core::DrainJobNotificationsCompleted() {
@@ -476,8 +476,8 @@ void WtsSessionProcessDelegate::Core::DrainJobNotificationsCompleted() {
 
     // Drain the completion queue to make sure all job object notification have
     // been received.
-    io_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &Core::DrainJobNotifications, this));
+    io_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::DrainJobNotifications, this));
   }
 }
 
@@ -492,8 +492,9 @@ void WtsSessionProcessDelegate::Core::InitializeJob(ScopedHandle job) {
   }
 
   // Let the main thread know that initialization is complete.
-  caller_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Core::InitializeJobCompleted, this, base::Passed(&job)));
+  caller_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::InitializeJobCompleted, this, std::move(job)));
 }
 
 void WtsSessionProcessDelegate::Core::InitializeJobCompleted(ScopedHandle job) {

@@ -151,17 +151,18 @@ TEST_F(DesktopSessionAgentTest, StartProcessStatsReportWithInvalidInterval) {
       base::TimeDelta::FromMilliseconds(-1))));
   ASSERT_TRUE(proxy->Send(
       new ChromotingNetworkToAnyMsg_StopProcessStatsReport()));
-  task_runner_->PostDelayedTask(FROM_HERE, base::Bind([](
-          DesktopSessionAgentTest* test,
-          std::unique_ptr<FakeDelegate>* delegate,
-          std::unique_ptr<IPC::ChannelProxy>* proxy) {
-        test->Shutdown();
-        delegate->reset();
-        proxy->reset();
-      },
-      base::Unretained(this),
-      base::Unretained(&delegate),
-      base::Unretained(&proxy)),
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](DesktopSessionAgentTest* test,
+             std::unique_ptr<FakeDelegate>* delegate,
+             std::unique_ptr<IPC::ChannelProxy>* proxy) {
+            test->Shutdown();
+            delegate->reset();
+            proxy->reset();
+          },
+          base::Unretained(this), base::Unretained(&delegate),
+          base::Unretained(&proxy)),
       base::TimeDelta::FromMilliseconds(1));
   run_loop_.Run();
 }
@@ -180,17 +181,18 @@ TEST_F(DesktopSessionAgentTest, StartThenStopProcessStatsReport) {
       base::TimeDelta::FromMilliseconds(1))));
   ASSERT_TRUE(proxy->Send(
       new ChromotingNetworkToAnyMsg_StopProcessStatsReport()));
-  task_runner_->PostDelayedTask(FROM_HERE, base::Bind([](
-          DesktopSessionAgentTest* test,
-          std::unique_ptr<FakeDelegate>* delegate,
-          std::unique_ptr<IPC::ChannelProxy>* proxy) {
-        test->Shutdown();
-        delegate->reset();
-        proxy->reset();
-      },
-      base::Unretained(this),
-      base::Unretained(&delegate),
-      base::Unretained(&proxy)),
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](DesktopSessionAgentTest* test,
+             std::unique_ptr<FakeDelegate>* delegate,
+             std::unique_ptr<IPC::ChannelProxy>* proxy) {
+            test->Shutdown();
+            delegate->reset();
+            proxy->reset();
+          },
+          base::Unretained(this), base::Unretained(&delegate),
+          base::Unretained(&proxy)),
       base::TimeDelta::FromMilliseconds(1));
   run_loop_.Run();
 }

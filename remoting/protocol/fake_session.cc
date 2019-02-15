@@ -84,7 +84,7 @@ void FakeSession::Close(ErrorCode error) {
       peer->Close(error);
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&FakeSession::Close, peer, error),
+          FROM_HERE, base::BindOnce(&FakeSession::Close, peer, error),
           signaling_delay_);
     }
   }
@@ -99,8 +99,9 @@ void FakeSession::SendTransportInfo(
     peer_->ProcessTransportInfo(std::move(transport_info));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&FakeSession::ProcessTransportInfo, peer_,
-                              base::Passed(&transport_info)),
+        FROM_HERE,
+        base::BindOnce(&FakeSession::ProcessTransportInfo, peer_,
+                       std::move(transport_info)),
         signaling_delay_);
   }
 }

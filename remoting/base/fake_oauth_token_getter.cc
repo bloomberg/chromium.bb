@@ -21,7 +21,7 @@ FakeOAuthTokenGetter::~FakeOAuthTokenGetter() = default;
 void FakeOAuthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(on_access_token, status_, user_email_, access_token_));
+      base::BindOnce(on_access_token, status_, user_email_, access_token_));
 }
 
 void FakeOAuthTokenGetter::InvalidateCache() {

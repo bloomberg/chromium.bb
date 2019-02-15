@@ -52,7 +52,7 @@ bool FakeSecurityKeyIpcClient::SendSecurityKeyRequest(
   if (send_security_request_should_succeed_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(response_callback, security_key_response_payload_));
+        base::BindOnce(response_callback, security_key_response_payload_));
   }
 
   return send_security_request_should_succeed_;

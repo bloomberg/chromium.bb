@@ -161,8 +161,8 @@ void GlRendererTest::PostSetDesktopFrameTasks(const webrtc::DesktopSize& size,
                                               int count) {
   for (int i = 0; i < count; i++) {
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&GlRendererTest::SetDesktopFrameWithSize,
-                              base::Unretained(this), size));
+        FROM_HERE, base::BindOnce(&GlRendererTest::SetDesktopFrameWithSize,
+                                  base::Unretained(this), size));
   }
 }
 

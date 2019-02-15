@@ -114,14 +114,15 @@ void HostWindowProxy::Core::Start(
 
   client_session_control_ = client_session_control;
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::StartOnUiThread, this,
-                            client_session_control->client_jid()));
+      FROM_HERE, base::BindOnce(&Core::StartOnUiThread, this,
+                                client_session_control->client_jid()));
 }
 
 void HostWindowProxy::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::StopOnUiThread, this));
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&Core::StopOnUiThread, this));
 }
 
 HostWindowProxy::Core::~Core() {
@@ -151,7 +152,7 @@ const std::string& HostWindowProxy::Core::client_jid() const {
 void HostWindowProxy::Core::DisconnectSession(protocol::ErrorCode error) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::DisconnectSession, this, error));
+        FROM_HERE, base::BindOnce(&Core::DisconnectSession, this, error));
     return;
   }
 
@@ -163,7 +164,7 @@ void HostWindowProxy::Core::OnLocalMouseMoved(
     const webrtc::DesktopVector& position) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::OnLocalMouseMoved, this, position));
+        FROM_HERE, base::BindOnce(&Core::OnLocalMouseMoved, this, position));
     return;
   }
 
@@ -174,7 +175,8 @@ void HostWindowProxy::Core::OnLocalMouseMoved(
 void HostWindowProxy::Core::SetDisableInputs(bool disable_inputs) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::SetDisableInputs, this, disable_inputs));
+        FROM_HERE,
+        base::BindOnce(&Core::SetDisableInputs, this, disable_inputs));
     return;
   }
 

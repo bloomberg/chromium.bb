@@ -49,8 +49,8 @@ void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
     peer->SetPeerCallback(peer_callback);
   } else {
     peer->main_thread_->PostTask(
-        FROM_HERE, base::Bind(&FakeSignalStrategy::SetPeerCallback,
-                              base::Unretained(peer), peer_callback));
+        FROM_HERE, base::BindOnce(&FakeSignalStrategy::SetPeerCallback,
+                                  base::Unretained(peer), peer_callback));
   }
 }
 
@@ -113,7 +113,7 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> sta
     peer_callback_.Run(std::move(stanza));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(peer_callback_, base::Passed(&stanza)),
+        FROM_HERE, base::BindOnce(peer_callback_, std::move(stanza)),
         send_delay_);
   }
   return true;
@@ -129,9 +129,9 @@ void FakeSignalStrategy::DeliverMessageOnThread(
     scoped_refptr<base::SingleThreadTaskRunner> thread,
     base::WeakPtr<FakeSignalStrategy> target,
     std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
-  thread->PostTask(FROM_HERE,
-                   base::Bind(&FakeSignalStrategy::OnIncomingMessage,
-                              target, base::Passed(&stanza)));
+  thread->PostTask(
+      FROM_HERE, base::BindOnce(&FakeSignalStrategy::OnIncomingMessage, target,
+                                std::move(stanza)));
 }
 
 void FakeSignalStrategy::OnIncomingMessage(

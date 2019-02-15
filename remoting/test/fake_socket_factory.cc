@@ -325,8 +325,8 @@ void FakePacketSocketFactory::ReceivePacket(
   pending_packets_.push_back(packet);
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakePacketSocketFactory::DoReceivePacket,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&FakePacketSocketFactory::DoReceivePacket,
+                     weak_factory_.GetWeakPtr()),
       delay);
 }
 

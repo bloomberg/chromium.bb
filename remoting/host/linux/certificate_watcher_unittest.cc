@@ -66,22 +66,20 @@ class CertificateWatcherTest : public testing::Test {
 
   void Connect() {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&CertificateWatcher::OnClientConnected,
-                   base::Unretained(watcher_.get()), ""));
+        FROM_HERE, base::BindOnce(&CertificateWatcher::OnClientConnected,
+                                  base::Unretained(watcher_.get()), ""));
   }
 
   void Disconnect() {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&CertificateWatcher::OnClientDisconnected,
-                   base::Unretained(watcher_.get()), ""));
+        FROM_HERE, base::BindOnce(&CertificateWatcher::OnClientDisconnected,
+                                  base::Unretained(watcher_.get()), ""));
   }
 
   void TouchFile(const char* filename) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&CertificateWatcherTest::TouchFileTask,
-                                      base::Unretained(this), filename));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CertificateWatcherTest::TouchFileTask,
+                                  base::Unretained(this), filename));
   }
 
   void TouchFileTask(const char* filename) {

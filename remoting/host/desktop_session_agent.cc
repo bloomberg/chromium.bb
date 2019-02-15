@@ -335,7 +335,8 @@ void DesktopSessionAgent::OnStartSessionAgent(
   if (delegate_->desktop_environment_factory().SupportsAudioCapture()) {
     audio_capturer_ = desktop_environment_->CreateAudioCapturer();
     audio_capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionAgent::StartAudioCapturer, this));
+        FROM_HERE,
+        base::BindOnce(&DesktopSessionAgent::StartAudioCapturer, this));
   }
 
   // Start the video capturer and mouse cursor monitor.
@@ -499,7 +500,8 @@ void DesktopSessionAgent::Stop() {
 
     // Stop the audio capturer.
     audio_capture_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionAgent::StopAudioCapturer, this));
+        FROM_HERE,
+        base::BindOnce(&DesktopSessionAgent::StopAudioCapturer, this));
 
     // Stop the video capturer.
     video_capturer_.reset();
@@ -627,8 +629,8 @@ void DesktopSessionAgent::SetScreenResolution(
 void DesktopSessionAgent::SendToNetwork(std::unique_ptr<IPC::Message> message) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionAgent::SendToNetwork, this,
-                              base::Passed(&message)));
+        FROM_HERE, base::BindOnce(&DesktopSessionAgent::SendToNetwork, this,
+                                  std::move(message)));
     return;
   }
 

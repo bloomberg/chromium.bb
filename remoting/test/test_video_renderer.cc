@@ -280,8 +280,9 @@ TestVideoRenderer::TestVideoRenderer()
     LOG(ERROR) << "Cannot start TestVideoRenderer";
   } else {
     video_decode_task_runner_ = video_decode_thread_->task_runner();
-    video_decode_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Initialize,
-                                        base::Unretained(core_.get())));
+    video_decode_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Core::Initialize, base::Unretained(core_.get())));
   }
 }
 
@@ -352,9 +353,8 @@ void TestVideoRenderer::SetCodecForDecoding(
 
   VLOG(2) << "TestVideoRenderer::SetDecoder() Called";
   video_decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::SetCodecForDecoding,
-                            base::Unretained(core_.get()),
-                            codec));
+      FROM_HERE, base::BindOnce(&Core::SetCodecForDecoding,
+                                base::Unretained(core_.get()), codec));
 }
 
 std::unique_ptr<webrtc::DesktopFrame>
@@ -374,9 +374,9 @@ void TestVideoRenderer::ExpectAverageColorInRect(
   DVLOG(2) << "TestVideoRenderer::SetImagePatternAndMatchedCallback() Called";
   video_decode_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::ExpectAverageColorInRect, base::Unretained(core_.get()),
-                 expected_rect, expected_avg_color,
-                 image_pattern_matched_callback));
+      base::BindOnce(&Core::ExpectAverageColorInRect,
+                     base::Unretained(core_.get()), expected_rect,
+                     expected_avg_color, image_pattern_matched_callback));
 }
 
 void TestVideoRenderer::SaveFrameDataToDisk(bool save_frame_data_to_disk) {
@@ -384,8 +384,8 @@ void TestVideoRenderer::SaveFrameDataToDisk(bool save_frame_data_to_disk) {
 
   video_decode_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::save_frame_data_to_disk, base::Unretained(core_.get()),
-                 save_frame_data_to_disk));
+      base::BindOnce(&Core::save_frame_data_to_disk,
+                     base::Unretained(core_.get()), save_frame_data_to_disk));
 }
 
 }  // namespace test

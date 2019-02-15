@@ -38,8 +38,9 @@ void PepperNetworkManager::StartUpdating() {
   if (network_list_received_) {
     // Post a task to avoid reentrancy.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PepperNetworkManager::SendNetworksChangedSignal,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&PepperNetworkManager::SendNetworksChangedSignal,
+                       weak_factory_.GetWeakPtr()));
   }
   ++start_count_;
 }

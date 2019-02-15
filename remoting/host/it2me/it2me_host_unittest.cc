@@ -95,7 +95,7 @@ void FakeIt2MeConfirmationDialog::Show(const std::string& remote_user_email,
   EXPECT_STREQ(remote_user_email_.c_str(), remote_user_email.c_str());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, dialog_result_));
+      FROM_HERE, base::BindOnce(callback, dialog_result_));
 }
 
 class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
@@ -258,8 +258,8 @@ void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
   if (last_host_state_ == It2MeHostState::kRequestedAccessCode) {
     network_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&It2MeHost::SetStateForTesting, it2me_host_.get(),
-                   It2MeHostState::kReceivedAccessCode, ErrorCode::OK));
+        base::BindOnce(&It2MeHost::SetStateForTesting, it2me_host_.get(),
+                       It2MeHostState::kReceivedAccessCode, ErrorCode::OK));
   } else if (last_host_state_ != It2MeHostState::kStarting) {
     quit_closure.Run();
     return;
@@ -320,9 +320,10 @@ void It2MeHostTest::RunValidationCallback(const std::string& remote_jid) {
 
   network_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(it2me_host_->GetValidationCallbackForTesting(), remote_jid,
-                 base::Bind(&It2MeHostTest::OnValidationComplete,
-                            base::Unretained(this), run_loop.QuitClosure())));
+      base::BindOnce(
+          it2me_host_->GetValidationCallbackForTesting(), remote_jid,
+          base::Bind(&It2MeHostTest::OnValidationComplete,
+                     base::Unretained(this), run_loop.QuitClosure())));
 
   run_loop.Run();
 }

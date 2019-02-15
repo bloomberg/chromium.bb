@@ -176,9 +176,9 @@ void AutoThread::QuitThread(const base::Closure& quit_when_idle_closure) {
   was_quit_properly_ = true;
 
   if (joiner_.get()) {
-    joiner_->PostTask(
-        FROM_HERE,
-        base::Bind(&AutoThread::JoinAndDeleteThread, base::Unretained(this)));
+    joiner_->PostTask(FROM_HERE,
+                      base::BindOnce(&AutoThread::JoinAndDeleteThread,
+                                     base::Unretained(this)));
   }
 }
 

@@ -66,12 +66,12 @@ void JniRuntimeDelegate::RuntimeWillShutdown() {
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   runtime_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniRuntimeDelegate::DetachFromVmAndSignal,
-                            base::Unretained(this), &done_event));
+      FROM_HERE, base::BindOnce(&JniRuntimeDelegate::DetachFromVmAndSignal,
+                                base::Unretained(this), &done_event));
   done_event.Wait();
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniRuntimeDelegate::DetachFromVmAndSignal,
-                            base::Unretained(this), &done_event));
+      FROM_HERE, base::BindOnce(&JniRuntimeDelegate::DetachFromVmAndSignal,
+                                base::Unretained(this), &done_event));
   done_event.Wait();
 }
 

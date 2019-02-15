@@ -125,8 +125,7 @@ void ConfigFileWatcherImpl::Watch(ConfigWatcher::Delegate* delegate) {
   delegate_ = delegate;
 
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ConfigFileWatcherImpl::WatchOnIoThread, this));
+      FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::WatchOnIoThread, this));
 }
 
 void ConfigFileWatcherImpl::WatchOnIoThread() {
@@ -147,9 +146,8 @@ void ConfigFileWatcherImpl::WatchOnIoThread() {
           base::Bind(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
     PLOG(ERROR) << "Couldn't watch file '" << config_path_.value() << "'";
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ConfigFileWatcherImpl::NotifyError,
-            weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::NotifyError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -162,7 +160,7 @@ void ConfigFileWatcherImpl::StopWatching() {
 
   weak_factory_.InvalidateWeakPtrs();
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ConfigFileWatcherImpl::FinishStopping, this));
+      FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::FinishStopping, this));
 }
 
 ConfigFileWatcherImpl::~ConfigFileWatcherImpl() {
@@ -221,9 +219,8 @@ void ConfigFileWatcherImpl::ReloadConfig() {
     PLOG(ERROR) << "Failed to read '" << config_path_.value() << "'";
 
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ConfigFileWatcherImpl::NotifyError,
-            weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::NotifyError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -233,9 +230,8 @@ void ConfigFileWatcherImpl::ReloadConfig() {
   if (config_ != config) {
     config_ = config;
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&ConfigFileWatcherImpl::NotifyUpdate,
-            weak_factory_.GetWeakPtr(), config_));
+        FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::NotifyUpdate,
+                                  weak_factory_.GetWeakPtr(), config_));
   }
 }
 
