@@ -136,7 +136,6 @@ class CORE_EXPORT HTMLMediaElement
   void ScheduleTextTrackResourceLoad();
 
   bool HasRemoteRoutes() const;
-  bool IsPlayingRemotely() const { return playing_remotely_; }
 
   // error state
   MediaError* error() const;
@@ -197,9 +196,6 @@ class CORE_EXPORT HTMLMediaElement
   ScriptPromise playForBindings(ScriptState*);
   base::Optional<DOMExceptionCode> Play();
   void pause();
-  void RequestRemotePlayback();
-  void RequestRemotePlaybackControl();
-  void RequestRemotePlaybackStop();
   void FlingingStarted();
   void FlingingStopped();
 
@@ -423,11 +419,6 @@ class CORE_EXPORT HTMLMediaElement
   void RemoveTextTrack(WebInbandTextTrack*) final;
   void MediaSourceOpened(WebMediaSource*) final;
   void RequestSeek(double) final;
-  void RemoteRouteAvailabilityChanged(WebRemotePlaybackAvailability) final;
-  void ConnectedToRemoteDevice() final;
-  void DisconnectedFromRemoteDevice() final;
-  void CancelledRemotePlaybackRequest() final;
-  void RemotePlaybackStarted() final;
   void RemotePlaybackCompatibilityChanged(const WebURL&,
                                           bool is_compatible) final;
   void OnBecamePersistentVideo(bool) override {}
@@ -672,7 +663,6 @@ class CORE_EXPORT HTMLMediaElement
 
   bool tracks_are_ready_ : 1;
   bool processing_preference_change_ : 1;
-  bool playing_remotely_ : 1;
 
   // The following is always false unless viewport intersection monitoring is
   // turned on via ActivateViewportIntersectionMonitoring().

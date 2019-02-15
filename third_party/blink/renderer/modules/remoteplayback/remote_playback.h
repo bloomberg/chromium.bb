@@ -7,7 +7,6 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
@@ -116,9 +115,6 @@ class MODULES_EXPORT RemotePlayback final
   void DidClose(mojom::blink::PresentationConnectionCloseReason) override;
 
   // WebRemotePlaybackClient implementation.
-  void StateChanged(WebRemotePlaybackState) override;
-  void AvailabilityChanged(WebRemotePlaybackAvailability) override;
-  void PromptCancelled() override;
   bool RemotePlaybackAvailable() const override;
   void SourceChanged(const WebURL&, bool is_source_supported) override;
   WebString GetPresentationId() override;
@@ -126,12 +122,17 @@ class MODULES_EXPORT RemotePlayback final
   // RemotePlaybackController implementation.
   void AddObserver(RemotePlaybackObserver*) override;
   void RemoveObserver(RemotePlaybackObserver*) override;
+  void AvailabilityChangedForTesting(bool screen_is_available) override;
+  void StateChangedForTesting(bool is_connected) override;
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver implementation.
   void ContextDestroyed(ExecutionContext*) override;
+
+  // Adjusts the internal state of |this| after a playback state change.
+  void StateChanged(WebRemotePlaybackState);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting, kConnecting)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
@@ -143,6 +144,8 @@ class MODULES_EXPORT RemotePlayback final
   friend class V8RemotePlayback;
   friend class RemotePlaybackTest;
   friend class MediaControlsImplTest;
+
+  void PromptCancelled();
 
   // Calls the specified availability callback with the current availability.
   // Need a void() method to post it as a task.
@@ -161,7 +164,7 @@ class MODULES_EXPORT RemotePlayback final
   void CleanupConnections();
 
   WebRemotePlaybackState state_;
-  WebRemotePlaybackAvailability availability_;
+  mojom::blink::ScreenAvailability availability_;
   HeapHashMap<int, TraceWrapperMember<AvailabilityCallbackWrapper>>
       availability_callbacks_;
   Member<HTMLMediaElement> media_element_;

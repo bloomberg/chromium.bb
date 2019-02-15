@@ -40,7 +40,6 @@ class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
 
   // RemotePlaybackObserver implementation.
   void OnRemotePlaybackStateChanged(WebRemotePlaybackState) final;
-  void OnRemotePlaybackAvailabilityChanged(WebRemotePlaybackAvailability) final;
 
   bool active_for_tests() const { return active_; }
 

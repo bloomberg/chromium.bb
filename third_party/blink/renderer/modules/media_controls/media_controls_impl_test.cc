@@ -9,7 +9,6 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -227,8 +226,8 @@ class MediaControlsImplTest : public PageTestBase,
   }
 
   void SimulateRouteAvailable() {
-    media_controls_->MediaElement().RemoteRouteAvailabilityChanged(
-        WebRemotePlaybackAvailability::kDeviceAvailable);
+    RemotePlayback::From(media_controls_->MediaElement())
+        .AvailabilityChangedForTesting(/* screen_is_available */ true);
   }
 
   void EnsureSizing() {

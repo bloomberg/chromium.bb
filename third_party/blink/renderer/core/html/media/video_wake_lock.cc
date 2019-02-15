@@ -60,9 +60,6 @@ void VideoWakeLock::OnRemotePlaybackStateChanged(WebRemotePlaybackState state) {
   Update();
 }
 
-void VideoWakeLock::OnRemotePlaybackAvailabilityChanged(
-    WebRemotePlaybackAvailability) {}
-
 void VideoWakeLock::Update() {
   bool should_be_active = ShouldBeActive();
   if (should_be_active == active_)

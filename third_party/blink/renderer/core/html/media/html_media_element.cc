@@ -33,7 +33,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/logging_override_if_enabled.h"
-#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -505,7 +504,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       should_perform_automatic_track_selection_(true),
       tracks_are_ready_(true),
       processing_preference_change_(false),
-      playing_remotely_(false),
       mostly_filling_viewport_(false),
       was_always_muted_(true),
       audio_tracks_(AudioTrackList::Create(*this)),
@@ -2519,21 +2517,6 @@ void HTMLMediaElement::PauseInternal() {
   UpdatePlayState();
 }
 
-void HTMLMediaElement::RequestRemotePlayback() {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->RequestRemotePlayback();
-}
-
-void HTMLMediaElement::RequestRemotePlaybackControl() {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->RequestRemotePlaybackControl();
-}
-
-void HTMLMediaElement::RequestRemotePlaybackStop() {
-  if (GetWebMediaPlayer())
-    GetWebMediaPlayer()->RequestRemotePlaybackStop();
-}
-
 void HTMLMediaElement::FlingingStarted() {
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->FlingingStarted();
@@ -3299,46 +3282,10 @@ void HTMLMediaElement::RequestSeek(double time) {
   setCurrentTime(time);
 }
 
-void HTMLMediaElement::RemoteRouteAvailabilityChanged(
-    WebRemotePlaybackAvailability availability) {
-  // The new remote playback pipeline is using the Presentation API for
-  // remote playback device availability monitoring.
-  // This code is left as is because many tests depend on this path for the
-  // moment, but it will be cleaned up.
-  // TODO(https://crbug.com/927099): Clean up old discovery paths.
-  // TODO(https://crubg.com/927451): Remove test depencencies on
-  // RemoteRouteAvailabilityChanged
-
-  if (RemotePlaybackClient())
-    RemotePlaybackClient()->AvailabilityChanged(availability);
-}
-
 bool HTMLMediaElement::HasRemoteRoutes() const {
   // TODO(mlamouri): used by MediaControlsPainter; should be refactored out.
   return RemotePlaybackClient() &&
          RemotePlaybackClient()->RemotePlaybackAvailable();
-}
-
-void HTMLMediaElement::ConnectedToRemoteDevice() {
-  playing_remotely_ = true;
-  if (RemotePlaybackClient())
-    RemotePlaybackClient()->StateChanged(WebRemotePlaybackState::kConnecting);
-}
-
-void HTMLMediaElement::DisconnectedFromRemoteDevice() {
-  playing_remotely_ = false;
-  if (RemotePlaybackClient())
-    RemotePlaybackClient()->StateChanged(WebRemotePlaybackState::kDisconnected);
-}
-
-void HTMLMediaElement::CancelledRemotePlaybackRequest() {
-  if (RemotePlaybackClient())
-    RemotePlaybackClient()->PromptCancelled();
-}
-
-void HTMLMediaElement::RemotePlaybackStarted() {
-  if (RemotePlaybackClient())
-    RemotePlaybackClient()->StateChanged(WebRemotePlaybackState::kConnected);
 }
 
 void HTMLMediaElement::RemotePlaybackCompatibilityChanged(const WebURL& url,
@@ -3548,10 +3495,6 @@ void HTMLMediaElement::ClearMediaPlayer() {
 
   pending_action_flags_ = 0;
   load_state_ = kWaitingForSource;
-
-  // We can't cast if we don't have a media player.
-  playing_remotely_ = false;
-  RemoteRouteAvailabilityChanged(WebRemotePlaybackAvailability::kUnknown);
 
   if (GetLayoutObject())
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
@@ -3906,10 +3849,6 @@ void HTMLMediaElement::ResetMediaPlayerAndMediaSource() {
     AudioSourceProviderClientLockScope scope(*this);
     ClearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
   }
-
-  // We haven't yet found out if any remote routes are available.
-  playing_remotely_ = false;
-  RemoteRouteAvailabilityChanged(WebRemotePlaybackAvailability::kUnknown);
 
   if (audio_source_node_)
     GetAudioSourceProvider().SetClient(audio_source_node_);

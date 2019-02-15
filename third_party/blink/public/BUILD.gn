@@ -72,7 +72,6 @@ if (is_android) {
   java_cpp_enum("blink_headers_java_enums_srcjar") {
     sources = [
       "./common/manifest/web_display_mode.h",
-      "./platform/modules/remoteplayback/web_remote_playback_availability.h",
       "./platform/web_focus_type.h",
       "./platform/web_input_event.h",
       "./platform/web_text_input_mode.h",
@@ -163,7 +162,6 @@ source_set("blink_headers") {
     "platform/modules/push_messaging/web_push_provider.h",
     "platform/modules/push_messaging/web_push_subscription.h",
     "platform/modules/push_messaging/web_push_subscription_options.h",
-    "platform/modules/remoteplayback/web_remote_playback_availability.h",
     "platform/modules/remoteplayback/web_remote_playback_client.h",
     "platform/modules/remoteplayback/web_remote_playback_state.h",
     "platform/modules/service_worker/web_service_worker_clients_info.h",

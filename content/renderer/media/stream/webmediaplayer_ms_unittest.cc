@@ -572,12 +572,6 @@ class WebMediaPlayerMSTest
   void RemoveTextTrack(blink::WebInbandTextTrack*) override {}
   void MediaSourceOpened(blink::WebMediaSource*) override {}
   void RequestSeek(double) override {}
-  void RemoteRouteAvailabilityChanged(
-      blink::WebRemotePlaybackAvailability) override {}
-  void ConnectedToRemoteDevice() override {}
-  void DisconnectedFromRemoteDevice() override {}
-  void CancelledRemotePlaybackRequest() override {}
-  void RemotePlaybackStarted() override {}
   void RemotePlaybackCompatibilityChanged(const blink::WebURL& url,
                                           bool is_compatible) override {}
   void OnBecamePersistentVideo(bool) override {}
