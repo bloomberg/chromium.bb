@@ -40,6 +40,7 @@ source_set("location_bar") {
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/browser_state:browser_state",
     "//ios/chrome/browser/geolocation:geolocation_internal",
+    "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui",
