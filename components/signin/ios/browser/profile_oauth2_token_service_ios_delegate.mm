@@ -270,6 +270,11 @@ void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
   ClearExcludedSecondaryAccounts();
 }
 
+void ProfileOAuth2TokenServiceIOSDelegate::AddAccountFromSystem(
+    const std::string& account_id) {
+  AddOrUpdateAccount(account_id);
+}
+
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadAccountsFromSystem(
     const std::string& primary_account_id) {
   if (primary_account_id.empty())

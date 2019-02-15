@@ -16,8 +16,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -31,7 +29,6 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
-#import "services/identity/public/cpp/identity_manager.h"
 #import "services/identity/public/cpp/primary_account_mutator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -74,12 +71,10 @@ std::string ChromeIdentityToAccountID(
 
 AuthenticationService::AuthenticationService(
     PrefService* pref_service,
-    ProfileOAuth2TokenService* token_service,
     SyncSetupService* sync_setup_service,
     identity::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
-      token_service_(token_service),
       sync_setup_service_(sync_setup_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
@@ -89,7 +84,7 @@ AuthenticationService::AuthenticationService(
   DCHECK(sync_setup_service_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
-  token_service_->AddObserver(this);
+  identity_manager_->AddObserver(this);
 }
 
 AuthenticationService::~AuthenticationService() {
@@ -151,7 +146,7 @@ void AuthenticationService::Initialize(
 }
 
 void AuthenticationService::Shutdown() {
-  token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   [center removeObserver:foreground_observer_];
@@ -196,13 +191,11 @@ void AuthenticationService::OnApplicationEnterForeground() {
 
   // Clear signin errors on the accounts that had a specific MDM device status.
   // This will trigger services to fetch data for these accounts again.
-  ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
-      static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-          token_service_->GetDelegate());
   std::map<std::string, NSDictionary*> cached_mdm_infos(cached_mdm_infos_);
   cached_mdm_infos_.clear();
   for (const auto& cached_mdm_info : cached_mdm_infos) {
-    token_service_delegate->AddOrUpdateAccount(cached_mdm_info.first);
+    // TODO(crbug.com/930094): Eliminate this.
+    identity_manager_->LegacyAddAccountFromSystem(cached_mdm_info.first);
   }
 }
 
@@ -358,10 +351,8 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
 
   // Reload all credentials to match the desktop model. Exclude all the
   // accounts ids that are the primary account ids on other profiles.
-  ProfileOAuth2TokenServiceIOSDelegate* tokenServiceDelegate =
-      static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-          token_service_->GetDelegate());
-  tokenServiceDelegate->ReloadCredentials(new_authenticated_account_id);
+  // TODO(crbug.com/930094): Eliminate this.
+  identity_manager_->LegacyReloadAccountsFromSystem();
   StoreAccountsInPrefs();
 
   // Kick-off sync: The authentication error UI (sign in infobar and warning
@@ -413,7 +404,8 @@ NSDictionary* AuthenticationService::GetCachedMDMInfo(
     return nil;
   }
 
-  if (!token_service_->RefreshTokenHasError(it->first)) {
+  if (!identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
+          it->first)) {
     // Account has no error, invalidate the cache.
     cached_mdm_infos_.erase(it);
     return nil;
@@ -451,7 +443,7 @@ base::WeakPtr<AuthenticationService> AuthenticationService::GetWeakPtr() {
   return weak_pointer_factory_.GetWeakPtr();
 }
 
-void AuthenticationService::OnEndBatchChanges() {
+void AuthenticationService::OnEndBatchOfRefreshTokenStateChanges() {
   if (is_in_foreground_) {
     // Accounts maybe have been excluded or included from the current browser
     // state, without any change to the identity list.
@@ -580,10 +572,8 @@ void AuthenticationService::ReloadCredentialsFromIdentities(
 
   HandleForgottenIdentity(nil, should_prompt);
   if (GetAuthenticatedUserEmail()) {
-    ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
-        static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-            token_service_->GetDelegate());
-    token_service_delegate->ReloadCredentials();
+    // TODO(crbug.com/930094): Eliminate this.
+    identity_manager_->LegacyReloadAccountsFromSystem();
   }
 }
 

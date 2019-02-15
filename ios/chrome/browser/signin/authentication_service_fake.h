@@ -44,7 +44,6 @@ class AuthenticationServiceFake : public AuthenticationService {
 
  private:
   AuthenticationServiceFake(PrefService* pref_service,
-                            ProfileOAuth2TokenService* token_service,
                             SyncSetupService* sync_setup_service,
                             identity::IdentityManager* identity_manager,
                             syncer::SyncService* sync_service);

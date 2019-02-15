@@ -285,6 +285,11 @@ std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
 void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
 }
+
+void IdentityManager::LegacyAddAccountFromSystem(
+    const std::string& account_id) {
+  token_service_->GetDelegate()->AddAccountFromSystem(account_id);
+}
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
