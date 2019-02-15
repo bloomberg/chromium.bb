@@ -37,14 +37,6 @@ Polymer({
     },
 
     /**
-     * @private {boolean}
-     */
-    listExpanded_: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * A set containing the ids of all the apps with notifications enabled.
      * @private {!Set<string>}
      */
@@ -61,50 +53,13 @@ Polymer({
   },
 
   /**
-   * @param {AppMap} apps
-   * @param {boolean} listExpanded
-   * @return {?string}
-   * @private
-   */
-  moreAppsString_: function(apps, listExpanded) {
-    if (apps === undefined || listExpanded === undefined) {
-      return null;
-    }
-
-    const numApps = Object.keys(apps).length;
-    return listExpanded ?
-        loadTimeData.getString('lessApps') :
-        loadTimeData.getStringF(
-            'moreApps', numApps - NUMBER_OF_APPS_DISPLAYED_DEFAULT);
-  },
-
-  /**
-   * @private
-   */
-  toggleListExpanded_: function() {
-    this.listExpanded_ = !this.listExpanded_;
-    this.onAppsChanged_();
-  },
-
-  /**
    * @private
    */
   onAppsChanged_: function() {
     const appList = Object.values(this.apps_);
-    this.$['expander-row'].hidden =
-        appList.length <= NUMBER_OF_APPS_DISPLAYED_DEFAULT;
     this.displayedApps_ = appList.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     this.collapsedApps_ =
         appList.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, appList.length);
-  },
-
-  /**
-   * @param {boolean} listExpanded
-   * @return {string}
-   * @private
-   */
-  getCollapsedIcon_: function(listExpanded) {
-    return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 
   /** @private */

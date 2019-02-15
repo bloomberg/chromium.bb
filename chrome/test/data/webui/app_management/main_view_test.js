@@ -31,12 +31,16 @@ suite('<app-management-main-view>', function() {
   test('simple app addition', async function() {
     // Ensure there is no apps initially
     expectEquals(
-        0, mainView.root.querySelectorAll('app-management-app-item').length);
+        0,
+        mainView.$$('app-management-expandable-app-list')
+            .root.querySelectorAll('app-management-app-item')
+            .length);
 
     const appId = '1';
     await fakeHandler.addApp(appId);
 
-    let appItems = mainView.root.querySelectorAll('app-management-app-item');
+    let appItems = mainView.$$('app-management-expandable-app-list')
+                       .root.querySelectorAll('app-management-app-item');
     expectEquals(1, appItems.length);
 
     expectEquals(appId, appItems[0].app.id);
@@ -46,14 +50,24 @@ suite('<app-management-main-view>', function() {
     // The more apps bar shouldn't appear when there are 4 apps.
     await addApps(4);
     expectEquals(
-        4, mainView.root.querySelectorAll('app-management-app-item').length);
-    expectTrue(mainView.$['expander-row'].hidden);
+        4,
+        mainView.$$('app-management-expandable-app-list')
+            .root.querySelectorAll('app-management-app-item')
+            .length);
+    expectTrue(mainView.$$('app-management-expandable-app-list')
+                   .$['expander-row']
+                   .hidden);
 
     // The more apps bar appears when there are 5 apps.
     await addApps(1);
     expectEquals(
-        5, mainView.root.querySelectorAll('app-management-app-item').length);
-    expectFalse(mainView.$['expander-row'].hidden);
+        5,
+        mainView.$$('app-management-expandable-app-list')
+            .root.querySelectorAll('app-management-app-item')
+            .length);
+    expectFalse(mainView.$$('app-management-expandable-app-list')
+                    .$['expander-row']
+                    .hidden);
   });
 
   test('notifications sublabel collapsibility', async function() {
