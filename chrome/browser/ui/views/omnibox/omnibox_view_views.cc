@@ -975,16 +975,8 @@ base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   base::string16 selection_text = gfx::TruncateString(
       clipboard_text, kMaxSelectionTextLength, gfx::WORD_BREAK);
 
-  // If the clipboard text is too long, this command will be disabled, so
-  // we skip the potentially expensive classification of the text and default to
-  // IDS_PASTE_AND_SEARCH.
-  bool paste_and_search =
-      clipboard_text.size() > OmniboxEditModel::kMaxPasteAndGoTextLength ||
-      model()->ClassifiesAsSearch(clipboard_text);
-
-  if (paste_and_search) {
+  if (model()->ClassifiesAsSearch(clipboard_text))
     return l10n_util::GetStringFUTF16(IDS_PASTE_AND_SEARCH, selection_text);
-  }
 
   // To ensure the search and url strings began to truncate at the exact same
   // number of characters, the pixel width at which the url begins to elide is

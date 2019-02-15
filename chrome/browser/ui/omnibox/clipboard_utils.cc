@@ -16,6 +16,7 @@ base::string16 GetClipboardText() {
                                    ui::CLIPBOARD_TYPE_COPY_PASTE)) {
     base::string16 text;
     clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
+    text = text.substr(0, kMaxClipboardTextLength);
     return OmniboxView::SanitizeTextForPaste(text);
   }
 
