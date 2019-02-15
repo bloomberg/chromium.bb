@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -724,6 +725,8 @@ class CORE_EXPORT LocalFrameView final
  private:
 #if DCHECK_IS_ON()
   class DisallowLayoutInvalidationScope {
+    STACK_ALLOCATED();
+
    public:
     DisallowLayoutInvalidationScope(LocalFrameView* view)
         : local_frame_view_(view) {

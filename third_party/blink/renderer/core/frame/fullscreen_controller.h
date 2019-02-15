@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -50,6 +51,8 @@ class WebViewImpl;
 // and out of fullscreen, including restoring scroll offset and scale after
 // exiting fullscreen. It is (indirectly) used by the Fullscreen class.
 class CORE_EXPORT FullscreenController {
+  USING_FAST_MALLOC(FullscreenController);
+
  public:
   static std::unique_ptr<FullscreenController> Create(WebViewImpl*);
 

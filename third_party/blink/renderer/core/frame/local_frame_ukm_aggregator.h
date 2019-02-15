@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_UKM_AGGREGATOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -172,6 +173,8 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   // aggregator that created the scoped timer. It will also record an event
   // into the histogram counter.
   class CORE_EXPORT ScopedUkmHierarchicalTimer {
+    STACK_ALLOCATED();
+
    public:
     ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&);
     ~ScopedUkmHierarchicalTimer();

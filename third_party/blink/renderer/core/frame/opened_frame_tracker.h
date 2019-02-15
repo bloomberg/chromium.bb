@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_OPENED_FRAME_TRACKER_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
@@ -16,6 +17,8 @@ class WebFrame;
 // Due to layering restrictions, we need to hide the implementation, since
 // public/web/ cannot depend on wtf/.
 class OpenedFrameTracker {
+  USING_FAST_MALLOC(OpenedFrameTracker);
+
  public:
   OpenedFrameTracker();
   ~OpenedFrameTracker();
