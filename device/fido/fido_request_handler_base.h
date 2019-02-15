@@ -106,13 +106,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // If true, dispatch of the request cannot be controlled by
     // the embedder. The embedder must not display a UI for this
     // request and must ignore all subsequent invocations of the
-    // TransportAvailabilityObserver interface methods.
+    // Observer interface methods.
     bool disable_embedder_ui = false;
   };
 
-  class COMPONENT_EXPORT(DEVICE_FIDO) TransportAvailabilityObserver {
+  class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
    public:
-    virtual ~TransportAvailabilityObserver();
+    virtual ~Observer();
 
     // This method will not be invoked until the observer is set.
     virtual void OnTransportAvailabilityEnumerated(
@@ -179,7 +179,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 
-  void set_observer(TransportAvailabilityObserver* observer) {
+  void set_observer(Observer* observer) {
     DCHECK(!observer_) << "Only one observer is supported.";
     observer_ = observer;
 
@@ -220,7 +220,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   std::vector<std::unique_ptr<FidoDiscoveryBase>>& discoveries() {
     return discoveries_;
   }
-  TransportAvailabilityObserver* observer() const { return observer_; }
+  Observer* observer() const { return observer_; }
 
   // FidoDiscoveryBase::Observer
   void AuthenticatorAdded(FidoDiscoveryBase* discovery,
@@ -256,7 +256,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscoveryBase>> discoveries_;
-  TransportAvailabilityObserver* observer_ = nullptr;
+  Observer* observer_ = nullptr;
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
   std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;

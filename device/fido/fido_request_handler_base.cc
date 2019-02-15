@@ -48,10 +48,9 @@ FidoRequestHandlerBase::TransportAvailabilityInfo::operator=(
 FidoRequestHandlerBase::TransportAvailabilityInfo::
     ~TransportAvailabilityInfo() = default;
 
-// FidoRequestHandlerBase::TransportAvailabilityObserver ----------------------
+// FidoRequestHandlerBase::Observer ----------------------
 
-FidoRequestHandlerBase::TransportAvailabilityObserver::
-    ~TransportAvailabilityObserver() = default;
+FidoRequestHandlerBase::Observer::~Observer() = default;
 
 // FidoRequestHandlerBase -----------------------------------------------------
 

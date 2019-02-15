@@ -30,11 +30,10 @@ constexpr char kTestFidoBleAuthenticatorId[] = "ble:test_device_address";
 constexpr char kTestPinCode[] = "1234";
 constexpr char kTestBluetoothDisplayName[] = "device_name";
 
-class MockTransportAvailabilityObserver
-    : public FidoRequestHandlerBase::TransportAvailabilityObserver {
+class MockObserver : public FidoRequestHandlerBase::Observer {
  public:
-  MockTransportAvailabilityObserver() = default;
-  ~MockTransportAvailabilityObserver() override = default;
+  MockObserver() = default;
+  ~MockObserver() override = default;
 
   MOCK_METHOD1(OnTransportAvailabilityEnumerated,
                void(FidoRequestHandlerBase::TransportAvailabilityInfo data));
@@ -51,13 +50,12 @@ class MockTransportAvailabilityObserver
                void(base::StringPiece, bool));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockTransportAvailabilityObserver);
+  DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
 class FakeFidoRequestHandlerBase : public FidoRequestHandlerBase {
  public:
-  explicit FakeFidoRequestHandlerBase(
-      MockTransportAvailabilityObserver* observer)
+  explicit FakeFidoRequestHandlerBase(MockObserver* observer)
       : FidoRequestHandlerBase(nullptr, {}) {
     set_observer(observer);
   }
@@ -102,7 +100,7 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
   }
 
   MockBluetoothAdapter* adapter() { return adapter_.get(); }
-  MockTransportAvailabilityObserver* observer() { return mock_observer_.get(); }
+  MockObserver* observer() { return mock_observer_.get(); }
   bool adapter_powered_on_programmatically(
       const BleAdapterManager& adapter_manager) {
     return adapter_manager.adapter_powered_on_programmatically_;
@@ -126,8 +124,8 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<MockBluetoothAdapter> adapter_ =
       base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
-  std::unique_ptr<MockTransportAvailabilityObserver> mock_observer_ =
-      std::make_unique<MockTransportAvailabilityObserver>();
+  std::unique_ptr<MockObserver> mock_observer_ =
+      std::make_unique<MockObserver>();
   std::unique_ptr<FakeFidoRequestHandlerBase> fake_request_handler_ =
       std::make_unique<FakeFidoRequestHandlerBase>(mock_observer_.get());
 };
