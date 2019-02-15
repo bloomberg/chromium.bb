@@ -20,18 +20,20 @@ namespace {
 // A sample document to compute snippets of.
 // The \x bits after the first "Google" are UTF-8 of U+2122 TRADE MARK SIGN,
 // and are useful for verifying we don't screw up in UTF-8/UTF-16 conversion.
-const char* kSampleDocument = "Google\xe2\x84\xa2 Terms of Service "
-"Welcome to Google! "
-"1. Your relationship with Google "
-"1.1 Your use of Google's products, software, services and web sites "
-"(referred to collectively as the \"Services\" in this document and excluding "
-"any services provided to you by Google under a separate written agreement) "
-"is subject to the terms of a legal agreement between you and Google. "
-"\"Google\" means Google Inc., whose principal place of business is at 1600 "
-"Amphitheatre Parkway, Mountain View, CA 94043, United States. This document "
-"explains how the agreement is made up, and sets out some of the terms of "
-"that agreement.";
-};
+const char kSampleDocument[] =
+    "Google\xe2\x84\xa2 Terms of Service "
+    "Welcome to Google! "
+    "1. Your relationship with Google "
+    "1.1 Your use of Google's products, software, services and web sites "
+    "(referred to collectively as the \"Services\" in this document and "
+    "excluding any services provided to you by Google under a separate "
+    " written agreement) is subject to the terms of a legal agreement "
+    "between you and Google. \"Google\" means Google Inc., whose principal "
+    "place of business is at 1600 Amphitheatre Parkway, Mountain View, "
+    "CA 94043, United States. This document explains how the agreement is "
+    "made up, and sets out some of the terms of that agreement.";
+
+}  // namespace
 
 // Thai sample taken from http://www.google.co.th/intl/th/privacy.html
 // TODO(jungshik) : Add more samples (e.g. Hindi) after porting

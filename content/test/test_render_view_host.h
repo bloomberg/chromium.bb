@@ -98,7 +98,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
   // period of time.
-  void ResetFallbackToFirstNavigationSurface() override{};
+  void ResetFallbackToFirstNavigationSurface() override {}
 
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
   void SetWantsAnimateOnlyBeginFrames() override {}

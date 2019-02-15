@@ -2327,7 +2327,7 @@ class BookmarkBarViewTest27 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest27, MiddleClickOnFolderOpensAllBookmarks);
+VIEW_TEST(BookmarkBarViewTest27, MiddleClickOnFolderOpensAllBookmarks)
 
 #endif  // defined(OS_MACOSX)
 
@@ -2357,4 +2357,4 @@ class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest28, ClickWithModifierOnFolderOpensAllBookmarks);
+VIEW_TEST(BookmarkBarViewTest28, ClickWithModifierOnFolderOpensAllBookmarks)
