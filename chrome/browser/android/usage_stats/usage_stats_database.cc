@@ -10,7 +10,6 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
@@ -19,7 +18,7 @@ namespace usage_stats {
 using leveldb_proto::ProtoDatabaseProvider;
 using leveldb_proto::ProtoDatabaseProviderFactory;
 
-const char kNamespace[] = "usage_stats";
+const char kNamespace[] = "UsageStats";
 
 const char kKeySeparator[] = "_";
 
@@ -33,10 +32,12 @@ const int kUnixTimeDigits = 11;
 const char kUnixTimeFormat[] = "%011d";
 
 UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
-    : weak_ptr_factory_(this) {
+    : website_event_db_initialized_(false),
+      suspension_db_initialized_(false),
+      token_mapping_db_initialized_(false),
+      weak_ptr_factory_(this) {
   ProtoDatabaseProvider* db_provider =
-      ProtoDatabaseProviderFactory::GetInstance()->GetForBrowserContext(
-          profile);
+      ProtoDatabaseProviderFactory::GetForBrowserContext(profile);
 
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 
@@ -52,6 +53,8 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
 
   token_mapping_db_ = db_provider->GetDB<TokenMapping>(
       kNamespace, kTokenMappingPrefix, usage_stats_dir, db_task_runner);
+
+  InitializeDBs();
 }
 
 // Used for testing.
@@ -62,7 +65,12 @@ UsageStatsDatabase::UsageStatsDatabase(
     : website_event_db_(std::move(website_event_db)),
       suspension_db_(std::move(suspension_db)),
       token_mapping_db_(std::move(token_mapping_db)),
-      weak_ptr_factory_(this) {}
+      website_event_db_initialized_(false),
+      suspension_db_initialized_(false),
+      token_mapping_db_initialized_(false),
+      weak_ptr_factory_(this) {
+  InitializeDBs();
+}
 
 UsageStatsDatabase::~UsageStatsDatabase() = default;
 
@@ -97,7 +105,30 @@ std::string CreateWebsiteEventKey(int64_t seconds, const std::string& fqdn) {
 
 }  // namespace
 
+void UsageStatsDatabase::InitializeDBs() {
+  // Asynchronously initialize databases.
+  website_event_db_->Init(
+      kNamespace, base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
+                                 weak_ptr_factory_.GetWeakPtr(), true));
+
+  suspension_db_->Init(kNamespace,
+                       base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
+                                      weak_ptr_factory_.GetWeakPtr(), true));
+
+  token_mapping_db_->Init(
+      kNamespace, base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
+                                 weak_ptr_factory_.GetWeakPtr(), true));
+}
+
 void UsageStatsDatabase::GetAllEvents(EventsCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!website_event_db_initialized_) {
+    website_event_db_callbacks_.emplace(
+        base::BindOnce(&UsageStatsDatabase::GetAllEvents,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
   // Load all WebsiteEvents.
   website_event_db_->LoadEntries(
       base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForGetAllEvents,
@@ -107,6 +138,14 @@ void UsageStatsDatabase::GetAllEvents(EventsCallback callback) {
 void UsageStatsDatabase::QueryEventsInRange(int64_t start,
                                             int64_t end,
                                             EventsCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!website_event_db_initialized_) {
+    website_event_db_callbacks_.emplace(base::BindOnce(
+        &UsageStatsDatabase::QueryEventsInRange, weak_ptr_factory_.GetWeakPtr(),
+        start, end, std::move(callback)));
+    return;
+  }
+
   // Load all WebsiteEvents where the timestamp is
   // in the specified range. Function accepts a half-open range [start, end) as
   // input, but the database operates on fully-closed ranges. Because the
@@ -120,6 +159,14 @@ void UsageStatsDatabase::QueryEventsInRange(int64_t start,
 
 void UsageStatsDatabase::AddEvents(std::vector<WebsiteEvent> events,
                                    StatusCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!website_event_db_initialized_) {
+    website_event_db_callbacks_.emplace(base::BindOnce(
+        &UsageStatsDatabase::AddEvents, weak_ptr_factory_.GetWeakPtr(),
+        std::move(events), std::move(callback)));
+    return;
+  }
+
   auto entries =
       std::make_unique<ProtoDatabase<WebsiteEvent>::KeyEntryVector>();
   entries->reserve(events.size());
@@ -139,6 +186,14 @@ void UsageStatsDatabase::AddEvents(std::vector<WebsiteEvent> events,
 }
 
 void UsageStatsDatabase::DeleteAllEvents(StatusCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!website_event_db_initialized_) {
+    website_event_db_callbacks_.emplace(
+        base::BindOnce(&UsageStatsDatabase::DeleteAllEvents,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
   // Remove all WebsiteEvent entries.
   website_event_db_->UpdateEntriesWithRemoveFilter(
       std::make_unique<ProtoDatabase<WebsiteEvent>::KeyEntryVector>(),
@@ -149,6 +204,14 @@ void UsageStatsDatabase::DeleteAllEvents(StatusCallback callback) {
 void UsageStatsDatabase::DeleteEventsInRange(int64_t start,
                                              int64_t end,
                                              StatusCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!website_event_db_initialized_) {
+    website_event_db_callbacks_.emplace(base::BindOnce(
+        &UsageStatsDatabase::DeleteEventsInRange,
+        weak_ptr_factory_.GetWeakPtr(), start, end, std::move(callback)));
+    return;
+  }
+
   // TODO(crbug/927655): If/when leveldb_proto adds an UpdateEntriesInRange
   // function, we should consolidate these two proto_db_ calls into a single
   // call.
@@ -167,6 +230,15 @@ void UsageStatsDatabase::DeleteEventsInRange(int64_t start,
 void UsageStatsDatabase::DeleteEventsWithMatchingDomains(
     base::flat_set<std::string> domains,
     StatusCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!website_event_db_initialized_) {
+    website_event_db_callbacks_.emplace(
+        base::BindOnce(&UsageStatsDatabase::DeleteEventsWithMatchingDomains,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(domains),
+                       std::move(callback)));
+    return;
+  }
+
   // Remove all events with domains in the given set.
   website_event_db_->UpdateEntriesWithRemoveFilter(
       std::make_unique<ProtoDatabase<WebsiteEvent>::KeyEntryVector>(),
@@ -176,6 +248,14 @@ void UsageStatsDatabase::DeleteEventsWithMatchingDomains(
 }
 
 void UsageStatsDatabase::GetAllSuspensions(SuspensionsCallback callback) {
+  if (!suspension_db_initialized_) {
+    // Defer execution if database is uninitialized.
+    suspension_db_callbacks_.emplace(
+        base::BindOnce(&UsageStatsDatabase::GetAllSuspensions,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
   // Load all Suspensions.
   suspension_db_->LoadEntries(
       base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForGetAllSuspensions,
@@ -184,6 +264,14 @@ void UsageStatsDatabase::GetAllSuspensions(SuspensionsCallback callback) {
 
 void UsageStatsDatabase::SetSuspensions(base::flat_set<std::string> domains,
                                         StatusCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!suspension_db_initialized_) {
+    suspension_db_callbacks_.emplace(base::BindOnce(
+        &UsageStatsDatabase::SetSuspensions, weak_ptr_factory_.GetWeakPtr(),
+        std::move(domains), std::move(callback)));
+    return;
+  }
+
   auto entries = std::make_unique<ProtoDatabase<Suspension>::KeyEntryVector>();
 
   for (std::string domain : domains) {
@@ -202,6 +290,14 @@ void UsageStatsDatabase::SetSuspensions(base::flat_set<std::string> domains,
 }
 
 void UsageStatsDatabase::GetAllTokenMappings(TokenMappingsCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!token_mapping_db_initialized_) {
+    token_mapping_db_callbacks_.emplace(
+        base::BindOnce(&UsageStatsDatabase::GetAllTokenMappings,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
   // Load all TokenMappings.
   token_mapping_db_->LoadEntries(
       base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForGetAllTokenMappings,
@@ -210,6 +306,14 @@ void UsageStatsDatabase::GetAllTokenMappings(TokenMappingsCallback callback) {
 
 void UsageStatsDatabase::SetTokenMappings(TokenMap mappings,
                                           StatusCallback callback) {
+  // Defer execution if database is uninitialized.
+  if (!token_mapping_db_initialized_) {
+    token_mapping_db_callbacks_.emplace(base::BindOnce(
+        &UsageStatsDatabase::SetTokenMappings, weak_ptr_factory_.GetWeakPtr(),
+        std::move(mappings), std::move(callback)));
+    return;
+  }
+
   std::vector<std::string> keys;
   keys.reserve(mappings.size());
 
@@ -237,6 +341,76 @@ void UsageStatsDatabase::SetTokenMappings(TokenMap mappings,
       base::BindRepeating(&DoesNotContainFilter, std::move(key_set)),
       base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::OnWebsiteEventInitDone(
+    bool retry,
+    leveldb_proto::Enums::InitStatus status) {
+  website_event_db_initialized_ =
+      status == leveldb_proto::Enums::InitStatus::kOK;
+
+  if (!website_event_db_initialized_) {
+    if (retry) {
+      // Retry unsuccessful initialization.
+      website_event_db_->Init(
+          kNamespace,
+          base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
+                         weak_ptr_factory_.GetWeakPtr(), false));
+    }
+    return;
+  }
+
+  // Execute deferred operations on sucessfully initialized database.
+  while (!website_event_db_callbacks_.empty()) {
+    std::move(website_event_db_callbacks_.front()).Run();
+    website_event_db_callbacks_.pop();
+  }
+}
+
+void UsageStatsDatabase::OnSuspensionInitDone(
+    bool retry,
+    leveldb_proto::Enums::InitStatus status) {
+  suspension_db_initialized_ = status == leveldb_proto::Enums::InitStatus::kOK;
+
+  if (!suspension_db_initialized_) {
+    if (retry) {
+      // Retry unsuccessful initialization.
+      suspension_db_->Init(
+          kNamespace, base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
+                                     weak_ptr_factory_.GetWeakPtr(), false));
+    }
+    return;
+  }
+
+  // Execute deferred operations on sucessfully initialized database.
+  while (!suspension_db_callbacks_.empty()) {
+    std::move(suspension_db_callbacks_.front()).Run();
+    suspension_db_callbacks_.pop();
+  }
+}
+
+void UsageStatsDatabase::OnTokenMappingInitDone(
+    bool retry,
+    leveldb_proto::Enums::InitStatus status) {
+  token_mapping_db_initialized_ =
+      status == leveldb_proto::Enums::InitStatus::kOK;
+
+  if (!token_mapping_db_initialized_) {
+    if (retry) {
+      // Retry unsuccessful initialization.
+      token_mapping_db_->Init(
+          kNamespace,
+          base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
+                         weak_ptr_factory_.GetWeakPtr(), false));
+    }
+    return;
+  }
+
+  // Execute deferred operations on sucessfully initialized database.
+  while (!token_mapping_db_callbacks_.empty()) {
+    std::move(token_mapping_db_callbacks_.front()).Run();
+    token_mapping_db_callbacks_.pop();
+  }
 }
 
 void UsageStatsDatabase::OnUpdateEntries(StatusCallback callback,
