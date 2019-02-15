@@ -154,7 +154,9 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
       script_request_url_(script_request_url),
       options_(options),
       context_proxy_(
-          MakeGarbageCollected<DedicatedWorkerMessagingProxy>(context, this)) {
+          MakeGarbageCollected<DedicatedWorkerMessagingProxy>(context, this)),
+      v8_stack_trace_id_(ThreadDebugger::From(context->GetIsolate())
+                             ->StoreCurrentStackTrace("Worker Created")) {
   DCHECK(context->IsContextThread());
   DCHECK(script_request_url_.IsValid());
   DCHECK(context_proxy_);
@@ -213,10 +215,6 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
 void DedicatedWorker::Start() {
   DCHECK(GetExecutionContext()->IsContextThread());
 
-  v8_inspector::V8StackTraceId stack_id =
-      ThreadDebugger::From(GetExecutionContext()->GetIsolate())
-          ->StoreCurrentStackTrace("Worker Created");
-
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
     scope->EnsureFetcher();
   if (blink::features::IsPlzDedicatedWorkerEnabled()) {
@@ -243,18 +241,9 @@ void DedicatedWorker::Start() {
       options_->type() == "module") {
     // Specify empty source code here because scripts will be fetched on the
     // worker thread.
-    auto* outside_settings_object =
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            GetExecutionContext()
-                ->Fetcher()
-                ->GetProperties()
-                .GetFetchClientSettingsObject());
-    context_proxy_->StartWorkerGlobalScope(
-        CreateGlobalScopeCreationParams(
-            script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
-            network::mojom::ReferrerPolicy::kDefault),
-        options_, script_request_url_, *outside_settings_object, stack_id,
-        String() /* source_code */);
+    ContinueStart(
+        script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
+        network::mojom::ReferrerPolicy::kDefault, String() /* source_code */);
     return;
   }
   if (options_->type() == "classic") {
@@ -269,8 +258,7 @@ void DedicatedWorker::Start() {
         network::mojom::FetchCredentialsMode::kSameOrigin,
         GetExecutionContext()->GetSecurityContext().AddressSpace(),
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
-        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this),
-                  stack_id));
+        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)));
     return;
   }
   NOTREACHED() << "Invalid type: " << options_->type();
@@ -329,7 +317,11 @@ void DedicatedWorker::OnWorkerHostCreated(
 
 void DedicatedWorker::OnScriptLoaded() {
   DCHECK(features::IsPlzDedicatedWorkerEnabled());
-  // TODO(nhiroki): Continue worker start.
+  // Specify empty source code here because scripts will be fetched on the
+  // worker thread.
+  ContinueStart(
+      script_request_url_, OffMainThreadWorkerScriptFetchOption::kEnabled,
+      network::mojom::ReferrerPolicy::kDefault, String() /* source_code */);
 }
 
 void DedicatedWorker::OnScriptLoadFailed() {
@@ -377,7 +369,7 @@ void DedicatedWorker::OnResponse() {
                                   classic_script_loader_->Identifier());
 }
 
-void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
+void DedicatedWorker::OnFinished() {
   DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_->Canceled()) {
     // Do nothing.
@@ -398,23 +390,32 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
     DCHECK(script_request_url_ == script_response_url ||
            SecurityOrigin::AreSameSchemeHostPort(script_request_url_,
                                                  script_response_url));
-    auto* outside_settings_object =
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            GetExecutionContext()
-                ->Fetcher()
-                ->GetProperties()
-                .GetFetchClientSettingsObject());
-    context_proxy_->StartWorkerGlobalScope(
-        CreateGlobalScopeCreationParams(
-            script_response_url,
-            OffMainThreadWorkerScriptFetchOption::kDisabled, referrer_policy),
-        options_, script_response_url, *outside_settings_object, stack_id,
-        classic_script_loader_->SourceText());
+    ContinueStart(script_response_url,
+                  OffMainThreadWorkerScriptFetchOption::kDisabled,
+                  referrer_policy, classic_script_loader_->SourceText());
     probe::scriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
                           classic_script_loader_->SourceText());
   }
   classic_script_loader_ = nullptr;
+}
+
+void DedicatedWorker::ContinueStart(
+    const KURL& script_url,
+    OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
+    network::mojom::ReferrerPolicy referrer_policy,
+    const String& source_code) {
+  auto* outside_settings_object =
+      MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          GetExecutionContext()
+              ->Fetcher()
+              ->GetProperties()
+              .GetFetchClientSettingsObject());
+  context_proxy_->StartWorkerGlobalScope(
+      CreateGlobalScopeCreationParams(script_url, off_main_thread_fetch_option,
+                                      referrer_policy),
+      options_, script_url, *outside_settings_object, v8_stack_trace_id_,
+      source_code);
 }
 
 std::unique_ptr<GlobalScopeCreationParams>
@@ -440,6 +441,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
                                       ? mojom::ScriptType::kClassic
                                       : mojom::ScriptType::kModule;
 
+  // TODO(nhiroki): Create WebWorkerFetchContext using |factory_client_| when
+  // PlzDedicatedWorker is enabled (https://crbug.com/906991).
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
     LocalFrame* frame = document->GetFrame();
