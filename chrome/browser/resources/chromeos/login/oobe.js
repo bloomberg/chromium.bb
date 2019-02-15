@@ -17,10 +17,11 @@
 // <include src="demo_mode_test_helper.js">
 
 // <include
-// src="../../../../../ui/login/account_picker/md_screen_account_picker.js">
+// src="../../../../../ui/login/account_picker/chromeos_screen_account_picker.js">
 
 // <include src="../../../../../ui/login/login_ui_tools.js">
-// <include src="../../../../../ui/login/account_picker/md_user_pod_row.js">
+// <include
+// src="../../../../../ui/login/account_picker/chromeos_user_pod_row.js">
 // <include src="../../../../../ui/login/resource_loader.js">
 // <include src="cr_ui.js">
 // <include src="oobe_screen_reset.js">

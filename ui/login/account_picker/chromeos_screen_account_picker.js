@@ -388,7 +388,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * Sets the authentication type used to authenticate the user.
      * @param {string} username Username of selected user
      * @param {number} authType Authentication type, must be a valid value in
-     *                          the AUTH_TYPE enum in user_pod_row.js.
+     *                          the AUTH_TYPE enum in chromeos_user_pod_row.js.
      * @param {string} value The initial value to use for authentication.
      */
     setAuthType: function(username, authType, value) {
