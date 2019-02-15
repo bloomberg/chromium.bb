@@ -20,6 +20,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
@@ -192,6 +194,30 @@ TEST_F(AXAshWindowUtilsTest, SerializeNodeTree) {
   EXPECT_TRUE(textfield_->HasFocus());
   AXAuraObjWrapper* textfield_wrapper = cache->GetOrCreate(textfield_);
   EXPECT_EQ(textfield_wrapper, cache->GetFocus());
+}
+
+TEST_F(AXAshWindowUtilsTest, IsRootWindow) {
+  AXAshWindowUtils utils;
+
+  // From the client's perspective a widget's root window is a root.
+  aura::Window* widget_root = widget_->GetNativeWindow()->GetRootWindow();
+  EXPECT_TRUE(widget_root->IsRootWindow());
+
+  // Simulate an embedded remote client window.
+  aura::WindowTreeHostMus window_tree_host(aura::CreateInitParamsForTopLevel(
+      views::MusClient::Get()->window_tree_client()));
+  window_tree_host.InitHost();
+  window_tree_host.SetBounds(gfx::Rect(0, 0, 100, 200),
+                             viz::LocalSurfaceIdAllocation());
+  aura::Window* embed_root = window_tree_host.window();
+
+  // From the client's perspective the embed is a root.
+  EXPECT_TRUE(embed_root->IsRootWindow());
+
+  // Accessibility serialization only considers display roots to be roots.
+  EXPECT_TRUE(utils.IsRootWindow(Shell::GetPrimaryRootWindow()));
+  EXPECT_FALSE(utils.IsRootWindow(embed_root));
+  EXPECT_FALSE(utils.IsRootWindow(widget_root));
 }
 
 }  // namespace

@@ -4,7 +4,11 @@
 
 #include "ash/ws/ax_ash_window_utils.h"
 
+#include <vector>
+
+#include "ash/shell.h"
 #include "ash/ws/window_lookup.h"
+#include "base/stl_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -57,10 +61,12 @@ aura::Window::Windows AXAshWindowUtils::GetChildren(aura::Window* window) {
 }
 
 bool AXAshWindowUtils::IsRootWindow(aura::Window* window) const {
+  if (!window->IsRootWindow())
+    return false;
   // SingleProcessMash behaves like classic ash. Only display roots are
-  // considered root windows for accessibility, not top-level Widgets.
-  return window->IsRootWindow() &&
-         !views::Widget::GetWidgetForNativeWindow(window);
+  // considered root windows for accessibility, not top-level Widgets or embeds.
+  std::vector<aura::Window*> roots = Shell::GetAllRootWindows();
+  return base::ContainsValue(roots, window);
 }
 
 views::Widget* AXAshWindowUtils::GetWidgetForNativeView(aura::Window* window) {
