@@ -31,14 +31,18 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
       appcache_host_(std::move(appcache_host)),
       resource_context_(resource_context),
       loader_factory_(std::move(loader_factory)) {
+#if DCHECK_IS_ON()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   // In the current implementation, dedicated workers use
   // ServiceWorkerProviderHost w/ kForSharedWorker.
   // TODO(nhiroki): Rename it to kForWorker for both dedicated workers and
   // shared workers, or add kForDedicatedWorker (https://crbug.com/906991).
-  DCHECK_EQ(service_worker_provider_host_->provider_type(),
-            blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
+  if (service_worker_provider_host_) {
+    DCHECK_EQ(service_worker_provider_host_->provider_type(),
+              blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
+  }
+#endif  // DCHECK_IS_ON()
 }
 
 WorkerScriptLoaderFactory::~WorkerScriptLoaderFactory() {
@@ -77,6 +81,12 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
          resource_request.resource_type == RESOURCE_TYPE_SHARED_WORKER)
       << resource_request.resource_type;
   DCHECK(!script_loader_);
+
+  // TODO(falken): There's no guarantee |resource_context_| is still valid here.
+  // WorkerScriptLoaderFactory needs access to an IO thread class that
+  // can tell it if shutdown has started (e.g.,
+  // ServiceWorkerContextWrapper::resource_context(), though it's weird to
+  // depend on service worker infra for this.
 
   // Create a WorkerScriptLoader to load the script.
   auto script_loader = std::make_unique<WorkerScriptLoader>(

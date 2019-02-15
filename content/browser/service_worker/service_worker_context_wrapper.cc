@@ -357,6 +357,8 @@ bool ServiceWorkerContextWrapper::StartingExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context())
+    return false;
   ServiceWorkerVersion* version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
@@ -368,6 +370,8 @@ bool ServiceWorkerContextWrapper::FinishedExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context())
+    return false;
   ServiceWorkerVersion* version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
@@ -1024,8 +1028,10 @@ ServiceWorkerContextWrapper::PreCreateHostForSharedWorker(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (!context_core_)
+    return nullptr;
   return ServiceWorkerProviderHost::PreCreateForSharedWorker(
-      context()->AsWeakPtr(), process_id, out_provider_info);
+      context_core_->AsWeakPtr(), process_id, out_provider_info);
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
