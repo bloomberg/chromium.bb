@@ -2748,8 +2748,8 @@
   },
   {
     "name": "reduced-referrer-granularity",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "jochen", "mkwst" ],
+    "expiry_milestone": 78
   },
   {
     "name": "remove-ntp-fakebox",
