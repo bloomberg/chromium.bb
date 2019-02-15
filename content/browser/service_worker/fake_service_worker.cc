@@ -191,8 +191,7 @@ void FakeServiceWorker::SetIdleTimerDelayToZero() {
 
 void FakeServiceWorker::OnConnectionError() {
   // Destroys |this|.
-  // TODO(falken): Uncomment this in the next patch, which implements it.
-  // helper_->RemoveServiceWorker(this);
+  helper_->RemoveServiceWorker(this);
 }
 
 }  // namespace content

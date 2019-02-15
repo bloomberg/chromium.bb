@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -181,31 +182,32 @@ class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
 };
 
 class RecordableEmbeddedWorkerInstanceClient
-    : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
+    : public FakeEmbeddedWorkerInstanceClient {
  public:
   enum class Message { StartWorker, StopWorker };
 
   explicit RecordableEmbeddedWorkerInstanceClient(
       EmbeddedWorkerTestHelper* helper)
-      : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
+      : FakeEmbeddedWorkerInstanceClient(helper) {}
 
   const std::vector<Message>& events() const { return events_; }
 
  protected:
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
     events_.push_back(Message::StartWorker);
-    EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-        std::move(params));
+    FakeEmbeddedWorkerInstanceClient::StartWorker(std::move(params));
   }
 
   void StopWorker() override {
     events_.push_back(Message::StopWorker);
-    EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker();
+
+    // Let stop complete, but don't call the base class's StopWorker(), which
+    // would destroy |this| before the test can retrieve events().
+    host()->OnStopped();
   }
 
-  std::vector<Message> events_;
-
  private:
+  std::vector<Message> events_;
   DISALLOW_COPY_AND_ASSIGN(RecordableEmbeddedWorkerInstanceClient);
 };
 
@@ -392,9 +394,10 @@ TEST_F(ServiceWorkerContextTest, Register) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
 
-  RecordableEmbeddedWorkerInstanceClient* client = nullptr;
-  client = helper_->CreateAndRegisterMockInstanceClient<
-      RecordableEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* client =
+      helper_
+          ->AddNewPendingInstanceClient<RecordableEmbeddedWorkerInstanceClient>(
+              helper_.get());
 
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -445,9 +448,10 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   helper_.reset(new RejectInstallTestHelper);
   helper_->context_wrapper()->AddObserver(this);
 
-  RecordableEmbeddedWorkerInstanceClient* client = nullptr;
-  client = helper_->CreateAndRegisterMockInstanceClient<
-      RecordableEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* client =
+      helper_
+          ->AddNewPendingInstanceClient<RecordableEmbeddedWorkerInstanceClient>(
+              helper_.get());
 
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;
@@ -494,9 +498,10 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   helper_.reset(new RejectActivateTestHelper);
   helper_->context_wrapper()->AddObserver(this);
 
-  RecordableEmbeddedWorkerInstanceClient* client = nullptr;
-  client = helper_->CreateAndRegisterMockInstanceClient<
-      RecordableEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* client =
+      helper_
+          ->AddNewPendingInstanceClient<RecordableEmbeddedWorkerInstanceClient>(
+              helper_.get());
 
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   bool called = false;

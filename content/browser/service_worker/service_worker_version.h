@@ -73,19 +73,13 @@ FORWARD_DECLARE_TEST(ServiceWorkerControlleeRequestHandlerTest,
 
 namespace service_worker_version_unittest {
 class ServiceWorkerVersionTest;
-class ServiceWorkerRequestTimeoutTest;
-class ServiceWorkerFailToStartTest;
-FORWARD_DECLARE_TEST(ServiceWorkerFailToStartTest, Timeout);
-FORWARD_DECLARE_TEST(ServiceWorkerRequestTimeoutTest, RequestTimeout);
-FORWARD_DECLARE_TEST(ServiceWorkerStallInStoppingTest, DetachThenRestart);
-FORWARD_DECLARE_TEST(ServiceWorkerStallInStoppingTest,
-                     DetachThenRestartNoCrash);
-FORWARD_DECLARE_TEST(ServiceWorkerStallInStoppingTest, DetachThenStart);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, FailToStart_Timeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, IdleTimeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, MixedRequestTimeouts);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RegisterForeignFetchScopes);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestCustomizedTimeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestNowTimeout);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestTimeout);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RestartWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, RequestNowTimeoutKill);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, SetDevToolsAttached);
@@ -94,6 +88,9 @@ FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_FreshWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_NonActiveWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_RunningWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_StartWorker);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest,
+                     StallInStopping_DetachThenRestart);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StallInStopping_DetachThenStart);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StartRequestWithNullContext);
 }  // namespace service_worker_version_unittest
 
@@ -576,27 +573,24 @@ class CONTENT_EXPORT ServiceWorkerVersion
       service_worker_version_unittest::ServiceWorkerVersionTest,
       StartRequestWithNullContext);
   FRIEND_TEST_ALL_PREFIXES(
-      service_worker_version_unittest::ServiceWorkerRequestTimeoutTest,
-      RequestTimeout);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_version_unittest::ServiceWorkerFailToStartTest,
-      Timeout);
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      FailToStart_Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutStartingWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutWorkerInEvent);
   FRIEND_TEST_ALL_PREFIXES(
-      service_worker_version_unittest::ServiceWorkerStallInStoppingTest,
-      DetachThenStart);
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      StallInStopping_DetachThenStart);
   FRIEND_TEST_ALL_PREFIXES(
-      service_worker_version_unittest::ServiceWorkerStallInStoppingTest,
-      DetachThenRestart);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_version_unittest::ServiceWorkerStallInStoppingTest,
-      DetachThenRestartNoCrash);
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      StallInStopping_DetachThenRestart);
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
       RequestNowTimeout);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
       RestartWorker);
