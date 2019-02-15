@@ -4,19 +4,19 @@
       "name": "Scrolling background of LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTableSection TBODY",
-          "rect": [8, 28, 186, 134],
-          "reason": "appeared"
-        }
-      ]
+      "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutTableCell TD",
-      "position": [24, 22],
-      "bounds": [10, 19],
+      "name": "VerticalScrollbar",
+      "position": [285, 0],
+      "bounds": [15, 300],
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='content'",
+      "bounds": [285, 1000],
+      "contentsOpaque": true,
+      "backgroundColor": "#000000",
       "transform": 1
     }
   ],
@@ -27,7 +27,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [72, 96, 0, 1]
+        [50, 50, 0, 1]
       ]
     }
   ]

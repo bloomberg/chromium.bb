@@ -704,28 +704,12 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       OpacityAnimationDoesNotCreateTransformNode) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    return;
-  }
-
-  LoadTestData("opacity-animation.html");
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
-  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
-}
-
-TEST_P(PaintPropertyTreeBuilderTest,
-       BGPTOpacityAnimationCreatesTransformAndFilterNodes) {
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    return;
-  }
-
+       OpacityAnimationCreatesTransformAndFilterNodes) {
   LoadTestData("opacity-animation.html");
   // TODO(flackr): Verify that after https://crbug.com/900241 is fixed we no
   // longer create transform or filter nodes for opacity animations.
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
+  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Effect());
   EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
 }
 
@@ -759,13 +743,8 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
             transform_properties->Transform()->Matrix());
   // The value is zero without a transform property that needs transform-offset.
   EXPECT_EQ(FloatPoint3D(0, 0, 0), transform_properties->Transform()->Origin());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(nullptr, transform_properties->PaintOffsetTranslation());
-  } else {
-    // SPv1 creates PaintOffsetTranslation for composited layers.
-    EXPECT_EQ(TransformationMatrix().Translate(50, 100),
-              transform_properties->PaintOffsetTranslation()->Matrix());
-  }
+  EXPECT_EQ(TransformationMatrix().Translate(50, 100),
+            transform_properties->PaintOffsetTranslation()->Matrix());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(
         transform_properties->Transform()->HasDirectCompositingReasons());

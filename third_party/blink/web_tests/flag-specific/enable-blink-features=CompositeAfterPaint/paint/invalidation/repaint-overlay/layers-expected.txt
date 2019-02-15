@@ -9,7 +9,6 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
-      "position": [40, 50],
       "bounds": [100, 100],
       "backgroundColor": "#0000FF80",
       "paintInvalidations": [
@@ -19,12 +18,12 @@
           "reason": "background"
         }
       ],
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='scrollable'",
       "bounds": [302, 302],
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='transform'",
@@ -38,7 +37,7 @@
           "reason": "background"
         }
       ],
-      "transform": 5
+      "transform": 6
     }
   ],
   "transforms": [
@@ -58,7 +57,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [104, 103, 0, 1]
+        [40, 50, 0, 1]
       ]
     },
     {
@@ -68,7 +67,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -30, 0, 1]
+        [64, 53, 0, 1]
       ]
     },
     {
@@ -78,12 +77,22 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [89, 78, 0, 1]
+        [0, -30, 0, 1]
       ]
     },
     {
       "id": 5,
       "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [89, 78, 0, 1]
+      ]
+    },
+    {
+      "id": 6,
+      "parent": 5,
       "transform": [
         [3.53553390593274, 3.53553390593274, 0, 0],
         [-3.53553390593274, 3.53553390593274, 0, 0],

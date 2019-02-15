@@ -146,6 +146,19 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboSquashableReasons =
         kOverlap | kAssumedOverlap | kOverflowScrollingParent,
+
+    kDirectReasonsForTransformProperty =
+        k3DTransform | kWillChangeCompositingHint |
+        kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
+        // Currently, we create transform/effect/filter nodes for an element
+        // whenever any property is being animated so that the existence of the
+        // effect node implies the existence of all nodes.
+        // TODO(flackr): Check for nodes for each KeyframeModel target property
+        // instead of creating all nodes and only create a transform/effect/
+        // filter node if needed, https://crbug.com/900241
+        kComboActiveAnimation,
+    kDirectReasonsForEffectProperty = kComboActiveAnimation,
+    kDirectReasonsForFilterProperty = kComboActiveAnimation,
   };
 };
 

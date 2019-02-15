@@ -175,6 +175,10 @@ struct PaintPropertyTreeBuilderContext {
   // Whether composited raster invalidation is supported for this object.
   // If not, subtree invalidations occur on every property tree change.
   unsigned supports_composited_raster_invalidation : 1;
+
+  // This is always recalculated in PaintPropertyTreeBuilder::UpdateForSelf()
+  // which overrides the inherited value.
+  CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
 };
 
 class VisualViewportPaintPropertyTreeBuilder {

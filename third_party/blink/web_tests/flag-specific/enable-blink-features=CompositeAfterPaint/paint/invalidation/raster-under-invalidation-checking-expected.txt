@@ -317,7 +317,6 @@
     },
     {
       "name": "LayoutBlockFlow DIV id='target2'",
-      "position": [18, 60],
       "bounds": [60, 40],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
@@ -629,11 +628,11 @@
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         }
-      ]
+      ],
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV",
-      "position": [8, 110],
       "bounds": [150, 150],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
@@ -945,7 +944,8 @@
           "oldPixel": "#0000FF",
           "newPixel": "#008000"
         }
-      ]
+      ],
+      "transform": 2
     },
     {
       "name": "HorizontalScrollbar",
@@ -1259,12 +1259,30 @@
           "newPixel": "#008000"
         }
       ],
-      "transform": 1
+      "transform": 3
     }
   ],
   "transforms": [
     {
       "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 60, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 110, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

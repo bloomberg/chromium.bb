@@ -8,11 +8,10 @@
     },
     {
       "name": "LayoutBlockFlow DIV",
-      "position": [20, 20],
       "bounds": [400, 400],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 3
     }
   ],
   "transforms": [
@@ -35,6 +34,16 @@
         [0, 0, 0, 1]
       ],
       "origin": [120, 120]
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 20, 0, 1]
+      ]
     }
   ]
 }
