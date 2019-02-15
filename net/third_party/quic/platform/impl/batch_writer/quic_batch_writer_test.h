@@ -116,8 +116,6 @@ MakeQuicBatchWriterTestParams() {
         if (packet_size <= data_size && (data_size / packet_size < 200)) {
           params.push_back({QuicMakeUnique<QuicUdpBatchWriterIOTestDelegateT>(),
                             address_family, data_size, packet_size});
-          params.push_back({QuicMakeUnique<QuicUdpBatchWriterIOTestDelegateT>(),
-                            address_family, data_size, packet_size});
         }
       }
     }
