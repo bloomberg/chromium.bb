@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_audio_destination_node.h"
 
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
@@ -38,41 +38,41 @@
 
 namespace blink {
 
-scoped_refptr<DefaultAudioDestinationHandler>
-DefaultAudioDestinationHandler::Create(
+scoped_refptr<RealtimeAudioDestinationHandler>
+RealtimeAudioDestinationHandler::Create(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint) {
-  return base::AdoptRef(new DefaultAudioDestinationHandler(node, latency_hint));
+  return base::AdoptRef(
+      new RealtimeAudioDestinationHandler(node, latency_hint));
 }
 
-DefaultAudioDestinationHandler::DefaultAudioDestinationHandler(
+RealtimeAudioDestinationHandler::RealtimeAudioDestinationHandler(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint)
-    : AudioDestinationHandler(node),
-      latency_hint_(latency_hint) {
+    : AudioDestinationHandler(node), latency_hint_(latency_hint) {
   // Node-specific default channel count and mixing rules.
   channel_count_ = 2;
   SetInternalChannelCountMode(kExplicit);
   SetInternalChannelInterpretation(AudioBus::kSpeakers);
 }
 
-DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler() {
+RealtimeAudioDestinationHandler::~RealtimeAudioDestinationHandler() {
   DCHECK(!IsInitialized());
 }
 
-void DefaultAudioDestinationHandler::Dispose() {
+void RealtimeAudioDestinationHandler::Dispose() {
   Uninitialize();
   AudioDestinationHandler::Dispose();
 }
 
-void DefaultAudioDestinationHandler::Initialize() {
+void RealtimeAudioDestinationHandler::Initialize() {
   DCHECK(IsMainThread());
 
   CreatePlatformDestination();
   AudioHandler::Initialize();
 }
 
-void DefaultAudioDestinationHandler::Uninitialize() {
+void RealtimeAudioDestinationHandler::Uninitialize() {
   DCHECK(IsMainThread());
 
   // It is possible that the handler is already uninitialized.
@@ -84,7 +84,7 @@ void DefaultAudioDestinationHandler::Uninitialize() {
   AudioHandler::Uninitialize();
 }
 
-void DefaultAudioDestinationHandler::SetChannelCount(
+void RealtimeAudioDestinationHandler::SetChannelCount(
     unsigned channel_count,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -114,56 +114,56 @@ void DefaultAudioDestinationHandler::SetChannelCount(
   }
 }
 
-void DefaultAudioDestinationHandler::StartRendering() {
+void RealtimeAudioDestinationHandler::StartRendering() {
   DCHECK(IsMainThread());
 
   StartPlatformDestination();
 }
 
-void DefaultAudioDestinationHandler::StopRendering() {
+void RealtimeAudioDestinationHandler::StopRendering() {
   DCHECK(IsMainThread());
 
   StopPlatformDestination();
 }
 
-void DefaultAudioDestinationHandler::Pause() {
+void RealtimeAudioDestinationHandler::Pause() {
   DCHECK(IsMainThread());
   if (platform_destination_) {
     platform_destination_->Pause();
   }
 }
 
-void DefaultAudioDestinationHandler::Resume() {
+void RealtimeAudioDestinationHandler::Resume() {
   DCHECK(IsMainThread());
   if (platform_destination_) {
     platform_destination_->Resume();
   }
 }
 
-void DefaultAudioDestinationHandler::RestartRendering() {
+void RealtimeAudioDestinationHandler::RestartRendering() {
   DCHECK(IsMainThread());
 
   StopRendering();
   StartRendering();
 }
 
-uint32_t DefaultAudioDestinationHandler::MaxChannelCount() const {
+uint32_t RealtimeAudioDestinationHandler::MaxChannelCount() const {
   return AudioDestination::MaxChannelCount();
 }
 
-double DefaultAudioDestinationHandler::SampleRate() const {
+double RealtimeAudioDestinationHandler::SampleRate() const {
   // This can be accessed from both threads (main and audio), so it is
   // possible that |platform_destination_| is not fully functional when it
   // is accssed by the audio thread.
   return platform_destination_ ? platform_destination_->SampleRate() : 0;
 }
 
-void DefaultAudioDestinationHandler::Render(
+void RealtimeAudioDestinationHandler::Render(
     AudioBus* destination_bus,
     uint32_t number_of_frames,
     const AudioIOPosition& output_position,
     const AudioIOCallbackMetric& metric) {
-  TRACE_EVENT0("webaudio", "DefaultAudioDestinationHandler::Render");
+  TRACE_EVENT0("webaudio", "RealtimeAudioDestinationHandler::Render");
 
   // Denormals can seriously hurt performance of audio processing. This will
   // take care of all AudioNode processes within this scope.
@@ -220,26 +220,26 @@ void DefaultAudioDestinationHandler::Render(
   context->UpdateWorkletGlobalScopeOnRenderingThread();
 }
 
-uint32_t DefaultAudioDestinationHandler::GetCallbackBufferSize() const {
+uint32_t RealtimeAudioDestinationHandler::GetCallbackBufferSize() const {
   DCHECK(IsMainThread());
   DCHECK(IsInitialized());
 
   return platform_destination_->CallbackBufferSize();
 }
 
-int DefaultAudioDestinationHandler::GetFramesPerBuffer() const {
+int RealtimeAudioDestinationHandler::GetFramesPerBuffer() const {
   DCHECK(IsMainThread());
   DCHECK(IsInitialized());
 
   return platform_destination_ ? platform_destination_->FramesPerBuffer() : 0;
 }
 
-void DefaultAudioDestinationHandler::CreatePlatformDestination() {
+void RealtimeAudioDestinationHandler::CreatePlatformDestination() {
   platform_destination_ =
       AudioDestination::Create(*this, ChannelCount(), latency_hint_);
 }
 
-void DefaultAudioDestinationHandler::StartPlatformDestination() {
+void RealtimeAudioDestinationHandler::StartPlatformDestination() {
   if (platform_destination_->IsPlaying()) {
     return;
   }
@@ -257,7 +257,7 @@ void DefaultAudioDestinationHandler::StartPlatformDestination() {
   }
 }
 
-void DefaultAudioDestinationHandler::StopPlatformDestination() {
+void RealtimeAudioDestinationHandler::StopPlatformDestination() {
   if (platform_destination_->IsPlaying()) {
     platform_destination_->Stop();
   }
@@ -265,18 +265,18 @@ void DefaultAudioDestinationHandler::StopPlatformDestination() {
 
 // -----------------------------------------------------------------------------
 
-DefaultAudioDestinationNode::DefaultAudioDestinationNode(
+RealtimeAudioDestinationNode::RealtimeAudioDestinationNode(
     AudioContext& context,
     const WebAudioLatencyHint& latency_hint)
     : AudioDestinationNode(context) {
-  SetHandler(DefaultAudioDestinationHandler::Create(*this, latency_hint));
+  SetHandler(RealtimeAudioDestinationHandler::Create(*this, latency_hint));
 }
 
-DefaultAudioDestinationNode* DefaultAudioDestinationNode::Create(
+RealtimeAudioDestinationNode* RealtimeAudioDestinationNode::Create(
     AudioContext* context,
     const WebAudioLatencyHint& latency_hint) {
-  return MakeGarbageCollected<DefaultAudioDestinationNode>(*context,
-                                                           latency_hint);
+  return MakeGarbageCollected<RealtimeAudioDestinationNode>(*context,
+                                                            latency_hint);
 }
 
 }  // namespace blink
