@@ -116,6 +116,10 @@
         margin-inline-start: 6px;
         width: 20px;
       }
+
+      :host-context([dir=rtl]) iron-icon {
+        transform: scaleX(-1);
+      }
     </style>
     <div class="ntp-background-logo"></div>
     <h1 tabindex="-1">$i18n{ntpBackgroundDescription}</h1>
