@@ -301,9 +301,10 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
-                                       history_client_->CreateBackendClient(),
-                                       base::ThreadTaskRunnerHandle::Get());
+  history_backend = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<AndroidProviderBackendDelegate>(),
+      history_client_->CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
@@ -438,9 +439,10 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
-                                       history_client_->CreateBackendClient(),
-                                       base::ThreadTaskRunnerHandle::Get());
+  history_backend = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<AndroidProviderBackendDelegate>(),
+      history_client_->CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
@@ -1827,9 +1829,10 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
-                                       history_client_->CreateBackendClient(),
-                                       base::ThreadTaskRunnerHandle::Get());
+  history_backend = base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<AndroidProviderBackendDelegate>(),
+      history_client_->CreateBackendClient(),
+      base::ThreadTaskRunnerHandle::Get());
   history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);

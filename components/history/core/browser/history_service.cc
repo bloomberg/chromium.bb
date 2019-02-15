@@ -895,31 +895,8 @@ void HistoryService::Cleanup() {
     // Get rid of the in-memory backend.
     in_memory_backend_.reset();
 
-    // The backend's destructor must run on the history thread since it is not
-    // threadsafe. So this thread must not be the last thread holding a
-    // reference to the backend, or a crash could happen.
-    //
-    // We have a reference to the history backend. There is also an extra
-    // reference held by our delegate installed in the backend, which
-    // HistoryBackend::Closing will release. This means if we scheduled a call
-    // to HistoryBackend::Closing and *then* released our backend reference,
-    // there will be a race between us and the backend's Closing function to see
-    // who is the last holder of a reference. If the backend thread's Closing
-    // manages to run before we release our backend refptr, the last reference
-    // will be held by this thread and the destructor will be called from here.
-    //
-    // Therefore, we create a closure to run the Closing operation first. This
-    // holds a reference to the backend. Then we release our reference, then we
-    // schedule the task to run. After the task runs, it will delete its
-    // reference from the history thread, ensuring everything works properly.
-    //
-    // TODO(ajwong): Cleanup HistoryBackend lifetime issues.
-    //     See http://crbug.com/99767.
-    base::Closure closing_task =
-        base::Bind(&HistoryBackend::Closing, history_backend_);
-    ScheduleTask(PRIORITY_NORMAL, closing_task);
-    closing_task.Reset();
-    backend_task_runner_->ReleaseSoon(FROM_HERE, std::move(history_backend_));
+    ScheduleTask(PRIORITY_NORMAL, base::BindOnce(&HistoryBackend::Closing,
+                                                 std::move(history_backend_)));
   }
 
   // Clear |backend_task_runner_| to make sure it's not used after Cleanup().
@@ -955,9 +932,9 @@ bool HistoryService::Init(
   }
 
   // Create the history backend.
-  scoped_refptr<HistoryBackend> backend(new HistoryBackend(
-      new BackendDelegate(weak_ptr_factory_.GetWeakPtr(),
-                          base::ThreadTaskRunnerHandle::Get()),
+  scoped_refptr<HistoryBackend> backend(base::MakeRefCounted<HistoryBackend>(
+      std::make_unique<BackendDelegate>(weak_ptr_factory_.GetWeakPtr(),
+                                        base::ThreadTaskRunnerHandle::Get()),
       history_client_ ? history_client_->CreateBackendClient() : nullptr,
       backend_task_runner_));
   history_backend_.swap(backend);
