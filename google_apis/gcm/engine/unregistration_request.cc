@@ -259,7 +259,8 @@ void UnregistrationRequest::RetryWithBackoff() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&UnregistrationRequest::Start, weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&UnregistrationRequest::Start,
+                     weak_ptr_factory_.GetWeakPtr()),
       backoff_entry_.GetTimeUntilRelease());
 }
 

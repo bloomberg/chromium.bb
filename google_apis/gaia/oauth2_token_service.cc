@@ -446,9 +446,9 @@ OAuth2TokenService::StartRequestForMultilogin(
   // If we can get refresh token from the delegate, inform cosumer right away.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&RequestImpl::InformConsumer, request.get()->AsWeakPtr(),
-                 GoogleServiceAuthError(GoogleServiceAuthError::NONE),
-                 token_response));
+      base::BindOnce(&RequestImpl::InformConsumer, request.get()->AsWeakPtr(),
+                     GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+                     token_response));
   return std::move(request);
 }
 
@@ -515,8 +515,8 @@ OAuth2TokenService::StartRequestForClientWithContext(
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(), error,
-                   OAuth2AccessTokenConsumer::TokenResponse()));
+        base::BindOnce(&RequestImpl::InformConsumer, request->AsWeakPtr(),
+                       error, OAuth2AccessTokenConsumer::TokenResponse()));
     return std::move(request);
   }
 
@@ -580,9 +580,9 @@ void OAuth2TokenService::InformConsumerWithCachedTokenResponse(
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(),
-                 GoogleServiceAuthError(GoogleServiceAuthError::NONE),
-                 *cache_token_response));
+      base::BindOnce(&RequestImpl::InformConsumer, request->AsWeakPtr(),
+                     GoogleServiceAuthError(GoogleServiceAuthError::NONE),
+                     *cache_token_response));
 }
 
 std::vector<std::string> OAuth2TokenService::GetAccounts() const {
