@@ -131,24 +131,28 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
     on_google_signed_out_callback_ = std::move(callback);
   }
 
-  const AccountInfo& primary_account_from_signin_callback() const {
+  const CoreAccountInfo& primary_account_from_signin_callback() const {
     return primary_account_from_signin_callback_;
   }
-  const AccountInfo& primary_account_from_signout_callback() const {
+  const CoreAccountInfo& primary_account_from_signout_callback() const {
     return primary_account_from_signout_callback_;
   }
 
  private:
   // SigninManager::Observer:
-  void GoogleSigninSucceeded(const AccountInfo& account_info) override {
-    ASSERT_TRUE(identity_manager_);
+  void GoogleSigninSucceeded(const AccountInfo&) override {
+    // Fetch the primary account from IdentityManager. The goal is to check
+    // that the account from IdentityManager has correct values even if other
+    // SigninManager::Observer are notified.
     primary_account_from_signin_callback_ =
         identity_manager_->GetPrimaryAccountInfo();
     if (on_google_signin_succeeded_callback_)
       std::move(on_google_signin_succeeded_callback_).Run();
   }
-  void GoogleSignedOut(const AccountInfo& account_info) override {
-    ASSERT_TRUE(identity_manager_);
+  void GoogleSignedOut(const AccountInfo&) override {
+    // Fetch the primary account from IdentityManager. The goal is to check
+    // that the account from IdentityManager has correct values even if other
+    // SigninManager::Observer are notified.
     primary_account_from_signout_callback_ =
         identity_manager_->GetPrimaryAccountInfo();
     if (on_google_signed_out_callback_)
@@ -160,8 +164,8 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
   base::OnceClosure on_google_signin_succeeded_callback_;
   base::OnceClosure on_google_signin_failed_callback_;
   base::OnceClosure on_google_signed_out_callback_;
-  AccountInfo primary_account_from_signin_callback_;
-  AccountInfo primary_account_from_signout_callback_;
+  CoreAccountInfo primary_account_from_signin_callback_;
+  CoreAccountInfo primary_account_from_signout_callback_;
 };
 
 // Class that observes updates from ProfileOAuth2TokenService and and verifies
@@ -436,7 +440,7 @@ class IdentityManagerTest : public testing::Test {
 
 // Test that IdentityManager starts off with the information in SigninManager.
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
@@ -462,7 +466,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   EXPECT_EQ(kTestGaiaId, primary_account_from_set_callback.gaia);
   EXPECT_EQ(kTestEmail, primary_account_from_set_callback.email);
 
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
@@ -498,7 +502,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   EXPECT_EQ(kTestGaiaId, primary_account_from_cleared_callback.gaia);
   EXPECT_EQ(kTestEmail, primary_account_from_cleared_callback.email);
 
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ("", primary_account_info.gaia);
   EXPECT_EQ("", primary_account_info.email);
@@ -525,7 +529,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
   // the IdentityManager is still storing the primary account's ID.
   account_tracker()->RemoveAccount(kTestGaiaId);
 
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ("", primary_account_info.gaia);
   EXPECT_EQ("", primary_account_info.email);
@@ -595,7 +599,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
 
 TEST_F(IdentityManagerTest,
        QueryingOfRefreshTokensInteractionWithPrimaryAccount) {
-  AccountInfo account_info = identity_manager()->GetPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager()->GetPrimaryAccountInfo();
   std::string account_id = account_info.account_id;
 
   // Should not have a refresh token for the primary account at initialization.
@@ -658,7 +662,7 @@ TEST_F(IdentityManagerTest, GetAccountsReflectsNonemptyInitialState) {
 
 TEST_F(IdentityManagerTest,
        QueryingOfRefreshTokensReflectsNonemptyInitialState) {
-  AccountInfo account_info = identity_manager()->GetPrimaryAccountInfo();
+  CoreAccountInfo account_info = identity_manager()->GetPrimaryAccountInfo();
   std::string account_id = account_info.account_id;
 
   EXPECT_FALSE(
@@ -901,7 +905,7 @@ TEST_F(
 TEST_F(
     IdentityManagerTest,
     HasAccountWithRefreshTokenInteractionBetweenPrimaryAndSecondaryAccounts) {
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   std::string primary_account_id = primary_account_info.account_id;
 
@@ -943,7 +947,7 @@ TEST_F(
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnUpdateToErrorStateOfRefreshTokenForAccount) {
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   std::string primary_account_id = primary_account_info.account_id;
   SetRefreshTokenForPrimaryAccount(identity_manager());
@@ -997,7 +1001,7 @@ TEST_F(IdentityManagerTest,
 }
 
 TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   std::string primary_account_id = primary_account_info.account_id;
 
@@ -1338,7 +1342,7 @@ TEST_F(
   signin_manager()->SignIn(kTestGaiaId, kTestEmail);
   run_loop.Run();
 
-  AccountInfo primary_account_from_signin_callback =
+  CoreAccountInfo primary_account_from_signin_callback =
       signin_manager_observer.primary_account_from_signin_callback();
   EXPECT_EQ(kTestGaiaId, primary_account_from_signin_callback.gaia);
   EXPECT_EQ(kTestEmail, primary_account_from_signin_callback.email);
@@ -1363,7 +1367,7 @@ TEST_F(
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  AccountInfo primary_account_from_signout_callback =
+  CoreAccountInfo primary_account_from_signout_callback =
       signin_manager_observer.primary_account_from_signout_callback();
   EXPECT_EQ(std::string(), primary_account_from_signout_callback.gaia);
   EXPECT_EQ(std::string(), primary_account_from_signout_callback.email);
@@ -1380,7 +1384,7 @@ TEST_F(
 // IdentityManager correctly reflects the updated version. See crbug.com/842041
 // and crbug.com/842670 for further details.
 TEST_F(IdentityManagerTest, IdentityManagerReflectsUpdatedEmailAddress) {
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
