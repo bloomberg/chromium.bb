@@ -1121,11 +1121,8 @@ IN_PROC_BROWSER_TEST_P(MainFrameDownloadFlagsBrowserTest, Download) {
       has_gesture ||
       sandbox_option != SandboxOption::kDisallowDownloadsWithoutUserActivation;
   bool expected_sandbox_bit =
-      enable_blocking_downloads_in_sandbox_without_user_activation
-          ? has_gesture &&
-                sandbox_option ==
-                    SandboxOption::kDisallowDownloadsWithoutUserActivation
-          : sandbox_option != SandboxOption::kNoSandbox;
+      expected_download &&
+      sandbox_option == SandboxOption::kDisallowDownloadsWithoutUserActivation;
 
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -1299,11 +1296,8 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadFlagsBrowserTest, Download) {
       has_gesture ||
       sandbox_option != SandboxOption::kDisallowDownloadsWithoutUserActivation;
   bool expected_sandbox_bit =
-      enable_blocking_downloads_in_sandbox_without_user_activation
-          ? has_gesture &&
-                sandbox_option ==
-                    SandboxOption::kDisallowDownloadsWithoutUserActivation
-          : sandbox_option != SandboxOption::kNoSandbox;
+      expected_download &&
+      sandbox_option == SandboxOption::kDisallowDownloadsWithoutUserActivation;
 
   std::unique_ptr<content::DownloadTestObserver> download_observer(
       new content::DownloadTestObserverTerminal(
