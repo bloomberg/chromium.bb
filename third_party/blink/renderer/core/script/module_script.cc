@@ -226,7 +226,7 @@ void ModuleScript::Trace(blink::Visitor* visitor) {
   Script::Trace(visitor);
 }
 
-void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
+void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) {
   DVLOG(1) << *this << "::RunScript()";
   settings_object_->ExecuteModule(this,
                                   Modulator::CaptureEvalErrorFlag::kReport);

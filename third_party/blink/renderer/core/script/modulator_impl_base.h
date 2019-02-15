@@ -80,7 +80,7 @@ class ModulatorImplBase : public Modulator {
   ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
-  ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
+  ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
 
   // Populates |reason| and returns true if the dynamic import is disallowed on
   // the associated execution context. In that case, a caller of this function

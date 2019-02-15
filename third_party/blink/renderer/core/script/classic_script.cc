@@ -15,7 +15,7 @@ void ClassicScript::Trace(blink::Visitor* visitor) {
 }
 
 void ClassicScript::RunScript(LocalFrame* frame,
-                              const SecurityOrigin* security_origin) const {
+                              const SecurityOrigin* security_origin) {
   frame->GetScriptController().ExecuteScriptInMainWorld(
       GetScriptSourceCode(), BaseURL(), sanitize_script_errors_,
       FetchOptions());

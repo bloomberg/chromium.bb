@@ -198,8 +198,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // and the caller should rethrow the returned exception. - When "rethrow
   // errors" is not to be set, use kReport. EvaluateModule() "report the error"
   // inside it (if any), and always returns null ScriptValue().
-  virtual ScriptValue ExecuteModule(const ModuleScript*,
-                                    CaptureEvalErrorFlag) = 0;
+  virtual ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) = 0;
 
   virtual ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) = 0;

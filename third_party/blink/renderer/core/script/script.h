@@ -30,7 +30,7 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
   // or
   // https://html.spec.whatwg.org/C/#run-a-module-script,
   // depending on the script type.
-  virtual void RunScript(LocalFrame*, const SecurityOrigin*) const = 0;
+  virtual void RunScript(LocalFrame*, const SecurityOrigin*) = 0;
 
   // For CSP check for inline scripts.
   virtual String InlineSourceTextForCSP() const = 0;

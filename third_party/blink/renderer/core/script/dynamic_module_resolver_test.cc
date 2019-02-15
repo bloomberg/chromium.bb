@@ -87,7 +87,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     fetch_tree_was_called_ = true;
   }
 
-  ScriptValue ExecuteModule(const ModuleScript* module_script,
+  ScriptValue ExecuteModule(ModuleScript* module_script,
                             CaptureEvalErrorFlag capture_error) final {
     EXPECT_EQ(CaptureEvalErrorFlag::kCapture, capture_error);
 
