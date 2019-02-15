@@ -29,7 +29,6 @@
 
 # https://crbug.com/893576
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_falseWontSetCookies
--org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_trueWillSetCookies
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
 -org.chromium.android_webview.test.CookieManagerTest.testEmbedderCanSeeRestrictedCookies
 -org.chromium.android_webview.test.CookieManagerTest.testRejectFileSchemeCookies
@@ -38,9 +37,21 @@
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookiesArePerWebview
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyJavascriptCookie
 
+# https://crbug.com/931641
+-org.chromium.android_webview.test.CookieManagerTest.testRemoveSessionCookiesNullCallback
+-org.chromium.android_webview.test.CookieManagerTest.testSetSecureCookieForHttpUrl
+-org.chromium.android_webview.test.CookieManagerTest.testSetCookie
+-org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookieForWebSocketDisabledCase
+-org.chromium.android_webview.test.CookieManagerTest.testSetCookieWithDomainForUrlWithTrailingSemicolonInCookie
+-org.chromium.android_webview.test.CookieManagerTest.testSetCookieWithDomainForUrl
+-org.chromium.android_webview.test.CookieManagerTest.testRemoveSessionCookies
+-org.chromium.android_webview.test.CookieManagerTest.testSetCookieCallback
+-org.chromium.android_webview.test.CookieManagerTest.testRemoveSessionCookiesCallback
+-org.chromium.android_webview.test.CookieManagerTest.testSetCookieWithDomainForUrlAndExistingDomainAttribute
+-org.chromium.android_webview.test.CookieManagerTest.testCookieExpiration
+
 # https://crbug.com/893580
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
--org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testSetCookieInIframe
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testThirdPartyCookieInIframe
 
 # https://crbug.com/893582

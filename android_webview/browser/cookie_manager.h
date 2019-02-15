@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 
 class GURL;
 
@@ -24,6 +25,7 @@ class CookieStore;
 
 namespace android_webview {
 
+class AwCookieManagerWrapper;
 class BoolCookieCallbackHolder;
 
 // CookieManager creates and owns Webview's CookieStore, in addition to handling
@@ -41,6 +43,11 @@ class CookieManager {
   // Returns the CookieStore, creating it if necessary. This must only be called
   // on the CookieStore TaskRunner.
   net::CookieStore* GetCookieStore();
+  // Passes a |cookie_manager_info| to |cookie_manager_wrapper_|. This may
+  // create an AwCookieManagerWrapper to assign to |cookie_manager_wrapper_|, if
+  // none already exists.
+  void SetMojoCookieManager(
+      network::mojom::CookieManagerPtrInfo cookie_manager_info);
 
   void SetShouldAcceptCookies(bool accept);
   bool GetShouldAcceptCookies();
@@ -65,6 +72,12 @@ class CookieManager {
   CookieManager();
   ~CookieManager();
 
+  // Returns an AwCookieManagerWrapper, creating it if necessary. This must only
+  // be called on the CookieStore TaskRunner. Must only be called when the
+  // NetworkService is enabled, although this may be called before content layer
+  // is initialized.
+  AwCookieManagerWrapper* GetCookieManagerWrapper();
+
   void ExecCookieTaskSync(
       base::OnceCallback<void(base::RepeatingCallback<void(bool)>)> task);
   void ExecCookieTaskSync(
@@ -84,6 +97,9 @@ class CookieManager {
                               net::CookieList* result,
                               const net::CookieList& value,
                               const net::CookieStatusList& excluded_cookies);
+  void GetCookieListCompleted2(base::OnceClosure complete,
+                               net::CookieList* result,
+                               const net::CookieList& value);
 
   void RemoveSessionCookiesHelper(base::RepeatingCallback<void(bool)> callback);
   void RemoveAllCookiesHelper(base::RepeatingCallback<void(bool)> callback);
@@ -112,6 +128,7 @@ class CookieManager {
 
   scoped_refptr<base::SingleThreadTaskRunner> cookie_store_task_runner_;
   std::unique_ptr<net::CookieStore> cookie_store_;
+  std::unique_ptr<AwCookieManagerWrapper> cookie_manager_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };

@@ -28,8 +28,10 @@
 #include "android_webview/browser/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/aw_url_loader_throttle.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
+#include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/net_helpers.h"
+#include "android_webview/browser/net_network_service/aw_cookie_manager_wrapper.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_content_client.h"
@@ -89,6 +91,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -213,6 +216,21 @@ void OnReceivedErrorOnUIThread(
                           false /*safebrowsing_hit*/);
 }
 
+void PassCookieManagerToCookieManagerWrapper(
+    const network::mojom::NetworkContextPtr& network_context) {
+  // Get the CookieManager from the NetworkContext.
+  network::mojom::CookieManagerPtrInfo cookie_manager_info;
+  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_info));
+
+  // Pass the CookieManagerPtrInfo to AwCookieManagerWrapper, so it can use that
+  // CookieManager to implement its APIs on the correct thread.
+  CookieManager* aw_cookie_manager = CookieManager::GetInstance();
+  aw_cookie_manager->GetCookieStoreTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&CookieManager::SetMojoCookieManager,
+                                base::Unretained(aw_cookie_manager),
+                                std::move(cookie_manager_info)));
+}
+
 }  // anonymous namespace
 
 std::string GetProduct() {
@@ -286,6 +304,10 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   // Quic is not currently supported in WebView (http://crbug.com/763187).
   content::GetNetworkService()->DisableQuic();
+
+  // Pass a CookieManager to the code supporting AwCookieManager.java (i.e., the
+  // Cookies APIs).
+  PassCookieManagerToCookieManagerWrapper(network_context);
 
   return network_context;
 }
