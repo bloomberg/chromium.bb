@@ -2313,23 +2313,39 @@
   },
   {
     "name": "memlog",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "erikchen", "ssid", "etienneb", "alph" ],
+    // Memlog is Chrome's heap profiler. It is used for both automated and
+    // manual performance analysis. This flag allows a user or developer to
+    // capture a memlog without disturbing the situation under test by
+    // restarting to apply a switch. It should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "memlog-keep-small-allocations",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "erikchen", "ssid", "etienneb", "alph" ],
+    // Memlog is Chrome's heap profiler. It is used for both automated and
+    // manual performance analysis. This flag allows a user or developer to
+    // capture a memlog without disturbing the situation under test by
+    // restarting to apply a switch. It should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "memlog-sampling",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "erikchen", "ssid", "etienneb", "alph" ],
+    // Memlog is Chrome's heap profiler. It is used for both automated and
+    // manual performance analysis. This flag allows a user or developer to
+    // capture a memlog without disturbing the situation under test by
+    // restarting to apply a switch. It should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "memlog-stack-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "erikchen", "ssid", "etienneb", "alph" ],
+    // Memlog is Chrome's heap profiler. It is used for both automated and
+    // manual performance analysis. This flag allows a user or developer to
+    // capture a memlog without disturbing the situation under test by
+    // restarting to apply a switch. It should not be removed.
+    "expiry_milestone": -1
   },
   {
     "name": "memory-pressure-thresholds",
