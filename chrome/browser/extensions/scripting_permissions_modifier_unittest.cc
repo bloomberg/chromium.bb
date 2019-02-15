@@ -22,6 +22,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
@@ -802,6 +803,37 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
                   ->GetRuntimeGrantedPermissions(extension->id())
                   ->explicit_hosts()
                   .is_empty());
+}
+
+// Test that granting <all_urls> as an optional permission, and then revoking
+// it, behaves properly. Regression test for https://crbug.com/930062.
+TEST_F(ScriptingPermissionsModifierUnitTest,
+       RemoveAllURLsGrantedOptionalPermission) {
+  RuntimeHostPermissionsForcedScope enabled_scope(true);
+  InitializeEmptyExtensionService();
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .SetManifestKey("optional_permissions",
+                          ListBuilder().Append("<all_urls>").Build())
+          .Build();
+  InitializeExtensionPermissions(profile(), *extension);
+
+  // Also verify the extension doesn't have file access, so that <all_urls>
+  // shouldn't match file URLs either.
+  EXPECT_FALSE(util::AllowFileAccess(extension->id(), profile()));
+
+  {
+    PermissionsUpdater updater(profile());
+    updater.GrantOptionalPermissions(
+        *extension, PermissionsParser::GetOptionalPermissions(extension.get()),
+        base::DoNothing());
+  }
+
+  ScriptingPermissionsModifier(profile(), extension.get())
+      .SetWithholdHostPermissions(true);
+
+  EXPECT_THAT(GetEffectivePatternsAsStrings(*extension), testing::IsEmpty());
 }
 
 }  // namespace extensions
