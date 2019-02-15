@@ -10,6 +10,7 @@
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
 namespace vr {
@@ -24,6 +25,29 @@ VR_BASE_EXPORT UScriptCode UScriptGetScript(UChar32 codepoint, UErrorCode* err);
 
 VR_BASE_EXPORT base::string16 FormatUrlForVr(const GURL& gurl,
                                              url::Parsed* new_parsed);
+
+enum VrIconId {
+  kVrNoneIcon,
+  kVrReloadIcon,
+  kVrVideocamIcon,
+  kVrBackArrowIcon,
+  kVrInfoOutlineIcon,
+  kVrScreenShareIcon,
+  kVrCloseRoundedIcon,
+  kVrForwardArrowIcon,
+  kVrBluetoothConnectedIcon,
+  kVrMicIcon,
+  kVrMyLocationIcon,
+  kVrRepositionIcon,
+  kVrMoreVertIcon,
+  kVrSadTabIcon,
+  kVrRemoveCircleOutlineIcon,
+  kVrDaydreamControllerAppButtonIcon,
+  kVrDaydreamControllerHomeButtonIcon,
+  kVrOpenInBrowserIcon,
+};
+
+VR_BASE_EXPORT const gfx::VectorIcon& GetVrIcon(VrIconId icon);
 
 }  // namespace vr
 

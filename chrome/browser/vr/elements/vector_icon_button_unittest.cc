@@ -6,14 +6,14 @@
 
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
-#include "components/vector_icons/vector_icons.h"
+#include "chrome/browser/vr/ui_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
 
 TEST(VectorIconButton, CornerRadiiOnResize) {
   VectorIconButton button(base::RepeatingCallback<void()>(),
-                          vector_icons::kMicIcon, nullptr);
+                          GetVrIcon(kVrMicIcon), nullptr);
   button.SetSize(1.0f, 1.0f);
   button.set_corner_radius(0.25f);
 

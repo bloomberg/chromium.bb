@@ -21,7 +21,6 @@
 #include "cc/animation/animation_target.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
@@ -71,12 +70,9 @@
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
-#include "chrome/browser/vr/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
@@ -502,7 +498,7 @@ std::unique_ptr<UiElement> CreateControllerElement(
 
   auto app_button =
       Create<VectorIcon>(kControllerAppButton, kPhaseForeground, 100);
-  app_button->SetIcon(kDaydreamControllerAppButtonIcon);
+  app_button->SetIcon(GetVrIcon(kVrDaydreamControllerAppButtonIcon));
   app_button->SetColor(model->color_scheme().controller_button);
   app_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   app_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
@@ -524,7 +520,7 @@ std::unique_ptr<UiElement> CreateControllerElement(
 
   auto home_button =
       Create<VectorIcon>(kControllerHomeButton, kPhaseForeground, 100);
-  home_button->SetIcon(kDaydreamControllerHomeButtonIcon);
+  home_button->SetIcon(GetVrIcon(kVrDaydreamControllerHomeButtonIcon));
   home_button->SetColor(model->color_scheme().controller_button);
   home_button->SetSize(kControllerSmallButtonSize, kControllerSmallButtonSize);
   home_button->SetRotate(1, 0, 0, -base::kPiFloat / 2);
@@ -1468,7 +1464,7 @@ void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
             switch (prompt) {
               case ExternalPromptNotificationType::kPromptGenericPermission:
                 message_id = IDS_VR_DESKTOP_GENERIC_PERMISSION_PROMPT;
-                icon = &kOpenInBrowserIcon;
+                icon = &GetVrIcon(kVrOpenInBrowserIcon);
                 break;
               case ExternalPromptNotificationType::kPromptNone:
                 NOTREACHED();
@@ -1584,7 +1580,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
 
   auto timeout_icon =
       Create<VectorIcon>(kWebVrTimeoutMessageIcon, kPhaseForeground, 512);
-  timeout_icon->SetIcon(kSadTabIcon);
+  timeout_icon->SetIcon(GetVrIcon(kVrSadTabIcon));
   timeout_icon->set_hit_testable(true);
   timeout_icon->SetSize(kTimeoutMessageIconWidthDMM,
                         kTimeoutMessageIconHeightDMM);
@@ -1606,7 +1602,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
       Create<DiscButton>(kWebVrTimeoutMessageButton, kPhaseForeground,
                          base::BindRepeating(&UiBrowserInterface::ExitPresent,
                                              base::Unretained(browser_)),
-                         vector_icons::kCloseRoundedIcon, audio_delegate_);
+                         GetVrIcon(kVrCloseRoundedIcon), audio_delegate_);
   button->SetVisible(false);
   button->SetTranslate(0, -kTimeoutMessageTextWidthDMM, 0);
   button->SetRotate(1, 0, 0, kTimeoutButtonRotationRad);
@@ -1743,7 +1739,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
                 &Rect::SetColor);
 
   auto microphone_icon = std::make_unique<VectorIcon>(512);
-  microphone_icon->SetIcon(vector_icons::kMicIcon);
+  microphone_icon->SetIcon(GetVrIcon(kVrMicIcon));
   microphone_icon->SetName(kSpeechRecognitionMicrophoneIcon);
   microphone_icon->SetDrawPhase(kPhaseForeground);
   microphone_icon->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
@@ -1810,7 +1806,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       kSpeechRecognitionListeningCloseButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::SetVoiceSearchActive,
                           base::Unretained(browser_), false),
-      vector_icons::kCloseRoundedIcon, audio_delegate_);
+      GetVrIcon(kVrCloseRoundedIcon), audio_delegate_);
   close_button->SetSize(kVoiceSearchCloseButtonDiameter,
                         kVoiceSearchCloseButtonDiameter);
   close_button->set_hover_offset(kButtonZOffsetHoverDMM * kContentDistance);
@@ -1923,7 +1919,7 @@ void UiSceneCreator::CreateControllers() {
   auto reposition_icon = std::make_unique<VectorIcon>(128);
   reposition_icon->set_owner_name_for_test(kRepositionCursor);
   reposition_icon->SetType(kTypeCursorForeground);
-  reposition_icon->SetIcon(kRepositionIcon);
+  reposition_icon->SetIcon(GetVrIcon(kVrRepositionIcon));
   reposition_icon->SetDrawPhase(kPhaseForeground);
   reposition_icon->SetSize(kRepositionCursorSize, kRepositionCursorSize);
   VR_BIND_COLOR(model_, reposition_icon.get(), &ColorScheme::cursor_foreground,
@@ -2017,7 +2013,7 @@ void UiSceneCreator::CreateUrlBar() {
       kUrlBarBackButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::NavigateBack,
                           base::Unretained(browser_)),
-      vector_icons::kBackArrowIcon, audio_delegate_);
+      GetVrIcon(kVrBackArrowIcon), audio_delegate_);
   back_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
   back_button->SetCornerRadii(
       {kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2, 0});
@@ -2082,7 +2078,7 @@ void UiSceneCreator::CreateUrlBar() {
       kUrlBarSecurityButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::ShowPageInfo,
                           base::Unretained(browser_)),
-      gfx::kNoneIcon, audio_delegate_);
+      GetVrIcon(kVrNoneIcon), audio_delegate_);
   security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
@@ -2165,7 +2161,7 @@ void UiSceneCreator::CreateUrlBar() {
       base::BindRepeating(
           [](Model* model) { model->overflow_menu_enabled = true; },
           base::Unretained(model_)),
-      kMoreVertIcon, audio_delegate_);
+      GetVrIcon(kVrMoreVertIcon), audio_delegate_);
   overflow_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
   overflow_button->SetCornerRadii(
       {0, kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2});
@@ -2227,8 +2223,8 @@ void UiSceneCreator::CreateOverflowMenu() {
   std::vector<
       std::tuple<UiElementName, LayoutAlignment, const gfx::VectorIcon&>>
       menu_buttons = {
-          {kOverflowMenuForwardButton, LEFT, vector_icons::kForwardArrowIcon},
-          {kOverflowMenuReloadButton, RIGHT, vector_icons::kReloadIcon},
+          {kOverflowMenuForwardButton, LEFT, GetVrIcon(kVrForwardArrowIcon)},
+          {kOverflowMenuReloadButton, RIGHT, GetVrIcon(kVrReloadIcon)},
       };
   for (auto& item : menu_buttons) {
     auto button = Create<VectorIconButton>(std::get<0>(item), kPhaseForeground,
@@ -2527,7 +2523,7 @@ void UiSceneCreator::CreateOmnibox() {
       base::BindRepeating(
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
           base::Unretained(browser_), base::Unretained(ui_)),
-      vector_icons::kMicIcon, audio_delegate_);
+      GetVrIcon(kVrMicIcon), audio_delegate_);
   mic_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   mic_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   mic_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
@@ -2571,7 +2567,7 @@ void UiSceneCreator::CreateOmnibox() {
       base::BindRepeating(
           [](Model* model) { model->pop_mode(kModeEditingOmnibox); },
           base::Unretained(model_)),
-      vector_icons::kBackArrowIcon, audio_delegate_);
+      GetVrIcon(kVrBackArrowIcon), audio_delegate_);
   close_button->SetSize(kOmniboxCloseButtonDiameterDMM,
                         kOmniboxCloseButtonDiameterDMM);
   close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
@@ -2651,7 +2647,7 @@ void UiSceneCreator::CreateCloseButton() {
       base::Unretained(model_), base::Unretained(browser_));
   std::unique_ptr<DiscButton> element =
       Create<DiscButton>(kCloseButton, kPhaseForeground, click_handler,
-                         vector_icons::kCloseRoundedIcon, audio_delegate_);
+                         GetVrIcon(kVrCloseRoundedIcon), audio_delegate_);
   element->set_contributes_to_parent_bounds(false);
   element->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
@@ -2712,7 +2708,7 @@ void UiSceneCreator::CreatePrompts() {
             switch (type) {
               case kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission:
                 message_id = IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION;
-                icon = &vector_icons::kMicIcon;
+                icon = &GetVrIcon(kVrMicIcon);
                 primary_button_text_id =
                     IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON;
                 secondary_button_text_id =
@@ -2720,7 +2716,7 @@ void UiSceneCreator::CreatePrompts() {
                 break;
               case kModalPromptTypeUpdateKeyboard:
                 message_id = IDS_VR_UPDATE_KEYBOARD_PROMPT;
-                icon = &vector_icons::kInfoOutlineIcon;
+                icon = &GetVrIcon(kVrInfoOutlineIcon);
                 primary_button_text_id =
                     IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON;
                 secondary_button_text_id =
@@ -2728,7 +2724,7 @@ void UiSceneCreator::CreatePrompts() {
                 break;
               case kModalPromptTypeExitVRForSiteInfo:
                 message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO;
-                icon = &vector_icons::kInfoOutlineIcon;
+                icon = &GetVrIcon(kVrInfoOutlineIcon);
                 primary_button_text_id =
                     IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
                 secondary_button_text_id = IDS_VR_BUTTON_BACK;
@@ -2737,7 +2733,7 @@ void UiSceneCreator::CreatePrompts() {
               case kModalPromptTypeExitVRForConnectionSecurityInfo:
               case kModalPromptTypeGenericUnsupportedFeature:
                 message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION;
-                icon = &vector_icons::kInfoOutlineIcon;
+                icon = &GetVrIcon(kVrInfoOutlineIcon);
                 primary_button_text_id =
                     IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
                 secondary_button_text_id = IDS_VR_BUTTON_BACK;
@@ -2788,7 +2784,7 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
 
   IndicatorSpec app_button_spec = {kNone,
                                    kWebVrExclusiveScreenToast,
-                                   kRemoveCircleOutlineIcon,
+                                   GetVrIcon(kVrRemoveCircleOutlineIcon),
                                    IDS_PRESS_APP_TO_EXIT,
                                    0,
                                    0,

@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/elements/indicator_spec.h"
-#include "chrome/browser/vr/vector_icons/vector_icons.h"
+#include "chrome/browser/vr/ui_support.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -43,7 +42,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
 
   std::vector<IndicatorSpec> specs = {
       {kLocationAccessIndicator, kWebVrLocationAccessIndicator,
-       kMyLocationIcon,
+       GetVrIcon(kVrMyLocationIcon),
        IDS_VR_SHELL_SITE_IS_TRACKING_LOCATION,
        // Background tabs cannot track high accuracy location.
        0,
@@ -52,7 +51,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kAudioCaptureIndicator, kWebVrAudioCaptureIndicator,
-       vector_icons::kMicIcon,
+       GetVrIcon(kVrMicIcon),
        IDS_VR_SHELL_SITE_IS_USING_MICROPHONE,
        IDS_VR_SHELL_BG_IS_USING_MICROPHONE,
        IDS_VR_SHELL_SITE_CAN_USE_MICROPHONE,
@@ -60,7 +59,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kVideoCaptureIndicator, kWebVrVideoCaptureIndicator,
-       vector_icons::kVideocamIcon,
+       GetVrIcon(kVrVideocamIcon),
        IDS_VR_SHELL_SITE_IS_USING_CAMERA,
        IDS_VR_SHELL_BG_IS_USING_CAMERA,
        IDS_VR_SHELL_SITE_CAN_USE_CAMERA,
@@ -68,7 +67,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kBluetoothConnectedIndicator, kWebVrBluetoothConnectedIndicator,
-       vector_icons::kBluetoothConnectedIcon,
+       GetVrIcon(kVrBluetoothConnectedIcon),
        IDS_VR_SHELL_SITE_IS_USING_BLUETOOTH,
        IDS_VR_SHELL_BG_IS_USING_BLUETOOTH,
        IDS_VR_SHELL_SITE_CAN_USE_BLUETOOTH,
@@ -76,7 +75,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kScreenCaptureIndicator, kWebVrScreenCaptureIndicator,
-       vector_icons::kScreenShareIcon,
+       GetVrIcon(kVrScreenShareIcon),
        IDS_VR_SHELL_SITE_IS_SHARING_SCREEN,
        IDS_VR_SHELL_BG_IS_SHARING_SCREEN,
        IDS_VR_SHELL_SITE_CAN_SHARE_SCREEN,
