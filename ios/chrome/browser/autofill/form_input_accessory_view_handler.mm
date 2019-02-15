@@ -226,7 +226,7 @@ NSArray* FindDescendantToolbarItemsForActionName(
   NSString* actionName = autofill::kFormSuggestionAssistButtonDone;
   BOOL performedAction = [self executeFormAssistAction:actionName];
 
-  if (!performedAction) {
+  if (!performedAction && [_lastFocusFormActivityWebFrameID length]) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
     [_JSSuggestionManager

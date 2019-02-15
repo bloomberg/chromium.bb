@@ -605,18 +605,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
   // Make server respond so URL1 becomes committed.
   [self setServerPaused:NO];
-  if (base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
-    // With frame messaging, only one back is executed. This is the expected
-    // behavior.
-    [ChromeEarlGrey waitForWebViewContainingText:kTestPage2];
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-        assertWithMatcher:grey_notNil()];
-  } else {
-    // TODO(crbug.com/866406): fix the test to have documented behavior.
-    [ChromeEarlGrey waitForWebViewContainingText:kTestPage1];
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-        assertWithMatcher:grey_notNil()];
-  }
+  // TODO(crbug.com/866406): fix the test to have documented behavior.
+  [ChromeEarlGrey waitForWebViewContainingText:kTestPage1];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 #pragma mark -
