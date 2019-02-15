@@ -27,6 +27,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "build/build_config.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -192,7 +193,14 @@ PriorityClassChangeResult RelaunchAndDoProcessPriorityAdjustment() {
 }  // namespace
 
 // Launching a subprocess at normal priority class is a noop.
-TEST(SetupUtilTest, AdjustFromNormalPriority) {
+// See crbug.com/930336: win-asap bots run unit tests using
+// BELOW_NORMAL_PRIORITY_CLASS (0x4000) which prevents running some tests.
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_AdjustFromNormalPriority DISABLED_AdjustFromNormalPriority
+#else
+#define MAYBE_AdjustFromNormalPriority AdjustFromNormalPriority
+#endif
+TEST(SetupUtilTest, MAYBE_AdjustFromNormalPriority) {
   ASSERT_EQ(static_cast<DWORD>(NORMAL_PRIORITY_CLASS),
             ::GetPriorityClass(::GetCurrentProcess()));
   EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
@@ -200,7 +208,15 @@ TEST(SetupUtilTest, AdjustFromNormalPriority) {
 
 // Launching a subprocess below normal priority class drops it to bg mode for
 // sufficiently recent operating systems.
-TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
+// See crbug.com/930336: win-asap bots run unit tests using
+// BELOW_NORMAL_PRIORITY_CLASS (0x4000) which prevents running some tests.
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_AdjustFromBelowNormalPriority \
+  DISABLED_AdjustFromBelowNormalPriority
+#else
+#define MAYBE_AdjustFromBelowNormalPriority AdjustFromBelowNormalPriority
+#endif
+TEST(SetupUtilTest, MAYBE_AdjustFromBelowNormalPriority) {
   std::unique_ptr<ScopedPriorityClass> below_normal =
       ScopedPriorityClass::Create(BELOW_NORMAL_PRIORITY_CLASS);
   ASSERT_TRUE(below_normal);
