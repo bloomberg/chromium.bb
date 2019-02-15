@@ -1846,9 +1846,6 @@ extern const char kBulkPrintersDescription[];
 extern const char kCaptivePortalBypassProxyName[];
 extern const char kCaptivePortalBypassProxyDescription[];
 
-extern const char kCrOSComponentName[];
-extern const char kCrOSComponentDescription[];
-
 extern const char kCrOSContainerName[];
 extern const char kCrOSContainerDescription[];
 

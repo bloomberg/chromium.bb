@@ -230,33 +230,31 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                          PrinterSetupCallback cb,
                          const std::string& ppd_contents,
                          const std::vector<std::string>& ppd_filters) {
-    if (base::FeatureList::IsEnabled(features::kCrOSComponent)) {
-      std::set<std::string> components_requested;
-      for (const auto& ppd_filter : ppd_filters) {
-        for (const auto& component : GetComponentizedFilters()) {
-          if (component.first == ppd_filter) {
-            components_requested.insert(component.second);
-          }
+    std::set<std::string> components_requested;
+    for (const auto& ppd_filter : ppd_filters) {
+      for (const auto& component : GetComponentizedFilters()) {
+        if (component.first == ppd_filter) {
+          components_requested.insert(component.second);
         }
       }
-      if (components_requested.size() == 1) {
-        // Only allow one filter request in ppd file.
-        auto& component_name = *components_requested.begin();
-        g_browser_process->platform_part()->cros_component_manager()->Load(
-            component_name,
-            component_updater::CrOSComponentManager::MountPolicy::kMount,
-            component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
-            base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
-                           weak_factory_.GetWeakPtr(), printer, ppd_contents,
-                           std::move(cb)));
-        return;
-      }
-      if (components_requested.size() > 1) {
-        PRINTER_LOG(ERROR) << printer.make_and_model()
-                           << " More than one filter component is requested.";
-        std::move(cb).Run(PrinterSetupResult::kFatalError);
-        return;
-      }
+    }
+    if (components_requested.size() == 1) {
+      // Only allow one filter request in ppd file.
+      auto& component_name = *components_requested.begin();
+      g_browser_process->platform_part()->cros_component_manager()->Load(
+          component_name,
+          component_updater::CrOSComponentManager::MountPolicy::kMount,
+          component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
+          base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
+                         weak_factory_.GetWeakPtr(), printer, ppd_contents,
+                         std::move(cb)));
+      return;
+    }
+    if (components_requested.size() > 1) {
+      PRINTER_LOG(ERROR) << printer.make_and_model()
+                         << " More than one filter component is requested.";
+      std::move(cb).Run(PrinterSetupResult::kFatalError);
+      return;
     }
     AddPrinter(printer, ppd_contents, std::move(cb));
   }

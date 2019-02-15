@@ -3086,10 +3086,6 @@ const char kCaptivePortalBypassProxyDescription[] =
     "different captive portals. This enables opening captive portal "
     "authorization dialog in a separate window, which ignores proxy settings.";
 
-const char kCrOSComponentName[] = "Chrome OS Component";
-const char kCrOSComponentDescription[] =
-    "Disable the use of componentized escpr CUPS filter.";
-
 const char kCrOSContainerName[] = "Chrome OS Container";
 const char kCrOSContainerDescription[] =
     "Enable the use of Chrome OS Container utility.";
