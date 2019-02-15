@@ -37,22 +37,13 @@ void WebComponent::LoadUrl(const GURL& url) {
 
 WebComponent::WebComponent(
     WebContentRunner* runner,
-    fuchsia::sys::StartupInfo startup_info,
+    std::unique_ptr<base::fuchsia::StartupContext> context,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request)
-    : runner_(runner), controller_binding_(this) {
+    : runner_(runner),
+      startup_context_(std::move(context)),
+      controller_binding_(this) {
   DCHECK(runner);
-
-  // Handle the incoming services directory for this component.
-  if (startup_info.launch_info.additional_services &&
-      startup_info.launch_info.additional_services->host_directory) {
-    additional_services_ =
-        std::make_unique<base::fuchsia::ServiceDirectoryClient>(
-            fidl::InterfaceHandle<fuchsia::io::Directory>(std::move(
-                startup_info.launch_info.additional_services->host_directory)));
-    additional_service_names_ =
-        std::move(startup_info.launch_info.additional_services->names);
-  }
 
   // If the ComponentController request is valid then bind it, and configure it
   // to destroy this component on error.
@@ -70,17 +61,12 @@ WebComponent::WebComponent(
   // Create the underlying Frame and get its NavigationController.
   runner_->context()->CreateFrame(frame_.NewRequest());
 
-  // Create a ServiceDirectory for this component, and publish a ViewProvider
-  // into it, for the caller to use to create a View for this component.
-  // Note that we must publish ViewProvider before returning control to the
-  // message-loop, to ensure that it is available before the ServiceDirectory
-  // starts processing requests.
-  service_directory_ = std::make_unique<base::fuchsia::ServiceDirectory>(
-      fidl::InterfaceRequest<fuchsia::io::Directory>(
-          std::move(startup_info.launch_info.directory_request)));
+  // Publish ViewProvider before returning control to the message-loop, to
+  // ensure that it is available before the ServiceDirectory starts processing
+  // requests.
   view_provider_binding_ = std::make_unique<
       base::fuchsia::ScopedServiceBinding<fuchsia::ui::app::ViewProvider>>(
-      service_directory_.get(), this);
+      startup_context()->public_services(), this);
 }
 
 void WebComponent::Kill() {

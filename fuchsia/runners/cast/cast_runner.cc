@@ -48,16 +48,18 @@ void CastRunner::StartComponent(
   const std::string cast_app_id(cast_url.GetContent());
   app_config_manager_->GetConfig(
       cast_app_id,
-      [this, startup_info = std::move(startup_info),
+      [this,
+       startup_context = std::make_unique<base::fuchsia::StartupContext>(
+           std::move(startup_info)),
        controller_request = std::move(controller_request)](
           chromium::cast::ApplicationConfigPtr app_config) mutable {
-        GetConfigCallback(std::move(startup_info),
+        GetConfigCallback(std::move(startup_context),
                           std::move(controller_request), std::move(app_config));
       });
 }
 
 void CastRunner::GetConfigCallback(
-    fuchsia::sys::StartupInfo startup_info,
+    std::unique_ptr<base::fuchsia::StartupContext> startup_context,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request,
     chromium::cast::ApplicationConfigPtr app_config) {
@@ -66,6 +68,7 @@ void CastRunner::GetConfigCallback(
 
     // For test purposes, we need to call RegisterComponent even if there is no
     // URL to launch.
+    // TODO: Replace this hack, e.g. with an test-specific callback.
     RegisterComponent(std::unique_ptr<WebComponent>(nullptr));
     return;
   }
@@ -73,7 +76,7 @@ void CastRunner::GetConfigCallback(
   // If a config was returned then use it to launch a component.
   GURL cast_app_url(app_config->web_url);
   auto component = std::make_unique<CastComponent>(
-      this, std::move(startup_info), std::move(controller_request));
+      this, std::move(startup_context), std::move(controller_request));
   component->LoadUrl(std::move(cast_app_url));
   RegisterComponent(std::move(component));
 }

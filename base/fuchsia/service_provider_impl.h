@@ -12,8 +12,10 @@
 #include <lib/zx/channel.h>
 #include <string>
 
+#include "base/base_export.h"
 #include "base/callback.h"
 #include "base/fuchsia/service_directory_client.h"
+#include "base/macros.h"
 
 namespace base {
 namespace fuchsia {

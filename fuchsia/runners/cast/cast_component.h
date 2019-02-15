@@ -21,7 +21,7 @@ class CastComponent : public WebComponent,
                       public chromium::web::NavigationEventObserver {
  public:
   CastComponent(CastRunner* runner,
-                fuchsia::sys::StartupInfo startup_info,
+                std::unique_ptr<base::fuchsia::StartupContext> startup_context,
                 fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                     controller_request);
   ~CastComponent() override;
