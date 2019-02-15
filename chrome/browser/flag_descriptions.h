@@ -867,9 +867,6 @@ extern const char kOnTheFlyMhtmlHashComputationDescription[];
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
 
-extern const char kOverflowIconsForMediaControlsName[];
-extern const char kOverflowIconsForMediaControlsDescription[];
-
 extern const char kOriginTrialsName[];
 extern const char kOriginTrialsDescription[];
 
@@ -1174,9 +1171,6 @@ extern const char kUiPartialSwapDescription[];
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
-extern const char kUseModernMediaControlsName[];
-extern const char kUseModernMediaControlsDescription[];
-
 extern const char kUsePdfCompositorServiceName[];
 extern const char kUsePdfCompositorServiceDescription[];
 
@@ -1397,9 +1391,6 @@ extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 
 extern const char kEnableCustomContextMenuName[];
 extern const char kEnableCustomContextMenuDescription[];
-
-extern const char kEnableMediaControlsExpandGestureName[];
-extern const char kEnableMediaControlsExpandGestureDescription[];
 
 extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
