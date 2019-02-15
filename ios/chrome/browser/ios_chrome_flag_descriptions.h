@@ -345,6 +345,11 @@ extern const char kUsdzPreviewDescription[];
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
+// Title and description for the flag to use the Clear browsing data API from
+// web.
+extern const char kWebClearBrowsingDataName[];
+extern const char kWebClearBrowsingDataDescription[];
+
 // Title and description for the flag to enable web frame messaging.
 extern const char kWebFrameMessagingName[];
 extern const char kWebFrameMessagingDescription[];

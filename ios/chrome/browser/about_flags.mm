@@ -558,6 +558,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserContainerKeepsContentViewName,
      flag_descriptions::kBrowserContainerKeepsContentViewDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerKeepsContentView)},
+    {"web-clear-browsing-data", flag_descriptions::kWebClearBrowsingDataName,
+     flag_descriptions::kWebClearBrowsingDataDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(experimental_flags::kWebClearBrowsingData)},
 };
 
 // Add all switches from experimental flags to |command_line|.

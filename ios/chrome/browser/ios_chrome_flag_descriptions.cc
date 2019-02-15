@@ -415,6 +415,10 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
+const char kWebClearBrowsingDataName[] = "Web-API for browsing data";
+const char kWebClearBrowsingDataDescription[] =
+    "When enabled the Clear Browsing Data feature is using the web API.";
+
 const char kWebFrameMessagingName[] = "Web Frame Messaging";
 const char kWebFrameMessagingDescription[] =
     "When enabled, API will be injected into webpages to allow sending messages"

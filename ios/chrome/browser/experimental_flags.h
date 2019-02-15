@@ -18,6 +18,10 @@ namespace experimental_flags {
 // ExternalFileController.
 extern const base::Feature kExternalFilesLoadedInWebState;
 
+// Feature to use the clear browsing data from web instead of the one from
+// chrome.
+extern const base::Feature kWebClearBrowsingData;
+
 enum GaiaEnvironment {
   GAIA_ENVIRONMENT_PROD,
   GAIA_ENVIRONMENT_STAGING,
