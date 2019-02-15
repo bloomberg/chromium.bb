@@ -20,35 +20,15 @@
 
 namespace content {
 class RenderViewImpl;
-}
+}  // namespace content
 
 namespace test_runner {
 class WebTestInterfaces;
 
-class TEST_RUNNER_EXPORT WebFrameTestProxyBase {
- public:
-  blink::WebLocalFrame* web_frame() const { return web_frame_; }
-  void set_web_frame(blink::WebLocalFrame* frame) {
-    DCHECK(frame);
-    DCHECK(!web_frame_);
-    web_frame_ = frame;
-  }
-
- protected:
-  WebFrameTestProxyBase() = default;
-  ~WebFrameTestProxyBase() = default;
-
- private:
-  blink::WebLocalFrame* web_frame_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxyBase);
-};
-
 // WebFrameTestProxy is used during running web tests instead of a
 // RenderFrameImpl to inject test-only behaviour by overriding methods in the
 // base class.
-class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl,
-                                             public WebFrameTestProxyBase {
+class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
  public:
   template <typename... Args>
   explicit WebFrameTestProxy(Args&&... args)

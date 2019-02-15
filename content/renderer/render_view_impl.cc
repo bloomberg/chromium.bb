@@ -464,14 +464,21 @@ cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                                const mojom::CreateViewParams& params)
-    : render_widget_(new RenderWidget(
-          params.main_frame_widget_routing_id,
-          compositor_deps,
-          params.visual_properties.screen_info,
-          params.visual_properties.display_mode,
-          /*is_frozen=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
-          params.hidden,
-          params.never_visible)),
+    : render_widget_([compositor_deps, &params] {
+        // TODO(https://crbug.com/545684): This is a transitor hack
+        // until the creation of RenderWidget is taken out of the constructor.
+        auto render_widget = RenderWidget::CreateForFrame(
+            params.main_frame_widget_routing_id, compositor_deps,
+            params.visual_properties.screen_info,
+            params.visual_properties.display_mode,
+            /*is_frozen=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
+            params.hidden, params.never_visible,
+            /*widget_request=*/nullptr);
+        // The lifetime |render_widget_| is handled manually for the
+        // mainframe widget. The matching Release() is in Initialize().
+        render_widget->AddRef();
+        return render_widget.get();
+      }()),
       routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
@@ -507,7 +514,14 @@ void RenderViewImpl::Initialize(
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
+
+  // The GetWidget->Init() call causes an AddRef() to itself meaning that
+  // IPC system has taken conceptual ownership of the object. RenderView
+  // can and must now manually Release() the RenderWidget to balance out the
+  // extra refcount it had been using to preserve the RenderWidget from
+  // construction to initialization.
   GetWidget()->Init(std::move(show_callback), webview_->MainFrameWidget());
+  GetWidget()->Release();
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -1092,6 +1106,10 @@ void RenderViewImpl::DidCloseWidget() {
   g_view_map.Get().erase(webview_);
   webview_ = nullptr;
   g_routing_id_view_map.Get().erase(GetRoutingID());
+
+  // The |render_widget_| is deleted after DidCloseWidget() returns. Drop the
+  // reference to it to avoid a UaF.
+  render_widget_ = nullptr;
 }
 
 void RenderViewImpl::CancelPagePopupForWidget() {
@@ -1454,7 +1472,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // RenderWidget for the frame making the popup.
   RenderWidget* view_render_widget = GetWidget();
 
-  auto popup_widget = base::MakeRefCounted<RenderWidget>(
+  auto popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
       view_render_widget->screen_info(), blink::kWebDisplayModeUndefined,
       /*is_frozen=*/false,

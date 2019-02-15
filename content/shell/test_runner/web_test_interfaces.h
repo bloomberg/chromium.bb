@@ -24,9 +24,9 @@ namespace test_runner {
 
 class TestInterfaces;
 class WebFrameTestClient;
-class WebFrameTestProxyBase;
+class WebFrameTestProxy;
 class WebTestDelegate;
-class WebViewTestProxyBase;
+class WebViewTestProxy;
 class WebTestRunner;
 
 class TEST_RUNNER_EXPORT WebTestInterfaces {
@@ -57,10 +57,10 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   // Creates a WebLocalFrameClient implementation providing test behavior (i.e.
   // forwarding javascript console output to the test harness).  The caller
   // should guarantee that the returned object won't be used beyond the lifetime
-  // of WebTestInterfaces and/or the lifetime of |web_view_test_proxy_base|.
+  // of WebTestInterfaces and/or the lifetime of |web_view_test_proxy|.
   std::unique_ptr<WebFrameTestClient> CreateWebFrameTestClient(
-      WebViewTestProxyBase* web_view_test_proxy_base,
-      WebFrameTestProxyBase* web_frame_test_proxy_base);
+      WebViewTestProxy* web_view_test_proxy,
+      WebFrameTestProxy* web_frame_test_proxy);
 
   // Gets a list of currently opened windows created by the current test.
   std::vector<blink::WebView*> GetWindowList();

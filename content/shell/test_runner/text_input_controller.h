@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
 class WebInputMethodController;
@@ -19,14 +20,14 @@ class WebView;
 
 namespace test_runner {
 
-class WebViewTestProxyBase;
+class WebViewTestProxy;
 
 // TextInputController is bound to window.textInputController in Javascript
 // when content_shell is running. Web tests use it to exercise various
 // corners of text input.
-class TextInputController {
+class TEST_RUNNER_EXPORT TextInputController {
  public:
-  explicit TextInputController(WebViewTestProxyBase* web_view_test_proxy_base);
+  explicit TextInputController(WebViewTestProxy* web_view_test_proxy);
   ~TextInputController();
 
   void Install(blink::WebLocalFrame* frame);
@@ -55,7 +56,7 @@ class TextInputController {
   // accepting IME. Could return nullptr if no such frame exists.
   blink::WebInputMethodController* GetInputMethodController();
 
-  WebViewTestProxyBase* web_view_test_proxy_base_;
+  WebViewTestProxy* web_view_test_proxy_;
 
   base::WeakPtrFactory<TextInputController> weak_factory_;
 

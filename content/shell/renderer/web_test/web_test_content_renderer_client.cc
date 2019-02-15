@@ -72,23 +72,16 @@ void WebTestContentRendererClient::RenderThreadStarted() {
 
 void WebTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
-  test_runner::WebFrameTestProxyBase* frame_proxy =
-      GetWebFrameTestProxyBase(render_frame);
-  frame_proxy->set_web_frame(render_frame->GetWebFrame());
   new WebTestRenderFrameObserver(render_frame);
 }
 
 void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
   new ShellRenderViewObserver(render_view);
 
-  test_runner::WebViewTestProxyBase* proxy =
-      GetWebViewTestProxyBase(render_view);
-  proxy->set_web_view(render_view->GetWebView());
-  // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
-  // local root in WebFrameTestProxy instead of having only the WebWidget for
-  // the main frame in WebViewTestProxy.
-  proxy->web_widget_test_proxy_base()->set_web_widget(
-      render_view->GetWebView()->MainFrameWidget());
+  // TODO(https://crbug.com/545684): Does this function need to exist? Can
+  // this all just be in the CreateWebViewTestProxy() or does
+  // RenderViewCreated() get manually invoked by the test runner?
+  test_runner::WebViewTestProxy* proxy = GetWebViewTestProxy(render_view);
   proxy->Reset();
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);

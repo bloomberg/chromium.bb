@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_ax_object_proxy.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "v8/include/v8.h"
@@ -22,12 +23,11 @@ class WebView;
 
 namespace test_runner {
 
-class WebViewTestProxyBase;
+class WebViewTestProxy;
 
-class AccessibilityController {
+class TEST_RUNNER_EXPORT AccessibilityController {
  public:
-  explicit AccessibilityController(
-      WebViewTestProxyBase* web_view_test_proxy_base);
+  explicit AccessibilityController(WebViewTestProxy* web_view_test_proxy);
   ~AccessibilityController();
 
   void Reset();
@@ -61,7 +61,7 @@ class AccessibilityController {
   v8::Persistent<v8::Function> notification_callback_;
 
   blink::WebView* web_view();
-  WebViewTestProxyBase* web_view_test_proxy_base_;
+  WebViewTestProxy* web_view_test_proxy_;
 
   std::unique_ptr<blink::WebAXContext> ax_context_;
 

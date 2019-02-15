@@ -158,22 +158,51 @@ class CONTENT_EXPORT RenderWidget
     TTFAP_5MIN_AFTER_BACKGROUNDED,
   };
 
-  // An Init*() method must be called after creating a RenderWidget, which will
-  // make the RenderWidget self-referencing. Then it can be deleted by calling
-  // Close().
-  RenderWidget(int32_t widget_routing_id,
-               CompositorDependencies* compositor_deps,
-               const ScreenInfo& screen_info,
-               blink::WebDisplayMode display_mode,
-               bool is_frozen,
-               bool hidden,
-               bool never_visible,
-               mojom::WidgetRequest widget_request = nullptr);
+  // Convenience type for creation method taken by InstallCreateForFrameHook().
+  // The method signature matches the RenderWidget constructor.
+  using CreateRenderWidgetFunction =
+      scoped_refptr<RenderWidget> (*)(int32_t,
+                                      CompositorDependencies*,
+                                      const ScreenInfo&,
+                                      blink::WebDisplayMode display_mode,
+                                      bool,
+                                      bool,
+                                      bool,
+                                      mojom::WidgetRequest widget_request);
+  // Overrides the implementation of CreateForFrame() function below. Used by
+  // web tests to return a partial fake of RenderWidget.
+  static void InstallCreateForFrameHook(
+      CreateRenderWidgetFunction create_widget);
+
+  // Creates a RenderWidget that is meant to be associated with a RenderFrame.
+  // Testing infrastructure, such as test_runner, can override this function
+  // by calling InstallCreateForFrameHook().
+  static scoped_refptr<RenderWidget> CreateForFrame(
+      int32_t widget_routing_id,
+      CompositorDependencies* compositor_deps,
+      const ScreenInfo& screen_info,
+      blink::WebDisplayMode display_mode,
+      bool is_frozen,
+      bool hidden,
+      bool never_visible,
+      mojom::WidgetRequest widget_request);
+
+  // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
+  // because popups do not not need to be faked out.
+  static scoped_refptr<RenderWidget> CreateForPopup(
+      int32_t widget_routing_id,
+      CompositorDependencies* compositor_deps,
+      const ScreenInfo& screen_info,
+      blink::WebDisplayMode display_mode,
+      bool is_frozen,
+      bool hidden,
+      bool never_visible,
+      mojom::WidgetRequest widget_request);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. This method increments the reference
-  // count on the RenderWidget, making it self-referencing, which can be
-  // released by calling Close().
+  // count on the RenderWidget, making it self-referencing, which is then
+  // release when a WidgetMsg_Close IPC is received.
   void InitForPopup(ShowCallback show_callback,
                     blink::WebPagePopup* web_page_popup);
 
@@ -582,6 +611,17 @@ class CONTENT_EXPORT RenderWidget
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
+  // An Init*() method must be called after creating a RenderWidget, which will
+  // make the RenderWidget self-referencing. Then it can be deleted by calling
+  // by calling OnClose().
+  RenderWidget(int32_t widget_routing_id,
+               CompositorDependencies* compositor_deps,
+               const ScreenInfo& screen_info,
+               blink::WebDisplayMode display_mode,
+               bool is_frozen,
+               bool hidden,
+               bool never_visible,
+               mojom::WidgetRequest widget_request);
   ~RenderWidget() override;
 
   // Close the underlying WebWidget and stop the compositor.

@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/shell/test_runner/test_runner_export.h"
 #include "v8/include/v8.h"
 
 class GURL;
@@ -42,7 +43,7 @@ class WebViewTestProxy;
 // - testRunner.capturePixelsAsyncThen
 // - testRunner.setPageVisibility
 // Note that "global" bindings are handled by TestRunner class.
-class TestRunnerForSpecificView {
+class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
  public:
   explicit TestRunnerForSpecificView(WebViewTestProxy* web_view_test_proxy);
   ~TestRunnerForSpecificView();

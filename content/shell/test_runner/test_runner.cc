@@ -1728,8 +1728,8 @@ void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
         changed_values);
 
     bool allowed = web_test_runtime_flags_.plugins_allowed();
-    for (WebViewTestProxyBase* window : test_interfaces_->GetWindowList())
-      window->web_view()->GetSettings()->SetPluginsEnabled(allowed);
+    for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
+      window->webview()->GetSettings()->SetPluginsEnabled(allowed);
   }
 }
 
@@ -2138,8 +2138,8 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = blink::kWebScreenOrientationLandscapeSecondary;
   }
 
-  for (WebViewTestProxyBase* window : test_interfaces_->GetWindowList()) {
-    blink::WebFrame* main_frame = window->web_view()->MainFrame();
+  for (WebViewTestProxy* window : test_interfaces_->GetWindowList()) {
+    blink::WebFrame* main_frame = window->webview()->MainFrame();
     // TODO(lukasza): Need to make this work for remote frames.
     if (main_frame->IsWebLocalFrame()) {
       mock_screen_orientation_client_->UpdateDeviceOrientation(
@@ -2242,8 +2242,8 @@ void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
   web_test_runtime_flags_.set_accept_languages(accept_languages);
   OnWebTestRuntimeFlagsChanged();
 
-  for (WebViewTestProxyBase* window : test_interfaces_->GetWindowList())
-    window->web_view()->AcceptLanguagesChanged();
+  for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
+    window->webview()->AcceptLanguagesChanged();
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
@@ -2361,8 +2361,8 @@ void TestRunner::SetStorageAllowed(bool allowed) {
 void TestRunner::SetPluginsAllowed(bool allowed) {
   web_test_runtime_flags_.set_plugins_allowed(allowed);
 
-  for (WebViewTestProxyBase* window : test_interfaces_->GetWindowList())
-    window->web_view()->GetSettings()->SetPluginsEnabled(allowed);
+  for (WebViewTestProxy* window : test_interfaces_->GetWindowList())
+    window->webview()->GetSettings()->SetPluginsEnabled(allowed);
 
   OnWebTestRuntimeFlagsChanged();
 }

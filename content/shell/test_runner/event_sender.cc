@@ -1314,8 +1314,8 @@ EventSender::SavedEvent::SavedEvent()
       milliseconds(0),
       modifiers(0) {}
 
-EventSender::EventSender(WebWidgetTestProxyBase* web_widget_test_proxy_base)
-    : web_widget_test_proxy_base_(web_widget_test_proxy_base),
+EventSender::EventSender(WebWidgetTestProxy* web_widget_test_proxy)
+    : web_widget_test_proxy_(web_widget_test_proxy),
       replaying_saved_events_(false),
       weak_factory_(this) {
   Reset();
@@ -1831,32 +1831,32 @@ void EventSender::TextZoomOut() {
 }
 
 void EventSender::ZoomPageIn() {
-  const std::vector<WebViewTestProxyBase*>& window_list =
+  const std::vector<WebViewTestProxy*>& window_list =
       interfaces()->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->web_view()->SetZoomLevel(
-        window_list.at(i)->web_view()->ZoomLevel() + 1);
+    window_list.at(i)->webview()->SetZoomLevel(
+        window_list.at(i)->webview()->ZoomLevel() + 1);
   }
 }
 
 void EventSender::ZoomPageOut() {
-  const std::vector<WebViewTestProxyBase*>& window_list =
+  const std::vector<WebViewTestProxy*>& window_list =
       interfaces()->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->web_view()->SetZoomLevel(
-        window_list.at(i)->web_view()->ZoomLevel() - 1);
+    window_list.at(i)->webview()->SetZoomLevel(
+        window_list.at(i)->webview()->ZoomLevel() - 1);
   }
 }
 
 void EventSender::SetPageZoomFactor(double zoom_factor) {
-  const std::vector<WebViewTestProxyBase*>& window_list =
+  const std::vector<WebViewTestProxy*>& window_list =
       interfaces()->GetWindowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->web_view()->SetZoomLevel(std::log(zoom_factor) /
-                                                std::log(1.2));
+    window_list.at(i)->webview()->SetZoomLevel(std::log(zoom_factor) /
+                                               std::log(1.2));
   }
 }
 
@@ -2903,24 +2903,23 @@ void EventSender::SendGesturesForMouseWheelEvent(
 }
 
 TestInterfaces* EventSender::interfaces() {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()
-      ->test_interfaces();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->test_interfaces();
 }
 
 WebTestDelegate* EventSender::delegate() {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()->delegate();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->delegate();
 }
 
 const blink::WebView* EventSender::view() const {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->webview();
 }
 
 blink::WebView* EventSender::view() {
-  return web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
+  return web_widget_test_proxy_->GetWebViewTestProxy()->webview();
 }
 
 blink::WebWidget* EventSender::widget() {
-  return web_widget_test_proxy_base_->web_widget();
+  return web_widget_test_proxy_->GetWebWidget();
 }
 
 blink::WebFrameWidget* EventSender::mainFrameWidget() {
@@ -2929,8 +2928,8 @@ blink::WebFrameWidget* EventSender::mainFrameWidget() {
 
 std::unique_ptr<WebInputEvent> EventSender::TransformScreenToWidgetCoordinates(
     const WebInputEvent& event) {
-  return delegate()->TransformScreenToWidgetCoordinates(
-      web_widget_test_proxy_base_, event);
+  return delegate()->TransformScreenToWidgetCoordinates(web_widget_test_proxy_,
+                                                        event);
 }
 
 void EventSender::UpdateLifecycleToPrePaint() {

@@ -325,15 +325,15 @@ float BlinkTestRunner::GetWindowToViewportScale() {
 
 std::unique_ptr<blink::WebInputEvent>
 BlinkTestRunner::TransformScreenToWidgetCoordinates(
-    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+    test_runner::WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event) {
-  return content::TransformScreenToWidgetCoordinates(web_widget_test_proxy_base,
+  return content::TransformScreenToWidgetCoordinates(web_widget_test_proxy,
                                                      event);
 }
 
-test_runner::WebWidgetTestProxyBase* BlinkTestRunner::GetWebWidgetTestProxyBase(
+test_runner::WebWidgetTestProxy* BlinkTestRunner::GetWebWidgetTestProxy(
     blink::WebLocalFrame* frame) {
-  return content::GetWebWidgetTestProxyBase(frame);
+  return content::GetWebWidgetTestProxy(frame);
 }
 
 void BlinkTestRunner::EnableUseZoomForDSF() {

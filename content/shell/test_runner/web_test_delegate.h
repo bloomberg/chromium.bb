@@ -37,7 +37,7 @@ class WebView;
 
 namespace test_runner {
 
-class WebWidgetTestProxyBase;
+class WebWidgetTestProxy;
 struct TestPreferences;
 
 constexpr int kDefaultDatabaseQuota = -1;
@@ -130,17 +130,17 @@ class WebTestDelegate {
 
   // Converts |event| from screen coordinates used by test_runner::EventSender
   // into coordinates that are understood by the widget associated with
-  // |web_widget_test_proxy_base|.  Returns nullptr if no transformation was
+  // |web_widget_test_proxy|.  Returns nullptr if no transformation was
   // necessary (e.g. for a keyboard event OR if widget requires no scaling
   // and has coordinates starting at (0,0)).
   virtual std::unique_ptr<blink::WebInputEvent>
   TransformScreenToWidgetCoordinates(
-      test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+      test_runner::WebWidgetTestProxy* web_widget_test_proxy,
       const blink::WebInputEvent& event) = 0;
 
-  // Gets WebWidgetTestProxyBase associated with |frame| (associated with either
+  // Gets WebWidgetTestProxy associated with |frame| (associated with either
   // a RenderView or a RenderWidget for the local root).
-  virtual test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+  virtual test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
       blink::WebLocalFrame* frame) = 0;
 
   // Enable zoom-for-dsf option.

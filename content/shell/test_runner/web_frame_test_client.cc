@@ -142,16 +142,15 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
 
 }  // namespace
 
-WebFrameTestClient::WebFrameTestClient(
-    WebTestDelegate* delegate,
-    WebViewTestProxyBase* web_view_test_proxy_base,
-    WebFrameTestProxyBase* web_frame_test_proxy_base)
+WebFrameTestClient::WebFrameTestClient(WebTestDelegate* delegate,
+                                       WebViewTestProxy* web_view_test_proxy,
+                                       WebFrameTestProxy* web_frame_test_proxy)
     : delegate_(delegate),
-      web_view_test_proxy_base_(web_view_test_proxy_base),
-      web_frame_test_proxy_base_(web_frame_test_proxy_base) {
+      web_view_test_proxy_(web_view_test_proxy),
+      web_frame_test_proxy_(web_frame_test_proxy) {
   DCHECK(delegate_);
-  DCHECK(web_frame_test_proxy_base_);
-  DCHECK(web_view_test_proxy_base_);
+  DCHECK(web_frame_test_proxy_);
+  DCHECK(web_view_test_proxy_);
 }
 
 WebFrameTestClient::~WebFrameTestClient() {}
@@ -317,7 +316,7 @@ void WebFrameTestClient::HandleWebAccessibilityEvent(
     return;
 
   AccessibilityController* accessibility_controller =
-      web_view_test_proxy_base_->accessibility_controller();
+      web_view_test_proxy_->accessibility_controller();
   accessibility_controller->NotificationReceived(obj, event_name);
   if (accessibility_controller->ShouldLogAccessibilityEvents()) {
     std::string message("AccessibilityNotification - ");
@@ -351,7 +350,7 @@ void WebFrameTestClient::DidChangeContents() {
 
 blink::WebPlugin* WebFrameTestClient::CreatePlugin(
     const blink::WebPluginParams& params) {
-  blink::WebLocalFrame* frame = web_frame_test_proxy_base_->web_frame();
+  blink::WebLocalFrame* frame = web_frame_test_proxy_->GetWebFrame();
   if (TestPlugin::IsSupportedMimeType(params.mime_type))
     return TestPlugin::Create(params, delegate_, frame);
   return delegate_->CreatePluginPlaceholder(params);
@@ -359,7 +358,7 @@ blink::WebPlugin* WebFrameTestClient::CreatePlugin(
 
 void WebFrameTestClient::ShowContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
-  delegate_->GetWebWidgetTestProxyBase(web_frame_test_proxy_base_->web_frame())
+  delegate_->GetWebWidgetTestProxy(web_frame_test_proxy_->GetWebFrame())
       ->event_sender()
       ->SetContextMenuData(context_menu_data);
 }
@@ -378,8 +377,8 @@ void WebFrameTestClient::DownloadURL(
 void WebFrameTestClient::DidReceiveTitle(const blink::WebString& title,
                                          blink::WebTextDirection direction) {
   if (test_runner()->shouldDumpFrameLoadCallbacks() &&
-      web_frame_test_proxy_base_->web_frame()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
+      web_frame_test_proxy_->GetWebFrame()) {
+    PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
     delegate_->PrintMessage(std::string(" - didReceiveTitle: ") + title.Utf8() +
                             "\n");
   }
@@ -391,7 +390,7 @@ void WebFrameTestClient::DidReceiveTitle(const blink::WebString& title,
 
 void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
   if (test_runner()->shouldDumpIconChanges()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
+    PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
     delegate_->PrintMessage(std::string(" - didChangeIcons\n"));
   }
 }
@@ -399,19 +398,18 @@ void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
 void WebFrameTestClient::DidFailLoad(const blink::WebURLError& error,
                                      blink::WebHistoryCommitType commit_type) {
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
+    PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
     delegate_->PrintMessage(" - didFailLoadWithError\n");
   }
 }
 
 void WebFrameTestClient::DidStartLoading() {
-  test_runner()->tryToSetTopLoadingFrame(
-      web_frame_test_proxy_base_->web_frame());
+  test_runner()->tryToSetTopLoadingFrame(web_frame_test_proxy_->GetWebFrame());
 }
 
 void WebFrameTestClient::DidStopLoading() {
   test_runner()->tryToClearTopLoadingFrame(
-      web_frame_test_proxy_base_->web_frame());
+      web_frame_test_proxy_->GetWebFrame());
 }
 
 void WebFrameTestClient::DidDispatchPingLoader(const blink::WebURL& url) {
@@ -581,10 +579,10 @@ void WebFrameTestClient::CheckIfAudioSinkExistsAndIsAuthorized(
 }
 
 void WebFrameTestClient::DidClearWindowObject() {
-  blink::WebLocalFrame* frame = web_frame_test_proxy_base_->web_frame();
-  web_view_test_proxy_base_->test_interfaces()->BindTo(frame);
-  web_view_test_proxy_base_->BindTo(frame);
-  delegate_->GetWebWidgetTestProxyBase(frame)->BindTo(frame);
+  blink::WebLocalFrame* frame = web_frame_test_proxy_->GetWebFrame();
+  web_view_test_proxy_->test_interfaces()->BindTo(frame);
+  web_view_test_proxy_->BindTo(frame);
+  delegate_->GetWebWidgetTestProxy(frame)->BindTo(frame);
 }
 
 blink::WebEffectiveConnectionType
@@ -593,7 +591,7 @@ WebFrameTestClient::GetEffectiveConnectionType() {
 }
 
 TestRunner* WebFrameTestClient::test_runner() {
-  return web_view_test_proxy_base_->test_interfaces()->GetTestRunner();
+  return web_view_test_proxy_->test_interfaces()->GetTestRunner();
 }
 
 }  // namespace test_runner
