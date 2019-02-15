@@ -357,7 +357,14 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   }
 
   void PreRunTestOnMainThread() override {
-    termination_observer_.reset(new TerminationObserver());
+    // Initialize extension test message listener early on, as the test kiosk
+    // app gets launched early in Chrome session setup for CrashRestore test.
+    // Listeners created in IN_PROC_BROWSER_TEST might miss the messages sent
+    // from the kiosk app.
+    app_window_loaded_listener_ =
+        std::make_unique<ExtensionTestMessageListener>("appWindowLoaded",
+                                                       false);
+    termination_observer_ = std::make_unique<TerminationObserver>();
     InProcessBrowserTest::PreRunTestOnMainThread();
   }
 
@@ -370,6 +377,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   }
 
   void TearDownOnMainThread() override {
+    app_window_loaded_listener_.reset();
     termination_observer_.reset();
 
     extensions::ExtensionApiTest::TearDownOnMainThread();
@@ -481,6 +489,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   }
 
  protected:
+  std::unique_ptr<ExtensionTestMessageListener> app_window_loaded_listener_;
   std::unique_ptr<TerminationObserver> termination_observer_;
 
  private:
@@ -493,8 +502,7 @@ class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(AutoLaunchedKioskTest);
 };
 
-// TODO(crbug.com/930345): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, DISABLED_PRE_CrashRestore) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, PRE_CrashRestore) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_FALSE(termination_observer_->terminated());
@@ -509,16 +517,14 @@ IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, DISABLED_PRE_CrashRestore) {
   ExpectCommandLineHasDefaultPolicySwitches(
       *base::CommandLine::ForCurrentProcess());
 
-  ExtensionTestMessageListener listener("appWindowLoaded", false);
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_TRUE(app_window_loaded_listener_->WaitUntilSatisfied());
 
   EXPECT_TRUE(IsKioskAppAutoLaunched(kTestKioskApp));
 
   ASSERT_TRUE(CloseAppWindow(kTestKioskApp));
 }
 
-// TODO(crbug.com/930345): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, DISABLED_CrashRestore) {
+IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, CrashRestore) {
   // Verify that Chrome hasn't already exited, e.g. in order to apply user
   // session flags.
   ASSERT_FALSE(termination_observer_->terminated());
@@ -526,8 +532,7 @@ IN_PROC_BROWSER_TEST_F(AutoLaunchedKioskTest, DISABLED_CrashRestore) {
   ExpectCommandLineHasDefaultPolicySwitches(
       *base::CommandLine::ForCurrentProcess());
 
-  ExtensionTestMessageListener listener("appWindowLoaded", false);
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_TRUE(app_window_loaded_listener_->WaitUntilSatisfied());
 
   EXPECT_TRUE(IsKioskAppAutoLaunched(kTestKioskApp));
 
