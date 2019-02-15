@@ -106,7 +106,7 @@ class CrostiniExportImportTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportTest);
 };
 
-TEST_F(CrostiniExportImportTest, TestExportSuccess) {
+TEST_F(CrostiniExportImportTest, DISABLED_TestExportSuccess) {
   crostini_export_import()->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
   run_loop_->RunUntilIdle();
@@ -151,7 +151,7 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
             CrostiniExportImportNotification::Status::DONE);
 }
 
-TEST_F(CrostiniExportImportTest, TestExportFail) {
+TEST_F(CrostiniExportImportTest, DISABLED_TestExportFail) {
   crostini_export_import()->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
   run_loop_->RunUntilIdle();
@@ -165,7 +165,7 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
             CrostiniExportImportNotification::Status::FAILED);
 }
 
-TEST_F(CrostiniExportImportTest, TestImportSuccess) {
+TEST_F(CrostiniExportImportTest, DISABLED_TestImportSuccess) {
   crostini_export_import()->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
   run_loop_->RunUntilIdle();
@@ -211,7 +211,7 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
             CrostiniExportImportNotification::Status::DONE);
 }
 
-TEST_F(CrostiniExportImportTest, TestImportFail) {
+TEST_F(CrostiniExportImportTest, DISABLED_TestImportFail) {
   crostini_export_import()->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
   run_loop_->RunUntilIdle();
