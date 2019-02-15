@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/list_model/list_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 
 @class ChromeTableViewStyler;
 
@@ -17,13 +18,18 @@
 // The accessory type to display on the trailing edge of the cell.
 @property(nonatomic, assign) UITableViewCellAccessoryType accessoryType;
 
+// Whether custom separator should be used. The separator can replace the
+// separator provided by UITableViewCell. It is a 0.5pt high line. Default is
+// NO.
+@property(nonatomic, assign) BOOL useCustomSeparator;
+
 - (instancetype)initWithType:(NSInteger)type NS_DESIGNATED_INITIALIZER;
 
 // Configures the given cell with the item's information. Override this method
 // to specialize. At this level, only accessibility properties are ported from
 // the item to the cell.
 // The cell's class must match cellClass for the given instance.
-- (void)configureCell:(UITableViewCell*)cell
+- (void)configureCell:(TableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler NS_REQUIRES_SUPER;
 
 @end

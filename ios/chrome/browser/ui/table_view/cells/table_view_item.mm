@@ -15,16 +15,20 @@
 
 - (instancetype)initWithType:(NSInteger)type {
   if ((self = [super initWithType:type])) {
-    self.cellClass = [UITableViewCell class];
+    _useCustomSeparator = NO;
+
+    self.cellClass = [TableViewCell class];
   }
   return self;
 }
 
-- (void)configureCell:(UITableViewCell*)cell
+- (void)configureCell:(TableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   DCHECK(styler);
   DCHECK([cell class] == self.cellClass);
+  DCHECK([cell isKindOfClass:[TableViewCell class]]);
   cell.accessoryType = self.accessoryType;
+  cell.useCustomSeparator = self.useCustomSeparator;
   cell.accessibilityTraits = self.accessibilityTraits;
   cell.accessibilityIdentifier = self.accessibilityIdentifier;
   if (!cell.backgroundView) {

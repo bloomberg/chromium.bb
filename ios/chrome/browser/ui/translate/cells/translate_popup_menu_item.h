@@ -22,7 +22,7 @@
 @end
 
 // Associated cell for a TranslatePopupMenuItem.
-@interface TranslatePopupMenuCell : UITableViewCell
+@interface TranslatePopupMenuCell : TableViewCell
 
 - (void)setTitle:(NSString*)title;
 

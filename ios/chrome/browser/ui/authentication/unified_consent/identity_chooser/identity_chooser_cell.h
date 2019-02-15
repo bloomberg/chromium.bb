@@ -7,10 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
+
 @class IdentityView;
 
 // Cell to display an user identity or the "Add Account…" button.
-@interface IdentityChooserCell : UITableViewCell
+@interface IdentityChooserCell : TableViewCell
 
 // Initializes IdentityChooserCell instance.
 - (instancetype)initWithStyle:(UITableViewCellStyle)style

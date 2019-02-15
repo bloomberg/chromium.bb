@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 class GURL;
@@ -37,7 +38,7 @@ class GURL;
 // contains a favicon, a title, a URL, and optionally some metadata such as a
 // timestamp or a file size. After configuring the cell, make sure to call
 // configureUILayout:.
-@interface TableViewURLCell : UITableViewCell
+@interface TableViewURLCell : TableViewCell
 
 // The imageview that is displayed on the leading edge of the cell.  This
 // contains a favicon composited on top of an off-white background.

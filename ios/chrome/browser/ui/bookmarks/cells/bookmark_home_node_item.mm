@@ -31,7 +31,7 @@
   return self;
 }
 
-- (void)configureCell:(UITableViewCell*)cell
+- (void)configureCell:(TableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   if (_bookmarkNode->is_folder()) {

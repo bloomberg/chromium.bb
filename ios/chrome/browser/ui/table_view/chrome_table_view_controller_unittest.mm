@@ -24,7 +24,7 @@
 
 @synthesize configureCellCalled = _configureCellCalled;
 
-- (void)configureCell:(UITableViewCell*)cell
+- (void)configureCell:(TableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   self.configureCellCalled = YES;
   [super configureCell:cell withStyler:styler];

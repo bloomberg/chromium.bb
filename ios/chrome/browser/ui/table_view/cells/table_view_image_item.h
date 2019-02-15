@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // TableViewImageItem contains the model data for a TableViewImageCell.
@@ -26,7 +27,7 @@
 @end
 
 // TableViewImageCell contains a favicon, a title, and an optional chevron.
-@interface TableViewImageCell : UITableViewCell
+@interface TableViewImageCell : TableViewCell
 
 // The cell favicon imageView.
 @property(nonatomic, readonly, strong) UIImageView* imageView;

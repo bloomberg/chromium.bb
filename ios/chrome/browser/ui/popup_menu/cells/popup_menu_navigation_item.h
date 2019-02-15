@@ -23,7 +23,7 @@ class NavigationItem;
 @end
 
 // Associated cell for a PopupMenuNavigationItem.
-@interface PopupMenuNavigationCell : UITableViewCell
+@interface PopupMenuNavigationCell : TableViewCell
 
 - (void)setTitle:(NSString*)title;
 - (void)setFavicon:(UIImage*)favicon;

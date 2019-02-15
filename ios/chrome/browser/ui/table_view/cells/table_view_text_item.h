@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // TableViewTextItem contains the model data for a TableViewTextCell.
@@ -31,8 +32,8 @@
 
 @end
 
-// UITableViewCell that displays a text label.
-@interface TableViewTextCell : UITableViewCell
+// TableViewCell that displays a text label.
+@interface TableViewTextCell : TableViewCell
 
 // The text to display.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

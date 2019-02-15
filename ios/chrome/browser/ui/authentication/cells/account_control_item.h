@@ -22,7 +22,7 @@
 
 // Cell for account settings view with a leading imageView, title text label,
 // and detail text label. The imageView is top-leading aligned.
-@interface AccountControlCell : UITableViewCell
+@interface AccountControlCell : TableViewCell
 
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 @property(nonatomic, readonly, strong) UILabel* textLabel;

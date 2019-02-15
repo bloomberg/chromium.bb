@@ -46,9 +46,9 @@
 
 @end
 
-// AutofillEditCell implements an UITableViewCell subclass containing a label
+// AutofillEditCell implements an TableViewCell subclass containing a label
 // and a text field.
-@interface AutofillEditCell : UITableViewCell
+@interface AutofillEditCell : TableViewCell
 
 // Label at the leading edge of the cell. It displays the item's textFieldName.
 @property(nonatomic, strong) UILabel* textLabel;

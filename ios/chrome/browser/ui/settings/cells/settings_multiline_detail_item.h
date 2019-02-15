@@ -21,11 +21,11 @@
 
 @end
 
-// SettingsMultilineDetailCell implements an UITableViewCell
+// SettingsMultilineDetailCell implements an TableViewCell
 // subclass containing two text labels: a "main" label and a "detail" label.
 // The two labels are laid out on top of each other and can span on multiple
 // lines. This is to be used with a SettingsMultilineDetailItem.
-@interface SettingsMultilineDetailCell : UITableViewCell
+@interface SettingsMultilineDetailCell : TableViewCell
 
 // UILabels corresponding to |text| and |detailText| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

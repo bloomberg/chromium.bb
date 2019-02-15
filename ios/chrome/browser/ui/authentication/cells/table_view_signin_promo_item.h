@@ -23,8 +23,8 @@
 @property(nonatomic, readwrite, strong) NSString* text;
 @end
 
-// UITableViewCell that contains a SignInPromoView.
-@interface TableViewSigninPromoCell : UITableViewCell
+// TableViewCell that contains a SignInPromoView.
+@interface TableViewSigninPromoCell : TableViewCell
 // The SigninPromoView contained by this Cell.
 @property(nonatomic, strong) SigninPromoView* signinPromoView;
 @end

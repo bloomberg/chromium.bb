@@ -28,9 +28,6 @@ const CGFloat kDefaultHeaderFooterHeight = 10;
 // Estimated height of the header/footer, used to speed the constraints.
 const CGFloat kEstimatedHeaderFooterHeight = 35;
 
-// Color for the separator.
-const int kSeparatorColor = 0xE8EAED;
-
 enum SavedBarButtomItemPositionEnum {
   kUndefinedBarButtonItemPosition,
   kLeftBarButtonItemPosition,
@@ -123,7 +120,7 @@ NSString* const kSettingsToolbarDeleteButtonId =
   self.styler.tableViewSectionHeaderBlurEffect = nil;
   [super viewDidLoad];
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
-    self.tableView.separatorColor = UIColorFromRGB(kSeparatorColor);
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   }
   self.styler.cellBackgroundColor = [UIColor whiteColor];
   self.styler.cellTitleColor = [UIColor blackColor];
