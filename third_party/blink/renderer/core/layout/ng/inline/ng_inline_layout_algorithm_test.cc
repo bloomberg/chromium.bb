@@ -253,6 +253,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
     <style>
     html { font-size: 10px; }
     img { vertical-align: bottom; }
+    #container { display: flow-root; }
     </style>
     <div id=container><img src="#" width="96" height="96"></div>
   )HTML");

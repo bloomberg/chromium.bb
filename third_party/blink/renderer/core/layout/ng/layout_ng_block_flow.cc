@@ -34,11 +34,6 @@ bool LayoutNGBlockFlow::IsOfType(LayoutObjectType type) const {
 void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  // This block is an entry-point from the legacy engine to LayoutNG. This means
-  // that we need to be at a formatting context boundary, since NG and legacy
-  // don't cooperate on e.g. margin collapsing.
-  DCHECK(CreatesNewFormattingContext());
-
   if (IsOutOfFlowPositioned()) {
     UpdateOutOfFlowBlockLayout();
     return;
