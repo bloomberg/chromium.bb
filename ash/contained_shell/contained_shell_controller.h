@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 
 // ContainedShellController allows a consumer of ash to provide a
@@ -21,6 +23,9 @@ class ASH_EXPORT ContainedShellController
  public:
   ContainedShellController();
   ~ContainedShellController() override;
+
+  // Register prefs related to the Contained Shell.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Binds the mojom::ContainedShellController interface to this object.
   void BindRequest(mojom::ContainedShellControllerRequest request);
