@@ -21,6 +21,10 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/android_hardware_buffer_compat.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -210,6 +214,9 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
     native_pixmap_supported =
         ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(
             gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::GPU_READ);
+#elif defined(OS_ANDROID)
+    native_pixmap_supported =
+        base::AndroidHardwareBufferCompat::IsSupportAvailable();
 #elif defined(OS_MACOSX) || defined(OS_WIN)
     native_pixmap_supported = true;
 #endif
