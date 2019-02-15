@@ -16,7 +16,6 @@ import exceptions
 import logging
 import os
 import re
-import sys
 
 import devil_chromium
 from devil.android import device_errors
@@ -25,6 +24,7 @@ from devil.android import device_utils
 from devil.android.ndk import abis
 from devil.android.sdk import version_codes
 from devil.android.tools import script_common
+from devil.utils import logging_common
 from py_utils import tempfile_ext
 
 STATUSES = [
@@ -258,18 +258,11 @@ List Java classes in an APK which fail ART class verification.
 
   script_common.AddEnvironmentArguments(parser)
   script_common.AddDeviceArguments(parser)
+  logging_common.AddLoggingArguments(parser)
 
-  parser.add_argument('--verbose', '-v', default=False, action='store_true')
-  parser.add_argument('--quiet', '-q', default=False, action='store_true')
   args = parser.parse_args()
   script_common.InitializeEnvironment(args)
-
-  if args.verbose:
-    logging.basicConfig(stream=sys.stderr, level=logging.INFO)
-  elif args.quiet:
-    logging.basicConfig(stream=sys.stderr, level=logging.ERROR)
-  else:
-    logging.basicConfig(stream=sys.stderr, level=logging.WARN)
+  logging_common.InitializeLogging(args)
 
   if args.workdir:
     if not os.path.isdir(args.workdir):

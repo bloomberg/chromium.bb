@@ -23,6 +23,7 @@ from devil.android.ndk import abis  # pylint: disable=import-error
 from devil.android.sdk import version_codes  # pylint: disable=import-error
 from devil.android.tools import script_common  # pylint: disable=import-error
 from devil.utils import cmd_helper  # pylint: disable=import-error
+from devil.utils import logging_common  # pylint: disable=import-error
 from pylib.utils import test_filter # pylint: disable=import-error
 
 # cts test archives for all platforms are stored in this bucket
@@ -330,8 +331,10 @@ def main():
 
   test_filter.AddFilterOptions(parser)
   script_common.AddDeviceArguments(parser)
+  logging_common.AddLoggingArguments(parser)
 
   args, test_runner_args = parser.parse_known_args()
+  logging_common.InitializeLogging(args)
   devil_chromium.Initialize()
 
   devices = script_common.GetDevices(args.devices, args.blacklist_file)
