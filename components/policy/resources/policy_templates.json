@@ -5847,7 +5847,7 @@
 
       Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
 
-      Note that this policy does not prevent the page updating dynamically through JavaScript. For example, if you block 'example.com/abc', users might still be able to visit 'example.com' and click on a link to visit 'example.com/abc', as long as the page does not refresh.
+      From M73 you can block 'javascript://*' URLs. However, it affects only JavaScript typed in address bar (or, for example, bookmarklets). Note that in-page JavaScript URLs, as long as dynamically loaded data, are not subject to this policy. For example, if you block 'example.com/abc', page 'example.com' will still be able to load 'example.com/abc' via XMLHTTPRequest.
 
       If this policy is not set no URL will be blacklisted in the browser.''',
       'arc_support': 'Android apps may voluntarily choose to honor this list. You cannot force them to honor it.',
