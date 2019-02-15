@@ -202,7 +202,8 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request,
     // Some products don't have an idle screen that makes periodic network
     // requests. Schedule another check to ensure connectivity hasn't dropped.
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&ConnectivityCheckerImpl::CheckInternal, this),
+        FROM_HERE,
+        base::BindOnce(&ConnectivityCheckerImpl::CheckInternal, this),
         base::TimeDelta::FromSeconds(kConnectivitySuccessPeriodSeconds));
     timeout_.Cancel();
     return;

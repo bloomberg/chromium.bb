@@ -453,8 +453,9 @@ class AutomationMessageFilter : public IPC::MessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&AutomationMessageFilter::OnMessageReceivedOnRenderThread,
-                   this, message));
+        base::BindOnce(
+            &AutomationMessageFilter::OnMessageReceivedOnRenderThread, this,
+            message));
 
     // Always return false in case there are multiple
     // AutomationInternalCustomBindings instances attached to the same thread.
