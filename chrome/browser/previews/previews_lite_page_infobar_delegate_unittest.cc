@@ -80,7 +80,7 @@ TEST_F(PreviewsLitePageInfoBarDelegateUnitTest,
 #if defined(OS_ANDROID)
   ASSERT_EQ(l10n_util::GetStringUTF16(IDS_LITE_PAGE_PREVIEWS_SETTINGS_LINK),
             infobar->GetLinkText());
-  ASSERT_EQ(IDR_ANDROID_INFOBAR_PREVIEWS, infobar->GetIconId());
+  ASSERT_EQ(IDR_ANDROID_INFOBAR_LITE_MODE, infobar->GetIconId());
 #else
   ASSERT_EQ(base::string16(), infobar->GetLinkText());
   ASSERT_EQ(PreviewsLitePageInfoBarDelegate::kNoIconID, infobar->GetIconId());
