@@ -55,7 +55,7 @@ class StyleReflection : public RefCounted<StyleReflection> {
  private:
   StyleReflection()
       : direction_(kReflectionBelow),
-        offset_(0, kFixed),
+        offset_(Length::Fixed(0)),
         mask_(NinePieceImage::MaskDefaults()) {}
 
   CSSReflectionDirection direction_;

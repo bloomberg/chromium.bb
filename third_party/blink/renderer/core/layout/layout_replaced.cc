@@ -272,9 +272,9 @@ void LayoutReplaced::ComputePositionedLogicalWidth(
   // ---------------------------------------------------------------------------
   if (logical_left.IsAuto() || logical_right.IsAuto()) {
     if (margin_logical_left.IsAuto())
-      margin_logical_left.SetValue(kFixed, 0);
+      margin_logical_left = Length::Fixed(0);
     if (margin_logical_right.IsAuto())
-      margin_logical_right.SetValue(kFixed, 0);
+      margin_logical_right = Length::Fixed(0);
   }
 
   // ---------------------------------------------------------------------------
@@ -481,9 +481,9 @@ void LayoutReplaced::ComputePositionedLogicalHeight(
   // auto, but if only top is auto, this makes step 4 impossible.
   if (logical_top.IsAuto() || logical_bottom.IsAuto()) {
     if (margin_before.IsAuto())
-      margin_before.SetValue(kFixed, 0);
+      margin_before = Length::Fixed(0);
     if (margin_after.IsAuto())
-      margin_after.SetValue(kFixed, 0);
+      margin_after = Length::Fixed(0);
   }
 
   // ---------------------------------------------------------------------------
