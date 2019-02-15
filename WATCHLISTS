@@ -1519,6 +1519,9 @@
                   '|third_party/blink/renderer/platform/graphics/video_frame_*'\
                   '|third_party/blink/renderer/platform/graphics/surface_layer_bridge*',
     },
+    'switch_access': {
+      'filepath': 'switch_access',
+    },
     'sync': {
       'filepath': '^chrome/browser/ui/sync/'\
                   '|^chrome/browser/ui/views/sync/'\
@@ -2434,6 +2437,7 @@
     'supervised_users': [],
     'surface_layer_for_video': [ 'lethalantidote@chromium.org',
                                  'liberato@chromium.org'],
+    'switch_access': ['anastasi+watch@google.com'],
     'sync': ['sync-reviews@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',
