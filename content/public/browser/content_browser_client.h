@@ -1236,8 +1236,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Always called on the IO thread and only when the Network Service is
   // enabled.
   virtual std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
-  WillCreateURLLoaderRequestInterceptors(NavigationUIData* navigation_ui_data,
-                                         int frame_tree_node_id);
+  WillCreateURLLoaderRequestInterceptors(
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id,
+      const scoped_refptr<network::SharedURLLoaderFactory>&
+          network_loader_factory);
 
   // Called when the NetworkService, accessible through
   // content::GetNetworkService(), is created. Implementations should avoid

@@ -764,11 +764,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // See if embedders want to add interceptors.
     std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
-        browser_interceptors = GetContentClient()
-                                   ->browser()
-                                   ->WillCreateURLLoaderRequestInterceptors(
-                                       navigation_ui_data_.get(),
-                                       request_info->frame_tree_node_id);
+        browser_interceptors =
+            GetContentClient()
+                ->browser()
+                ->WillCreateURLLoaderRequestInterceptors(
+                    navigation_ui_data_.get(), request_info->frame_tree_node_id,
+                    network_loader_factory_);
     if (!browser_interceptors.empty()) {
       for (auto& browser_interceptor : browser_interceptors) {
         interceptors_.push_back(
