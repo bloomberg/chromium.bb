@@ -294,11 +294,19 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   DCHECK(navigation_handle()->IsInMainFrame());
   DCHECK_NE(navigation_handle()->GetReloadType(),
             content::ReloadType::ORIGINAL_REQUEST_URL);
-
-  // TODO: Move all eligibility reasons to PreviewsState decision code.
-  // Check if the parameters of the navigation are not eligible for the preview.
-  // https://crbug.com/921755
+  // TODO(crbug.com/921755): Move all eligibility reasons to PreviewsState
+  // decision code and remove |ineligible_reasons|.
   std::vector<IneligibleReason> ineligible_reasons;
+
+  PreviewsUITabHelper* tab_helper = PreviewsUITabHelper::FromWebContents(
+      navigation_handle()->GetWebContents());
+  previews::PreviewsUserData* previews_data =
+      tab_helper->GetPreviewsUserData(navigation_handle());
+  if (!previews_data || !(previews_data->allowed_previews_state() &
+                          content::LITE_PAGE_REDIRECT_ON)) {
+    ineligible_reasons.push_back(IneligibleReason::kPreviewsState);
+  }
+
   const GURL& url = navigation_handle()->GetURL();
   if (!url.SchemeIs(url::kHttpsScheme))
     ineligible_reasons.push_back(IneligibleReason::kNonHttpsScheme);

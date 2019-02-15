@@ -1619,6 +1619,8 @@ class PreviewsLitePageAndPageHintsBrowserTest
 IN_PROC_BROWSER_TEST_F(
     PreviewsLitePageAndPageHintsBrowserTest,
     DISABLE_ON_WIN_MAC(LitePagePreviewsDoesNotOverridePageHints)) {
+  base::HistogramTester histogram_tester;
+
   // Whitelist test URL for resource loading hints.
   GURL url = HttpsLitePageURL(kSuccess);
   SetResourceLoadingHints({url.host()});
@@ -1627,6 +1629,10 @@ IN_PROC_BROWSER_TEST_F(
 
   base::RunLoop().RunUntilIdle();
   content::WaitForLoadStop(GetWebContents());
+
+  histogram_tester.ExpectBucketCount(
+      "Previews.ServerLitePage.IneligibleReasons",
+      PreviewsLitePageNavigationThrottle::IneligibleReason::kPreviewsState, 1);
 
   // Verify the committed previews type is resource loading hints.
   PreviewsUITabHelper* ui_tab_helper =

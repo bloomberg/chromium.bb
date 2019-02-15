@@ -202,31 +202,19 @@ PreviewsLitePageDecider::MaybeCreateThrottleFor(
     return nullptr;
   DCHECK(!browser_context->IsOffTheRecord());
 
-  PreviewsUITabHelper* tab_helper =
-      PreviewsUITabHelper::FromWebContents(handle->GetWebContents());
-  if (!tab_helper)
-    return nullptr;
+  PreviewsLitePageDecider* decider =
+      previews_service->previews_lite_page_decider();
+  DCHECK(decider);
 
-  previews::PreviewsUserData* previews_data =
-      tab_helper->GetPreviewsUserData(handle);
-  if (!previews_data)
-    return nullptr;
+  bool drp_enabled = decider->drp_settings_->IsDataReductionProxyEnabled();
+  bool preview_enabled = previews::params::ArePreviewsAllowed() &&
+                         previews::params::IsLitePageServerPreviewsEnabled();
 
-  // If this navigation is reloading on a lite page, always create a navigation
-  // throttle. In this event, the navigation throttle will always cancel and
-  // restart the navigation to a non-preview page. This is important for the
-  // experiment that disables previews on reloads since it won't enable the
-  // previews state.
-  bool reload_load_original =
-      previews::ExtractOriginalURLFromLitePageRedirectURL(handle->GetURL(),
-                                                          nullptr) &&
-      handle->GetReloadType() != content::ReloadType::NONE;
-
-  if (previews_data->allowed_previews_state() &
-          content::LITE_PAGE_REDIRECT_ON ||
-      reload_load_original) {
-    return std::make_unique<PreviewsLitePageNavigationThrottle>(
-        handle, previews_service->previews_lite_page_decider());
+  // Always create a navigation throttle if the feature is enabled. The throttle
+  // itself will check the PreviewsState bit for triggering.
+  if (drp_enabled && preview_enabled) {
+    return std::make_unique<PreviewsLitePageNavigationThrottle>(handle,
+                                                                decider);
   }
 
   return nullptr;
