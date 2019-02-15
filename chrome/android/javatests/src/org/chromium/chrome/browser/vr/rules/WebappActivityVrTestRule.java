@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
  * up a WebappActivity to a blank page while performing some additional VR-only setup.
  */
 public class WebappActivityVrTestRule extends WebappActivityTestRule implements VrTestRule {
-    private boolean mTrackerDirty;
     private boolean mDonEnabled;
 
     @Override
@@ -39,16 +38,6 @@ public class WebappActivityVrTestRule extends WebappActivityTestRule implements 
     @Override
     public @SupportedActivity int getRestriction() {
         return SupportedActivity.WAA;
-    }
-
-    @Override
-    public boolean isTrackerDirty() {
-        return mTrackerDirty;
-    }
-
-    @Override
-    public void setTrackerDirty() {
-        mTrackerDirty = true;
     }
 
     @Override

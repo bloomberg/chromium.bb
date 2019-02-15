@@ -11,18 +11,6 @@ package org.chromium.chrome.browser.vr.rules;
  */
 public interface VrTestRule extends XrTestRule {
     /**
-     * Whether the head tracking mode has been changed.
-     *
-     * @return True if the head tracking mode has been changed, false otherwise.
-     */
-    public boolean isTrackerDirty();
-
-    /**
-     * Tells the rule that the head tracking mode has been changed.
-     */
-    public void setTrackerDirty();
-
-    /**
      * Whether the currently applied settings result in the DON flow being enabled.
      * @return True if the DON flow is enabled, false otherwise.
      */
