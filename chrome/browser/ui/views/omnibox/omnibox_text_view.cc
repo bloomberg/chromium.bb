@@ -99,6 +99,10 @@ void ApplyTextStyleForType(SuggestionAnswer::TextStyle text_style,
     case SuggestionAnswer::TextStyle::BOLD:
       style = {part_color, .baseline = gfx::NORMAL_BASELINE,
                .weight = gfx::Font::Weight::BOLD};
+      if (base::FeatureList::IsEnabled(
+              omnibox::kUIExperimentUnboldSuggestionText)) {
+        style.weight = gfx::Font::Weight::NORMAL;
+      }
       break;
     case SuggestionAnswer::TextStyle::NORMAL:
     case SuggestionAnswer::TextStyle::NORMAL_DIM:
@@ -258,9 +262,12 @@ void OmniboxTextView::ReapplyStyling() {
             : text_length;
     const gfx::Range current_range(text_start, text_end);
 
-    // Calculate style-related data.
-    if (classifications[i].style & ACMatchClassification::MATCH)
-      render_text_->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
+    if (!base::FeatureList::IsEnabled(
+            omnibox::kUIExperimentUnboldSuggestionText)) {
+      // Calculate style-related data.
+      if (classifications[i].style & ACMatchClassification::MATCH)
+        render_text_->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
+    }
 
     OmniboxPart part = OmniboxPart::RESULTS_TEXT_DEFAULT;
     if (classifications[i].style & ACMatchClassification::URL) {
