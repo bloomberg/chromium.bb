@@ -124,11 +124,11 @@ void FakeRemoter::Start() {
   if (start_will_fail_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&FakeRemoter::StartFailed, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FakeRemoter::StartFailed, weak_factory_.GetWeakPtr()));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&FakeRemoter::Started, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FakeRemoter::Started, weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -152,8 +152,8 @@ void FakeRemoter::StartDataStreams(
 
 void FakeRemoter::Stop(mojom::RemotingStopReason reason) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeRemoter::Stopped, weak_factory_.GetWeakPtr(), reason));
+      FROM_HERE, base::BindOnce(&FakeRemoter::Stopped,
+                                weak_factory_.GetWeakPtr(), reason));
 }
 
 void FakeRemoter::SendMessageToSink(const std::vector<uint8_t>& message) {}

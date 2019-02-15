@@ -723,8 +723,8 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   // TODO(dwkang): check if there is a way to remove this workaround.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-                 weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
+      base::BindOnce(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
+                     weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
   bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
 
   if (status != MEDIA_CODEC_OK) {
@@ -827,8 +827,9 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
           picturebuffers_requested_ = true;
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,
-                         weak_this_factory_.GetWeakPtr()));
+              base::BindOnce(
+                  &AndroidVideoDecodeAccelerator::RequestPictureBuffers,
+                  weak_this_factory_.GetWeakPtr()));
           return false;
         }
 
@@ -1012,8 +1013,9 @@ void AndroidVideoDecodeAccelerator::Decode(
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-                   weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
+        base::BindOnce(
+            &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
+            weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
   }
 }
 
@@ -1298,8 +1300,9 @@ void AndroidVideoDecodeAccelerator::Reset() {
     if (bitstream_buffer_id != -1) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-                     weak_this_factory_.GetWeakPtr(), bitstream_buffer_id));
+          base::BindOnce(
+              &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
+              weak_this_factory_.GetWeakPtr(), bitstream_buffer_id));
     }
   }
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount", 0);

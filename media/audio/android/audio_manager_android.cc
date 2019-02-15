@@ -69,9 +69,9 @@ AudioManagerAndroid::~AudioManagerAndroid() = default;
 
 void AudioManagerAndroid::InitializeIfNeeded() {
   GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&AudioManagerAndroid::GetJavaAudioManager),
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(
+                                    &AudioManagerAndroid::GetJavaAudioManager),
+                                base::Unretained(this)));
 }
 
 void AudioManagerAndroid::ShutdownOnAudioThread() {
@@ -298,20 +298,14 @@ void AudioManagerAndroid::SetMute(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jboolean muted) {
   GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &AudioManagerAndroid::DoSetMuteOnAudioThread,
-          base::Unretained(this),
-          muted));
+      FROM_HERE, base::BindOnce(&AudioManagerAndroid::DoSetMuteOnAudioThread,
+                                base::Unretained(this), muted));
 }
 
 void AudioManagerAndroid::SetOutputVolumeOverride(double volume) {
   GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &AudioManagerAndroid::DoSetVolumeOnAudioThread,
-          base::Unretained(this),
-          volume));
+      FROM_HERE, base::BindOnce(&AudioManagerAndroid::DoSetVolumeOnAudioThread,
+                                base::Unretained(this), volume));
 }
 
 bool AudioManagerAndroid::HasOutputVolumeOverride(double* out_volume) const {

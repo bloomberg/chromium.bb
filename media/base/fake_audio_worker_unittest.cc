@@ -46,8 +46,8 @@ class FakeAudioWorkerTest : public testing::Test {
     // Start() should immediately post a task to run the callback, so we
     // should end up with only a single callback being run.
     message_loop_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeAudioWorkerTest::EndTest, base::Unretained(this), 1));
+        FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::EndTest,
+                                  base::Unretained(this), 1));
   }
 
   void StopStartOnAudioThread() {
@@ -68,8 +68,8 @@ class FakeAudioWorkerTest : public testing::Test {
     if (seen_callbacks_ < callbacks) {
       message_loop_.task_runner()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
-                     base::Unretained(this), callbacks),
+          base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
+                         base::Unretained(this), callbacks),
           time_between_callbacks_ / 2);
     } else {
       end_time_ = base::TimeTicks::Now();
@@ -140,8 +140,8 @@ TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
   // chance of catching the worker doing the wrong thing.
   message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeAudioWorkerTest::StopStartOnAudioThread,
-                 base::Unretained(this)),
+      base::BindOnce(&FakeAudioWorkerTest::StopStartOnAudioThread,
+                     base::Unretained(this)),
       time_between_callbacks_ / 2);
 
   // EndTest() will ensure the proper number of callbacks have occurred.

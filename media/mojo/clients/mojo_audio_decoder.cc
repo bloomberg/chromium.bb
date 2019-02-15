@@ -88,16 +88,16 @@ void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (remote_decoder_.encountered_error()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
   mojom::DecoderBufferPtr buffer =
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(media_buffer));
   if (!buffer) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 

@@ -40,8 +40,8 @@ void VideoFrameReceiverOnTaskRunner::OnFrameReadyInBuffer(
 
 void VideoFrameReceiverOnTaskRunner::OnBufferRetired(int buffer_id) {
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoFrameReceiver::OnBufferRetired, receiver_, buffer_id));
+      FROM_HERE, base::BindOnce(&VideoFrameReceiver::OnBufferRetired, receiver_,
+                                buffer_id));
 }
 
 void VideoFrameReceiverOnTaskRunner::OnError(VideoCaptureError error) {

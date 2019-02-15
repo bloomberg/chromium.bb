@@ -430,16 +430,15 @@ class ExternalVideoEncoder::VEAClientImpl
 
   // Note: This method can be called on any thread.
   void OnCreateSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&VEAClientImpl::OnReceivedSharedMemory,
-                                      this,
-                                      base::Passed(&memory)));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VEAClientImpl::OnReceivedSharedMemory, this,
+                                  std::move(memory)));
   }
 
   void OnCreateInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VEAClientImpl::OnReceivedInputSharedMemory,
-                                  this, base::Passed(&memory)));
+                                  this, std::move(memory)));
   }
 
   void OnReceivedSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
@@ -663,13 +662,10 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
   if (!client_ || video_frame->visible_rect().size() != frame_size_)
     return false;
 
-  client_->task_runner()->PostTask(FROM_HERE,
-                                   base::Bind(&VEAClientImpl::EncodeVideoFrame,
-                                              client_,
-                                              video_frame,
-                                              reference_time,
-                                              key_frame_requested_,
-                                              frame_encoded_callback));
+  client_->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VEAClientImpl::EncodeVideoFrame, client_,
+                                video_frame, reference_time,
+                                key_frame_requested_, frame_encoded_callback));
   key_frame_requested_ = false;
   return true;
 }
@@ -762,13 +758,10 @@ void ExternalVideoEncoder::OnCreateVideoEncodeAccelerator(
                               std::move(vea), video_config.max_frame_rate,
                               std::move(wrapped_status_change_cb),
                               create_video_encode_memory_cb_);
-  client_->task_runner()->PostTask(FROM_HERE,
-                                   base::Bind(&VEAClientImpl::Initialize,
-                                              client_,
-                                              frame_size_,
-                                              codec_profile,
-                                              bit_rate_,
-                                              first_frame_id));
+  client_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VEAClientImpl::Initialize, client_, frame_size_,
+                     codec_profile, bit_rate_, first_frame_id));
 }
 
 SizeAdaptableExternalVideoEncoder::SizeAdaptableExternalVideoEncoder(

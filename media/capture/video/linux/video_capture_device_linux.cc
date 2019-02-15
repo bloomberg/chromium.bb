@@ -86,11 +86,11 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
   }
   v4l2_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2CaptureDelegate::AllocateAndStart,
-                 capture_impl_->GetWeakPtr(),
-                 params.requested_format.frame_size.width(),
-                 params.requested_format.frame_size.height(),
-                 params.requested_format.frame_rate, base::Passed(&client)));
+      base::BindOnce(&V4L2CaptureDelegate::AllocateAndStart,
+                     capture_impl_->GetWeakPtr(),
+                     params.requested_format.frame_size.width(),
+                     params.requested_format.frame_size.height(),
+                     params.requested_format.frame_rate, std::move(client)));
 
   for (auto& request : photo_requests_queue_)
     v4l2_thread_.task_runner()->PostTask(FROM_HERE, std::move(request));
@@ -113,7 +113,7 @@ void VideoCaptureDeviceLinux::TakePhoto(TakePhotoCallback callback) {
   DCHECK(capture_impl_);
   auto functor =
       base::BindOnce(&V4L2CaptureDelegate::TakePhoto,
-                     capture_impl_->GetWeakPtr(), base::Passed(&callback));
+                     capture_impl_->GetWeakPtr(), std::move(callback));
   if (!v4l2_thread_.IsRunning()) {
     // We have to wait until we get the device AllocateAndStart()ed.
     photo_requests_queue_.push_back(std::move(functor));
@@ -125,7 +125,7 @@ void VideoCaptureDeviceLinux::TakePhoto(TakePhotoCallback callback) {
 void VideoCaptureDeviceLinux::GetPhotoState(GetPhotoStateCallback callback) {
   auto functor =
       base::BindOnce(&V4L2CaptureDelegate::GetPhotoState,
-                     capture_impl_->GetWeakPtr(), base::Passed(&callback));
+                     capture_impl_->GetWeakPtr(), std::move(callback));
   if (!v4l2_thread_.IsRunning()) {
     // We have to wait until we get the device AllocateAndStart()ed.
     photo_requests_queue_.push_back(std::move(functor));
@@ -137,9 +137,9 @@ void VideoCaptureDeviceLinux::GetPhotoState(GetPhotoStateCallback callback) {
 void VideoCaptureDeviceLinux::SetPhotoOptions(
     mojom::PhotoSettingsPtr settings,
     SetPhotoOptionsCallback callback) {
-  auto functor = base::BindOnce(
-      &V4L2CaptureDelegate::SetPhotoOptions, capture_impl_->GetWeakPtr(),
-      base::Passed(&settings), base::Passed(&callback));
+  auto functor = base::BindOnce(&V4L2CaptureDelegate::SetPhotoOptions,
+                                capture_impl_->GetWeakPtr(),
+                                std::move(settings), std::move(callback));
   if (!v4l2_thread_.IsRunning()) {
     // We have to wait until we get the device AllocateAndStart()ed.
     photo_requests_queue_.push_back(std::move(functor));

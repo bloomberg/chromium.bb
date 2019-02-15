@@ -291,7 +291,8 @@ void CastTransportImpl::SendRawEvents() {
 
   transport_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CastTransportImpl::SendRawEvents, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&CastTransportImpl::SendRawEvents,
+                     weak_factory_.GetWeakPtr()),
       logging_flush_interval_);
 }
 

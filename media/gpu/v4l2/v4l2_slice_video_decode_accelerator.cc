@@ -126,8 +126,9 @@ V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
     DVLOGF(5) << "returning input_id: " << input_id;
     client_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&VideoDecodeAccelerator::Client::NotifyEndOfBitstreamBuffer,
-                   client, input_id));
+        base::BindOnce(
+            &VideoDecodeAccelerator::Client::NotifyEndOfBitstreamBuffer, client,
+            input_id));
   }
 }
 
@@ -540,9 +541,9 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
 
   child_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-                 client_, num_pictures, pixel_format, 1, coded_size_,
-                 device_->GetTextureTarget()));
+      base::BindOnce(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
+                     client_, num_pictures, pixel_format, 1, coded_size_,
+                     device_->GetTextureTarget()));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
   // or event handling while we are waiting for AssignPictureBuffers(). Not
@@ -1122,8 +1123,8 @@ void V4L2SliceVideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
   if (state_ == kDecoding) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&V4L2SliceVideoDecodeAccelerator::DecodeBufferTask,
-                   base::Unretained(this)));
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DecodeBufferTask,
+                       base::Unretained(this)));
   }
 }
 
@@ -1322,8 +1323,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask,
-                 base::Unretained(this), buffers));
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask,
+                     base::Unretained(this), buffers));
 }
 
 void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
@@ -1632,9 +1633,9 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBuffer(
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask,
-                 base::Unretained(this), picture_buffer_id,
-                 base::Passed(&egl_fence)));
+      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask,
+                     base::Unretained(this), picture_buffer_id,
+                     std::move(egl_fence)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
@@ -1753,8 +1754,8 @@ bool V4L2SliceVideoDecodeAccelerator::FinishFlush() {
   decoder_flushing_ = false;
   VLOGF(2) << "Flush finished";
 
-  child_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&Client::NotifyFlushDone, client_));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Client::NotifyFlushDone, client_));
 
   TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2SVDA Flush", this);
   return true;
@@ -1830,8 +1831,8 @@ bool V4L2SliceVideoDecodeAccelerator::FinishReset() {
   decoder_resetting_ = false;
   VLOGF(2) << "Reset finished";
 
-  child_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&Client::NotifyResetDone, client_));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Client::NotifyResetDone, client_));
 
   TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2SVDA Reset", this);
   return true;
@@ -2018,7 +2019,7 @@ void V4L2SliceVideoDecodeAccelerator::SendPictureReady() {
       // all pictures are cleared at the beginning.
       decode_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&Client::PictureReady, decode_client_, picture));
+          base::BindOnce(&Client::PictureReady, decode_client_, picture));
       pending_picture_ready_.pop();
     } else if (!cleared || send_now) {
       DVLOGF(4) << "cleared=" << pending_picture_ready_.front().cleared

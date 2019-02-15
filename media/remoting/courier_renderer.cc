@@ -144,7 +144,7 @@ void CourierRenderer::Initialize(MediaResource* media_resource,
       FROM_HERE,
       base::BindOnce(
           &RendererController::StartDataPipe, controller_,
-          base::Passed(&audio_data_pipe), base::Passed(&video_data_pipe),
+          std::move(audio_data_pipe), std::move(video_data_pipe),
           base::BindOnce(&CourierRenderer::OnDataPipeCreatedOnMainThread,
                          media_task_runner_, weak_factory_.GetWeakPtr(),
                          rpc_broker_)));
@@ -295,13 +295,13 @@ void CourierRenderer::OnDataPipeCreatedOnMainThread(
     mojo::ScopedDataPipeProducerHandle video_handle) {
   media_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&CourierRenderer::OnDataPipeCreated, self,
-                 base::Passed(&audio), base::Passed(&video),
-                 base::Passed(&audio_handle), base::Passed(&video_handle),
-                 rpc_broker ? rpc_broker->GetUniqueHandle()
-                            : RpcBroker::kInvalidHandle,
-                 rpc_broker ? rpc_broker->GetUniqueHandle()
-                            : RpcBroker::kInvalidHandle));
+      base::BindOnce(&CourierRenderer::OnDataPipeCreated, self,
+                     std::move(audio), std::move(video),
+                     std::move(audio_handle), std::move(video_handle),
+                     rpc_broker ? rpc_broker->GetUniqueHandle()
+                                : RpcBroker::kInvalidHandle,
+                     rpc_broker ? rpc_broker->GetUniqueHandle()
+                                : RpcBroker::kInvalidHandle));
 }
 
 void CourierRenderer::OnDataPipeCreated(
@@ -370,9 +370,9 @@ void CourierRenderer::OnMessageReceivedOnMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     base::WeakPtr<CourierRenderer> self,
     std::unique_ptr<pb::RpcMessage> message) {
-  media_task_runner->PostTask(FROM_HERE,
-                              base::Bind(&CourierRenderer::OnReceivedRpc, self,
-                                         base::Passed(&message)));
+  media_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&CourierRenderer::OnReceivedRpc, self,
+                                std::move(message)));
 }
 
 void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
@@ -438,7 +438,7 @@ void CourierRenderer::SendRpcToRemote(std::unique_ptr<pb::RpcMessage> message) {
   DCHECK(main_task_runner_);
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RpcBroker::SendMessageToRemote, rpc_broker_,
-                                base::Passed(&message)));
+                                std::move(message)));
 }
 
 void CourierRenderer::AcquireRendererDone(

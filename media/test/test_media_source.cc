@@ -213,8 +213,8 @@ void TestMediaSource::Shutdown() {
 
 void TestMediaSource::DemuxerOpened() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestMediaSource::DemuxerOpenedTask, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&TestMediaSource::DemuxerOpenedTask,
+                                base::Unretained(this)));
 }
 
 void TestMediaSource::DemuxerOpenedTask() {

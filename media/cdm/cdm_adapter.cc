@@ -687,10 +687,11 @@ void CdmAdapter::SetTimer(int64_t delay_ms, void* context) {
   TRACE_EVENT2("media", "CdmAdapter::SetTimer", "delay_ms", delay_ms, "context",
                context);
 
-  task_runner_->PostDelayedTask(FROM_HERE,
-                                base::Bind(&CdmAdapter::TimerExpired,
-                                           weak_factory_.GetWeakPtr(), context),
-                                delay);
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CdmAdapter::TimerExpired, weak_factory_.GetWeakPtr(),
+                     context),
+      delay);
 }
 
 void CdmAdapter::TimerExpired(void* context) {

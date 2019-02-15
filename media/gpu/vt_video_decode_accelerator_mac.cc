@@ -854,8 +854,8 @@ void VTVideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
   // no image.
   if (!frame->has_slice) {
     gpu_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&VTVideoDecodeAccelerator::DecodeDone, weak_this_, frame));
+        FROM_HERE, base::BindOnce(&VTVideoDecodeAccelerator::DecodeDone,
+                                  weak_this_, frame));
     return;
   }
 
@@ -1010,7 +1010,7 @@ void VTVideoDecodeAccelerator::Output(void* source_frame_refcon,
   frame->image.reset(image_buffer, base::scoped_policy::RETAIN);
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VTVideoDecodeAccelerator::DecodeDone, weak_this_, frame));
+      base::BindOnce(&VTVideoDecodeAccelerator::DecodeDone, weak_this_, frame));
 }
 
 void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
@@ -1057,7 +1057,7 @@ void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
   // Queue a task even if flushing fails, so that destruction always completes.
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VTVideoDecodeAccelerator::FlushDone, weak_this_, type));
+      base::BindOnce(&VTVideoDecodeAccelerator::FlushDone, weak_this_, type));
 }
 
 void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
@@ -1121,7 +1121,7 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
   // future work after that happens.
   gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VTVideoDecodeAccelerator::ProcessWorkQueues, weak_this_));
+      base::BindOnce(&VTVideoDecodeAccelerator::ProcessWorkQueues, weak_this_));
 }
 
 void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
@@ -1357,8 +1357,8 @@ void VTVideoDecodeAccelerator::NotifyError(
   if (!gpu_task_runner_->BelongsToCurrentThread()) {
     gpu_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VTVideoDecodeAccelerator::NotifyError, weak_this_,
-                   vda_error_type, session_failure_type));
+        base::BindOnce(&VTVideoDecodeAccelerator::NotifyError, weak_this_,
+                       vda_error_type, session_failure_type));
   } else if (state_ == STATE_DECODING) {
     state_ = STATE_ERROR;
     UMA_HISTOGRAM_ENUMERATION("Media.VTVDA.SessionFailureReason",

@@ -651,11 +651,9 @@ class CastBenchmark {
       SearchVector ac = a.blend(c, static_cast<double>(x) / max);
       SearchVector v = ab.blend(ac, x == y ? 1.0 : static_cast<double>(y) / x);
       thread_num++;
-      (*threads)[thread_num % threads->size()]
-          ->task_runner()
-          ->PostTask(FROM_HERE,
-                     base::Bind(&CastBenchmark::BinarySearch,
-                                base::Unretained(this), v, accuracy));
+      (*threads)[thread_num % threads->size()]->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&CastBenchmark::BinarySearch,
+                                    base::Unretained(this), v, accuracy));
     } else {
       skip *= 2;
       SpanningSearch(max, x, y, skip, a, b, c, accuracy, threads);

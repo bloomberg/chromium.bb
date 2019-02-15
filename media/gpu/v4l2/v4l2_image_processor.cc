@@ -304,8 +304,8 @@ bool V4L2ImageProcessor::Initialize() {
 
   // StartDevicePoll will NotifyError on failure.
   device_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2ImageProcessor::StartDevicePoll, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::StartDevicePoll,
+                                base::Unretained(this)));
 
   VLOGF(2) << "V4L2ImageProcessor initialized for "
            << "input_layout: " << input_layout_
@@ -464,8 +464,8 @@ void V4L2ImageProcessor::Destroy() {
         FROM_HERE, base::BindOnce(&V4L2ImageProcessor::StopDevicePoll,
                                   base::Unretained(this)));
     device_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&V4L2ImageProcessor::DestroyBuffersTask,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DestroyBuffersTask,
+                                  base::Unretained(this)));
     // Wait for tasks to finish/early-exit.
     device_thread_.Stop();
   } else {

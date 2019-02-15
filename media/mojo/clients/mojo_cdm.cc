@@ -364,7 +364,7 @@ void MojoCdm::OnSessionKeysChange(
       DCHECK(decryptor_task_runner_);
       decryptor_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&MojoCdm::OnKeyAdded, weak_factory_.GetWeakPtr()));
+          base::BindOnce(&MojoCdm::OnKeyAdded, weak_factory_.GetWeakPtr()));
     }
   }
 
