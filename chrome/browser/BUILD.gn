@@ -340,6 +340,8 @@ jumbo_split_static_library("browser") {
     "conflicts/enumerate_input_method_editors_win.h",
     "conflicts/enumerate_shell_extensions_win.cc",
     "conflicts/enumerate_shell_extensions_win.h",
+    "conflicts/inspection_results_cache_win.cc",
+    "conflicts/inspection_results_cache_win.h",
     "conflicts/module_database_observer_win.h",
     "conflicts/module_database_win.cc",
     "conflicts/module_database_win.h",

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
 
 // ModuleInfoKey and ModuleInfoData are used in pair by the ModuleDatabase to
@@ -41,11 +42,17 @@ struct ModuleInfoKey {
 // information is expensive to gather and requires disk access, it should be
 // collected via InspectModule() on a task runner that allow blocking.
 //
-// This struct is move-only to ensure it is not unnecessarily copied.
+// Note: Any modification to this structure should be reflected in
+//       SerializeInspectionResult() and DeserializeInspectionResult() in
+//       chrome/browser/conflicts/inspection_results_cache_win.cc.
 struct ModuleInspectionResult {
   ModuleInspectionResult();
-  ModuleInspectionResult(ModuleInspectionResult&& other) noexcept;
-  ModuleInspectionResult& operator=(ModuleInspectionResult&& other) noexcept;
+  ModuleInspectionResult(const ModuleInspectionResult& other);
+  ModuleInspectionResult(ModuleInspectionResult&& other);
+
+  ModuleInspectionResult& operator=(const ModuleInspectionResult& other);
+  ModuleInspectionResult& operator=(ModuleInspectionResult&& other);
+
   ~ModuleInspectionResult();
 
   // The lowercase module path, not including the basename.
@@ -66,9 +73,6 @@ struct ModuleInspectionResult {
 
   // The certificate info for the module.
   CertificateInfo certificate_info;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ModuleInspectionResult);
 };
 
 // Contains the inspection result of a module and additional information that is
@@ -111,6 +115,11 @@ struct ModuleInfoData {
 // ModuleInspectionResult that contains detailed information about the module on
 // disk. This is a blocking task that requires access to disk.
 ModuleInspectionResult InspectModule(const base::FilePath& module_path);
+
+// Returns the date stamp to be used in the inspection results cache.
+// Represents the number of hours between |time| and the Windows epoch
+// (1601-01-01 00:00:00 UTC).
+uint32_t CalculateTimeStamp(base::Time time);
 
 // Generate the code id of a module.
 std::string GenerateCodeId(const ModuleInfoKey& module_key);

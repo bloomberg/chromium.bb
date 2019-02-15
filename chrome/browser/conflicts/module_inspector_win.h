@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CONFLICTS_MODULE_INSPECTOR_WIN_H_
 #define CHROME_BROWSER_CONFLICTS_MODULE_INSPECTOR_WIN_H_
 
+#include <map>
+
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
@@ -12,6 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/conflicts/inspection_results_cache_win.h"
+#include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
 
@@ -29,7 +33,7 @@ class SequencedTaskRunner;
 // IncreaseInspectionPriority().
 //
 // This class is not thread safe and it enforces safety via a SEQUENCE_CHECKER.
-class ModuleInspector {
+class ModuleInspector : public ModuleDatabaseObserver {
  public:
   using OnModuleInspectedCallback =
       base::Callback<void(const ModuleInfoKey& module_key,
@@ -37,7 +41,7 @@ class ModuleInspector {
 
   explicit ModuleInspector(
       const OnModuleInspectedCallback& on_module_inspected_callback);
-  ~ModuleInspector();
+  ~ModuleInspector() override;
 
   // Adds the module to the queue of modules to inspect. Starts the inspection
   // process if the |queue_| is empty.
@@ -49,16 +53,28 @@ class ModuleInspector {
   // Returns true if ModuleInspector is not doing anything right now.
   bool IsIdle();
 
+  // ModuleDatabaseObserver:
+  void OnModuleDatabaseIdle() override;
+
  private:
   // Invoked when Chrome has finished starting up to initiate the inspection of
   // queued modules.
   void OnStartupFinished();
+
+  // Invoked when the InspectionResultsCache is available.
+  void OnInspectionResultsCacheRead(
+      InspectionResultsCache inspection_results_cache);
 
   // Handles a connection error to the UtilWin service.
   void OnUtilWinServiceConnectionError();
 
   // Starts inspecting the module at the front of the queue.
   void StartInspectingModule();
+
+  // Adds the newly inspected module to the cache then calls
+  // OnInspectionFinished().
+  void OnModuleNewlyInspected(const ModuleInfoKey& module_key,
+                              ModuleInspectionResult inspection_result);
 
   // Called back on the execution context on which the ModuleInspector was
   // created when a module has finished being inspected. The callback will be
@@ -84,12 +100,22 @@ class ModuleInspector {
   // The task runner where module inspections takes place. It originally starts
   // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> inspection_task_runner_;
 
   // The vector of paths to %env_var%, used to account for differences in
   // localization and where people keep their files.
   // e.g. c:\windows vs d:\windows
   StringMapping path_mapping_;
+
+  // This task runner handles updates to the inspection results cache.
+  scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
+
+  // Indicates if the inspection results cache was read from disk.
+  bool inspection_results_cache_read_;
+
+  // Contains the cached inspection results so that a module is not inspected
+  // more than once between restarts.
+  InspectionResultsCache inspection_results_cache_;
 
   // The number of time this class will try to restart the UtilWin service if a
   // connection error occurs. This is to prevent the degenerate case where the
