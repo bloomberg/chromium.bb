@@ -20,6 +20,7 @@ import {promiseForRequest, promiseForTransaction, throwForDisallowedKey} from '.
 
 const _databaseName = new WeakMap();
 const _databasePromise = new WeakMap();
+const _backingStoreObject = new WeakMap();
 
 const DEFAULT_STORAGE_AREA_NAME = 'default';
 const DEFAULT_IDB_STORE_NAME = 'store';
@@ -120,11 +121,15 @@ export class StorageArea {
       throw new TypeError('Invalid this value');
     }
 
-    return {
-      database: _databaseName.get(this),
-      store: DEFAULT_IDB_STORE_NAME,
-      version: 1,
-    };
+    if (!_backingStoreObject.has(this)) {
+      _backingStoreObject.set(this, Object.freeze({
+        database: _databaseName.get(this),
+        store: DEFAULT_IDB_STORE_NAME,
+        version: 1,
+      }));
+    }
+
+    return _backingStoreObject.get(this);
   }
 }
 
