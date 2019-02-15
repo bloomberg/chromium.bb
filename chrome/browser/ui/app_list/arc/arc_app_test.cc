@@ -114,10 +114,12 @@ void ArcAppTest::SetUp(Profile* profile) {
     WaitForDefaultApps();
 
   // Check initial conditions.
-  if (!arc::ShouldArcAlwaysStart())
-    arc::SetArcPlayStoreEnabledForProfile(profile_, true);
-  if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
-    EXPECT_TRUE(arc_session_manager_->enable_requested());
+  if (activate_arc_on_start_) {
+    if (!arc::ShouldArcAlwaysStart())
+      arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+    if (!arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_))
+      EXPECT_TRUE(arc_session_manager_->enable_requested());
+  }
 
   app_instance_ = std::make_unique<arc::FakeAppInstance>(arc_app_list_pref_);
   arc_service_manager_->arc_bridge_service()->app()->SetInstance(
