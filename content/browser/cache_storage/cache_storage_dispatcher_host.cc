@@ -47,6 +47,32 @@ bool OriginCanAccessCacheStorage(const url::Origin& origin) {
   return !origin.opaque() && IsOriginSecure(origin.GetURL());
 }
 
+// Verifies that the BatchOperation list conforms to the constraints imposed
+// by the web exposed Cache API.  Don't permit compromised renderers to use
+// unexpected operation combinations.
+bool ValidBatchOperations(
+    const std::vector<blink::mojom::BatchOperationPtr>& batch_operations) {
+  // At least one operation is required.
+  if (batch_operations.empty())
+    return false;
+  blink::mojom::OperationType type = batch_operations[0]->operation_type;
+  // We must have a defined operation type.  All other enum values allowed
+  // by the mojo validator are permitted here.
+  if (type == blink::mojom::OperationType::kUndefined)
+    return false;
+  // Delete operations should only be sent one at a time.
+  if (type == blink::mojom::OperationType::kDelete &&
+      batch_operations.size() > 1) {
+    return false;
+  }
+  // All operations in the list must be the same.
+  for (const auto& op : batch_operations) {
+    if (op->operation_type != type)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 // Implements the mojom interface CacheStorageCache. It's owned by
@@ -154,6 +180,10 @@ class CacheStorageDispatcherHost::CacheImpl
   void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
              bool fail_on_duplicates,
              BatchCallback callback) override {
+    if (!ValidBatchOperations(batch_operations)) {
+      mojo::ReportBadMessage("CSDH_UNEXPECTED_OPERATION");
+      return;
+    }
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
       std::move(callback).Run(CacheStorageVerboseError::New(
