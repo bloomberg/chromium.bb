@@ -211,8 +211,10 @@ void FillFrameData(base::trace_event::TracedValue* data,
 }  // namespace
 
 TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
-                               DevToolsIOContext* io_context)
+                               DevToolsIOContext* io_context,
+                               bool use_binary_protocol)
     : DevToolsDomainHandler(Tracing::Metainfo::domainName),
+      use_binary_protocol_(use_binary_protocol),
       io_context_(io_context),
       frame_tree_node_(frame_tree_node_),
       did_initiate_recording_(false),
@@ -276,7 +278,12 @@ void TracingHandler::OnTraceDataCollected(
   message.append(valid_trace_fragment.c_str() +
                  trace_data_buffer_state_.offset);
   message += "] } }";
-  frontend_->sendRawNotification(std::move(message));
+  if (use_binary_protocol_) {
+    auto parsed = protocol::StringUtil::parseMessage(message, false);
+    frontend_->sendRawNotification(parsed->serializeToBinary());
+  } else {
+    frontend_->sendRawNotification(std::move(message));
+  }
 }
 
 void TracingHandler::OnTraceComplete() {

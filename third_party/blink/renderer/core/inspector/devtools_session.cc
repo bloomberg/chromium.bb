@@ -43,11 +43,16 @@ std::vector<uint8_t> UnwrapMessage(
 }
 
 mojom::blink::DevToolsMessagePtr WrapMessage(
-    const protocol::ProtocolMessage& message) {
+    protocol::ProtocolMessage message) {
   auto result = mojom::blink::DevToolsMessage::New();
-  WTF::StringUTF8Adaptor adaptor(message.json);
-  result->data = mojo_base::BigBuffer(base::make_span(
-      reinterpret_cast<const uint8_t*>(adaptor.Data()), adaptor.length()));
+
+  if (message.json.IsEmpty()) {
+    result->data = std::move(message.binary);
+  } else {
+    WTF::StringUTF8Adaptor adaptor(message.json);
+    result->data = mojo_base::BigBuffer(base::make_span(
+        reinterpret_cast<const uint8_t*>(adaptor.Data()), adaptor.length()));
+  }
   return result;
 }
 
@@ -129,7 +134,8 @@ DevToolsSession::DevToolsSession(
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       v8_session_state_(kV8StateKey),
-      v8_session_state_json_(&v8_session_state_, /*default_value=*/String()) {
+      v8_session_state_json_(&v8_session_state_, /*default_value=*/String()),
+      uses_binary_protocol_(&v8_session_state_, false) {
   io_session_ =
       new IOSession(agent_->io_task_runner_, agent_->inspector_task_runner_,
                     WrapCrossThreadWeakPersistent(this), std::move(io_request));
@@ -203,7 +209,7 @@ void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   std::vector<uint8_t> data) {
   bool binary_protocol = data.size() && data[0] == 0xD8;
   if (binary_protocol)
-    uses_binary_protocol_ = true;
+    uses_binary_protocol_.Set(true);
 
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
@@ -267,7 +273,8 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(call_id, message->serialize(uses_binary_protocol_));
+  SendProtocolResponse(call_id,
+                       message->serialize(uses_binary_protocol_.Get()));
 }
 
 void DevToolsSession::fallThrough(int call_id,
@@ -283,8 +290,8 @@ void DevToolsSession::sendResponse(
   // We can potentially avoid copies if WebString would convert to utf8 right
   // from StringView, but it uses StringImpl itself, so we don't create any
   // extra copies here.
-  SendProtocolResponse(
-      call_id, ToProtocolMessage(std::move(message), uses_binary_protocol_));
+  SendProtocolResponse(call_id, ToProtocolMessage(std::move(message),
+                                                  uses_binary_protocol_.Get()));
 }
 
 void DevToolsSession::SendProtocolResponse(
@@ -333,7 +340,7 @@ class DevToolsSession::Notification {
       serialized = ToProtocolMessage(std::move(v8_notification_), binary);
       v8_notification_.reset();
     }
-    return WrapMessage(serialized);
+    return WrapMessage(std::move(serialized));
   }
 
  private:
@@ -367,9 +374,10 @@ void DevToolsSession::flushProtocolNotifications() {
   if (v8_session_)
     v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
-    host_ptr_->DispatchProtocolNotification(
-        notification_queue_[i]->Serialize(uses_binary_protocol_),
-        session_state_.TakeUpdates());
+    auto serialized =
+        notification_queue_[i]->Serialize(uses_binary_protocol_.Get());
+    host_ptr_->DispatchProtocolNotification(std::move(serialized),
+                                            session_state_.TakeUpdates());
   }
   notification_queue_.clear();
 }

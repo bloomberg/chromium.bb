@@ -46,7 +46,8 @@ namespace protocol {
 class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
  public:
   CONTENT_EXPORT TracingHandler(FrameTreeNode* frame_tree_node,
-                                DevToolsIOContext* io_context);
+                                DevToolsIOContext* io_context,
+                                bool use_binary_protocol);
   CONTENT_EXPORT ~TracingHandler() override;
 
   static std::vector<TracingHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -123,6 +124,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
                        std::unordered_set<base::ProcessId>* process_set);
   void OnProcessReady(RenderProcessHost*);
 
+  const bool use_binary_protocol_;
   std::unique_ptr<base::RepeatingTimer> buffer_usage_poll_timer_;
 
   std::unique_ptr<Tracing::Frontend> frontend_;
