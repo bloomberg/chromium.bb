@@ -13,6 +13,10 @@ management.BrowserReportingData;
 Polymer({
   is: 'management-ui',
 
+  behaviors: [
+    WebUIListenerBehavior,
+  ],
+
   properties: {
     /**
      * List of messages related to browser reporting.
@@ -52,6 +56,11 @@ Polymer({
     document.documentElement.classList.remove('loading');
     this.browserProxy_ = management.ManagementBrowserProxyImpl.getInstance();
     this.initBrowserReportingInfo_();
+
+    this.addWebUIListener(
+        'browser-reporting-info-updated',
+        reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
+
     this.getExtensions_();
     // <if expr="chromeos">
     this.getLocalTrustRootsInfo_();
