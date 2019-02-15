@@ -264,11 +264,11 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
     if (!network_task_runner_->RunsTasksInCurrentSequence()) {
       network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&FetcherTestURLRequestContextGetter::AddThrottlerEntry,
-                     this, url, url_id, sliding_window_period_ms,
-                     max_send_threshold, initial_backoff_ms, multiply_factor,
-                     jitter_factor, maximum_backoff_ms,
-                     reserve_sending_time_for_next_request));
+          base::BindOnce(&FetcherTestURLRequestContextGetter::AddThrottlerEntry,
+                         this, url, url_id, sliding_window_period_ms,
+                         max_send_threshold, initial_backoff_ms,
+                         multiply_factor, jitter_factor, maximum_backoff_ms,
+                         reserve_sending_time_for_next_request));
       return;
     }
     scoped_refptr<URLRequestThrottlerEntry> entry(new URLRequestThrottlerEntry(
@@ -289,7 +289,7 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
     if (!network_task_runner_->RunsTasksInCurrentSequence()) {
       network_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&FetcherTestURLRequestContextGetter::Shutdown, this));
+          base::BindOnce(&FetcherTestURLRequestContextGetter::Shutdown, this));
       return;
     }
 

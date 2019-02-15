@@ -453,8 +453,8 @@ MockRead SequencedSocketData::OnRead() {
       return MockRead(SYNCHRONOUS, ERR_IO_PENDING);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SequencedSocketData::OnReadComplete,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SequencedSocketData::OnReadComplete,
+                                  weak_factory_.GetWeakPtr()));
     CHECK_NE(COMPLETING, write_state_);
     read_state_ = COMPLETING;
   } else if (next_read.mode == SYNCHRONOUS) {
@@ -506,8 +506,8 @@ MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
 
     NET_TRACE(1, " *** ") << "Posting task to complete write";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SequencedSocketData::OnWriteComplete,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SequencedSocketData::OnWriteComplete,
+                                  weak_factory_.GetWeakPtr()));
     CHECK_NE(COMPLETING, read_state_);
     write_state_ = COMPLETING;
   } else if (next_write.mode == SYNCHRONOUS) {
@@ -624,8 +624,8 @@ void SequencedSocketData::MaybePostReadCompleteTask() {
   NET_TRACE(1, " ****** ") << "Posting task to complete read: "
                            << sequence_number_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SequencedSocketData::OnReadComplete,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SequencedSocketData::OnReadComplete,
+                                weak_factory_.GetWeakPtr()));
   CHECK_NE(COMPLETING, write_state_);
   read_state_ = COMPLETING;
 }
@@ -651,8 +651,8 @@ void SequencedSocketData::MaybePostWriteCompleteTask() {
   NET_TRACE(1, " ****** ") << "Posting task to complete write: "
                            << sequence_number_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SequencedSocketData::OnWriteComplete,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SequencedSocketData::OnWriteComplete,
+                                weak_factory_.GetWeakPtr()));
   CHECK_NE(COMPLETING, read_state_);
   write_state_ = COMPLETING;
 }

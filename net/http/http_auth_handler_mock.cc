@@ -115,8 +115,8 @@ int HttpAuthHandlerMock::GenerateAuthTokenImpl(
     callback_ = std::move(callback);
     auth_token_ = auth_token;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&HttpAuthHandlerMock::OnGenerateAuthToken,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&HttpAuthHandlerMock::OnGenerateAuthToken,
+                                  weak_factory_.GetWeakPtr()));
     state_ = State::TOKEN_PENDING;
     return ERR_IO_PENDING;
   } else {

@@ -118,8 +118,8 @@ void URLRequestMockDataJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestMockDataJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestMockDataJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 URLRequestMockDataJob::~URLRequestMockDataJob() = default;

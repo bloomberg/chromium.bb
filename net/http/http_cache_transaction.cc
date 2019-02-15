@@ -1329,8 +1329,8 @@ void HttpCache::Transaction::AddCacheLockTimeoutHandler(ActiveEntry* entry) {
        next_state_ == STATE_FINISH_HEADERS_COMPLETE)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&HttpCache::Transaction::OnCacheLockTimeout,
-                   weak_factory_.GetWeakPtr(), entry_lock_waiting_since_));
+        base::BindOnce(&HttpCache::Transaction::OnCacheLockTimeout,
+                       weak_factory_.GetWeakPtr(), entry_lock_waiting_since_));
   } else {
     int timeout_milliseconds = 20 * 1000;
     if (partial_ && entry->writers && !entry->writers->IsEmpty() &&
@@ -1356,8 +1356,8 @@ void HttpCache::Transaction::AddCacheLockTimeoutHandler(ActiveEntry* entry) {
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&HttpCache::Transaction::OnCacheLockTimeout,
-                   weak_factory_.GetWeakPtr(), entry_lock_waiting_since_),
+        base::BindOnce(&HttpCache::Transaction::OnCacheLockTimeout,
+                       weak_factory_.GetWeakPtr(), entry_lock_waiting_since_),
         TimeDelta::FromMilliseconds(timeout_milliseconds));
   }
 }

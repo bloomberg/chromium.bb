@@ -307,7 +307,7 @@ class ProxyConfigServiceAndroid::Delegate
       ShutdownInJNISequence();
     } else {
       jni_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&Delegate::ShutdownInJNISequence, this));
+          FROM_HERE, base::BindOnce(&Delegate::ShutdownInJNISequence, this));
     }
   }
 

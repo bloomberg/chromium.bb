@@ -94,8 +94,9 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
   NetworkDelegateErrorObserver observer(
       &network_delegate, base::ThreadTaskRunnerHandle::Get().get());
   thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                            base::Unretained(&observer), 42, base::string16()));
+      FROM_HERE,
+      base::BindOnce(&NetworkDelegateErrorObserver::OnPACScriptError,
+                     base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(network_delegate.got_pac_error());
@@ -109,8 +110,9 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   NetworkDelegateErrorObserver observer(
       NULL, base::ThreadTaskRunnerHandle::Get().get());
   thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                            base::Unretained(&observer), 42, base::string16()));
+      FROM_HERE,
+      base::BindOnce(&NetworkDelegateErrorObserver::OnPACScriptError,
+                     base::Unretained(&observer), 42, base::string16()));
   thread.Stop();
   base::RunLoop().RunUntilIdle();
   // Shouldn't have crashed until here...

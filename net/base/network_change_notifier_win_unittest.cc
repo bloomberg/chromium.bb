@@ -45,8 +45,8 @@ class TestNetworkChangeNotifierWin : public NetworkChangeNotifierWin {
   void RecomputeCurrentConnectionTypeOnDnsThread(
       base::Callback<void(ConnectionType)> reply_callback) const override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(reply_callback, NetworkChangeNotifier::CONNECTION_UNKNOWN));
+        FROM_HERE, base::BindOnce(reply_callback,
+                                  NetworkChangeNotifier::CONNECTION_UNKNOWN));
   }
 
   // From NetworkChangeNotifierWin.

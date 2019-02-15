@@ -199,8 +199,8 @@ void URLRequestTestJob::Start() {
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&URLRequestTestJob::StartAsync, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestTestJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestTestJob::StartAsync() {
@@ -269,8 +269,8 @@ int URLRequestTestJob::ReadRawData(IOBuffer* buf, int buf_size) {
     if (stage_ != WAITING) {
       stage_ = WAITING;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&URLRequestTestJob::ProcessNextOperation,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&URLRequestTestJob::ProcessNextOperation,
+                                    weak_factory_.GetWeakPtr()));
     }
     return ERR_IO_PENDING;
   }
@@ -363,8 +363,8 @@ bool URLRequestTestJob::NextReadAsync() {
 void URLRequestTestJob::AdvanceJob() {
   if (auto_advance_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&URLRequestTestJob::ProcessNextOperation,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&URLRequestTestJob::ProcessNextOperation,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
   g_pending_jobs.Get().push_back(this);

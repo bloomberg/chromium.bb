@@ -62,8 +62,8 @@ HttpServer::HttpServer(std::unique_ptr<ServerSocket> server_socket,
   // Start accepting connections in next run loop in case when delegate is not
   // ready to get callbacks.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&HttpServer::DoAcceptLoop, weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&HttpServer::DoAcceptLoop,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 HttpServer::~HttpServer() = default;

@@ -268,7 +268,7 @@ class MockTransaction : public DnsTransaction,
       return;
     // Using WeakPtr to cleanly cancel when transaction is destroyed.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockTransaction::Finish, AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&MockTransaction::Finish, AsWeakPtr()));
   }
 
   void FinishDelayedTransaction() {

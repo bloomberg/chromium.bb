@@ -320,8 +320,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and Flush have been posted to its task queue.
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                                base::Unretained(this)));
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)),
                NetLogWithSource());
@@ -385,8 +385,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                                base::Unretained(this)));
   BoundTestNetLog net_log;
   store_->Load(base::Bind(&SQLitePersistentCookieStoreTest::OnLoaded,
                           base::Unretained(this)),
@@ -397,8 +397,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
       "aaa.com", base::Bind(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
                             base::Unretained(this), run_loop.QuitClosure()));
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
+                                base::Unretained(this)));
 
   // Now the DB-thread queue contains:
   // (active:)

@@ -51,7 +51,7 @@ void JavaNegotiateResultWrapper::SetResult(JNIEnv* env,
   // simplifies the logic. In practice the result will only ever come back on
   // the original thread in an obscure error case.
   callback_task_runner_->PostTask(
-      FROM_HERE, base::Bind(thread_safe_callback_, result, raw_token));
+      FROM_HERE, base::BindOnce(thread_safe_callback_, result, raw_token));
   // We will always get precisely one call to set result for each call to
   // getNextAuthToken, so we can now delete the callback object, and must
   // do so to avoid a memory leak.

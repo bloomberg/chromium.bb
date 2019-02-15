@@ -368,8 +368,9 @@ FileNetLogObserver::~FileNetLogObserver() {
     // StopObserving was not called.
     net_log()->RemoveObserver(this);
     file_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::DeleteAllFiles,
-                              base::Unretained(file_writer_.get())));
+        FROM_HERE,
+        base::BindOnce(&FileNetLogObserver::FileWriter::DeleteAllFiles,
+                       base::Unretained(file_writer_.get())));
   }
   file_task_runner_->DeleteSoon(FROM_HERE, file_writer_.release());
 }
@@ -412,8 +413,8 @@ void FileNetLogObserver::OnAddEntry(const NetLogEntry& entry) {
   if (queue_size == kNumWriteQueueEvents) {
     file_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&FileNetLogObserver::FileWriter::Flush,
-                   base::Unretained(file_writer_.get()), write_queue_));
+        base::BindOnce(&FileNetLogObserver::FileWriter::Flush,
+                       base::Unretained(file_writer_.get()), write_queue_));
   }
 }
 
@@ -477,9 +478,9 @@ FileNetLogObserver::FileNetLogObserver(
   if (!constants)
     constants = GetNetConstants();
   file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FileNetLogObserver::FileWriter::Initialize,
-                            base::Unretained(file_writer_.get()),
-                            base::Passed(&constants)));
+      FROM_HERE, base::BindOnce(&FileNetLogObserver::FileWriter::Initialize,
+                                base::Unretained(file_writer_.get()),
+                                std::move(constants)));
 }
 
 FileNetLogObserver::WriteQueue::WriteQueue(uint64_t memory_max)

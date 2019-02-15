@@ -866,7 +866,7 @@ void SQLitePersistentCookieStore::Backend::ChainLoadCookies(
   if (load_success && keys_to_load_.size() > 0) {
     bool success = background_task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&Backend::ChainLoadCookies, this, loaded_callback),
+        base::BindOnce(&Backend::ChainLoadCookies, this, loaded_callback),
         base::TimeDelta::FromMilliseconds(kLoadDelayMilliseconds));
     if (!success) {
       LOG(WARNING) << "Failed to post task from " << FROM_HERE.ToString()
@@ -1310,7 +1310,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   if (num_pending == 1) {
     // We've gotten our first entry for this batch, fire off the timer.
     if (!background_task_runner_->PostDelayedTask(
-            FROM_HERE, base::Bind(&Backend::Commit, this),
+            FROM_HERE, base::BindOnce(&Backend::Commit, this),
             base::TimeDelta::FromMilliseconds(kCommitIntervalMs))) {
       NOTREACHED() << "background_task_runner_ is not running.";
     }

@@ -239,7 +239,8 @@ class CreateResolverJob : public Job {
 
     DCHECK_NE(rv, ERR_IO_PENDING);
     origin_runner->PostTask(
-        FROM_HERE, base::Bind(&CreateResolverJob::RequestComplete, this, rv));
+        FROM_HERE,
+        base::BindOnce(&CreateResolverJob::RequestComplete, this, rv));
   }
 
  protected:
@@ -307,7 +308,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
     DCHECK_NE(rv, ERR_IO_PENDING);
 
     origin_runner->PostTask(
-        FROM_HERE, base::Bind(&GetProxyForURLJob::QueryComplete, this, rv));
+        FROM_HERE, base::BindOnce(&GetProxyForURLJob::QueryComplete, this, rv));
   }
 
  protected:
@@ -362,7 +363,7 @@ void Executor::StartJob(Job* job) {
   job->FinishedWaitingForThread();
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&Job::Run, job, base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&Job::Run, job, base::ThreadTaskRunnerHandle::Get()));
 }
 
 void Executor::OnJobCompleted(Job* job) {

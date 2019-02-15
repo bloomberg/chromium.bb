@@ -80,8 +80,8 @@ int QuicConnectivityProbingManager::HandleWriteError(
   // undergoing probing, which will delete the packet writer.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&QuicConnectivityProbingManager::NotifyDelegateProbeFailed,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicConnectivityProbingManager::NotifyDelegateProbeFailed,
+                     weak_factory_.GetWeakPtr()));
   return error_code;
 }
 

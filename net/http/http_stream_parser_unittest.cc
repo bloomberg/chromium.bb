@@ -82,8 +82,8 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   int ReadInternal(IOBuffer* buf, int buf_len) override {
     if (async_ == FailureMode::ASYNC) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ReadErrorUploadDataStream::CompleteRead,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&ReadErrorUploadDataStream::CompleteRead,
+                                    weak_factory_.GetWeakPtr()));
       return ERR_IO_PENDING;
     }
     return ERR_FAILED;
@@ -207,8 +207,8 @@ class InitAsyncUploadDataStream : public ChunkedUploadDataStream {
 
   int InitInternal(const NetLogWithSource& net_log) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&InitAsyncUploadDataStream::CompleteInit,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&InitAsyncUploadDataStream::CompleteInit,
+                                  weak_factory_.GetWeakPtr()));
     return ERR_IO_PENDING;
   }
 

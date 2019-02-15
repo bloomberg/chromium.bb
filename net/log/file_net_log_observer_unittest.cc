@@ -578,8 +578,8 @@ TEST_P(FileNetLogObserverTest, AddEventsFromMultipleThreads) {
   // Add events in parallel from all the threads.
   for (size_t i = 0; i < kNumThreads; ++i) {
     threads[i]->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AddEntries, base::Unretained(logger_.get()),
-                              kNumEventsAddedPerThread, kDummyEventSize));
+        FROM_HERE, base::BindOnce(&AddEntries, base::Unretained(logger_.get()),
+                                  kNumEventsAddedPerThread, kDummyEventSize));
   }
 
   // Join all the threads.
@@ -963,8 +963,9 @@ TEST_P(FileNetLogObserverTest, AddEventsFromMultipleThreadsWithStopObserving) {
   // Add events in parallel from all the threads.
   for (size_t i = 0; i < kNumThreads; ++i) {
     threads[i]->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AddEntriesViaNetLog, base::Unretained(&net_log_),
-                              kNumEventsAddedPerThread));
+        FROM_HERE,
+        base::BindOnce(&AddEntriesViaNetLog, base::Unretained(&net_log_),
+                       kNumEventsAddedPerThread));
   }
 
   // Stop observing.
@@ -998,8 +999,9 @@ TEST_P(FileNetLogObserverTest,
   // Add events in parallel from all the threads.
   for (size_t i = 0; i < kNumThreads; ++i) {
     threads[i]->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&AddEntriesViaNetLog, base::Unretained(&net_log_),
-                              kNumEventsAddedPerThread));
+        FROM_HERE,
+        base::BindOnce(&AddEntriesViaNetLog, base::Unretained(&net_log_),
+                       kNumEventsAddedPerThread));
   }
 
   // Destroy logger.

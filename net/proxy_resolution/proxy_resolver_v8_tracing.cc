@@ -471,7 +471,7 @@ void Job::NotifyCaller(int result) {
   CheckIsOnWorkerThread();
 
   origin_runner_->PostTask(
-      FROM_HERE, base::Bind(&Job::NotifyCallerOnOriginLoop, this, result));
+      FROM_HERE, base::BindOnce(&Job::NotifyCallerOnOriginLoop, this, result));
 }
 
 void Job::NotifyCallerOnOriginLoop(int result) {
@@ -699,7 +699,8 @@ bool Job::PostDnsOperationAndWait(const std::string& host,
   DCHECK(!pending_dns_);
   pending_dns_host_ = host;
   pending_dns_op_ = op;
-  origin_runner_->PostTask(FROM_HERE, base::Bind(&Job::DoDnsOperation, this));
+  origin_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&Job::DoDnsOperation, this));
 
   event_.Wait();
   event_.Reset();
@@ -766,8 +767,8 @@ void Job::OnDnsOperationComplete(int result) {
   if (!blocking_dns_ && !pending_dns_completed_synchronously_) {
     // Restart. This time it should make more progress due to having
     // cached items.
-    worker_task_runner()->PostTask(FROM_HERE,
-                                   base::Bind(&Job::ExecuteNonBlocking, this));
+    worker_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&Job::ExecuteNonBlocking, this));
   }
 }
 
@@ -842,8 +843,8 @@ void Job::HandleAlertOrError(bool is_alert,
   if (blocking_dns_) {
     // In blocking DNS mode the events can be dispatched immediately.
     origin_runner_->PostTask(
-        FROM_HERE, base::Bind(&Job::DispatchAlertOrErrorOnOriginThread, this,
-                              is_alert, line_number, message));
+        FROM_HERE, base::BindOnce(&Job::DispatchAlertOrErrorOnOriginThread,
+                                  this, is_alert, line_number, message));
     return;
   }
 

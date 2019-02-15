@@ -292,7 +292,8 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
 
     // Make sure the thread started.
     main_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&SyncConfigGetter::Init, base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&SyncConfigGetter::Init, base::Unretained(this)));
     Wait();
   }
 
@@ -300,7 +301,7 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
     // Clean up the main thread.
     main_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&SyncConfigGetter::CleanUp, base::Unretained(this)));
+        base::BindOnce(&SyncConfigGetter::CleanUp, base::Unretained(this)));
     Wait();
   }
 
@@ -316,8 +317,8 @@ class SyncConfigGetter : public ProxyConfigService::Observer {
   ProxyConfigService::ConfigAvailability SyncGetLatestProxyConfig(
       ProxyConfigWithAnnotation* config) {
     main_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&SyncConfigGetter::GetLatestConfigOnIOThread,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&SyncConfigGetter::GetLatestConfigOnIOThread,
+                                  base::Unretained(this)));
     Wait();
     *config = proxy_config_;
     return get_latest_config_result_;

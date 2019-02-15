@@ -55,7 +55,7 @@ void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback,
     loaded_ = true;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(loaded_callback, base::Passed(&out_cookies)));
+      FROM_HERE, base::BindOnce(loaded_callback, std::move(out_cookies)));
 }
 
 void MockPersistentCookieStore::LoadCookiesForKey(
@@ -71,7 +71,7 @@ void MockPersistentCookieStore::LoadCookiesForKey(
   } else {
     std::vector<std::unique_ptr<CanonicalCookie>> empty_cookies;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(loaded_callback, base::Passed(&empty_cookies)));
+        FROM_HERE, base::BindOnce(loaded_callback, std::move(empty_cookies)));
   }
 }
 
@@ -147,7 +147,7 @@ void MockSimplePersistentCookieStore::Load(
     out_cookies.push_back(std::make_unique<CanonicalCookie>(it->second));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(loaded_callback, base::Passed(&out_cookies)));
+      FROM_HERE, base::BindOnce(loaded_callback, std::move(out_cookies)));
   loaded_ = true;
 }
 
@@ -159,7 +159,7 @@ void MockSimplePersistentCookieStore::LoadCookiesForKey(
   } else {
     std::vector<std::unique_ptr<CanonicalCookie>> empty_cookies;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(loaded_callback, base::Passed(&empty_cookies)));
+        FROM_HERE, base::BindOnce(loaded_callback, std::move(empty_cookies)));
   }
 }
 

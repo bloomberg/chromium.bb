@@ -77,8 +77,8 @@ class SerialWorkerTest : public TestWithScopedTaskEnvironment {
 
   void BreakNow(const std::string& b) {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&SerialWorkerTest::BreakCallback,
-                                      base::Unretained(this), b));
+                           base::BindOnce(&SerialWorkerTest::BreakCallback,
+                                          base::Unretained(this), b));
   }
 
   void RunUntilBreak(const std::string& b) {

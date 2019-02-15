@@ -54,7 +54,7 @@ bool ReadData(HANDLE read_fd,
   // Prepare a timeout in case the server fails to start.
   bool unblocked = false;
   thread.task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(UnblockPipe, write_fd, bytes_max, &unblocked),
+      FROM_HERE, base::BindOnce(UnblockPipe, write_fd, bytes_max, &unblocked),
       TestTimeouts::action_max_timeout());
 
   DWORD bytes_read = 0;

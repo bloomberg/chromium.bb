@@ -191,7 +191,7 @@ void ThroughputAnalyzer::NotifyRequestCompleted(const URLRequest& request) {
     // Notify the provided callback.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(throughput_observation_callback_, downstream_kbps));
+        base::BindOnce(throughput_observation_callback_, downstream_kbps));
   }
 
   // Try to remove the request from either |accuracy_degrading_requests_| or

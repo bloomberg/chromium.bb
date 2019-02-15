@@ -134,8 +134,8 @@ class FakeDataChannel {
       write_called_after_close_ = true;
       write_callback_ = std::move(callback);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&FakeDataChannel::DoWriteCallback,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&FakeDataChannel::DoWriteCallback,
+                                    weak_factory_.GetWeakPtr()));
       return ERR_IO_PENDING;
     }
     // This function returns synchronously, so make a copy of the buffer.
@@ -143,8 +143,8 @@ class FakeDataChannel {
         base::MakeRefCounted<StringIOBuffer>(std::string(buf->data(), buf_len)),
         buf_len));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FakeDataChannel::DoReadCallback,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&FakeDataChannel::DoReadCallback,
+                                  weak_factory_.GetWeakPtr()));
     return buf_len;
   }
 
@@ -156,8 +156,8 @@ class FakeDataChannel {
     closed_ = true;
     if (!read_callback_.is_null()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&FakeDataChannel::DoReadCallback,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&FakeDataChannel::DoReadCallback,
+                                    weak_factory_.GetWeakPtr()));
     }
   }
 

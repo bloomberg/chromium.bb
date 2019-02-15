@@ -399,7 +399,7 @@ void FakeURLFetcher::Start() {
   TestURLFetcher::Start();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&FakeURLFetcher::RunDelegate, weak_factory_.GetWeakPtr()));
 }
 
 void FakeURLFetcher::RunDelegate() {

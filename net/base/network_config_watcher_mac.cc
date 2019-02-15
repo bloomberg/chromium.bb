@@ -169,8 +169,9 @@ void NetworkConfigWatcherMacThread::Init() {
   // initialize this, rather than just delaying it by a fixed time.
   const base::TimeDelta kInitializationDelay = base::TimeDelta::FromSeconds(1);
   task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&NetworkConfigWatcherMacThread::InitNotifications,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&NetworkConfigWatcherMacThread::InitNotifications,
+                     weak_factory_.GetWeakPtr()),
       kInitializationDelay);
 }
 

@@ -122,8 +122,8 @@ void WebSocketEndpointLockManager::UnlockEndpointAfterDelay(
   ++pending_unlock_count_;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WebSocketEndpointLockManager::DelayedUnlockEndpoint,
-                 weak_factory_.GetWeakPtr(), endpoint),
+      base::BindOnce(&WebSocketEndpointLockManager::DelayedUnlockEndpoint,
+                     weak_factory_.GetWeakPtr(), endpoint),
       unlock_delay_);
 }
 
