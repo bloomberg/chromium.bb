@@ -320,6 +320,9 @@ int UnifiedMessageCenterView::GetStackedNotificationCount() const {
 }
 
 void UnifiedMessageCenterView::NotifyRectBelowScroll() {
+  if (!visible())
+    return;
+
   gfx::Rect rect_below_scroll;
   rect_below_scroll.set_height(
       std::max(0, message_list_view_->GetLastNotificationBounds().bottom() -
