@@ -48,17 +48,11 @@ CrostiniRepositorySearchResult::CrostiniRepositorySearchResult(
 
 CrostiniRepositorySearchResult::~CrostiniRepositorySearchResult() = default;
 
-// TODO(https://crbug.com/921429): Change Open() to open up an installation
-// confirmation dialogue that then calls crostini::InstallLinuxPackageFromApt.
-
 void CrostiniRepositorySearchResult::OnOpen(
     const crostini::LinuxPackageInfo& package_info) {
+  // TODO(https://crbug.com/921429): Handle when |package_info| fails.
   if (package_info.success) {
-    crostini::CrostiniPackageService::GetForProfile(profile_)
-        ->InstallLinuxPackageFromApt(crostini::kCrostiniDefaultVmName,
-                                     crostini::kCrostiniDefaultContainerName,
-                                     package_info.package_id,
-                                     base::DoNothing());
+    crostini::ShowCrostiniAppInstallerView(profile_, package_info);
   }
 }
 
