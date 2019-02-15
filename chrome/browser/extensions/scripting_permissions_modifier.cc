@@ -134,6 +134,77 @@ void SetWithholdPermissionsPrefValue(ExtensionPrefs* prefs,
       std::make_unique<base::Value>(permissions_allowed));
 }
 
+// Retrieves the effective list of runtime-granted permissions for a given
+// |extension| from the |prefs|. ExtensionPrefs doesn't store the valid schemes
+// for URLPatterns, which results in the chrome:-scheme being included for
+// <all_urls> when retrieving it directly from the prefs; this then causes
+// CHECKs to fail when validating that permissions being revoked are present
+// (see https://crbug.com/930062).
+// Returns null if there are no stored runtime-granted permissions.
+// TODO(https://crbug.com/931881): ExtensionPrefs should return properly-bounded
+// permissions.
+std::unique_ptr<const PermissionSet> GetRuntimePermissionsFromPrefs(
+    const Extension& extension,
+    const ExtensionPrefs& prefs) {
+  std::unique_ptr<const PermissionSet> permissions =
+      prefs.GetRuntimeGrantedPermissions(extension.id());
+
+  // If there are no stored permissions, there's nothing to adjust.
+  if (!permissions)
+    return nullptr;
+
+  // If the extension is allowed to run on chrome:// URLs, then we don't have
+  // to adjust anything.
+  if (PermissionsData::AllUrlsIncludesChromeUrls(extension.id()))
+    return permissions;
+
+  // We need to adjust a pattern if it matches all URLs and includes the
+  // chrome:-scheme. These patterns would otherwise match hosts like
+  // chrome://settings, which should not be allowed.
+  // NOTE: We don't need to adjust for the file scheme, because
+  // ExtensionPrefs properly does that based on the extension's file access.
+  auto needs_chrome_scheme_adjustment = [](const URLPattern& pattern) {
+    return pattern.match_all_urls() &&
+           ((pattern.valid_schemes() & URLPattern::SCHEME_CHROMEUI) != 0);
+  };
+
+  // NOTE: We don't need to check scriptable_hosts, because the default
+  // scriptable_hosts scheme mask omits the chrome:-scheme in normal
+  // circumstances (whereas the default explicit scheme does not, in order to
+  // allow for patterns like chrome://favicon).
+
+  bool needs_adjustment = std::any_of(permissions->explicit_hosts().begin(),
+                                      permissions->explicit_hosts().end(),
+                                      needs_chrome_scheme_adjustment);
+  // If no patterns need adjustment, return the original set.
+  if (!needs_adjustment)
+    return permissions;
+
+  // Otherwise, iterate over the explicit hosts, and modify any that need to be
+  // tweaked, adding back in permitted chrome:-scheme hosts. This logic mirrors
+  // that in PermissionsParser, and is also similar to logic in
+  // permissions_api_helpers::UnpackOriginPermissions(), and has some overlap
+  // to URLPatternSet::Populate().
+  // TODO(devlin): ^^ Ouch. Refactor so that this isn't duplicated.
+  URLPatternSet new_explicit_hosts;
+  for (const auto& pattern : permissions->explicit_hosts()) {
+    if (!needs_chrome_scheme_adjustment(pattern)) {
+      new_explicit_hosts.AddPattern(pattern);
+      continue;
+    }
+
+    URLPattern new_pattern(pattern);
+    int new_valid_schemes =
+        pattern.valid_schemes() & ~URLPattern::SCHEME_CHROMEUI;
+    new_pattern.SetValidSchemes(new_valid_schemes);
+    new_explicit_hosts.AddPattern(std::move(new_pattern));
+  }
+
+  return std::make_unique<PermissionSet>(
+      permissions->apis().Clone(), permissions->manifest_permissions().Clone(),
+      std::move(new_explicit_hosts), permissions->scriptable_hosts());
+}
+
 }  // namespace
 
 ScriptingPermissionsModifier::ScriptingPermissionsModifier(
@@ -214,7 +285,7 @@ ScriptingPermissionsModifier::GetSiteAccess(const GURL& url) const {
     // silently granted them) at any time.
     granted_permissions = &extension_->permissions_data()->active_permissions();
   } else {
-    permission_holder = prefs->GetRuntimeGrantedPermissions(extension_->id());
+    permission_holder = GetRuntimePermissionsFromPrefs(*extension_, *prefs);
     granted_permissions = permission_holder.get();
   }
 
@@ -285,7 +356,7 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(
     const GURL& url) const {
   DCHECK(CanAffectExtension());
 
-  return extension_prefs_->GetRuntimeGrantedPermissions(extension_->id())
+  return GetRuntimePermissionsFromPrefs(*extension_, *extension_prefs_)
       ->effective_hosts()
       .MatchesSecurityOrigin(url);
 }
@@ -297,7 +368,7 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
   std::unique_ptr<const PermissionSet> runtime_permissions =
-      prefs->GetRuntimeGrantedPermissions(extension_->id());
+      GetRuntimePermissionsFromPrefs(*extension_, *prefs);
 
   URLPatternSet explicit_hosts;
   for (const auto& pattern : runtime_permissions->explicit_hosts()) {
@@ -346,7 +417,7 @@ void ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
   // runtime through the runtime host permissions feature or the optional
   // permissions API.
   std::unique_ptr<const PermissionSet> runtime_granted_permissions =
-      extension_prefs.GetRuntimeGrantedPermissions(extension.id());
+      GetRuntimePermissionsFromPrefs(extension, extension_prefs);
   PartitionHostPermissions(permissions, *runtime_granted_permissions,
                            granted_permissions_out);
 }
@@ -367,7 +438,7 @@ ScriptingPermissionsModifier::GetRevokablePermissions() const {
   // host permissions.
   const PermissionSet* current_granted_permissions = nullptr;
   std::unique_ptr<const PermissionSet> runtime_granted_permissions =
-      extension_prefs_->GetRuntimeGrantedPermissions(extension_->id());
+      GetRuntimePermissionsFromPrefs(*extension_, *extension_prefs_);
   std::unique_ptr<const PermissionSet> union_set;
   if (runtime_granted_permissions) {
     union_set = PermissionSet::CreateUnion(
