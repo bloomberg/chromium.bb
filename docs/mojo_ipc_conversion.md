@@ -234,6 +234,12 @@ decide how to proceed:
       [chromium-mojo@chromium.org](https://groups.google.com/a/chromium.org/forum#!forum/chromium-mojo)
       to propose or discuss options.
 
+*** aside
+**NOTE**: If you are converting a sync IPC, see the section on
+[Synchronous Calls](/mojo/public/cpp/bindings/README.md#Synchronous-Calls)
+in the Mojo documentation.
+***
+
 ### Dealing With Replies
 
 If the message is a **reply**, meaning it has a "request ID" which correlates it
