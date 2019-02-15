@@ -185,34 +185,6 @@ class PLATFORM_EXPORT Length {
 
   void SetQuirk(bool quirk) { quirk_ = quirk; }
 
-  void SetValue(LengthType t, int value) {
-    type_ = t;
-    int_value_ = value;
-    is_float_ = false;
-  }
-
-  void SetValue(int value) {
-    if (IsCalculated()) {
-      NOTREACHED();
-      return;
-    }
-    SetValue(kFixed, value);
-  }
-
-  void SetValue(LengthType t, float value) {
-    type_ = t;
-    float_value_ = value;
-    is_float_ = true;
-  }
-
-  void SetValue(LengthType t, LayoutUnit value) {
-    type_ = t;
-    float_value_ = value.ToFloat();
-    is_float_ = true;
-  }
-
-  void SetValue(float value) { *this = Length::Fixed(value); }
-
   bool IsMaxSizeNone() const { return GetType() == kMaxSizeNone; }
 
   // FIXME calc: https://bugs.webkit.org/show_bug.cgi?id=80357. A calculated

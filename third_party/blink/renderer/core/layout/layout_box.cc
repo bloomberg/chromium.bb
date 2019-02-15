@@ -3101,9 +3101,9 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
     // will think we're wider than we actually are and calculate line sizes
     // wrong. See also https://drafts.csswg.org/css-flexbox/#auto-margins
     if (margin_start_length.IsAuto())
-      margin_start_length.SetValue(0);
+      margin_start_length = Length::Fixed(0);
     if (margin_end_length.IsAuto())
-      margin_end_length.SetValue(0);
+      margin_end_length = Length::Fixed(0);
   }
 
   LayoutUnit margin_start_width =
@@ -4100,9 +4100,9 @@ void LayoutBox::ComputeInlineStaticDistance(
   // them (depending on the direction) is simply "0".
   if (parent->IsLayoutGrid() && parent == child->ContainingBlock()) {
     if (parent_direction == TextDirection::kLtr)
-      logical_left.SetValue(kFixed, 0);
+      logical_left = Length::Fixed(0);
     else
-      logical_right.SetValue(kFixed, 0);
+      logical_right = Length::Fixed(0);
     return;
   }
 
@@ -4138,7 +4138,7 @@ void LayoutBox::ComputeInlineStaticDistance(
         }
       }
     }
-    logical_left.SetValue(kFixed, static_position);
+    logical_left = Length::Fixed(static_position);
   } else {
     LayoutBox* enclosing_box = child->Parent()->EnclosingBox();
     LayoutUnit static_position = child->Layer()->StaticInlinePosition() +
@@ -4176,7 +4176,7 @@ void LayoutBox::ComputeInlineStaticDistance(
       if (curr == container_block)
         break;
     }
-    logical_right.SetValue(kFixed, static_position);
+    logical_right = Length::Fixed(static_position);
   }
 }
 
@@ -4602,7 +4602,7 @@ void LayoutBox::ComputeBlockStaticDistance(
     static_logical_top -=
         ToLayoutBox(container_block)->LogicalTopScrollbarHeight();
   }
-  logical_top.SetValue(kFixed, static_logical_top);
+  logical_top = Length::Fixed(static_logical_top);
 }
 
 void LayoutBox::ComputePositionedLogicalHeight(

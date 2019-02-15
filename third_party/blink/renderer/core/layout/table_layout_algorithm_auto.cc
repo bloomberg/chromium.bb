@@ -89,9 +89,9 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           if (cell_logical_width.IsCalculated())
             cell_logical_width = Length();  // Make it Auto
           if (cell_logical_width.Value() > kCCellMaxWidth)
-            cell_logical_width.SetValue(kCCellMaxWidth);
+            cell_logical_width = Length::Fixed(kCCellMaxWidth);
           if (cell_logical_width.IsNegative())
-            cell_logical_width.SetValue(0);
+            cell_logical_width = Length::Fixed(0);
           switch (cell_logical_width.GetType()) {
             case kFixed:
               // ignore width=0
@@ -106,11 +106,11 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
                   if ((logical_width > column_layout.logical_width.Value()) ||
                       ((column_layout.logical_width.Value() == logical_width) &&
                        (max_contributor == cell))) {
-                    column_layout.logical_width.SetValue(kFixed, logical_width);
+                    column_layout.logical_width = Length::Fixed(logical_width);
                     fixed_contributor = cell;
                   }
                 } else {
-                  column_layout.logical_width.SetValue(kFixed, logical_width);
+                  column_layout.logical_width = Length::Fixed(logical_width);
                   fixed_contributor = cell;
                 }
               }
@@ -478,11 +478,8 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
             total_width -=
                 layout_struct_[pos].ClampedEffectiveMaxLogicalWidth();
             percent_missing -= percent;
-            if (percent > 0)
-              layout_struct_[pos].effective_logical_width.SetValue(kPercent,
-                                                                   percent);
-            else
-              layout_struct_[pos].effective_logical_width = Length();
+            layout_struct_[pos].effective_logical_width =
+                percent > 0 ? Length::Percent(percent) : Length();
           }
         }
       }

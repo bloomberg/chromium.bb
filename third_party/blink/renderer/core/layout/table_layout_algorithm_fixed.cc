@@ -160,7 +160,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
       fixed_border_box_logical_width =
           cell->AdjustBorderBoxLogicalWidthForBoxSizing(logical_width.Value())
               .ToInt();
-      logical_width.SetValue(fixed_border_box_logical_width);
+      logical_width = Length::Fixed(fixed_border_box_logical_width);
     }
 
     unsigned used_span = 0;
