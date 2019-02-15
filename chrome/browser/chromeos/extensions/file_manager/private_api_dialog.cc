@@ -73,14 +73,10 @@ bool FileManagerPrivateSelectFileFunction::RunAsync() {
   }
 
   file_manager::util::GetSelectedFileInfo(
-      render_frame_host(),
-      GetProfile(),
-      file_paths,
-      option,
-      base::Bind(
+      render_frame_host(), GetProfile(), file_paths, option,
+      base::BindOnce(
           &FileManagerPrivateSelectFileFunction::GetSelectedFileInfoResponse,
-          this,
-          params->index));
+          this, params->index));
   return true;
 }
 
@@ -107,13 +103,11 @@ bool FileManagerPrivateSelectFilesFunction::RunAsync() {
     file_urls.emplace_back(params->selected_paths[i]);
 
   file_manager::util::GetSelectedFileInfo(
-      render_frame_host(),
-      GetProfile(),
-      file_urls,
-      params->should_return_local_path ?
-          file_manager::util::NEED_LOCAL_PATH_FOR_OPENING :
-          file_manager::util::NO_LOCAL_PATH_RESOLUTION,
-      base::Bind(
+      render_frame_host(), GetProfile(), file_urls,
+      params->should_return_local_path
+          ? file_manager::util::NEED_LOCAL_PATH_FOR_OPENING
+          : file_manager::util::NO_LOCAL_PATH_RESOLUTION,
+      base::BindOnce(
           &FileManagerPrivateSelectFilesFunction::GetSelectedFileInfoResponse,
           this));
   return true;

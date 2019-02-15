@@ -254,20 +254,20 @@ void ConvertSearchResultInfoListToEntryDefinitionList(
 
 class SingleEntryPropertiesGetterForDrive {
  public:
-  typedef base::Callback<void(std::unique_ptr<EntryProperties> properties,
-                              base::File::Error error)>
+  typedef base::OnceCallback<void(std::unique_ptr<EntryProperties> properties,
+                                  base::File::Error error)>
       ResultCallback;
 
   // Creates an instance and starts the process.
   static void Start(const base::FilePath local_path,
                     const std::set<EntryPropertyName>& names,
                     Profile* const profile,
-                    const ResultCallback& callback) {
+                    ResultCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SingleEntryPropertiesGetterForDrive* instance =
         new SingleEntryPropertiesGetterForDrive(local_path, names, profile,
-                                                callback);
+                                                std::move(callback));
     instance->StartProcess();
 
     // The instance will be destroyed by itself.
@@ -280,8 +280,8 @@ class SingleEntryPropertiesGetterForDrive {
       const base::FilePath local_path,
       const std::set<EntryPropertyName>& /* names */,
       Profile* const profile,
-      const ResultCallback& callback)
-      : callback_(callback),
+      ResultCallback callback)
+      : callback_(std::move(callback)),
         local_path_(local_path),
         running_profile_(profile),
         properties_(new EntryProperties),
@@ -415,13 +415,13 @@ class SingleEntryPropertiesGetterForDrive {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback_.is_null());
 
-    callback_.Run(std::move(properties_),
-                  drive::FileErrorToBaseFileError(error));
+    std::move(callback_).Run(std::move(properties_),
+                             drive::FileErrorToBaseFileError(error));
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
   }
 
   // Given parameters.
-  const ResultCallback callback_;
+  ResultCallback callback_;
   const base::FilePath local_path_;
   Profile* const running_profile_;
 
@@ -436,19 +436,19 @@ class SingleEntryPropertiesGetterForDrive {
 
 class SingleEntryPropertiesGetterForFileSystemProvider {
  public:
-  typedef base::Callback<void(std::unique_ptr<EntryProperties> properties,
-                              base::File::Error error)>
+  typedef base::OnceCallback<void(std::unique_ptr<EntryProperties> properties,
+                                  base::File::Error error)>
       ResultCallback;
 
   // Creates an instance and starts the process.
   static void Start(const storage::FileSystemURL file_system_url,
                     const std::set<EntryPropertyName>& names,
-                    const ResultCallback& callback) {
+                    ResultCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SingleEntryPropertiesGetterForFileSystemProvider* instance =
-        new SingleEntryPropertiesGetterForFileSystemProvider(file_system_url,
-                                                             names, callback);
+        new SingleEntryPropertiesGetterForFileSystemProvider(
+            file_system_url, names, std::move(callback));
     instance->StartProcess();
 
     // The instance will be destroyed by itself.
@@ -460,8 +460,8 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
   SingleEntryPropertiesGetterForFileSystemProvider(
       const storage::FileSystemURL& file_system_url,
       const std::set<EntryPropertyName>& names,
-      const ResultCallback& callback)
-      : callback_(callback),
+      ResultCallback callback)
+      : callback_(std::move(callback)),
         file_system_url_(file_system_url),
         names_(names),
         properties_(new EntryProperties),
@@ -556,12 +556,12 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!callback_.is_null());
 
-    callback_.Run(std::move(properties_), result);
+    std::move(callback_).Run(std::move(properties_), result);
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
   }
 
   // Given parameters.
-  const ResultCallback callback_;
+  ResultCallback callback_;
   const storage::FileSystemURL file_system_url_;
   const std::set<EntryPropertyName> names_;
 
@@ -887,16 +887,18 @@ bool FileManagerPrivateInternalGetEntryPropertiesFunction::RunAsync() {
       case storage::kFileSystemTypeDrive:
         SingleEntryPropertiesGetterForDrive::Start(
             file_system_url.path(), names_as_set, GetProfile(),
-            base::Bind(&FileManagerPrivateInternalGetEntryPropertiesFunction::
-                           CompleteGetEntryProperties,
-                       this, i, file_system_url));
+            base::BindOnce(
+                &FileManagerPrivateInternalGetEntryPropertiesFunction::
+                    CompleteGetEntryProperties,
+                this, i, file_system_url));
         break;
       case storage::kFileSystemTypeProvided:
         SingleEntryPropertiesGetterForFileSystemProvider::Start(
             file_system_url, names_as_set,
-            base::Bind(&FileManagerPrivateInternalGetEntryPropertiesFunction::
-                           CompleteGetEntryProperties,
-                       this, i, file_system_url));
+            base::BindOnce(
+                &FileManagerPrivateInternalGetEntryPropertiesFunction::
+                    CompleteGetEntryProperties,
+                this, i, file_system_url));
         break;
       case storage::kFileSystemTypeDriveFs:
         SingleEntryPropertiesGetterForDriveFs::Start(

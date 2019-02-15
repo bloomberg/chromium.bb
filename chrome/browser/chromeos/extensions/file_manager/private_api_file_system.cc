@@ -214,12 +214,12 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
   storage::FileSystemOperationRunner::OperationID* operation_id =
       new storage::FileSystemOperationRunner::OperationID;
   *operation_id = file_system_context->operation_runner()->Copy(
-      source_url, destination_url,
-      storage::FileSystemOperation::OPTION_NONE,
+      source_url, destination_url, storage::FileSystemOperation::OPTION_NONE,
       storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
-      base::Bind(&OnCopyProgress, profile_id, base::Unretained(operation_id)),
-      base::Bind(&OnCopyCompleted, profile_id, base::Owned(operation_id),
-                 source_url, destination_url));
+      base::BindRepeating(&OnCopyProgress, profile_id,
+                          base::Unretained(operation_id)),
+      base::BindOnce(&OnCopyCompleted, profile_id, base::Owned(operation_id),
+                     source_url, destination_url));
   return *operation_id;
 }
 
@@ -239,7 +239,7 @@ void CancelCopyOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   file_system_context->operation_runner()->Cancel(
-      operation_id, base::Bind(&OnCopyCancelled));
+      operation_id, base::BindOnce(&OnCopyCancelled));
 }
 
 // Converts a status code to a bool value and calls the |callback| with it.
@@ -511,7 +511,7 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     auto* manager = storage_monitor->media_transfer_protocol_manager();
     manager->GetStorageInfoFromDevice(
         storage_name,
-        base::Bind(
+        base::BindOnce(
             &FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace,
             this));
   } else {
@@ -595,11 +595,11 @@ bool FileManagerPrivateInternalValidatePathNameLengthFunction::RunAsync() {
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&GetFileNameMaxLengthAsync,
-                 file_system_url.path().AsUTF8Unsafe()),
-      base::Bind(&FileManagerPrivateInternalValidatePathNameLengthFunction::
-                     OnFilePathLimitRetrieved,
-                 this, params->name.size()));
+      base::BindOnce(&GetFileNameMaxLengthAsync,
+                     file_system_url.path().AsUTF8Unsafe()),
+      base::BindOnce(&FileManagerPrivateInternalValidatePathNameLengthFunction::
+                         OnFilePathLimitRetrieved,
+                     this, params->name.size()));
   return true;
 }
 
@@ -803,9 +803,9 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
           GetProfile(), render_frame_host());
   const bool result = base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&StartCopyOnIOThread, GetProfile(), file_system_context,
-                 source_url_, destination_url_),
-      base::Bind(
+      base::BindOnce(&StartCopyOnIOThread, GetProfile(), file_system_context,
+                     source_url_, destination_url_),
+      base::BindOnce(
           &FileManagerPrivateInternalStartCopyFunction::RunAfterStartCopy,
           this));
   if (!result)
@@ -1181,10 +1181,10 @@ bool FileManagerPrivateInternalGetDirectorySizeFunction::RunAsync() {
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&base::ComputeDirectorySize, root_path),
-      base::Bind(&FileManagerPrivateInternalGetDirectorySizeFunction::
-                     OnDirectorySizeRetrieved,
-                 this));
+      base::BindOnce(&base::ComputeDirectorySize, root_path),
+      base::BindOnce(&FileManagerPrivateInternalGetDirectorySizeFunction::
+                         OnDirectorySizeRetrieved,
+                     this));
   return true;
 }
 
