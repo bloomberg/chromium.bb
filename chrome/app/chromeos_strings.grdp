@@ -3542,6 +3542,32 @@
     No description is available.
   </message>
 
+  <!-- Crostini export and import -->
+  <message name="IDS_CROSTINI_EXPORT_TITLE" desc="Title for exporting (backing up) the crostini container.">
+    Backup
+  </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_IN_PROGRESS" desc="Message displayed while export is in progress in the notification for exporting (backing up) the crostini container.">
+    Backup up...
+  </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_DONE" desc="Message displayed when done in the notification for exporting (backing up) the crostini container.">
+    Backup complete
+  </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_FAILED" desc="Message displayed when there is a failure in the notification for exporting (backing up) the crostini container.">
+    Backup failed
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_TITLE" desc="Title for importing (restoring) the crostini container.">
+    Restore
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_IN_PROGRESS" desc="Message displayed while import is in progress in the notification for importing (restoring) the crostini container.">
+    Restoring...
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_DONE" desc="Message displayed when done in the notification for importing (restoring) the crostini container.">
+    Restore complete
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_FAILED" desc="Message displayed when there is a failure in the notification for importing (restoring) the crostini container.">
+    Restore failed
+  </message>
+
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
     Almost time for a break

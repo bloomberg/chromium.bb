@@ -90,8 +90,7 @@ enum class UninstallPackageProgressStatus {
 };
 
 enum class ExportContainerProgressStatus {
-  TAR,
-  COMPRESS,
+  PACK,
   DOWNLOAD,
 };
 
