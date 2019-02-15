@@ -136,21 +136,11 @@ void NGOutOfFlowLayoutPart::Run(LayoutBox* only_layout) {
     return;
   }
 
+  HashSet<const LayoutObject*> placed_objects;
   while (descendant_candidates.size() > 0) {
     ComputeInlineContainingBlocks(descendant_candidates);
-    for (auto& candidate : descendant_candidates) {
-      if (IsContainingBlockForDescendant(candidate) &&
-          (!only_layout || candidate.node.GetLayoutBox() == only_layout)) {
-        NGLogicalOffset offset;
-        scoped_refptr<NGLayoutResult> result =
-            LayoutDescendant(candidate, &offset, only_layout);
-        container_builder_->AddChild(*result, offset);
-        if (candidate.node.GetLayoutBox() != only_layout)
-          candidate.node.UseOldOutOfFlowPositioning();
-      } else {
-        container_builder_->AddOutOfFlowDescendant(candidate);
-      }
-    }
+    LayoutDescendantCandidates(descendant_candidates, only_layout,
+                               &placed_objects);
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
     descendant_candidates.Shrink(0);
@@ -326,10 +316,30 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
   }
 }
 
+void NGOutOfFlowLayoutPart::LayoutDescendantCandidates(
+    const Vector<NGOutOfFlowPositionedDescendant> descendant_candidates,
+    const LayoutBox* only_layout,
+    HashSet<const LayoutObject*>* placed_objects) {
+  for (auto& candidate : descendant_candidates) {
+    if (IsContainingBlockForDescendant(candidate) &&
+        (!only_layout || candidate.node.GetLayoutBox() == only_layout)) {
+      NGLogicalOffset offset;
+      scoped_refptr<NGLayoutResult> result =
+          LayoutDescendant(candidate, only_layout, &offset);
+      container_builder_->AddChild(*result, offset);
+      placed_objects->insert(candidate.node.GetLayoutBox());
+      if (candidate.node.GetLayoutBox() != only_layout)
+        candidate.node.UseOldOutOfFlowPositioning();
+    } else {
+      container_builder_->AddOutOfFlowDescendant(candidate);
+    }
+  }
+}
+
 scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     const NGOutOfFlowPositionedDescendant& descendant,
-    NGLogicalOffset* offset,
-    LayoutBox* only_layout) {
+    const LayoutBox* only_layout,
+    NGLogicalOffset* offset) {
   ContainingBlockInfo container_info = GetContainingBlockInfo(descendant);
   const ComputedStyle& descendant_style = descendant.node.Style();
 

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -94,10 +95,15 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   void ComputeInlineContainingBlocks(Vector<NGOutOfFlowPositionedDescendant>);
 
+  void LayoutDescendantCandidates(
+      const Vector<NGOutOfFlowPositionedDescendant> descendant_candidates,
+      const LayoutBox* only_layout,
+      HashSet<const LayoutObject*>* placed_objects);
+
   scoped_refptr<NGLayoutResult> LayoutDescendant(
       const NGOutOfFlowPositionedDescendant&,
-      NGLogicalOffset* offset,
-      LayoutBox* only_layout);
+      const LayoutBox* only_layout,
+      NGLogicalOffset* offset);
 
   bool IsContainingBlockForDescendant(
       const NGOutOfFlowPositionedDescendant& descendant);
