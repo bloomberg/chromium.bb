@@ -3529,6 +3529,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
      flag_descriptions::kHorizontalTabSwitcherAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kHorizontalTabSwitcherAndroid)},
+
+    {"enable-tab-grid-layout", flag_descriptions::kTabGridLayoutAndroidName,
+     flag_descriptions::kTabGridLayoutAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid)},
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)

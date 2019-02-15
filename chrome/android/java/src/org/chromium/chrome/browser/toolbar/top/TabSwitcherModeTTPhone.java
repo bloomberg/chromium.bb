@@ -270,7 +270,9 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         }
 
         boolean useLightIcons = mIsIncognito
-                && (usingHorizontalTabSwitcher() || DeviceClassManager.enableAccessibilityLayout());
+                && (usingHorizontalTabSwitcher()
+                        || FeatureUtilities.isGridTabSwitcherEnabled(getContext())
+                        || DeviceClassManager.enableAccessibilityLayout());
 
         if (mUseLightIcons == useLightIcons) return;
 

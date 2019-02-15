@@ -12,7 +12,10 @@ import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -29,7 +32,14 @@ class GridTabSwitcherMediator
     private final PropertyModel mContainerViewModel;
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
+    private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final List<OverviewModeObserver> mObservers = new ArrayList<>();
+
+    /**
+     * In cases where a didSelectTab was due to closing a tab or switching models with a toggle,
+     * we don't change tab grid visibility.
+     */
+    private boolean mShouldIgnoreNextSelect;
 
     /**
      * Basic constructor for the Mediator.
@@ -44,12 +54,17 @@ class GridTabSwitcherMediator
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
 
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                mShouldIgnoreNextSelect = true;
+                mCoordinator.resetWithTabModel(newModel);
+                mContainerViewModel.set(IS_INCOGNITO, newModel.isIncognito());
+            }
+        };
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
         mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
-            /**
-             * In cases where a didSelectTab was due to closing a tab, we don't change tab grid
-             * visibility.
-             */
-            private boolean mShouldIgnoreNextSelect;
 
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
@@ -138,6 +153,7 @@ class GridTabSwitcherMediator
      * Destroy any members that needs clean up.
      */
     public void destroy() {
+        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mTabModelObserver.destroy();
     }
 }
