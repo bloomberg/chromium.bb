@@ -91,13 +91,14 @@ def main(argv):
               os.environ.get('CXXFLAGS', '').split()),
       ]) + '\n')
     subprocess.check_call(['ninja', '-C', libcxx_dir])
+    shutil.copy2(os.path.join(gn_build_dir, 'libc++.gn.so'), out_dir)
 
     def append_to_env(var, vals):
       os.putenv(var, os.environ.get(var, '') + ' ' + ' '.join(vals))
 
     append_to_env('LDFLAGS', [
-        '-nodefaultlibs', 'libc++.so', '-lc', '-lm', '-Wl,-rpath="\$$ORIGIN/."',
-        '-Wl,-rpath-link=.'
+        '-nodefaultlibs', 'libc++.gn.so', '-lc', '-lm',
+        '-Wl,-rpath="\$$ORIGIN/."', '-Wl,-rpath-link=.'
     ])
     append_to_env('CXXFLAGS', [
         '-nostdinc++',
