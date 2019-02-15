@@ -35,7 +35,7 @@ class EnrollmentScreenTest : public InProcessBrowserTest {
   EnrollmentScreenTest() = default;
   ~EnrollmentScreenTest() override = default;
 
-  // Overridden from InProcessBrowserTest:
+  // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendArg(switches::kLoginManager);
@@ -81,8 +81,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestCancel) {
   run_loop.Run();
 }
 
-// Flaky test: crbug.com/394069
-IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, DISABLED_TestSuccess) {
+IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, TestSuccess) {
   WizardController::SkipEnrollmentPromptsForTesting();
   base::RunLoop run_loop;
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
@@ -100,7 +99,7 @@ class AttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
   ~AttestationAuthEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from EnrollmentScreenTest:
+  // EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnterpriseEnableZeroTouchEnrollment);
@@ -151,7 +150,7 @@ class ForcedAttestationAuthEnrollmentScreenTest : public EnrollmentScreenTest {
   ~ForcedAttestationAuthEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from EnrollmentScreenTest:
+  // EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
@@ -177,7 +176,7 @@ class MultiAuthEnrollmentScreenTest : public EnrollmentScreenTest {
   ~MultiAuthEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from EnrollmentScreenTest:
+  // EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnterpriseEnableZeroTouchEnrollment);
@@ -209,7 +208,7 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
   ~ProvisionedEnrollmentScreenTest() override = default;
 
  private:
-  // Overridden from EnrollmentScreenTest:
+  // EnrollmentScreenTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
