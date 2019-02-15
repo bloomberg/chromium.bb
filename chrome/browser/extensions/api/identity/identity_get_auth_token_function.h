@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_list.h"
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
@@ -126,15 +129,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, InteractiveQueueShutdown);
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, NoninteractiveShutdown);
 
-  // Called by the IdentityManager in response to this class' request for the
-  // primary account info. Extra arguments that are bound internally at the time
-  // of calling the IdentityManager:
+  // Request the primary account info.
   // |extension_gaia_id|: The GAIA ID that was set in the parameters for this
   // instance, or empty if this was not in the parameters.
-  void OnReceivedPrimaryAccountInfo(
-      const std::string& extension_gaia_id,
-      const base::Optional<AccountInfo>& account_info,
-      const identity::AccountState& account_state);
+  void GetAuthTokenForPrimaryAccount(const std::string& extension_gaia_id);
 
   // Called when the AccountInfo that this instance should use is available.
   void OnReceivedExtensionAccountInfo(
@@ -242,6 +240,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   };
   AccountListeningMode account_listening_mode_ =
       AccountListeningMode::kNotListening;
+
+  base::WeakPtrFactory<IdentityGetAuthTokenFunction> weak_ptr_factory_;
 };
 
 }  // namespace extensions
