@@ -210,7 +210,7 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
  * @param {string} confirmPasswordIdentifier The id of confirm password element
  *   to fill.
  * @param {string} password The password to fill.
- * @return {boolean} Whether a password field has been filled.
+ * @return {boolean} Whether new password field has been filled.
 */
 __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
     formName, newPasswordIdentifier, confirmPasswordIdentifier, password) {
@@ -220,15 +220,18 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
   var inputs = getFormInputElements_(form);
   var newPasswordField =
       findInputByFieldIdentifier_(inputs, newPasswordIdentifier);
-  if (newPasswordField) {
-    newPasswordField.value = password;
+  if (!newPasswordField)
+    return false;
+  // Avoid resetting if same value, as it moves cursor to the end.
+  if (newPasswordField.value != password) {
+    __gCrWeb.fill.setInputElementValue(password, newPasswordField);
   }
   var confirmPasswordField =
       findInputByFieldIdentifier_(inputs, confirmPasswordIdentifier);
-  if (confirmPasswordField) {
-    confirmPasswordField.value = password;
+  if (confirmPasswordField && confirmPasswordField.value != password) {
+    __gCrWeb.fill.setInputElementValue(password, confirmPasswordField);
   }
-  return !!newPasswordField || !!confirmPasswordField;
+  return true;
 };
 
 /**

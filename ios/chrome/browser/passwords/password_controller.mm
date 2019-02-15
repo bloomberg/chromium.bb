@@ -101,6 +101,9 @@ enum class PasswordSuggestionType {
   COUNT
 };
 
+// Password is considered not generated when user edits it below 4 characters.
+constexpr int kMinimumLengthForEditedPassword = 4;
+
 // Duration for notify user auto-sign in dialog being displayed.
 constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
@@ -133,6 +136,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
+
+// Tracks if current password is generated.
+@property(nonatomic, assign) BOOL isPasswordGenerated;
 
 @end
 
@@ -318,6 +324,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   _passwordManagerClient.reset();
   _credentialManager.reset();
   _formGenerationData.clear();
+  _isPasswordGenerated = NO;
 }
 
 #pragma mark - FormSuggestionProvider
@@ -350,6 +357,22 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                          completion([fieldType isEqualToString:@"password"] ||
                                     suggestionsAvailable);
                        }];
+
+  if (self.isPasswordGenerated &&
+      [self canGeneratePasswordForForm:formName
+                       fieldIdentifier:fieldIdentifier
+                             fieldType:fieldType]) {
+    if (typedValue.length < kMinimumLengthForEditedPassword) {
+      self.isPasswordGenerated = NO;
+      // TODO(crbug.com/886583): call
+      // passwordManager->OnPasswordNoLongerGenerated, but how to get
+      // PasswordForm?
+    } else {
+      [self injectGeneratedPasswordForFormName:formName
+                             generatedPassword:typedValue
+                             completionHandler:nil];
+    }
+  }
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
@@ -722,29 +745,20 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       IsIPadIdiom() ? UIAlertControllerStyleAlert
                     : UIAlertControllerStyleActionSheet;
 
-  auto generatedPasswordInjected = ^(BOOL success) {
-    if (success) {
-      // TODO(crbug.com/886583) do not call presaved if username hasn't been
-      // filled in.
-      // TODO(crbug.com/886583) call _pM::OnPresaveGeneratedPassword once it has
-      // been refactored not to need a full form.
-    }
-    if (completionHandler)
-      completionHandler(YES);
-  };
-
-  auto injectGeneratedPassword = ^{
-    [self.formHelper fillPasswordForm:formName
-                newPasswordIdentifier:newPasswordIdentifier
-            confirmPasswordIdentifier:confirmPasswordIdentifier
-                    generatedPassword:displayPassword
-                    completionHandler:generatedPasswordInjected];
-  };
-
+  __weak PasswordController* weakSelf = self;
   // TODO(crbug.com/886583): i18n
-  [self.actionSheetCoordinator addItemWithTitle:@"Use Suggested Password"
-                                         action:injectGeneratedPassword
-                                          style:UIAlertActionStyleDefault];
+  [self.actionSheetCoordinator
+      addItemWithTitle:@"Use Suggested Password"
+                action:^{
+                  [weakSelf
+                      injectGeneratedPasswordForFormName:formName
+                                   newPasswordIdentifier:newPasswordIdentifier
+                               confirmPasswordIdentifier:
+                                   confirmPasswordIdentifier
+                                       generatedPassword:displayPassword
+                                       completionHandler:completionHandler];
+                }
+                 style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
@@ -755,6 +769,46 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                  style:UIAlertActionStyleCancel];
 
   [self.actionSheetCoordinator start];
+}
+
+- (void)injectGeneratedPasswordForFormName:(NSString*)formName
+                         generatedPassword:(NSString*)generatedPassword
+                         completionHandler:(void (^)(BOOL))completionHandler {
+  if (![self hasFormForGenerationForFormName:formName])
+    return;
+  const autofill::NewPasswordFormGenerationData form =
+      [self getFormForGenerationFromFormName:formName];
+  NSString* newPasswordIdentifier =
+      SysUTF16ToNSString(form.new_password_element);
+  NSString* confirmPasswordIdentifier =
+      SysUTF16ToNSString(form.confirmation_password_element);
+  [self injectGeneratedPasswordForFormName:formName
+                     newPasswordIdentifier:newPasswordIdentifier
+                 confirmPasswordIdentifier:confirmPasswordIdentifier
+                         generatedPassword:generatedPassword
+                         completionHandler:completionHandler];
+}
+
+- (void)injectGeneratedPasswordForFormName:(NSString*)formName
+                     newPasswordIdentifier:(NSString*)newPasswordIdentifier
+                 confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+                         generatedPassword:(NSString*)generatedPassword
+                         completionHandler:(void (^)(BOOL))completionHandler {
+  auto generatedPasswordInjected = ^(BOOL success) {
+    if (success) {
+      // TODO(crbug.com/886583) call _pM::OnPresaveGeneratedPassword once it has
+      // been refactored not to need a full form.
+      self.isPasswordGenerated = YES;
+    }
+    if (completionHandler)
+      completionHandler(YES);
+  };
+
+  [self.formHelper fillPasswordForm:formName
+              newPasswordIdentifier:newPasswordIdentifier
+          confirmPasswordIdentifier:confirmPasswordIdentifier
+                  generatedPassword:generatedPassword
+                  completionHandler:generatedPasswordInjected];
 }
 
 @end

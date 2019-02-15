@@ -513,7 +513,7 @@ TEST_F(
 // filled with the generated password and that new password field is untouched.
 TEST_F(
     PasswordControllerJsTest,
-    FillPasswordFormWithGeneratedPassword_SucceedsWhenOnlyConfirmPasswordFilled) {
+    FillPasswordFormWithGeneratedPassword_FailsWhenOnlyConfirmPasswordFilled) {
   LoadHtmlAndInject(@"<html>"
                      "  <body>"
                      "    <form name=\"foo\">"
@@ -528,19 +528,16 @@ TEST_F(
   NSString* const password = @"abc";
   NSString* const confirmPasswordIdentifier = @"ps2";
   EXPECT_NSEQ(
-      @YES,
-      ExecuteJavaScriptWithFormat(
-          @"__gCrWeb.passwords."
-          @"fillPasswordFormWithGeneratedPassword('%@', '%@', '%@', '%@')",
-          formName, @"", confirmPasswordIdentifier, password));
+      @NO, ExecuteJavaScriptWithFormat(
+               @"__gCrWeb.passwords."
+               @"fillPasswordFormWithGeneratedPassword('%@', '%@', '%@', '%@')",
+               formName, @"", confirmPasswordIdentifier, password));
   EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
                         @"document.getElementById('ps1').value == '%@'", @""));
-  EXPECT_NSEQ(@YES,
-              ExecuteJavaScriptWithFormat(
-                  @"document.getElementById('ps2').value == '%@'", password));
-  EXPECT_NSEQ(@NO,
-              ExecuteJavaScriptWithFormat(
-                  @"document.getElementById('user').value == '%@'", password));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"document.getElementById('ps2').value == '%@'", @""));
+  EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
+                        @"document.getElementById('user').value == '%@'", @""));
 }
 
 // Check that unknown or null identifiers are handled gracefully.
