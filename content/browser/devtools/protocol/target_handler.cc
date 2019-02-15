@@ -331,6 +331,11 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     return agent_host_->GetId() == target_id;
   }
 
+  bool UsesBinaryProtocol() override {
+    auto* client = handler_->root_session_->client();
+    return client->UsesBinaryProtocol();
+  }
+
  private:
   friend class TargetHandler;
 

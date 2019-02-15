@@ -336,10 +336,10 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
   std::string patched;
   bool patched_ok;
   if (client_->UsesBinaryProtocol()) {
-    patched_ok = protocol::AppendStringValueToMapBinary(message, "sessionId",
+    patched_ok = protocol::AppendStringValueToMapBinary(message, kSessionId,
                                                         session_id, &patched);
   } else {
-    patched_ok = protocol::AppendStringValueToMapJSON(message, "sessionId",
+    patched_ok = protocol::AppendStringValueToMapJSON(message, kSessionId,
                                                       session_id, &patched);
   }
   if (!patched_ok)
