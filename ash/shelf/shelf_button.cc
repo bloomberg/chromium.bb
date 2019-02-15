@@ -54,6 +54,13 @@ bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
+// Do not remove this function to avoid unnecessary ChromeVox announcement
+// triggered by Button::GetAccessibleNodeData. (See https://crbug.com/932200)
+void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kButton;
+  node_data->SetName(GetAccessibleName());
+}
+
 bool ShelfButton::GetTooltipText(const gfx::Point& p,
                                  base::string16* tooltip) const {
   // Copy the proper tooltip text, but return false because we do not want to
