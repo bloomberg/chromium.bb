@@ -167,7 +167,7 @@ def RevGitFile(filename, data, dryrun=False):
       UpdateLocalFile(filename, value, key)
     git.RunGit(cwd, ['add', filename])
     git.RunGit(cwd, ['commit', '-m', description])
-    git.PushBranch(prebuilt_branch, cwd, dryrun=dryrun)
+    git.PushBranch(prebuilt_branch, cwd, dryrun=dryrun, auto_merge=True)
   finally:
     # We reset the index and the working tree state in case there are any
     # uncommitted or pending changes, but we don't change any existing commits.
