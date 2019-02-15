@@ -47,6 +47,10 @@ enum AudioFocusType {
   // Request transient focus when you expect to play audio for only a short
   // time and you expect the previous holder to pause playing.
   kGainTransient,
+
+  // Request audio focus for playback can be mixed with other types of audio.
+  // It has no effect on other holders of audio focus.
+  kAmbient,
 };
 
 // Contains information about |MediaSessions| that have requested audio focus

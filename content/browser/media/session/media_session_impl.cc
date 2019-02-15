@@ -753,8 +753,9 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
         // media session.
         OnSuspendInternal(SuspendType::kSystem, State::SUSPENDED);
         break;
+      case AudioFocusType::kAmbient:
       case AudioFocusType::kGainTransient:
-        // MediaSessionImpl does not use |kGainTransient|.
+        // MediaSessionImpl does not use |kGainTransient| or |kAmbient|.
         NOTREACHED();
         break;
       case AudioFocusType::kGainTransientMayDuck:

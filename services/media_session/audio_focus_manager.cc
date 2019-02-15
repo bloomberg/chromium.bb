@@ -462,6 +462,8 @@ void AudioFocusManager::EnforceAudioFocus() {
         if (!session->IsSuspended())
           state.should_duck = true;
         break;
+      case mojom::AudioFocusType::kAmbient:
+        break;
     }
   }
 }
