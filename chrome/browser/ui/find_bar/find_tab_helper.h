@@ -61,6 +61,16 @@ class FindTabHelper : public content::WebContentsObserver,
   // Accessor for the previous search we issued.
   base::string16 previous_find_text() const { return previous_find_text_; }
 
+  // Accessor for the latest search for which a final result was reported.
+  base::string16 last_completed_find_text() const {
+    return last_completed_find_text_;
+  }
+
+  void set_last_completed_find_text(
+      const base::string16& last_completed_find_text) {
+    last_completed_find_text_ = last_completed_find_text;
+  }
+
   gfx::Range selected_range() const { return selected_range_; }
   void set_selected_range(const gfx::Range& selected_range) {
     selected_range_ = selected_range;
@@ -120,6 +130,14 @@ class FindTabHelper : public content::WebContentsObserver,
 
   // The string we searched for before |find_text_|.
   base::string16 previous_find_text_;
+
+  // Used to keep track the last completed search. A single find session can
+  // result in multiple final updates, if the document contents change
+  // dynamically. It's a nuisance to notify the user more than once that a
+  // search came up empty, and we never want to notify the user that a
+  // previously successful search's results were removed because,
+  // for instance, the page is being torn down during navigation.
+  base::string16 last_completed_find_text_;
 
   // The selection within the text.
   gfx::Range selected_range_;

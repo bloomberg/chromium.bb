@@ -123,10 +123,6 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
                                        ResultAction result_action) {
   find_bar_->Hide(true);
 
-  // If the user searches again for this string, it should notify if the result
-  // comes back empty again.
-  alerted_search_.clear();
-
   // |web_contents_| can be NULL for a number of reasons, for example when the
   // tab is closing. We must guard against that case. See issue 8030.
   if (web_contents_) {
@@ -209,39 +205,14 @@ void FindBarController::OnUserChangedFindText(base::string16 text) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarHost, content::NotificationObserver implementation:
+// FindBarController, content::NotificationObserver implementation:
 
 void FindBarController::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents_);
   if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
-    // Don't update for notifications from WebContentses other than the one we
-    // are actively tracking.
-    if (content::Source<WebContents>(source).ptr() == web_contents_) {
-      UpdateFindBarForCurrentResult();
-
-      // A final update can occur multiple times if the document changes.
-      if (find_tab_helper->find_result().final_update() &&
-          find_tab_helper->find_result().number_of_matches() == 0) {
-        const base::string16& last_search =
-            find_tab_helper->previous_find_text();
-        const base::string16& current_search = find_tab_helper->find_text();
-
-        // Alert the user once per unique search, if they aren't backspacing.
-        if (current_search != alerted_search_) {
-          // Keep track of the last notified search string, even if the
-          // notification itself is elided.
-          if (!base::StartsWith(last_search, current_search,
-                                base::CompareCase::SENSITIVE)) {
-            find_bar_->AudibleAlert();
-          }
-
-          alerted_search_ = current_search;
-        }
-      }
-    }
+    DCHECK(content::Source<WebContents>(source).ptr() == web_contents_);
+    OnFindResultAvailable();
   } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         content::Source<NavigationController>(source).ptr();
@@ -298,6 +269,33 @@ gfx::Rect FindBarController::GetLocationForFindbarView(
   }
 
   return new_pos;
+}
+
+void FindBarController::OnFindResultAvailable() {
+  UpdateFindBarForCurrentResult();
+
+  FindTabHelper* find_tab_helper =
+      FindTabHelper::FromWebContents(web_contents_);
+
+  // Only "final" results may audibly alert the user.
+  if (!find_tab_helper->find_result().final_update())
+    return;
+
+  const base::string16& current_search = find_tab_helper->find_text();
+
+  // If no results were found, play an audible alert (depending upon platform
+  // convention). Alert only once per unique search, and don't alert on
+  // backspace.
+  if ((find_tab_helper->find_result().number_of_matches() == 0) &&
+      (current_search != find_tab_helper->last_completed_find_text() &&
+       !base::StartsWith(find_tab_helper->previous_find_text(), current_search,
+                         base::CompareCase::SENSITIVE))) {
+    find_bar_->AudibleAlert();
+  }
+
+  // Record the completion of the search to suppress future alerts, even if the
+  // page's contents change.
+  find_tab_helper->set_last_completed_find_text(current_search);
 }
 
 void FindBarController::UpdateFindBarForCurrentResult() {
