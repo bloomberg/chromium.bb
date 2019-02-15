@@ -127,8 +127,8 @@ void TraceLog::StopATrace() {
                                WaitableEvent::InitialState::NOT_SIGNALED);
   end_chrome_tracing_thread.Start();
   end_chrome_tracing_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&EndChromeTracing, Unretained(this),
-                            Unretained(&complete_event)));
+      FROM_HERE, base::BindOnce(&EndChromeTracing, Unretained(this),
+                                Unretained(&complete_event)));
   complete_event.Wait();
 }
 

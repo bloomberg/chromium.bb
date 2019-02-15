@@ -500,7 +500,7 @@ void ShimNewMallocZonesAndReschedule(base::Time end_time,
   base::TimeDelta next_delay = delay * 2;
   SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ShimNewMallocZonesAndReschedule, end_time, next_delay),
+      base::BindOnce(&ShimNewMallocZonesAndReschedule, end_time, next_delay),
       delay);
 }
 
