@@ -66,7 +66,6 @@ namespace internal {
 namespace sequence_manager_impl_unittest {
 
 enum class TestType {
-  kCustom,
   kMockTaskRunner,
   kMessageLoop,
   kMessagePump,
@@ -80,8 +79,6 @@ std::string ToString(TestType type) {
       return "kMessagePump";
     case TestType::kMessageLoop:
       return "kMessageLoop";
-    case TestType::kCustom:
-      return "kCustom";
   }
 }
 
@@ -113,6 +110,29 @@ class Fixture {
   virtual void RunDoWorkOnce() = 0;
   virtual SequenceManagerForTest* sequence_manager() const = 0;
   virtual void DestroySequenceManager() = 0;
+  virtual int GetNowTicksCallCount() = 0;
+};
+
+class CallCountingTickClock : public TickClock {
+ public:
+  explicit CallCountingTickClock(RepeatingCallback<TimeTicks()> now_callback)
+      : now_callback_(std::move(now_callback)) {}
+  explicit CallCountingTickClock(TickClock* clock)
+      : CallCountingTickClock(
+            BindLambdaForTesting([clock]() { return clock->NowTicks(); })) {}
+
+  ~CallCountingTickClock() override = default;
+
+  TimeTicks NowTicks() const override {
+    ++now_call_count_;
+    return now_callback_.Run();
+  }
+
+  int now_call_count() const { return now_call_count_; }
+
+ private:
+  const RepeatingCallback<TimeTicks()> now_callback_;
+  mutable std::atomic<int> now_call_count_{0};
 };
 
 class FixtureWithMockTaskRunner final : public Fixture {
@@ -120,6 +140,8 @@ class FixtureWithMockTaskRunner final : public Fixture {
   FixtureWithMockTaskRunner()
       : test_task_runner_(MakeRefCounted<TestMockTimeTaskRunner>(
             TestMockTimeTaskRunner::Type::kBoundToThread)),
+        call_counting_clock_(
+            Bind(&TestMockTimeTaskRunner::NowTicks, test_task_runner_)),
         sequence_manager_(SequenceManagerForTest::Create(
             nullptr,
             ThreadTaskRunnerHandle::Get(),
@@ -134,7 +156,7 @@ class FixtureWithMockTaskRunner final : public Fixture {
   }
 
   const TickClock* mock_tick_clock() const override {
-    return test_task_runner_->GetMockTickClock();
+    return &call_counting_clock_;
   }
 
   TimeDelta NextPendingTaskDelay() const override {
@@ -168,22 +190,27 @@ class FixtureWithMockTaskRunner final : public Fixture {
 
   void DestroySequenceManager() override { sequence_manager_.reset(); }
 
+  int GetNowTicksCallCount() override {
+    return call_counting_clock_.now_call_count();
+  };
+
  private:
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
+  CallCountingTickClock call_counting_clock_;
   std::unique_ptr<SequenceManagerForTest> sequence_manager_;
 };
 
 class FixtureWithMockMessagePump : public Fixture {
  public:
-  FixtureWithMockMessagePump() {
+  FixtureWithMockMessagePump() : call_counting_clock_(&mock_clock_) {
     // A null clock triggers some assertions.
     mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
 
     auto pump = std::make_unique<MockTimeMessagePump>(&mock_clock_);
     pump_ = pump.get();
     sequence_manager_ = SequenceManagerForTest::Create(
-        std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
-                                                              &mock_clock_),
+        std::make_unique<ThreadControllerWithMessagePumpImpl>(
+            std::move(pump), mock_tick_clock()),
         SequenceManager::Settings{.randomised_sampling_enabled = false});
     sequence_manager_->SetDefaultTaskRunner(MakeRefCounted<NullTaskRunner>());
   }
@@ -192,14 +219,17 @@ class FixtureWithMockMessagePump : public Fixture {
     mock_clock_.Advance(delta);
   }
 
-  const TickClock* mock_tick_clock() const override { return &mock_clock_; }
+  const TickClock* mock_tick_clock() const override {
+    return &call_counting_clock_;
+  }
 
   TimeDelta NextPendingTaskDelay() const override {
-    return pump_->next_wake_up_time() - mock_clock_.NowTicks();
+    return pump_->next_wake_up_time() - mock_tick_clock()->NowTicks();
   }
 
   void FastForwardBy(TimeDelta delta) override {
-    pump_->SetAllowTimeToAutoAdvanceUntil(mock_clock_.NowTicks() + delta);
+    pump_->SetAllowTimeToAutoAdvanceUntil(mock_tick_clock()->NowTicks() +
+                                          delta);
     pump_->SetStopWhenMessagePumpIsIdle(true);
     RunLoop().Run();
     pump_->SetStopWhenMessagePumpIsIdle(false);
@@ -210,7 +240,7 @@ class FixtureWithMockMessagePump : public Fixture {
     pump_->SetStopWhenMessagePumpIsIdle(true);
     RunLoop().Run();
     pump_->SetStopWhenMessagePumpIsIdle(false);
-    pump_->SetAllowTimeToAutoAdvanceUntil(mock_clock_.NowTicks());
+    pump_->SetAllowTimeToAutoAdvanceUntil(mock_tick_clock()->NowTicks());
   }
 
   void RunDoWorkOnce() override {
@@ -228,16 +258,22 @@ class FixtureWithMockMessagePump : public Fixture {
     sequence_manager_.reset();
   }
 
+  int GetNowTicksCallCount() override {
+    return call_counting_clock_.now_call_count();
+  };
+
  private:
   MockTimeMessagePump* pump_ = nullptr;
   SimpleTestTickClock mock_clock_;
+  CallCountingTickClock call_counting_clock_;
   std::unique_ptr<SequenceManagerForTest> sequence_manager_;
 };
 
 class FixtureWithMessageLoop : public Fixture {
  public:
   FixtureWithMessageLoop()
-      : auto_reset_global_clock_(&global_clock_, &mock_clock_) {
+      : call_counting_clock_(&mock_clock_),
+        auto_reset_global_clock_(&global_clock_, &call_counting_clock_) {
     // A null clock triggers some assertions.
     mock_clock_.Advance(TimeDelta::FromMilliseconds(1));
     scoped_clock_override_ =
@@ -250,7 +286,7 @@ class FixtureWithMessageLoop : public Fixture {
 
     sequence_manager_ = SequenceManagerForTest::Create(
         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
-        &mock_clock_,
+        mock_tick_clock(),
         SequenceManager::Settings{.randomised_sampling_enabled = false});
   }
 
@@ -258,14 +294,17 @@ class FixtureWithMessageLoop : public Fixture {
     mock_clock_.Advance(delta);
   }
 
-  const TickClock* mock_tick_clock() const override { return &mock_clock_; }
+  const TickClock* mock_tick_clock() const override {
+    return &call_counting_clock_;
+  }
 
   TimeDelta NextPendingTaskDelay() const override {
-    return pump_->next_wake_up_time() - mock_clock_.NowTicks();
+    return pump_->next_wake_up_time() - mock_tick_clock()->NowTicks();
   }
 
   void FastForwardBy(TimeDelta delta) override {
-    pump_->SetAllowTimeToAutoAdvanceUntil(mock_clock_.NowTicks() + delta);
+    pump_->SetAllowTimeToAutoAdvanceUntil(mock_tick_clock()->NowTicks() +
+                                          delta);
     pump_->SetStopWhenMessagePumpIsIdle(true);
     RunLoop().Run();
     pump_->SetStopWhenMessagePumpIsIdle(false);
@@ -276,7 +315,7 @@ class FixtureWithMessageLoop : public Fixture {
     pump_->SetStopWhenMessagePumpIsIdle(true);
     RunLoop().Run();
     pump_->SetStopWhenMessagePumpIsIdle(false);
-    pump_->SetAllowTimeToAutoAdvanceUntil(mock_clock_.NowTicks());
+    pump_->SetAllowTimeToAutoAdvanceUntil(mock_tick_clock()->NowTicks());
   }
 
   void RunDoWorkOnce() override {
@@ -294,10 +333,15 @@ class FixtureWithMessageLoop : public Fixture {
     sequence_manager_.reset();
   }
 
+  int GetNowTicksCallCount() override {
+    return call_counting_clock_.now_call_count();
+  };
+
  private:
   static TickClock* global_clock_;
   static TimeTicks TicksNowOverride() { return global_clock_->NowTicks(); }
   SimpleTestTickClock mock_clock_;
+  CallCountingTickClock call_counting_clock_;
   AutoReset<TickClock*> auto_reset_global_clock_;
   std::unique_ptr<base::subtle::ScopedTimeClockOverrides>
       scoped_clock_override_;
@@ -308,11 +352,9 @@ class FixtureWithMessageLoop : public Fixture {
 
 TickClock* FixtureWithMessageLoop::global_clock_;
 
-// SequenceManagerImpl uses TestMockTimeTaskRunner which controls
-// both task execution and mock clock.
-// TODO(kraynov): Make this class to support all TestTypes.
-// It will allow us to re-run tests in various environments before we'll
-// eventually move to MessagePump and remove current ThreadControllerImpl.
+// Convenience wrapper around the fixtures so that we can use parametrized tests
+// instead of templated ones. The latter would be more verbose as all method
+// calls to the fixture would need to be like this->method()
 class SequenceManagerTest : public testing::TestWithParam<TestType>,
                             public Fixture {
  public:
@@ -392,54 +434,12 @@ class SequenceManagerTest : public testing::TestWithParam<TestType>,
 
   void DestroySequenceManager() override { fixture_->DestroySequenceManager(); }
 
+  int GetNowTicksCallCount() override {
+    return fixture_->GetNowTicksCallCount();
+  }
+
  private:
   std::unique_ptr<Fixture> fixture_;
-};
-
-// TODO(carlscab): Remove once the classes below have been migrated to
-// SequenceManagerTest
-class SequenceManagerTestBase : public testing::TestWithParam<TestType> {
- protected:
-  void TearDown() override {
-    // SequenceManager should be deleted before an underlying task runner.
-    manager_.reset();
-  }
-
-  scoped_refptr<TestTaskQueue> CreateTaskQueue(
-      TaskQueue::Spec spec = TaskQueue::Spec("test")) {
-    return manager_->CreateTaskQueueWithType<TestTaskQueue>(spec);
-  }
-
-  std::vector<scoped_refptr<TestTaskQueue>> CreateTaskQueues(
-      size_t num_queues) {
-    std::vector<scoped_refptr<TestTaskQueue>> queues;
-    for (size_t i = 0; i < num_queues; i++)
-      queues.push_back(CreateTaskQueue());
-    return queues;
-  }
-
-  std::unique_ptr<SequenceManagerForTest> manager_;
-
-  TimeTicks start_time_;
-  TestTaskTimeObserver test_task_time_observer_;
-};
-
-// SequenceManagerImpl is being initialized with real MessageLoop
-// at cost of less control over a task runner.
-// It also runs a version with experimental MessagePump support.
-// TODO(kraynov): Generalize as many tests as possible to run it
-// in all supported environments.
-// TODO(carlscab): Migrate to SequenceManagerTest and remove
-class SequenceManagerTestWithCustomInitialization
-    : public SequenceManagerTestBase {
- protected:
-  void SetUp() override { ASSERT_EQ(GetParam(), TestType::kCustom); }
-
-  const TickClock* GetTickClock() { return &mock_clock_; }
-
-  scoped_refptr<TestTaskQueue> default_task_queue_;
-  std::unique_ptr<MessageLoop> message_loop_;
-  SimpleTestTickClock mock_clock_;
 };
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -448,10 +448,6 @@ INSTANTIATE_TEST_SUITE_P(,
                                          TestType::kMessageLoop,
                                          TestType::kMessagePump),
                          GetTestNameSuffix);
-
-INSTANTIATE_TEST_SUITE_P(,
-                         SequenceManagerTestWithCustomInitialization,
-                         testing::Values(TestType::kCustom));
 
 void PostFromNestedRunloop(scoped_refptr<TestTaskQueue> runner,
                            std::vector<std::pair<OnceClosure, bool>>* tasks) {
@@ -487,14 +483,8 @@ class TestCountUsesTimeSource : public TickClock {
   DISALLOW_COPY_AND_ASSIGN(TestCountUsesTimeSource);
 };
 
-TEST_P(SequenceManagerTestWithCustomInitialization, NowNotCalledIfUnneeded) {
-  message_loop_.reset(new MessageLoop());
-  TestCountUsesTimeSource test_count_uses_time_source;
-
-  manager_ = SequenceManagerForTest::Create(
-      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
-      SequenceManager::Settings{.randomised_sampling_enabled = false});
-  manager_->SetWorkBatchSize(6);
+TEST_P(SequenceManagerTest, NowNotCalledIfUnneeded) {
+  sequence_manager()->SetWorkBatchSize(6);
 
   auto queues = CreateTaskQueues(3u);
 
@@ -507,19 +497,14 @@ TEST_P(SequenceManagerTestWithCustomInitialization, NowNotCalledIfUnneeded) {
 
   RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, test_count_uses_time_source.now_calls_count());
+  EXPECT_EQ(0, GetNowTicksCallCount());
 }
 
-TEST_P(SequenceManagerTestWithCustomInitialization,
+TEST_P(SequenceManagerTest,
        NowCalledMinimumNumberOfTimesToComputeTaskDurations) {
-  message_loop_.reset(new MessageLoop());
-  TestCountUsesTimeSource test_count_uses_time_source;
-
-  manager_ = SequenceManagerForTest::Create(
-      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
-      SequenceManager::Settings{.randomised_sampling_enabled = false});
-  manager_->SetWorkBatchSize(6);
-  manager_->AddTaskTimeObserver(&test_task_time_observer_);
+  TestTaskTimeObserver time_observer;
+  sequence_manager()->SetWorkBatchSize(6);
+  sequence_manager()->AddTaskTimeObserver(&time_observer);
 
   auto queues = CreateTaskQueues(3u);
 
@@ -533,19 +518,14 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   RunLoop().RunUntilIdle();
   // Now is called when each task starts running and when its completed.
   // 6 * 2 = 12 calls.
-  EXPECT_EQ(12, test_count_uses_time_source.now_calls_count());
+  EXPECT_EQ(12, GetNowTicksCallCount());
 }
 
-TEST_P(SequenceManagerTestWithCustomInitialization,
+TEST_P(SequenceManagerTest,
        NowCalledMinimumNumberOfTimesToComputeTaskDurationsDelayedFenceAllowed) {
-  message_loop_.reset(new MessageLoop());
-  TestCountUsesTimeSource test_count_uses_time_source;
-
-  manager_ = SequenceManagerForTest::Create(
-      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
-      SequenceManager::Settings{.randomised_sampling_enabled = false});
-  manager_->SetWorkBatchSize(6);
-  manager_->AddTaskTimeObserver(&test_task_time_observer_);
+  TestTaskTimeObserver time_observer;
+  sequence_manager()->SetWorkBatchSize(6);
+  sequence_manager()->AddTaskTimeObserver(&time_observer);
 
   std::vector<scoped_refptr<TestTaskQueue>> queues;
   for (size_t i = 0; i < 3; i++) {
@@ -563,7 +543,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   RunLoop().RunUntilIdle();
   // Now is called each time a task is queued, when first task is started
   // running, and when a task is completed. 6 * 3 = 18 calls.
-  EXPECT_EQ(18, test_count_uses_time_source.now_calls_count());
+  EXPECT_EQ(18, GetNowTicksCallCount());
 }
 
 void NullTask() {}
@@ -3738,7 +3718,7 @@ TEST_P(SequenceManagerTest,
   EXPECT_FALSE(counter.HasReferences());
 }
 
-TEST_P(SequenceManagerTestWithCustomInitialization, DefaultTaskRunnerSupport) {
+TEST(SequenceManagerBasicTest, DefaultTaskRunnerSupport) {
   MessageLoop message_loop;
   scoped_refptr<SingleThreadTaskRunner> original_task_runner =
       message_loop.task_runner();
@@ -3940,8 +3920,7 @@ TEST_P(SequenceManagerTest, DestructorPostChainDuringShutdown) {
   EXPECT_TRUE(run);
 }
 
-TEST_P(SequenceManagerTestWithCustomInitialization,
-       CreateUnboundSequenceManagerWhichIsNeverBound) {
+TEST_P(SequenceManagerTest, CreateUnboundSequenceManagerWhichIsNeverBound) {
   // This should not crash.
   CreateUnboundSequenceManager();
 }
