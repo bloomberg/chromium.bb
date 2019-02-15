@@ -50,7 +50,7 @@ class JSChecker(object):
 
   def PolymerLocalIdCheck(self, i, line):
     """Checks for use of element.$.localId."""
-    return self.RegexCheck(i, line, r"(?<!this)(\.\$)[\[\.]",
+    return self.RegexCheck(i, line, r"(?<!this)(\.\$)[\[\.](?![a-zA-Z]+\()",
         "Please only use this.$.localId, not element.$.localId")
 
   def RunEsLintChecks(self, affected_js_files, format='stylish'):
