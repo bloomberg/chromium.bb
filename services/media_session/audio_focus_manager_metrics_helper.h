@@ -52,7 +52,8 @@ class AudioFocusManagerMetricsHelper {
     kGain = 1,
     kGainTransientMayDuck = 2,
     kGainTransient = 3,
-    kMaxValue = kGainTransient  // Leave at the end.
+    kAmbient = 4,
+    kMaxValue = kAmbient  // Leave at the end.
   };
 
   void OnRequestAudioFocus(AudioFocusRequestSource, mojom::AudioFocusType);

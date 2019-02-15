@@ -88,6 +88,8 @@ AudioFocusManagerMetricsHelper::FromMojoFocusType(mojom::AudioFocusType type) {
       return AudioFocusType::kGainTransientMayDuck;
     case mojom::AudioFocusType::kGainTransient:
       return AudioFocusType::kGainTransient;
+    case mojom::AudioFocusType::kAmbient:
+      return AudioFocusType::kAmbient;
   }
 
   NOTREACHED();

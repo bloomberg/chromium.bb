@@ -34,6 +34,7 @@ const char kAudioFocusPreferStop[] = "PreferStop";
 const char kAudioFocusTypeGain[] = "Gain";
 const char kAudioFocusTypeGainTransient[] = "GainTransient";
 const char kAudioFocusTypeGainTransientMayDuck[] = "GainTransientMayDuck";
+const char kAudioFocusTypeAmbient[] = "Ambient";
 
 const char kMediaSessionStateActive[] = "Active";
 const char kMediaSessionStateDucking[] = "Ducking";
@@ -267,6 +268,9 @@ std::string MediaInternalsAudioFocusHelper::BuildStateString(
       break;
     case media_session::mojom::AudioFocusType::kGainTransientMayDuck:
       stream << " " << kAudioFocusTypeGainTransientMayDuck;
+      break;
+    case media_session::mojom::AudioFocusType::kAmbient:
+      stream << " " << kAudioFocusTypeAmbient;
       break;
   }
 
