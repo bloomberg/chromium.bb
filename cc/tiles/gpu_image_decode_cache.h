@@ -170,6 +170,8 @@ class CC_EXPORT GpuImageDecodeCache
   bool IsInInUseCacheForTesting(const DrawImage& image) const;
   bool IsInPersistentCacheForTesting(const DrawImage& image) const;
   sk_sp<SkImage> GetSWImageDecodeForTesting(const DrawImage& image);
+  sk_sp<SkImage> GetUploadedPlaneForTesting(const DrawImage& draw_image,
+                                            size_t index);
   size_t paint_image_entries_count_for_testing() const {
     return paint_image_entries_.size();
   }

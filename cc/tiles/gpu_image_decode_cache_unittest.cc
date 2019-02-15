@@ -409,6 +409,24 @@ class GpuImageDecodeCacheTest
     return static_cast<ServiceImageTransferCacheEntry*>(entry)->image();
   }
 
+  void CompareAllPlanesToMippedVersions(GpuImageDecodeCache* cache,
+                                        const DrawImage& draw_image,
+                                        bool should_have_mips) {
+    for (size_t i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
+      // TODO(crbug.com/910276): Skip alpha plane until supported in cache.
+      if (i != SkYUVAIndex::kA_Index) {
+        auto original_uploaded_plane =
+            cache->GetUploadedPlaneForTesting(draw_image, i);
+        ASSERT_TRUE(original_uploaded_plane);
+        auto plane_with_mips = original_uploaded_plane->makeTextureImage(
+            context_provider()->GrContext(), nullptr /* color space */,
+            GrMipMapped::kYes);
+        ASSERT_TRUE(plane_with_mips);
+        EXPECT_EQ(should_have_mips, original_uploaded_plane == plane_with_mips);
+      }
+    }
+  }
+
  protected:
   FakeDiscardableManager discardable_manager_;
   scoped_refptr<GPUImageDecodeTestMockContextProvider> context_provider_;
@@ -2558,10 +2576,6 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, BasicMips) {
-  if (do_yuv_decode_) {
-    // We will modify this test for YUV.
-    return;
-  }
   auto decode_and_check_mips = [this](SkFilterQuality filter_quality,
                                       SkSize scale,
                                       const gfx::ColorSpace& color_space,
@@ -2589,11 +2603,26 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
     EXPECT_TRUE(decoded_draw_image.image());
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
-    sk_sp<SkImage> image_with_mips =
-        decoded_draw_image.image()->makeTextureImage(
-            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
-    EXPECT_EQ(should_have_mips, image_with_mips == decoded_draw_image.image());
+    if (do_yuv_decode_) {
+      // As of M74, Skia will flatten a YUV SkImage upon calling
+      // makeTextureImage. Thus, we must separately request mips for each
+      // plane and compare to the original uploaded planes.
+      CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       should_have_mips);
+      EXPECT_TRUE(
+          SkColorSpace::Equals(cache->SupportsColorSpaceConversion()
+                                   ? color_space.ToSkColorSpace().get()
+                                   : nullptr,
+                               decoded_draw_image.image()->colorSpace()));
 
+    } else {
+      sk_sp<SkImage> image_with_mips =
+          decoded_draw_image.image()->makeTextureImage(
+              context_provider()->GrContext(), nullptr /* color space */,
+              GrMipMapped::kYes);
+      EXPECT_EQ(should_have_mips,
+                image_with_mips == decoded_draw_image.image());
+    }
     cache->DrawWithImageFinished(draw_image, decoded_draw_image);
     cache->UnrefImage(draw_image);
   };
@@ -2622,10 +2651,6 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
 }
 
 TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
-  if (do_yuv_decode_) {
-    // We will modify this test for YUV.
-    return;
-  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   auto filter_quality = kMedium_SkFilterQuality;
@@ -2654,12 +2679,20 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     EXPECT_TRUE(decoded_draw_image.image());
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
-    // No mips should be generated
-    sk_sp<SkImage> image_with_mips =
-        decoded_draw_image.image()->makeTextureImage(
-            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
-    EXPECT_NE(image_with_mips, decoded_draw_image.image());
-
+    // No mips should be generated.
+    if (do_yuv_decode_) {
+      // As of M74, Skia will flatten a YUV SkImage upon calling
+      // makeTextureImage. Thus, we must separately request mips for each
+      // plane and compare to the original uploaded planes.
+      CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       false /* should_have_mips */);
+    } else {
+      sk_sp<SkImage> image_with_mips =
+          decoded_draw_image.image()->makeTextureImage(
+              context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
+      ASSERT_TRUE(image_with_mips);
+      EXPECT_NE(image_with_mips, decoded_draw_image.image());
+    }
     cache->DrawWithImageFinished(draw_image, decoded_draw_image);
     cache->UnrefImage(draw_image);
   }
@@ -2690,20 +2723,26 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     // Mips should be generated
-    sk_sp<SkImage> image_with_mips =
-        decoded_draw_image.image()->makeTextureImage(
-            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
-    EXPECT_EQ(image_with_mips, decoded_draw_image.image());
+    if (do_yuv_decode_) {
+      CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       true /* should_have_mips */);
+      EXPECT_TRUE(
+          SkColorSpace::Equals(cache->SupportsColorSpaceConversion()
+                                   ? DefaultColorSpace().ToSkColorSpace().get()
+                                   : nullptr,
+                               decoded_draw_image.image()->colorSpace()));
+    } else {
+      sk_sp<SkImage> image_with_mips =
+          decoded_draw_image.image()->makeTextureImage(
+              context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
+      EXPECT_EQ(image_with_mips, decoded_draw_image.image());
+    }
     cache->DrawWithImageFinished(draw_image, decoded_draw_image);
     cache->UnrefImage(draw_image);
   }
 }
 
 TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
-  if (do_yuv_decode_) {
-    // We will modify this test for YUV.
-    return;
-  }
   auto cache = CreateCache();
   bool is_decomposable = true;
   auto filter_quality = kMedium_SkFilterQuality;
@@ -2735,15 +2774,22 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
-    EXPECT_TRUE(decoded_draw_image.image());
-    EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+    ASSERT_TRUE(decoded_draw_image.image());
+    ASSERT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
-    // No mips should be generated
-    sk_sp<SkImage> image_with_mips =
-        decoded_draw_image.image()->makeTextureImage(
-            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
-    EXPECT_NE(image_with_mips, decoded_draw_image.image());
-
+    // No mips should be generated.
+    if (do_yuv_decode_) {
+      // As of M74, Skia will flatten a YUV SkImage upon calling
+      // makeTextureImage. Thus, we must separately request mips for each
+      // plane and compare to the original uploaded planes.
+      CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       false /* should_have_mips */);
+    } else {
+      sk_sp<SkImage> image_with_mips =
+          decoded_draw_image.image()->makeTextureImage(
+              context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
+      EXPECT_NE(image_with_mips, decoded_draw_image.image());
+    }
     images_to_unlock.push_back({draw_image, decoded_draw_image});
   }
 
@@ -2764,15 +2810,24 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
     DecodedDrawImage decoded_draw_image =
         EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
 
-    EXPECT_TRUE(decoded_draw_image.image());
-    EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+    ASSERT_TRUE(decoded_draw_image.image());
+    ASSERT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
-    // Mips should be generated
-    sk_sp<SkImage> image_with_mips =
-        decoded_draw_image.image()->makeTextureImage(
-            context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
-    EXPECT_EQ(image_with_mips, decoded_draw_image.image());
-
+    // Mips should be generated.
+    if (do_yuv_decode_) {
+      CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       true /* should_have_mips */);
+      EXPECT_TRUE(
+          SkColorSpace::Equals(cache->SupportsColorSpaceConversion()
+                                   ? DefaultColorSpace().ToSkColorSpace().get()
+                                   : nullptr,
+                               decoded_draw_image.image()->colorSpace()));
+    } else {
+      sk_sp<SkImage> image_with_mips =
+          decoded_draw_image.image()->makeTextureImage(
+              context_provider()->GrContext(), nullptr, GrMipMapped::kYes);
+      EXPECT_EQ(image_with_mips, decoded_draw_image.image());
+    }
     images_to_unlock.push_back({draw_image, decoded_draw_image});
   }
 
@@ -2783,13 +2838,29 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
   {
     // All images which are currently ref-ed must have locked textures.
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
-    for (const auto& decode : images_to_unlock) {
+    for (const auto& draw_and_decoded_draw_image : images_to_unlock) {
       if (!use_transfer_cache_) {
-        discardable_manager_.ExpectLocked(GpuImageDecodeCache::GlIdFromSkImage(
-            decode.decoded_image.image().get()));
+        if (do_yuv_decode_) {
+          DrawImage draw_image = draw_and_decoded_draw_image.image;
+          for (size_t i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
+            // TODO(crbug.com/910276): Skip alpha plane until supported in
+            // cache.
+            if (i != SkYUVAIndex::kA_Index) {
+              SkImage* plane_image =
+                  cache->GetUploadedPlaneForTesting(draw_image, i).get();
+              discardable_manager_.ExpectLocked(
+                  GpuImageDecodeCache::GlIdFromSkImage(plane_image));
+            }
+          }
+        } else {
+          discardable_manager_.ExpectLocked(
+              GpuImageDecodeCache::GlIdFromSkImage(
+                  draw_and_decoded_draw_image.decoded_image.image().get()));
+        }
       }
-      cache->DrawWithImageFinished(decode.image, decode.decoded_image);
-      cache->UnrefImage(decode.image);
+      cache->DrawWithImageFinished(draw_and_decoded_draw_image.image,
+                                   draw_and_decoded_draw_image.decoded_image);
+      cache->UnrefImage(draw_and_decoded_draw_image.image);
     }
   }
 }

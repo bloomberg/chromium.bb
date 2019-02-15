@@ -710,7 +710,7 @@ void GpuImageDecodeCache::UploadedImageData::SetImage(
   if (!represents_yuv_image && image_->isTextureBacked()) {
     gl_id_ = GlIdFromSkImage(image_.get());
   } else {
-    gl_id_ = -1;
+    gl_id_ = 0;
   }
   OnSetLockedData(false /* out_of_raster */);
 }
@@ -758,6 +758,7 @@ void GpuImageDecodeCache::UploadedImageData::Reset() {
   image_yuv_planes_.reset();
   gl_plane_ids_.reset();
   gl_id_ = 0;
+  is_alpha_ = false;
   transfer_cache_id_.reset();
   OnResetData();
 }
@@ -1683,7 +1684,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     pixmap.setColorSpace(color_space);
 
     if (image_data->is_yuv) {
-      DLOG(WARNING) << "GpuImageDecodeCache wants to do YUV decoding/rendering";
+      DVLOG(3) << "GpuImageDecodeCache wants to do YUV decoding/rendering";
       SkPixmap pixmap_y;
       SkPixmap pixmap_u;
       SkPixmap pixmap_v;
@@ -1693,14 +1694,15 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         DLOG(ERROR) << "DrawAndScaleImage failed.";
         backing_memory->Unlock();
         backing_memory.reset();
+      } else {
+        image_y = SkImage::MakeFromRaster(pixmap_y, release_proc, nullptr);
+        image_u = SkImage::MakeFromRaster(pixmap_u, release_proc, nullptr);
+        image_v = SkImage::MakeFromRaster(pixmap_v, release_proc, nullptr);
       }
-      image_y = SkImage::MakeFromRaster(pixmap_y, release_proc, nullptr);
-      image_u = SkImage::MakeFromRaster(pixmap_u, release_proc, nullptr);
-      image_v = SkImage::MakeFromRaster(pixmap_v, release_proc, nullptr);
     } else {  // RGBX decoding is the default path.
       if (!DrawAndScaleImage(draw_image, &pixmap, generator_client_id_,
                              image_data->is_yuv)) {
-        LOG(ERROR) << "DrawAndScaleImage failed.";
+        DLOG(ERROR) << "DrawAndScaleImage failed.";
         backing_memory->Unlock();
         backing_memory.reset();
       } else {
@@ -1833,7 +1835,6 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     sk_sp<SkImage> uploaded_y_image = image_data->decode.y_image();
     sk_sp<SkImage> uploaded_u_image = image_data->decode.u_image();
     sk_sp<SkImage> uploaded_v_image = image_data->decode.v_image();
-    image_data->decode.mark_used();
 
     // For kGpu, we upload and color convert (if necessary).
     if (image_data->mode == DecodedDataMode::kGpu) {
@@ -1862,7 +1863,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
       uploaded_image = CreateImageFromYUVATexturesInternal(
           uploaded_y_image.get(), uploaded_u_image.get(),
           uploaded_v_image.get(), image_width, image_height, &yuva_color_space,
-          color_space);
+          decoded_target_colorspace);
     }
 
     // At-raster may have decoded this while we were unlocked. If so, ignore our
@@ -2003,9 +2004,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   const bool is_bitmap_backed = !draw_image.paint_image().IsLazyGenerated() &&
                                 upload_scale_mip_level == 0 &&
                                 !cache_color_conversion_on_cpu;
-  SkYUVASizeInfo temp_yuva_size_info;
-  const bool is_yuv = draw_image.paint_image().IsYuv(&temp_yuva_size_info) &&
-                      mode == DecodedDataMode::kGpu;
+  const bool is_yuv =
+      draw_image.paint_image().IsYuv() && mode == DecodedDataMode::kGpu;
 
   // TODO(crbug.com/910276): Change after alpha support.
   // TODO(crbug.com/915972): Remove YUV420 assumption.
@@ -2362,6 +2362,24 @@ sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
   return image_data->decode.ImageForTesting();
 }
 
+sk_sp<SkImage> GpuImageDecodeCache::GetUploadedPlaneForTesting(
+    const DrawImage& draw_image,
+    size_t index) {
+  base::AutoLock lock(lock_);
+  ImageData* image_data = GetImageDataForDrawImage(
+      draw_image, InUseCacheKey::FromDrawImage(draw_image));
+  switch (index) {
+    case SkYUVAIndex::kY_Index:
+      return image_data->upload.y_image();
+    case SkYUVAIndex::kU_Index:
+      return image_data->upload.u_image();
+    case SkYUVAIndex::kV_Index:
+      return image_data->upload.v_image();
+    default:
+      return nullptr;
+  }
+}
+
 void GpuImageDecodeCache::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   base::AutoLock lock(lock_);
@@ -2451,7 +2469,6 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
 void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
                                              ImageData* image_data) {
   CheckContextLockAcquiredIfNecessary();
-
   // If we already have mips, nothing to do.
   if (image_data->needs_mips)
     return;
@@ -2523,12 +2540,13 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
     SkYUVColorSpace yuva_color_space = SkYUVColorSpace::kRec601_SkYUVColorSpace;
     size_t width = image_y_with_mips_owned->width();
     size_t height = image_y_with_mips_owned->height();
-    SkColorSpace* decoded_color_space = draw_image.paint_image().color_space();
+    sk_sp<SkColorSpace> decoded_color_space =
+        ColorSpaceForImageDecode(draw_image, image_data->mode);
     sk_sp<SkImage> yuv_image_with_mips_owned =
         CreateImageFromYUVATexturesInternal(
             image_y_with_mips_owned.get(), image_u_with_mips_owned.get(),
             image_v_with_mips_owned.get(), width, height, &yuva_color_space,
-            sk_ref_sp(decoded_color_space));
+            decoded_color_space);
     // In case of lost context
     if (!yuv_image_with_mips_owned) {
       DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
