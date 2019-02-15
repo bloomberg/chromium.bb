@@ -834,6 +834,9 @@ function EntryListItem(rootType, modelItem, tree) {
     item.setContextMenu_(tree.contextMenuForRootItems);
   }
 
+  // Populate children of this volume.
+  item.updateSubDirectories(false /* recursive */);
+
   return item;
 }
 
