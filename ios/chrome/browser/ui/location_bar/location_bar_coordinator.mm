@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -266,6 +267,13 @@ const int kLocationAuthorizationStatusCount = 4;
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmniboxFromSearchButton {
+  // TODO(crbug.com/931284): Temporary workaround for intermediate broken state
+  // in the NTP.  Remove this once crbug.com/899827 is fixed.
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTPHelper && NTPHelper->IgnoreLoadRequests()) {
+    return;
+  }
   [self.omniboxCoordinator setNextFocusSourceAsSearchButton];
   [self focusOmnibox];
 }
