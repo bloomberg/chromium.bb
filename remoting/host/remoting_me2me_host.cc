@@ -590,8 +590,9 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 void HostProcess::OnConfigUpdated(
     const std::string& serialized_config) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(FROM_HERE,
-        base::Bind(&HostProcess::OnConfigUpdated, this, serialized_config));
+    context_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HostProcess::OnConfigUpdated, this, serialized_config));
     return;
   }
 
@@ -824,7 +825,7 @@ void HostProcess::OnChannelError() {
   // Shutdown the host if the daemon process disconnects the IPC channel.
   context_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&HostProcess::ShutdownHost, this, kSuccessExitCode));
+      base::BindOnce(&HostProcess::ShutdownHost, this, kSuccessExitCode));
 }
 
 void HostProcess::StartOnUiThread() {
@@ -839,7 +840,7 @@ void HostProcess::StartOnUiThread() {
   if (!report_offline_reason_.empty()) {
     // Don't need to do any UI initialization.
     context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::StartOnNetworkThread, this));
+        FROM_HERE, base::BindOnce(&HostProcess::StartOnNetworkThread, this));
     return;
   }
 
@@ -898,8 +899,7 @@ void HostProcess::StartOnUiThread() {
   desktop_environment_factory_.reset(desktop_environment_factory);
 
   context_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&HostProcess::StartOnNetworkThread, this));
+      FROM_HERE, base::BindOnce(&HostProcess::StartOnNetworkThread, this));
 }
 
 void HostProcess::ShutdownOnUiThread() {
@@ -954,9 +954,9 @@ void HostProcess::OnInitializePairingRegistry(
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
 #if defined(OS_WIN)
-  context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-      &HostProcess::InitializePairingRegistry,
-      this, privileged_key, unprivileged_key));
+  context_->network_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&HostProcess::InitializePairingRegistry, this,
+                                privileged_key, unprivileged_key));
 #else  // !defined(OS_WIN)
   NOTREACHED();
 #endif  // !defined(OS_WIN)
@@ -1064,8 +1064,8 @@ void HostProcess::OnPolicyUpdate(
     std::unique_ptr<base::DictionaryValue> policies) {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::OnPolicyUpdate, this,
-                              base::Passed(&policies)));
+        FROM_HERE, base::BindOnce(&HostProcess::OnPolicyUpdate, this,
+                                  std::move(policies)));
     return;
   }
 
@@ -1096,7 +1096,7 @@ void HostProcess::OnPolicyUpdate(
 void HostProcess::OnPolicyError() {
   if (!context_->network_task_runner()->BelongsToCurrentThread()) {
     context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::OnPolicyError, this));
+        FROM_HERE, base::BindOnce(&HostProcess::OnPolicyError, this));
     return;
   }
 
@@ -1697,7 +1697,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
 
     // Complete the rest of shutdown on the main thread.
     context_->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&HostProcess::ShutdownOnUiThread, this));
+        FROM_HERE, base::BindOnce(&HostProcess::ShutdownOnUiThread, this));
   } else {
     NOTREACHED();
   }

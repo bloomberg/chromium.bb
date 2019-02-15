@@ -387,8 +387,8 @@ void ChannelMultiplexer::DoCreatePendingChannels() {
   // callback may destroy the multiplexer or somehow else modify
   // |pending_channels_| list (e.g. call CancelChannelCreation()).
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ChannelMultiplexer::DoCreatePendingChannels,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ChannelMultiplexer::DoCreatePendingChannels,
+                                weak_factory_.GetWeakPtr()));
 
   PendingChannel c = pending_channels_.front();
   pending_channels_.erase(pending_channels_.begin());
@@ -415,8 +415,8 @@ void ChannelMultiplexer::OnBaseChannelError(int error) {
   for (auto it = channels_.begin(); it != channels_.end(); ++it) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ChannelMultiplexer::NotifyBaseChannelError,
-                   weak_factory_.GetWeakPtr(), it->second->name(), error));
+        base::BindOnce(&ChannelMultiplexer::NotifyBaseChannelError,
+                       weak_factory_.GetWeakPtr(), it->second->name(), error));
   }
 }
 

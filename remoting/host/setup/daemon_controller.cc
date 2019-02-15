@@ -113,7 +113,7 @@ void DaemonController::DoGetConfig(const GetConfigCallback& done) {
 
   std::unique_ptr<base::DictionaryValue> config = delegate_->GetConfig();
   caller_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(done, base::Passed(&config)));
+                                base::BindOnce(done, std::move(config)));
 }
 
 void DaemonController::DoSetConfigAndStart(
@@ -145,7 +145,7 @@ void DaemonController::DoGetUsageStatsConsent(
 
   DaemonController::UsageStatsConsent consent =
       delegate_->GetUsageStatsConsent();
-  caller_task_runner_->PostTask(FROM_HERE, base::Bind(done, consent));
+  caller_task_runner_->PostTask(FROM_HERE, base::BindOnce(done, consent));
 }
 
 void DaemonController::InvokeCompletionCallbackAndScheduleNext(
@@ -154,8 +154,9 @@ void DaemonController::InvokeCompletionCallbackAndScheduleNext(
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DaemonController::InvokeCompletionCallbackAndScheduleNext,
-                   this, done, result));
+        base::BindOnce(
+            &DaemonController::InvokeCompletionCallbackAndScheduleNext, this,
+            done, result));
     return;
   }
 

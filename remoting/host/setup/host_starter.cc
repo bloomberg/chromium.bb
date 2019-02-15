@@ -80,9 +80,10 @@ void HostStarter::OnGetTokensResponse(
     const std::string& access_token,
     int expires_in_seconds) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnGetTokensResponse, weak_ptr_,
-        refresh_token, access_token, expires_in_seconds));
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HostStarter::OnGetTokensResponse, weak_ptr_,
+                       refresh_token, access_token, expires_in_seconds));
     return;
   }
   refresh_token_ = refresh_token;
@@ -102,8 +103,9 @@ void HostStarter::OnRefreshTokenResponse(
 // with the service account credentials.
 void HostStarter::OnGetUserEmailResponse(const std::string& user_email) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnGetUserEmailResponse, weak_ptr_, user_email));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&HostStarter::OnGetUserEmailResponse,
+                                  weak_ptr_, user_email));
     return;
   }
 
@@ -131,8 +133,9 @@ void HostStarter::OnGetUserEmailResponse(const std::string& user_email) {
 
 void HostStarter::OnHostRegistered(const std::string& authorization_code) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnHostRegistered, weak_ptr_, authorization_code));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&HostStarter::OnHostRegistered, weak_ptr_,
+                                  authorization_code));
     return;
   }
 
@@ -176,8 +179,9 @@ void HostStarter::StartHostProcess() {
 
 void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnHostStarted, weak_ptr_, result));
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HostStarter::OnHostStarted, weak_ptr_, result));
     return;
   }
   if (result != DaemonController::RESULT_OK) {
@@ -190,8 +194,8 @@ void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {
 
 void HostStarter::OnOAuthError() {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnOAuthError, weak_ptr_));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&HostStarter::OnOAuthError, weak_ptr_));
     return;
   }
   if (unregistering_host_) {
@@ -204,8 +208,9 @@ void HostStarter::OnOAuthError() {
 
 void HostStarter::OnNetworkError(int response_code) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnNetworkError, weak_ptr_, response_code));
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HostStarter::OnNetworkError, weak_ptr_, response_code));
     return;
   }
   if (unregistering_host_) {
@@ -218,8 +223,8 @@ void HostStarter::OnNetworkError(int response_code) {
 
 void HostStarter::OnHostUnregistered() {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnHostUnregistered, weak_ptr_));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&HostStarter::OnHostUnregistered, weak_ptr_));
     return;
   }
   base::ResetAndReturn(&on_done_).Run(START_ERROR);

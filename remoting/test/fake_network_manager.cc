@@ -26,8 +26,8 @@ FakeNetworkManager::~FakeNetworkManager() = default;
 void FakeNetworkManager::StartUpdating() {
   started_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeNetworkManager::SendNetworksChangedSignal,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeNetworkManager::SendNetworksChangedSignal,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void FakeNetworkManager::StopUpdating() {

@@ -28,7 +28,7 @@ void SetFlagTask(bool* success) {
 void PostSetFlagTask(
     scoped_refptr<base::TaskRunner> task_runner,
     bool* success) {
-  task_runner->PostTask(FROM_HERE, base::Bind(&SetFlagTask, success));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&SetFlagTask, success));
 }
 
 #if defined(OS_WIN)
@@ -105,7 +105,7 @@ TEST_F(AutoThreadTest, ProcessTask) {
 
   // Post a task to it.
   bool success = false;
-  task_runner->PostTask(FROM_HERE, base::Bind(&SetFlagTask, &success));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&SetFlagTask, &success));
 
   task_runner = NULL;
   RunMessageLoop();
@@ -124,8 +124,8 @@ TEST_F(AutoThreadTest, ThreadDependency) {
 
   // Post a task to thread 1 that will post a task to thread 2.
   bool success = false;
-  task_runner1->PostTask(FROM_HERE,
-      base::Bind(&PostSetFlagTask, task_runner2, &success));
+  task_runner1->PostTask(
+      FROM_HERE, base::BindOnce(&PostSetFlagTask, task_runner2, &success));
 
   task_runner1 = NULL;
   task_runner2 = NULL;
@@ -146,8 +146,8 @@ TEST_F(AutoThreadTest, ThreadWithComMta) {
   // Post a task to query the COM apartment type.
   HRESULT hresult = E_FAIL;
   APTTYPE apt_type = APTTYPE_NA;
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&CheckComAptTypeTask, &apt_type, &hresult));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&CheckComAptTypeTask, &apt_type, &hresult));
 
   task_runner = NULL;
   RunMessageLoop();
@@ -167,8 +167,8 @@ TEST_F(AutoThreadTest, ThreadWithComSta) {
   // Post a task to query the COM apartment type.
   HRESULT hresult = E_FAIL;
   APTTYPE apt_type = APTTYPE_NA;
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&CheckComAptTypeTask, &apt_type, &hresult));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&CheckComAptTypeTask, &apt_type, &hresult));
 
   task_runner = NULL;
   RunMessageLoop();

@@ -98,7 +98,7 @@ std::string ReadString(bool no_echo) {
 void OnDone(HostStarter::Result result) {
   if (!g_message_loop->task_runner()->BelongsToCurrentThread()) {
     g_message_loop->task_runner()->PostTask(FROM_HERE,
-                                            base::Bind(&OnDone, result));
+                                            base::BindOnce(&OnDone, result));
     return;
   }
   switch (result) {

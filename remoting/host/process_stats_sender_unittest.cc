@@ -116,7 +116,7 @@ TEST(ProcessStatsSenderTest, ReportUsage) {
       base::Unretained(&run_loop)));
   message_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<ProcessStatsSender>* stats,
              FakeProcessStatsStub* stub, FakeProcessStatsAgent* agent) -> void {
             stats->reset(new ProcessStatsSender(
@@ -155,7 +155,7 @@ TEST(ProcessStatsSenderTest, MergeUsage) {
       base::ConstRef(agent2), base::Unretained(&run_loop)));
   message_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<ProcessStatsSender>* stats,
              FakeProcessStatsStub* stub, FakeProcessStatsAgent* agent1,
              FakeProcessStatsAgent* agent2) -> void {

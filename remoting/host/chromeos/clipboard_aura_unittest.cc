@@ -121,9 +121,10 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
 
   base::RunLoop run_loop;
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ClipboardAuraTest_MonitorClipboardChanges_Test::
-                                StopAndResetClipboard,
-                            base::Unretained(this)),
+      FROM_HERE,
+      base::BindOnce(&ClipboardAuraTest_MonitorClipboardChanges_Test::
+                         StopAndResetClipboard,
+                     base::Unretained(this)),
       TestTimeouts::tiny_timeout());
   message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());

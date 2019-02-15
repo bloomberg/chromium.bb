@@ -159,15 +159,16 @@ void MockIt2MeHost::Connect(
   RunSetState(kRequestedAccessCode);
 
   host_context()->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer_,
-                            kTestAccessCode, kTestAccessCodeLifetime));
+      FROM_HERE,
+      base::BindOnce(&It2MeHost::Observer::OnStoreAccessCode, observer_,
+                     kTestAccessCode, kTestAccessCodeLifetime));
 
   RunSetState(kReceivedAccessCode);
   RunSetState(kConnecting);
 
   host_context()->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
-                            observer_, kTestClientUsername));
+      FROM_HERE, base::BindOnce(&It2MeHost::Observer::OnClientAuthenticated,
+                                observer_, kTestClientUsername));
 
   RunSetState(kConnected);
 }
@@ -176,7 +177,7 @@ void MockIt2MeHost::Disconnect() {
   if (!host_context()->network_task_runner()->BelongsToCurrentThread()) {
     DCHECK(host_context()->ui_task_runner()->BelongsToCurrentThread());
     host_context()->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&MockIt2MeHost::Disconnect, this));
+        FROM_HERE, base::BindOnce(&MockIt2MeHost::Disconnect, this));
     return;
   }
 
@@ -186,8 +187,8 @@ void MockIt2MeHost::Disconnect() {
 void MockIt2MeHost::RunSetState(It2MeHostState state) {
   if (!host_context()->network_task_runner()->BelongsToCurrentThread()) {
     host_context()->network_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&It2MeHost::SetStateForTesting, this, state, ErrorCode::OK));
+        FROM_HERE, base::BindOnce(&It2MeHost::SetStateForTesting, this, state,
+                                  ErrorCode::OK));
   } else {
     SetStateForTesting(state, ErrorCode::OK);
   }
@@ -285,9 +286,8 @@ void It2MeNativeMessagingHostTest::SetUp() {
                  base::Unretained(this)));
 
   host_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&It2MeNativeMessagingHostTest::StartHost,
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&It2MeNativeMessagingHostTest::StartHost,
+                                base::Unretained(this)));
 
   // Wait until the host finishes starting.
   test_run_loop_->Run();
@@ -570,9 +570,8 @@ void It2MeNativeMessagingHostTest::StartHost() {
 void It2MeNativeMessagingHostTest::ExitTest() {
   if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
     test_message_loop_->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&It2MeNativeMessagingHostTest::ExitTest,
-                   base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&It2MeNativeMessagingHostTest::ExitTest,
+                                  base::Unretained(this)));
     return;
   }
   test_run_loop_->Quit();

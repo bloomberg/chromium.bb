@@ -61,8 +61,8 @@ void SocketReader::HandleReadResult(int result) {
       read_buffer_ = NULL;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&SocketReader::CallCallback, weak_factory_.GetWeakPtr(),
-                   read_buffer_, result));
+        base::BindOnce(&SocketReader::CallCallback, weak_factory_.GetWeakPtr(),
+                       read_buffer_, result));
   }
 }
 

@@ -196,8 +196,8 @@ class ProtocolPerfTest
 
   void OnClientConnected(const std::string& jid) override {
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ProtocolPerfTest::OnHostConnectedMainThread,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&ProtocolPerfTest::OnHostConnectedMainThread,
+                                  base::Unretained(this)));
   }
 
  protected:
@@ -258,7 +258,7 @@ class ProtocolPerfTest
 
     host_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ProtocolPerfTest::StartHost, base::Unretained(this)));
+        base::BindOnce(&ProtocolPerfTest::StartHost, base::Unretained(this)));
   }
 
   void StartHost() {
@@ -323,8 +323,8 @@ class ProtocolPerfTest
     host_->Start(kHostOwner);
 
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ProtocolPerfTest::StartClientAfterHost,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&ProtocolPerfTest::StartClientAfterHost,
+                                  base::Unretained(this)));
   }
 
   void StartClientAfterHost() {

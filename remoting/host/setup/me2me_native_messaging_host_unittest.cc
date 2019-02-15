@@ -313,9 +313,8 @@ void Me2MeNativeMessagingHostTest::SetUp() {
                  base::Unretained(this)));
 
   host_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Me2MeNativeMessagingHostTest::StartHost,
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&Me2MeNativeMessagingHostTest::StartHost,
+                                base::Unretained(this)));
 
   // Wait until the host finishes starting.
   test_run_loop_->Run();
@@ -380,9 +379,8 @@ void Me2MeNativeMessagingHostTest::StopHost() {
 void Me2MeNativeMessagingHostTest::ExitTest() {
   if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
     test_message_loop_->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,
-                   base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&Me2MeNativeMessagingHostTest::ExitTest,
+                                  base::Unretained(this)));
     return;
   }
   test_run_loop_->Quit();

@@ -143,7 +143,7 @@ void RdpClientTest::OnRdpConnected() {
 
   message_loop_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&RdpClientTest::CloseRdpClient, base::Unretained(this)));
+      base::BindOnce(&RdpClientTest::CloseRdpClient, base::Unretained(this)));
 }
 
 void RdpClientTest::CloseRdpClient() {

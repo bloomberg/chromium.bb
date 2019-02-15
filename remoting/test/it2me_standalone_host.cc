@@ -74,7 +74,7 @@ It2MeStandaloneHost::~It2MeStandaloneHost() {}
 void It2MeStandaloneHost::Run() {
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&It2MeStandaloneHost::Connect, base::Unretained(this)));
+      base::BindOnce(&It2MeStandaloneHost::Connect, base::Unretained(this)));
   run_loop_.Run();
 }
 

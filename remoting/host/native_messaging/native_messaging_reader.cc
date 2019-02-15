@@ -130,8 +130,8 @@ void NativeMessagingReader::Core::ReadMessage() {
 
     // Notify callback of new message.
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&NativeMessagingReader::InvokeMessageCallback,
-                              reader_, base::Passed(&message)));
+        FROM_HERE, base::BindOnce(&NativeMessagingReader::InvokeMessageCallback,
+                                  reader_, std::move(message)));
   }
 }
 
@@ -139,7 +139,7 @@ void NativeMessagingReader::Core::NotifyEof() {
   DCHECK(read_task_runner_->RunsTasksInCurrentSequence());
   caller_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NativeMessagingReader::InvokeEofCallback, reader_));
+      base::BindOnce(&NativeMessagingReader::InvokeEofCallback, reader_));
 }
 
 NativeMessagingReader::NativeMessagingReader(base::File file)
@@ -188,8 +188,8 @@ void NativeMessagingReader::Start(MessageCallback message_callback,
   // base::Unretained is safe since |core_| is only deleted via the
   // DeleteSoon task which is posted from this class's dtor.
   read_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&NativeMessagingReader::Core::ReadMessage,
-                            base::Unretained(core_.get())));
+      FROM_HERE, base::BindOnce(&NativeMessagingReader::Core::ReadMessage,
+                                base::Unretained(core_.get())));
 }
 
 void NativeMessagingReader::InvokeMessageCallback(

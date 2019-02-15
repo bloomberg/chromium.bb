@@ -76,7 +76,7 @@ void PolicyUpdateCallback(
     std::unique_ptr<base::DictionaryValue> policies) {
   DCHECK(callback);
   task_runner->PostTask(FROM_HERE,
-                        base::Bind(callback, base::Passed(&policies)));
+                        base::BindOnce(callback, std::move(policies)));
 }
 
 void PolicyErrorCallback(

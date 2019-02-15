@@ -212,7 +212,8 @@ void DatagramConnectionTester::HandleWriteResult(int result) {
     packets_sent_++;
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&DatagramConnectionTester::DoWrite, base::Unretained(this)),
+        base::BindOnce(&DatagramConnectionTester::DoWrite,
+                       base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(delay_ms_));
   }
 }

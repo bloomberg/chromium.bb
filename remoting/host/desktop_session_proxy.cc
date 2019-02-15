@@ -492,8 +492,8 @@ void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
 
   // Pass a captured audio packet to |audio_capturer_|.
   audio_capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&IpcAudioCapturer::OnAudioPacket, audio_capturer_,
-                            base::Passed(&packet)));
+      FROM_HERE, base::BindOnce(&IpcAudioCapturer::OnAudioPacket,
+                                audio_capturer_, std::move(packet)));
 }
 
 void DesktopSessionProxy::OnCreateSharedBuffer(

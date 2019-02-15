@@ -140,7 +140,7 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
       AutoThread::CreateWithType("ChromotingNetworkThread", ui_task_runner,
                                  base::MessageLoop::TYPE_IO);
   network_task_runner->PostTask(FROM_HERE,
-                                base::Bind(&DisallowBlockingOperations));
+                                base::BindOnce(&DisallowBlockingOperations));
 
   return base::WrapUnique(new ChromotingHostContext(
       ui_task_runner, audio_task_runner, file_task_runner,

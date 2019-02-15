@@ -107,7 +107,7 @@ Core::Core() : weak_factory_(this) {
       std::make_unique<RendererProxy>(runtime_->display_task_runner());
 
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Core::Initialize, GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&Core::Initialize, GetWeakPtr()));
 }
 
 Core::~Core() {
@@ -211,8 +211,9 @@ void Core::CreateRendererContext(EAGLView* view) {
   renderer_->RequestCanvasSize();
 
   runtime_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DualBufferFrameConsumer::RequestFullDesktopFrame,
-                            frame_consumer_));
+      FROM_HERE,
+      base::BindOnce(&DualBufferFrameConsumer::RequestFullDesktopFrame,
+                     frame_consumer_));
 }
 
 void Core::DestroyRendererContext() {
@@ -305,8 +306,8 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 - (void)setDelegate:(id<GlDisplayHandlerDelegate>)delegate {
   _runtime->display_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&remoting::GlDisplayHandler::Core::SetHandlerDelegate,
-                 _core->GetWeakPtr(), delegate));
+      base::BindOnce(&remoting::GlDisplayHandler::Core::SetHandlerDelegate,
+                     _core->GetWeakPtr(), delegate));
 }
 
 - (id<GlDisplayHandlerDelegate>)delegate {
