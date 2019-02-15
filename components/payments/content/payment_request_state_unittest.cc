@@ -446,7 +446,6 @@ TEST_F(PaymentRequestStateTest, SelectedShippingAddressMessage_Normalized) {
   EXPECT_EQ("", selected_shipping_address()->dependent_locality);
   EXPECT_EQ("91111", selected_shipping_address()->postal_code);
   EXPECT_EQ("", selected_shipping_address()->sorting_code);
-  EXPECT_EQ("", selected_shipping_address()->language_code);
   EXPECT_EQ("Underworld", selected_shipping_address()->organization);
   EXPECT_EQ("John H. Doe", selected_shipping_address()->recipient);
   EXPECT_EQ("16502111111", selected_shipping_address()->phone);
@@ -472,7 +471,6 @@ TEST_F(PaymentRequestStateTest, JaLatnShippingAddress) {
                                  "jon.doe@exampl.com", "Example Inc",
                                  "Roppongi", "6 Chrome-10-1", "Tokyo", "",
                                  "106-6126", "JP", "+81363849000");
-  profile.set_language_code("ja-Latn");
 
   state()->SetSelectedShippingProfile(&profile);
   EXPECT_EQ(0, num_on_selected_information_changed_called());
@@ -500,8 +498,6 @@ TEST_F(PaymentRequestStateTest, JaLatnShippingAddress) {
   EXPECT_EQ("", selected_shipping_address()->dependent_locality);
   EXPECT_EQ("106-6126", selected_shipping_address()->postal_code);
   EXPECT_EQ("", selected_shipping_address()->sorting_code);
-  EXPECT_EQ("ja", selected_shipping_address()->language_code);
-  EXPECT_EQ("Latn", selected_shipping_address()->script_code);
   EXPECT_EQ("Example Inc", selected_shipping_address()->organization);
   EXPECT_EQ("Jon V. Doe", selected_shipping_address()->recipient);
   EXPECT_EQ("+81363849000", selected_shipping_address()->phone);

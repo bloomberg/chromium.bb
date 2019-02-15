@@ -175,8 +175,6 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   input->payer->name = "Jon Doe";
   input->shipping_address = payments::mojom::blink::PaymentAddress::New();
   input->shipping_address->country = "US";
-  input->shipping_address->language_code = "en";
-  input->shipping_address->script_code = "Latn";
   input->shipping_address->address_line.push_back("340 Main St");
   input->shipping_address->address_line.push_back("BIN1");
   input->shipping_address->address_line.push_back("First floor");
@@ -201,8 +199,7 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
       "St\","
       "\"BIN1\",\"First "
       "floor\"],\"region\":\"\",\"city\":\"\",\"dependentLocality\":"
-      "\"\",\"postalCode\":\"\",\"sortingCode\":\"\",\"languageCode\":\"en-"
-      "Latn\","
+      "\"\",\"postalCode\":\"\",\"sortingCode\":\"\","
       "\"organization\":\"\",\"recipient\":\"\",\"phone\":\"\"},"
       "\"shippingOption\":"
       "\"standardShippingOption\",\"payerName\":\"Jon Doe\","

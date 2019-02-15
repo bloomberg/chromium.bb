@@ -28,19 +28,6 @@ class PaymentsValidators {
   static bool IsValidCountryCodeFormat(const std::string& code,
                                        std::string* optional_error_message);
 
-  // Returns true if |code| is a valid ISO 639 language code.
-  static bool IsValidLanguageCodeFormat(const std::string& code,
-                                        std::string* optional_error_message);
-
-  // Returns true if |code| is a valid ISO 15924 script code.
-  static bool IsValidScriptCodeFormat(const std::string& code,
-                                      std::string* optional_error_message);
-
-  // Splits BCP-57 |tag| into |language_code| and |script_code|.
-  static void SplitLanguageTag(const std::string& tag,
-                               std::string* language_code,
-                               std::string* script_code);
-
   // Returns false if |error| is too long (greater than 2048).
   static bool IsValidErrorMsgFormat(const std::string& code,
                                     std::string* optional_error_message);

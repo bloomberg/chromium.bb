@@ -134,7 +134,6 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponse) {
                    response.shipping_address->dependent_locality);
          EXPECT_EQ("91111", response.shipping_address->postal_code);
          EXPECT_EQ(std::string(), response.shipping_address->sorting_code);
-         EXPECT_EQ(std::string(), response.shipping_address->language_code);
          EXPECT_EQ("Underworld", response.shipping_address->organization);
          EXPECT_EQ("John H. Doe", response.shipping_address->recipient);
          EXPECT_EQ("16502111111", response.shipping_address->phone);

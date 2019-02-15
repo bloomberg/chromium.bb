@@ -56,7 +56,6 @@ TEST_F(PaymentRequestUtilTest,
   billing_address->SetString("dependentLocality", "");
   billing_address->SetString("city", "");
   billing_address->SetString("postalCode", "90210");
-  billing_address->SetString("languageCode", "");
   billing_address->SetString("sortingCode", "");
   billing_address->SetString("organization", "");
   billing_address->SetString("recipient", "");
@@ -72,7 +71,6 @@ TEST_F(PaymentRequestUtilTest,
   shipping_address->SetString("dependentLocality", "");
   shipping_address->SetString("city", "");
   shipping_address->SetString("postalCode", "94115");
-  shipping_address->SetString("languageCode", "");
   shipping_address->SetString("sortingCode", "");
   shipping_address->SetString("organization", "");
   shipping_address->SetString("recipient", "");
