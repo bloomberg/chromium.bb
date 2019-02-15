@@ -180,6 +180,8 @@ class CORE_EXPORT WorkerGlobalScope
 
   TrustedTypePolicyFactory* trustedTypes();
 
+  V8CacheOptions GetV8CacheOptions() const { return v8_cache_options_; }
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,

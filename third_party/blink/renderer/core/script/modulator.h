@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/module_import_meta.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -112,6 +113,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual base::SingleThreadTaskRunner* TaskRunner() = 0;
 
   virtual ScriptState* GetScriptState() = 0;
+
+  virtual V8CacheOptions GetV8CacheOptions() const = 0;
 
   // https://html.spec.whatwg.org/C/#concept-bc-noscript
   // "scripting is disabled for settings's responsible browsing context"

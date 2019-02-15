@@ -30,4 +30,8 @@ bool WorkletModulatorImpl::IsDynamicImportForbidden(String* reason) {
   return true;
 }
 
+V8CacheOptions WorkletModulatorImpl::GetV8CacheOptions() const {
+  return kV8CacheOptionsDefault;
+}
+
 }  // namespace blink
