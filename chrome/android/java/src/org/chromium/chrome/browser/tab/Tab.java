@@ -936,6 +936,7 @@ public class Tab
      */
     public boolean isPreview() {
         return getWebContents() != null && !isNativePage() && !isShowingInterstitialPage()
+                && getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS
                 && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(getWebContents());
     }
 
