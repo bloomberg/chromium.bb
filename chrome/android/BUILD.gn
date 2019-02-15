@@ -1572,6 +1572,10 @@ template("monochrome_public_apk_or_module_tmpl") {
                      "target_sdk_version=$android_sdk_version",
                      "webview_library=libmonochrome${_arch}${_lib_suffix}.so",
                    ]
+      if (invoker.target_type == "android_app_bundle_module") {
+        # Override include_arcore_manifest_flag to true for bundles.
+        variables += [ "include_arcore_manifest_flag=true" ]
+      }
     }
 
     # 32-bit is the common case, so remove the ABI variable in the 64-case.
