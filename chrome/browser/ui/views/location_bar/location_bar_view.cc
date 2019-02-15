@@ -737,8 +737,16 @@ void LocationBarView::RefreshBackground() {
   if (omnibox_view_->model()->is_caret_visible()) {
     background_color = border_color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
   } else {
-    const SkColor normal = GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND,
-                                           tint(), OmniboxPartState::NORMAL);
+    // If the white omnibox background experiment is enabled, use the color of
+    // the results box rather than the normal location bar background color.
+    OmniboxPart normal_color_part =
+        base::FeatureList::IsEnabled(
+            omnibox::kUIExperimentWhiteBackgroundOnBlur)
+            ? OmniboxPart::RESULTS_BACKGROUND
+            : OmniboxPart::LOCATION_BAR_BACKGROUND;
+    const SkColor normal =
+        GetOmniboxColor(normal_color_part, tint(), OmniboxPartState::NORMAL);
+
     const SkColor hovered =
         GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint(),
                         OmniboxPartState::HOVERED);
@@ -750,10 +758,18 @@ void LocationBarView::RefreshBackground() {
   if (is_popup_mode_) {
     SetBackground(views::CreateSolidBackground(background_color));
   } else {
-    // High contrast schemes get a border stroke even on a rounded omnibox.
-    SkColor stroke_color = GetNativeTheme()->UsesHighContrastColors()
-                               ? border_color
-                               : SK_ColorTRANSPARENT;
+    SkColor stroke_color = SK_ColorTRANSPARENT;
+
+    if (GetNativeTheme()->UsesHighContrastColors()) {
+      // High contrast schemes get a border stroke even on a rounded omnibox.
+      stroke_color = border_color;
+    } else if (base::FeatureList::IsEnabled(
+                   omnibox::kUIExperimentWhiteBackgroundOnBlur)) {
+      const double opacity = hover_animation_.GetCurrentValue();
+      stroke_color = gfx::Tween::ColorValueBetween(opacity, border_color,
+                                                   SK_ColorTRANSPARENT);
+    }
+
     SetBackground(CreateRoundRectBackground(background_color, stroke_color));
   }
 

@@ -233,6 +233,13 @@ const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{
     "OmniboxUIExperimentShowSuffixOnAllSearchSuggestions",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to show a white background in the omnibox while it's unfocused.
+// More technically, with this flag on, it uses the same background color as
+// the results popup (conventionally white).
+const base::Feature kUIExperimentWhiteBackgroundOnBlur{
+    "OmniboxUIExperimentWhiteBackgroundOnBlur",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to show a generic vector icon for omnibox search instead of the
 // search engine favicon.
 extern const base::Feature kUIExperimentUseGenericSearchEngineIcon{
