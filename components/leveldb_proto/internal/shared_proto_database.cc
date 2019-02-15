@@ -421,12 +421,11 @@ void GetClientInitCallback(
 }
 
 void SharedProtoDatabase::GetClientAsync(
-    const std::string& client_namespace,
-    const std::string& type_prefix,
+    ProtoDbType db_type,
     bool create_if_missing,
     base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>)>
         callback) {
-  auto client = GetClientInternal(client_namespace, type_prefix);
+  auto client = GetClientInternal(db_type);
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
   SharedProtoDatabaseClient* client_ptr = client.get();
@@ -442,13 +441,12 @@ void SharedProtoDatabase::GetClientAsync(
 // TODO(thildebr): Need to pass the client name into this call as well, and use
 // it with the pending requests too so we can clean up the database.
 std::unique_ptr<SharedProtoDatabaseClient>
-SharedProtoDatabase::GetClientForTesting(const std::string& client_namespace,
-                                         const std::string& type_prefix,
+SharedProtoDatabase::GetClientForTesting(ProtoDbType db_type,
                                          bool create_if_missing,
                                          SharedClientInitCallback callback) {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
-  auto client = GetClientInternal(client_namespace, type_prefix);
+  auto client = GetClientInternal(db_type);
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SharedProtoDatabase::Init, this, create_if_missing,
@@ -458,11 +456,10 @@ SharedProtoDatabase::GetClientForTesting(const std::string& client_namespace,
 }
 
 std::unique_ptr<SharedProtoDatabaseClient>
-SharedProtoDatabase::GetClientInternal(const std::string& client_namespace,
-                                       const std::string& type_prefix) {
+SharedProtoDatabase::GetClientInternal(ProtoDbType db_type) {
   return base::WrapUnique(new SharedProtoDatabaseClient(
-      std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get()),
-      client_namespace, type_prefix, this));
+      std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get()), db_type,
+      this));
 }
 
 LevelDB* SharedProtoDatabase::GetLevelDBForTesting() const {

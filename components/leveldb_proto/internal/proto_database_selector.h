@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 
 namespace leveldb_proto {
 
@@ -28,8 +29,7 @@ class ProtoDatabaseSelector
     : public base::RefCountedThreadSafe<ProtoDatabaseSelector> {
  public:
   ProtoDatabaseSelector(
-      const std::string& client_namespace,
-      const std::string& type_prefix,
+      ProtoDbType db_type,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       std::unique_ptr<SharedProtoDatabaseProvider> db_provider);
 
@@ -153,8 +153,7 @@ class ProtoDatabaseSelector
       bool success);
   void OnInitDone();
 
-  const std::string client_namespace_;
-  const std::string type_prefix_;
+  ProtoDbType db_type_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const std::unique_ptr<SharedProtoDatabaseProvider> db_provider_;
   const std::unique_ptr<MigrationDelegate> migration_delegate_;

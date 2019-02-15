@@ -26,12 +26,10 @@ void RunInitCallbackOnTaskRunner(
 }  // namespace
 
 ProtoDatabaseSelector::ProtoDatabaseSelector(
-    const std::string& client_namespace,
-    const std::string& type_prefix,
+    ProtoDbType db_type,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     std::unique_ptr<SharedProtoDatabaseProvider> db_provider)
-    : client_namespace_(client_namespace),
-      type_prefix_(type_prefix),
+    : db_type_(db_type),
       task_runner_(task_runner),
       db_provider_(std::move(db_provider)),
       migration_delegate_(std::make_unique<MigrationDelegate>()) {
@@ -134,7 +132,7 @@ void ProtoDatabaseSelector::OnInitSharedDB(
   if (shared_db) {
     // If we have a reference to the shared database, try to get a client.
     shared_db->GetClientAsync(
-        client_namespace_, type_prefix_, use_shared_db,
+        db_type_, use_shared_db,
         base::BindOnce(&ProtoDatabaseSelector::OnGetSharedDBClient, this,
                        std::move(unique_db), use_shared_db,
                        std::move(callback)));

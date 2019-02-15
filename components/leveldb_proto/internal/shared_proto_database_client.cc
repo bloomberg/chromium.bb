@@ -8,14 +8,14 @@
 #include <utility>
 
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/internal/shared_proto_database.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 
 namespace leveldb_proto {
 namespace {
-const char* const* g_obsolete_client_list_for_testing = nullptr;
+const ProtoDbType* g_obsolete_client_list_for_testing = nullptr;
 
 // Holds the db wrapper alive and callback is called at destruction. This class
 // is used to post multiple update tasks on |db_wrapper| and keep the instance
@@ -86,10 +86,10 @@ void DestroyObsoleteSharedProtoDatabaseClients(
   scoped_refptr<ObsoleteClientsDbHolder> db_holder =
       new ObsoleteClientsDbHolder(std::move(db_wrapper), std::move(callback));
 
-  const char* const* list = g_obsolete_client_list_for_testing
+  const ProtoDbType* list = g_obsolete_client_list_for_testing
                                 ? g_obsolete_client_list_for_testing
-                                : kObsoleteSharedProtoDatabaseClients;
-  for (size_t i = 0; list[i] != nullptr; ++i) {
+                                : kObsoleteSharedProtoDbTypeClients;
+  for (size_t i = 0; list[i] != ProtoDbType::LAST; ++i) {
     // Callback keeps a ref pointer to db_holder alive till the changes are
     // done. |db_holder| will be destroyed once all the RemoveKeys() calls
     // return.
@@ -102,22 +102,26 @@ void DestroyObsoleteSharedProtoDatabaseClients(
     // the prefix contains the client namespace at the beginning.
     db_wrapper_ptr->RemoveKeys(
         base::BindRepeating([](const std::string& key) { return true; }),
-        list[i], std::move(callback_wrapper));
+        SharedProtoDatabaseClient::PrefixForDatabase(list[i]),
+        std::move(callback_wrapper));
   }
 }
 
-void SetObsoleteClientListForTesting(const char* const* list) {
+void SetObsoleteClientListForTesting(const ProtoDbType* list) {
   g_obsolete_client_list_for_testing = list;
+}
+
+// static
+std::string SharedProtoDatabaseClient::PrefixForDatabase(ProtoDbType db_type) {
+  return base::StringPrintf("%d_", static_cast<int>(db_type));
 }
 
 SharedProtoDatabaseClient::SharedProtoDatabaseClient(
     std::unique_ptr<ProtoLevelDBWrapper> db_wrapper,
-    const std::string& client_namespace,
-    const std::string& type_prefix,
+    ProtoDbType db_type,
     const scoped_refptr<SharedProtoDatabase>& parent_db)
     : UniqueProtoDatabase(std::move(db_wrapper)),
-      prefix_(base::JoinString({client_namespace, type_prefix, std::string()},
-                               "_")),
+      prefix_(PrefixForDatabase(db_type)),
       parent_db_(parent_db),
       weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);

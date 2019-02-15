@@ -15,19 +15,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/internal/shared_proto_database.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace leveldb_proto {
-
-namespace {
-
-const char* kDefaultNamespace = "abc";
-const char* kDefaultNamespace1 = "cde";
-const char* kDefaultNamespace2 = "cfd";
-const char* kDefaultTypePrefix = "tp";
-
-}  // namespace
 
 class SharedProtoDatabaseClientTest : public testing::Test {
  public:
@@ -50,14 +42,13 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   LevelDB* GetLevelDB() const { return db_->GetLevelDBForTesting(); }
 
   std::unique_ptr<SharedProtoDatabaseClient> GetClient(
-      const std::string& client_namespace,
-      const std::string& type_prefix,
+      ProtoDbType db_type,
       bool create_if_missing,
       Callbacks::InitStatusCallback callback,
       SharedDBMetadataProto::MigrationStatus expected_migration_status =
           SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED) {
     return db_->GetClientForTesting(
-        client_namespace, type_prefix, create_if_missing,
+        db_type, create_if_missing,
         base::BindOnce(
             [](SharedDBMetadataProto::MigrationStatus expected_migration_status,
                Callbacks::InitStatusCallback callback, Enums::InitStatus status,
@@ -69,15 +60,14 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   }
 
   std::unique_ptr<SharedProtoDatabaseClient> GetClientAndWait(
-      const std::string& client_namespace,
-      const std::string& type_prefix,
+      ProtoDbType db_type,
       bool create_if_missing,
       Enums::InitStatus* status,
       SharedDBMetadataProto::MigrationStatus expected_migration_status =
           SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED) {
     base::RunLoop loop;
     auto client =
-        GetClient(client_namespace, type_prefix, create_if_missing,
+        GetClient(db_type, create_if_missing,
                   base::BindOnce(
                       [](Enums::InitStatus* status_out,
                          base::OnceClosure closure, Enums::InitStatus status) {
@@ -92,14 +82,13 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
   bool ContainsKeys(const leveldb_proto::KeyVector& db_keys,
                     const leveldb_proto::KeyVector& keys,
-                    const std::string& client_namespace,
-                    const std::string& prefix) {
+                    ProtoDbType db_type) {
     std::set<std::string> key_set(db_keys.begin(), db_keys.end());
     for (auto& key : keys) {
       auto full_key =
-          client_namespace.empty() || prefix.empty()
+          db_type == ProtoDbType::LAST
               ? key
-              : base::JoinString({client_namespace, prefix, key}, "_");
+              : SharedProtoDatabaseClient::PrefixForDatabase(db_type) + key;
       if (key_set.find(full_key) == key_set.end())
         return false;
     }
@@ -108,15 +97,13 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
   bool ContainsEntries(const leveldb_proto::KeyVector& db_keys,
                        const ValueVector& entries,
-                       const std::string& client_namespace,
-                       const std::string& type_prefix) {
+                       ProtoDbType db_type) {
     std::set<std::string> entry_id_set;
     for (auto& entry : entries)
       entry_id_set.insert(entry);
 
     // Entry IDs don't include the full prefix, so we don't look for that here.
-    auto prefix =
-        base::JoinString({client_namespace, type_prefix, std::string()}, "_");
+    auto prefix = SharedProtoDatabaseClient::PrefixForDatabase(db_type);
     for (auto& key : db_keys) {
       if (entry_id_set.find(prefix + key) == entry_id_set.end())
         return false;
@@ -266,7 +253,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
   // Sets the obsolete client list to given list, runs clean up tasks and waits
   // for them to complete.
-  void DestroyObsoleteClientsAndWait(const char* const* client_list) {
+  void DestroyObsoleteClientsAndWait(const ProtoDbType* client_list) {
     SetObsoleteClientListForTesting(client_list);
     base::RunLoop wait_loop;
     Callbacks::UpdateCallback wait_callback = base::BindOnce(
@@ -309,7 +296,7 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 
 TEST_F(SharedProtoDatabaseClientTest, InitSuccess) {
   auto status = Enums::InitStatus::kError;
-  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                  true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -320,7 +307,7 @@ TEST_F(SharedProtoDatabaseClientTest, InitSuccess) {
 
 TEST_F(SharedProtoDatabaseClientTest, InitFail) {
   auto status = Enums::InitStatus::kError;
-  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                  false /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kInvalidOperation);
 
@@ -333,7 +320,7 @@ TEST_F(SharedProtoDatabaseClientTest, InitFail) {
 // removes prefixed entries correctly.
 TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
   auto status = Enums::InitStatus::kError;
-  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                  true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -345,8 +332,7 @@ TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 3U);
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace, kDefaultTypePrefix));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE0));
 
   auto remove_keys = {key_list[0]};
   // Now try to delete one entry.
@@ -355,17 +341,17 @@ TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
   keys.clear();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 2U);
-  ASSERT_TRUE(ContainsKeys(keys, {key_list[1], key_list[2]}, kDefaultNamespace,
-                           kDefaultTypePrefix));
+  ASSERT_TRUE(ContainsKeys(keys, {key_list[1], key_list[2]},
+                           ProtoDbType::TEST_DATABASE0));
 }
 
 TEST_F(SharedProtoDatabaseClientTest,
        UpdateEntries_DeletesCorrectClientEntries) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -377,24 +363,21 @@ TEST_F(SharedProtoDatabaseClientTest,
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 6U);
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace, kDefaultTypePrefix));
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace2, kDefaultTypePrefix));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE0));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE2));
 
   // Now delete from client_b and ensure only client A's values exist.
   UpdateEntries(client_b.get(), leveldb_proto::KeyVector(), key_list, true);
   keys.clear();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 3U);
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace, kDefaultTypePrefix));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE0));
 }
 
 TEST_F(SharedProtoDatabaseClientTest,
        UpdateEntriesWithRemoveFilter_DeletesCorrectEntries) {
   auto status = Enums::InitStatus::kError;
-  auto client = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                  true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -418,16 +401,16 @@ TEST_F(SharedProtoDatabaseClientTest,
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), 2U);
   // Make sure "testentry3" was removed.
-  ASSERT_TRUE(ContainsKeys(keys, {"entry1", "entry2"}, kDefaultNamespace,
-                           kDefaultTypePrefix));
+  ASSERT_TRUE(
+      ContainsKeys(keys, {"entry1", "entry2"}, ProtoDbType::TEST_DATABASE0));
 }
 
 TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -440,14 +423,14 @@ TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
   LoadEntriesWithFilter(client_a.get(), leveldb_proto::KeyFilter(),
                         leveldb::ReadOptions(), std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 3U);
-  ASSERT_TRUE(ContainsEntries(key_list_a, *entries, kDefaultNamespace,
-                              kDefaultTypePrefix));
+  ASSERT_TRUE(
+      ContainsEntries(key_list_a, *entries, ProtoDbType::TEST_DATABASE0));
 
   LoadEntriesWithFilter(client_b.get(), leveldb_proto::KeyFilter(),
                         leveldb::ReadOptions(), std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 3U);
-  ASSERT_TRUE(ContainsEntries(key_list_b, *entries, kDefaultNamespace2,
-                              kDefaultTypePrefix));
+  ASSERT_TRUE(
+      ContainsEntries(key_list_b, *entries, ProtoDbType::TEST_DATABASE2));
 
   // Now test the actual filtering functionality.
   LoadEntriesWithFilter(
@@ -458,16 +441,16 @@ TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
       }),
       leveldb::ReadOptions(), std::string(), true, &entries);
   ASSERT_EQ(entries->size(), 1U);
-  ASSERT_TRUE(ContainsEntries({"entry2124"}, *entries, kDefaultNamespace2,
-                              kDefaultTypePrefix));
+  ASSERT_TRUE(
+      ContainsEntries({"entry2124"}, *entries, ProtoDbType::TEST_DATABASE2));
 }
 
 TEST_F(SharedProtoDatabaseClientTest, LoadKeysAndEntriesInRange) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -494,15 +477,15 @@ TEST_F(SharedProtoDatabaseClientTest, LoadKeysAndEntriesInRange) {
   ASSERT_EQ(keys_and_entries_a->size(), 3U);
   ASSERT_EQ(keys_and_entries_b->size(), 0U);
   ASSERT_TRUE(ContainsEntries({"entry1", "entry2", "entry3"}, entries,
-                              kDefaultNamespace, kDefaultTypePrefix));
+                              ProtoDbType::TEST_DATABASE0));
 }
 
 TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -514,18 +497,18 @@ TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {
   std::unique_ptr<KeyVector> keys;
   LoadKeys(client_a.get(), true, &keys);
   ASSERT_EQ(keys->size(), 4U);
-  ASSERT_TRUE(ContainsKeys(*keys, key_list_a, std::string(), std::string()));
+  ASSERT_TRUE(ContainsKeys(*keys, key_list_a, ProtoDbType::LAST));
   LoadKeys(client_b.get(), true, &keys);
   ASSERT_EQ(keys->size(), 3U);
-  ASSERT_TRUE(ContainsKeys(*keys, key_list_b, std::string(), std::string()));
+  ASSERT_TRUE(ContainsKeys(*keys, key_list_b, ProtoDbType::LAST));
 }
 
 TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -535,10 +518,10 @@ TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
   UpdateEntries(client_a.get(), key_list, leveldb_proto::KeyVector(), true);
   UpdateEntries(client_b.get(), key_list, leveldb_proto::KeyVector(), true);
 
-  auto a_prefix = base::JoinString(
-      {kDefaultNamespace, kDefaultTypePrefix, std::string()}, "_");
-  auto b_prefix = base::JoinString(
-      {kDefaultNamespace2, kDefaultTypePrefix, std::string()}, "_");
+  auto a_prefix =
+      SharedProtoDatabaseClient::PrefixForDatabase(ProtoDbType::TEST_DATABASE0);
+  auto b_prefix =
+      SharedProtoDatabaseClient::PrefixForDatabase(ProtoDbType::TEST_DATABASE2);
 
   for (auto& key : key_list) {
     auto entry = GetEntry(client_a.get(), key, true);
@@ -550,13 +533,13 @@ TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
 
 TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace1, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE1,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_c = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_c = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -574,24 +557,23 @@ TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
   EXPECT_EQ(keys.size(), test_keys.size() * 3);
 
   // Mark some DBs obsolete.
-  const char* const kObsoleteList1[] = {kDefaultNamespace, kDefaultNamespace1,
-                                        nullptr};
+  const ProtoDbType kObsoleteList1[] = {ProtoDbType::TEST_DATABASE0,
+                                        ProtoDbType::TEST_DATABASE1,
+                                        ProtoDbType::LAST};
   DestroyObsoleteClientsAndWait(kObsoleteList1);
 
   keys.clear();
   db->LoadKeys(&keys);
 
   EXPECT_EQ(keys.size(), test_keys.size());
-  EXPECT_FALSE(
-      ContainsKeys(keys, test_keys, kDefaultNamespace, kDefaultTypePrefix));
-  EXPECT_FALSE(
-      ContainsKeys(keys, test_keys, kDefaultNamespace1, kDefaultTypePrefix));
-  EXPECT_TRUE(
-      ContainsKeys(keys, test_keys, kDefaultNamespace2, kDefaultTypePrefix));
+  EXPECT_FALSE(ContainsKeys(keys, test_keys, ProtoDbType::TEST_DATABASE0));
+  EXPECT_FALSE(ContainsKeys(keys, test_keys, ProtoDbType::TEST_DATABASE1));
+  EXPECT_TRUE(ContainsKeys(keys, test_keys, ProtoDbType::TEST_DATABASE2));
 
   // Make all the DBs obsolete.
-  const char* const kObsoleteList2[] = {kDefaultNamespace, kDefaultNamespace1,
-                                        kDefaultNamespace2, nullptr};
+  const ProtoDbType kObsoleteList2[] = {
+      ProtoDbType::TEST_DATABASE0, ProtoDbType::TEST_DATABASE1,
+      ProtoDbType::TEST_DATABASE2, ProtoDbType::LAST};
   DestroyObsoleteClientsAndWait(kObsoleteList2);
 
   // Nothing should remain.
@@ -602,10 +584,10 @@ TEST_F(SharedProtoDatabaseClientTest, TestCleanupObsoleteClients) {
 
 TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
-  auto client_b = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   ASSERT_EQ(status, Enums::InitStatus::kOK);
 
@@ -620,18 +602,15 @@ TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
   LevelDB* db = GetLevelDB();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), key_list.size() * 2);
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace, kDefaultTypePrefix));
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace2, kDefaultTypePrefix));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE0));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE2));
   Destroy(client_a.get(), true);
 
   // Make sure only client B remains and delete client B.
   keys.clear();
   db->LoadKeys(&keys);
   ASSERT_EQ(keys.size(), key_list.size());
-  ASSERT_TRUE(
-      ContainsKeys(keys, key_list, kDefaultNamespace2, kDefaultTypePrefix));
+  ASSERT_TRUE(ContainsKeys(keys, key_list, ProtoDbType::TEST_DATABASE2));
   Destroy(client_b.get(), true);
 
   // Nothing should remain.
@@ -642,19 +621,19 @@ TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
 
 TEST_F(SharedProtoDatabaseClientTest, UpdateClientMetadataAsync) {
   auto status = Enums::InitStatus::kError;
-  auto client_a = GetClientAndWait(kDefaultNamespace, kDefaultTypePrefix,
+  auto client_a = GetClientAndWait(ProtoDbType::TEST_DATABASE0,
                                    true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
             client_a->migration_status());
 
-  auto client_b = GetClientAndWait(kDefaultNamespace1, kDefaultTypePrefix,
+  auto client_b = GetClientAndWait(ProtoDbType::TEST_DATABASE1,
                                    true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
             client_b->migration_status());
 
-  auto client_c = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_c = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
   EXPECT_EQ(SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED,
@@ -671,16 +650,16 @@ TEST_F(SharedProtoDatabaseClientTest, UpdateClientMetadataAsync) {
   client_c.reset();
 
   auto client_d = GetClientAndWait(
-      kDefaultNamespace, kDefaultTypePrefix, true /* create_if_missing */,
-      &status, SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL);
+      ProtoDbType::TEST_DATABASE0, true /* create_if_missing */, &status,
+      SharedDBMetadataProto::MIGRATE_TO_SHARED_SUCCESSFUL);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
 
   auto client_e = GetClientAndWait(
-      kDefaultNamespace1, kDefaultTypePrefix, true /* create_if_missing */,
-      &status, SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
+      ProtoDbType::TEST_DATABASE1, true /* create_if_missing */, &status,
+      SharedDBMetadataProto::MIGRATE_TO_UNIQUE_SHARED_TO_BE_DELETED);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
 
-  auto client_f = GetClientAndWait(kDefaultNamespace2, kDefaultTypePrefix,
+  auto client_f = GetClientAndWait(ProtoDbType::TEST_DATABASE2,
                                    true /* create_if_missing */, &status);
   EXPECT_EQ(status, Enums::InitStatus::kOK);
 

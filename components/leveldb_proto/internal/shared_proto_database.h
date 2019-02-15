@@ -32,16 +32,14 @@ class SharedProtoDatabase
   // Always returns a SharedProtoDatabaseClient pointer, but that should ONLY
   // be used if the callback returns success.
   std::unique_ptr<SharedProtoDatabaseClient> GetClientForTesting(
-      const std::string& client_namespace,
-      const std::string& type_prefix,
+      ProtoDbType db_type,
       bool create_if_missing,
       SharedClientInitCallback callback);
 
   // A version of GetClient that returns the client in a callback instead of
   // giving back a client instance immediately.
   void GetClientAsync(
-      const std::string& client_namespace,
-      const std::string& type_prefix,
+      ProtoDbType db_type,
       bool create_if_missing,
       base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient>)>
           callback);
@@ -94,8 +92,7 @@ class SharedProtoDatabase
   void ProcessInitRequests(Enums::InitStatus status);
 
   std::unique_ptr<SharedProtoDatabaseClient> GetClientInternal(
-      const std::string& client_namespace,
-      const std::string& type_prefix);
+      ProtoDbType db_type);
 
   void OnGetClientMetadata(
       const std::string& client_db_id,
