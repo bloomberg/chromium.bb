@@ -334,10 +334,9 @@ MediaFileSystemBackend::CreateFileStreamReader(
   }
 #endif
 
-  return std::unique_ptr<storage::FileStreamReader>(
-      storage::FileStreamReader::CreateForLocalFile(
-          context->default_file_task_runner(), url.path(), offset,
-          expected_modification_time));
+  return storage::FileStreamReader::CreateForLocalFile(
+      context->default_file_task_runner(), url.path(), offset,
+      expected_modification_time);
 }
 
 std::unique_ptr<storage::FileStreamWriter>
@@ -345,10 +344,9 @@ MediaFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context) const {
-  return std::unique_ptr<storage::FileStreamWriter>(
-      storage::FileStreamWriter::CreateForLocalFile(
-          context->default_file_task_runner(), url.path(), offset,
-          storage::FileStreamWriter::OPEN_EXISTING_FILE));
+  return storage::FileStreamWriter::CreateForLocalFile(
+      context->default_file_task_runner(), url.path(), offset,
+      storage::FileStreamWriter::OPEN_EXISTING_FILE);
 }
 
 storage::FileSystemQuotaUtil* MediaFileSystemBackend::GetQuotaUtil() {

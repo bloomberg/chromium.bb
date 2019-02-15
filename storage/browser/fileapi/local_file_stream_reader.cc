@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "net/base/file_stream.h"
@@ -53,13 +54,13 @@ void SendGetFileInfoResults(GetFileInfoCallback callback,
 
 }  // namespace
 
-FileStreamReader* FileStreamReader::CreateForLocalFile(
+std::unique_ptr<FileStreamReader> FileStreamReader::CreateForLocalFile(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
     int64_t initial_offset,
     const base::Time& expected_modification_time) {
-  return new LocalFileStreamReader(task_runner, file_path, initial_offset,
-                                   expected_modification_time);
+  return base::WrapUnique(new LocalFileStreamReader(
+      task_runner, file_path, initial_offset, expected_modification_time));
 }
 
 LocalFileStreamReader::~LocalFileStreamReader() = default;

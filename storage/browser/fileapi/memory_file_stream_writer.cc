@@ -4,15 +4,19 @@
 
 #include "storage/browser/fileapi/memory_file_stream_writer.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
+
 namespace storage {
 
-FileStreamWriter* FileStreamWriter::CreateForMemoryFile(
+std::unique_ptr<FileStreamWriter> FileStreamWriter::CreateForMemoryFile(
     base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
     const base::FilePath& file_path,
     int64_t initial_offset,
     OpenOrCreate open_or_create) {
-  return new MemoryFileStreamWriter(std::move(memory_file_util), file_path,
-                                    initial_offset, open_or_create);
+  return base::WrapUnique(new MemoryFileStreamWriter(
+      std::move(memory_file_util), file_path, initial_offset, open_or_create));
 }
 
 MemoryFileStreamWriter::~MemoryFileStreamWriter() = default;

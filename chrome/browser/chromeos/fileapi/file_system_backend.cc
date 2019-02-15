@@ -440,10 +440,9 @@ FileSystemBackend::CreateFileStreamWriter(
           url, offset, context);
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeDriveFs:
-      return std::unique_ptr<storage::FileStreamWriter>(
-          storage::FileStreamWriter::CreateForLocalFile(
-              context->default_file_task_runner(), url.path(), offset,
-              storage::FileStreamWriter::OPEN_EXISTING_FILE));
+      return storage::FileStreamWriter::CreateForLocalFile(
+          context->default_file_task_runner(), url.path(), offset,
+          storage::FileStreamWriter::OPEN_EXISTING_FILE);
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
       return mtp_delegate_->CreateFileStreamWriter(url, offset, context);
     // Read only file systems.
