@@ -222,12 +222,6 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       UpdateShapeOutsideInfoIfNeeded(
           *layout_result, constraint_space.PercentageResolutionInlineSize());
 
-      // We have to re-set the cached result here, because it is used for
-      // LayoutNGMixin::CurrentFragment and therefore has to be up-to-date.
-      // In particular, that fragment would have an incorrect offset if we
-      // don't re-set the result here.
-      block_flow->SetCachedLayoutResult(constraint_space, break_token,
-                                        *layout_result);
       return layout_result;
     }
   }
