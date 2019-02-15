@@ -70,6 +70,10 @@ static int ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                const MACROBLOCK *const x,
                                const RD_STATS *const rd_stats,
                                unsigned int pb_source_variance);
+static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
+                                 int mi_col, BLOCK_SIZE bsize, int ref,
+                                 MV ref_mv_full, int num_planes,
+                                 int use_subpixel);
 
 // This is used as a reference when computing the source variance for the
 //  purposes of activity masking.
@@ -220,6 +224,25 @@ static BLOCK_SIZE get_rd_var_based_fixed_partition(AV1_COMP *cpi, MACROBLOCK *x,
     return BLOCK_16X16;
   else
     return BLOCK_8X8;
+}
+
+void av1_simple_motion_sse_var(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                               int mi_col, BLOCK_SIZE bsize,
+                               const MV ref_mv_full, int use_subpixel,
+                               unsigned int *sse, unsigned int *var) {
+  MACROBLOCKD *xd = &x->e_mbd;
+  const MV_REFERENCE_FRAME ref =
+      cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
+
+  simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref, ref_mv_full, 1,
+                       use_subpixel);
+
+  const uint8_t *src = x->plane[0].src.buf;
+  const int src_stride = x->plane[0].src.stride;
+  const uint8_t *dst = xd->plane[0].dst.buf;
+  const int dst_stride = xd->plane[0].dst.stride;
+
+  *var = cpi->fn_ptr[bsize].vf(src, src_stride, dst, dst_stride, sse);
 }
 
 static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
@@ -3540,36 +3563,30 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   MACROBLOCKD *xd = &x->e_mbd;
 
   // Perform a single motion search in Y_PLANE to make a prediction
-  const MV_REFERENCE_FRAME ref =
-      cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
   const int use_subpixel = 0;
-  const int num_planes = 1;
-
-  const MV ref_mv_full = { .row = 0, .col = 0 };
-  simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref, ref_mv_full,
-                       num_planes, use_subpixel);
-  aom_clear_system_state();
 
   // Start getting the features
   int f_idx = 0;
 
   // Q_INDEX
   const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  aom_clear_system_state();
   features[f_idx++] = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
 
   // VARIANCE
+  unsigned int sse = 0;
+  unsigned int var = 0;
+  const MV ref_mv_full = { .row = 0, .col = 0 };
+  av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full,
+                            use_subpixel, &sse, &var);
+  aom_clear_system_state();
+  features[f_idx++] = logf(1.0f + (float)var);
+
+  // Regional
   const uint8_t *src = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *dst = xd->plane[0].dst.buf;
   const int dst_stride = xd->plane[0].dst.stride;
-  unsigned int sse = 0;
-
-  // Whole block
-  const unsigned int var =
-      cpi->fn_ptr[bsize].vf(src, src_stride, dst, dst_stride, &sse);
-  features[f_idx++] = logf(1.0f + (float)var);
-
-  // Regional
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
@@ -3581,6 +3598,7 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
     const int dst_offset = y_idx * dst_stride + x_idx;
     const unsigned int sub_var = cpi->fn_ptr[subsize].vf(
         src + src_offset, src_stride, dst + dst_offset, dst_stride, &sse);
+    aom_clear_system_state();
     const float var_ratio = (1.0f + (float)sub_var) / (4.0f + (float)var);
     features[f_idx++] = var_ratio;
   }
