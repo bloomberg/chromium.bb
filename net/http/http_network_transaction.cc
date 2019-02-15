@@ -1868,15 +1868,7 @@ GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
     }
     case HttpAuth::AUTH_SERVER:
       if (ForWebSocketHandshake()) {
-        const GURL& url = request_->url;
-        url::Replacements<char> ws_to_http;
-        if (url.SchemeIs("ws")) {
-          ws_to_http.SetScheme("http", url::Component(0, 4));
-        } else {
-          DCHECK(url.SchemeIs("wss"));
-          ws_to_http.SetScheme("https", url::Component(0, 5));
-        }
-        return url.ReplaceComponents(ws_to_http);
+        return net::ChangeWebSocketSchemeToHttpScheme(request_->url);
       }
       return request_->url;
     default:

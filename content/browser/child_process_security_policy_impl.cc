@@ -34,6 +34,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/filename_util.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
@@ -1207,10 +1208,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForWebSocket(
     int child_id,
     const GURL& url) {
   DCHECK(url.SchemeIsWSOrWSS());
-  GURL::Replacements replace_scheme;
-  replace_scheme.SetSchemeStr(url.SchemeIs(url::kWssScheme) ? url::kHttpsScheme
-                                                            : url::kHttpScheme);
-  GURL url_to_check = url.ReplaceComponents(replace_scheme);
+  GURL url_to_check = net::ChangeWebSocketSchemeToHttpScheme(url);
   return CanAccessDataForOrigin(child_id, url_to_check);
 }
 
