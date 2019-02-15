@@ -197,6 +197,7 @@
     'nacl_irt_x86_32.nexe.debug',
 
     # https://crbug.com/932387
-    'performance_browser_tests',
+    'performance_browser_tests.exe',
+    'performance_browser_tests.exe.pdb',
   ],
 }
