@@ -1242,6 +1242,22 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   scoped_refptr<NGLayoutResult> layout_result = child.Layout(
       child_space, child_break_token, &inline_child_layout_context_);
 
+  // To save space of the stack when we recurse into |NGBlockNode::Layout|
+  // above, the rest of this function is continued within |FinishInflow|.
+  // However it should be read as one function.
+  return FinishInflow(child, child_break_token, child_space, layout_result,
+                      &child_data, previous_inflow_position,
+                      previous_inline_break_token);
+}
+
+bool NGBlockLayoutAlgorithm::FinishInflow(
+    NGLayoutInputNode child,
+    const NGBreakToken* child_break_token,
+    const NGConstraintSpace& child_space,
+    scoped_refptr<NGLayoutResult> layout_result,
+    NGInflowChildData* child_data,
+    NGPreviousInflowPosition* previous_inflow_position,
+    scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token) {
   base::Optional<LayoutUnit> child_bfc_block_offset =
       layout_result->BfcBlockOffset();
   // TODO(layout-dev): A more optimal version of this is to set
@@ -1312,7 +1328,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       // Since we know our own BFC block offset, though, we can calculate that
       // of the child as well.
       child_bfc_block_offset = PositionEmptyChildWithParentBfc(
-          child, child_space, child_data, *layout_result);
+          child, child_space, *child_data, *layout_result);
     }
   } else if (!has_clearance) {
     // We shouldn't have any pending floats here, since an in-flow child found
@@ -1346,13 +1362,13 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   bool empty_block_affected_by_clearance_needs_relayout = false;
   if (empty_block_affected_by_clearance) {
     NGMarginStrut margin_strut;
-    margin_strut.Append(child_data.margins.block_start,
+    margin_strut.Append(child_data->margins.block_start,
                         child.Style().HasMarginBeforeQuirk());
 
     // We only need to relayout if the new margin strut is different to the
     // previous one.
-    if (child_data.margin_strut != margin_strut) {
-      child_data.margin_strut = margin_strut;
+    if (child_data->margin_strut != margin_strut) {
+      child_data->margin_strut = margin_strut;
       empty_block_affected_by_clearance_needs_relayout = true;
     }
   }
@@ -1366,7 +1382,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
        empty_block_affected_by_clearance_needs_relayout) &&
       child_bfc_block_offset) {
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
-        child, child_data, child_available_size_, child_bfc_block_offset);
+        child, *child_data, child_available_size_, child_bfc_block_offset);
     layout_result = child.Layout(new_child_space, child_break_token,
                                  &inline_child_layout_context_);
 
@@ -1379,7 +1395,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       child_bfc_block_offset = layout_result->BfcBlockOffset();
       DCHECK(child_bfc_block_offset);
       new_child_space = CreateConstraintSpaceForChild(
-          child, child_data, child_available_size_, child_bfc_block_offset);
+          child, *child_data, child_available_size_, child_bfc_block_offset);
       layout_result = child.Layout(new_child_space, child_break_token,
                                    &inline_child_layout_context_);
     }
@@ -1446,18 +1462,18 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     // also required to calculate line-left offset (due to block alignment)
     // before layout. Do so now, so that we store the correct values (which is
     // required by e.g. getComputedStyle()).
-    if (!child_data.margins_fully_resolved) {
+    if (!child_data->margins_fully_resolved) {
       ResolveInlineMargins(child.Style(), Style(),
                            child_available_size_.inline_size,
-                           fragment.InlineSize(), &child_data.margins);
-      child_data.margins_fully_resolved = true;
+                           fragment.InlineSize(), &child_data->margins);
+      child_data->margins_fully_resolved = true;
     }
 
-    ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data.margins);
+    ToNGBlockNode(child).StoreMargins(ConstraintSpace(), child_data->margins);
   }
 
   *previous_inflow_position = ComputeInflowPosition(
-      *previous_inflow_position, child, child_data, child_bfc_block_offset,
+      *previous_inflow_position, child, *child_data, child_bfc_block_offset,
       logical_offset, *layout_result, fragment,
       empty_block_affected_by_clearance);
 

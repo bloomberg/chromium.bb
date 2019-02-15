@@ -185,6 +185,15 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGPreviousInflowPosition*,
       scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token);
 
+  bool FinishInflow(
+      NGLayoutInputNode child,
+      const NGBreakToken* child_break_token,
+      const NGConstraintSpace&,
+      scoped_refptr<NGLayoutResult>,
+      NGInflowChildData*,
+      NGPreviousInflowPosition*,
+      scoped_refptr<const NGInlineBreakToken>* previous_inline_break_token);
+
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.
   LayoutUnit FragmentainerSpaceAvailable() const;
