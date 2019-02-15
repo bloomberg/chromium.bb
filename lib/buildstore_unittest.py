@@ -289,6 +289,23 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
 
+  def testGetBuildsFailures(self):
+    """Tests the redirect for GetBuildsFailures function."""
+    init = self.PatchObject(BuildStore, 'InitializeClients',
+                            return_value=True)
+    bs = BuildStore()
+    bs.cidb_conn = mock.MagicMock()
+    buildbucket_ids = ['bucket 1', 'bucket 2']
+    # Test for buildbucket_ids.
+    bs.GetBuildsFailures(buildbucket_ids=buildbucket_ids)
+    bs.cidb_conn.GetBuildsFailures.assert_called_once_with(
+        buildbucket_ids)
+    # Test for empty argument.
+    self.assertEqual(bs.GetBuildsFailures([]), [])
+    init.return_value = False
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.GetBuildsFailures(buildbucket_ids=buildbucket_ids)
+
   def testGetBuildsStages(self):
     """Tests the redirect for GetBuildsStages function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

@@ -332,12 +332,8 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
                    'Doing nothing.')
       return
 
-    slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
-    child_build_ids = [
-        c['id']
-        for c in self.buildstore.GetBuildStatuses(slave_buildbucket_ids)]
-    child_failures = self.buildstore.GetCIDBHandle().GetBuildsFailures(
-        child_build_ids)
+    child_failures = self.buildstore.GetBuildsFailures(
+        self.GetScheduledSlaveBuildbucketIds())
     failures_by_build = cros_collections.GroupNamedtuplesByKey(
         child_failures, 'build_id')
     for _, build_failures in sorted(failures_by_build.items()):

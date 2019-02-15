@@ -369,17 +369,18 @@ class BuilderStage(object):
 
     return buildbucket_ids
 
-  def GetBuildFailureMessageFromCIDB(self, build_id, db):
-    """Get message summarizing failures of this build from CIDB.
+  def GetBuildFailureMessageFromBuildStore(self, buildstore, build_identifier):
+    """Get message summarizing failures of this build from BuildStore.
 
     Args:
-      build_id: The build id of the build being inspected.
-      db: An instance of cidb.CIDBConnection.
+      buildstore: An instance of BuildStore to make DB calls.
+      build_identifier: The instance of BuildIdentifier of the current build.
 
     Returns:
       An instance of build_failure_message.BuildFailureMessage.
     """
-    stage_failures = db.GetBuildsFailures([build_id])
+    stage_failures = buildstore.GetBuildsFailures([
+        build_identifier.buildbucket_id])
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
@@ -387,7 +388,7 @@ class BuilderStage(object):
     if stage_failures:
       master_build_id = stage_failures[0].master_build_id
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-        db, build_id, master_build_id)
+        buildstore.GetCIDBHandle(), build_identifier.cidb_id, master_build_id)
 
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
@@ -409,10 +410,10 @@ class BuilderStage(object):
 
   def GetBuildFailureMessage(self):
     """Get message summarizing failure of this build."""
-    build_identifier, db = self._run.GetCIDBHandle()
-    build_id = build_identifier.cidb_id
-    if db is not None:
-      return self.GetBuildFailureMessageFromCIDB(build_id, db)
+    build_identifier, _ = self._run.GetCIDBHandle()
+    if self.buildstore.AreClientsReady():
+      return self.GetBuildFailureMessageFromBuildStore(
+          self.buildstore, build_identifier)
     else:
       return self.GetBuildFailureMessageFromResults()
 

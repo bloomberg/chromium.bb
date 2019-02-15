@@ -1286,22 +1286,22 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         return []
 
   @minimum_schema(44)
-  def GetBuildsFailures(self, build_ids):
-    """Gets the failure entries for all listed build_ids.
+  def GetBuildsFailures(self, buildbucket_ids):
+    """Gets the failure entries for all listed buildbucket_ids.
 
     Args:
-      build_ids: list of build ids of the builds to fetch failures for.
+      buildbucket_ids: list of build ids of the builds to fetch failures for.
 
     Returns:
       A list of failure_message_lib.StageFailure instances.
     """
-    if not build_ids:
+    if not buildbucket_ids:
       return []
 
     columns_string = ', '.join(failure_message_lib.FAILURE_KEYS)
 
-    query = ('SELECT %s FROM failureView WHERE build_id IN (%s)' %
-             (columns_string, ','.join(str(int(x)) for x in build_ids)))
+    query = ('SELECT %s FROM failureView WHERE buildbucket_id IN (%s)' %
+             (columns_string, ','.join(str(int(x)) for x in buildbucket_ids)))
 
     results = self._Execute(query).fetchall()
     return [failure_message_lib.StageFailure(*values) for values in results]

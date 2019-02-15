@@ -335,6 +335,24 @@ class BuildStore(object):
       buildbucket_v2.UpdateBuildMetadata(metadata)
     return update_status
 
+  def GetBuildsFailures(self, buildbucket_ids=None):
+    """Gets the failure entries for all listed buildbucket_ids.
+
+    Args:
+      buildbucket_ids: list of build ids of the builds to fetch failures for.
+
+    Returns:
+      A list of failure_message_lib.StageFailure instances. This will change
+      with Buildbucket implementation.
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if not self._read_from_bb:
+      if buildbucket_ids:
+        return self.cidb_conn.GetBuildsFailures(buildbucket_ids)
+      else:
+        return []
+
   def GetBuildsStages(self, build_ids=None, buildbucket_ids=None):
     """Gets all the stages for all listed build_ids.
 
@@ -474,6 +492,12 @@ class FakeBuildStore(object):
 
   def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument
     return
+
+  def GetBuildsFailures(self, buildbucket_ids=None):
+    if buildbucket_ids:
+      return self.fake_cidb.GetBuildsFailures(buildbucket_ids)
+    else:
+      return []
 
   def GetBuildsStages(self, buildbucket_ids=None, build_ids=None):
     if buildbucket_ids:

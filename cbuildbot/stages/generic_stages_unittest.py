@@ -32,7 +32,7 @@ from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.lib import results_lib
-from chromite.lib.buildstore import FakeBuildStore
+from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 from chromite.scripts import cbuildbot
 
 
@@ -99,7 +99,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
-               master_build_id=None,
+               master_build_id=None, buildbucket_id=None,
                site_config=None):
     """Prepare a BuilderRun at self._run for this test.
 
@@ -126,6 +126,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
         Example: ['branch-name', 'some-branch-name'] will effectively cause
         self._run.options.branch_name to be set to 'some-branch-name'.
       build_id: mock build id
+      buildbucket_id: mock buildbucket_id
       master_build_id: mock build id of master build.
       site_config: SiteConfig to use (or MockSiteConfig)
     """
@@ -170,6 +171,9 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
     if build_id is not None:
       self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+
+    if buildbucket_id is not None:
+      self._run.options.buildbucket_id = buildbucket_id
 
     if master_build_id is not None:
       self._run.options.master_build_id = master_build_id
@@ -294,7 +298,7 @@ class BuilderStageTest(AbstractStageTestCase):
   def setUp(self):
     self._Prepare()
     self.mock_cidb = mock.MagicMock()
-    self.buildstore = FakeBuildStore()
+    self.buildstore = FakeBuildStore(self.mock_cidb)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     # Many tests modify the global results_lib.Results instance.
     results_lib.Results.Clear()
@@ -531,10 +535,11 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
   def ConstructStage(self):
     return generic_stages.BuilderStage(self._run, self.buildstore)
 
-  def testGetBuildFailureMessageFromCIDB(self):
-    """Test GetBuildFailureMessageFromCIDB."""
+  def testGetBuildFailureMessageFromBuildStore(self):
+    """Test GetBuildFailureMessageFromBuildStore."""
     db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
+    buildstore = FakeBuildStore(db)
 
     build_id = db.InsertBuild('lumpy-pre-cq', 1,
                               'lumpy-pre-cq', 'bot_hostname',
@@ -547,7 +552,10 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
                                  "failed_packages": ["sys-apps/flashrom"]})
     self._Prepare(build_id=build_id)
     stage = self.ConstructStage()
-    message = stage.GetBuildFailureMessageFromCIDB(build_id, db)
+    # Sending cidb_id as buildbucket_id so as to not refactor the
+    # fake_cidb function.
+    message = stage.GetBuildFailureMessageFromBuildStore(
+        buildstore, BuildIdentifier(buildbucket_id=build_id, cidb_id=build_id))
 
     self.assertFalse(message.MatchesExceptionCategories(
         {constants.EXCEPTION_CATEGORY_LAB}))
@@ -564,12 +572,13 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     self.assertTrue(isinstance(build_failure_msg.failure_messages[0],
                                failure_message_lib.StageFailureMessage))
 
-  def testGetBuildFailureMessageWithDB(self):
-    """Test GetBuildFailureMessage with DB instance."""
+  def testGetBuildFailureMessageWithoutBuildStore(self):
+    """Test GetBuildFailureMessage without working BuildStore instance."""
     stage = self.ConstructStage()
     message = 'foo'
     get_msg_from_cidb = self.PatchObject(
-        stage, 'GetBuildFailureMessageFromCIDB', return_value=message)
+        stage, 'GetBuildFailureMessageFromBuildStore', return_value=message)
+    self.PatchObject(FakeBuildStore, 'AreClientsReady', return_value=False)
     get_msg_from_results = self.PatchObject(
         stage, 'GetBuildFailureMessageFromResults', return_value=message)
 
@@ -577,20 +586,25 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     get_msg_from_cidb.assert_not_called()
     get_msg_from_results.assert_called_once_with()
 
-  def testGetBuildFailureMessageWithoutDB(self):
-    """Test GetBuildFailureMessage without DB instance."""
+  def testGetBuildFailureMessageWithBuildStore(self):
+    """Test GetBuildFailureMessage with working BuildStore."""
     db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
     stage = self.ConstructStage()
-    master_build_id = stage._run.attrs.metadata.GetValue('build_id')
     message = 'foo'
     get_msg_from_cidb = self.PatchObject(
-        stage, 'GetBuildFailureMessageFromCIDB', return_value=message)
+        stage, 'GetBuildFailureMessageFromBuildStore', return_value=message)
+    self.PatchObject(FakeBuildStore, 'AreClientsReady', return_value=True)
     get_msg_from_results = self.PatchObject(
         stage, 'GetBuildFailureMessageFromResults', return_value=message)
 
+    build_identifier = BuildIdentifier(cidb_id=constants.MOCK_BUILD_ID,
+                                       buildbucket_id=None)
+    self.PatchObject(stage._run, 'GetCIDBHandle',
+                     return_value=[build_identifier, None])
     stage.GetBuildFailureMessage()
-    get_msg_from_cidb.assert_called_once_with(master_build_id, db)
+    get_msg_from_cidb.assert_called_once_with(
+        self.buildstore, build_identifier)
     get_msg_from_results.assert_not_called()
 
   def testMeaningfulMessage(self):
@@ -600,6 +614,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     exception = Exception('failed!')
     stage_failure_message = failures_lib.GetStageFailureMessageFromException(
         'TacoStage', 1, exception, stage_prefix_name='TacoStage')
+    self.PatchObject(FakeBuildStore, 'AreClientsReady', return_value=False)
     self.PatchObject(
         results_lib.Results, 'GetStageFailureMessage',
         return_value=[stage_failure_message])

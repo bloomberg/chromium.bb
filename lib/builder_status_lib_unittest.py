@@ -345,6 +345,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def testGetSlaveFailures(self):
     """Test _GetSlaveFailures."""
+    # pylint: disable=attribute-defined-outside-init
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
     entry_1 = stage_failure_helper.GetStageFailure(
         build_config=self.slave_1, failure_id=1)
@@ -355,9 +356,13 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     failure_entries = [entry_1, entry_2, entry_3]
     mock_db = mock.Mock()
     mock_db.GetBuildStatusesWithBuildbucketIds.return_value = []
+    self.buildstore = FakeBuildStore(mock_db)
     mock_db.GetBuildsFailures.return_value = failure_entries
+    fake_bb_info = mock.Mock()
+    fake_bb_info.buildbucket_id = 1234
+    fake_buildbucket_info_dict = {1: fake_bb_info}
     manager = self.ConstructBuilderStatusManager(db=mock_db)
-    slave_failures_dict = manager._GetSlaveFailures(None)
+    slave_failures_dict = manager._GetSlaveFailures(fake_buildbucket_info_dict)
 
     self.assertItemsEqual(slave_failures_dict.keys(),
                           [self.slave_1, self.slave_2])
