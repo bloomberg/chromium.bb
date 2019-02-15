@@ -98,8 +98,7 @@ TYPED_TEST_P(ClientCertStoreTest, AllIssuersAllowed) {
 
 // Verify that certificates are correctly filtered against CertRequestInfo with
 // |cert_authorities| containing only |authority_1_DN|.
-// Flaky: https://crbug.com/716730
-TYPED_TEST_P(ClientCertStoreTest, DISABLED_CertAuthorityFiltering) {
+TYPED_TEST_P(ClientCertStoreTest, CertAuthorityFiltering) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
   ASSERT_TRUE(cert_1.get());
@@ -173,7 +172,7 @@ TYPED_TEST_P(ClientCertStoreTest, PrintableStringContainingUTF8) {
 REGISTER_TYPED_TEST_SUITE_P(ClientCertStoreTest,
                             EmptyQuery,
                             AllIssuersAllowed,
-                            DISABLED_CertAuthorityFiltering,
+                            CertAuthorityFiltering,
                             PrintableStringContainingUTF8);
 
 }  // namespace net
