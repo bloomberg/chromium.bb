@@ -54,7 +54,8 @@ class MarkupAccumulator {
   String SerializeNodes(const Node&, EChildrenOnly);
 
  protected:
-  virtual void AppendElement(const Element&);
+  // Returns serialized prefix. It should be passed to AppendEndTag().
+  virtual AtomicString AppendElement(const Element&);
   virtual void AppendAttribute(const Element&, const Attribute&);
 
   MarkupFormatter formatter_;
@@ -67,11 +68,12 @@ class MarkupAccumulator {
   void AppendString(const String&);
   // Serialize a Node, without its children and its end tag.
   void AppendStartMarkup(const Node&);
-  // Returns 'ignore namespace definition attribute' flag.
-  // If it's true, we should not serialize xmlns="..." on the element.
-  bool AppendStartTagOpen(const Element&);
+  // Returns the pair of 'ignore namespace definition attribute' flag and the
+  // serialized prefix.
+  // If the flag is true, we should not serialize xmlns="..." on the element.
+  // The prefix should be used in end tag serialization.
+  std::pair<bool, AtomicString> AppendStartTagOpen(const Element&);
   void AppendStartTagClose(const Element&);
-  bool ShouldAddNamespaceElement(const Element&);
   void AppendNamespace(const AtomicString& prefix,
                        const AtomicString& namespace_uri);
   void AppendAttributeAsXMLWithNamespace(const Element& element,
@@ -80,7 +82,7 @@ class MarkupAccumulator {
   bool ShouldAddNamespaceAttribute(const Attribute& attribute,
                                    const AtomicString& candidate_prefix);
 
-  void AppendEndTag(const Element&);
+  void AppendEndTag(const Element&, const AtomicString& prefix);
 
   EntityMask EntityMaskForText(const Text&) const;
 

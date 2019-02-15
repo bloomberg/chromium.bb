@@ -100,12 +100,19 @@ class MarkupFormatter final {
 
   void AppendStartMarkup(StringBuilder&, const Node&);
   void AppendEndMarkup(StringBuilder&, const Element&);
+  void AppendEndMarkup(StringBuilder& result,
+                       const Element& element,
+                       const AtomicString& prefix,
+                       const AtomicString& local_name);
 
   bool SerializeAsHTMLDocument(const Node&) const;
 
   void AppendText(StringBuilder&, const Text&);
   // Serialize '<' and the element name.
   void AppendStartTagOpen(StringBuilder&, const Element&);
+  void AppendStartTagOpen(StringBuilder& result,
+                          const AtomicString& prefix,
+                          const AtomicString& local_name);
   // Serialize '>' or '/>'
   void AppendStartTagClose(StringBuilder&, const Element&);
 

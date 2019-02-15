@@ -92,7 +92,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   void AppendCustomAttributes(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) const override;
   bool ShouldIgnoreElement(const Element&) const override;
-  void AppendElement(const Element&) override;
+  AtomicString AppendElement(const Element&) override;
   void AppendAttribute(const Element&, const Attribute&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
@@ -152,8 +152,9 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
   return delegate_.ShouldIgnoreElement(element);
 }
 
-void SerializerMarkupAccumulator::AppendElement(const Element& element) {
-  MarkupAccumulator::AppendElement(element);
+AtomicString SerializerMarkupAccumulator::AppendElement(
+    const Element& element) {
+  AtomicString prefix = MarkupAccumulator::AppendElement(element);
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // element like this, without special cases for XHTML
@@ -171,6 +172,8 @@ void SerializerMarkupAccumulator::AppendElement(const Element& element) {
 
   // FIXME: For object (plugins) tags and video tag we could replace them by an
   // image of their current contents.
+
+  return prefix;
 }
 
 void SerializerMarkupAccumulator::AppendAttribute(const Element& element,

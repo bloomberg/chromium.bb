@@ -187,12 +187,23 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
 
 void MarkupFormatter::AppendEndMarkup(StringBuilder& result,
                                       const Element& element) {
+  AppendEndMarkup(result, element, element.prefix(), element.localName());
+}
+
+void MarkupFormatter::AppendEndMarkup(StringBuilder& result,
+                                      const Element& element,
+                                      const AtomicString& prefix,
+                                      const AtomicString& local_name) {
   if (ShouldSelfClose(element) ||
       (!element.HasChildren() && ElementCannotHaveEndTag(element)))
     return;
 
   result.Append("</");
-  result.Append(element.TagQName().ToString());
+  if (!prefix.IsEmpty()) {
+    result.Append(prefix);
+    result.Append(":");
+  }
+  result.Append(local_name);
   result.Append('>');
 }
 
@@ -297,8 +308,18 @@ void MarkupFormatter::AppendProcessingInstruction(StringBuilder& result,
 
 void MarkupFormatter::AppendStartTagOpen(StringBuilder& result,
                                          const Element& element) {
+  AppendStartTagOpen(result, element.prefix(), element.localName());
+}
+
+void MarkupFormatter::AppendStartTagOpen(StringBuilder& result,
+                                         const AtomicString& prefix,
+                                         const AtomicString& local_name) {
   result.Append('<');
-  result.Append(element.TagQName().ToString());
+  if (!prefix.IsEmpty()) {
+    result.Append(prefix);
+    result.Append(":");
+  }
+  result.Append(local_name);
 }
 
 void MarkupFormatter::AppendStartTagClose(StringBuilder& result,

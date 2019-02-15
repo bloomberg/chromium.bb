@@ -99,6 +99,14 @@ class MarkupAccumulator::NamespaceContext final {
     return local_default_namespace_;
   }
 
+  void InheritLocalDefaultNamespace() {
+    if (!local_default_namespace_)
+      return;
+    SetContextNamespace(local_default_namespace_.IsEmpty()
+                            ? g_null_atom
+                            : local_default_namespace_);
+  }
+
   const Vector<AtomicString> PrefixList(const AtomicString& ns) const {
     return ns_prefixes_map_.at(ns ? ns : g_empty_atom);
   }
@@ -129,8 +137,9 @@ void MarkupAccumulator::AppendString(const String& string) {
   markup_.Append(string);
 }
 
-void MarkupAccumulator::AppendEndTag(const Element& element) {
-  formatter_.AppendEndMarkup(markup_, element);
+void MarkupAccumulator::AppendEndTag(const Element& element,
+                                     const AtomicString& prefix) {
+  formatter_.AppendEndMarkup(markup_, element, prefix, element.localName());
 }
 
 void MarkupAccumulator::AppendStartMarkup(const Node& node) {
@@ -164,7 +173,8 @@ bool MarkupAccumulator::ShouldIgnoreElement(const Element& element) const {
   return false;
 }
 
-void MarkupAccumulator::AppendElement(const Element& element) {
+AtomicString MarkupAccumulator::AppendElement(const Element& element) {
+  AtomicString prefix = element.prefix();
   if (SerializeAsHTMLDocument(element)) {
     // https://html.spec.whatwg.org/C/#html-fragment-serialisation-algorithm
     AppendStartTagOpen(element);
@@ -182,8 +192,9 @@ void MarkupAccumulator::AppendElement(const Element& element) {
   } else {
     // https://w3c.github.io/DOM-Parsing/#xml-serializing-an-element-node
     namespace_stack_.back().RecordNamespaceInformation(element);
-    const bool ignore_namespace_definition_attribute =
-        AppendStartTagOpen(element);
+    auto pair = AppendStartTagOpen(element);
+    const bool ignore_namespace_definition_attribute = pair.first;
+    prefix = pair.second;
 
     for (const auto& attribute : element.Attributes()) {
       if (ignore_namespace_definition_attribute &&
@@ -199,12 +210,14 @@ void MarkupAccumulator::AppendElement(const Element& element) {
   AppendCustomAttributes(element);
 
   AppendStartTagClose(element);
+  return prefix;
 }
 
-bool MarkupAccumulator::AppendStartTagOpen(const Element& element) {
+std::pair<bool, AtomicString> MarkupAccumulator::AppendStartTagOpen(
+    const Element& element) {
   if (SerializeAsHTMLDocument(element)) {
     formatter_.AppendStartTagOpen(markup_, element);
-    return false;
+    return std::make_pair(false, element.prefix());
   }
 
   // https://w3c.github.io/DOM-Parsing/#xml-serializing-an-element-node
@@ -224,33 +237,72 @@ bool MarkupAccumulator::AppendStartTagOpen(const Element& element) {
   AtomicString ns = element.namespaceURI();
 
   // 11. If inherited ns is equal to ns, then:
-  if (inherited_ns == ns && element.prefix().IsEmpty()) {
+  if (inherited_ns == ns) {
     // 11.1. If local default namespace is not null, then set ignore namespace
     // definition attribute to true.
     ignore_namespace_definition_attribute = !local_default_namespace.IsNull();
     // 11.3. Otherwise, append to qualified name the value of node's
     // localName. The node's prefix if it exists, is dropped.
-    // TODO(tkent): Implement prefix-rewriting for elements.
 
     // 11.4. Append the value of qualified name to markup.
-    formatter_.AppendStartTagOpen(markup_, element);
-    return ignore_namespace_definition_attribute;
+    formatter_.AppendStartTagOpen(markup_, g_null_atom, element.localName());
+    return std::make_pair(ignore_namespace_definition_attribute, g_null_atom);
   }
 
-  if (!element.prefix().IsEmpty()) {
-    formatter_.AppendStartTagOpen(markup_, element);
-    if (ShouldAddNamespaceElement(element))
-      AppendNamespace(element.prefix(), ns);
-    // 12.5.7. If local default namespace is not null (there exists a
+  // 12. Otherwise, inherited ns is not equal to ns (the node's own namespace is
+  // different from the context namespace of its parent). Run these sub-steps:
+  // 12.1. Let prefix be the value of node's prefix attribute.
+  AtomicString prefix = element.prefix();
+  // 12.2. Let candidate prefix be the result of retrieving a preferred prefix
+  // string prefix from map given namespace ns.
+  AtomicString candidate_prefix;
+  if (!ns.IsEmpty()) {
+    candidate_prefix = RetrievePreferredPrefixString(ns, prefix);
+  }
+  // 12.4. if candidate prefix is not null (a namespace prefix is defined which
+  // maps to ns), then:
+  if (!candidate_prefix.IsNull() && LookupNamespaceURI(candidate_prefix)) {
+    // 12.4.1. Append to qualified name the concatenation of candidate prefix,
+    // ":" (U+003A COLON), and node's localName.
+    // 12.4.3. Append the value of qualified name to markup.
+    formatter_.AppendStartTagOpen(markup_, candidate_prefix,
+                                  element.localName());
+    // 12.4.2. If the local default namespace is not null (there exists a
+    // locally-defined default namespace declaration attribute) and its value is
+    // not the XML namespace, then let inherited ns get the value of local
+    // default namespace unless the local default namespace is the empty string
+    // in which case let it get null (the context namespace is changed to the
+    // declared default, rather than this node's own namespace).
+    if (local_default_namespace != xml_names::kNamespaceURI)
+      namespace_context.InheritLocalDefaultNamespace();
+
+    return std::make_pair(ignore_namespace_definition_attribute,
+                          candidate_prefix);
+  }
+
+  // 12.5. Otherwise, if prefix is not null, then:
+  if (!prefix.IsEmpty()) {
+    // 12.5.1. If the local prefixes map contains a key matching prefix, then
+    // let prefix be the result of generating a prefix providing as input map,
+    // ns, and prefix index
+    if (element.hasAttribute(WTF::g_xmlns_with_colon + prefix)) {
+      prefix = GeneratePrefix(ns);
+    } else {
+      // 12.5.2. Add prefix to map given namespace ns.
+      AddPrefix(prefix, ns);
+    }
+    // 12.5.3. Append to qualified name the concatenation of prefix, ":" (U+003A
+    // COLON), and node's localName.
+    // 12.5.4. Append the value of qualified name to markup.
+    formatter_.AppendStartTagOpen(markup_, prefix, element.localName());
+    // 12.5.5. Append the following to markup, in the order listed:
+    MarkupFormatter::AppendAttribute(markup_, g_xmlns_atom, prefix, ns, false);
+    // 12.5.5.7. If local default namespace is not null (there exists a
     // locally-defined default namespace declaration attribute), then let
     // inherited ns get the value of local default namespace unless the local
     // default namespace is the empty string in which case let it get null.
-    if (local_default_namespace) {
-      namespace_context.SetContextNamespace(local_default_namespace.IsEmpty()
-                                                ? g_null_atom
-                                                : local_default_namespace);
-    }
-    return ignore_namespace_definition_attribute;
+    namespace_context.InheritLocalDefaultNamespace();
+    return std::make_pair(ignore_namespace_definition_attribute, prefix);
   }
 
   // 12.6. Otherwise, if local default namespace is null, or local default
@@ -265,7 +317,7 @@ bool MarkupAccumulator::AppendStartTagOpen(const Element& element) {
     // 12.6.5. Append the following to markup, in the order listed:
     MarkupFormatter::AppendAttribute(markup_, g_null_atom, g_xmlns_atom, ns,
                                      false);
-    return ignore_namespace_definition_attribute;
+    return std::make_pair(ignore_namespace_definition_attribute, g_null_atom);
   }
 
   // 12.7. Otherwise, the node has a local default namespace that matches
@@ -274,7 +326,7 @@ bool MarkupAccumulator::AppendStartTagOpen(const Element& element) {
   DCHECK_EQ(local_default_namespace, ns);
   namespace_context.SetContextNamespace(ns);
   formatter_.AppendStartTagOpen(markup_, element);
-  return ignore_namespace_definition_attribute;
+  return std::make_pair(ignore_namespace_definition_attribute, g_null_atom);
 }
 
 void MarkupAccumulator::AppendStartTagClose(const Element& element) {
@@ -401,16 +453,15 @@ void MarkupAccumulator::PopNamespaces(const Element& element) {
 AtomicString MarkupAccumulator::RetrievePreferredPrefixString(
     const AtomicString& ns,
     const AtomicString& preferred_prefix) {
-  // TODO(tkent): We'll apply this function to elements too.
-  const bool kForAttribute = true;
+  DCHECK(!ns.IsEmpty()) << ns;
   AtomicString ns_for_preferred = LookupNamespaceURI(preferred_prefix);
   // Preserve the prefix if the prefix is used in the scope and the namespace
   // for it is matches to the node's one.
   // This is equivalent to the following step in the specification:
   // 2.1. If prefix matches preferred prefix, then stop running these steps and
   // return prefix.
-  if ((!kForAttribute || !preferred_prefix.IsEmpty()) &&
-      !ns_for_preferred.IsNull() && EqualIgnoringNullity(ns_for_preferred, ns))
+  if (!preferred_prefix.IsEmpty() && !ns_for_preferred.IsNull() &&
+      EqualIgnoringNullity(ns_for_preferred, ns))
     return preferred_prefix;
 
   const Vector<AtomicString>& candidate_list =
@@ -427,8 +478,7 @@ AtomicString MarkupAccumulator::RetrievePreferredPrefixString(
   // We should not get '' for attributes.
   for (auto it = candidate_list.rbegin(); it != candidate_list.rend(); ++it) {
     AtomicString candidate_prefix = *it;
-    if (kForAttribute && candidate_prefix.IsEmpty())
-      continue;
+    DCHECK(!candidate_prefix.IsEmpty());
     AtomicString ns_for_candaite = LookupNamespaceURI(candidate_prefix);
     if (EqualIgnoringNullity(ns_for_candaite, ns))
       return candidate_prefix;
@@ -473,20 +523,6 @@ bool MarkupAccumulator::SerializeAsHTMLDocument(const Node& node) const {
   return formatter_.SerializeAsHTMLDocument(node);
 }
 
-bool MarkupAccumulator::ShouldAddNamespaceElement(const Element& element) {
-  // Don't add namespace attribute if it is already defined for this elem.
-  const AtomicString& prefix = element.prefix();
-  if (prefix.IsEmpty()) {
-    if (element.hasAttribute(g_xmlns_atom)) {
-      AddPrefix(g_empty_atom, element.namespaceURI());
-      return false;
-    }
-    return true;
-  }
-
-  return !element.hasAttribute(WTF::g_xmlns_with_colon + prefix);
-}
-
 std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
     const Element& element) const {
   return std::pair<Node*, Element*>();
@@ -510,8 +546,9 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
 
   PushNamespaces(target_element);
 
+  AtomicString prefix_override;
   if (!children_only)
-    AppendElement(target_element);
+    prefix_override = AppendElement(target_element);
 
   bool has_end_tag = !(SerializeAsHTMLDocument(target_element) &&
                        ElementCannotHaveEndTag(target_element));
@@ -527,16 +564,17 @@ void MarkupAccumulator::SerializeNodesWithNamespaces(
         GetAuxiliaryDOMTree(target_element);
     if (Node* auxiliary_tree = auxiliary_pair.first) {
       Element* enclosing_element = auxiliary_pair.second;
+      AtomicString enclosing_element_prefix;
       if (enclosing_element)
-        AppendElement(*enclosing_element);
+        enclosing_element_prefix = AppendElement(*enclosing_element);
       for (const Node& child : Strategy::ChildrenOf(*auxiliary_tree))
         SerializeNodesWithNamespaces<Strategy>(child, kIncludeNode);
       if (enclosing_element)
-        AppendEndTag(*enclosing_element);
+        AppendEndTag(*enclosing_element, enclosing_element_prefix);
     }
 
     if (!children_only)
-      AppendEndTag(target_element);
+      AppendEndTag(target_element, prefix_override);
   }
 
   PopNamespaces(target_element);
