@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 
 from chromite.lib import commandline
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 
@@ -31,33 +32,31 @@ def _ParseArguments(argv):
 def main(argv):
   _opts = _ParseArguments(argv)
 
-  base_dir = os.path.abspath(os.path.join(__file__, '..'))
+  base_dir = os.path.join(constants.CHROOT_SOURCE_ROOT, 'chromite', 'api')
   output = os.path.join(base_dir, 'gen')
   source = os.path.join(base_dir, 'proto')
   targets = os.path.join(source, '*.proto')
 
-  # TODO(crbug.com/924660) Update compile to run in the chroot and remove
-  # the warning.
-  protoc_version = ['protoc', '--version']
-  result = cros_build_lib.RunCommand(protoc_version, print_cmd=False,
-                                     redirect_stdout=True,
-                                     combine_stdout_stderr=True,
-                                     error_code_ok=True)
-  if not result.returncode == 0 or not '3.6.1' in result.output:
-    logging.warning('You must have libprotoc 3.6.1 installed locally to '
-                    'compile the protobuf correctly.')
-    logging.warning('This will be run in the chroot in the future '
-                    '(see crbug.com/924660).')
-    if not result.returncode == 0:
-      logging.warning('protoc could not be found on your system.')
-    else:
-      logging.warning('"%s" was found on your system.', result.output.strip())
-
-    logging.warning("We won't stop you from running it for now, but be very "
-                    "weary of your changes.")
+  version = cros_build_lib.RunCommand(['protoc', '--version'], print_cmd=False,
+                                      enter_chroot=True, capture_output=True,
+                                      error_code_ok=True)
+  if version.returncode != 0:
+    cros_build_lib.Die('protoc not found in your chroot.')
+  elif '3.3.0' in version.output:
+    # This is the old chroot version, just needs to have update_chroot run.
+    cros_build_lib.Die('Old protoc version detected. Please update your chroot'
+                       'and try again: `cros_sdk -- ./update_chroot`')
+  elif '3.6.1' not in version.output:
+    # Note: We know some lower versions have some compiling backwards
+    # compatibility problems. One would hope new versions would be ok,
+    # but we would have said that with earlier versions too.
+    logging.warning('Unsupported protoc version found in your chroot.\n'
+                    "libprotoc 3.6.1 is supported. Found '%s'.\n"
+                    'protoc will still be run, but be cautious.',
+                    version.output.strip())
 
   cmd = ('protoc --python_out %(output)s --proto_path %(source)s %(targets)s'
          % {'output': output, 'source': source, 'targets': targets})
-
-  result = cros_build_lib.RunCommand(cmd, shell=True, error_code_ok=True)
+  result = cros_build_lib.RunCommand(cmd, enter_chroot=True, shell=True,
+                                     error_code_ok=True)
   return result.returncode
