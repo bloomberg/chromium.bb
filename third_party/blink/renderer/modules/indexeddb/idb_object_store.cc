@@ -640,6 +640,17 @@ IDBRequest* IDBObjectStore::deleteFunction(
   return request;
 }
 
+IDBRequest* IDBObjectStore::getKeyGeneratorCurrentNumber(
+    ScriptState* script_state,
+    IDBRequest::AsyncTraceState metrics) {
+  IDBRequest* request = IDBRequest::Create(
+      script_state, this, transaction_.Get(), std::move(metrics));
+
+  BackendDB()->GetKeyGeneratorCurrentNumber(
+      transaction_->Id(), Id(), request->CreateWebCallbacks().release());
+  return request;
+}
+
 IDBRequest* IDBObjectStore::clear(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   IDB_TRACE("IDBObjectStore::clearRequestSetup");

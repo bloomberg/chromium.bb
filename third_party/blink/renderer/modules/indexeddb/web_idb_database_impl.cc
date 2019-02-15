@@ -221,6 +221,16 @@ void WebIDBDatabaseImpl::DeleteRange(long long transaction_id,
                          GetCallbacksProxy(base::WrapUnique(callbacks)));
 }
 
+void WebIDBDatabaseImpl::GetKeyGeneratorCurrentNumber(
+    long long transaction_id,
+    long long object_store_id,
+    WebIDBCallbacks* callbacks) {
+  callbacks->SetState(nullptr, transaction_id);
+  database_->GetKeyGeneratorCurrentNumber(
+      transaction_id, object_store_id,
+      GetCallbacksProxy(base::WrapUnique(callbacks)));
+}
+
 void WebIDBDatabaseImpl::Clear(long long transaction_id,
                                long long object_store_id,
                                WebIDBCallbacks* callbacks) {

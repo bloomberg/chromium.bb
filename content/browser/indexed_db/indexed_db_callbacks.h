@@ -107,6 +107,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBDatabase::Count
   // IndexedDBFactory::DeleteDatabase
   // IndexedDBDatabase::DeleteRange
+  // IndexedDBDatabase::GetKeyGeneratorCurrentNumber
   virtual void OnSuccess(int64_t value);
 
   // IndexedDBCursor::Continue / Advance (when complete)

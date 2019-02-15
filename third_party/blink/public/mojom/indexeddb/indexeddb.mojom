@@ -365,6 +365,12 @@ interface IDBDatabase {
               int64 object_store_id,
               IDBKeyRange key_range,
               associated IDBCallbacks callbacks);
+  // Gets the current number of an IndexedDB ObjectStore's key generator. It
+  // is implemented in the browser (more priviledged) and handles requests in
+  // the renderer process: WebIDBDatabaseImpl::GetKeyGeneratorCurrentNumber()
+  GetKeyGeneratorCurrentNumber(int64 transaction_id,
+                               int64 object_store_id,
+                               associated IDBCallbacks callbacks);
   Clear(int64 transaction_id,
         int64 object_store_id,
         associated IDBCallbacks callbacks);

@@ -127,6 +127,10 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long object_store_id,
                     const IDBKeyRange*,
                     WebIDBCallbacks*));
+  MOCK_METHOD3(GetKeyGeneratorCurrentNumber,
+               void(long long transaction_id,
+                    long long object_store_id,
+                    WebIDBCallbacks*));
   MOCK_METHOD3(Clear,
                void(long long transaction_id,
                     long long object_store_id,

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/indexed_db_database.h"
-
 #include <math.h>
 
 #include <algorithm>
@@ -1681,6 +1680,39 @@ Status IndexedDBDatabase::DeleteRangeOperation(
                     nullptr);
   factory_->NotifyIndexedDBContentChanged(
       origin(), metadata_.name, metadata_.object_stores[object_store_id].name);
+  return s;
+}
+
+void IndexedDBDatabase::GetKeyGeneratorCurrentNumber(
+    IndexedDBTransaction* transaction,
+    int64_t object_store_id,
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
+  DCHECK(transaction);
+  if (!ValidateObjectStoreId(object_store_id)) {
+    callbacks->OnError(CreateError(blink::kWebIDBDatabaseExceptionDataError,
+                                   "Object store id not valid.", transaction));
+    return;
+  }
+  transaction->ScheduleTask(
+      base::BindOnce(&IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation,
+                     this, object_store_id, callbacks));
+}
+
+Status IndexedDBDatabase::GetKeyGeneratorCurrentNumberOperation(
+    int64_t object_store_id,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    IndexedDBTransaction* transaction) {
+  int64_t current_number;
+  Status s = backing_store_.get()->GetKeyGeneratorCurrentNumber(
+      transaction->BackingStoreTransaction(), id(), object_store_id,
+      &current_number);
+  if (!s.ok()) {
+    callbacks->OnError(CreateError(
+        blink::kWebIDBDatabaseExceptionDataError,
+        "Failed to get the current number of key generator.", transaction));
+    return s;
+  }
+  callbacks->OnSuccess(current_number);
   return s;
 }
 
