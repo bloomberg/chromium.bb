@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_processing_event.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
-#include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_audio_destination_node.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -465,11 +465,11 @@ ScriptProcessorNode* ScriptProcessorNode::Create(
       // just use the minimum valid buffer size.
       if (context.HasRealtimeConstraint()) {
         // TODO(crbug.com/854229): Due to the incompatible constructor between
-        // AudioDestinationNode and DefaultAudioDestinationNode, casting
+        // AudioDestinationNode and RealtimeAudioDestinationNode, casting
         // directly from |destination()| is impossible. This is a temporary
         // workaround until the refactoring is completed.
-        DefaultAudioDestinationHandler& destination_handler =
-            static_cast<DefaultAudioDestinationHandler&>(
+        RealtimeAudioDestinationHandler& destination_handler =
+            static_cast<RealtimeAudioDestinationHandler&>(
                 context.destination()->GetAudioDestinationHandler());
         buffer_size =
             ChooseBufferSize(destination_handler.GetCallbackBufferSize());

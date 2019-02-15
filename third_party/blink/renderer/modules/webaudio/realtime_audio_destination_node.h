@@ -23,8 +23,8 @@
  * DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFAULT_AUDIO_DESTINATION_NODE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFAULT_AUDIO_DESTINATION_NODE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_AUDIO_DESTINATION_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_AUDIO_DESTINATION_NODE_H_
 
 #include <memory>
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
@@ -38,13 +38,13 @@ class AudioContext;
 class ExceptionState;
 class WebAudioLatencyHint;
 
-class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
-                                             public AudioIOCallback {
+class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
+                                              public AudioIOCallback {
  public:
-  static scoped_refptr<DefaultAudioDestinationHandler> Create(
+  static scoped_refptr<RealtimeAudioDestinationHandler> Create(
       AudioNode&,
       const WebAudioLatencyHint&);
-  ~DefaultAudioDestinationHandler() override;
+  ~RealtimeAudioDestinationHandler() override;
 
   // For AudioHandler.
   void Dispose() override;
@@ -79,8 +79,8 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   int GetFramesPerBuffer() const;
 
  private:
-  explicit DefaultAudioDestinationHandler(AudioNode&,
-                                          const WebAudioLatencyHint&);
+  explicit RealtimeAudioDestinationHandler(AudioNode&,
+                                           const WebAudioLatencyHint&);
 
   void CreatePlatformDestination();
   void StartPlatformDestination();
@@ -94,15 +94,15 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
 
 // -----------------------------------------------------------------------------
 
-class DefaultAudioDestinationNode final : public AudioDestinationNode {
+class RealtimeAudioDestinationNode final : public AudioDestinationNode {
  public:
-  static DefaultAudioDestinationNode* Create(AudioContext*,
-                                             const WebAudioLatencyHint&);
+  static RealtimeAudioDestinationNode* Create(AudioContext*,
+                                              const WebAudioLatencyHint&);
 
-  explicit DefaultAudioDestinationNode(AudioContext&,
-                                       const WebAudioLatencyHint&);
+  explicit RealtimeAudioDestinationNode(AudioContext&,
+                                        const WebAudioLatencyHint&);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFAULT_AUDIO_DESTINATION_NODE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_AUDIO_DESTINATION_NODE_H_

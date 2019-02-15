@@ -23,10 +23,10 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_timestamp.h"
-#include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_audio_destination_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -120,7 +120,7 @@ AudioContext::AudioContext(Document& document,
                            const WebAudioLatencyHint& latency_hint)
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++) {
-  destination_node_ = DefaultAudioDestinationNode::Create(this, latency_hint);
+  destination_node_ = RealtimeAudioDestinationNode::Create(this, latency_hint);
 
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
@@ -322,11 +322,11 @@ double AudioContext::baseLatency() const {
   DCHECK(destination());
 
   // TODO(hongchan): Due to the incompatible constructor between
-  // AudioDestinationNode and DefaultAudioDestinationNode, casting directly from
-  // |destination()| is impossible. This is a temporary workaround until the
-  // refactoring is completed.
-  DefaultAudioDestinationHandler& destination_handler =
-      static_cast<DefaultAudioDestinationHandler&>(
+  // AudioDestinationNode and RealtimeAudioDestinationNode, casting directly
+  // from |destination()| is impossible. This is a temporary workaround until
+  // the refactoring is completed.
+  RealtimeAudioDestinationHandler& destination_handler =
+      static_cast<RealtimeAudioDestinationHandler&>(
           destination()->GetAudioDestinationHandler());
   return destination_handler.GetFramesPerBuffer() /
          static_cast<double>(sampleRate());
