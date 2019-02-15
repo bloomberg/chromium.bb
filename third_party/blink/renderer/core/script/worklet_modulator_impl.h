@@ -30,6 +30,7 @@ class WorkletModulatorImpl final : public ModulatorImplBase {
  private:
   // Implements ModulatorImplBase.
   bool IsDynamicImportForbidden(String* reason) override;
+  V8CacheOptions GetV8CacheOptions() const override;
 };
 
 }  // namespace blink

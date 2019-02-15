@@ -55,4 +55,9 @@ bool WorkerModulatorImpl::IsDynamicImportForbidden(String* reason) {
   return true;
 }
 
+V8CacheOptions WorkerModulatorImpl::GetV8CacheOptions() const {
+  auto* scope = To<WorkerGlobalScope>(GetExecutionContext());
+  return scope->GetV8CacheOptions();
+}
+
 }  // namespace blink

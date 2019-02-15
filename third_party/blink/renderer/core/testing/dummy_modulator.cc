@@ -50,6 +50,10 @@ ScriptState* DummyModulator::GetScriptState() {
   return nullptr;
 }
 
+V8CacheOptions DummyModulator::GetV8CacheOptions() const {
+  return kV8CacheOptionsDefault;
+}
+
 bool DummyModulator::IsScriptingDisabled() const {
   return false;
 }
