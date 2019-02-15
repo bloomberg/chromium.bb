@@ -127,6 +127,8 @@ static void set_good_speed_feature_framesize_dependent(
       sf->ml_partition_search_breakout_thresh[2] = 300;  // BLOCK_32X32
       sf->ml_partition_search_breakout_thresh[3] = 300;  // BLOCK_64X64
       sf->ml_partition_search_breakout_thresh[4] = -1;   // BLOCK_128X128
+
+      sf->firstpass_simple_motion_search_early_term = 1;
     }
   }
 
@@ -694,6 +696,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->txb_split_cap = 1;
   sf->adaptive_txb_search_level = 0;
   sf->two_pass_partition_search = 0;
+  sf->firstpass_simple_motion_search_early_term = 0;
   sf->use_intra_txb_hash = 0;
   // TODO(any) : clean use_inter_txb_hash code
   sf->use_inter_txb_hash = 0;

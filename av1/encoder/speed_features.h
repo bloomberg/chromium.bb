@@ -384,6 +384,10 @@ typedef struct SPEED_FEATURES {
   // in the initial partition search to prune mode candidates, e.g. ref frames.
   int two_pass_partition_search;
 
+  // Terminate early in firstpass of two_pass partition search for faster
+  // firstpass.
+  int firstpass_simple_motion_search_early_term;
+
   // Skip rectangular partition test when partition type none gives better
   // rd than partition type split. Can take values 0 - 2, 0 referring to no
   // skipping, and 1 - 2 increasing aggressiveness of skipping in order.

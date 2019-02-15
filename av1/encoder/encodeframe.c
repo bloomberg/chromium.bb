@@ -75,6 +75,9 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
                                  int mi_col, BLOCK_SIZE bsize, int ref,
                                  MV ref_mv_full, int num_planes,
                                  int use_subpixel);
+static void firstpass_simple_motion_search_features(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, float *features);
 
 // This is used as a reference when computing the source variance for the
 //  purposes of activity masking.
@@ -2421,6 +2424,74 @@ static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   }
 }
 
+#define NUM_FEATURES 20
+static void av1_firstpass_simple_motion_search_early_term(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, const RD_STATS *none_rdc,
+    int *do_square_split) {
+  const NN_CONFIG *nn_config = NULL;
+  float thresh = 0.0f;
+  const float *ml_mean = NULL, *ml_std = NULL;
+  if (bsize == BLOCK_128X128) {
+    nn_config = &av1_fp_simple_motion_search_term_none_nn_config_128;
+    ml_mean = av1_fp_simple_motion_search_term_none_mean_128;
+    ml_std = av1_fp_simple_motion_search_term_none_std_128;
+    thresh = av1_fp_simple_motion_search_term_none_thresh_128;
+  } else if (bsize == BLOCK_64X64) {
+    nn_config = &av1_fp_simple_motion_search_term_none_nn_config_64;
+    ml_mean = av1_fp_simple_motion_search_term_none_mean_64;
+    ml_std = av1_fp_simple_motion_search_term_none_std_64;
+    thresh = av1_fp_simple_motion_search_term_none_thresh_64;
+  } else if (bsize == BLOCK_32X32) {
+    nn_config = &av1_fp_simple_motion_search_term_none_nn_config_32;
+    ml_mean = av1_fp_simple_motion_search_term_none_mean_32;
+    ml_std = av1_fp_simple_motion_search_term_none_std_32;
+    thresh = av1_fp_simple_motion_search_term_none_thresh_32;
+  } else if (bsize == BLOCK_16X16) {
+    nn_config = &av1_fp_simple_motion_search_term_none_nn_config_16;
+    ml_mean = av1_fp_simple_motion_search_term_none_mean_16;
+    ml_std = av1_fp_simple_motion_search_term_none_std_16;
+    thresh = av1_fp_simple_motion_search_term_none_thresh_16;
+  } else if (bsize == BLOCK_8X8) {
+    nn_config = &av1_fp_simple_motion_search_term_none_nn_config_8;
+    ml_mean = av1_fp_simple_motion_search_term_none_mean_8;
+    ml_std = av1_fp_simple_motion_search_term_none_std_8;
+    thresh = av1_fp_simple_motion_search_term_none_thresh_8;
+  } else {
+    assert(0 &&
+           "Unexpected bsize in firstpass_simple_motion_search_early_term");
+  }
+
+  if (nn_config && thresh <= -100.0f) {
+    float ml_features[NUM_FEATURES] = { 0.0f };
+
+    firstpass_simple_motion_search_features(cpi, x, pc_tree, mi_row, mi_col,
+                                            bsize, ml_features);
+    int f_idx = 17;
+
+    ml_features[f_idx++] = logf(1.0f + (float)none_rdc->rate);
+    ml_features[f_idx++] = logf(1.0f + (float)none_rdc->dist);
+    ml_features[f_idx++] = logf(1.0f + (float)none_rdc->rdcost);
+
+    for (f_idx = 0; f_idx < 20; f_idx++) {
+      ml_features[f_idx] =
+          (ml_features[f_idx] - ml_mean[f_idx]) / ml_std[f_idx];
+    }
+
+    // Get probabilities
+    float score = 0.0f;
+
+    av1_nn_predict(ml_features, nn_config, &score);
+    aom_clear_system_state();
+
+    // Determine if we should prune square partitions.
+    if (score < thresh) {
+      *do_square_split = 0;
+    }
+  }
+}
+#undef NUM_FEATURES
+
 static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
                                   TileDataEnc *tile_data, TOKENEXTRA **tp,
                                   int mi_row, int mi_col, BLOCK_SIZE bsize,
@@ -2591,6 +2662,16 @@ static void rd_pick_sqr_partition(AV1_COMP *const cpi, ThreadData *td,
               best_rdc.rate < rate_breakout_thr) {
             do_square_split = 0;
           }
+        }
+
+        if (cpi->sf.firstpass_simple_motion_search_early_term &&
+            cm->show_frame && bsize >= BLOCK_8X8 && !frame_is_intra_only(cm) &&
+            mi_row + mi_step < cm->mi_rows && mi_col + mi_step < cm->mi_cols &&
+            this_rdc.rdcost < INT64_MAX && this_rdc.rdcost >= 0 &&
+            this_rdc.rate < INT_MAX && this_rdc.rate >= 0 && do_square_split) {
+          av1_firstpass_simple_motion_search_early_term(
+              cpi, x, pc_tree, mi_row, mi_col, bsize, &this_rdc,
+              &do_square_split);
         }
       }
     }
@@ -3344,15 +3425,18 @@ static int simple_motion_search_get_best_ref(
         best_ref = ref;
       }
 
+      const int new_mv_row = x->best_mv.as_mv.row / 8;
+      const int new_mv_col = x->best_mv.as_mv.col / 8;
       if (save_mv_code == 4) {
-        pc_tree->mv_ref_fulls[ref].row = x->best_mv.as_mv.row / 8;
-        pc_tree->mv_ref_fulls[ref].col = x->best_mv.as_mv.col / 8;
+        pc_tree->mv_ref_fulls[ref].row = new_mv_row;
+        pc_tree->mv_ref_fulls[ref].col = new_mv_col;
       } else if (save_mv_code >= 0 && save_mv_code < 4) {
         // Propagate the new motion vectors to a lower level
-        pc_tree->split[save_mv_code]->mv_ref_fulls[ref].row =
-            x->best_mv.as_mv.row / 8;
-        pc_tree->split[save_mv_code]->mv_ref_fulls[ref].col =
-            x->best_mv.as_mv.col / 8;
+        pc_tree->split[save_mv_code]->mv_ref_fulls[ref].row = new_mv_row;
+        pc_tree->split[save_mv_code]->mv_ref_fulls[ref].col = new_mv_col;
+      } else {
+        assert(save_mv_code == -1 &&
+               "Unknown code in simple_motion_search_get_best_ref.");
       }
     }
   }
@@ -3780,6 +3864,66 @@ static void update_picked_ref_frames_mask(MACROBLOCK *const x, int ref_type,
       x->picked_ref_frames_mask[i * 32 + j] |= 1 << ref_type;
     }
   }
+}
+
+static void firstpass_simple_motion_search_features(
+    AV1_COMP *const cpi, MACROBLOCK *x, PC_TREE *pc_tree, int mi_row,
+    int mi_col, BLOCK_SIZE bsize, float *features) {
+  assert(mi_size_wide[bsize] == mi_size_high[bsize]);
+  assert(cpi->ref_frame_flags & ref_frame_flag_list[LAST_FRAME] ||
+         cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
+
+  // Setting up motion search
+  const int ref_list[] = { LAST_FRAME, ALTREF_FRAME };
+  const int num_refs = 2;
+  const int use_subpixel = 0;
+
+  unsigned int int_features[10] = { 0 };
+
+  int f_idx = 0;
+  // Doing whole block first to update the mv
+  simple_motion_search_get_best_ref(
+      cpi, x, pc_tree, mi_row, mi_col, bsize, ref_list, num_refs, use_subpixel,
+      4, &int_features[f_idx], &int_features[f_idx + 1]);
+  f_idx += 2;
+
+  // Split subblocks
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
+  const int w_mi = mi_size_wide[bsize];
+  const int h_mi = mi_size_high[bsize];
+  for (int r_idx = 0; r_idx < 4; r_idx++) {
+    const int sub_mi_col = mi_col + (r_idx & 1) * w_mi / 2;
+    const int sub_mi_row = mi_row + (r_idx >> 1) * h_mi / 2;
+
+    simple_motion_search_get_best_ref(
+        cpi, x, pc_tree, sub_mi_row, sub_mi_col, subsize, ref_list, num_refs,
+        use_subpixel, r_idx, &int_features[f_idx], &int_features[f_idx + 1]);
+    f_idx += 2;
+  }
+
+  aom_clear_system_state();
+  for (int idx = 0; idx < f_idx; idx++) {
+    features[idx] = logf(1.0f + (float)int_features[idx]);
+  }
+
+  const MACROBLOCKD *xd = &x->e_mbd;
+  set_offsets(cpi, &xd->tile, x, mi_row, mi_col, bsize);
+
+  // Q_INDEX
+  const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  features[f_idx++] = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
+
+  // Neighbor stuff
+  const int has_above = !!xd->above_mbmi;
+  const int has_left = !!xd->left_mbmi;
+  const BLOCK_SIZE above_bsize = has_above ? xd->above_mbmi->sb_type : bsize;
+  const BLOCK_SIZE left_bsize = has_left ? xd->left_mbmi->sb_type : bsize;
+  features[f_idx++] = (float)has_above;
+  features[f_idx++] = (float)mi_size_wide_log2[above_bsize];
+  features[f_idx++] = (float)mi_size_high_log2[above_bsize];
+  features[f_idx++] = (float)has_left;
+  features[f_idx++] = (float)mi_size_wide_log2[left_bsize];
+  features[f_idx++] = (float)mi_size_high_log2[left_bsize];
 }
 
 // TODO(jinging,jimbankoski,rbultje): properly skip partition types that are
@@ -5411,7 +5555,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     pc_root->index = 0;
 
     if ((sf->simple_motion_search_prune_rect ||
-         sf->simple_motion_search_early_term_none) &&
+         sf->simple_motion_search_early_term_none ||
+         sf->firstpass_simple_motion_search_early_term) &&
         !frame_is_intra_only(cm)) {
       init_simple_motion_search_mvs(pc_root);
     }
