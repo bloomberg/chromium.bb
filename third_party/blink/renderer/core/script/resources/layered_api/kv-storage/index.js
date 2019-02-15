@@ -154,12 +154,19 @@ async function performDatabaseOperation(area, mode, steps) {
 }
 
 function initializeDatabasePromise(area) {
+  const databaseName = _databaseName.get(area);
+
   _databasePromise.set(
       area, new Promise((resolve, reject) => {
-        const request = self.indexedDB.open(_databaseName.get(area), 1);
+        const request = self.indexedDB.open(databaseName, 1);
 
         request.onsuccess = () => {
           const database = request.result;
+
+          if (!checkDatabaseSchema(database, databaseName, reject)) {
+            return;
+          }
+
           database.onclose = () => _databasePromise.set(area, null);
           database.onversionchange = () => {
             database.close();
@@ -178,4 +185,39 @@ function initializeDatabasePromise(area) {
           }
         };
       }));
+}
+
+function checkDatabaseSchema(database, databaseName, reject) {
+  if (database.objectStoreNames.length !== 1) {
+    reject(new DOMException(
+        `KV storage database "${databaseName}" corrupted: there are ` +
+            `${database.objectStoreNames.length} object stores, instead of ` +
+            `the expected 1.`,
+        'InvalidStateError'));
+    return false;
+  }
+
+  if (database.objectStoreNames[0] !== DEFAULT_IDB_STORE_NAME) {
+    reject(new DOMException(
+        `KV storage database "${databaseName}" corrupted: the object store ` +
+            `is named "${database.objectStoreNames[0]}" instead of the ` +
+            `expected "${DEFAULT_IDB_STORE_NAME}".`,
+        'InvalidStateError'));
+    return false;
+  }
+
+  const transaction = database.transaction(DEFAULT_IDB_STORE_NAME, 'readonly');
+  const store = transaction.objectStore(DEFAULT_IDB_STORE_NAME);
+
+  if (store.autoIncrement !== false || store.keyPath !== null ||
+      store.indexNames.length !== 0) {
+    reject(new DOMException(
+        `KV storage database "${databaseName}" corrupted: the ` +
+            `"${DEFAULT_IDB_STORE_NAME}" object store has a non-default ` +
+            `schema.`,
+        'InvalidStateError'));
+    return false;
+  }
+
+  return true;
 }
