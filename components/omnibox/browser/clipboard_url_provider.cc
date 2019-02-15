@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/clipboard_provider.h"
+#include "components/omnibox/browser/clipboard_url_provider.h"
 
 #include <algorithm>
 #include <memory>
@@ -32,11 +32,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_util.h"
 
-ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
-                                     AutocompleteProviderListener* listener,
-                                     HistoryURLProvider* history_url_provider,
-                                     ClipboardRecentContent* clipboard_content)
-    : AutocompleteProvider(AutocompleteProvider::TYPE_CLIPBOARD),
+ClipboardURLProvider::ClipboardURLProvider(
+    AutocompleteProviderClient* client,
+    AutocompleteProviderListener* listener,
+    HistoryURLProvider* history_url_provider,
+    ClipboardRecentContent* clipboard_content)
+    : AutocompleteProvider(AutocompleteProvider::TYPE_CLIPBOARD_URL),
       client_(client),
       listener_(listener),
       clipboard_content_(clipboard_content),
@@ -46,10 +47,10 @@ ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
   DCHECK(clipboard_content_);
 }
 
-ClipboardProvider::~ClipboardProvider() {}
+ClipboardURLProvider::~ClipboardURLProvider() {}
 
-void ClipboardProvider::Start(const AutocompleteInput& input,
-                              bool minimal_changes) {
+void ClipboardURLProvider::Start(const AutocompleteInput& input,
+                                 bool minimal_changes) {
   matches_.clear();
 
   // If the user started typing, do not offer clipboard based match.
@@ -73,13 +74,13 @@ void ClipboardProvider::Start(const AutocompleteInput& input,
   AddCreatedMatchWithTracking(input, std::move(optional_match).value());
 }
 
-void ClipboardProvider::Stop(bool clear_cached_results,
-                             bool due_to_user_inactivity) {
+void ClipboardURLProvider::Stop(bool clear_cached_results,
+                                bool due_to_user_inactivity) {
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
   AutocompleteProvider::Stop(clear_cached_results, due_to_user_inactivity);
 }
 
-void ClipboardProvider::AddCreatedMatchWithTracking(
+void ClipboardURLProvider::AddCreatedMatchWithTracking(
     const AutocompleteInput& input,
     const AutocompleteMatch& match) {
   // Record the number of times the currently-offered URL has been suggested.
@@ -116,7 +117,7 @@ void ClipboardProvider::AddCreatedMatchWithTracking(
   matches_.emplace_back(match);
 }
 
-base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
+base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateURLMatch(
     const AutocompleteInput& input) {
   // The clipboard does not contain a URL worth suggesting.
   base::Optional<GURL> optional_gurl =
@@ -154,7 +155,7 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
   return match;
 }
 
-base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
+base::Optional<AutocompleteMatch> ClipboardURLProvider::CreateTextMatch(
     const AutocompleteInput& input) {
   // Only try text match if feature is enabled
   if (!base::FeatureList::IsEnabled(
@@ -205,7 +206,7 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
   return match;
 }
 
-bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
+bool ClipboardURLProvider::CreateImageMatch(const AutocompleteInput& input) {
   // Only try image match if feature is enabled
   if (!base::FeatureList::IsEnabled(
           omnibox::kEnableClipboardProviderImageSuggestions)) {
@@ -230,21 +231,21 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
   done_ = false;
   PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&ClipboardProvider::EncodeClipboardImage,
+      base::BindOnce(&ClipboardURLProvider::EncodeClipboardImage,
                      optional_image.value()),
-      base::BindOnce(&ClipboardProvider::ConstructImageMatchCallback,
+      base::BindOnce(&ClipboardURLProvider::ConstructImageMatchCallback,
                      callback_weak_ptr_factory_.GetWeakPtr(), input,
                      url_service));
   return true;
 }
 
-scoped_refptr<base::RefCountedMemory> ClipboardProvider::EncodeClipboardImage(
-    gfx::Image image) {
+scoped_refptr<base::RefCountedMemory>
+ClipboardURLProvider::EncodeClipboardImage(gfx::Image image) {
   gfx::Image resized_image = gfx::ResizedImageForSearchByImage(image);
   return resized_image.As1xPNGBytes();
 }
 
-void ClipboardProvider::ConstructImageMatchCallback(
+void ClipboardURLProvider::ConstructImageMatchCallback(
     const AutocompleteInput& input,
     TemplateURLService* url_service,
     scoped_refptr<base::RefCountedMemory> image_bytes) {
@@ -281,7 +282,7 @@ void ClipboardProvider::ConstructImageMatchCallback(
   done_ = true;
 }
 
-void ClipboardProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+void ClipboardURLProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   // If a URL wasn't suggested on this most recent focus event, don't bother
   // setting |times_returned_results_in_session|, as in effect this URL has
   // never been suggested during the current session.  (For the purpose of

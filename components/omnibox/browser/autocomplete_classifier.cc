@@ -43,7 +43,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
 #endif
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
       (base::FeatureList::IsEnabled(omnibox::kEnableClipboardProvider)
-           ? AutocompleteProvider::TYPE_CLIPBOARD
+           ? AutocompleteProvider::TYPE_CLIPBOARD_URL
            : 0) |
       (base::FeatureList::IsEnabled(omnibox::kDocumentProvider)
            ? AutocompleteProvider::TYPE_DOCUMENT
