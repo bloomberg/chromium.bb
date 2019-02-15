@@ -1120,18 +1120,13 @@ TEST_F(CrostiniManagerTest, ExportContainerSuccess) {
                      base::Unretained(this), run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
 
-  // Send signals, TAR, COMPRESS, DOWNLOAD, DONE.
+  // Send signals, PACK, DOWNLOAD, DONE.
   vm_tools::cicerone::ExportLxdContainerProgressSignal signal;
   signal.set_owner_id(CryptohomeIdForProfile(profile()));
   signal.set_vm_name(kVmName);
   signal.set_container_name(kContainerName);
   signal.set_status(vm_tools::cicerone::
-                        ExportLxdContainerProgressSignal_Status_EXPORTING_TAR);
-  fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
-
-  signal.set_status(
-      vm_tools::cicerone::
-          ExportLxdContainerProgressSignal_Status_EXPORTING_COMPRESS);
+                        ExportLxdContainerProgressSignal_Status_EXPORTING_PACK);
   fake_cicerone_client_->NotifyExportLxdContainerProgress(signal);
 
   signal.set_status(

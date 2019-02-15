@@ -1106,7 +1106,7 @@ void CrostiniManager::ExportLxdContainer(std::string vm_name,
     return;
   }
 
-  auto key = std::make_pair(vm_name, container_name);
+  ContainerId key(vm_name, container_name);
   if (export_lxd_container_callbacks_.find(key) !=
       export_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "Export currently in progress for " << vm_name << ", "
@@ -1147,7 +1147,7 @@ void CrostiniManager::ImportLxdContainer(std::string vm_name,
     std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
     return;
   }
-  auto key = std::make_pair(vm_name, container_name);
+  ContainerId key(vm_name, container_name);
   if (import_lxd_container_callbacks_.find(key) !=
       import_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "Import currently in progress for " << vm_name << ", "
@@ -1745,8 +1745,8 @@ void CrostiniManager::AddShutdownContainerCallback(
     std::string vm_name,
     std::string container_name,
     ShutdownContainerCallback shutdown_callback) {
-  shutdown_container_callbacks_.emplace(
-      std::make_tuple(vm_name, container_name), std::move(shutdown_callback));
+  shutdown_container_callbacks_.emplace(ContainerId(vm_name, container_name),
+                                        std::move(shutdown_callback));
 }
 
 void CrostiniManager::AddRemoveCrostiniCallback(
@@ -2129,7 +2129,7 @@ void CrostiniManager::OnCreateLxdContainer(
     // The callback will be called when we receive the LxdContainerCreated
     // signal.
     create_lxd_container_callbacks_.emplace(
-        std::make_tuple(vm_name, container_name), std::move(callback));
+        ContainerId(vm_name, container_name), std::move(callback));
     return;
   }
   if (response.status() !=
@@ -2179,7 +2179,7 @@ void CrostiniManager::OnStartLxdContainer(
       // The callback will be called when we receive the LxdContainerStarting
       // signal.
       start_lxd_container_callbacks_.emplace(
-          std::make_tuple(vm_name, container_name), std::move(callback));
+          ContainerId(vm_name, container_name), std::move(callback));
       break;
     default:
       NOTREACHED();
@@ -2210,7 +2210,7 @@ void CrostiniManager::OnSetUpLxdContainerUser(
   }
 
   if (!GetContainerInfo(vm_name, container_name)) {
-    start_container_callbacks_.emplace(std::make_tuple(vm_name, container_name),
+    start_container_callbacks_.emplace(ContainerId(vm_name, container_name),
                                        std::move(callback));
     return;
   }
@@ -2535,7 +2535,7 @@ void CrostiniManager::OnExportLxdContainer(
     std::string vm_name,
     std::string container_name,
     base::Optional<vm_tools::cicerone::ExportLxdContainerResponse> reply) {
-  auto key = std::make_pair(vm_name, container_name);
+  ContainerId key(vm_name, container_name);
   auto it = export_lxd_container_callbacks_.find(key);
   if (it == export_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "No export callback for " << vm_name << ", "
@@ -2571,14 +2571,9 @@ void CrostiniManager::OnExportLxdContainerProgress(
   ExportContainerProgressStatus status;
   CrostiniResult result;
   switch (signal.status()) {
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_TAR:
+    case vm_tools::cicerone::ExportLxdContainerProgressSignal::EXPORTING_PACK:
       exporting = true;
-      status = ExportContainerProgressStatus::TAR;
-      break;
-    case vm_tools::cicerone::ExportLxdContainerProgressSignal::
-        EXPORTING_COMPRESS:
-      exporting = true;
-      status = ExportContainerProgressStatus::COMPRESS;
+      status = ExportContainerProgressStatus::PACK;
       break;
     case vm_tools::cicerone::ExportLxdContainerProgressSignal::
         EXPORTING_DOWNLOAD:
@@ -2620,7 +2615,7 @@ void CrostiniManager::OnImportLxdContainer(
     std::string vm_name,
     std::string container_name,
     base::Optional<vm_tools::cicerone::ImportLxdContainerResponse> reply) {
-  auto key = std::make_pair(vm_name, container_name);
+  ContainerId key(vm_name, container_name);
   auto it = import_lxd_container_callbacks_.find(key);
   if (it == import_lxd_container_callbacks_.end()) {
     LOG(ERROR) << "No import callback for " << vm_name << ", "
