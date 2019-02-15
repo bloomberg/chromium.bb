@@ -4,14 +4,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the Chromium source repository LICENSE file.
  */
-#include "arm_features.h"
 
+#include "arm_features.h"
 #include "zutil.h"
 
 int ZLIB_INTERNAL arm_cpu_enable_crc32 = 0;
 int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 
 #if !defined(_MSC_VER)
+
 #include <pthread.h>
 #include <stdint.h>
 
@@ -21,53 +22,54 @@ int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 #include <asm/hwcap.h>
 #include <sys/auxv.h>
 #else
-#error ### No ARM CPU features detection in your platform/OS
+#error arm_features.c ARM feature detection in not defined for your platform
 #endif
 
 static pthread_once_t cpu_check_inited_once = PTHREAD_ONCE_INIT;
 
-static void init_arm_features(void)
-{
-    uint64_t flag_crc32 = 0, flag_pmull = 0, capabilities = 0;
-
-#if defined(ARMV8_OS_ANDROID)
-    flag_crc32 = ANDROID_CPU_ARM_FEATURE_CRC32;
-    flag_pmull = ANDROID_CPU_ARM_FEATURE_PMULL;
-    capabilities = android_getCpuFeatures();
-#elif defined(ARMV8_OS_LINUX)
-    #if defined(__aarch64__)
-        flag_crc32 = HWCAP_CRC32;
-        flag_pmull = HWCAP_PMULL;
-        capabilities = getauxval(AT_HWCAP);
-    #elif defined(__ARM_NEON) || defined(__ARM_NEON__)
-        /* The use of HWCAP2 is for getting features of newer ARMv8-A SoCs
-         * while running in 32bits mode (i.e. aarch32).
-         */
-        flag_crc32 = HWCAP2_CRC32;
-        flag_pmull = HWCAP2_PMULL;
-        capabilities = getauxval(AT_HWCAP2);
-    #endif
-#endif
-
-    if (capabilities & flag_crc32)
-        arm_cpu_enable_crc32 = 1;
-
-    if (capabilities & flag_pmull)
-        arm_cpu_enable_pmull = 1;
-}
+static void _arm_check_features(void);
 
 void ZLIB_INTERNAL arm_check_features(void)
 {
-    pthread_once(&cpu_check_inited_once, init_arm_features);
+    pthread_once(&cpu_check_inited_once, _arm_check_features);
 }
-#else
+
+/*
+ * See http://bit.ly/2CcoEsr for run-time detection of ARM features and also
+ * crbug.com/931275 for android_getCpuFeatures() use in the Android sandbox.
+ */
+static void _arm_check_features(void)
+{
+#if defined(ARMV8_OS_ANDROID) && defined(__aarch64__)
+    uint64_t features = android_getCpuFeatures();
+    arm_cpu_enable_crc32 = !!(features & ANDROID_CPU_ARM64_FEATURE_CRC32);
+    arm_cpu_enable_pmull = !!(features & ANDROID_CPU_ARM64_FEATURE_PMULL);
+#elif defined(ARMV8_OS_ANDROID) /* aarch32 */
+    uint64_t features = android_getCpuFeatures();
+    arm_cpu_enable_crc32 = !!(features & ANDROID_CPU_ARM_FEATURE_CRC32);
+    arm_cpu_enable_pmull = !!(features & ANDROID_CPU_ARM_FEATURE_PMULL);
+#elif defined(ARMV8_OS_LINUX) && defined(__aarch64__)
+    unsigned long features = getauxval(AT_HWCAP);
+    arm_cpu_enable_crc32 = !!(features & HWCAP_CRC32);
+    arm_cpu_enable_pmull = !!(features & HWCAP_PMULL);
+#elif defined(ARMV8_OS_LINUX) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
+    /* Query HWCAP2 for ARMV8-A SoCs running in aarch32 mode */
+    unsigned long features = getauxval(AT_HWCAP2);
+    arm_cpu_enable_crc32 = !!(features & HWCAP2_CRC32);
+    arm_cpu_enable_pmull = !!(features & HWCAP2_PMULL);
+#endif
+    /* TODO(crbug.com/810125): add ARMV8_OS_ZIRCON support for fucshia */
+}
+
+#else /* _MSC_VER */
+
 #include <windows.h>
+
+static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;
 
 static BOOL CALLBACK _arm_check_features(PINIT_ONCE once,
                                          PVOID param,
                                          PVOID *context);
-static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;
-
 
 void ZLIB_INTERNAL arm_check_features(void)
 {
@@ -87,4 +89,5 @@ static BOOL CALLBACK _arm_check_features(PINIT_ONCE once,
 
     return TRUE;
 }
+
 #endif /* _MSC_VER */
