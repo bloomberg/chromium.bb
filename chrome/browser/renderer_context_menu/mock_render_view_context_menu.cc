@@ -149,9 +149,25 @@ void MockRenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
 
 void MockRenderViewContextMenu::AddAccessibilityLabelsServiceItem(
     bool is_checked) {
-  AddCheckItem(
-      IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND));
+  // TODO(katie): Is there a way not to repeat this logic from
+  // render_view_context_menu.cc?
+  if (is_checked) {
+    AddCheckItem(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+                 l10n_util::GetStringUTF16(
+                     IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION));
+  } else {
+    ui::SimpleMenuModel accessibility_labels_submenu_model_(this);
+    accessibility_labels_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND);
+    accessibility_labels_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE,
+        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND_ONCE);
+    AddSubMenu(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS,
+               l10n_util::GetStringUTF16(
+                   IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION),
+               &accessibility_labels_submenu_model_);
+  }
 }
 
 content::RenderViewHost* MockRenderViewContextMenu::GetRenderViewHost() const {

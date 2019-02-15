@@ -19,6 +19,7 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;
+class Profile;
 
 // An observer that listens to events from the RenderViewContextMenu class and
 // shows the accessibility labels menu if a screen reader is enabled.
@@ -36,6 +37,7 @@ class AccessibilityLabelsMenuObserver : public RenderViewContextMenuObserver {
 
  private:
   bool ShouldShowLabelsItem();
+  void ShowConfirmBubble(Profile* profile, bool enable_always);
 
   // The interface to add a context-menu item and update it. This class uses
   // this interface to avoid accessing context-menu items directly.

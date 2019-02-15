@@ -22,6 +22,8 @@ AccessibilityLabelsService::~AccessibilityLabelsService() {}
 void AccessibilityLabelsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAccessibilityImageLabelsOptInAccepted,
+                                false);
 }
 
 void AccessibilityLabelsService::Init() {
@@ -54,6 +56,13 @@ ui::AXMode AccessibilityLabelsService::GetAXMode() {
   }
 
   return ax_mode;
+}
+
+void AccessibilityLabelsService::EnableLabelsServiceOnce() {
+  // TODO(katie): Fire an AXAction on the active tab to enable this feature
+  // once only.
+  // TODO(katie): Ensure this can't be subject to a race condition where the
+  // context menu was on a different tab than the active tab.
 }
 
 void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {

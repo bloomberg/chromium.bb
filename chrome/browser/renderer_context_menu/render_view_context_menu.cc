@@ -353,10 +353,12 @@ const struct UmaEnumCommandIdPair {
     {97, -1, IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5},
     {98, -1, IDC_CONTENT_CONTEXT_LOOK_UP},
     {99, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE},
+    {100, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE},
+    {101, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {100, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {102, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                    // was added.
 };
 
@@ -550,21 +552,6 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
   }
 }
 
-// static
-void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(
-    ui::SimpleMenuModel* menu,
-    bool is_checked) {
-  if (is_checked) {
-    menu->AddCheckItemWithStringId(
-        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
-        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND);
-  } else {
-    menu->AddItemWithStringId(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
-                              IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND);
-    AddGoogleIconToLastMenuItem(menu);
-  }
-}
-
 RenderViewContextMenu::RenderViewContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
@@ -578,6 +565,7 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
+      accessibility_labels_submenu_model_(this),
       embedder_web_contents_(GetWebContentsToUse(source_web_contents_)) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
@@ -2183,7 +2171,25 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
 }
 
 void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(bool is_checked) {
-  AddAccessibilityLabelsServiceItem(&menu_model_, is_checked);
+  if (is_checked) {
+    menu_model_.AddCheckItemWithStringId(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION);
+  } else {
+    // Add the submenu if the whole feature is not enabled.
+    accessibility_labels_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE,
+        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND);
+    accessibility_labels_submenu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE,
+        IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_SEND_ONCE);
+    menu_model_.AddSubMenu(
+        IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS,
+        l10n_util::GetStringUTF16(
+            IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION),
+        &accessibility_labels_submenu_model_);
+    AddGoogleIconToLastMenuItem(&menu_model_);
+  }
 }
 
 // static

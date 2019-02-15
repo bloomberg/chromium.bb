@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
+#include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/accessibility_labels_bubble_model.h"
@@ -46,14 +48,18 @@ void AccessibilityLabelsMenuObserver::InitMenu(
 }
 
 bool AccessibilityLabelsMenuObserver::IsCommandIdSupported(int command_id) {
-  return command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE;
+  return command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE ||
+         command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS ||
+         command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE;
 }
 
 bool AccessibilityLabelsMenuObserver::IsCommandIdChecked(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
   Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
 
-  if (command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE) {
+  if (command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE ||
+      command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS ||
+      command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE) {
     return profile->GetPrefs()->GetBoolean(
         prefs::kAccessibilityImageLabelsEnabled);
   }
@@ -62,7 +68,9 @@ bool AccessibilityLabelsMenuObserver::IsCommandIdChecked(int command_id) {
 
 bool AccessibilityLabelsMenuObserver::IsCommandIdEnabled(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
-  if (command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE) {
+  if (command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE ||
+      command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS ||
+      command_id == IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE) {
     return ShouldShowLabelsItem();
   }
   return false;
@@ -80,20 +88,22 @@ void AccessibilityLabelsMenuObserver::ExecuteCommand(int command_id) {
     // service immediately.
     if (!profile->GetPrefs()->GetBoolean(
             prefs::kAccessibilityImageLabelsEnabled)) {
-      content::WebContents* web_contents = proxy_->GetWebContents();
-      content::RenderWidgetHostView* view =
-          proxy_->GetRenderViewHost()->GetWidget()->GetView();
-      gfx::Rect rect = view->GetViewBounds();
-      auto model = std::make_unique<AccessibilityLabelsBubbleModel>(
-          profile, web_contents);
-      chrome::ShowConfirmBubble(
-          web_contents->GetTopLevelNativeWindow(), view->GetNativeView(),
-          gfx::Point(rect.CenterPoint().x(), rect.y()), std::move(model));
+      // Always show the confirm bubble when enabling the full feature,
+      // regardless of whether it's been shown before.
+      ShowConfirmBubble(profile, true /* enable always */);
     } else {
-      if (profile) {
-        profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
-                                        false);
-      }
+      profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
+                                      false);
+    }
+  } else if (command_id ==
+             IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE) {
+    // Only show the confirm bubble if it's never been shown before.
+    if (!profile->GetPrefs()->GetBoolean(
+            prefs::kAccessibilityImageLabelsOptInAccepted)) {
+      ShowConfirmBubble(profile, false /* enable once only */);
+    } else {
+      AccessibilityLabelsServiceFactory::GetForProfile(profile)
+          ->EnableLabelsServiceOnce();
     }
   }
 }
@@ -106,4 +116,17 @@ bool AccessibilityLabelsMenuObserver::ShouldShowLabelsItem() {
   }
 
   return accessibility_state_utils::IsScreenReaderEnabled();
+}
+
+void AccessibilityLabelsMenuObserver::ShowConfirmBubble(Profile* profile,
+                                                        bool enable_always) {
+  content::WebContents* web_contents = proxy_->GetWebContents();
+  content::RenderWidgetHostView* view =
+      proxy_->GetRenderViewHost()->GetWidget()->GetView();
+  gfx::Rect rect = view->GetViewBounds();
+  auto model = std::make_unique<AccessibilityLabelsBubbleModel>(
+      profile, web_contents, enable_always);
+  chrome::ShowConfirmBubble(
+      web_contents->GetTopLevelNativeWindow(), view->GetNativeView(),
+      gfx::Point(rect.CenterPoint().x(), rect.y()), std::move(model));
 }

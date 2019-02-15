@@ -65,7 +65,7 @@ void AccessibilityMainHandler::HandleCheckAccessibilityImageLabels(
       web_contents->GetRenderViewHost()->GetWidget()->GetView();
   gfx::Rect rect = view->GetViewBounds();
   auto model = std::make_unique<AccessibilityLabelsBubbleModel>(
-      Profile::FromWebUI(web_ui()), web_contents);
+      Profile::FromWebUI(web_ui()), web_contents, true /* enable always */);
   chrome::ShowConfirmBubble(
       web_contents->GetTopLevelNativeWindow(), view->GetNativeView(),
       gfx::Point(rect.CenterPoint().x(), rect.y()), std::move(model));
