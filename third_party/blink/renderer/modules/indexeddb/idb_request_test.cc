@@ -144,6 +144,10 @@ class BackendDatabaseWithMockedClose
       int64_t object_store_id,
       mojom::blink::IDBKeyRangePtr key_range,
       mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+  void GetKeyGeneratorCurrentNumber(
+      int64_t transaction_id,
+      int64_t object_store_id,
+      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
   void Clear(int64_t transaction_id,
              int64_t object_store_id,
              mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}

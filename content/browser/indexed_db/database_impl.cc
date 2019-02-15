@@ -116,6 +116,10 @@ class DatabaseImpl::IDBSequenceHelper {
                    int64_t object_store_id,
                    const IndexedDBKeyRange& key_range,
                    scoped_refptr<IndexedDBCallbacks> callbacks);
+  void GetKeyGeneratorCurrentNumber(
+      int64_t transaction_id,
+      int64_t object_store_id,
+      scoped_refptr<IndexedDBCallbacks> callbacks);
   void Clear(int64_t transaction_id,
              int64_t object_store_id,
              scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -423,6 +427,20 @@ void DatabaseImpl::DeleteRange(
       FROM_HERE,
       base::BindOnce(&IDBSequenceHelper::DeleteRange, base::Unretained(helper_),
                      transaction_id, object_store_id, key_range,
+                     std::move(callbacks)));
+}
+
+void DatabaseImpl::GetKeyGeneratorCurrentNumber(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
+  idb_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IDBSequenceHelper::GetKeyGeneratorCurrentNumber,
+                     base::Unretained(helper_), transaction_id, object_store_id,
                      std::move(callbacks)));
 }
 
@@ -805,6 +823,22 @@ void DatabaseImpl::IDBSequenceHelper::DeleteRange(
   connection_->database()->DeleteRange(
       transaction, object_store_id,
       std::make_unique<IndexedDBKeyRange>(key_range), std::move(callbacks));
+}
+
+void DatabaseImpl::IDBSequenceHelper::GetKeyGeneratorCurrentNumber(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    scoped_refptr<IndexedDBCallbacks> callbacks) {
+  if (!connection_->IsConnected())
+    return;
+
+  IndexedDBTransaction* transaction =
+      connection_->GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+
+  connection_->database()->GetKeyGeneratorCurrentNumber(
+      transaction, object_store_id, std::move(callbacks));
 }
 
 void DatabaseImpl::IDBSequenceHelper::Clear(

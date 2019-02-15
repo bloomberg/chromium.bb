@@ -137,6 +137,9 @@ class MODULES_EXPORT WebIDBDatabase {
                            long long object_store_id,
                            const IDBKeyRange*,
                            WebIDBCallbacks*) = 0;
+  virtual void GetKeyGeneratorCurrentNumber(long long transaction_id,
+                                            long long object_store_id,
+                                            WebIDBCallbacks*) = 0;
   virtual void Clear(long long transaction_id,
                      long long object_store_id,
                      WebIDBCallbacks*) = 0;

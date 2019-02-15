@@ -197,6 +197,10 @@ class CONTENT_EXPORT IndexedDBDatabase
                    int64_t object_store_id,
                    std::unique_ptr<blink::IndexedDBKeyRange> key_range,
                    scoped_refptr<IndexedDBCallbacks> callbacks);
+  void GetKeyGeneratorCurrentNumber(
+      IndexedDBTransaction* transaction,
+      int64_t object_store_id,
+      scoped_refptr<IndexedDBCallbacks> callbacks);
   void Clear(IndexedDBTransaction* transaction,
              int64_t object_store_id,
              scoped_refptr<IndexedDBCallbacks> callbacks);
@@ -266,6 +270,10 @@ class CONTENT_EXPORT IndexedDBDatabase
   leveldb::Status DeleteRangeOperation(
       int64_t object_store_id,
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      IndexedDBTransaction* transaction);
+  leveldb::Status GetKeyGeneratorCurrentNumberOperation(
+      int64_t object_store_id,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);
   leveldb::Status ClearOperation(int64_t object_store_id,

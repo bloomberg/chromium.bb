@@ -100,6 +100,9 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
                    long long object_store_id,
                    const IDBKeyRange*,
                    WebIDBCallbacks*) override;
+  void GetKeyGeneratorCurrentNumber(long long transaction_id,
+                                    long long object_store_id,
+                                    WebIDBCallbacks*) override;
   void Clear(long long transaction_id,
              long long object_store_id,
              WebIDBCallbacks*) override;

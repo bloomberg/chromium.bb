@@ -139,6 +139,9 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
       ScriptState*,
       IDBKeyRange*,
       IDBRequest::AsyncTraceState = IDBRequest::AsyncTraceState());
+  IDBRequest* getKeyGeneratorCurrentNumber(
+      ScriptState*,
+      IDBRequest::AsyncTraceState = IDBRequest::AsyncTraceState());
 
   void MarkDeleted();
   bool IsDeleted() const { return deleted_; }
