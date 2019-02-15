@@ -239,7 +239,7 @@ void WorkerScriptLoader::OnStartLoadingResponseBody(
 
 void WorkerScriptLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  if (status.error_code == net::OK)
+  if (service_worker_provider_host_ && status.error_code == net::OK)
     service_worker_provider_host_->CompleteSharedWorkerPreparation();
   client_->OnComplete(status);
 }

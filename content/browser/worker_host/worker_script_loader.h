@@ -123,7 +123,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   network::ResourceRequest resource_request_;
   network::mojom::URLLoaderClientPtr client_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
-  ResourceContext* resource_context_;
+  ResourceContext* const resource_context_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 

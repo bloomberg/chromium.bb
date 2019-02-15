@@ -31,6 +31,7 @@ namespace content {
 
 class AppCacheNavigationHandleCore;
 class BrowserContext;
+class ResourceContext;
 class ServiceWorkerContextWrapper;
 class StoragePartitionImpl;
 class URLLoaderFactoryGetter;
@@ -83,7 +84,8 @@ class WorkerScriptFetchInitiator {
           factory_bundle_for_browser_info,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
-      scoped_refptr<ServiceWorkerContextWrapper> context,
+      ResourceContext* resource_context,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           blob_url_loader_factory_info,

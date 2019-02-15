@@ -29,7 +29,8 @@ class WorkerScriptLoader;
 //
 // This is created per one web worker. All functions of this class must be
 // called on the IO thread.
-class WorkerScriptLoaderFactory : public network::mojom::URLLoaderFactory {
+class CONTENT_EXPORT WorkerScriptLoaderFactory
+    : public network::mojom::URLLoaderFactory {
  public:
   // |loader_factory| is used to load the script if the load is not intercepted
   // by a feature like service worker. Typically it will load the script from
@@ -37,7 +38,7 @@ class WorkerScriptLoaderFactory : public network::mojom::URLLoaderFactory {
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   WorkerScriptLoaderFactory(
       int process_id,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       base::WeakPtr<AppCacheHost> appcache_host,
       ResourceContext* resource_context,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);

@@ -290,6 +290,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // connect to the host. The host stays alive as long as this info stays alive
   // (namely, as long as |out_provider_info->host_ptr_info| stays alive).
   //
+  // Returns null if context() is null.
+  //
   // Must be called on the IO thread.
   base::WeakPtr<ServiceWorkerProviderHost> PreCreateHostForSharedWorker(
       int process_id,

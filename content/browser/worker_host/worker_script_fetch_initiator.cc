@@ -23,11 +23,13 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -62,6 +64,14 @@ void WorkerScriptFetchInitiator::Start(
          resource_type == RESOURCE_TYPE_SHARED_WORKER)
       << resource_type;
 
+  BrowserContext* browser_context = storage_partition->browser_context();
+  ResourceContext* resource_context =
+      browser_context ? browser_context->GetResourceContext() : nullptr;
+  if (!browser_context || !resource_context) {
+    // The browser is shutting down. Just drop this request.
+    return;
+  }
+
   bool constructor_uses_file_url =
       request_initiator.scheme() == url::kFileScheme;
 
@@ -88,12 +98,18 @@ void WorkerScriptFetchInitiator::Start(
     resource_request->request_initiator = request_initiator;
     resource_request->resource_type = resource_type;
 
-    AddAdditionalRequestHeaders(resource_request.get(),
-                                storage_partition->browser_context());
+    AddAdditionalRequestHeaders(resource_request.get(), browser_context);
   }
 
   // Bounce to the IO thread to setup service worker and appcache support in
   // case the request for the worker script will need to be intercepted by them.
+  //
+  // This passes |resource_context| to the IO thread. |resource_context| will
+  // not be destroyed before the task runs, because the shutdown sequence is:
+  // 1. (UI thread) StoragePartitionImpl destructs.
+  // 2. (IO thread) ResourceContext destructs.
+  // Since |storage_partition| is alive, we must be before step 1, so this
+  // task we post to the IO thread must run before step 2.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
@@ -101,7 +117,7 @@ void WorkerScriptFetchInitiator::Start(
           std::move(resource_request),
           storage_partition->url_loader_factory_getter(),
           std::move(factory_bundle_for_browser),
-          std::move(subresource_loader_factories),
+          std::move(subresource_loader_factories), resource_context,
           std::move(service_worker_context), appcache_handle_core,
           blob_url_loader_factory ? blob_url_loader_factory->Clone() : nullptr,
           std::move(callback)));
@@ -231,18 +247,21 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
         factory_bundle_for_browser_info,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
-    scoped_refptr<ServiceWorkerContextWrapper> context,
+    ResourceContext* resource_context,
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         blob_url_loader_factory_info,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(resource_context);
 
   // Set up for service worker.
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      context->PreCreateHostForSharedWorker(process_id, &provider_info);
+  base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
+      service_worker_context->PreCreateHostForSharedWorker(process_id,
+                                                           &provider_info);
 
   // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
   // the main script.
@@ -289,13 +308,14 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
         base::BindRepeating([]() -> WebContents* { return nullptr; });
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
         GetContentClient()->browser()->CreateURLLoaderThrottles(
-            *resource_request, context->resource_context(), wc_getter,
+            *resource_request, resource_context, wc_getter,
             nullptr /* navigation_ui_data */, -1 /* frame_tree_node_id */);
 
     WorkerScriptFetcher::CreateAndStart(
         std::make_unique<WorkerScriptLoaderFactory>(
-            process_id, host, std::move(appcache_host),
-            context->resource_context(), std::move(url_loader_factory)),
+            process_id, std::move(service_worker_host),
+            std::move(appcache_host), resource_context,
+            std::move(url_loader_factory)),
         std::move(throttles), std::move(resource_request),
         base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO,
                        std::move(callback), std::move(provider_info),
@@ -308,8 +328,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   network::mojom::URLLoaderFactoryAssociatedPtrInfo main_script_loader_factory;
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<WorkerScriptLoaderFactory>(
-          process_id, host->AsWeakPtr(), std::move(appcache_host),
-          context->resource_context(), std::move(url_loader_factory)),
+          process_id, std::move(service_worker_host), std::move(appcache_host),
+          resource_context, std::move(url_loader_factory)),
       mojo::MakeRequest(&main_script_loader_factory));
 
   DidCreateScriptLoaderOnIO(std::move(callback), std::move(provider_info),
