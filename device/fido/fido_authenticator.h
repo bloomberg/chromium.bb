@@ -24,6 +24,12 @@ namespace device {
 class CtapGetAssertionRequest;
 class CtapMakeCredentialRequest;
 
+namespace pin {
+struct RetriesResponse;
+struct KeyAgreementResponse;
+struct EmptyResponse;
+}  // namespace pin
+
 // FidoAuthenticator is an authenticator from the WebAuthn Authenticator model
 // (https://www.w3.org/TR/webauthn/#sctn-authenticator-model). It may be a
 // physical device, or a built-in (platform) authenticator.
@@ -35,6 +41,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using GetAssertionCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
       base::Optional<AuthenticatorGetAssertionResponse>)>;
+  using GetRetriesCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<pin::RetriesResponse>)>;
+  using GetEphemeralKeyCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<pin::KeyAgreementResponse>)>;
+  using SetPINCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<pin::EmptyResponse>)>;
+  using ResetCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<pin::EmptyResponse>)>;
 
   FidoAuthenticator() = default;
   virtual ~FidoAuthenticator() = default;
@@ -47,9 +65,38 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                               MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             GetAssertionCallback callback) = 0;
+  // GetTouch causes an (external) authenticator to flash and wait for a touch.
+  virtual void GetTouch(base::OnceCallback<void()> callback);
+  // GetRetries gets the number of PIN attempts remaining before an
+  // authenticator locks. It is only valid to call this method if |Options|
+  // indicates that the authenticator supports PINs.
+  virtual void GetRetries(GetRetriesCallback callback);
+  // GetEphemeralKey fetches an ephemeral P-256 key from the authenticator for
+  // use in protecting transmitted PINs. It is only valid to call this method if
+  // |Options| indicates that the authenticator supports PINs.
+  virtual void GetEphemeralKey(GetEphemeralKeyCallback callback);
+  // SetPIN sets a new PIN on a device that does not currently have one. The
+  // length of |pin| must respect |pin::kMinLength| and |pin::kMaxLength|. It is
+  // only valid to call this method if |Options| indicates that the
+  // authenticator supports PINs.
+  virtual void SetPIN(const std::string& pin,
+                      pin::KeyAgreementResponse& peer_key,
+                      SetPINCallback callback);
+  // ChangePIN alters the PIN on a device that already has a PIN set. The
+  // length of |pin| must respect |pin::kMinLength| and |pin::kMaxLength|. It is
+  // only valid to call this method if |Options| indicates that the
+  // authenticator supports PINs.
+  virtual void ChangePIN(const std::string& old_pin,
+                         const std::string& new_pin,
+                         pin::KeyAgreementResponse& peer_key,
+                         SetPINCallback callback);
+  // Reset triggers a reset operation on the authenticator. This erases all
+  // stored resident keys and any configured PIN.
+  virtual void Reset(ResetCallback callback);
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
   virtual base::string16 GetDisplayName() const = 0;
+  virtual ProtocolVersion SupportedProtocol() const;
   virtual const base::Optional<AuthenticatorSupportedOptions>& Options()
       const = 0;
   virtual base::Optional<FidoTransportProtocol> AuthenticatorTransport()

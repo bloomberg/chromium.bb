@@ -15,6 +15,7 @@
 #include "device/fido/fido_device.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/make_credential_task.h"
+#include "device/fido/pin.h"
 
 namespace device {
 
@@ -96,6 +97,136 @@ void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                              std::move(callback));
 }
 
+void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
+  // We want to flash and wait for a touch. With a U2F device, that can be
+  // achieved by requesting a signature for a dummy credential ID, but CTAP2
+  // devices will return an error immediately. Newer versions of the CTAP2 spec
+  // include a provision for blocking for a touch when an empty pinAuth is
+  // specified, but devices may exist that predate this part of the spec and
+  // also the spec says that devices need only do that if they implement PIN
+  // support. Therefore, in order to portably wait for a touch a dummy
+  // credential is created. This does assume that the device supports ECDSA
+  // P-256, however.
+  if (device_->supported_protocol() == ProtocolVersion::kU2f) {
+    CtapGetAssertionRequest req(".dummy", "");
+    req.SetAllowList(
+        {PublicKeyCredentialDescriptor(CredentialType::kPublicKey, {0})});
+    GetAssertion(
+        std::move(req),
+        base::BindOnce(
+            [](base::OnceCallback<void()> callback, CtapDeviceResponseCode,
+               base::Optional<AuthenticatorGetAssertionResponse>) {
+              std::move(callback).Run();
+            },
+            std::move(callback)));
+  } else {
+    PublicKeyCredentialUserEntity user({1} /* user ID */);
+    // The user name is incorrectly marked as optional in the CTAP2 spec.
+    user.SetUserName("dummy");
+    CtapMakeCredentialRequest req(
+        "" /* client_data_json */, PublicKeyCredentialRpEntity(".dummy"),
+        std::move(user),
+        PublicKeyCredentialParams(
+            {{CredentialType::kPublicKey,
+              base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
+    req.SetExcludeList({});
+    // Set an empty pinAuth in case the device is a newer CTAP2 and understands
+    // this to mean to block for touch.
+    req.SetPinAuth({});
+
+    MakeCredential(
+        std::move(req),
+        base::BindOnce(
+            [](base::OnceCallback<void()> callback,
+               CtapDeviceResponseCode status,
+               base::Optional<AuthenticatorMakeCredentialResponse>) {
+              // If the device didn't understand/process the request it may
+              // fail immediately. Rather than count that as a touch, ignore
+              // those cases completely.
+              if (status == CtapDeviceResponseCode::kSuccess ||
+                  status == CtapDeviceResponseCode::kCtap2ErrPinNotSet ||
+                  status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
+                std::move(callback).Run();
+              }
+            },
+            std::move(callback)));
+  }
+}
+
+void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+  DCHECK(Options());
+  DCHECK(Options()->client_pin_availability !=
+         AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<pin::RetriesRequest, pin::RetriesResponse>>(
+      device_.get(), pin::RetriesRequest(), std::move(callback),
+      base::BindOnce(&pin::RetriesResponse::Parse));
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::GetEphemeralKey(
+    GetEphemeralKeyCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+  DCHECK(Options());
+  DCHECK(Options()->client_pin_availability !=
+         AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+
+  operation_ =
+      std::make_unique<Ctap2DeviceOperation<pin::KeyAgreementRequest,
+                                            pin::KeyAgreementResponse>>(
+          device_.get(), pin::KeyAgreementRequest(), std::move(callback),
+          base::BindOnce(&pin::KeyAgreementResponse::Parse));
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::SetPIN(const std::string& pin,
+                                     pin::KeyAgreementResponse& peer_key,
+                                     SetPINCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+  DCHECK(Options());
+  DCHECK(Options()->client_pin_availability !=
+         AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<pin::SetRequest, pin::EmptyResponse>>(
+      device_.get(), pin::SetRequest(pin, peer_key), std::move(callback),
+      base::BindOnce(&pin::EmptyResponse::Parse));
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::ChangePIN(const std::string& old_pin,
+                                        const std::string& new_pin,
+                                        pin::KeyAgreementResponse& peer_key,
+                                        SetPINCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+  DCHECK(Options());
+  DCHECK(Options()->client_pin_availability !=
+         AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<pin::ChangeRequest, pin::EmptyResponse>>(
+      device_.get(), pin::ChangeRequest(old_pin, new_pin, peer_key),
+      std::move(callback), base::BindOnce(&pin::EmptyResponse::Parse));
+  operation_->Start();
+}
+
+void FidoDeviceAuthenticator::Reset(ResetCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<pin::ResetRequest, pin::ResetResponse>>(
+      device_.get(), pin::ResetRequest(), std::move(callback),
+      base::BindOnce(&pin::ResetResponse::Parse));
+  operation_->Start();
+}
+
 void FidoDeviceAuthenticator::Cancel() {
   if (!task_)
     return;
@@ -109,6 +240,11 @@ std::string FidoDeviceAuthenticator::GetId() const {
 
 base::string16 FidoDeviceAuthenticator::GetDisplayName() const {
   return device_->GetDisplayName();
+}
+
+ProtocolVersion FidoDeviceAuthenticator::SupportedProtocol() const {
+  DCHECK(device_->SupportedProtocolIsInitialized());
+  return device_->supported_protocol();
 }
 
 const base::Optional<AuthenticatorSupportedOptions>&

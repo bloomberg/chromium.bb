@@ -66,6 +66,7 @@ component("fido") {
     "ec_public_key.h",
     "features.cc",
     "features.h",
+    "fido_authenticator.cc",
     "fido_authenticator.h",
     "fido_constants.cc",
     "fido_constants.h",
