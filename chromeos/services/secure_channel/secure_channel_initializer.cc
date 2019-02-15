@@ -71,7 +71,7 @@ SecureChannelInitializer::SecureChannelInitializer(
   // call as a task to ensure that it is returned asynchronously, even in tests.
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           device::BluetoothAdapterFactory::GetAdapter,
           base::Bind(&SecureChannelInitializer::OnBluetoothAdapterReceived,
                      weak_ptr_factory_.GetWeakPtr())));
