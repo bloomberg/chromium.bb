@@ -75,6 +75,8 @@
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#include <algorithm>
+
 namespace blink {
 
 BaseAudioContext* BaseAudioContext::Create(
@@ -171,7 +173,6 @@ void BaseAudioContext::Uninitialize() {
 
   DCHECK(!is_resolving_resume_promises_);
   DCHECK_EQ(resume_resolvers_.size(), 0u);
-  DCHECK_EQ(active_source_nodes_.size(), 0u);
 }
 
 void BaseAudioContext::ContextLifecycleStateChanged(
@@ -655,16 +656,17 @@ void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(this);
 
-  active_source_nodes_.push_back(node);
+  GetDeferredTaskHandler().GetActiveSourceHandlers()->push_back(
+      &node->Handler());
   node->Handler().MakeConnection();
 }
 
 void BaseAudioContext::ReleaseActiveSourceNodes() {
   DCHECK(IsMainThread());
-  for (auto& source_node : active_source_nodes_)
-    source_node->Handler().BreakConnection();
-
-  active_source_nodes_.clear();
+  for (auto source_handler :
+       *GetDeferredTaskHandler().GetActiveSourceHandlers()) {
+    source_handler->BreakConnection();
+  }
 }
 
 void BaseAudioContext::HandleStoppableSourceNodes() {
@@ -694,14 +696,15 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     is_resolving_resume_promises_ = false;
   }
 
-  if (active_source_nodes_.size()) {
+  Vector<scoped_refptr<AudioHandler>>* active_source_handlers =
+      GetDeferredTaskHandler().GetActiveSourceHandlers();
+  if (active_source_handlers->size()) {
     // Find AudioBufferSourceNodes to see if we can stop playing them.
-    for (AudioNode* node : active_source_nodes_) {
-      if (node->Handler().GetNodeType() ==
-          AudioHandler::kNodeTypeAudioBufferSource) {
-        AudioBufferSourceNode* source_node =
-            static_cast<AudioBufferSourceNode*>(node);
-        source_node->GetAudioBufferSourceHandler().HandleStoppableSourceNode();
+    for (auto handler : *active_source_handlers) {
+      if (handler->GetNodeType() == AudioHandler::kNodeTypeAudioBufferSource) {
+        AudioBufferSourceHandler* source_handler =
+            static_cast<AudioBufferSourceHandler*>(handler.get());
+        source_handler->HandleStoppableSourceNode();
       }
     }
 
@@ -714,10 +717,10 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     // playing.
     wtf_size_t remove_count = 0;
     Vector<bool> removables;
-    removables.resize(active_source_nodes_.size());
+    removables.resize(active_source_handlers->size());
     for (AudioHandler* handler : finished_handlers) {
-      for (wtf_size_t i = 0; i < active_source_nodes_.size(); ++i) {
-        if (handler == &active_source_nodes_[i]->Handler()) {
+      for (wtf_size_t i = 0; i < active_source_handlers->size(); ++i) {
+        if (handler == active_source_handlers->at(i).get()) {
           handler->BreakConnectionWithLock();
           removables[i] = true;
           remove_count++;
@@ -728,17 +731,18 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
 
     // Copy over the surviving active nodes after removal.
     if (remove_count > 0) {
-      HeapVector<Member<AudioNode>> actives;
-      DCHECK_GE(active_source_nodes_.size(), remove_count);
+      Vector<scoped_refptr<AudioHandler>> actives;
+      DCHECK_GE(active_source_handlers->size(), remove_count);
       wtf_size_t initial_capacity =
-          std::min(active_source_nodes_.size() - remove_count,
-                   active_source_nodes_.size());
+          std::min(active_source_handlers->size() - remove_count,
+                   active_source_handlers->size());
       actives.ReserveInitialCapacity(initial_capacity);
       for (wtf_size_t i = 0; i < removables.size(); ++i) {
-        if (!removables[i])
-          actives.push_back(active_source_nodes_[i]);
+        if (!removables[i]) {
+          actives.push_back(active_source_handlers->at(i));
+        }
       }
-      active_source_nodes_.swap(actives);
+      active_source_handlers->swap(actives);
     }
   }
 
@@ -803,7 +807,6 @@ void BaseAudioContext::StartRendering() {
 void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(destination_node_);
   visitor->Trace(listener_);
-  visitor->Trace(active_source_nodes_);
   visitor->Trace(resume_resolvers_);
   visitor->Trace(decode_audio_resolvers_);
   visitor->Trace(periodic_wave_sine_);

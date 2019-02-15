@@ -346,6 +346,7 @@ void DeferredTaskHandler::ClearHandlersToBeDeleted() {
   deletable_orphan_handlers_.clear();
   automatic_pull_handlers_.clear();
   rendering_automatic_pull_handlers_.clear();
+  active_source_handlers_.clear();
 }
 
 void DeferredTaskHandler::SetAudioThreadToCurrentThread() {
