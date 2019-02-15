@@ -60,6 +60,13 @@ class SkiaOutputSurfaceImplTest : public testing::Test {
   void TearDown() override;
   void BlockMainThread();
   void UnblockMainThread();
+  bool is_vulkan_enabled() {
+#if BUILDFLAG(ENABLE_VULKAN)
+    return !!vulkan_implementation_;
+#else
+    return false;
+#endif
+  }
 
   std::unique_ptr<base::Thread> gpu_thread_;
   std::unique_ptr<SkiaOutputSurfaceImpl> output_surface_;
@@ -259,12 +266,19 @@ TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
   geometry.result_bounds = surface_rect;
   geometry.result_selection = output_rect;
   geometry.sampling_bounds = surface_rect;
-  // TODO(https://crbug.com/929790): The need to change the value of
-  // readback_offset when using GLRendererCopier suggests a bug that needs
-  // further investigation because we will still have software readback for
-  // SkiaRenderer with Vulkan.
-  geometry.readback_offset = gfx::Vector2d(0, 90);
 
+  if (is_vulkan_enabled()) {
+    // No flipping because Skia handles all co-ordinate transformation on the
+    // software readback path currently implemented for Vulkan.
+    geometry.readback_offset = geometry.readback_offset = gfx::Vector2d(0, 0);
+  } else {
+    // GLRendererCopier may need a vertical flip depending on output surface
+    // characteristics.
+    geometry.readback_offset =
+        output_surface_->capabilities().flipped_output_surface
+            ? geometry.readback_offset = gfx::Vector2d(0, 0)
+            : geometry.readback_offset = gfx::Vector2d(0, 90);
+  }
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
   BlockMainThread();
 }

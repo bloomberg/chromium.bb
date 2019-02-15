@@ -498,7 +498,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
 
   SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       gfx::Size(characterization_.width(), characterization_.height()),
-      BGRA_8888, false, characterization_.refColorSpace());
+      BGRA_8888, false /* mipmap */, characterization_.refColorSpace());
   overdraw_surface_recorder_.emplace(characterization);
   overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
 
