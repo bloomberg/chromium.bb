@@ -29,6 +29,10 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "ui/native_theme/native_theme.h"  // nogncheck
+#endif
+
 namespace autofill {
 
 namespace {
@@ -352,8 +356,16 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
   // On Android and Desktop, Google Pay branding is shown along with Settings.
   // So Google Pay Icon is just attached to an existing menu item.
-  if (is_all_server_suggestions)
+  if (is_all_server_suggestions) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
     suggestions->back().icon = "googlePay";
+#else
+    suggestions->back().icon =
+        ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+            ? "googlePayDark"
+            : "googlePay";
+#endif
+  }
 
 // On iOS, GooglePayIcon comes at the begining and hence prepended to the list.
 #if defined(OS_IOS)
