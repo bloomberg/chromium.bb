@@ -98,12 +98,12 @@ std::unique_ptr<views::Label> CreateExplanationText(
     LocalCardMigrationDialogState view_state,
     int card_list_size,
     const base::string16& user_email) {
-  DCHECK_NE((int)user_email.length(), 0);
   auto explanation_text =
       std::make_unique<views::Label>(base::string16(), CONTEXT_BODY_TEXT_LARGE,
                                      ChromeTextStyle::STYLE_SECONDARY);
   switch (view_state) {
     case LocalCardMigrationDialogState::kOffered:
+      DCHECK(!user_email.empty());
       explanation_text->SetText(
           base::i18n::MessageFormatter::FormatWithNumberedArgs(
               l10n_util::GetStringFUTF16(
