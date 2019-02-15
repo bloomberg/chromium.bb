@@ -10,9 +10,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -28,7 +26,6 @@
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
@@ -175,8 +172,6 @@ class AuthenticationServiceTest : public PlatformTest,
     }
     authentication_service_ = std::make_unique<AuthenticationService>(
         browser_state_->GetPrefs(),
-        ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-            browser_state_.get()),
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()),
         IdentityManagerFactory::GetForBrowserState(browser_state_.get()),
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
@@ -235,8 +230,11 @@ class AuthenticationServiceTest : public PlatformTest,
   }
 
   identity::IdentityManager* identity_manager() {
-    return identity_test_environment_adaptor_->identity_test_env()
-        ->identity_manager();
+    return identity_test_env()->identity_manager();
+  }
+
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_environment_adaptor_->identity_test_env();
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -264,10 +262,6 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
 
   EXPECT_NSEQ(identity_, authentication_service_->GetAuthenticatedIdentity());
 
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-          browser_state_.get());
-
   std::string user_email = base::SysNSStringToUTF8([identity_ userEmail]);
   AccountInfo account_info =
       identity_manager()
@@ -275,7 +269,8 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
           .value();
   EXPECT_EQ(user_email, account_info.email);
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ gaiaID]), account_info.gaia);
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_info.account_id));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
 }
 
 TEST_F(AuthenticationServiceTest, TestSetPromptForSignIn) {
@@ -572,13 +567,8 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   // AccountTrackerService::Initialize(), it fails because account ids are
   // updated with gaia ID from email at MigrateToGaiaId. As IdentityManager
   // needs refresh token to find account info, it reloads all credentials.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-          browser_state_.get());
-  ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
-      static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-          token_service->GetDelegate());
-  token_service_delegate->ReloadCredentials();
+  // TODO(crbug.com/930094): Eliminate this.
+  identity_manager()->LegacyReloadAccountsFromSystem();
 
   // Actually migrate the accounts in prefs.
   MigrateAccountsStoredInPrefsIfNeeded();
@@ -605,9 +595,8 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   SetCachedMDMInfo(identity_, user_info);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
-      ->GetDelegate()
-      ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
+  identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      base::SysNSStringToUTF8([identity_ gaiaID]), error);
   EXPECT_EQ(2, refresh_token_available_count_);
 
   // MDM error for |identity_| is being cleared, refresh token available
@@ -646,9 +635,8 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
-      ->GetDelegate()
-      ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
+  identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      base::SysNSStringToUTF8([identity_ gaiaID]), error);
 
   NSDictionary* user_info1 = @{ @"foo" : @1 };
   ON_CALL(*identity_service_, GetMDMDeviceStatus(user_info1))
@@ -683,9 +671,8 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
-      ->GetDelegate()
-      ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
+  identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      base::SysNSStringToUTF8([identity_ gaiaID]), error);
 
   NSDictionary* user_info1 = @{ @"foo" : @1 };
   ON_CALL(*identity_service_, GetMDMDeviceStatus(user_info1))
@@ -742,9 +729,8 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state_.get())
-      ->GetDelegate()
-      ->UpdateAuthError(base::SysNSStringToUTF8([identity_ gaiaID]), error);
+  identity_test_env()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      base::SysNSStringToUTF8([identity_ gaiaID]), error);
 
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity_, user_info);

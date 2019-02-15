@@ -398,6 +398,13 @@ class IdentityManager : public SigninManagerBase::Observer,
   // TODO(https://crbug.com/930582) : Remove the need to expose this method
   // or move it to the network::CookieManager.
   void ForceTriggerOnCookieChange();
+
+  // Adds a given account to the token service from a system account. This
+  // API calls OAuth2TokenServiceDelegate::AddAccountFromSystem and it
+  // triggers platform specific implementation for IOS.
+  // NOTE: In normal usage, this method SHOULD NOT be called.
+  // TODO(https://crbug.com/930094): Eliminate the need to expose this.
+  void LegacyAddAccountFromSystem(const std::string& account_id);
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
