@@ -2171,8 +2171,10 @@ bool LocalFrameView::UpdateLifecyclePhases(
     return Lifecycle().GetState() == target_state;
   }
 
-  for (auto& observer : lifecycle_observers_)
-    observer->WillStartLifecycleUpdate();
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    for (auto& observer : frame_view.lifecycle_observers_)
+      observer->WillStartLifecycleUpdate();
+  });
 
   // If we're in PrintBrowser mode, setup a print context.
   // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
@@ -2196,8 +2198,10 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   UpdateThrottlingStatusForSubtree();
 
-  for (auto& observer : lifecycle_observers_)
-    observer->DidFinishLifecycleUpdate();
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    for (auto& observer : frame_view.lifecycle_observers_)
+      observer->DidFinishLifecycleUpdate();
+  });
 
   return Lifecycle().GetState() == target_state;
 }
