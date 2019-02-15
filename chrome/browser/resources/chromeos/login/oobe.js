@@ -10,7 +10,6 @@
 // <include src="test_util.js">
 // <include src="../../../../../ui/login/screen.js">
 // <include src="screen_context.js">
-// <include src="../user_images_grid.js">
 // <include src="apps_menu.js">
 // <include src="../../../../../ui/login/bubble.js">
 // <include src="../../../../../ui/login/display_manager.js">
