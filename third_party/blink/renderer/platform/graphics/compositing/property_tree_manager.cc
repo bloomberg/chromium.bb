@@ -650,8 +650,9 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       synthetic_effect.clip_id =
           EnsureCompositorClipNode(*pending_clip.clip->Parent());
     }
-    synthetic_effect.transform_id =
-        EnsureCompositorTransformNode(pending_clip.clip->LocalTransformSpace());
+    const auto& transform = pending_clip.clip->LocalTransformSpace();
+    synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
+    synthetic_effect.double_sided = !transform.IsBackfaceHidden();
     synthetic_effect.has_render_surface = true;
     // Clip and kDstIn do not commute. This shall never be reached because
     // kDstIn is only used internally to implement CSS clip-path and mask,
