@@ -291,9 +291,9 @@ void XRFrameProvider::OnImmersiveFrameData(
   // Used kInternalMedia since 1) this is not spec-ed and 2) this is media
   // related then tasks should not be throttled or frozen in background tabs.
   frame->GetTaskRunner(blink::TaskType::kInternalMedia)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
-                           WrapWeakPersistent(this), nullptr, high_res_now_ms));
+      ->PostTask(FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+                                      WrapWeakPersistent(this), std::move(data),
+                                      high_res_now_ms));
 }
 
 void XRFrameProvider::OnNonImmersiveVSync(double high_res_now_ms) {
@@ -404,6 +404,10 @@ void XRFrameProvider::ProcessScheduledFrame(
       DCHECK(buffer_mailbox_holder_);
     }
 #endif
+    if (frame_data && (frame_data->left_eye || frame_data->right_eye)) {
+      immersive_session_->UpdateDisplayInfo(frame_data->left_eye,
+                                            frame_data->right_eye);
+    }
     immersive_session_->OnFrame(high_res_now_ms, std::move(pose_matrix),
                                 buffer_mailbox_holder_, base::nullopt,
                                 base::nullopt);

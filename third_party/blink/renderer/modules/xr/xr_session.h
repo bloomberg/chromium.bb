@@ -158,6 +158,9 @@ class XRSession final : public EventTargetWithInlineData,
     return !display_info_->capabilities->hasPosition;
   }
 
+  void UpdateDisplayInfo(
+      const device::mojom::blink::VREyeParametersPtr& left_eye,
+      const device::mojom::blink::VREyeParametersPtr& right_eye);
   bool External() const { return is_external_; }
   // Incremented every time display_info_ is changed, so that other objects that
   // depend on it can know when they need to update.

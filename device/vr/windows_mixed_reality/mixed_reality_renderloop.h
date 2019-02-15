@@ -29,18 +29,13 @@
 
 namespace device {
 
-class MixedRealityWindow : public gfx::WindowImpl {
-  BOOL ProcessWindowMessage(HWND window,
-                            UINT message,
-                            WPARAM w_param,
-                            LPARAM l_param,
-                            LRESULT& result,
-                            DWORD msg_map_id) override;
-};
+class MixedRealityWindow;
 
 class MixedRealityRenderLoop : public XRCompositorCommon {
  public:
-  MixedRealityRenderLoop();
+  explicit MixedRealityRenderLoop(
+      base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
+          on_display_info_changed);
   ~MixedRealityRenderLoop() override;
 
  private:
@@ -60,16 +55,42 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
 
   // Helpers to implement XRDeviceAbstraction.
   std::vector<mojom::XRInputSourceStatePtr> GetInputState();
-
+  void InitializeOrigin();
   void InitializeSpace();
   void StartPresenting();
+  void UpdateWMRDataForNextFrame();
+  bool UpdateDisplayInfo();  // returns true if display info has changed.
+
+  std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
 
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace>
       holographic_space_;
-
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
+      origin_;
   std::unique_ptr<MixedRealityWindow> window_;
+  mojom::VRDisplayInfoPtr current_display_info_;
+  base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
+      on_display_info_changed_;
 
-  std::unique_ptr<base::win::ScopedWinrtInitializer> initializer_;
+  // Per frame data:
+  Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicFrame>
+      holographic_frame_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Graphics::Holographic::IHolographicFramePrediction>
+      prediction_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<
+      ABI::Windows::Graphics::Holographic::HolographicCameraPose*>>
+      poses_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Graphics::Holographic::IHolographicCameraPose>
+      pose_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::
+                             IHolographicCameraRenderingParameters>
+      rendering_params_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Graphics::Holographic::IHolographicCamera>
+      camera_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedRealityRenderLoop);
 };

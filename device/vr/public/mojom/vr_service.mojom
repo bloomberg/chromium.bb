@@ -252,6 +252,18 @@ struct XRFrameData {
   // Pass through camera values
   gfx.mojom.Size? buffer_size;
   array<float, 16>? projection_matrix;
+
+  // Eye parameters may be provided per-frame for some runtimes.  If both of
+  // these are null, it indicates that there was no change since the previous
+  // frame.  If either are non-null, it indicates that data has changed. If only
+  // one is null, it indicates that the data has changed and the display is
+  // mono. Some hardware have sliders to adjust the displays for the eyes, so
+  // Oculus, Vive, and Samsung headsets may have differen't eye offsets for each
+  // frame. These need to be synchronized with a frame because the runtimes
+  // distort textures assuming the view matrix they handed out was used for
+  // rendering.
+  VREyeParameters? left_eye;
+  VREyeParameters? right_eye;
 };
 
 enum VRDisplayEventReason {
