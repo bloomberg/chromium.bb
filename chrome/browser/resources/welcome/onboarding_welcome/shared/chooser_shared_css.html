@@ -65,6 +65,11 @@
         width: 3rem;
       }
 
+      :host-context([dir=rtl]) .option iron-icon {
+        left: 0.375rem;
+        right: unset;
+      }
+
       .option iron-icon {
         --iron-icon-fill-color: white;
         background: lightgrey;
@@ -101,7 +106,7 @@
       }
 
       :host-context([dir=rtl]) iron-icon {
-        transform: rotate(180deg);
+        transform: scaleX(-1);
       }
 
       iron-icon[icon='cr:chevron-right'] {
