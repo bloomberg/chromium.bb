@@ -1464,12 +1464,12 @@
   },
   {
     "name": "enable-ntp-asset-download-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-ntp-bookmark-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
@@ -1479,22 +1479,22 @@
   },
   {
     "name": "enable-ntp-offline-page-download-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-ntp-remote-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-ntp-snippets-increased-visibility",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-ntp-suggestions-notifications",
-    // "owners": [ "your-team" ],
+    "owners": [ "fgorski" ],
     "expiry_milestone": 76
   },
   {
