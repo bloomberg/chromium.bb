@@ -249,6 +249,8 @@ jumbo_source_set("browser_sources") {
     "render_widget_host_iterator.h",
     "render_widget_host_view.h",
     "render_widget_host_view_mac_delegate.h",
+    "renderer_preferences_util.cc",
+    "renderer_preferences_util.h",
     "replaced_navigation_entry_data.h",
     "resource_context.h",
     "resource_dispatcher_host.h",

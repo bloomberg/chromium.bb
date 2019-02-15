@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/renderer_preferences_util.h"
+#include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -150,6 +150,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
   content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
+  content::UpdateFocusRingPreferencesFromSystemSettings(prefs);
 #endif
 
 #if !defined(OS_MACOSX)
