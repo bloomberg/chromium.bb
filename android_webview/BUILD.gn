@@ -664,6 +664,8 @@ source_set("common") {
     "browser/net_helpers.h",
     "browser/net_network_service/android_stream_reader_url_loader.cc",
     "browser/net_network_service/android_stream_reader_url_loader.h",
+    "browser/net_network_service/aw_cookie_manager_wrapper.cc",
+    "browser/net_network_service/aw_cookie_manager_wrapper.h",
     "browser/parent_compositor_draw_constraints.cc",
     "browser/parent_compositor_draw_constraints.h",
     "browser/parent_output_surface.cc",

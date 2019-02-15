@@ -12,10 +12,12 @@
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/init_native_callback.h"
+#include "android_webview/browser/net_network_service/aw_cookie_manager_wrapper.h"
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -38,6 +40,9 @@
 #include "net/cookies/parsed_cookie.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "url/url_constants.h"
 
 using base::FilePath;
@@ -243,6 +248,21 @@ net::CookieStore* CookieManager::GetCookieStore() {
   return cookie_store_.get();
 }
 
+AwCookieManagerWrapper* CookieManager::GetCookieManagerWrapper() {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
+  if (!cookie_manager_wrapper_) {
+    cookie_manager_wrapper_ = std::make_unique<AwCookieManagerWrapper>();
+  }
+  return cookie_manager_wrapper_.get();
+}
+
+void CookieManager::SetMojoCookieManager(
+    network::mojom::CookieManagerPtrInfo cookie_manager_info) {
+  GetCookieManagerWrapper()->SetMojoCookieManager(
+      std::move(cookie_manager_info));
+}
+
 void CookieManager::SetShouldAcceptCookies(bool accept) {
   AwCookieAccessPolicy::GetInstance()->SetShouldAcceptCookies(accept);
 }
@@ -313,10 +333,17 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
   options.set_same_site_cookie_mode(
       net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
 
-  GetCookieStore()->GetCookieListWithOptionsAsync(
-      host, options,
-      base::BindOnce(&CookieManager::GetCookieListCompleted,
-                     base::Unretained(this), std::move(complete), result));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    GetCookieManagerWrapper()->GetCookieList(
+        host, options,
+        base::BindOnce(&CookieManager::GetCookieListCompleted2,
+                       base::Unretained(this), std::move(complete), result));
+  } else {
+    GetCookieStore()->GetCookieListWithOptionsAsync(
+        host, options,
+        base::BindOnce(&CookieManager::GetCookieListCompleted,
+                       base::Unretained(this), std::move(complete), result));
+  }
 }
 
 void CookieManager::GetCookieListCompleted(
@@ -324,6 +351,13 @@ void CookieManager::GetCookieListCompleted(
     net::CookieList* result,
     const net::CookieList& value,
     const net::CookieStatusList& excluded_cookies) {
+  *result = value;
+  std::move(complete).Run();
+}
+
+void CookieManager::GetCookieListCompleted2(base::OnceClosure complete,
+                                            net::CookieList* result,
+                                            const net::CookieList& value) {
   *result = value;
   std::move(complete).Run();
 }
