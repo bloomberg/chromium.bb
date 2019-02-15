@@ -396,8 +396,9 @@ interesting attributes supported today.
 :   The `Native` attribute may be specified for an empty struct declaration to
     provide a nominal bridge between Mojo IPC and legacy `IPC::ParamTraits` or
     `IPC_STRUCT_TRAITS*` macros.
-    See [Using Legacy IPC Traits](/ipc/README.md#Using-Legacy-IPC-Traits) for
-    more details. Note support for this attribute is strictly limited to C++
+    See
+    [Repurposing Legacy IPC Traits](/docs/mojo_ipc_conversion.md#repurposing-and-invocations)
+    for more details. Note support for this attribute is strictly limited to C++
     bindings generation.
 
 **`[MinVersion=N]`**
