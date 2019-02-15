@@ -112,9 +112,12 @@ void XRRigidTransform::EnsureMatrix() {
     decomp.scale_y = 1;
     decomp.scale_z = 1;
 
-    decomp.quaternion_x = orientation_->x();
-    decomp.quaternion_y = orientation_->y();
-    decomp.quaternion_z = orientation_->z();
+    // TODO(https://crbug.com/929841): Minuses are needed as a workaround for
+    // bug in TransformationMatrix so that callers can still pass non-inverted
+    // quaternions.
+    decomp.quaternion_x = -orientation_->x();
+    decomp.quaternion_y = -orientation_->y();
+    decomp.quaternion_z = -orientation_->z();
     decomp.quaternion_w = orientation_->w();
 
     decomp.translate_x = position_->x();

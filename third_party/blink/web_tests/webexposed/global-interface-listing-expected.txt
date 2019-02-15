@@ -10464,8 +10464,8 @@ interface XRPresentationContext
 interface XRRay
     attribute @@toStringTag
     getter direction
+    getter matrix
     getter origin
-    getter transformMatrix
     method constructor
 interface XRReferenceSpace : XRSpace
     attribute @@toStringTag

@@ -204,6 +204,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
+      function DOMPointFromVec3(vector) {
+        return { x : vector[0], y : vector[1], z : vector[2]}
+      }
+
       let rayOrigin = vec3.create();
       let rayDirection = vec3.create();
       function onSelect(event) {
@@ -229,7 +233,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 inputPose.targetRay.direction.x,
                 inputPose.targetRay.direction.y,
                 inputPose.targetRay.direction.z);
-            event.frame.session.requestHitTest(rayOrigin, rayDirection, xrRefSpace).then((results) => {
+
+            let ray = new XRRay(DOMPointFromVec3(rayOrigin), DOMPointFromVec3(rayDirection));
+            event.frame.session.requestHitTest(ray, xrRefSpace).then((results) => {
               if (results.length) {
                 addARObjectAt(results[0].hitMatrix);
               }
@@ -255,7 +261,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           vec3.sub(rayDirection, rayDirection, rayOrigin);
           vec3.normalize(rayDirection, rayDirection);
 
-          session.requestHitTest(rayOrigin, rayDirection, xrRefSpace).then((results) => {
+          let ray = new XRRay(DOMPointFromVec3(rayOrigin), DOMPointFromVec3(rayDirection));
+          session.requestHitTest(ray, xrRefSpace).then((results) => {
             // When the hit test returns use it to place our proxy object.
             if (results.length) {
               let hitResult = results[0];

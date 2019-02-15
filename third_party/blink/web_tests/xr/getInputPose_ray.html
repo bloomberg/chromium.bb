@@ -51,7 +51,7 @@ let testFunction =
 
         t.step( () => {
           assert_not_equals(input_pose.gripTransform, null);
-          assert_matrices_approx_equal(input_pose.targetRay.transformMatrix,
+          assert_matrices_approx_equal(input_pose.targetRay.matrix,
             input_pose.gripTransform.matrix, FLOAT_EPSILON,
             "Target ray matrix is incorrect.");
 
@@ -77,7 +77,7 @@ let testFunction =
         let input_pose = xrFrame.getInputPose(source, referenceSpace);
 
         t.step( () => {
-          assert_matrices_approx_equal(input_pose.targetRay.transformMatrix,
+          assert_matrices_approx_equal(input_pose.targetRay.matrix,
             VALID_GRIP_WITH_POINTER_OFFSET, FLOAT_EPSILON,
             "Target ray matrix is not offset properly.");
 

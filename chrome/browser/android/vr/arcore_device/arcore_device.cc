@@ -426,6 +426,9 @@ void ArCoreDevice::OnGetInlineFrameData(
 void ArCoreDevice::RequestHitTest(
     mojom::XRRayPtr ray,
     mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", direction=" << ray->direction.ToString();
+
   DCHECK(IsOnMainThread());
 
   PostTaskToGlThread(base::BindOnce(

@@ -410,7 +410,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               if (hitResult.node ==  source.node) {
                 draggingSource = source;
                 draggingInput = inputSource;
-                mat4.invert(draggingTransform, inputPose.targetRay.transformMatrix);
+                mat4.invert(draggingTransform, inputPose.targetRay.matrix);
                 mat4.multiply(draggingTransform, draggingTransform, source.node.matrix);
                 return true;
               }
@@ -451,7 +451,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           let draggingPose = frame.getInputPose(draggingInput, refSpace);
           if (draggingPose) {
             let pos = draggingSource.position;
-            mat4.multiply(tmpMatrix, draggingPose.targetRay.transformMatrix, draggingTransform);
+            mat4.multiply(tmpMatrix, draggingPose.targetRay.matrix, draggingTransform);
             vec3.transformMat4(pos, [0, 0, 0], tmpMatrix);
             draggingSource.source.setPosition(pos[0], pos[1], pos[2]);
           }
