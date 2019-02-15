@@ -20,8 +20,10 @@
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -41,6 +43,11 @@ GURL CreateAssistantOptInURL(ash::mojom::FlowType type) {
       GURL(chrome::kChromeUIAssistantOptInURL), kFlowTypeParamKey,
       std::to_string(static_cast<int>(type)));
   return gurl;
+}
+
+void DisablePolymer2(content::URLDataSource* shared_source) {
+  if (shared_source)
+    shared_source->DisablePolymer2ForHost(chrome::kChromeUIAssistantOptInHost);
 }
 
 }  // namespace
@@ -70,6 +77,17 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
       content::HostZoomMap::GetForWebContents(web_ui->GetWebContents());
   DCHECK(zoom_map);
   zoom_map->SetZoomLevelForHost(web_ui->GetWebContents()->GetURL().host(), 0);
+
+  // If allowed, request that the shared resources send this page Polymer 1
+  // resources instead of Polymer 2.
+  // TODO (https://crbug.com/739611): Remove this exception by migrating to
+  // Polymer 2.
+  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
+    content::URLDataSource::GetSourceForURL(
+        Profile::FromWebUI(web_ui),
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
+        base::BindOnce(DisablePolymer2));
+  }
 }
 
 AssistantOptInUI::~AssistantOptInUI() = default;
