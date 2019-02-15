@@ -15,6 +15,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/test_identity_manager_observer.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,49 +28,6 @@ const char kTestEmail2[] = "test_user@test-2.com";
 const char kRefreshToken[] = "refresh_token";
 const char kRefreshToken2[] = "refresh_token_2";
 const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
-
-// Class that observes updates from identity::IdentityManager.
-class TestIdentityManagerObserver : public identity::IdentityManager::Observer {
- public:
-  explicit TestIdentityManagerObserver(
-      identity::IdentityManager* identity_manager)
-      : identity_manager_(identity_manager) {
-    identity_manager_->AddObserver(this);
-  }
-  ~TestIdentityManagerObserver() override {
-    identity_manager_->RemoveObserver(this);
-  }
-
-  void set_on_refresh_token_updated_callback(
-      base::OnceCallback<void(const std::string&)> callback) {
-    on_refresh_token_updated_callback_ = std::move(callback);
-  }
-
-  void set_on_refresh_token_removed_callback(
-      base::OnceCallback<void(const std::string&)> callback) {
-    on_refresh_token_removed_callback_ = std::move(callback);
-  }
-
- private:
-  // identity::IdentityManager::Observer:
-  void OnRefreshTokenUpdatedForAccount(
-      const CoreAccountInfo& account_info) override {
-    if (on_refresh_token_updated_callback_)
-      std::move(on_refresh_token_updated_callback_)
-          .Run(account_info.account_id);
-  }
-
-  void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
-    if (on_refresh_token_removed_callback_)
-      std::move(on_refresh_token_removed_callback_).Run(account_id);
-  }
-
-  identity::IdentityManager* identity_manager_;
-  base::OnceCallback<void(const std::string&)>
-      on_refresh_token_updated_callback_;
-  base::OnceCallback<void(const std::string&)>
-      on_refresh_token_removed_callback_;
-};
 
 // Class that observes diagnostics updates from identity::IdentityManager.
 class TestIdentityManagerDiagnosticsObserver
@@ -177,12 +135,8 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_AddNewAccount) {
     return;
 
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   std::string account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
@@ -214,12 +168,8 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
 
   // First of all add the account to the account tracker service.
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   std::string account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
@@ -242,15 +192,8 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   // Now try adding the account again with the same account id but with
   // different information, and check that the account gets updated.
   base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             const std::string& expected_account_id,
-             const std::string& added_account_id) {
-            EXPECT_EQ(added_account_id, expected_account_id);
-            std::move(quit_closure).Run();
-          },
-          run_loop2.QuitClosure(), account_id));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop2.QuitClosure());
 
   // The internals of IdentityService is migrating from email to gaia id
   // as the account id. Detect whether the current plaform has completed
@@ -268,6 +211,11 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
       /*is_under_advanced_protection=*/true,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop2.Run();
+
+  EXPECT_EQ(identity_manager_observer()
+                ->AccountFromRefreshTokenUpdatedCallback()
+                .account_id,
+            account_id);
 
   // No new accounts should be created, just the information should be updated.
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
@@ -294,12 +242,8 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
 
   // First of all add the account to the account tracker service.
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   std::string account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
@@ -387,20 +331,17 @@ TEST_F(AccountsMutatorTest,
 
   // Now try invalidating the primary account, and check that it gets updated.
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             const std::string& expected_account_id,
-             const std::string& added_or_updated_account_id) {
-            EXPECT_EQ(added_or_updated_account_id, expected_account_id);
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure(), primary_account_info.account_id));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   accounts_mutator()->InvalidateRefreshTokenForPrimaryAccount(
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop.Run();
 
+  EXPECT_EQ(identity_manager_observer()
+                ->AccountFromRefreshTokenUpdatedCallback()
+                .account_id,
+            primary_account_info.account_id);
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
       primary_account_info.account_id));
   EXPECT_TRUE(
@@ -428,12 +369,8 @@ TEST_F(
 
   // Next, add a secondary account.
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   std::string account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
@@ -449,19 +386,17 @@ TEST_F(
 
   // Now try invalidating the primary account, and check that it gets updated.
   base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             const std::string& expected_account_id,
-             const std::string& added_or_updated_account_id) {
-            EXPECT_EQ(added_or_updated_account_id, expected_account_id);
-            std::move(quit_closure).Run();
-          },
-          run_loop2.QuitClosure(), primary_account_info.account_id));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop2.QuitClosure());
 
   accounts_mutator()->InvalidateRefreshTokenForPrimaryAccount(
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop2.Run();
+
+  EXPECT_EQ(identity_manager_observer()
+                ->AccountFromRefreshTokenUpdatedCallback()
+                .account_id,
+            primary_account_info.account_id);
 
   // Check whether the primary account refresh token got invalidated.
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
@@ -511,8 +446,8 @@ TEST_F(AccountsMutatorTest, RemoveAccount_NonExistingAccount) {
     return;
 
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce([](const std::string& account_id) {
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      base::BindOnce([]() {
         // This callback should not be invoked now.
         EXPECT_TRUE(false);
       }));
@@ -537,12 +472,8 @@ TEST_F(AccountsMutatorTest, RemoveAccount_ExistingAccount) {
 
   // First of all add the account to the account tracker service.
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   std::string account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
@@ -558,19 +489,16 @@ TEST_F(AccountsMutatorTest, RemoveAccount_ExistingAccount) {
 
   // Now remove the account that we just added.
   base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_removed_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             const std::string& expected_account_id,
-             const std::string& removed_account_id) {
-            EXPECT_EQ(removed_account_id, expected_account_id);
-            std::move(quit_closure).Run();
-          },
-          run_loop2.QuitClosure(), account_id));
+  identity_manager_observer()->SetOnRefreshTokenRemovedCallback(
+      run_loop2.QuitClosure());
 
   accounts_mutator()->RemoveAccount(
       account_id, signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   run_loop2.Run();
+
+  EXPECT_EQ(
+      identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback(),
+      account_id);
 
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   EXPECT_FALSE(
@@ -588,12 +516,8 @@ TEST_F(AccountsMutatorTest, RemoveAllAccounts) {
 
   // First of all the first account to the account tracker service.
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   std::string account_id = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId, kTestEmail, kRefreshToken,
@@ -609,12 +533,8 @@ TEST_F(AccountsMutatorTest, RemoveAllAccounts) {
 
   // Now add the second account.
   base::RunLoop run_loop2;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop2.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop2.QuitClosure());
 
   std::string account_id2 = accounts_mutator()->AddOrUpdateAccount(
       kTestGaiaId2, kTestEmail2, kRefreshToken2,
@@ -692,12 +612,8 @@ TEST_F(AccountsMutatorTest, LegacySetRefreshTokenForSupervisedUser) {
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 0U);
 
   base::RunLoop run_loop;
-  identity_manager_observer()->set_on_refresh_token_updated_callback(
-      base::BindOnce(
-          [](base::OnceClosure quit_closure, const std::string& account_id) {
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure()));
+  identity_manager_observer()->SetOnRefreshTokenUpdatedCallback(
+      run_loop.QuitClosure());
 
   accounts_mutator()->LegacySetRefreshTokenForSupervisedUser(kRefreshToken);
   run_loop.Run();
