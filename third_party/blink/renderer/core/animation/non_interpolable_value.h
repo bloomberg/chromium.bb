@@ -29,12 +29,11 @@ class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
 #define DEFINE_NON_INTERPOLABLE_VALUE_TYPE(T) \
   NonInterpolableValue::Type T::static_type_ = &T::static_type_
 
-#define DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(T)               \
-  inline bool Is##T(const NonInterpolableValue* value) {          \
-    return !value || value->GetType() == T::static_type_;         \
-  }                                                               \
-  DEFINE_TYPE_CASTS(T, NonInterpolableValue, value, Is##T(value), \
-                    Is##T(&value));
+#define DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(T)       \
+  inline bool Is##T(const NonInterpolableValue* value) {  \
+    return !value || value->GetType() == T::static_type_; \
+  }                                                       \
+  DEFINE_TYPE_CASTS(T, NonInterpolableValue, value, Is##T(value), Is##T(&value))
 
 }  // namespace blink
 
