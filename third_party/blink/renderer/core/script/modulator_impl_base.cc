@@ -261,7 +261,7 @@ ModulatorImplBase::ModuleRequestsFromScriptModule(ScriptModule script_module) {
 
 // <specdef href="https://html.spec.whatwg.org/C/#run-a-module-script">
 ScriptValue ModulatorImplBase::ExecuteModule(
-    const ModuleScript* module_script,
+    ModuleScript* module_script,
     CaptureEvalErrorFlag capture_error) {
   // <spec step="1">If rethrow errors is not given, let it be false.</spec>
 

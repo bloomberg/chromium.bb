@@ -140,8 +140,7 @@ Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromScriptModule(
   return Vector<ModuleRequest>();
 }
 
-ScriptValue DummyModulator::ExecuteModule(const ModuleScript*,
-                                          CaptureEvalErrorFlag) {
+ScriptValue DummyModulator::ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) {
   NOTREACHED();
   return ScriptValue();
 }
