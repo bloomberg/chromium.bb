@@ -438,8 +438,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBulkPrinters;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrosCompUpdates;
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrOSComponent;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTPMFirmwareUpdate;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

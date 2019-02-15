@@ -653,10 +653,6 @@ const base::Feature kBulkPrinters{"BulkPrinters",
 const base::Feature kCrosCompUpdates{"CrosCompUpdates",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables Chrome OS Component updates on Chrome OS.
-const base::Feature kCrOSComponent{"CrOSComponent",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables TPM firmware update capability on Chrome OS.
 const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
