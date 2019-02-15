@@ -33,8 +33,9 @@ struct MessageHeader : internal::StructHeader {
   uint32_t name;
   // 0 or either of the enum values defined above.
   uint32_t flags;
-  // Unused padding to make the struct size a multiple of 8 bytes.
-  uint32_t padding;
+  // A unique (hopefully) id for a message. Used in tracing to match trace
+  // events for sending and receiving a message.
+  uint32_t trace_id;
 };
 static_assert(sizeof(MessageHeader) == 24, "Bad sizeof(MessageHeader)");
 
