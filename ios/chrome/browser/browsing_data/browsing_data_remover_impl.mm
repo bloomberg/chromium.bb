@@ -42,6 +42,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -57,6 +58,7 @@
 #include "ios/chrome/browser/ui/external_file_remover_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
+#import "ios/web/public/browsing_data_removing_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -546,6 +548,38 @@ void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     base::Time delete_begin,
     base::Time delete_end,
     BrowsingDataRemoveMask mask) {
+  if (base::FeatureList::IsEnabled(experimental_flags::kWebClearBrowsingData)) {
+    web::ClearBrowsingDataMask types =
+        web::ClearBrowsingDataMask::kRemoveNothing;
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {
+      types |= web::ClearBrowsingDataMask::kRemoveAppCache;
+    }
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+      types |= web::ClearBrowsingDataMask::kRemoveCookies;
+    }
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_INDEXEDDB)) {
+      types |= web::ClearBrowsingDataMask::kRemoveIndexedDB;
+    }
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
+      types |= web::ClearBrowsingDataMask::kRemoveLocalStorage;
+    }
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
+      types |= web::ClearBrowsingDataMask::kRemoveWebSQL;
+    }
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
+      types |= web::ClearBrowsingDataMask::kRemoveCacheStorage;
+    }
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
+      types |= web::ClearBrowsingDataMask::kRemoveVisitedLinks;
+    }
+
+    web::ClearBrowsingData(browser_state_, types);
+    return;
+  }
+
   // Converts browsing data types from BrowsingDataRemoveMask to
   // WKWebsiteDataStore strings.
   NSMutableSet* data_types_to_remove = [[NSMutableSet alloc] init];

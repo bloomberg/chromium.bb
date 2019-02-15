@@ -50,6 +50,9 @@ namespace experimental_flags {
 const base::Feature kExternalFilesLoadedInWebState{
     "ExternalFilesLoadedInWebState", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kWebClearBrowsingData{"WebClearBrowsingData",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool AlwaysDisplayFirstRun() {
   return
       [[NSUserDefaults standardUserDefaults] boolForKey:kFirstRunForceEnabled];

@@ -21,6 +21,7 @@ source_set("public") {
     "block_types.h",
     "browser_state.h",
     "browser_url_rewriter.h",
+    "browsing_data_removing_util.h",
     "cert_policy.h",
     "certificate_policy_cache.h",
     "crw_navigation_item_storage.h",
