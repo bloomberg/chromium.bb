@@ -1455,10 +1455,10 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
                                  std::unique_ptr<storage::BlobDataHandle> blob,
                                  const base::Time& last_modified) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    std::unique_ptr<storage::FileStreamWriter> writer(
+    std::unique_ptr<storage::FileStreamWriter> writer =
         storage::FileStreamWriter::CreateForLocalFile(
             task_runner_.get(), file_path, 0,
-            storage::FileStreamWriter::CREATE_NEW_FILE));
+            storage::FileStreamWriter::CREATE_NEW_FILE);
     std::unique_ptr<FileWriterDelegate> delegate(
         std::make_unique<FileWriterDelegate>(
             std::move(writer), storage::FlushPolicy::FLUSH_ON_COMPLETION));

@@ -101,13 +101,13 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
 
   if (file_system_context_->is_incognito() &&
       base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
-    file_reader_.reset(FileStreamReader::CreateForMemoryFile(
+    file_reader_ = FileStreamReader::CreateForMemoryFile(
         file_system_context_->sandbox_delegate()->memory_file_util_delegate(),
-        platform_path, initial_offset_, expected_modification_time_));
+        platform_path, initial_offset_, expected_modification_time_);
   } else {
-    file_reader_.reset(FileStreamReader::CreateForLocalFile(
+    file_reader_ = FileStreamReader::CreateForLocalFile(
         file_system_context_->default_file_task_runner(), platform_path,
-        initial_offset_, expected_modification_time_));
+        initial_offset_, expected_modification_time_);
   }
 
   if (read_callback_) {

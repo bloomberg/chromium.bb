@@ -747,12 +747,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       file_thread.task_runner();
 
-  std::unique_ptr<storage::FileStreamReader> reader(
+  std::unique_ptr<storage::FileStreamReader> reader =
       storage::FileStreamReader::CreateForLocalFile(
-          task_runner.get(), source_path, 0, base::Time()));
+          task_runner.get(), source_path, 0, base::Time());
 
-  std::unique_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
-      task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
+  std::unique_ptr<FileStreamWriter> writer =
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0,
+                                           FileStreamWriter::CREATE_NEW_FILE);
 
   std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
@@ -803,12 +804,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       file_thread.task_runner();
 
-  std::unique_ptr<storage::FileStreamReader> reader(
+  std::unique_ptr<storage::FileStreamReader> reader =
       storage::FileStreamReader::CreateForLocalFile(
-          task_runner.get(), source_path, 0, base::Time()));
+          task_runner.get(), source_path, 0, base::Time());
 
-  std::unique_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
-      task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
+  std::unique_ptr<FileStreamWriter> writer =
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0,
+                                           FileStreamWriter::CREATE_NEW_FILE);
 
   std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(
@@ -855,12 +857,13 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       file_thread.task_runner();
 
-  std::unique_ptr<storage::FileStreamReader> reader(
+  std::unique_ptr<storage::FileStreamReader> reader =
       storage::FileStreamReader::CreateForLocalFile(
-          task_runner.get(), source_path, 0, base::Time()));
+          task_runner.get(), source_path, 0, base::Time());
 
-  std::unique_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
-      task_runner.get(), dest_path, 0, FileStreamWriter::CREATE_NEW_FILE));
+  std::unique_ptr<FileStreamWriter> writer =
+      FileStreamWriter::CreateForLocalFile(task_runner.get(), dest_path, 0,
+                                           FileStreamWriter::CREATE_NEW_FILE);
 
   std::vector<int64_t> progress;
   CopyOrMoveOperationDelegate::StreamCopyHelper helper(

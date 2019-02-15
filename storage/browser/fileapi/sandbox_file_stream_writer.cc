@@ -145,13 +145,13 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
 
   if (file_system_context_->is_incognito() &&
       base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
-    file_writer_.reset(FileStreamWriter::CreateForMemoryFile(
+    file_writer_ = FileStreamWriter::CreateForMemoryFile(
         file_system_context_->sandbox_delegate()->memory_file_util_delegate(),
-        platform_path, initial_offset_, FileStreamWriter::OPEN_EXISTING_FILE));
+        platform_path, initial_offset_, FileStreamWriter::OPEN_EXISTING_FILE);
   } else {
-    file_writer_.reset(FileStreamWriter::CreateForLocalFile(
+    file_writer_ = FileStreamWriter::CreateForLocalFile(
         file_system_context_->default_file_task_runner(), platform_path,
-        initial_offset_, FileStreamWriter::OPEN_EXISTING_FILE));
+        initial_offset_, FileStreamWriter::OPEN_EXISTING_FILE);
   }
   storage::QuotaManagerProxy* quota_manager_proxy =
       file_system_context_->quota_manager_proxy();

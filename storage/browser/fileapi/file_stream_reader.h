@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
@@ -44,7 +46,7 @@ class FileStreamReader {
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
   COMPONENT_EXPORT(STORAGE_BROWSER)
-  static FileStreamReader* CreateForLocalFile(
+  static std::unique_ptr<FileStreamReader> CreateForLocalFile(
       base::TaskRunner* task_runner,
       const base::FilePath& file_path,
       int64_t initial_offset,
@@ -60,7 +62,7 @@ class FileStreamReader {
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
   COMPONENT_EXPORT(STORAGE_BROWSER)
-  static FileStreamReader* CreateForMemoryFile(
+  static std::unique_ptr<FileStreamReader> CreateForMemoryFile(
       base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
       const base::FilePath& file_path,
       int64_t initial_offset,
