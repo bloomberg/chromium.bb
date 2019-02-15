@@ -126,17 +126,17 @@ TEST_F(SelectionRequestorTest, NestedRequests) {
   XAtom target2 = gfx::GetAtom("TARGET2");
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PerformBlockingConvertSelection,
-                            base::Unretained(requestor_.get()), selection,
-                            target2, "Data2"));
+      FROM_HERE, base::BindOnce(&PerformBlockingConvertSelection,
+                                base::Unretained(requestor_.get()), selection,
+                                target2, "Data2"));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SelectionRequestorTest::SendSelectionNotify,
-                 base::Unretained(this), selection, target1, "Data1"));
+      base::BindOnce(&SelectionRequestorTest::SendSelectionNotify,
+                     base::Unretained(this), selection, target1, "Data1"));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SelectionRequestorTest::SendSelectionNotify,
-                 base::Unretained(this), selection, target2, "Data2"));
+      base::BindOnce(&SelectionRequestorTest::SendSelectionNotify,
+                     base::Unretained(this), selection, target2, "Data2"));
   PerformBlockingConvertSelection(requestor_.get(), selection, target1,
                                   "Data1");
 }

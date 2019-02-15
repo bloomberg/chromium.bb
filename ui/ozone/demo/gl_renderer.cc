@@ -74,7 +74,7 @@ void GlRenderer::PostRenderFrameTask(gfx::SwapResult result,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GlRenderer::RenderFrame, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GlRenderer::OnPresentation(const gfx::PresentationFeedback& feedback) {

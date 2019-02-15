@@ -260,8 +260,8 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
 
   // Immediately quit drag'n'drop, or we'll hang.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DragDropClientMac::EndDrag,
-                            base::Unretained(drag_drop_client())));
+      FROM_HERE, base::BindOnce(&DragDropClientMac::EndDrag,
+                                base::Unretained(drag_drop_client())));
 
   // It will call ReleaseCapture().
   drag_drop_client()->StartDragAndDrop(
