@@ -9,11 +9,14 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -22,6 +25,10 @@ namespace {
 
 constexpr base::Feature kWinOOPInspectModuleFeature = {
     "WinOOPInspectModule", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The maximum amount of time a stale entry is kept in the cache before it is
+// deleted.
+constexpr base::TimeDelta kMaxEntryAge = base::TimeDelta::FromDays(30);
 
 constexpr int kConnectionErrorRetryCount = 10;
 
@@ -51,16 +58,53 @@ void ReportConnectionError(bool value) {
   base::UmaHistogramBoolean("Windows.InspectModule.ConnectionError", value);
 }
 
+base::FilePath GetInspectionResultsCachePath() {
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    return base::FilePath();
+
+  return user_data_dir.Append(L"Module Info Cache");
+}
+
+// Reads the inspection results cache and records the result in UMA.
+InspectionResultsCache ReadInspectionResultsCacheOnBackgroundSequence(
+    const base::FilePath& file_path) {
+  InspectionResultsCache inspection_results_cache;
+
+  uint32_t min_time_stamp =
+      CalculateTimeStamp(base::Time::Now() - kMaxEntryAge);
+  ReadCacheResult read_result = ReadInspectionResultsCache(
+      file_path, min_time_stamp, &inspection_results_cache);
+  base::UmaHistogramEnumeration("Windows.ModuleInspector.ReadCacheResult",
+                                read_result);
+
+  return inspection_results_cache;
+}
+
+// Writes the inspection results cache to disk and records the result in UMA.
+void WriteInspectionResultCacheOnBackgroundSequence(
+    const base::FilePath& file_path,
+    const InspectionResultsCache& inspection_results_cache) {
+  bool succeeded =
+      WriteInspectionResultsCache(file_path, inspection_results_cache);
+  base::UmaHistogramBoolean("Windows.ModuleInspector.WriteCacheResult",
+                            succeeded);
+}
+
 }  // namespace
 
 ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
       is_after_startup_(false),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+      inspection_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       path_mapping_(GetPathMapping()),
+      cache_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      inspection_results_cache_read_(false),
       connection_error_retry_count_(kConnectionErrorRetryCount),
       weak_ptr_factory_(this) {
   // Use AfterStartupTaskUtils to be notified when startup is finished.
@@ -81,7 +125,7 @@ void ModuleInspector::AddModule(const ModuleInfoKey& module_key) {
 
   // If the queue was empty before adding the current module, then the
   // inspection must be started.
-  if (is_after_startup_ && was_queue_empty)
+  if (inspection_results_cache_read_ && was_queue_empty)
     StartInspectingModule();
 }
 
@@ -89,7 +133,7 @@ void ModuleInspector::IncreaseInspectionPriority() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Create a task runner with higher priority so that future inspections are
   // done faster.
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+  inspection_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
@@ -101,6 +145,14 @@ bool ModuleInspector::IsIdle() {
   return queue_.empty();
 }
 
+void ModuleInspector::OnModuleDatabaseIdle() {
+  // Serialize cache.
+  cache_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&WriteInspectionResultCacheOnBackgroundSequence,
+                                GetInspectionResultsCachePath(),
+                                inspection_results_cache_));
+}
+
 void ModuleInspector::OnStartupFinished() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -110,6 +162,23 @@ void ModuleInspector::OnStartupFinished() {
     return;
 
   is_after_startup_ = true;
+
+  // Read the inspection cache now that it won't affect startup.
+  base::PostTaskAndReplyWithResult(
+      cache_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ReadInspectionResultsCacheOnBackgroundSequence,
+                     GetInspectionResultsCachePath()),
+      base::BindOnce(&ModuleInspector::OnInspectionResultsCacheRead,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ModuleInspector::OnInspectionResultsCacheRead(
+    InspectionResultsCache inspection_results_cache) {
+  DCHECK(is_after_startup_);
+  DCHECK(!inspection_results_cache_read_);
+
+  inspection_results_cache_read_ = true;
+  inspection_results_cache_ = std::move(inspection_results_cache);
 
   if (!queue_.empty())
     StartInspectingModule();
@@ -130,10 +199,22 @@ void ModuleInspector::OnUtilWinServiceConnectionError() {
 }
 
 void ModuleInspector::StartInspectingModule() {
-  DCHECK(is_after_startup_);
+  DCHECK(inspection_results_cache_read_);
   DCHECK(!queue_.empty());
 
   const ModuleInfoKey& module_key = queue_.front();
+
+  // First check if the cache already contains the inspection result.
+  auto inspection_result =
+      GetInspectionResultFromCache(module_key, &inspection_results_cache_);
+  if (inspection_result) {
+    // Send asynchronously or this might cause a stack overflow.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ModuleInspector::OnInspectionFinished,
+                                  weak_ptr_factory_.GetWeakPtr(), module_key,
+                                  std::move(*inspection_result)));
+    return;
+  }
 
   // There is a small priority inversion that happens when
   // IncreaseInspectionPriority() is called while a module is currently being
@@ -157,18 +238,18 @@ void ModuleInspector::StartInspectingModule() {
 
     util_win_ptr_->InspectModule(
         module_key.module_path,
-        base::BindOnce(&ModuleInspector::OnInspectionFinished,
+        base::BindOnce(&ModuleInspector::OnModuleNewlyInspected,
                        weak_ptr_factory_.GetWeakPtr(), module_key));
   } else {
     base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE,
+        inspection_task_runner_.get(), FROM_HERE,
         base::BindOnce(&InspectModule, module_key.module_path),
-        base::BindOnce(&ModuleInspector::OnInspectionFinished,
+        base::BindOnce(&ModuleInspector::OnModuleNewlyInspected,
                        weak_ptr_factory_.GetWeakPtr(), module_key));
   }
 }
 
-void ModuleInspector::OnInspectionFinished(
+void ModuleInspector::OnModuleNewlyInspected(
     const ModuleInfoKey& module_key,
     ModuleInspectionResult inspection_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -177,6 +258,17 @@ void ModuleInspector::OnInspectionFinished(
   // variable mappings (ie, %systemroot$). This makes i18n localized paths
   // easily comparable.
   CollapseMatchingPrefixInPath(path_mapping_, &inspection_result.location);
+
+  AddInspectionResultToCache(module_key, inspection_result,
+                             &inspection_results_cache_);
+
+  OnInspectionFinished(module_key, std::move(inspection_result));
+}
+
+void ModuleInspector::OnInspectionFinished(
+    const ModuleInfoKey& module_key,
+    ModuleInspectionResult inspection_result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Pop first, because the callback may want to know if there is any work left
   // to be done, which is caracterized by a non-empty queue.

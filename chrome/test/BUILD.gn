@@ -2556,6 +2556,7 @@ test("unit_tests") {
     "../browser/component_updater/sw_reporter_installer_win_unittest.cc",
     "../browser/conflicts/enumerate_input_method_editors_win_unittest.cc",
     "../browser/conflicts/enumerate_shell_extensions_win_unittest.cc",
+    "../browser/conflicts/inspection_results_cache_win_unittest.cc",
     "../browser/conflicts/module_database_win_unittest.cc",
     "../browser/conflicts/module_event_sink_impl_win_unittest.cc",
     "../browser/conflicts/module_info_util_win_unittest.cc",
