@@ -60,6 +60,7 @@ class TopCornerBorder : public views::Border {
     flags.setAntiAlias(true);
 
     gfx::Rect rect = rect_below_scroll_;
+    rect.set_height(std::min(rect.height(), kUnifiedTrayCornerRadius * 2));
     rect.Inset(gfx::Insets(-kUnifiedTrayCornerRadius * 4, 0, 0, 0));
     canvas->DrawRoundRect(gfx::RectF(rect), kUnifiedTrayCornerRadius, flags);
   }
