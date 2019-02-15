@@ -74,9 +74,7 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
                    sandbox_token, "allow-top-navigation-by-user-activation")) {
       flags &= ~kSandboxTopNavigationByUserActivation;
     } else if (EqualIgnoringASCIICase(
-                   sandbox_token, "allow-downloads-without-user-activation") &&
-               RuntimeEnabledFeatures::
-                   BlockingDownloadsInSandboxWithoutUserActivationEnabled()) {
+                   sandbox_token, "allow-downloads-without-user-activation")) {
       flags &= ~kSandboxDownloads;
     } else {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");

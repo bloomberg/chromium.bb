@@ -24,17 +24,13 @@ const char* const kSupportedSandboxTokens[] = {
     "allow-same-origin",
     "allow-scripts",
     "allow-top-navigation",
-    "allow-top-navigation-by-user-activation"};
+    "allow-top-navigation-by-user-activation",
+    "allow-downloads-without-user-activation"};
 
 bool IsTokenSupported(const AtomicString& token) {
   for (const char* supported_token : kSupportedSandboxTokens) {
     if (token == supported_token)
       return true;
-  }
-  if (token == "allow-downloads-without-user-activation" &&
-      RuntimeEnabledFeatures::
-          BlockingDownloadsInSandboxWithoutUserActivationEnabled()) {
-    return true;
   }
   return false;
 }
