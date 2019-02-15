@@ -75,7 +75,7 @@ using FileVersionInfoFactories =
 
 }  // namespace
 
-TYPED_TEST_CASE(FileVersionInfoTest, FileVersionInfoFactories);
+TYPED_TEST_SUITE(FileVersionInfoTest, FileVersionInfoFactories);
 
 TYPED_TEST(FileVersionInfoTest, HardCodedProperties) {
   const base::char16 kDLLName[] = STRING16_LITERAL("FileVersionInfoTest1.dll");

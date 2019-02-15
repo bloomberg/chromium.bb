@@ -849,7 +849,7 @@ using RendererTypes =
                      SkiaRenderer,
                      cc::GLRendererWithExpandedViewport,
                      cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
+TYPED_TEST_SUITE(RendererPixelTest, RendererTypes);
 
 template <typename RendererType>
 class SoftwareRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
@@ -857,7 +857,7 @@ class SoftwareRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
 using SoftwareRendererTypes =
     ::testing::Types<SoftwareRenderer,
                      cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_CASE(SoftwareRendererPixelTest, SoftwareRendererTypes);
+TYPED_TEST_SUITE(SoftwareRendererPixelTest, SoftwareRendererTypes);
 
 // TODO(weiliangc): Move these tests to normal RendererPixelTest as they pass
 // with SkiaRenderer. Failed test list recorded in crbug.com/821176.
@@ -869,7 +869,7 @@ using NonSkiaRendererTypes =
                      SoftwareRenderer,
                      cc::GLRendererWithExpandedViewport,
                      cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_CASE(NonSkiaRendererPixelTest, NonSkiaRendererTypes);
+TYPED_TEST_SUITE(NonSkiaRendererPixelTest, NonSkiaRendererTypes);
 
 // Test GLRenderer as well as SkiaRenderer.
 template <typename RendererType>
@@ -877,7 +877,7 @@ class GLCapableRendererPixelTest : public cc::RendererPixelTest<RendererType> {
 };
 
 using GLCapableRendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
-TYPED_TEST_CASE(GLCapableRendererPixelTest, GLCapableRendererTypes);
+TYPED_TEST_SUITE(GLCapableRendererPixelTest, GLCapableRendererTypes);
 
 template <typename RendererType>
 class FuzzyForSoftwareOnlyPixelComparator : public cc::PixelComparator {
@@ -1275,9 +1275,9 @@ using SoftwareRendererTypes =
 using GLRendererTypes =
     ::testing::Types<GLRenderer, cc::GLRendererWithExpandedViewport>;
 
-TYPED_TEST_CASE(IntersectingQuadPixelTest, RendererTypes);
-TYPED_TEST_CASE(IntersectingQuadGLPixelTest, GLRendererTypes);
-TYPED_TEST_CASE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
+TYPED_TEST_SUITE(IntersectingQuadPixelTest, RendererTypes);
+TYPED_TEST_SUITE(IntersectingQuadGLPixelTest, GLRendererTypes);
+TYPED_TEST_SUITE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
 
 TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
   this->SetupQuadStateAndRenderPass();
@@ -2648,8 +2648,8 @@ class RendererPixelTestWithBackgroundFilter
 using BackgroundFilterRendererTypes =
     ::testing::Types<GLRenderer, SkiaRenderer>;
 
-TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
-                BackgroundFilterRendererTypes);
+TYPED_TEST_SUITE(RendererPixelTestWithBackgroundFilter,
+                 BackgroundFilterRendererTypes);
 
 TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
   this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
@@ -4042,7 +4042,7 @@ TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
 }
 
 using SkiaRendererTypes = ::testing::Types<SkiaRenderer>;
-TYPED_TEST_CASE(SkiaRendererPixelTestWithOverdrawFeedback, SkiaRendererTypes);
+TYPED_TEST_SUITE(SkiaRendererPixelTestWithOverdrawFeedback, SkiaRendererTypes);
 
 class SkiaRendererPixelTestWithOverdrawFeedback
     : public cc::RendererPixelTest<SkiaRenderer> {

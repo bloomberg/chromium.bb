@@ -37,7 +37,7 @@ class CommonStringPieceTest<string16> : public ::testing::Test {
 
 typedef ::testing::Types<std::string, string16> SupportedStringTypes;
 
-TYPED_TEST_CASE(CommonStringPieceTest, SupportedStringTypes);
+TYPED_TEST_SUITE(CommonStringPieceTest, SupportedStringTypes);
 
 TYPED_TEST(CommonStringPieceTest, CheckComparisonOperators) {
 #define CMP_Y(op, x, y)                                                   \

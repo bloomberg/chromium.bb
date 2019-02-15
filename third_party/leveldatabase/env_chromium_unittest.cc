@@ -83,8 +83,8 @@ class ChromiumEnvMultiPlatformTests : public ::testing::Test {
 };
 
 typedef ::testing::Types<ChromiumEnv> ChromiumEnvMultiPlatformTestsTypes;
-TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests,
-                ChromiumEnvMultiPlatformTestsTypes);
+TYPED_TEST_SUITE(ChromiumEnvMultiPlatformTests,
+                 ChromiumEnvMultiPlatformTestsTypes);
 
 int CountFilesWithExtension(const base::FilePath& dir,
                             const base::FilePath::StringType& extension) {

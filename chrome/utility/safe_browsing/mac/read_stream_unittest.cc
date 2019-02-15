@@ -105,7 +105,7 @@ std::unique_ptr<ReadStream> ReadStreamTest<FileReadStreamTest>::CreateStream(
 
 using ReadStreamImpls = testing::Types<MemoryReadStreamTest,
                                        FileReadStreamTest>;
-TYPED_TEST_CASE(ReadStreamTest, ReadStreamImpls);
+TYPED_TEST_SUITE(ReadStreamTest, ReadStreamImpls);
 
 TYPED_TEST(ReadStreamTest, Read) {
   std::unique_ptr<ReadStream> stream =

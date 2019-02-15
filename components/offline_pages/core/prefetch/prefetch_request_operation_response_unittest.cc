@@ -280,7 +280,7 @@ typedef testing::Types<GeneratePageBundleRequestDoneOperationBuilder,
                        GetOperationRequestDoneOperationBuilder,
                        GetOperationRequestPendingOperationBuilder>
     MyTypes;
-TYPED_TEST_CASE(PrefetchRequestOperationResponseTest, MyTypes);
+TYPED_TEST_SUITE(PrefetchRequestOperationResponseTest, MyTypes);
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
   EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,

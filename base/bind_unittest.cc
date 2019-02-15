@@ -774,7 +774,7 @@ struct OnceTestConfig {
 
 using BindVariantsTestConfig = ::testing::Types<
   RepeatingTestConfig, OnceTestConfig>;
-TYPED_TEST_CASE(BindVariantsTest, BindVariantsTestConfig);
+TYPED_TEST_SUITE(BindVariantsTest, BindVariantsTestConfig);
 
 template <typename TypeParam, typename Signature>
 using CallbackType = typename TypeParam::template CallbackType<Signature>;
@@ -1003,7 +1003,7 @@ struct CustomDeleter {
 using MoveOnlyTypesToTest =
     ::testing::Types<std::unique_ptr<DeleteCounter>,
                      std::unique_ptr<DeleteCounter, CustomDeleter>>;
-TYPED_TEST_CASE(BindMoveOnlyTypeTest, MoveOnlyTypesToTest);
+TYPED_TEST_SUITE(BindMoveOnlyTypeTest, MoveOnlyTypesToTest);
 
 TYPED_TEST(BindMoveOnlyTypeTest, PassedToBoundCallback) {
   int deletes = 0;
