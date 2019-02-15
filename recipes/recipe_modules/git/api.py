@@ -194,7 +194,7 @@ class GitApi(recipe_api.RecipeApi):
 
     # Some of the commands below require depot_tools to be in PATH.
     path = self.m.path.pathsep.join([
-        str(self.package_repo_resource()), '%(PATH)s'])
+        str(self.repo_resource()), '%(PATH)s'])
 
     with self.m.context(cwd=dir_path):
       if use_git_cache:
@@ -403,7 +403,7 @@ class GitApi(recipe_api.RecipeApi):
     """
     env = self.m.context.env
     env['PATH'] = self.m.path.pathsep.join([
-        str(self.package_repo_resource()), '%(PATH)s'])
+        str(self.repo_resource()), '%(PATH)s'])
     args = ['new-branch', branch]
     if upstream:
       args.extend(['--upstream', upstream])

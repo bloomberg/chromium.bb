@@ -263,7 +263,7 @@ class TryserverApi(recipe_api.RecipeApi):
             int(self.gerrit_change.patchset))
 
     result = self.m.python(
-        'parse description', self.package_repo_resource('git_footers.py'),
+        'parse description', self.repo_resource('git_footers.py'),
         args=['--json', self.m.json.output()],
         stdin=self.m.raw_io.input(data=patch_text))
     return result.json.output

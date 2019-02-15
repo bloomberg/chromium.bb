@@ -19,11 +19,11 @@ class GerritApi(recipe_api.RecipeApi):
     env = self.m.context.env
     env.setdefault('PATH', '%(PATH)s')
     env['PATH'] = self.m.path.pathsep.join([
-        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+        env['PATH'], str(self.repo_resource())])
 
     with self.m.context(env=env):
       return self.m.python(prefix + name,
-                           self.package_repo_resource('gerrit_client.py'),
+                           self.repo_resource('gerrit_client.py'),
                            cmd,
                            infra_step=infra_step,
                            **kwargs)

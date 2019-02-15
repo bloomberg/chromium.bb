@@ -17,7 +17,7 @@ class GitClApi(recipe_api.RecipeApi):
     my_loc = self.c.repo_location if self.c else None
     with self.m.context(cwd=self.m.context.cwd or my_loc):
       return self.m.step(
-          name, [self.package_repo_resource('git_cl.py'), subcmd] + args,
+          name, [self.repo_resource('git_cl.py'), subcmd] + args,
           **kwargs)
 
   def get_description(self, patch_url=None, codereview=None, **kwargs):

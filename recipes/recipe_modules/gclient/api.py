@@ -80,9 +80,9 @@ class GclientApi(recipe_api.RecipeApi):
       prefix = ('[spec: %s] ' % self.spec_alias) + prefix
 
     with self.m.context(
-        env_suffixes={'PATH': [self._module.PACKAGE_REPO_ROOT]}):
+        env_suffixes={'PATH': [self.repo_resource()]}):
       return self.m.python(prefix + name,
-                           self.package_repo_resource('gclient.py'),
+                           self.repo_resource('gclient.py'),
                            cmd,
                            infra_step=infra_step,
                            **kwargs)
