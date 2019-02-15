@@ -380,10 +380,12 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
 
   getThirdPartyAppName(function(appName) {
     if (!!appName) {
-      $('wallpaper-set-by-message').textContent =
+      $('message-container').textContent =
           loadTimeData.getStringF('currentWallpaperSetByMessage', appName);
+      $('message-container').style.visibility = 'visible';
       $('wallpaper-grid').classList.add('small');
     } else {
+      $('message-container').style.visibility = 'hidden';
       $('wallpaper-grid').classList.remove('small');
     }
   });
@@ -655,8 +657,6 @@ WallpaperManager.prototype.onWallpaperChanged_ = function(
   this.wallpaperGrid_.activeItem = activeItem;
   this.currentWallpaper_ = currentWallpaperURL;
   this.decorateCurrentWallpaperInfoBar_();
-  // Hides the wallpaper set by message.
-  $('wallpaper-set-by-message').textContent = '';
   $('wallpaper-grid').classList.remove('small');
 
     this.wallpaperGrid_.checkmark.focus();

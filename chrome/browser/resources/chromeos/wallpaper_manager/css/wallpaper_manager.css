@@ -127,16 +127,6 @@ body.v1 {
   position: relative;
 }
 
-#wallpaper-set-by-message {
-  height: 30px;
-  padding-inline-end: 5px;
-  padding-inline-start: 15px;
-}
-
-#wallpaper-set-by-message:empty {
-  display: none;
-}
-
 .image-picker {
   display: block;
   /* Set font size to 0 to remove the extra vertical margin between two rows of
