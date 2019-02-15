@@ -435,8 +435,9 @@ void InstallAttributes::OnTpmGetPasswordCompleted(
   if (!result.has_value() && dbus_retries_remaining) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&InstallAttributes::TriggerConsistencyCheck,
-                   weak_ptr_factory_.GetWeakPtr(), dbus_retries_remaining - 1),
+        base::BindOnce(&InstallAttributes::TriggerConsistencyCheck,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       dbus_retries_remaining - 1),
         base::TimeDelta::FromSeconds(kDbusRetryIntervalInSeconds));
     return;
   }
