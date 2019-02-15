@@ -227,10 +227,6 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   size_t child_region = region_index + 1;
   size_t child_region_end = child_region + region_child_count;
   gfx::PointF location_in_target = location_transformed;
-  if (!features::IsVizHitTestingSurfaceLayerEnabled() &&
-      is_location_relative_to_parent) {
-    location_in_target -= hit_test_data_[region_index].rect.OffsetFromOrigin();
-  }
 
   const uint32_t flags = hit_test_data_[region_index].flags;
 
@@ -291,10 +287,6 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
   }
 
   hit_test_data_[region_index].transform().TransformPoint(location_in_target);
-  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-    location_in_target->Offset(-hit_test_data_[region_index].rect.x(),
-                               -hit_test_data_[region_index].rect.y());
-  }
   if (!target_ancestor)
     return true;
 
@@ -333,10 +325,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
   // found immediately.
   if (hit_test_data_[region_index].frame_sink_id == target) {
     *transform = hit_test_data_[region_index].transform();
-    if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-      transform->Translate(-hit_test_data_[region_index].rect.x(),
-                           -hit_test_data_[region_index].rect.y());
-    }
     return true;
   }
 
@@ -353,10 +341,6 @@ bool HitTestQuery::GetTransformToTargetRecursively(
     if (GetTransformToTargetRecursively(target, child_region,
                                         &transform_to_child)) {
       gfx::Transform region_transform(hit_test_data_[region_index].transform());
-      if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
-        region_transform.Translate(-hit_test_data_[region_index].rect.x(),
-                                   -hit_test_data_[region_index].rect.y());
-      }
       *transform = transform_to_child * region_transform;
       return true;
     }
