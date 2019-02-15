@@ -144,8 +144,8 @@ void ConnectionFactoryImpl::ConnectWithBackoff() {
         backoff_entry_->GetTimeUntilRelease().InMilliseconds());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ConnectionFactoryImpl::ConnectWithBackoff,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ConnectionFactoryImpl::ConnectWithBackoff,
+                       weak_ptr_factory_.GetWeakPtr()),
         backoff_entry_->GetTimeUntilRelease());
     return;
   }

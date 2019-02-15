@@ -303,8 +303,9 @@ void UrlFetchRequestBase::StartAfterPrepare(
     // asynchronously because client code does not assume result callback is
     // called synchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&UrlFetchRequestBase::CompleteRequestWithError,
-                              weak_ptr_factory_.GetWeakPtr(), error_code));
+        FROM_HERE,
+        base::BindOnce(&UrlFetchRequestBase::CompleteRequestWithError,
+                       weak_ptr_factory_.GetWeakPtr(), error_code));
     return;
   }
 

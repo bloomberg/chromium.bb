@@ -111,8 +111,8 @@ void OAuth2TokenServiceRequest::Core::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_service_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&OAuth2TokenServiceRequest::Core::StartOnTokenServiceThread,
-                 this));
+      base::BindOnce(
+          &OAuth2TokenServiceRequest::Core::StartOnTokenServiceThread, this));
 }
 
 void OAuth2TokenServiceRequest::Core::Stop() {
@@ -127,8 +127,8 @@ void OAuth2TokenServiceRequest::Core::Stop() {
   // will be destroyed on the owner thread.
   token_service_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&OAuth2TokenServiceRequest::Core::StopOnTokenServiceThread,
-                 this));
+      base::BindOnce(&OAuth2TokenServiceRequest::Core::StopOnTokenServiceThread,
+                     this));
 }
 
 bool OAuth2TokenServiceRequest::Core::IsStopped() const {
@@ -227,8 +227,8 @@ void RequestCore::OnGetTokenSuccess(
   DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(request_.get(), request);
   owning_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&RequestCore::InformOwnerOnGetTokenSuccess, this,
-                            token_response));
+      FROM_HERE, base::BindOnce(&RequestCore::InformOwnerOnGetTokenSuccess,
+                                this, token_response));
   request_.reset();
 }
 
@@ -238,7 +238,7 @@ void RequestCore::OnGetTokenFailure(const OAuth2TokenService::Request* request,
   DCHECK_EQ(request_.get(), request);
   owning_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&RequestCore::InformOwnerOnGetTokenFailure, this, error));
+      base::BindOnce(&RequestCore::InformOwnerOnGetTokenFailure, this, error));
   request_.reset();
 }
 

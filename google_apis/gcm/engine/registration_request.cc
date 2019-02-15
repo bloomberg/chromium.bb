@@ -232,7 +232,8 @@ void RegistrationRequest::RetryWithBackoff() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&RegistrationRequest::Start, weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&RegistrationRequest::Start,
+                     weak_ptr_factory_.GetWeakPtr()),
       backoff_entry_.GetTimeUntilRelease());
 }
 
