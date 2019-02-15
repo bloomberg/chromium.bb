@@ -172,10 +172,8 @@ void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
 }
 
 RenderViewTest::RenderViewTest() {
-  // Overrides creation of RenderFrameImpl, but does not need to
-  // override behaviour of WebWidgetClient.
-  RenderFrameImpl::InstallCreateHook(&TestRenderFrame::CreateTestRenderFrame,
-                                     nullptr, nullptr);
+  // Overrides creation of RenderFrameImpl.
+  RenderFrameImpl::InstallCreateHook(&TestRenderFrame::CreateTestRenderFrame);
 }
 
 RenderViewTest::~RenderViewTest() {

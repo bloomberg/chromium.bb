@@ -10,7 +10,6 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "content/shell/test_runner/web_widget_test_client.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 
 namespace test_runner {
@@ -57,19 +56,18 @@ TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
-    WebViewTestProxyBase* web_view_test_proxy_base,
-    WebFrameTestProxyBase* web_frame_test_proxy_base) {
+    WebViewTestProxy* web_view_test_proxy,
+    WebFrameTestProxy* web_frame_test_proxy) {
   // TODO(lukasza): Do not pass the WebTestDelegate below - it's lifetime can
   // differ from the lifetime of WebFrameTestClient - https://crbug.com/606594.
-  return std::make_unique<WebFrameTestClient>(interfaces_->GetDelegate(),
-                                              web_view_test_proxy_base,
-                                              web_frame_test_proxy_base);
+  return std::make_unique<WebFrameTestClient>(
+      interfaces_->GetDelegate(), web_view_test_proxy, web_frame_test_proxy);
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {
   std::vector<blink::WebView*> result;
-  for (WebViewTestProxyBase* proxy : interfaces_->GetWindowList())
-    result.push_back(proxy->web_view());
+  for (WebViewTestProxy* proxy : interfaces_->GetWindowList())
+    result.push_back(proxy->webview());
   return result;
 }
 

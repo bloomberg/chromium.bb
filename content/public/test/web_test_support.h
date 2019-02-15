@@ -30,9 +30,9 @@ class ColorSpace;
 }
 
 namespace test_runner {
-class WebFrameTestProxyBase;
-class WebViewTestProxyBase;
-class WebWidgetTestProxyBase;
+class WebFrameTestProxy;
+class WebViewTestProxy;
+class WebWidgetTestProxy;
 }  // namespace test_runner
 
 namespace content {
@@ -56,22 +56,15 @@ void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
 // Turn a renderer into web test mode.
 void EnableRendererWebTestMode();
 
-// "Casts" |render_view| to |WebViewTestProxyBase|.  Caller has to ensure that
+// "Casts" |render_view| to |WebViewTestProxy|.  Caller has to ensure that
 // prior to construction of |render_view|, EnableWebTestProxyCreation was
 // called.
-test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
-    RenderView* render_view);
+test_runner::WebViewTestProxy* GetWebViewTestProxy(RenderView* render_view);
 
-// "Casts" |render_frame| to |WebFrameTestProxyBase|.  Caller has to ensure
-// that prior to construction of |render_frame|, EnableTestProxyCreation
-// was called.
-test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
-    RenderFrame* render_frame);
-
-// Gets WebWidgetTestProxyBase associated with |frame| (either the view's widget
+// Gets WebWidgetTestProxy associated with |frame| (either the view's widget
 // or the local root's frame widget).  Caller has to ensure that prior to
-// construction of |render_frame|, EnableTestProxyCreation was called.
-test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+// construction of |render_frame|, EnableWebTestProxyCreation was called.
+test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
     blink::WebLocalFrame* frame);
 
 // Enable injecting of a WebViewTestProxy between WebViews and RenderViews,
@@ -102,11 +95,11 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor);
 float GetWindowToViewportScale(RenderView* render_view);
 
 // Converts |event| from screen coordinates to coordinates used by the widget
-// associated with the |web_widget_test_proxy_base|.  Returns nullptr if no
+// associated with the |web_widget_test_proxy|.  Returns nullptr if no
 // transformation was necessary (e.g. for a keyboard event OR if widget requires
 // no scaling and has coordinates starting at (0,0)).
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+    test_runner::WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event);
 
 // Get the color space for a given name string. This is not in the ColorSpace

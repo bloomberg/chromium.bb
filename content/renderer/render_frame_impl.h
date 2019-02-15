@@ -275,24 +275,10 @@ class CONTENT_EXPORT RenderFrameImpl
   };
 
   using CreateRenderFrameImplFunction = RenderFrameImpl* (*)(CreateParams);
-  using CreateRenderWidgetForChildLocalRootFunction =
-      RenderWidget* (*)(int32_t,
-                        CompositorDependencies*,
-                        const ScreenInfo&,
-                        blink::WebDisplayMode display_mode,
-                        bool,
-                        bool,
-                        bool);
-  using RenderWidgetForChildLocalRootInitializedCallback =
-      void (*)(RenderWidget*);
 
-  // Web tests override the creation of RenderFrames and RenderWidgets in
-  // order to inject their own (subclass) type and change behaviour inside the
-  // tests.
-  static void InstallCreateHook(
-      CreateRenderFrameImplFunction create_frame,
-      CreateRenderWidgetForChildLocalRootFunction create_widget,
-      RenderWidgetForChildLocalRootInitializedCallback widget_initialized);
+  // Web tests override the creation of RenderFrames in order to inject a
+  // partial testing fake.
+  static void InstallCreateHook(CreateRenderFrameImplFunction create_frame);
 
   // Looks up and returns the WebFrame corresponding to a given opener frame
   // routing ID.

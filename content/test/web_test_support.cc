@@ -104,38 +104,18 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
   return render_view_proxy;
 }
 
-RenderWidget* CreateRenderWidgetForChildLocalRoot(
+scoped_refptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool swapped_out,
     bool hidden,
-    bool never_visible) {
-  auto* render_widget_proxy = new test_runner::WebWidgetTestProxy(
+    bool never_visible,
+    mojom::WidgetRequest widget_request) {
+  return base::MakeRefCounted<test_runner::WebWidgetTestProxy>(
       routing_id, compositor_deps, screen_info, display_mode, swapped_out,
-      hidden, never_visible);
-  return render_widget_proxy;
-}
-
-void RenderWidgetForChildLocalRootInitialized(RenderWidget* render_widget) {
-  test_runner::WebTestInterfaces* interfaces =
-      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-
-  blink::WebWidget* web_widget = render_widget->GetWebWidget();
-  auto* web_frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
-  // RenderWidgets for a frame will have a local root with a RenderView.
-  blink::WebView* web_view = web_frame_widget->LocalRoot()->View();
-  RenderView* render_view = content::RenderView::FromWebView(web_view);
-  // RenderViews are always RenderViewImpls internally.
-  auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-
-  // We are here because CreateWebWidgetTestProxy() was used to make the
-  // RenderWidget, and it creates a WebWidgetTestProxy instead, which is-a
-  // RenderWidget.
-  auto* render_widget_proxy =
-      static_cast<test_runner::WebWidgetTestProxy*>(render_widget);
-  render_widget_proxy->Initialize(interfaces, web_widget, render_view_impl);
+      hidden, never_visible, std::move(widget_request));
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
@@ -170,56 +150,25 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
 
 }  // namespace
 
-test_runner::WebViewTestProxyBase* GetWebViewTestProxyBase(
-    RenderView* render_view) {
-  auto* render_view_proxy =
-      static_cast<test_runner::WebViewTestProxy*>(render_view);
-  return static_cast<test_runner::WebViewTestProxyBase*>(render_view_proxy);
+test_runner::WebViewTestProxy* GetWebViewTestProxy(RenderView* render_view) {
+  return static_cast<test_runner::WebViewTestProxy*>(render_view);
 }
 
-test_runner::WebFrameTestProxyBase* GetWebFrameTestProxyBase(
-    RenderFrame* render_frame) {
-  auto* render_frame_proxy =
-      static_cast<test_runner::WebFrameTestProxy*>(render_frame);
-  return static_cast<test_runner::WebFrameTestProxyBase*>(render_frame_proxy);
-}
-
-test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
     blink::WebLocalFrame* frame) {
   DCHECK(frame);
   RenderFrame* local_root = RenderFrame::FromWebFrame(frame->LocalRoot());
   RenderFrameImpl* local_root_impl = static_cast<RenderFrameImpl*>(local_root);
   DCHECK(local_root);
 
-  // TODO(lfg): Simplify once RenderView no longer inherits from RenderWidget.
-  if (local_root->IsMainFrame()) {
-    // For main frames, since the RenderWidget is attached to the RenderView
-    // (subclassed by WebViewTestProxy), we grab the widget stuff through the
-    // view.
-    test_runner::WebViewTestProxyBase* web_view_test_proxy_base =
-        GetWebViewTestProxyBase(local_root->GetRenderView());
-    return web_view_test_proxy_base->web_widget_test_proxy_base();
-  } else {
-    // For sub frames, the RenderWidget is independent from the RenderView and
-    // hangs off the frame. The WebWidgetTestProxy then subclasses the
-    // RenderWidget since there's no RenderView in the way. From there we can
-    // go up to the WebWidgetTestProxyBase.
-    //
-    // Inheritance:
-    //   RenderWidget     WebWidgetTestProxyBase
-    //       \\             //
-    //      WebWidgetTestProxy
-    RenderWidget* render_widget = local_root_impl->GetLocalRootRenderWidget();
-    auto* proxy = static_cast<test_runner::WebWidgetTestProxy*>(render_widget);
-    return static_cast<test_runner::WebWidgetTestProxyBase*>(proxy);
-  }
+  return static_cast<test_runner::WebWidgetTestProxy*>(
+      local_root_impl->GetLocalRootRenderWidget());
 }
 
 void EnableWebTestProxyCreation() {
   RenderViewImpl::InstallCreateHook(CreateWebViewTestProxy);
-  RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy,
-                                     CreateRenderWidgetForChildLocalRoot,
-                                     RenderWidgetForChildLocalRootInitialized);
+  RenderWidget::InstallCreateForFrameHook(CreateRenderWidgetForFrame);
+  RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
 
 void FetchManifest(blink::WebView* view, FetchManifestCallback callback) {
@@ -457,33 +406,12 @@ float GetWindowToViewportScale(RenderView* render_view) {
 }
 
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-    test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+    test_runner::WebWidgetTestProxy* web_widget_test_proxy,
     const blink::WebInputEvent& event) {
-  DCHECK(web_widget_test_proxy_base);
+  DCHECK(web_widget_test_proxy);
 
-  // Two possible inheritance stories.
-  // A main frame:
-  //   RenderWidget               WebWidgetTestProxyBase
-  //       \*\*\ (private)          /*/*/ (private)
-  //      RenderViewImpl      WebViewTestProxyBase
-  //                \\          //
-  //               WebViewTestProxy
-  //
-  // And a sub frame:
-  //   RenderWidget     WebWidgetTestProxyBase
-  //       \\             //
-  //      WebWidgetTestProxy
-  RenderWidget* render_widget;
-  if (web_widget_test_proxy_base->main_frame_widget()) {
-    auto* proxy_base = web_widget_test_proxy_base->web_view_test_proxy_base();
-    auto* proxy = static_cast<test_runner::WebViewTestProxy*>(proxy_base);
-    auto* view = static_cast<RenderViewImpl*>(proxy);
-    render_widget = view->GetWidget();
-  } else {
-    auto* proxy = static_cast<test_runner::WebWidgetTestProxy*>(
-        web_widget_test_proxy_base);
-    render_widget = static_cast<RenderWidget*>(proxy);
-  }
+  RenderWidget* render_widget =
+      static_cast<RenderWidget*>(web_widget_test_proxy);
 
   blink::WebRect view_rect = render_widget->ViewRect();
   float scale = GetWindowToViewportScale(render_widget);

@@ -196,10 +196,8 @@ void TextInputControllerBindings::ForceTextInputStateUpdate() {
 }
 // TextInputController ---------------------------------------------------------
 
-TextInputController::TextInputController(
-    WebViewTestProxyBase* web_view_test_proxy_base)
-    : web_view_test_proxy_base_(web_view_test_proxy_base),
-      weak_factory_(this) {}
+TextInputController::TextInputController(WebViewTestProxy* web_view_test_proxy)
+    : web_view_test_proxy_(web_view_test_proxy), weak_factory_(this) {}
 
 TextInputController::~TextInputController() {}
 
@@ -400,12 +398,12 @@ void TextInputController::ForceTextInputStateUpdate() {
   CHECK(view()->MainFrame()->IsWebLocalFrame())
       << "WebView does not have a local main frame and"
          " cannot handle input method controller tasks.";
-  web_view_test_proxy_base_->delegate()->ForceTextInputStateUpdate(
+  web_view_test_proxy_->delegate()->ForceTextInputStateUpdate(
       view()->MainFrame()->ToWebLocalFrame());
 }
 
 blink::WebView* TextInputController::view() {
-  return web_view_test_proxy_base_->web_view();
+  return web_view_test_proxy_->webview();
 }
 
 blink::WebInputMethodController*

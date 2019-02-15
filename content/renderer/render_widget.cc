@@ -169,6 +169,9 @@ namespace content {
 
 namespace {
 
+RenderWidget::CreateRenderWidgetFunction g_create_render_widget_for_frame =
+    nullptr;
+
 using RoutingIDWidgetMap = std::map<int32_t, RenderWidget*>;
 base::LazyInstance<RoutingIDWidgetMap>::Leaky g_routing_id_widget_map =
     LAZY_INSTANCE_INITIALIZER;
@@ -388,6 +391,46 @@ static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
 }  // namespace
 
 // RenderWidget ---------------------------------------------------------------
+
+// static
+void RenderWidget::InstallCreateForFrameHook(
+    CreateRenderWidgetFunction create_widget) {
+  g_create_render_widget_for_frame = create_widget;
+}
+
+scoped_refptr<RenderWidget> RenderWidget::CreateForFrame(
+    int32_t widget_routing_id,
+    CompositorDependencies* compositor_deps,
+    const ScreenInfo& screen_info,
+    blink::WebDisplayMode display_mode,
+    bool is_frozen,
+    bool hidden,
+    bool never_visible,
+    mojom::WidgetRequest widget_request) {
+  if (g_create_render_widget_for_frame) {
+    return g_create_render_widget_for_frame(
+        widget_routing_id, compositor_deps, screen_info, display_mode,
+        is_frozen, hidden, never_visible, std::move(widget_request));
+  }
+
+  return base::WrapRefCounted(new RenderWidget(
+      widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
+      hidden, never_visible, std::move(widget_request)));
+}
+
+scoped_refptr<RenderWidget> RenderWidget::CreateForPopup(
+    int32_t widget_routing_id,
+    CompositorDependencies* compositor_deps,
+    const ScreenInfo& screen_info,
+    blink::WebDisplayMode display_mode,
+    bool is_frozen,
+    bool hidden,
+    bool never_visible,
+    mojom::WidgetRequest widget_request) {
+  return base::WrapRefCounted(new RenderWidget(
+      widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
+      hidden, never_visible, std::move(widget_request)));
+}
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
@@ -706,6 +749,15 @@ void RenderWidget::OnClose() {
   // If there is a Send call on the stack, then it could be dangerous to close
   // now.  Post a task that only gets invoked when there are no nested message
   // loops.
+  //
+  // The asynchronous Close() takes an owning reference to |this| keeping the
+  // object alive beyond the Release() below. It is the last reference to this
+  // object.
+  //
+  // TODO(https://crbug.com/545684): The actual lifetime for RenderWidget
+  // seems to be single-owner. It is either owned by "IPC" events (popup,
+  // mainframe, and fullscreen), or a RenderFrame. If Close() self-deleting,
+  // all the ref-counting mess could be removed.
   GetCleanupTaskRunner()->PostNonNestableTask(
       FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
 

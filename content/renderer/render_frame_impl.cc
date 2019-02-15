@@ -583,10 +583,6 @@ WebFrameLoadType NavigationTypeToLoadType(
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
     nullptr;
-RenderFrameImpl::CreateRenderWidgetForChildLocalRootFunction
-    g_create_render_widget = nullptr;
-RenderFrameImpl::RenderWidgetForChildLocalRootInitializedCallback
-    g_render_widget_initialized = nullptr;
 
 WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
   DCHECK(!path.IsAbsolute());
@@ -1535,23 +1531,11 @@ void RenderFrameImpl::CreateFrame(
     // Makes a new RenderWidget for the child local root. It provides the
     // local root with a new compositing, painting, and input coordinate
     // space/context.
-    scoped_refptr<RenderWidget> render_widget;
-    if (g_create_render_widget) {
-      // Web test hooks inject a different type (subclass) for RenderWidget,
-      // allowing it to override the behaviour of the WebWidgetClient which
-      // RenderWidget provides.
-      render_widget = g_create_render_widget(
-          widget_params.routing_id, compositor_deps,
-          screen_info_from_main_frame, blink::kWebDisplayModeUndefined,
-          /*is_frozen=*/false, widget_params.hidden,
-          /*never_visible=*/false);
-    } else {
-      render_widget = base::MakeRefCounted<RenderWidget>(
-          widget_params.routing_id, compositor_deps,
-          screen_info_from_main_frame, blink::kWebDisplayModeUndefined,
-          /*is_frozen=*/false, widget_params.hidden,
-          /*never_visible=*/false);
-    }
+    scoped_refptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
+        widget_params.routing_id, compositor_deps, screen_info_from_main_frame,
+        blink::kWebDisplayModeUndefined,
+        /*is_frozen=*/false, widget_params.hidden,
+        /*never_visible=*/false, /*widget_request=*/nullptr);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this
@@ -1569,10 +1553,6 @@ void RenderFrameImpl::CreateFrame(
     // initialized by RenderViewImpl, so this is surely redundant? It will be
     // pulling the device scale factor off the WebView itself.
     render_widget->UpdateWebViewWithDeviceScaleFactor();
-
-    // Web test hooks to set up the injected type for RenderWidget.
-    if (g_render_widget_initialized)
-      g_render_widget_initialized(render_widget.get());
 
     render_frame->render_widget_ = std::move(render_widget);
   }
@@ -1618,15 +1598,9 @@ RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
 
 // static
 void RenderFrameImpl::InstallCreateHook(
-    CreateRenderFrameImplFunction create_frame,
-    CreateRenderWidgetForChildLocalRootFunction create_widget,
-    RenderWidgetForChildLocalRootInitializedCallback widget_initialized) {
+    CreateRenderFrameImplFunction create_frame) {
   DCHECK(!g_create_render_frame_impl);
-  DCHECK(!g_create_render_widget);
-  DCHECK(!g_render_widget_initialized);
   g_create_render_frame_impl = create_frame;
-  g_create_render_widget = create_widget;
-  g_render_widget_initialized = widget_initialized;
 }
 
 // static

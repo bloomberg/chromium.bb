@@ -520,6 +520,15 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // it in the same order in the .cc file as it was in the header.
   // ---------------------------------------------------------------------------
 
+  // This is the |render_widget_| for the main frame. Its lifetime is controlled
+  // via IPC messages to RenderWidget (see WidgetMsg_Close). RenderView
+  // holds a weak reference to this object and relies on
+  // RenderWidgetDelegate::DidCloseWidget() to avoid UaF.
+  //
+  // Instances of RenderWidget for child frame local roots, popups, and
+  // fullscreen widgets are never contained by this pointer. Child frame
+  // local roots are owned by a RenderFrame. The others are owned by the IPC
+  // system.
   RenderWidget* render_widget_;
 
   // Routing ID that allows us to communicate with the corresponding

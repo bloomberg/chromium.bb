@@ -683,8 +683,7 @@ content::RenderWidget* TestRunnerForSpecificView::main_frame_render_widget() {
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {
-  // TODO(danakj): This could grab the GetWebView() off RenderViewImpl instead.
-  return web_view_test_proxy_->web_view();
+  return web_view_test_proxy_->webview();
 }
 
 WebTestDelegate* TestRunnerForSpecificView::delegate() {

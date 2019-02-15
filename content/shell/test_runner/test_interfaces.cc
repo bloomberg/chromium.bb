@@ -65,8 +65,8 @@ void TestInterfaces::ResetTestHelperControllers() {
   gamepad_controller_->Reset();
   blink::WebCache::Clear();
 
-  for (WebViewTestProxyBase* web_view_test_proxy_base : window_list_)
-    web_view_test_proxy_base->Reset();
+  for (WebViewTestProxy* web_view_test_proxy : window_list_)
+    web_view_test_proxy->Reset();
 }
 
 void TestInterfaces::ResetAll() {
@@ -125,12 +125,12 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     test_runner_->set_is_web_platform_tests_mode();
 }
 
-void TestInterfaces::WindowOpened(WebViewTestProxyBase* proxy) {
+void TestInterfaces::WindowOpened(WebViewTestProxy* proxy) {
   window_list_.push_back(proxy);
 }
 
-void TestInterfaces::WindowClosed(WebViewTestProxyBase* proxy) {
-  std::vector<WebViewTestProxyBase*>::iterator pos =
+void TestInterfaces::WindowClosed(WebViewTestProxy* proxy) {
+  std::vector<WebViewTestProxy*>::iterator pos =
       std::find(window_list_.begin(), window_list_.end(), proxy);
   if (pos == window_list_.end()) {
     NOTREACHED();
@@ -138,7 +138,7 @@ void TestInterfaces::WindowClosed(WebViewTestProxyBase* proxy) {
   }
   window_list_.erase(pos);
 
-  if (proxy->web_view() == main_view_)
+  if (proxy->webview() == main_view_)
     SetMainView(nullptr);
 }
 
@@ -150,7 +150,7 @@ WebTestDelegate* TestInterfaces::GetDelegate() {
   return delegate_;
 }
 
-const std::vector<WebViewTestProxyBase*>& TestInterfaces::GetWindowList() {
+const std::vector<WebViewTestProxy*>& TestInterfaces::GetWindowList() {
   return window_list_;
 }
 

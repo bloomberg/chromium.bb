@@ -24,7 +24,7 @@ namespace test_runner {
 class GamepadController;
 class TestRunner;
 class WebTestDelegate;
-class WebViewTestProxyBase;
+class WebViewTestProxy;
 
 class TestInterfaces {
  public:
@@ -41,12 +41,12 @@ class TestInterfaces {
   void ConfigureForTestWithURL(const blink::WebURL& test_url,
                                bool protocol_mode);
 
-  void WindowOpened(WebViewTestProxyBase* proxy);
-  void WindowClosed(WebViewTestProxyBase* proxy);
+  void WindowOpened(WebViewTestProxy* proxy);
+  void WindowClosed(WebViewTestProxy* proxy);
 
   TestRunner* GetTestRunner();
   WebTestDelegate* GetDelegate();
-  const std::vector<WebViewTestProxyBase*>& GetWindowList();
+  const std::vector<WebViewTestProxy*>& GetWindowList();
   blink::WebThemeEngine* GetThemeEngine();
 
  private:
@@ -54,7 +54,7 @@ class TestInterfaces {
   std::unique_ptr<TestRunner> test_runner_;
   WebTestDelegate* delegate_;
 
-  std::vector<WebViewTestProxyBase*> window_list_;
+  std::vector<WebViewTestProxy*> window_list_;
   blink::WebView* main_view_;
 
   std::unique_ptr<MockWebThemeEngine> theme_engine_;

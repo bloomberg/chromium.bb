@@ -172,7 +172,8 @@ class InteractiveRenderWidget : public RenderWidget {
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
-                     false),
+                     false,
+                     nullptr),
         always_overscroll_(false) {
     InitForPopup(base::NullCallback(), &mock_page_popup_);
 
@@ -447,7 +448,8 @@ class PopupRenderWidget : public RenderWidget {
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
-                     false) {
+                     false,
+                     nullptr) {
     InitForPopup(RenderWidget::ShowCallback(), &stub_page_popup_);
   }
 

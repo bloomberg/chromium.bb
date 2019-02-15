@@ -95,9 +95,9 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceColorSpace(const std::string& name) override;
   float GetWindowToViewportScale() override;
   std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
-      test_runner::WebWidgetTestProxyBase* web_widget_test_proxy_base,
+      test_runner::WebWidgetTestProxy* web_widget_test_proxy,
       const blink::WebInputEvent& event) override;
-  test_runner::WebWidgetTestProxyBase* GetWebWidgetTestProxyBase(
+  test_runner::WebWidgetTestProxy* GetWebWidgetTestProxy(
       blink::WebLocalFrame* frame) override;
   void EnableUseZoomForDSF() override;
   bool IsUseZoomForDSFEnabled() override;
