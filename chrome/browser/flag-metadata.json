@@ -323,7 +323,7 @@
   },
   {
     "name": "calculate-native-win-occlusion",
-    // "owners": [ "your-team" ],
+    "owners": [ "davidbienvenu", "fdoray" ],
     "expiry_milestone": 76
   },
   {
