@@ -524,7 +524,7 @@ TEST_P(HttpProxyConnectJobTest, RequestPriority) {
       EXPECT_FALSE(test_delegate.has_result());
 
       MockHostResolverBase* host_resolver = session_deps_.host_resolver.get();
-      int request_id = host_resolver->num_resolve();
+      size_t request_id = host_resolver->last_id();
       EXPECT_EQ(initial_priority, host_resolver->request_priority(request_id));
 
       connect_job->ChangePriority(static_cast<RequestPriority>(new_priority));

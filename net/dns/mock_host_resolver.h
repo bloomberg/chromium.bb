@@ -151,6 +151,10 @@ class MockHostResolverBase
   // for async resolution, starting with 1. IDs are not reused. Once a request
   // completes, it is destroyed, and can no longer be accessed.
 
+  // Returns the ID of the most recently started still-active request. Zero if
+  // no requests are currently active.
+  size_t last_id();
+
   // Resolve request stored in |requests_|. Pass rv to callback.
   void ResolveNow(size_t id);
 
@@ -389,7 +393,9 @@ class RuleBasedHostResolverProc : public HostResolverProc {
 // Create rules that map all requests to localhost.
 RuleBasedHostResolverProc* CreateCatchAllHostResolverProc();
 
-// HangingHostResolver never completes its |Resolve| request.
+// HangingHostResolver never completes its |Resolve| request. As LOCAL_ONLY
+// requests are not allowed to complete asynchronously, they will always result
+// in |ERR_DNS_CACHE_MISS|.
 class HangingHostResolver : public HostResolver {
  public:
   HangingHostResolver();
