@@ -14,7 +14,7 @@ namespace views {
 // the button, a grey circular background appears as an indicator.
 class BackToTabImageButton : public views::ImageButton {
  public:
-  explicit BackToTabImageButton(ButtonListener* listener);
+  explicit BackToTabImageButton(ButtonListener*);
   ~BackToTabImageButton() override = default;
 
   // views::Button:

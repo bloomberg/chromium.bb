@@ -12,7 +12,7 @@ namespace views {
 // An image button with an associated id.
 class ControlImageButton : public views::ImageButton {
  public:
-  explicit ControlImageButton(ButtonListener* listener);
+  explicit ControlImageButton(ButtonListener*);
 
   ~ControlImageButton() override;
 

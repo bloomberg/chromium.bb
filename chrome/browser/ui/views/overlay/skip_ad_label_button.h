@@ -13,7 +13,7 @@ namespace views {
 // A label button representing a skip-ad button.
 class SkipAdLabelButton : public views::LabelButton {
  public:
-  explicit SkipAdLabelButton(ButtonListener* listener);
+  explicit SkipAdLabelButton(ButtonListener*);
   ~SkipAdLabelButton() override = default;
 
   // Sets the position of itself with an offset from the given window size.
