@@ -110,6 +110,7 @@ PermissionService* ClipboardPromise::GetPermissionService() {
 
 bool ClipboardPromise::IsFocusedDocument(ExecutionContext* context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+  DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
   Document* doc = To<Document>(context);
   return doc && doc->hasFocus();
 }
@@ -119,10 +120,7 @@ void ClipboardPromise::RequestReadPermission(
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
   DCHECK(script_promise_resolver_);
 
-  ExecutionContext* context = ExecutionContext::From(script_state_);
-  DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
-
-  if (!IsFocusedDocument(context)) {
+  if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
     script_promise_resolver_->Reject(DOMException::Create(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
@@ -147,10 +145,7 @@ void ClipboardPromise::CheckWritePermission(
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
   DCHECK(script_promise_resolver_);
 
-  ExecutionContext* context = ExecutionContext::From(script_state_);
-  DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
-
-  if (!IsFocusedDocument(context)) {
+  if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
     script_promise_resolver_->Reject(DOMException::Create(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
