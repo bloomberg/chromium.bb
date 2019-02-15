@@ -41,9 +41,7 @@ per-file chrome_service_worker_browsertest.cc=file://content/browser/service_wor
 per-file chrome_site_per_process_browsertest.cc=file://content/OWNERS
 per-file chrome_site_per_process_browsertest.cc=kenrb@chromium.org
 
-per-file chrome_webusb_browser_client*=juncai@chromium.org
-per-file chrome_webusb_browser_client*=reillyg@chromium.org
-per-file chrome_webusb_browser_client*=rockot@google.com
+per-file chrome_webusb_browser_client*=file://chrome/browser/usb/OWNERS
 
 per-file exo_parts.*=reveman@chromium.org
 
