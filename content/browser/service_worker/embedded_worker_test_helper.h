@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -34,8 +35,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace blink {
 struct PlatformNotificationData;
 }
@@ -43,8 +42,8 @@ struct PlatformNotificationData;
 namespace content {
 
 class EmbeddedWorkerRegistry;
-class EmbeddedWorkerTestHelper;
 class MockRenderProcessHost;
+class FakeServiceWorker;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class TestBrowserContext;
@@ -52,76 +51,53 @@ class TestBrowserContext;
 // In-Process EmbeddedWorker test helper.
 //
 // Usage: create an instance of this class to test browser-side embedded worker
-// code without creating a child process.  This class will create a
+// code without creating a child process. This class will create a
 // ServiceWorkerContextWrapper and ServiceWorkerContextCore for you.
 //
-// By default this class just notifies back WorkerStarted and WorkerStopped
-// for StartWorker and StopWorker requests. The default implementation
-// also returns success for event messages (e.g. InstallEvent, FetchEvent).
+// By default, this class uses FakeEmbeddedWorkerInstanceClient which notifies
+// back success for StartWorker and StopWorker requests. It also uses
+// FakeServiceWorker which returns success for event messages (e.g.
+// InstallEvent, FetchEvent).
 //
-// Alternatively consumers can subclass this helper and override On*()
-// methods to add their own logic/verification code.
+// Alternatively consumers can use subclasses of the Fake* classes
+// to add their own logic/verification code.
 //
-// See embedded_worker_instance_unittest.cc for example usages.
+// Example:
+//
+//  class MyClient : public FakeEmbeddedWorkerInstanceClient {
+//    void StartWorker(...) override {
+//      // Do custom stuff.
+//      LOG(INFO) << "in start worker!";
+//    }
+//  };
+//  class MyServiceWorker : public FakeServiceWorker {
+//    void DispatchFetchEvent(...) override {
+//      // Do custom stuff.
+//      LOG(INFO) << "in fetch event!";
+//    }
+//  };
+//
+//  // Set up the fakes.
+//  helper->AddPendingInstanceClient(std::make_unique<MyClient>());
+//  helper->AddPendingServiceWorker(std::make_unique<MyServiceWorker>());
+//
+//  // Run code that starts a worker.
+//  StartWorker();  // "in start worker!"
+//
+//  // Run code that dispatches a fetch event.
+//  Navigate();  // "in fetch event!"
+//
+// See embedded_worker_instance_unittest.cc for more example usages.
 class EmbeddedWorkerTestHelper {
  public:
   enum class Event { Install, Activate };
-
-  class MockEmbeddedWorkerInstanceClient
-      : public blink::mojom::EmbeddedWorkerInstanceClient {
-   public:
-    // |helper| must outlive this.
-    explicit MockEmbeddedWorkerInstanceClient(EmbeddedWorkerTestHelper* helper);
-    ~MockEmbeddedWorkerInstanceClient() override;
-
-    static void Bind(EmbeddedWorkerTestHelper* helper,
-                     blink::mojom::EmbeddedWorkerInstanceClientRequest request);
-
-   protected:
-    // blink::mojom::EmbeddedWorkerInstanceClient implementation.
-    void StartWorker(
-        blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
-    void StopWorker() override;
-    void ResumeAfterDownload() override;
-    void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                             const std::string& message) override;
-    void BindDevToolsAgent(
-        blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
-        blink::mojom::DevToolsAgentAssociatedRequest) override {}
-
-    // |helper_| owns |this|.
-    EmbeddedWorkerTestHelper* helper_;
-    mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
-
-    base::Optional<int> embedded_worker_id_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(MockEmbeddedWorkerInstanceClient);
-  };
 
   // If |user_data_directory| is empty, the context makes storage stuff in
   // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
   virtual ~EmbeddedWorkerTestHelper();
 
-  // Simulates Mojo calls to the browser process.
-  void SimulateRequestTermination(int embedded_worker_id,
-                                  base::OnceCallback<void(bool)> callback);
-
-  // Registers a Mojo endpoint object derived from
-  // MockEmbeddedWorkerInstanceClient.
-  void RegisterMockInstanceClient(
-      std::unique_ptr<MockEmbeddedWorkerInstanceClient> client);
-
-  template <typename MockType, typename... Args>
-  MockType* CreateAndRegisterMockInstanceClient(Args&&... args);
-
   std::vector<Event>* dispatched_events() { return &events_; }
-
-  std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>*
-  mock_instance_clients() {
-    return &mock_instance_clients_;
-  }
 
   ServiceWorkerContextCore* context();
   ServiceWorkerContextWrapper* context_wrapper() { return wrapper_.get(); }
@@ -153,34 +129,53 @@ class EmbeddedWorkerTestHelper {
   // null pointer will restore the default behavior.
   void SetNetworkFactory(network::mojom::URLLoaderFactory* factory);
 
+  // Adds the given client to the pending queue. The next time this helper
+  // receives a blink::mojom::EmbeddedWorkerInstanceClientRequest request (i.e.,
+  // on the next start worker attempt), it uses the first client from this
+  // queue.
+  void AddPendingInstanceClient(
+      std::unique_ptr<FakeEmbeddedWorkerInstanceClient> instance_client);
+
+  // Adds the given service worker to the pending queue. The next time this
+  // helper receives a blink::mojom::ServiceWorkerRequest request (i.e., on the
+  // next start worker attempt), it uses the first service worker from this
+  // queue.
+  void AddPendingServiceWorker(
+      std::unique_ptr<FakeServiceWorker> service_worker);
+
+  // A convenience method useful for keeping a pointer to a
+  // FakeEmbeddedWorkerInstanceClient after it's added. Equivalent to:
+  //   auto client_to_pass = std::make_unique<MockType>(args);
+  //   auto* client = client.get();
+  //   AddPendingInstanceClient(std::move(client_to_pass));
+  template <typename MockType, typename... Args>
+  MockType* AddNewPendingInstanceClient(Args&&... args);
+  // Same for FakeServiceWorker.
+  template <typename MockType, typename... Args>
+  MockType* AddNewPendingServiceWorker(Args&&... args);
+
+  /////////////////////////////////////////////////////////////////////////////
+  // The following are exposed to public so the fake embedded worker and service
+  // worker implementations and their subclasses can call them.
+  //
+  // Called when |request| is received. It takes the object from a previous
+  // AddPending*() call if any and calls Create*() otherwise.
+  void OnInstanceClientRequest(
+      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+  void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
+
+  // Called by the fakes to destroy themselves.
+  void RemoveInstanceClient(FakeEmbeddedWorkerInstanceClient* instance_client);
+  void RemoveServiceWorker(FakeServiceWorker* service_worker);
+
   // Writes a dummy script into the given service worker's
   // ServiceWorkerScriptCacheMap. |callback| is called when done.
   virtual void PopulateScriptCacheMap(int64_t service_worker_version_id,
                                       base::OnceClosure callback);
+  /////////////////////////////////////////////////////////////////////////////
 
  protected:
-  // StartWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
-  // This simulates behaviors in the renderer process. Binds
-  // |service_worker_request| to MockServiceWorker by default.
-  virtual void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      blink::mojom::ServiceWorkerRequest service_worker_request,
-      blink::mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
-          installed_scripts_info);
-  virtual void OnResumeAfterDownload(int embedded_worker_id);
-  // StopWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
-  // This calls SimulateWorkerStopped() by default.
-  virtual void OnStopWorker(int embedded_worker_id);
-
-  // On*Event handlers. By default they just return success via
-  // SimulateSendReplyToBrowser.
+  // TODO(falken): Remove these and use FakeServiceWorker instead.
   virtual void OnActivateEvent(
       blink::mojom::ServiceWorker::DispatchActivateEventCallback callback);
   virtual void OnBackgroundFetchAbortEvent(
@@ -245,15 +240,6 @@ class EmbeddedWorkerTestHelper {
           callback);
   virtual void OnSetIdleTimerDelayToZero(int embedded_worker_id);
 
-  // These functions simulate making Mojo calls to the browser.
-  void SimulateWorkerReadyForInspection(int embedded_worker_id);
-  void SimulateWorkerScriptLoaded(int embedded_worker_id);
-  void SimulateScriptEvaluationStart(int embedded_worker_id);
-  void SimulateWorkerStarted(int embedded_worker_id,
-                             blink::mojom::ServiceWorkerStartStatus status,
-                             int thread_id);
-  void SimulateWorkerStopped(int embedded_worker_id);
-
   EmbeddedWorkerRegistry* registry();
 
   blink::mojom::ServiceWorkerHost* GetServiceWorkerHost(
@@ -266,28 +252,18 @@ class EmbeddedWorkerTestHelper {
     return embedded_worker_id_instance_host_ptr_map_[embedded_worker_id].get();
   }
 
+  // Subclasses can override these to change the default fakes. This saves tests
+  // from calling AddPending*() for each start worker attempt.
+  virtual std::unique_ptr<FakeEmbeddedWorkerInstanceClient>
+  CreateInstanceClient();
+  virtual std::unique_ptr<FakeServiceWorker> CreateServiceWorker();
+
  private:
   friend FakeServiceWorker;
   class MockNetworkURLLoaderFactory;
-  class MockServiceWorker;
   class MockRendererInterface;
 
-  void AddServiceWorker(std::unique_ptr<MockServiceWorker> service_worker);
-  void RemoveServiceWorker(MockServiceWorker* service_worker);
-  void CreateServiceWorker(blink::mojom::ServiceWorkerRequest request,
-                           int embedded_worker_id);
-
-  void DidPopulateScriptCacheMap(int embedded_worker_id,
-                                 bool pause_after_download);
-
   // TODO(falken): Remove these and use FakeServiceWorker instead.
-  void OnInitializeGlobalScope(
-      int embedded_worker_id,
-      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info);
-  void OnStartWorkerStub(blink::mojom::EmbeddedWorkerStartParamsPtr params);
-  void OnResumeAfterDownloadStub(int embedded_worker_id);
-  void OnStopWorkerStub(int embedded_worker_id);
   void OnActivateEventStub(
       blink::mojom::ServiceWorker::DispatchActivateEventCallback callback);
   void OnBackgroundFetchAbortEventStub(
@@ -358,11 +334,15 @@ class EmbeddedWorkerTestHelper {
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 
   std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
-  std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
-      mock_instance_clients_;
-  size_t mock_instance_clients_next_index_;
 
-  base::flat_set<std::unique_ptr<MockServiceWorker>, base::UniquePtrComparator>
+  base::queue<std::unique_ptr<FakeEmbeddedWorkerInstanceClient>>
+      pending_embedded_worker_instance_clients_;
+  base::flat_set<std::unique_ptr<FakeEmbeddedWorkerInstanceClient>,
+                 base::UniquePtrComparator>
+      instance_clients_;
+
+  base::queue<std::unique_ptr<FakeServiceWorker>> pending_service_workers_;
+  base::flat_set<std::unique_ptr<FakeServiceWorker>, base::UniquePtrComparator>
       service_workers_;
 
   int next_thread_id_;
@@ -399,12 +379,21 @@ class EmbeddedWorkerTestHelper {
 };
 
 template <typename MockType, typename... Args>
-MockType* EmbeddedWorkerTestHelper::CreateAndRegisterMockInstanceClient(
+MockType* EmbeddedWorkerTestHelper::AddNewPendingInstanceClient(
     Args&&... args) {
   std::unique_ptr<MockType> mock =
       std::make_unique<MockType>(std::forward<Args>(args)...);
   MockType* mock_rawptr = mock.get();
-  RegisterMockInstanceClient(std::move(mock));
+  AddPendingInstanceClient(std::move(mock));
+  return mock_rawptr;
+}
+
+template <typename MockType, typename... Args>
+MockType* EmbeddedWorkerTestHelper::AddNewPendingServiceWorker(Args&&... args) {
+  std::unique_ptr<MockType> mock =
+      std::make_unique<MockType>(std::forward<Args>(args)...);
+  MockType* mock_rawptr = mock.get();
+  AddPendingServiceWorker(std::move(mock));
   return mock_rawptr;
 }
 

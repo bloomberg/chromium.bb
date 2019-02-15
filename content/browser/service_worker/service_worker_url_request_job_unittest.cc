@@ -26,6 +26,8 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
+#include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -419,6 +421,10 @@ class ServiceWorkerURLRequestJobTest
   }
   // ---------------------------------------------------------------------------
 
+  void CompleteNavigationPreload() {
+    handler()->job()->OnNavigationPreloadResponse();
+  }
+
   // |scoped_feature_list_| must be before |thread_bundle_|.
   // See comments in ServiceWorkerProviderHostTest.
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -470,93 +476,47 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   EXPECT_EQ(std::string(), info->response_cache_storage_cache_name());
 }
 
-// Helper for controlling when to start a worker and respond to a fetch event.
-class DelayHelper : public EmbeddedWorkerTestHelper {
+// For controlling when to respond to a fetch event.
+class DelayFetchWorker : public FakeServiceWorker {
  public:
-  DelayHelper(ServiceWorkerURLRequestJobTest* test)
-      : EmbeddedWorkerTestHelper(base::FilePath()), test_(test) {}
-  ~DelayHelper() override {}
+  explicit DelayFetchWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(std::move(helper)) {}
+  ~DelayFetchWorker() override = default;
 
-  void CompleteNavigationPreload() {
-    test_->handler()->job()->OnNavigationPreloadResponse();
-  }
-
-  void CompleteStartWorker() {
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id_, service_worker_version_id_, scope_, script_url_,
-        pause_after_download_, std::move(start_worker_request_),
-        std::move(controller_request_), std::move(start_worker_instance_host_),
-        std::move(provider_info_), std::move(installed_scripts_info_));
+  void DispatchFetchEvent(
+      blink::mojom::DispatchFetchEventParamsPtr params,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      DispatchFetchEventCallback callback) override {
+    params_ = std::move(params);
+    response_callback_ = std::move(response_callback);
+    callback_ = std::move(callback);
+    if (respond_immediately_)
+      Respond();
   }
 
   void Respond() {
-    response_callback_->OnResponse(
-        MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
-    std::move(finish_callback_)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
-  }
-
- protected:
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      blink::mojom::ServiceWorkerRequest service_worker_request,
-      blink::mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
-      override {
-    embedded_worker_id_ = embedded_worker_id;
-    service_worker_version_id_ = service_worker_version_id;
-    scope_ = scope;
-    script_url_ = script_url;
-    pause_after_download_ = pause_after_download;
-    start_worker_request_ = std::move(service_worker_request);
-    controller_request_ = std::move(controller_request);
-    start_worker_instance_host_ = std::move(instance_host);
-    provider_info_ = std::move(provider_info);
-    installed_scripts_info_ = std::move(installed_scripts_info);
-  }
-
-  void OnFetchEvent(
-      int embedded_worker_id,
-      blink::mojom::FetchAPIRequestPtr /* request */,
-      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
-    embedded_worker_id_ = embedded_worker_id;
-    response_callback_ = std::move(response_callback);
-    finish_callback_ = std::move(finish_callback);
-    preload_handle_ = std::move(preload_handle);
+    if (!params_) {
+      respond_immediately_ = true;
+      return;
+    }
+    FakeServiceWorker::DispatchFetchEvent(std::move(params_),
+                                          std::move(response_callback_),
+                                          std::move(callback_));
   }
 
  private:
-  int64_t service_worker_version_id_;
-  GURL scope_;
-  GURL script_url_;
-  bool pause_after_download_;
-  blink::mojom::ServiceWorkerRequest start_worker_request_;
-  blink::mojom::ControllerServiceWorkerRequest controller_request_;
-  blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
-      start_worker_instance_host_;
-  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
-  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;
-  int embedded_worker_id_ = 0;
+  bool respond_immediately_ = false;
+  blink::mojom::DispatchFetchEventParamsPtr params_;
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
-  blink::mojom::FetchEventPreloadHandlePtr preload_handle_;
-  blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback_;
-  ServiceWorkerURLRequestJobTest* test_;
-  DISALLOW_COPY_AND_ASSIGN(DelayHelper);
+  DispatchFetchEventCallback callback_;
+  DISALLOW_COPY_AND_ASSIGN(DelayFetchWorker);
 };
 
 TEST_F(ServiceWorkerURLRequestJobTest,
        NavPreloadMetrics_WorkerAlreadyStarted_MainFrame) {
-  SetUpWithHelper(std::make_unique<DelayHelper>(this));
-  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<DelayFetchWorker>(helper_.get());
 
   // Start the worker before the navigation.
   blink::ServiceWorkerStatusCode status =
@@ -565,14 +525,12 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         base::BindOnce(&SaveStatusCallback, &status));
   base::RunLoop().RunUntilIdle();
-  helper->CompleteStartWorker();
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
   // Do the navigation.
   SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);
-  helper->CompleteNavigationPreload();
-  helper->Respond();
+  CompleteNavigationPreload();
+  worker->Respond();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
@@ -590,16 +548,20 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 
 TEST_F(ServiceWorkerURLRequestJobTest,
        NavPreloadMetrics_WorkerFirst_MainFrame) {
-  SetUpWithHelper(std::make_unique<DelayHelper>(this));
-  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<DelayFetchWorker>(helper_.get());
 
   base::HistogramTester histogram_tester;
   SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);
 
   // Worker finishes first.
-  helper->CompleteStartWorker();
-  helper->CompleteNavigationPreload();
-  helper->Respond();
+  client->UnblockStartWorker();
+  base::RunLoop().RunUntilIdle();
+  CompleteNavigationPreload();
+  worker->Respond();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
@@ -617,16 +579,19 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 
 TEST_F(ServiceWorkerURLRequestJobTest,
        NavPreloadMetrics_NavPreloadFirst_MainFrame) {
-  SetUpWithHelper(std::make_unique<DelayHelper>(this));
-  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<DelayFetchWorker>(helper_.get());
 
   base::HistogramTester histogram_tester;
   SetUpNavigationPreloadTest(RESOURCE_TYPE_MAIN_FRAME);
 
   // Nav preload finishes first.
-  helper->CompleteNavigationPreload();
-  helper->CompleteStartWorker();
-  helper->Respond();
+  CompleteNavigationPreload();
+  client->UnblockStartWorker();
+  worker->Respond();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
@@ -643,16 +608,20 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, NavPreloadMetrics_WorkerFirst_SubFrame) {
-  SetUpWithHelper(std::make_unique<DelayHelper>(this));
-  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<DelayFetchWorker>(helper_.get());
 
   base::HistogramTester histogram_tester;
   SetUpNavigationPreloadTest(RESOURCE_TYPE_SUB_FRAME);
 
   // Worker finishes first.
-  helper->CompleteStartWorker();
-  helper->CompleteNavigationPreload();
-  helper->Respond();
+  client->UnblockStartWorker();
+  base::RunLoop().RunUntilIdle();
+  CompleteNavigationPreload();
+  worker->Respond();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
@@ -669,16 +638,19 @@ TEST_F(ServiceWorkerURLRequestJobTest, NavPreloadMetrics_WorkerFirst_SubFrame) {
 
 TEST_F(ServiceWorkerURLRequestJobTest,
        NavPreloadMetrics_NavPreloadFirst_SubFrame) {
-  SetUpWithHelper(std::make_unique<DelayHelper>(this));
-  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<DelayFetchWorker>(helper_.get());
 
   base::HistogramTester histogram_tester;
   SetUpNavigationPreloadTest(RESOURCE_TYPE_SUB_FRAME);
 
   // Nav preload finishes first.
-  helper->CompleteNavigationPreload();
-  helper->CompleteStartWorker();
-  helper->Respond();
+  CompleteNavigationPreload();
+  client->UnblockStartWorker();
+  worker->Respond();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
@@ -1255,32 +1227,38 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveReadAndAbort) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
-// Helper to simulate failing to dispatch a fetch event to a worker.
-class FailFetchHelper : public EmbeddedWorkerTestHelper {
+// Simulates failing to dispatch a fetch event to a worker.
+class FailFetchWorker : public FakeServiceWorker {
  public:
-  FailFetchHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~FailFetchHelper() override {}
+  explicit FailFetchWorker(EmbeddedWorkerTestHelper* helper,
+                           FakeEmbeddedWorkerInstanceClient* instance_client)
+      : FakeServiceWorker(helper), instance_client_(instance_client) {}
+  ~FailFetchWorker() override = default;
 
  protected:
-  void OnFetchEvent(
-      int embedded_worker_id,
-      blink::mojom::FetchAPIRequestPtr /* request */,
-      blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
-      blink::mojom::
-          ServiceWorkerFetchResponseCallbackPtr /* response_callback */,
-      blink::mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
-      override {
-    SimulateWorkerStopped(embedded_worker_id);
-    std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
+  void DispatchFetchEvent(
+      blink::mojom::DispatchFetchEventParamsPtr params,
+      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      DispatchFetchEventCallback callback) override {
+    instance_client_->host()->OnStopped();
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FailFetchHelper);
+  FakeEmbeddedWorkerInstanceClient* const instance_client_;
+  DISALLOW_COPY_AND_ASSIGN(FailFetchWorker);
 };
 
 TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
-  SetUpWithHelper(std::make_unique<FailFetchHelper>());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+
+  // Setup Mojo implementation fakes for the renderer-side service worker.
+  // These force dispatching the fetch event to fail.
+  auto* instance_client =
+      helper_->AddNewPendingInstanceClient<FakeEmbeddedWorkerInstanceClient>(
+          helper_.get());
+  helper_->AddPendingServiceWorker(
+      std::make_unique<FailFetchWorker>(helper_.get(), instance_client));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
@@ -1403,8 +1381,11 @@ TEST_F(ServiceWorkerURLRequestJobTest, EarlyResponse) {
 
 // Test cancelling the URLRequest while the fetch event is in flight.
 TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
-  SetUpWithHelper(std::make_unique<DelayHelper>(this));
-  DelayHelper* helper = static_cast<DelayHelper*>(helper_.get());
+  SetUpWithHelper(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<DelayFetchWorker>(helper_.get());
 
   // Start the URL request. The job will be waiting for the
   // worker to respond to the fetch event.
@@ -1415,7 +1396,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
   request_->set_method("GET");
   request_->Start();
   base::RunLoop().RunUntilIdle();
-  helper->CompleteStartWorker();
+  client->UnblockStartWorker();
   base::RunLoop().RunUntilIdle();
 
   // Cancel the URL request.
@@ -1424,7 +1405,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, CancelRequest) {
 
   // Respond to the fetch event.
   EXPECT_FALSE(version_->HasNoWork());
-  helper->Respond();
+  worker->Respond();
   base::RunLoop().RunUntilIdle();
 
   // The fetch event request should no longer be in-flight.

@@ -65,6 +65,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerControlleeRequestHandlerTest,
 }  // namespace service_worker_controllee_request_handler_unittest
 
 namespace service_worker_url_request_job_unittest {
+class ServiceWorkerURLRequestJobTest;
 class DelayHelper;
 }  // namespace service_worker_url_request_job_unittest
 
@@ -151,7 +152,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   class NavigationPreloadMetrics;
   friend class service_worker_url_request_job_unittest::DelayHelper;
-  friend class ServiceWorkerURLRequestJobTest;
+  friend class service_worker_url_request_job_unittest::
+      ServiceWorkerURLRequestJobTest;
   FRIEND_TEST_ALL_PREFIXES(service_worker_controllee_request_handler_unittest::
                                ServiceWorkerControlleeRequestHandlerTest,
                            LostActiveVersion);

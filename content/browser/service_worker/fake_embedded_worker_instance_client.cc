@@ -52,9 +52,8 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
   host_.Bind(std::move(params->instance_host));
   start_params_ = std::move(params);
 
-  // TODO(falken): Uncomment this in the next patch, which implements it.
-  // helper_->OnServiceWorkerRequest(
-  //    std::move(start_params_->service_worker_request));
+  helper_->OnServiceWorkerRequest(
+      std::move(start_params_->service_worker_request));
 
   host_->OnReadyForInspection();
   if (start_params_->is_installed) {
@@ -101,8 +100,7 @@ void FakeEmbeddedWorkerInstanceClient::DidPopulateScriptCacheMap() {
 
 void FakeEmbeddedWorkerInstanceClient::OnConnectionError() {
   // Destroys |this|.
-  // TODO(falken): Uncomment this in the next patch, which implements it.
-  // helper_->RemoveInstanceClient(this);
+  helper_->RemoveInstanceClient(this);
 }
 
 void FakeEmbeddedWorkerInstanceClient::EvaluateScript() {
