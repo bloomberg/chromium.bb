@@ -28,6 +28,8 @@ blink_modules_sources("xr") {
     "xr_input_source_event.h",
     "xr_layer.cc",
     "xr_layer.h",
+    "xr_pose.cc",
+    "xr_pose.h",
     "xr_presentation_context.cc",
     "xr_presentation_context.h",
     "xr_ray.cc",

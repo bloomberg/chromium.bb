@@ -149,9 +149,15 @@ class XRSession final : public EventTargetWithInlineData,
 
   void OnPoseReset();
 
-  const device::mojom::blink::VRDisplayInfoPtr& GetVRDisplayInfo() {
+  const device::mojom::blink::VRDisplayInfoPtr& GetVRDisplayInfo() const {
     return display_info_;
   }
+
+  // TODO(jacde): Update the mojom to deliver this per-frame.
+  bool EmulatedPosition() const {
+    return !display_info_->capabilities->hasPosition;
+  }
+
   bool External() const { return is_external_; }
   // Incremented every time display_info_ is changed, so that other objects that
   // depend on it can know when they need to update.

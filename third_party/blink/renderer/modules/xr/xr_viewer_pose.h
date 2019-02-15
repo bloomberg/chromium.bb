@@ -5,33 +5,27 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_VIEWER_POSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_VIEWER_POSE_H_
 
-#include <utility>
+#include "third_party/blink/renderer/modules/xr/xr_pose.h"
 
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
-class XRRigidTransform;
 class XRSession;
 class XRView;
 
-class XRViewerPose final : public ScriptWrappable {
+class XRViewerPose final : public XRPose {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   XRViewerPose(XRSession*, std::unique_ptr<TransformationMatrix>);
+  ~XRViewerPose() override = default;
 
-  XRRigidTransform* transform() const { return transform_; }
   const HeapVector<Member<XRView>>& views() const { return views_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  const Member<XRSession> session_;
-  Member<XRRigidTransform> transform_;
   HeapVector<Member<XRView>> views_;
 };
 
