@@ -193,23 +193,23 @@ AppListSyncableService::SyncItem::SyncItem(
 
 AppListSyncableService::SyncItem::~SyncItem() = default;
 
-// AppListSyncableService::ModelUpdaterDelegate
+// AppListSyncableService::ModelUpdaterObserver
 
-class AppListSyncableService::ModelUpdaterDelegate
-    : public AppListModelUpdaterDelegate {
+class AppListSyncableService::ModelUpdaterObserver
+    : public AppListModelUpdaterObserver {
  public:
-  explicit ModelUpdaterDelegate(AppListSyncableService* owner) : owner_(owner) {
-    DVLOG(2) << owner_ << ": ModelUpdaterDelegate Added";
-    owner_->GetModelUpdater()->SetDelegate(this);
+  explicit ModelUpdaterObserver(AppListSyncableService* owner) : owner_(owner) {
+    DVLOG(2) << owner_ << ": ModelUpdaterObserver Added";
+    owner_->GetModelUpdater()->AddObserver(this);
   }
 
-  ~ModelUpdaterDelegate() override {
-    owner_->GetModelUpdater()->SetDelegate(nullptr);
-    DVLOG(2) << owner_ << ": ModelUpdaterDelegate Removed";
+  ~ModelUpdaterObserver() override {
+    owner_->GetModelUpdater()->RemoveObserver(this);
+    DVLOG(2) << owner_ << ": ModelUpdaterObserver Removed";
   }
 
  private:
-  // ChromeAppListModelUpdaterDelegate
+  // ChromeAppListModelUpdaterObserver
   void OnAppListItemAdded(ChromeAppListItem* item) override {
     DCHECK(adding_item_id_.empty());
     adding_item_id_ = item->id();  // Ignore updates while adding an item.
@@ -256,7 +256,7 @@ class AppListSyncableService::ModelUpdaterDelegate
   AppListSyncableService* owner_;
   std::string adding_item_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ModelUpdaterDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ModelUpdaterObserver);
 };
 
 // AppListSyncableService
@@ -301,7 +301,7 @@ AppListSyncableService::AppListSyncableService(
 
 AppListSyncableService::~AppListSyncableService() {
   // Remove observers.
-  model_updater_delegate_.reset();
+  model_updater_observer_.reset();
 }
 
 bool AppListSyncableService::IsExtensionServiceReady() const {
@@ -496,7 +496,7 @@ AppListModelUpdater* AppListSyncableService::GetModelUpdater() {
 
 void AppListSyncableService::HandleUpdateStarted() {
   // Don't observe the model while processing update changes.
-  model_updater_delegate_.reset();
+  model_updater_observer_.reset();
 }
 
 void AppListSyncableService::HandleUpdateFinished() {
@@ -505,7 +505,7 @@ void AppListSyncableService::HandleUpdateFinished() {
   ResolveFolderPositions();
 
   // Resume or start observing app list model changes.
-  model_updater_delegate_ = std::make_unique<ModelUpdaterDelegate>(this);
+  model_updater_observer_ = std::make_unique<ModelUpdaterObserver>(this);
 
   NotifyObserversSyncUpdated();
 }

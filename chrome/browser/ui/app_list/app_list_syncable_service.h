@@ -183,7 +183,7 @@ class AppListSyncableService : public syncer::SyncableService,
   void Shutdown() override;
 
  private:
-  class ModelUpdaterDelegate;
+  class ModelUpdaterObserver;
 
   // Builds the model once ExtensionService is ready.
   void BuildModel();
@@ -302,7 +302,7 @@ class AppListSyncableService : public syncer::SyncableService,
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   std::unique_ptr<AppListModelUpdater> model_updater_;
-  std::unique_ptr<ModelUpdaterDelegate> model_updater_delegate_;
+  std::unique_ptr<ModelUpdaterObserver> model_updater_observer_;
 
   std::unique_ptr<AppServiceAppModelBuilder> app_service_apps_builder_;
   // TODO(crbug.com/826982): delete all the other FooModelBuilder's, after

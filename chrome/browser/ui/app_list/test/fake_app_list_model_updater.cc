@@ -58,8 +58,8 @@ void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
     ChromeAppListItem* item = items_[index].get();
     ChromeAppListItem::TestApi test_api(item);
     test_api.SetFolderId(folder_id);
-    if (delegate_)
-      delegate_->OnAppListItemUpdated(item);
+    for (AppListModelUpdaterObserver& observer : observers_)
+      observer.OnAppListItemUpdated(item);
   }
 }
 
@@ -214,7 +214,12 @@ void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
 }
 
-void FakeAppListModelUpdater::SetDelegate(
-    AppListModelUpdaterDelegate* delegate) {
-  delegate_ = delegate;
+void FakeAppListModelUpdater::AddObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeAppListModelUpdater::RemoveObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.RemoveObserver(observer);
 }

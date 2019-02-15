@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/app_list/app_list_model_updater_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater_observer.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
 class ChromeAppListItem;
@@ -141,7 +141,8 @@ class AppListModelUpdater {
                                     const syncer::StringOrdinal& position) = 0;
   virtual void OnPageBreakItemDeleted(const std::string& id) = 0;
 
-  virtual void SetDelegate(AppListModelUpdaterDelegate* delegate) = 0;
+  virtual void AddObserver(AppListModelUpdaterObserver* observer) = 0;
+  virtual void RemoveObserver(AppListModelUpdaterObserver* observer) = 0;
 
  protected:
   // Returns the first available position in app list. |top_level_items| are
