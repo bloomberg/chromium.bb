@@ -151,15 +151,10 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
 };
 
 TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
-  // Timer shouldn't start until signin screen is ready.
-  set_auto_login_account_id(auto_login_account_id_);
   set_auto_login_delay(kAutoLoginDelay2);
-  existing_user_controller()->StartAutoLoginTimer();
-  EXPECT_FALSE(auto_login_timer());
 
   // Timer shouldn't start if the policy isn't set.
   set_auto_login_account_id(EmptyAccountId());
-  existing_user_controller()->OnSigninScreenReady();
   existing_user_controller()->StartAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
 
@@ -179,7 +174,6 @@ TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
 }
 
 TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
-  existing_user_controller()->OnSigninScreenReady();
   set_auto_login_account_id(auto_login_account_id_);
   set_auto_login_delay(kAutoLoginDelay2);
 
@@ -193,7 +187,6 @@ TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
 }
 
 TEST_F(ExistingUserControllerAutoLoginTest, ResetAutoLoginTimer) {
-  existing_user_controller()->OnSigninScreenReady();
   set_auto_login_account_id(auto_login_account_id_);
 
   // Timer starts off not running.
@@ -222,8 +215,6 @@ TEST_F(ExistingUserControllerAutoLoginTest, ResetAutoLoginTimer) {
 }
 
 TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
-  existing_user_controller()->OnSigninScreenReady();
-
   // Timer shouldn't start when the policy is disabled.
   ConfigureAutoLogin();
   EXPECT_FALSE(auto_login_timer());

@@ -673,14 +673,12 @@ void ExistingUserController::RestartLogin(const UserContext& user_context) {
 void ExistingUserController::OnSigninScreenReady() {
   // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
   VLOG(1) << "OnSigninScreenReady";
-  auto_launch_ready_ = true;
   StartAutoLoginTimer();
 }
 
 void ExistingUserController::OnGaiaScreenReady() {
   // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
   VLOG(1) << "OnGaiaScreenReady";
-  auto_launch_ready_ = true;
   StartAutoLoginTimer();
 }
 
@@ -1466,7 +1464,7 @@ void ExistingUserController::ResetAutoLoginTimer() {
 }
 
 void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
-  CHECK(auto_launch_ready_ && public_session_auto_login_account_id_.is_valid());
+  CHECK(public_session_auto_login_account_id_.is_valid());
   VLOG(2) << "Public session autologin fired";
   SigninSpecifics signin_specifics;
   signin_specifics.is_auto_login = true;
@@ -1476,7 +1474,7 @@ void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
 }
 
 void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
-  CHECK(auto_launch_ready_ && (arc_kiosk_auto_login_account_id_.is_valid()));
+  CHECK(arc_kiosk_auto_login_account_id_.is_valid());
   VLOG(2) << "ARC kiosk autologin fired";
   SigninSpecifics signin_specifics;
   signin_specifics.is_auto_login = true;
@@ -1515,11 +1513,10 @@ void ExistingUserController::ResyncUserData() {
 }
 
 void ExistingUserController::StartAutoLoginTimer() {
-  if (!auto_launch_ready_ || is_login_in_progress_ ||
+  if (is_login_in_progress_ ||
       (!public_session_auto_login_account_id_.is_valid() &&
        !arc_kiosk_auto_login_account_id_.is_valid())) {
     VLOG(2) << "Not starting autologin timer, because:";
-    VLOG_IF(2, !auto_launch_ready_) << "* Not ready;";
     VLOG_IF(2, is_login_in_progress_) << "* Login is in process;";
     VLOG_IF(2, (!public_session_auto_login_account_id_.is_valid() &&
                 !arc_kiosk_auto_login_account_id_.is_valid()))
