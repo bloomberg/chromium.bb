@@ -117,10 +117,11 @@ class ManifestRepository(object):
   def ListManifests(self, root_manifests):
     """Finds all manifests included directly or indirectly by root manifests.
 
-    For convenience, the returned set includes the root manifests.
+    For convenience, the returned set includes the root manifests. If any
+    manifest is not found on disk, it is ignored.
 
     Args:
-      root_manifests: Manifests whose includes will be traversed.
+      root_manifests: Names of manifests whose includes will be traversed.
 
     Returns:
       Set of paths to included manifests.
@@ -128,11 +129,11 @@ class ManifestRepository(object):
     pending = list(root_manifests)
     found = set()
     while pending:
-      path = pending.pop()
-      if path in found:
+      path = self.AbsoluteManifestPath(pending.pop())
+      if path in found or not os.path.exists(path):
         continue
       found.add(path)
-      manifest = self.ReadManifest(self.AbsoluteManifestPath(path))
+      manifest = self.ReadManifest(path)
       pending.extend([inc.name for inc in manifest.Includes()])
     return found
 
@@ -186,11 +187,10 @@ class ManifestRepository(object):
     Args:
       branches: List a ProjectBranches for each branched project.
     """
-    manifest_names = self.ListManifests(
+    manifest_paths = self.ListManifests(
         [constants.DEFAULT_MANIFEST, constants.OFFICIAL_MANIFEST])
     branches_by_path = {project.Path(): branch for project, branch in branches}
-    for manifest_name in manifest_names:
-      manifest_path = self.AbsoluteManifestPath(manifest_name)
+    for manifest_path in manifest_paths:
       logging.info('Repairing manifest file %s', manifest_path)
       manifest = self.RepairManifest(manifest_path, branches_by_path)
       manifest.Write(manifest_path)

@@ -167,7 +167,6 @@ MANIFEST_FILES = {
     EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_XML,
                                     REMOTE_EXTERNAL_XML,
                                     PROJECTS_EXTERNAL_XML),
-    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
     constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
 }
 
@@ -248,7 +247,6 @@ MANIFEST_BRANCHED_FILES = {
     EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
                                     REMOTE_EXTERNAL_XML,
                                     PROJECTS_EXTERNAL_BRANCHED_XML),
-    constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
     constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
 }
 
@@ -439,11 +437,35 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
         MANIFEST_INTERNAL_FILES[os.path.basename(path)],
         allow_unsupported_features=allow_unsupported_features)
 
+  def PathExistsMock(self, path):
+    """Returns true if the fake manifest file exists.
+
+    Args:
+      path: Path to the manifest.
+
+    Returns:
+      True if we have a fake manifest under the given name.
+    """
+    return os.path.basename(path) in MANIFEST_INTERNAL_FILES
+
+  def ExpectedFilePath(self, fname):
+    """Returns the expected absolute path for the file.
+
+    Args:
+      fname: The manifest file name.
+
+    Returns:
+      Expected file path, of the form /root/manifest-internal/<fname>
+    """
+    return os.path.join(self.root, self.project.Path(), fname)
+
   def setUp(self):
     self.PatchObject(CrosCheckout, 'GitRevision', self.GitRevisionMock)
     self.PatchObject(repo_manifest.Manifest, 'FromFile', self.FromFileMock)
+    self.PatchObject(os.path, 'exists', self.PathExistsMock)
 
-    self.checkout = CrosCheckout('/root', manifest=self.full_manifest)
+    self.root = '/root'
+    self.checkout = CrosCheckout(self.root, manifest=self.full_manifest)
     self.project = self.ProjectFor(PROJECTS.MANIFEST_INTERNAL)
     self.manifest_repo = ManifestRepository(self.checkout, self.project)
 
@@ -451,27 +473,27 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """Test AbsoluteManifestPath joins path with file name."""
     self.assertEqual(
         self.manifest_repo.AbsoluteManifestPath('test.xml'),
-        '/root/manifest-internal/test.xml')
+        self.ExpectedFilePath('test.xml'))
 
   def testListManifestsSingleFileNoIncludes(self):
     """Test ListManifests on a root file with no includes."""
     roots = expected = [EXTERNAL_FILE_NAME]
     actual = self.manifest_repo.ListManifests(roots)
-    self.assertItemsEqual(actual, expected)
+    self.assertItemsEqual(actual, map(self.ExpectedFilePath, expected))
 
   def testListManifestsSingleFileWithIncludes(self):
     """Test ListManifests on a root file with unique includes."""
     roots = [constants.DEFAULT_MANIFEST]
     expected = roots + [EXTERNAL_FILE_NAME, INTERNAL_FILE_NAME]
     actual = self.manifest_repo.ListManifests(roots)
-    self.assertItemsEqual(actual, expected)
+    self.assertItemsEqual(actual, map(self.ExpectedFilePath, expected))
 
   def testListManifestsMultipleFilesWithIncludes(self):
     """Test ListManifests on root files with shared includes."""
     roots = [constants.DEFAULT_MANIFEST, EXTERNAL_FILE_NAME]
     expected = roots + [INTERNAL_FILE_NAME]
     actual = self.manifest_repo.ListManifests(roots)
-    self.assertItemsEqual(actual, expected)
+    self.assertItemsEqual(actual, map(self.ExpectedFilePath, expected))
 
   def testRepairManifestDeletesDefaultRevisions(self):
     """Test RepairManifest deletes revision attr on <default> and <remote>."""
