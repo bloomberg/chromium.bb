@@ -338,6 +338,9 @@ static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv,
 static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
   const AV1_COMMON *const cm = &cpi->common;
 
+  // TODO(kyslov): Fix 64x64 SB size for RealTime
+  if (cpi->oxcf.mode == REALTIME) return BLOCK_128X128;
+
   if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_64X64)
     return BLOCK_64X64;
 #if CONFIG_FILEOPTIONS

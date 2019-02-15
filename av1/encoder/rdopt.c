@@ -3649,7 +3649,18 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int is_inter = is_inter_block(mbmi);
-  mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
+  TX_SIZE tx_size = tx_size_from_tx_mode(bs, cm->tx_mode);
+
+  // Setting largest TX size for 64x64 blocks will select 64x64 TX.
+  // If 64x64 TX is disabled via oxcf and if pre-selected partitioning
+  // (Variance Based or Fixed) is used this will lead to inability
+  // to select transform and to get RD cost for the block
+  if (txsize_sqr_up_map[tx_size] == TX_64X64 && !cpi->oxcf.enable_tx64 &&
+      (cpi->sf.partition_search_type == VAR_BASED_PARTITION ||
+       cpi->sf.partition_search_type == FIXED_PARTITION)) {
+    tx_size = sub_tx_size_map[tx_size];
+  }
+  mbmi->tx_size = tx_size;
   const TxSetType tx_set_type =
       av1_get_ext_tx_set_type(mbmi->tx_size, is_inter, cm->reduced_tx_set_used);
   prune_tx(cpi, bs, x, xd, tx_set_type);

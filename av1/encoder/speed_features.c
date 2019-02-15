@@ -614,6 +614,9 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->default_max_partition_size = BLOCK_128X128;
     sf->default_min_partition_size = BLOCK_8X8;
     sf->partition_search_type = VAR_BASED_PARTITION;
+    // Can't use LARGEST TX mode with pre-calculated partition
+    // and disabled TX64
+    if (!cpi->oxcf.enable_tx64) sf->tx_size_search_method = USE_FAST_RD;
     sf->use_nonrd_pick_mode = 1;
     sf->inter_mode_rd_model_estimation = 2;
   }
