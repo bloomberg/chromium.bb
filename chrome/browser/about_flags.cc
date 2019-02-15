@@ -127,6 +127,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/leveldb_features.h"
@@ -4077,6 +4078,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionName,
      flag_descriptions::kEnableBlinkHeapUnifiedGarbageCollectionDescription,
      kOsAll, FEATURE_VALUE_TYPE(features::kBlinkHeapUnifiedGarbageCollection)},
+
+    {"enable-filesystem-in-incognito",
+     flag_descriptions::kEnableFilesystemInIncognitoName,
+     flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,
+     FEATURE_VALUE_TYPE(storage::features::kEnableFilesystemInIncognito)},
 
     {"enable-incognito-window-counter",
      flag_descriptions::kEnableIncognitoWindowCounterName,

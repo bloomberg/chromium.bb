@@ -345,6 +345,9 @@ extern const char kEnableClientLoFiDescription[];
 extern const char kEnableCSSFragmentIdentifiersName[];
 extern const char kEnableCSSFragmentIdentifiersDescription[];
 
+extern const char kEnableFilesystemInIncognitoName[];
+extern const char kEnableFilesystemInIncognitoDescription[];
+
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 
