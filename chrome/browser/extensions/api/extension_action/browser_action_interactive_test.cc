@@ -302,15 +302,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   test_util->HidePopup();
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_TestOpenPopupDoesNotCloseOtherPopups DISABLED_TestOpenPopupDoesNotCloseOtherPopups
-#else
-#define MAYBE_TestOpenPopupDoesNotCloseOtherPopups TestOpenPopupDoesNotCloseOtherPopups
-#endif
 // Tests if there is already a popup open (by a user click or otherwise), that
 // the openPopup API does not override it.
 IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
-                       MAYBE_TestOpenPopupDoesNotCloseOtherPopups) {
+                       TestOpenPopupDoesNotCloseOtherPopups) {
   if (!ShouldRunPopupTest())
     return;
 
