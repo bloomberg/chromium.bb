@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
@@ -209,6 +210,8 @@ class CORE_EXPORT MessageEvent final : public Event {
 
  private:
   class V8GCAwareString final {
+    DISALLOW_NEW();
+
    public:
     V8GCAwareString() = default;
     V8GCAwareString(const String&);
