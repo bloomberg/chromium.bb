@@ -263,8 +263,12 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+    // TODO(https://crbug.com/928677): Once there is no more usage of ctors
+    // that allows tests to pass backing object, |dependencies_owner_| null
+    // pointer condition is not neccessary.
     accounts_mutator = std::make_unique<AccountsMutatorImpl>(
-        token_service_, account_tracker_service_, signin_manager_);
+        token_service_, account_tracker_service_, signin_manager_,
+        dependencies_owner_ ? dependencies_owner_->pref_service() : nullptr);
 #endif
 
     std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator =

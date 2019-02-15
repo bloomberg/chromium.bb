@@ -44,6 +44,10 @@ source_set("cpp") {
     "//services/identity/public/cpp:cpp_types",
     "//services/network/public/cpp",
   ]
+
+  deps = [
+    "//components/prefs:prefs",
+  ]
 }
 
 # A source_set for types which the public interfaces depend on for typemapping.
@@ -97,6 +101,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//components/signin/core/browser:internals_test_support",
+    "//components/sync_preferences:test_support",
     "//services/network:test_support",
     "//testing/gtest",
   ]

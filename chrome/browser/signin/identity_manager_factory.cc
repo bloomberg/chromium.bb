@@ -52,7 +52,7 @@ std::unique_ptr<identity::AccountsMutator> BuildAccountsMutator(
   return std::make_unique<identity::AccountsMutatorImpl>(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       AccountTrackerServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile));
+      SigninManagerFactory::GetForProfile(profile), profile->GetPrefs());
 #else
   return nullptr;
 #endif

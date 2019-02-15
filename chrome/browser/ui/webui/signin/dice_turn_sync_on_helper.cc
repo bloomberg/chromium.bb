@@ -33,7 +33,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
@@ -413,11 +412,6 @@ void DiceTurnSyncOnHelper::OnNewProfileTokensLoaded(Profile* new_profile) {
       IdentityManagerFactory::GetForProfile(new_profile)->GetAccountsMutator();
   accounts_mutator->MoveAccount(new_profile_accounts_mutator,
                                 account_info_.account_id);
-  // Reset the device ID from the source profile: the exported token is linked
-  // to the device ID of the current profile on the server. Reset the device ID
-  // of the current profile to avoid tying it with the new profile. See
-  // https://crbug.com/813928#c16
-  signin::RecreateSigninScopedDeviceId(profile_->GetPrefs());
 
   SwitchToProfile(new_profile);
   DCHECK_EQ(profile_, new_profile);

@@ -8,10 +8,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "build/buildflag.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 
 class AccountTrackerService;
+class PrefService;
 class ProfileOAuth2TokenService;
 class SigninManagerBase;
 
@@ -22,7 +25,8 @@ class AccountsMutatorImpl : public AccountsMutator {
  public:
   explicit AccountsMutatorImpl(ProfileOAuth2TokenService* token_service,
                                AccountTrackerService* account_tracker_service,
-                               SigninManagerBase* signin_manager);
+                               SigninManagerBase* signin_manager,
+                               PrefService* pref_service);
   ~AccountsMutatorImpl() override;
 
   // AccountsMutator:
@@ -56,7 +60,9 @@ class AccountsMutatorImpl : public AccountsMutator {
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;
   SigninManagerBase* signin_manager_;
-
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  PrefService* pref_service_;
+#endif
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorImpl);
 };
 
