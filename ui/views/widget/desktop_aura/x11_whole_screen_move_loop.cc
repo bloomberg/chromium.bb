@@ -95,8 +95,8 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
         // dispatched without waiting for the drag widget updates.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(&X11WholeScreenMoveLoop::DispatchMouseMovement,
-                       weak_factory_.GetWeakPtr()));
+            base::BindOnce(&X11WholeScreenMoveLoop::DispatchMouseMovement,
+                           weak_factory_.GetWeakPtr()));
       }
       return ui::POST_DISPATCH_NONE;
     }

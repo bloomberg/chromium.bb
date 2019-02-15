@@ -282,8 +282,8 @@ void SurfacelessGlRenderer::PostRenderFrameTask(
       FALLTHROUGH;  // We want to render a new frame anyways.
     case gfx::SwapResult::SWAP_ACK:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&SurfacelessGlRenderer::RenderFrame,
-                                weak_ptr_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&SurfacelessGlRenderer::RenderFrame,
+                                    weak_ptr_factory_.GetWeakPtr()));
       break;
     case gfx::SwapResult::SWAP_FAILED:
       LOG(FATAL) << "Failed to swap buffers";
