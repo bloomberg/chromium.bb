@@ -303,8 +303,10 @@ const char* BrowserAppMenuButton::GetClassName() const {
 }
 
 void BrowserAppMenuButton::UpdateBorder() {
-  SetBorder(views::CreateEmptyBorder(GetLayoutInsets(TOOLBAR_BUTTON) +
-                                     *GetProperty(views::kInternalPaddingKey)));
+  gfx::Insets new_insets = GetLayoutInsets(TOOLBAR_BUTTON) +
+                           *GetProperty(views::kInternalPaddingKey);
+  if (!border() || border()->GetInsets() != new_insets)
+    SetBorder(views::CreateEmptyBorder(new_insets));
 }
 
 void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {

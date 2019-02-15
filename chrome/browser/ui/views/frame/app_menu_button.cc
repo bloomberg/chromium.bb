@@ -7,12 +7,15 @@
 #include <utility>
 
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 
 AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
-    : views::MenuButton(base::string16(), menu_button_listener) {}
+    : views::MenuButton(base::string16(),
+                        menu_button_listener,
+                        CONTEXT_TOOLBAR_BUTTON) {}
 
 AppMenuButton::~AppMenuButton() {}
 

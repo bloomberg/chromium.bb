@@ -31,7 +31,8 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   // Create a Button.
   MenuButton(const base::string16& text,
-             MenuButtonListener* menu_button_listener);
+             MenuButtonListener* menu_button_listener,
+             int button_context = style::CONTEXT_BUTTON);
   ~MenuButton() override;
 
   bool Activate(const ui::Event* event);
@@ -57,7 +58,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   void OnMouseMoved(const ui::MouseEvent& event) final;
 
   // Protected methods needed for MenuButtonEventHandler.
-  // TODO (cyan): Move these to a delegate interface.
+  // TODO(cyan): Move these to a delegate interface.
   using InkDropHostView::GetInkDrop;
   using View::InDrag;
   using View::GetDragOperations;
@@ -80,7 +81,7 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
  private:
   // All events get sent to this handler to be processed.
-  // TODO (cyan): This will be generalized into a ButtonEventHandler and moved
+  // TODO(cyan): This will be generalized into a ButtonEventHandler and moved
   // into the Button class.
   MenuButtonEventHandler menu_button_event_handler_;
 

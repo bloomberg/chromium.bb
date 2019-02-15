@@ -62,6 +62,8 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   // make to the leading margin to handle Fitts' Law, it's easier to just
   // allocate the property once and modify the value.
   SetProperty(views::kInternalPaddingKey, new gfx::Insets());
+
+  UpdateHighlightBackgroundAndInsets();
 }
 
 ToolbarButton::~ToolbarButton() {}
@@ -101,21 +103,24 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
     SetEnabledTextColors(*highlight_color_);
   }
 
-  gfx::Insets insets = GetLayoutInsets(TOOLBAR_BUTTON) + layout_inset_delta_ +
-                       *GetProperty(views::kInternalPaddingKey);
+  gfx::Insets new_insets = GetLayoutInsets(TOOLBAR_BUTTON) +
+                           layout_inset_delta_ +
+                           *GetProperty(views::kInternalPaddingKey);
+
   if (!GetText().empty()) {
     const int text_side_inset = highlight_radius / 2;
 
     // Some subclasses (AvatarToolbarButton) may be change alignment. This adds
     // an inset to the text-label side.
     if (horizontal_alignment() == gfx::ALIGN_RIGHT) {
-      insets += gfx::Insets(0, text_side_inset, 0, 0);
+      new_insets += gfx::Insets(0, text_side_inset, 0, 0);
     } else {
-      insets += gfx::Insets(0, 0, 0, text_side_inset);
+      new_insets += gfx::Insets(0, 0, 0, text_side_inset);
     }
   }
 
-  SetBorder(views::CreateEmptyBorder(insets));
+  if (!border() || new_insets != border()->GetInsets())
+    SetBorder(views::CreateEmptyBorder(new_insets));
 }
 
 void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {
