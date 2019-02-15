@@ -57,7 +57,9 @@ class VIZ_HOST_EXPORT HitTestQuery {
   // 1. The list is in ascending (front to back) z-order.
   // 2. Children count includes children of children.
   // 3. After applying transform to the incoming point, point is in the same
-  // coordinate system as the bounds it is comparing against.
+  // coordinate system as the bounds it is comparing against. We shouldn't
+  // need to apply rect's origin offset as it should be included in this
+  // transform.
   // For example,
   //  +e-------------+
   //  |   +c---------|

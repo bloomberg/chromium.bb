@@ -361,12 +361,13 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneathTransform) {
   gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
   gfx::Rect c_bounds_in_e = gfx::Rect(0, 0, 800, 800);
   gfx::Rect a_bounds_in_c = gfx::Rect(0, 0, 200, 100);
-  gfx::Rect b_bounds_in_c = gfx::Rect(0, 100, 800, 600);
+  gfx::Rect b_bounds_in_c = gfx::Rect(0, 0, 800, 600);
   gfx::Rect d_bounds_in_e = gfx::Rect(0, 0, 800, 800);
   gfx::Transform transform_e_to_e, transform_e_to_c, transform_c_to_a,
       transform_c_to_b, transform_e_to_d;
   transform_e_to_c.Translate(-200, -100);
   transform_e_to_d.Translate(-400, -50);
+  transform_c_to_b.Translate(0, -100);
   active_data_.push_back(AggregatedHitTestRegion(
       e_id,
       HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse,
@@ -1097,14 +1098,15 @@ TEST_F(HitTestQueryTest, GetTransformToTarget) {
   FrameSinkId b_id = FrameSinkId(4, 4);
   FrameSinkId d_id = FrameSinkId(5, 5);
   gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
-  gfx::Rect c_bounds_in_e = gfx::Rect(0, 50, 800, 800);
+  gfx::Rect c_bounds_in_e = gfx::Rect(0, 0, 800, 800);
   gfx::Rect a_bounds_in_c = gfx::Rect(0, 0, 200, 100);
-  gfx::Rect b_bounds_in_c = gfx::Rect(0, 100, 800, 600);
+  gfx::Rect b_bounds_in_c = gfx::Rect(0, 0, 800, 600);
   gfx::Rect d_bounds_in_e = gfx::Rect(0, 0, 800, 800);
   gfx::Transform transform_e_to_e, transform_e_to_c, transform_c_to_a,
       transform_c_to_b, transform_e_to_d;
-  transform_e_to_c.Translate(-200, -100);
+  transform_e_to_c.Translate(-200, -150);
   transform_e_to_d.Translate(-400, -50);
+  transform_c_to_b.Translate(0, -100);
   transform_c_to_b.Skew(2, 3);
   transform_c_to_b.Scale(.5f, .7f);
   active_data_.push_back(AggregatedHitTestRegion(
@@ -1150,7 +1152,6 @@ TEST_F(HitTestQueryTest, GetTransformToTarget) {
   gfx::Transform transform_to_b;
   gfx::Transform expected_transform_to_b;
   expected_transform_to_b.Translate(-200, -150);
-  expected_transform_to_b.Translate(0, -100);
   expected_transform_to_b.ConcatTransform(transform_c_to_b);
   EXPECT_TRUE(hit_test_query().GetTransformToTarget(b_id, &transform_to_b));
   // Use ToString so that we can compare float.

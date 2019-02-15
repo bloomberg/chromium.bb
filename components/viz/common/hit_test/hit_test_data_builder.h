@@ -23,14 +23,6 @@ class VIZ_COMMON_EXPORT HitTestDataBuilder {
       bool should_ask_for_child_region);
 
  private:
-  static const RenderPass* GetRenderPassInFrame(const CompositorFrame& frame,
-                                                RenderPassId render_pass_id);
-
-  static void AddHitTestDataFromRenderPass(const CompositorFrame& frame,
-                                           RenderPassId render_pass_id,
-                                           std::vector<HitTestRegion>* regions,
-                                           bool should_ask_for_child_region);
-
   DISALLOW_COPY_AND_ASSIGN(HitTestDataBuilder);
 };
 

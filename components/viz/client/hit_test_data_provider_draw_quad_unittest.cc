@@ -313,4 +313,109 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataTransparent) {
             hit_test_region_list->regions[0].transform);
 }
 
+// Test to ensure that we account for shape-rects in hit-test data when it's
+// present in the filters of the RenderPass.
+TEST(HitTestDataProviderDrawQuad, HitTestDataShapeFilters) {
+  std::unique_ptr<HitTestDataProvider> hit_test_data_provider =
+      std::make_unique<HitTestDataProviderDrawQuad>(
+          true /* should_ask_for_child_region */,
+          true /* root_accepts_events */);
+
+  constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
+  gfx::Rect child_rect(200, 100);
+  gfx::Transform invertible_transform;
+  invertible_transform.Translate(200, 100);
+
+  RenderPassList pass_list;
+
+  // A render pass that has shape filters.
+  SurfaceId child_surface_id1 = CreateChildSurfaceId(2);
+  SurfaceId child_surface_id2 = CreateChildSurfaceId(3);
+
+  auto pass1 = RenderPass::Create();
+  pass1->SetNew(1, kFrameRect, kFrameRect, invertible_transform);
+  // Create a filter with three shapes, the first two are included in
+  // surface_quad_1 and the other one intersects sueface_quad_2. These rects are
+  // in DIP space.
+  cc::FilterOperations filters;
+  filters.Append(cc::FilterOperation::CreateAlphaThresholdFilter(
+      {gfx::Rect(101, 51, 25, 25), gfx::Rect(151, 51, 25, 25),
+       gfx::Rect(325, 200, 200, 200)},
+      0.f, 0.f));
+  pass1->filters = filters;
+  auto* shared_state_1 = pass1->CreateAndAppendSharedQuadState();
+  shared_state_1->SetAll(invertible_transform, kFrameRect, kFrameRect,
+                         kFrameRect, false, false, 1, SkBlendMode::kSrcOver, 0);
+
+  auto* surface_quad_1 = pass1->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  surface_quad_1->SetNew(
+      pass1->shared_quad_state_list.back(), child_rect, child_rect,
+      SurfaceRange(child_surface_id1), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  gfx::Rect child_rect2(400, 400, 100, 100);
+  auto* surface_quad_2 = pass1->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  surface_quad_2->SetNew(
+      pass1->shared_quad_state_list.back(), child_rect2, child_rect2,
+      SurfaceRange(child_surface_id2), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  pass_list.push_back(std::move(pass1));
+
+  auto compositor_frame = CompositorFrameBuilder()
+                              .SetRenderPassList(std::move(pass_list))
+                              .SetDeviceScaleFactor(2.f)
+                              .Build();
+  base::Optional<HitTestRegionList> hit_test_region_list =
+      hit_test_data_provider->GetHitTestData(compositor_frame);
+
+  // Expect three hit-test regions, two from the first draw-quad and the other
+  // from the second draw-quad.
+  EXPECT_EQ(3u, hit_test_region_list->regions.size());
+  EXPECT_EQ(child_surface_id1.frame_sink_id(),
+            hit_test_region_list->regions[0].frame_sink_id);
+  EXPECT_EQ(gfx::Rect(2, 2, 50, 50), hit_test_region_list->regions[0].rect);
+  EXPECT_EQ(child_surface_id1.frame_sink_id(),
+            hit_test_region_list->regions[1].frame_sink_id);
+  EXPECT_EQ(gfx::Rect(102, 2, 50, 50), hit_test_region_list->regions[1].rect);
+  EXPECT_EQ(child_surface_id2.frame_sink_id(),
+            hit_test_region_list->regions[2].frame_sink_id);
+  EXPECT_EQ(gfx::Rect(450, 400, 50, 100),
+            hit_test_region_list->regions[2].rect);
+
+  // Build another CompositorFrame with device-scale-factor=0.5f.
+  auto pass2 = RenderPass::Create();
+  pass2->SetNew(2, kFrameRect, kFrameRect, invertible_transform);
+  // Create a filter with a shapes included in surface_quad_3, in DIP space.
+  cc::FilterOperations filters2;
+  filters2.Append(cc::FilterOperation::CreateAlphaThresholdFilter(
+      {gfx::Rect(600, 200, 300, 300)}, 0.f, 0.f));
+  pass2->filters = filters2;
+  auto* shared_state_2 = pass2->CreateAndAppendSharedQuadState();
+  shared_state_2->SetAll(invertible_transform, kFrameRect, kFrameRect,
+                         kFrameRect, false, false, 1, SkBlendMode::kSrcOver, 0);
+
+  auto* surface_quad_3 = pass2->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+  surface_quad_3->SetNew(
+      pass2->shared_quad_state_list.back(), child_rect, child_rect,
+      SurfaceRange(child_surface_id1), SK_ColorWHITE,
+      /*stretch_content_to_fill_bounds=*/false, /*ignores_input_event=*/false);
+
+  pass_list.push_back(std::move(pass2));
+
+  auto compositor_frame_2 = CompositorFrameBuilder()
+                                .SetRenderPassList(std::move(pass_list))
+                                .SetDeviceScaleFactor(.5f)
+                                .Build();
+  base::Optional<HitTestRegionList> hit_test_region_list_2 =
+      hit_test_data_provider->GetHitTestData(compositor_frame_2);
+
+  // Expect one region included in surface_quad_3.
+  EXPECT_EQ(1u, hit_test_region_list_2->regions.size());
+  EXPECT_EQ(child_surface_id1.frame_sink_id(),
+            hit_test_region_list_2->regions[0].frame_sink_id);
+  EXPECT_EQ(gfx::Rect(100, 0, 100, 100),
+            hit_test_region_list_2->regions[0].rect);
+}
+
 }  // namespace viz

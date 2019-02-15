@@ -64,7 +64,6 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id,
                                           aggregate_timer.Elapsed(),
                                           base::TimeDelta::FromMicroseconds(1),
                                           base::TimeDelta::FromSeconds(10), 50);
-  referenced_child_regions_.clear();
   SendHitTestData();
 
   if (hit_test_debug_ && render_passes) {
@@ -180,6 +179,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
       trace_id ? TRACE_EVENT_FLAG_FLOW_IN : TRACE_EVENT_FLAG_NONE, "step",
       "AggregateHitTestData(Root)");
 
+  DCHECK(referenced_child_regions_.empty());
   referenced_child_regions_.insert(surface_id.frame_sink_id());
 
   size_t region_index = 1;
@@ -187,7 +187,9 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
     if (region_index >= hit_test_data_capacity_ - 1)
       break;
     region_index = AppendRegion(region_index, region);
+    DCHECK_EQ(referenced_child_regions_.size(), 1u);
   }
+  referenced_child_regions_.erase(referenced_child_regions_.begin());
 
   DCHECK_GE(region_index, 1u);
   int32_t child_count = region_index - 1;
@@ -269,6 +271,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
           break;
       }
     }
+    referenced_child_regions_.erase(region.frame_sink_id);
   }
   DCHECK_GE(region_index - parent_index - 1, 0u);
   int32_t child_count = region_index - parent_index - 1;
