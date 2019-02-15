@@ -1246,9 +1246,12 @@ drm_fb_get_from_dmabuf(struct linux_dmabuf_buffer *dmabuf,
 
 	fb->num_planes = dmabuf->attributes.n_planes;
 	for (i = 0; i < dmabuf->attributes.n_planes; i++) {
-		fb->handles[i] = gbm_bo_get_handle_for_plane(fb->bo, i).u32;
-		if (!fb->handles[i])
+		union gbm_bo_handle handle;
+
+	        handle = gbm_bo_get_handle_for_plane(fb->bo, i);
+		if (handle.s32 == -1)
 			goto err_free;
+		fb->handles[i] = handle.u32;
 	}
 
 	if (drm_fb_addfb(backend, fb) != 0)
