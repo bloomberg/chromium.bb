@@ -78,6 +78,14 @@ namespace autotestPrivate {
   };
   callback PrinterArrayCallback = void (Printer[] printers);
 
+  dictionary ArcState {
+    // Whether the ARC is provisioned.
+    boolean provisioned;
+    // Whether ARC Terms of Service needs to be shown.
+    boolean tosNeeded;
+  };
+  callback ArcStateCallback = void (ArcState result);
+
   dictionary PlayStoreState {
     // Whether the Play Store allowed for the current user.
     boolean allowed;
@@ -212,6 +220,9 @@ namespace autotestPrivate {
     // Get visible notifications on the system.
     static void getVisibleNotifications(NotificationArrayCallback callback);
 
+    // Get state of the ARC session.
+    static void getArcState(ArcStateCallback callback);
+
     // Get state of the Play Store.
     static void getPlayStoreState(PlayStoreStateCallback callback);
 
@@ -222,6 +233,7 @@ namespace autotestPrivate {
     static void isAppShown(DOMString appId, IsAppShownCallback callback);
 
     // Returns true if ARC is provisioned.
+    // [deprecated="Use getArcState()"]
     static void isArcProvisioned(IsArcProvisionedCallback callback);
 
     // Gets information about the requested ARC app.

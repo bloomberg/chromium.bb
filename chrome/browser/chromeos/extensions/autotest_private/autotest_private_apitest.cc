@@ -60,6 +60,8 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
   arc::SetArcPlayStoreEnabledForProfile(profile(), true);
   // Provisioning is completed.
   browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
+  browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcTermsAccepted,
+                                               true);
 
   std::unique_ptr<arc::FakeAppInstance> app_instance;
   app_instance.reset(new arc::FakeAppInstance(prefs));
