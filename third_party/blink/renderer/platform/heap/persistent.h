@@ -16,15 +16,6 @@
 
 namespace blink {
 
-// Marker used to annotate persistent objects and collections with,
-// so as to enable reliable testing for persistent references via
-// a type trait (see TypeTraits.h's IsPersistentReferenceType<>.)
-#define IS_PERSISTENT_REFERENCE_TYPE()         \
- public:                                       \
-  using IsPersistentReferenceTypeMarker = int; \
-                                               \
- private:
-
 enum CrossThreadnessPersistentConfiguration {
   kSingleThreadPersistentConfiguration,
   kCrossThreadPersistentConfiguration
@@ -35,7 +26,6 @@ template <typename T,
           CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
 class PersistentBase {
   USING_FAST_MALLOC(PersistentBase);
-  IS_PERSISTENT_REFERENCE_TYPE();
 
  public:
   PersistentBase() : raw_(nullptr) {

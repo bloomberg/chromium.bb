@@ -224,22 +224,6 @@ class IsGarbageCollectedType<void> {
   static const bool value = false;
 };
 
-template <typename T>
-class IsPersistentReferenceType {
-  typedef char YesType;
-  typedef struct NoType { char padding[8]; } NoType;
-
-  template <typename U>
-  static YesType CheckPersistentReferenceType(
-      typename U::IsPersistentReferenceTypeMarker*);
-  template <typename U>
-  static NoType CheckPersistentReferenceType(...);
-
- public:
-  static const bool value =
-      (sizeof(YesType) == sizeof(CheckPersistentReferenceType<T>(nullptr)));
-};
-
 template <typename T,
           bool = std::is_function<typename std::remove_const<
                      typename std::remove_pointer<T>::type>::type>::value ||
