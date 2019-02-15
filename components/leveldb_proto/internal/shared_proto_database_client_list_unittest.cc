@@ -13,16 +13,16 @@
 namespace leveldb_proto {
 
 namespace {
-const char kTestClientName[] = "TestClientName";
+const char kTestClientName[] = "TEST_DATABASE1";
 }
 
 class SharedProtoDatabaseClientListTest : public testing::Test {
  public:
   void SetUpExperimentParam(std::string key, std::string value) {
     std::map<std::string, std::string> params = {
-        {"migrate_ClientNameFoo", "true"},
+        {"migrate_TEST_DATABASE0", "true"},
         {"migrate_" + key, value},
-        {"migrate_ClientNameBar", "false"},
+        {"migrate_TEST_DATABASE2", "false"},
     };
 
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
@@ -37,18 +37,18 @@ TEST_F(SharedProtoDatabaseClientListTest, ShouldUseSharedDBTest) {
   // Parameter value is case sensitive
   SetUpExperimentParam(kTestClientName, "true");
 
-  bool use_shared =
-      SharedProtoDatabaseClientList::ShouldUseSharedDB(kTestClientName);
+  bool use_shared = SharedProtoDatabaseClientList::ShouldUseSharedDB(
+      ProtoDbType::TEST_DATABASE1);
 
   ASSERT_TRUE(use_shared);
 }
 
 TEST_F(SharedProtoDatabaseClientListTest,
        ShouldUseSharedDBTest_OnlyWhenParamMatchesName) {
-  SetUpExperimentParam("AnotherClientName", "true");
+  SetUpExperimentParam("TEST_DATABASE10", "true");
 
-  bool use_shared =
-      SharedProtoDatabaseClientList::ShouldUseSharedDB(kTestClientName);
+  bool use_shared = SharedProtoDatabaseClientList::ShouldUseSharedDB(
+      ProtoDbType::TEST_DATABASE1);
 
   ASSERT_FALSE(use_shared);
 }
@@ -57,8 +57,8 @@ TEST_F(SharedProtoDatabaseClientListTest,
        ShouldUseSharedDBTest_OnlyWhenParamValueIsTrue) {
   SetUpExperimentParam(kTestClientName, "false");
 
-  bool use_shared =
-      SharedProtoDatabaseClientList::ShouldUseSharedDB(kTestClientName);
+  bool use_shared = SharedProtoDatabaseClientList::ShouldUseSharedDB(
+      ProtoDbType::TEST_DATABASE1);
 
   ASSERT_FALSE(use_shared);
 }

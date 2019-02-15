@@ -13,6 +13,7 @@
 #include "components/leveldb_proto/internal/leveldb_database.h"
 #include "components/leveldb_proto/internal/proto/shared_db_metadata.pb.h"
 #include "components/leveldb_proto/internal/unique_proto_database.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 
 namespace leveldb_proto {
 
@@ -52,15 +53,17 @@ void DestroyObsoleteSharedProtoDatabaseClients(
     Callbacks::UpdateCallback callback);
 
 // Sets list of client names that are obsolete and will be cleared by next call
-// to DestroyObsoleteSharedProtoDatabaseClients(). |list| is list of c strings
-// with a nullptr to mark the end of list.
-void SetObsoleteClientListForTesting(const char* const* list);
+// to DestroyObsoleteSharedProtoDatabaseClients(). |list| is list of dbs
+// with a |LAST| to mark the end of list.
+void SetObsoleteClientListForTesting(const ProtoDbType* list);
 
 // An implementation of ProtoDatabase<T> that uses a shared LevelDB and task
 // runner.
 // Should be created, destroyed, and used on the same sequenced task runner.
 class SharedProtoDatabaseClient : public UniqueProtoDatabase {
  public:
+  static std::string PrefixForDatabase(ProtoDbType db_type);
+
   ~SharedProtoDatabaseClient() override;
 
   void Init(const std::string& client_uma_name,
@@ -142,8 +145,7 @@ class SharedProtoDatabaseClient : public UniqueProtoDatabase {
   // Hide this so clients can only be created by the SharedProtoDatabase.
   SharedProtoDatabaseClient(
       std::unique_ptr<ProtoLevelDBWrapper> db_wrapper,
-      const std::string& client_namespace,
-      const std::string& type_prefix,
+      ProtoDbType db_type,
       const scoped_refptr<SharedProtoDatabase>& parent_db);
 
   static void StripPrefixLoadKeysCallback(
@@ -171,7 +173,6 @@ class SharedProtoDatabaseClient : public UniqueProtoDatabase {
       SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED;
 
   const std::string prefix_;
-  const std::string client_name_;
 
   scoped_refptr<SharedProtoDatabase> parent_db_;
 

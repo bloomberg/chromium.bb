@@ -68,8 +68,7 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
 
   // Internal implementation is free to choose between unique and shared
   // database to use here (transparently).
-  ProtoDatabaseImpl(const std::string& client_namespace,
-                    const std::string& type_prefix,
+  ProtoDatabaseImpl(ProtoDbType db_type,
                     const base::FilePath& db_dir,
                     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
                     std::unique_ptr<SharedProtoDatabaseProvider> db_provider);
@@ -168,6 +167,7 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
 
   void PostTransaction(base::OnceClosure task);
 
+  ProtoDbType db_type_;
   scoped_refptr<ProtoDatabaseSelector> db_wrapper_;
   const bool force_unique_db_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -309,7 +309,8 @@ void ParseLoadedEntry(
 template <typename T>
 ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : db_wrapper_(new ProtoDatabaseSelector("", "", task_runner, nullptr)),
+    : db_type_(ProtoDbType::LAST),
+      db_wrapper_(new ProtoDatabaseSelector(db_type_, task_runner, nullptr)),
       force_unique_db_(true),
       task_runner_(task_runner),
       weak_ptr_factory_(
@@ -317,13 +318,12 @@ ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
 
 template <typename T>
 ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
-    const std::string& client_namespace,
-    const std::string& type_prefix,
+    ProtoDbType db_type,
     const base::FilePath& db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     std::unique_ptr<SharedProtoDatabaseProvider> db_provider)
-    : db_wrapper_(new ProtoDatabaseSelector(client_namespace,
-                                            type_prefix,
+    : db_type_(db_type),
+      db_wrapper_(new ProtoDatabaseSelector(db_type_,
                                             task_runner,
                                             std::move(db_provider))),
       force_unique_db_(false),
@@ -357,7 +357,7 @@ void ProtoDatabaseImpl<T>::Init(
     typename Callbacks::InitStatusCallback callback) {
   bool use_shared_db =
       !force_unique_db_ &&
-      SharedProtoDatabaseClientList::ShouldUseSharedDB(client_uma_name);
+      SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
   Init(client_uma_name, use_shared_db, std::move(callback));
 }
 

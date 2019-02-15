@@ -22,10 +22,6 @@ const char kNamespace[] = "UsageStats";
 
 const char kKeySeparator[] = "_";
 
-const char kWebsiteEventPrefix[] = "website_event";
-const char kSuspensionPrefix[] = "suspension";
-const char kTokenMappingPrefix[] = "token_mapping";
-
 const int kUnixTimeDigits = 11;
 // Formats an integer with a minimum width of 11, right-justified, and
 // zero-filled (example: 1548353315 => 01548353315).
@@ -46,13 +42,16 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   website_event_db_ = db_provider->GetDB<WebsiteEvent>(
-      kNamespace, kWebsiteEventPrefix, usage_stats_dir, db_task_runner);
+      leveldb_proto::ProtoDbType::USAGE_STATS_WEBSITE_EVENT, usage_stats_dir,
+      db_task_runner);
 
   suspension_db_ = db_provider->GetDB<Suspension>(
-      kNamespace, kSuspensionPrefix, usage_stats_dir, db_task_runner);
+      leveldb_proto::ProtoDbType::USAGE_STATS_SUSPENSION, usage_stats_dir,
+      db_task_runner);
 
   token_mapping_db_ = db_provider->GetDB<TokenMapping>(
-      kNamespace, kTokenMappingPrefix, usage_stats_dir, db_task_runner);
+      leveldb_proto::ProtoDbType::USAGE_STATS_TOKEN_MAPPING, usage_stats_dir,
+      db_task_runner);
 
   InitializeDBs();
 }
