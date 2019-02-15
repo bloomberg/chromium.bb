@@ -61,9 +61,11 @@ constexpr base::FilePath::CharType kArcDownloadRoot[] =
     FILE_PATH_LITERAL("/download");
 constexpr base::FilePath::CharType kArcExternalFilesRoot[] =
     FILE_PATH_LITERAL("/external_files");
-// Sync with the removable media provider in ARC++ side.
-constexpr char kArcRemovableMediaProviderUrl[] =
-    "content://org.chromium.arc.removablemediaprovider/";
+// Sync with the volume provider in ARC++ side.
+constexpr char kArcRemovableMediaContentUrlPrefix[] =
+    "content://org.chromium.arc.volumeprovider/removable/";
+constexpr char kArcMyFilesContentUrlPrefix[] =
+    "content://org.chromium.arc.volumeprovider/MyFiles/";
 
 Profile* GetPrimaryProfile() {
   if (!user_manager::UserManager::IsInitialized())
@@ -385,7 +387,15 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   base::FilePath relative_path;
   if (base::FilePath(kRemovableMediaPath)
           .AppendRelativePath(path, &relative_path)) {
-    *arc_url_out = GURL(kArcRemovableMediaProviderUrl)
+    *arc_url_out = GURL(kArcRemovableMediaContentUrlPrefix)
+                       .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
+    return true;
+  }
+
+  // Convert paths under MyFiles
+  if (base::FilePath(GetMyFilesFolderForProfile(primary_profile))
+          .AppendRelativePath(path, &relative_path)) {
+    *arc_url_out = GURL(kArcMyFilesContentUrlPrefix)
                        .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
     return true;
   }

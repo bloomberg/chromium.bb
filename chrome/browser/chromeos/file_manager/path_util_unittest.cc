@@ -697,7 +697,21 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Removable) {
   GURL url;
   EXPECT_TRUE(ConvertPathToArcUrl(
       base::FilePath::FromUTF8Unsafe("/media/removable/a/b/c"), &url));
-  EXPECT_EQ(GURL("content://org.chromium.arc.removablemediaprovider/a/b/c"),
+  EXPECT_EQ(GURL("content://org.chromium.arc.volumeprovider/removable/a/b/c"),
+            url);
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_MyFiles) {
+  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
+                                                              base::Time());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
+  GURL url;
+  const base::FilePath myfiles = GetMyFilesFolderForProfile(
+      chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
+          "user@gmail.com-hash"));
+  EXPECT_TRUE(ConvertPathToArcUrl(myfiles.AppendASCII("a/b/c"), &url));
+  EXPECT_EQ(GURL("content://org.chromium.arc.volumeprovider/MyFiles/a/b/c"),
             url);
 }
 
@@ -769,8 +783,32 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_Removable) {
           [](base::RunLoop* run_loop, const std::vector<GURL>& urls) {
             run_loop->Quit();
             ASSERT_EQ(1U, urls.size());
+            EXPECT_EQ(GURL("content://org.chromium.arc.volumeprovider/"
+                           "removable/a/b/c"),
+                      urls[0]);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MyFiles) {
+  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
+                                                              base::Time());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
+  const base::FilePath myfiles = GetMyFilesFolderForProfile(
+      chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
+          "user@gmail.com-hash"));
+  base::RunLoop run_loop;
+  ConvertToContentUrls(
+      std::vector<FileSystemURL>{
+          CreateExternalURL(myfiles.AppendASCII("a/b/c"))},
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const std::vector<GURL>& urls) {
+            run_loop->Quit();
+            ASSERT_EQ(1U, urls.size());
             EXPECT_EQ(
-                GURL("content://org.chromium.arc.removablemediaprovider/a/b/c"),
+                GURL("content://org.chromium.arc.volumeprovider/MyFiles/a/b/c"),
                 urls[0]);
           },
           &run_loop));
@@ -953,9 +991,9 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipleUrls) {
             run_loop->Quit();
             ASSERT_EQ(4U, urls.size());
             EXPECT_EQ(GURL(), urls[0]);  // Invalid URL.
-            EXPECT_EQ(
-                GURL("content://org.chromium.arc.removablemediaprovider/a/b/c"),
-                urls[1]);
+            EXPECT_EQ(GURL("content://org.chromium.arc.volumeprovider/"
+                           "removable/a/b/c"),
+                      urls[1]);
             EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
                            "externalfile%3Adrive-user%252540gmail.com-hash%2Fa%"
                            "2Fb%2Fc"),
