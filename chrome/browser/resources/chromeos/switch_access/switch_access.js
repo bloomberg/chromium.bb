@@ -47,6 +47,13 @@ class SwitchAccess {
      */
     this.onMoveForwardForTesting_ = null;
 
+    /**
+     * Callback that is called once the navigation manager is initialized.
+     * Used to setup communications with the menu panel.
+     * @private {?function()}
+     */
+    this.navReadyCallback_ = null;
+
     this.init_();
   }
 
@@ -62,6 +69,9 @@ class SwitchAccess {
 
     chrome.automation.getDesktop(function(desktop) {
       this.navigationManager_ = new NavigationManager(desktop);
+
+      if (this.navReadyCallback_)
+        this.navReadyCallback_();
     }.bind(this));
 
     document.addEventListener(
@@ -246,5 +256,21 @@ class SwitchAccess {
    */
   keyCodeIsUsed(keyCode) {
     return this.switchAccessPrefs_.keyCodeIsUsed(keyCode);
+  }
+
+  /**
+   * Sets up the connection between the menuPanel and menuManager.
+   * @param {!PanelInterface} menuPanel
+   * @return {MenuManager}
+   */
+  connectMenuPanel(menuPanel) {
+    // Because this may be called before init_(), check if navigationManager_
+    // is initialized.
+    if (this.navigationManager_)
+      return this.navigationManager_.connectMenuPanel(menuPanel);
+
+    // If not, set navReadyCallback_ to have the menuPanel try again.
+    this.navReadyCallback_ = menuPanel.connectToBackground.bind(menuPanel);
+    return null;
   }
 }

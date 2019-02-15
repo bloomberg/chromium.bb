@@ -225,6 +225,15 @@ class NavigationManager {
           /** @type {chrome.automation.ActionType} */ (action));
   }
 
+  /**
+   * Sets up the connection between the menuPanel and menuManager.
+   * @param {!PanelInterface} menuPanel
+   * @return {!MenuManager}
+   */
+  connectMenuPanel(menuPanel) {
+    return this.menuManager_.connectMenuPanel(menuPanel);
+  }
+
   // ----------------------Private Methods---------------------
 
   /**

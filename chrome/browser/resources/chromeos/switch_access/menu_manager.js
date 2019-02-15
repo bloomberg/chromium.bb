@@ -49,7 +49,11 @@ class MenuManager {
      */
     this.inMenu_ = false;
 
-    this.init_();
+    /**
+     * A reference to the Switch Access Menu Panel class.
+     * @private {PanelInterface}
+     */
+    this.menuPanel_;
   }
 
   /**
@@ -59,12 +63,16 @@ class MenuManager {
    *        node, for which the menu is to be displayed.
    */
   enter(navNode) {
+    if (!this.menuPanel_) {
+      console.log('Error: Menu panel has not loaded.');
+      return;
+    }
+
     const actions = this.getActionsForNode_(navNode);
     this.inMenu_ = true;
     if (actions !== this.actions_) {
       this.actions_ = actions;
-      MessageHandler.sendMessage(
-          MessageHandler.Destination.MENU_PANEL, 'setActions', actions);
+      this.menuPanel_.setActions(this.actions_);
     }
 
     const firstNode =
@@ -74,11 +82,12 @@ class MenuManager {
       this.updateFocusRing_();
     }
 
-    if (navNode.location)
+    if (navNode.location) {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location, actions.length);
-    else
+    } else {
       console.log('Unable to show Switch Access menu.');
+    }
   }
 
   /**
@@ -100,7 +109,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveForward() {
-    if (!this.node_ || !this.inMenu_)
+    this.calculateCurrentNode();
+
+    if (!this.inMenu_ || !this.node_)
       return false;
 
     this.clearFocusRing_();
@@ -109,7 +120,7 @@ class MenuManager {
         SwitchAccessPredicate.restrictions(this.menuNode()));
     const node = treeWalker.next().node;
     if (!node)
-      this.node_ = this.menuNode();
+      this.node_ = null;
     else
       this.node_ = node;
     this.updateFocusRing_();
@@ -122,7 +133,9 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   moveBackward() {
-    if (!this.node_ || !this.inMenu_)
+    this.calculateCurrentNode();
+
+    if (!this.inMenu_ || !this.node_)
       return false;
 
     this.clearFocusRing_();
@@ -154,13 +167,25 @@ class MenuManager {
    * @return {boolean} Whether this function had any effect.
    */
   selectCurrentNode() {
-    if (!this.node_ || !this.inMenu_)
+    this.calculateCurrentNode();
+
+    if (!this.inMenu_ || !this.node_)
       return false;
 
     this.clearFocusRing_();
     this.node_.doDefault();
     this.exit();
     return true;
+  }
+
+  /**
+   * Sets up the connection between the menuPanel and the menuManager.
+   * @param {!PanelInterface} menuPanel
+   * @return {!MenuManager}
+   */
+  connectMenuPanel(menuPanel) {
+    this.menuPanel_ = menuPanel;
+    return this;
   }
 
   /**
@@ -224,35 +249,27 @@ class MenuManager {
   }
 
   /**
-   * @private
-   */
-  init_() {
-    // Listen for messages from the menu.
-    window.addEventListener('message', this.onMessageReceived_.bind(this));
-  }
-
-  /**
    * Receive a message from the Switch Access menu, and perform the appropriate
    * action.
    * @private
    */
-  onMessageReceived_(event) {
+  performAction(action) {
     this.exit();
 
-    if (event.data === MenuManager.Action.SELECT)
+    if (action === MenuManager.Action.SELECT)
       this.navigationManager_.selectCurrentNode();
-    else if (event.data === MenuManager.Action.DICTATION)
+    else if (action === MenuManager.Action.DICTATION)
       chrome.accessibilityPrivate.toggleDictation();
-    else if (event.data === MenuManager.Action.OPTIONS)
+    else if (action === MenuManager.Action.OPTIONS)
       window.switchAccess.showOptionsPage();
     else if (
-        event.data === MenuManager.Action.SCROLL_DOWN ||
-        event.data === MenuManager.Action.SCROLL_UP ||
-        event.data === MenuManager.Action.SCROLL_LEFT ||
-        event.data === MenuManager.Action.SCROLL_RIGHT)
-      this.navigationManager_.scroll(event.data);
+        action === MenuManager.Action.SCROLL_DOWN ||
+        action === MenuManager.Action.SCROLL_UP ||
+        action === MenuManager.Action.SCROLL_LEFT ||
+        action === MenuManager.Action.SCROLL_RIGHT)
+      this.navigationManager_.scroll(action);
     else
-      this.navigationManager_.performActionOnCurrentNode(event.data);
+      this.navigationManager_.performActionOnCurrentNode(action);
   }
 
   /**
@@ -263,12 +280,40 @@ class MenuManager {
    * @param {boolean=} opt_clear If true, will clear the focus ring.
    */
   updateFocusRing_(opt_clear) {
-    if (!this.node_)
+    if (!this.menuPanel_) {
+      console.log('Error: Menu panel has not loaded.');
+      return;
+    }
+
+    this.calculateCurrentNode();
+
+    if (!this.inMenu_ || !this.node_)
       return;
     const id = this.node_.htmlAttributes.id;
-    const onOrOff = opt_clear ? 'off' : 'on';
-    MessageHandler.sendMessage(
-        MessageHandler.Destination.MENU_PANEL, 'setFocusRing', [id, onOrOff]);
+    const enable = !opt_clear;
+    this.menuPanel_.setFocusRing(id, enable);
+  }
+
+  /**
+   * Updates the value of |this.node_|.
+   *
+   * - If it has a value, change nothing.
+   * - Otherwise, if menu node has a reasonable value, set |this.node_| to menu
+   *   node.
+   * - If not, set it to null.
+   *
+   * Return |this.node_|'s value after the update.
+   *
+   * @private
+   * @return {chrome.automation.AutomationNode}
+   */
+  calculateCurrentNode() {
+    if (this.node_)
+      return this.node_;
+    this.node_ = this.menuNode();
+    if (this.node_ === this.desktop_)
+      this.node_ = null;
+    return this.node_;
   }
 }
 
