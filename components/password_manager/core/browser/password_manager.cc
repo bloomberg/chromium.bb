@@ -974,6 +974,31 @@ void PasswordManager::NotifyStorePasswordCalled() {
   DropFormManagers();
 }
 
+#if defined(OS_IOS)
+void PasswordManager::PresaveGeneratedPassword(
+    PasswordManagerDriver* driver,
+    const FormData& form,
+    const base::string16& generated_password,
+    const base::string16& generation_element,
+    bool is_manually_triggered) {
+  // TODO(https://crbug.com/886583): Implement it.
+}
+
+void PasswordManager::UpdateGeneratedPasswordOnUserInput(
+    PasswordManagerDriver* driver,
+    const base::string16& form_identifier,
+    const base::string16& field_identifier,
+    const base::string16& field_value) {
+  // TODO(https://crbug.com/886583): Implement it.
+}
+
+void PasswordManager::OnPasswordNoLongerGenerated(
+    PasswordManagerDriver* driver) {
+  // TODO(https://crbug.com/886583): Implement it.
+}
+
+#endif
+
 void PasswordManager::ProvisionallySaveManager(
     const PasswordForm& form,
     PasswordFormManager* matched_manager,
