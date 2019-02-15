@@ -100,6 +100,11 @@ TestIdentityManagerObserver::AccountsInfoFromAccountsInCookieUpdatedCallback() {
   return accounts_info_from_cookie_change_callback_;
 }
 
+const GoogleServiceAuthError&
+TestIdentityManagerObserver::ErrorFromAccountsInCookieUpdatedCallback() const {
+  return error_from_cookie_change_callback_;
+}
+
 void TestIdentityManagerObserver::SetOnAddAccountToCookieCompletedCallback(
     base::OnceClosure callback) {
   on_add_account_to_cookie_completed_callback_ = std::move(callback);
@@ -205,6 +210,7 @@ void TestIdentityManagerObserver::OnAccountsInCookieUpdated(
     const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   accounts_info_from_cookie_change_callback_ = accounts_in_cookie_jar_info;
+  error_from_cookie_change_callback_ = error;
   if (on_accounts_in_cookie_updated_callback_)
     std::move(on_accounts_in_cookie_updated_callback_).Run();
 }

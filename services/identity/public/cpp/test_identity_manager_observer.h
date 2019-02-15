@@ -49,6 +49,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   void SetOnAccountsInCookieUpdatedCallback(base::OnceClosure callback);
   const AccountsInCookieJarInfo&
   AccountsInfoFromAccountsInCookieUpdatedCallback();
+  const GoogleServiceAuthError& ErrorFromAccountsInCookieUpdatedCallback()
+      const;
 
   void SetOnAddAccountToCookieCompletedCallback(base::OnceClosure callback);
   const std::string& AccountFromAddAccountToCookieCompletedCallback() const;
@@ -122,6 +124,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
 
   base::OnceClosure on_accounts_in_cookie_updated_callback_;
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
+  GoogleServiceAuthError error_from_cookie_change_callback_;
 
   base::OnceClosure on_add_account_to_cookie_completed_callback_;
   std::string account_from_add_account_to_cookie_completed_callback_;

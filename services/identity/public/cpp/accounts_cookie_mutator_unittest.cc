@@ -324,7 +324,7 @@ TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_NoListedAccounts) {
   EXPECT_TRUE(accounts_in_jar_info.accounts_are_fresh);
 
   EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
+                ->ErrorFromAccountsInCookieUpdatedCallback()
                 .state(),
             GoogleServiceAuthError::NONE);
 }
@@ -354,7 +354,7 @@ TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_OneListedAccounts) {
   EXPECT_TRUE(accounts_in_jar_info.accounts_are_fresh);
 
   EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
+                ->ErrorFromAccountsInCookieUpdatedCallback()
                 .state(),
             GoogleServiceAuthError::NONE);
 }
