@@ -19,9 +19,9 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences_util.h"
 #include "content/public/common/web_preferences.h"
 #include "jni/AwSettings_jni.h"
 #include "net/http/http_util.h"
@@ -233,6 +233,7 @@ void AwSettings::UpdateRendererPreferencesLocked(
 
   if (!renderer_prefs_initialized_) {
     content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
+    content::UpdateFocusRingPreferencesFromSystemSettings(prefs);
     renderer_prefs_initialized_ = true;
     update_prefs = true;
   }

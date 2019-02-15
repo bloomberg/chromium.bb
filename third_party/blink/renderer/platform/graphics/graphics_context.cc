@@ -391,21 +391,25 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 
 namespace {
 
-int AdjustedFocusRingOffset(int offset) {
+int AdjustedFocusRingOffset(int offset, int width, bool is_outset) {
 #if defined(OS_MACOSX)
   return offset + 2;
 #else
+  if (is_outset)
+    return offset + width - (width + 1) / 2;
   return 0;
 #endif
 }
 
 }  // namespace
 
-int GraphicsContext::FocusRingOutsetExtent(int offset, int width) {
+int GraphicsContext::FocusRingOutsetExtent(int offset,
+                                           int width,
+                                           bool is_outset) {
   // Unlike normal outlines (whole width is outside of the offset), focus
-  // rings are drawn with the center of the path aligned with the offset, so
+  // rings can be drawn with the center of the path aligned with the offset, so
   // only half of the width is outside of the offset.
-  return AdjustedFocusRingOffset(offset) + (width + 1) / 2;
+  return AdjustedFocusRingOffset(offset, width, is_outset) + (width + 1) / 2;
 }
 
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
@@ -436,7 +440,8 @@ void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
 void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     float width,
                                     int offset,
-                                    const Color& color) {
+                                    const Color& color,
+                                    bool is_outset) {
   if (ContextDisabled())
     return;
 
@@ -445,7 +450,7 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
     return;
 
   SkRegion focus_ring_region;
-  offset = AdjustedFocusRingOffset(offset);
+  offset = AdjustedFocusRingOffset(offset, std::ceil(width), is_outset);
   for (unsigned i = 0; i < rect_count; i++) {
     SkIRect r = rects[i];
     if (r.isEmpty())

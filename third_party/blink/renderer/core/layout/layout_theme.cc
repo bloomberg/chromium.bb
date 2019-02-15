@@ -838,6 +838,22 @@ void LayoutTheme::SetCustomFocusRingColor(const Color& c) {
   has_custom_focus_ring_color_ = true;
 }
 
+bool LayoutTheme::IsFocusRingOutset() const {
+  return is_focus_ring_outset_;
+}
+
+void LayoutTheme::SetIsFocusRingOutset(bool is_outset) {
+  is_focus_ring_outset_ = is_outset;
+}
+
+float LayoutTheme::MinimumStrokeWidthForFocusRing() const {
+  return minimum_width_for_focus_ring_;
+}
+
+void LayoutTheme::SetMinimumStrokeWidthForFocusRing(float stroke_width) {
+  minimum_width_for_focus_ring_ = stroke_width;
+}
+
 Color LayoutTheme::FocusRingColor() const {
   return has_custom_focus_ring_color_ ? custom_focus_ring_color_
                                       : GetTheme().PlatformFocusRingColor();

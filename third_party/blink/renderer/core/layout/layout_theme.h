@@ -153,6 +153,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color PlatformTextSearchHighlightColor(bool active_match) const;
   Color PlatformTextSearchColor(bool active_match) const;
 
+  bool IsFocusRingOutset() const;
+  void SetIsFocusRingOutset(bool is_outset);
+  float MinimumStrokeWidthForFocusRing() const;
+  void SetMinimumStrokeWidthForFocusRing(float stroke_width);
   Color FocusRingColor() const;
   virtual Color PlatformFocusRingColor() const { return Color(0, 0, 0); }
   void SetCustomFocusRingColor(const Color&);
@@ -300,6 +304,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // implementation to hand back the appropriate platform theme.
   static LayoutTheme& NativeTheme();
 
+  bool is_focus_ring_outset_ = false;
+  float minimum_width_for_focus_ring_ = 1.0f;
   Color custom_focus_ring_color_;
   bool has_custom_focus_ring_color_;
   TimeDelta caret_blink_interval_ = TimeDelta::FromMilliseconds(500);

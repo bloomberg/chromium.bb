@@ -499,9 +499,10 @@ void ObjectPainterBase::PaintOutlineRects(
 
   Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   if (style.OutlineStyleIsAuto()) {
-    paint_info.context.DrawFocusRing(pixel_snapped_outline_rects,
-                                     style.GetOutlineStrokeWidthForFocusRing(),
-                                     style.OutlineOffset(), color);
+    paint_info.context.DrawFocusRing(
+        pixel_snapped_outline_rects, style.GetOutlineStrokeWidthForFocusRing(),
+        style.OutlineOffset(), color,
+        LayoutTheme::GetTheme().IsFocusRingOutset());
     return;
   }
 
