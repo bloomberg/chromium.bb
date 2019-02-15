@@ -215,6 +215,7 @@ const base::Feature kAdjustWebApkInstallationSpace = {
 const base::Feature kAndroidNightMode{"AndroidNightMode",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -224,9 +225,11 @@ const base::Feature kAllowNewIncognitoTabIntents{
 const base::Feature kAllowRemoteContextForNotifications{
     "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAndroidSiteSettingsUIRefresh{
@@ -400,6 +403,7 @@ const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
 const base::Feature kOmniboxVoiceSearchAlwaysVisible{
     "OmniboxVoiceSearchAlwaysVisible", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 

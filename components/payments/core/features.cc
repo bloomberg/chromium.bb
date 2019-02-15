@@ -15,15 +15,19 @@ const base::Feature kWebPaymentsNativeApps{"WebPaymentsNativeApps",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// TODO(rouslan): Remove this.
 const base::Feature kWebPaymentsMethodSectionOrderV2{
     "WebPaymentsMethodSectionOrderV2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kWebPaymentsSingleAppUiSkip{
     "WebPaymentsSingleAppUiSkip", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// TODO(rouslan): Remove this.
 const base::Feature kWebPaymentsJustInTimePaymentApp{
     "WebPaymentsJustInTimePaymentApp", base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -98,11 +98,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "android-payment-apps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "android-site-settings-ui-refresh",
     "owners": [ "hkamila" ],
     "expiry_milestone": 76
@@ -735,16 +730,6 @@
   {
     "name": "enable-android-night-mode",
     "owners": [ "huayinz", "twellington", "tedchoc" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-android-pay-integration-v1",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-android-pay-integration-v2",
-    // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {
@@ -1952,16 +1937,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-web-payments-method-section-order-v2",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-web-payments-single-app-ui-skip",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-webassembly",
     "owners": [ "titzer", "wasm-team@google.com" ],
     "expiry_milestone": 72
@@ -2290,11 +2265,6 @@
     "name": "interest-feed-content-suggestions",
     "owners": [ "//chrome/android/feed/OWNERS" ],
     "expiry_milestone": 74
-  },
-  {
-    "name": "just-in-time-service-worker-payment-app",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "keep-prefetched-content-suggestions",
@@ -2702,11 +2672,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "pay-with-google-v1",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "pdf-annotations",
     "owners": [ "dstockwell@google.com" ],
     "expiry_milestone": 76
@@ -2835,11 +2800,6 @@
     "name": "search-suggestions-on-local-ntp",
     "owners": [ "kmilka", "ramyan" ],
     "expiry_milestone": 74
-  },
-  {
-    "name": "service-worker-payment-apps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "session-restore-prioritizes-background-use-cases",
@@ -3199,19 +3159,9 @@
     "expiry_milestone": 76
   },
   {
-    "name": "web-payments",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "web-contents-occlusion",
     "owners": [ "davidbienvenu" ],
     "expiry_milestone": 77
-  },
-  {
-    "name": "web-payments-modifiers",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
   },
   {
     "name": "webrtc-unified-plan-by-default",
