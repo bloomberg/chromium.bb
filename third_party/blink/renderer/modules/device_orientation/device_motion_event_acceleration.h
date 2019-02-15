@@ -23,45 +23,39 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate_init.h"
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_ACCELERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_ACCELERATION_H_
+
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
-DeviceRotationRate* DeviceRotationRate::Create(double alpha,
-                                               double beta,
-                                               double gamma) {
-  return MakeGarbageCollected<DeviceRotationRate>(alpha, beta, gamma);
-}
+class DeviceMotionEventAccelerationInit;
 
-DeviceRotationRate* DeviceRotationRate::Create(
-    const DeviceRotationRateInit* init) {
-  double alpha = init->hasAlpha() ? init->alpha() : NAN;
-  double beta = init->hasBeta() ? init->beta() : NAN;
-  double gamma = init->hasGamma() ? init->gamma() : NAN;
-  return DeviceRotationRate::Create(alpha, beta, gamma);
-}
+class MODULES_EXPORT DeviceMotionEventAcceleration final
+    : public ScriptWrappable {
+  DEFINE_WRAPPERTYPEINFO();
 
-DeviceRotationRate::DeviceRotationRate(double alpha, double beta, double gamma)
-    : alpha_(alpha), beta_(beta), gamma_(gamma) {}
+ public:
+  static DeviceMotionEventAcceleration* Create(double x, double y, double z);
+  static DeviceMotionEventAcceleration* Create(
+      const DeviceMotionEventAccelerationInit*);
 
-bool DeviceRotationRate::HasRotationData() const {
-  return !std::isnan(alpha_) || !std::isnan(beta_) || !std::isnan(gamma_);
-}
+  DeviceMotionEventAcceleration(double x, double y, double z);
 
-double DeviceRotationRate::alpha(bool& is_null) const {
-  is_null = std::isnan(alpha_);
-  return alpha_;
-}
+  bool HasAccelerationData() const;
 
-double DeviceRotationRate::beta(bool& is_null) const {
-  is_null = std::isnan(beta_);
-  return beta_;
-}
+  double x(bool& is_null) const;
+  double y(bool& is_null) const;
+  double z(bool& is_null) const;
 
-double DeviceRotationRate::gamma(bool& is_null) const {
-  is_null = std::isnan(gamma_);
-  return gamma_;
-}
+ private:
+  const double x_;
+  const double y_;
+  const double z_;
+};
 
 }  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_ACCELERATION_H_

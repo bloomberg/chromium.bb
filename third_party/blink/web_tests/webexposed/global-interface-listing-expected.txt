@@ -1497,6 +1497,18 @@ interface DeviceMotionEvent : Event
     getter interval
     getter rotationRate
     method constructor
+interface DeviceMotionEventAcceleration
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
+interface DeviceMotionEventRotationRate
+    attribute @@toStringTag
+    getter alpha
+    getter beta
+    getter gamma
+    method constructor
 interface DeviceOrientationEvent : Event
     attribute @@toStringTag
     getter absolute

@@ -12,9 +12,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_acceleration.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_sensor_entry.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -130,20 +131,21 @@ bool DeviceMotionEventPump::SensorsReadyOrErrored() const {
 }
 
 DeviceMotionData* DeviceMotionEventPump::GetDataFromSharedMemory() {
-  DeviceAcceleration* acceleration = nullptr;
-  DeviceAcceleration* acceleration_including_gravity = nullptr;
-  DeviceRotationRate* rotation_rate = nullptr;
+  DeviceMotionEventAcceleration* acceleration = nullptr;
+  DeviceMotionEventAcceleration* acceleration_including_gravity = nullptr;
+  DeviceMotionEventRotationRate* rotation_rate = nullptr;
 
   device::SensorReading accelerometer_reading;
   if (accelerometer_->GetReading(&accelerometer_reading)) {
     if (accelerometer_reading.timestamp() == 0.0)
       return nullptr;
 
-    acceleration_including_gravity = DeviceAcceleration::Create(
+    acceleration_including_gravity = DeviceMotionEventAcceleration::Create(
         accelerometer_reading.accel.x, accelerometer_reading.accel.y,
         accelerometer_reading.accel.z);
   } else {
-    acceleration_including_gravity = DeviceAcceleration::Create(NAN, NAN, NAN);
+    acceleration_including_gravity =
+        DeviceMotionEventAcceleration::Create(NAN, NAN, NAN);
   }
 
   device::SensorReading linear_acceleration_sensor_reading;
@@ -152,12 +154,12 @@ DeviceMotionData* DeviceMotionEventPump::GetDataFromSharedMemory() {
     if (linear_acceleration_sensor_reading.timestamp() == 0.0)
       return nullptr;
 
-    acceleration =
-        DeviceAcceleration::Create(linear_acceleration_sensor_reading.accel.x,
-                                   linear_acceleration_sensor_reading.accel.y,
-                                   linear_acceleration_sensor_reading.accel.z);
+    acceleration = DeviceMotionEventAcceleration::Create(
+        linear_acceleration_sensor_reading.accel.x,
+        linear_acceleration_sensor_reading.accel.y,
+        linear_acceleration_sensor_reading.accel.z);
   } else {
-    acceleration = DeviceAcceleration::Create(NAN, NAN, NAN);
+    acceleration = DeviceMotionEventAcceleration::Create(NAN, NAN, NAN);
   }
 
   device::SensorReading gyroscope_reading;
@@ -165,12 +167,12 @@ DeviceMotionData* DeviceMotionEventPump::GetDataFromSharedMemory() {
     if (gyroscope_reading.timestamp() == 0.0)
       return nullptr;
 
-    rotation_rate =
-        DeviceRotationRate::Create(gfx::RadToDeg(gyroscope_reading.gyro.x),
-                                   gfx::RadToDeg(gyroscope_reading.gyro.y),
-                                   gfx::RadToDeg(gyroscope_reading.gyro.z));
+    rotation_rate = DeviceMotionEventRotationRate::Create(
+        gfx::RadToDeg(gyroscope_reading.gyro.x),
+        gfx::RadToDeg(gyroscope_reading.gyro.y),
+        gfx::RadToDeg(gyroscope_reading.gyro.z));
   } else {
-    rotation_rate = DeviceRotationRate::Create(NAN, NAN, NAN);
+    rotation_rate = DeviceMotionEventRotationRate::Create(NAN, NAN, NAN);
   }
 
   // The device orientation spec states that interval should be in

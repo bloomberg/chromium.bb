@@ -23,26 +23,28 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ROTATION_RATE_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ROTATION_RATE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_ROTATION_RATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_ROTATION_RATE_H_
 
-#include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class DeviceRotationRateInit;
+class DeviceMotionEventRotationRateInit;
 
-class MODULES_EXPORT DeviceRotationRate final : public ScriptWrappable {
+class MODULES_EXPORT DeviceMotionEventRotationRate final
+    : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DeviceRotationRate* Create(double alpha, double beta, double gamma);
-  static DeviceRotationRate* Create(const DeviceRotationRateInit*);
+  static DeviceMotionEventRotationRate* Create(double alpha,
+                                               double beta,
+                                               double gamma);
+  static DeviceMotionEventRotationRate* Create(
+      const DeviceMotionEventRotationRateInit*);
 
-  DeviceRotationRate(double alpha, double beta, double gamma);
+  DeviceMotionEventRotationRate(double alpha, double beta, double gamma);
 
   bool HasRotationData() const;
 
@@ -58,4 +60,4 @@ class MODULES_EXPORT DeviceRotationRate final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ROTATION_RATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_EVENT_ROTATION_RATE_H_
