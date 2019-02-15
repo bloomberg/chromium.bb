@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/native_file_util.h"
 #include "storage/browser/fileapi/obfuscated_file_util_delegate.h"
 
@@ -51,6 +52,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilMemoryDelegate
       NativeFileUtil::CopyOrMoveMode mode) override;
   base::File::Error DeleteFile(const base::FilePath& path) override;
 
+  base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<ObfuscatedFileUtilMemoryDelegate> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilMemoryDelegate);
 };
 

@@ -308,6 +308,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
                                    OpenFileSystemMode mode,
                                    StatusCallback callback);
 
+  bool is_incognito() { return is_incognito_; }
+
  private:
   // For CreateFileSystemOperation.
   friend class FileSystemOperationRunner;

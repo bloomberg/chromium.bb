@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamWriter
   void set_default_quota(int64_t quota) { default_quota_ = quota; }
 
  private:
-  // Performs quota calculation and calls local_file_writer_->Write().
+  // Performs quota calculation and calls file_writer_->Write().
   int WriteInternal(net::IOBuffer* buf, int buf_len);
 
   // Callbacks that are chained for the first write.  This eventually calls
@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileStreamWriter
   scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemURL url_;
   int64_t initial_offset_;
-  std::unique_ptr<FileStreamWriter> local_file_writer_;
+  std::unique_ptr<FileStreamWriter> file_writer_;
   net::CompletionOnceCallback write_callback_;
   net::CompletionOnceCallback cancel_callback_;
 

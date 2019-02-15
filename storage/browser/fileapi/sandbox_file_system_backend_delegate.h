@@ -56,6 +56,7 @@ class FileSystemOperationContext;
 class FileSystemURL;
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
+class ObfuscatedFileUtilMemoryDelegate;
 class QuotaReservationManager;
 class SandboxQuotaObserver;
 
@@ -205,6 +206,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   }
 
   FileSystemFileUtil* sync_file_util();
+
+  base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_delegate();
 
  private:
   friend class QuotaBackendImpl;

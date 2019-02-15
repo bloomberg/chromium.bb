@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
 
 namespace base {
@@ -17,6 +18,10 @@ class TaskRunner;
 
 namespace net {
 class IOBuffer;
+}
+
+namespace storage {
+class ObfuscatedFileUtilMemoryDelegate;
 }
 
 namespace storage {
@@ -33,6 +38,15 @@ class FileStreamWriter {
                                               const base::FilePath& file_path,
                                               int64_t initial_offset,
                                               OpenOrCreate open_or_create);
+
+  // Creates a writer for the existing memory file in the path |file_path|
+  // starting from |initial_offset|.
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static FileStreamWriter* CreateForMemoryFile(
+      base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
+      const base::FilePath& file_path,
+      int64_t initial_offset,
+      OpenOrCreate open_or_create);
 
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,
   // the callback function associated with the operation is not called).

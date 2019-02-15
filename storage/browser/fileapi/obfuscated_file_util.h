@@ -213,6 +213,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // This will rewrite the databases to remove traces of deleted data from disk.
   void RewriteDatabases();
 
+  bool is_incognito() { return is_incognito_; }
+
+  ObfuscatedFileUtilDelegate* delegate() { return delegate_.get(); }
+
  private:
   using FileId = SandboxDirectoryDatabase::FileId;
   using FileInfo = SandboxDirectoryDatabase::FileInfo;
@@ -328,6 +332,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
   leveldb::Env* env_override_;
+  bool is_incognito_;
 
   // Used to delete database after a certain period of inactivity.
   int64_t db_flush_delay_seconds_;
