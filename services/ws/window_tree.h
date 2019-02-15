@@ -169,6 +169,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Sends CleanupGestureState mojo call for |window| to the window tree client.
   void CleanupGestureState(aura::Window* window);
 
+  bool IsMovingWindow() const { return window_moving_ != nullptr; }
+
  private:
   friend class ClientRoot;
   // TODO(sky): WindowTree should be refactored such that it is not
