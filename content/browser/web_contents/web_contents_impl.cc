@@ -3118,6 +3118,16 @@ bool WebContentsImpl::ShouldIgnoreUnresponsiveRenderer() {
   // Ignore unresponsive renderers if the debugger is attached to them since the
   // unresponsiveness might be a result of the renderer sitting on a breakpoint.
   //
+#ifdef OS_WIN
+  // Check if a windows debugger is attached to the renderer process.
+  base::ProcessHandle process_handle =
+      GetMainFrame()->GetProcess()->GetProcess().Handle();
+  BOOL debugger_present = FALSE;
+  if (CheckRemoteDebuggerPresent(process_handle, &debugger_present) &&
+      debugger_present)
+    return true;
+#endif  // OS_WIN
+
   // TODO(pfeldman): Fix this to only return true if the renderer is *actually*
   // sitting on a breakpoint. https://crbug.com/684202
   return DevToolsAgentHost::IsDebuggerAttached(this);
