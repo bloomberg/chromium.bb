@@ -121,11 +121,6 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     // Dummy Oobe functions not present with stripped login UI.
-    initializeA11yMenu: function(e) {},
-    handleAccessibilityLinkClick: function(e) {},
-    handleSpokenFeedbackClick: function(e) {},
-    handleHighContrastClick: function(e) {},
-    handleScreenMagnifierClick: function(e) {},
     setUsageStats: function(checked) {},
     setTpmPassword: function(password) {},
     refreshA11yInfo: function(data) {},

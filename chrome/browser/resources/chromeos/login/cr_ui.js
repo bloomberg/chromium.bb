@@ -187,12 +187,9 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Clears error bubble as well as optional menus that could be open.
+   * Clears error bubble.
    */
   Oobe.clearErrors = function() {
-    var accessibilityMenu = $('accessibility-menu');
-    if (accessibilityMenu)
-      accessibilityMenu.hide();
     DisplayManager.clearErrors();
   };
 
