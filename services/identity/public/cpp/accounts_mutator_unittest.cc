@@ -87,7 +87,6 @@ class AccountsMutatorTest : public testing::Test {
  public:
   AccountsMutatorTest()
       : identity_test_env_(&test_url_loader_factory_, &prefs_),
-        identity_manager_observer_(identity_manager()),
         identity_manager_diagnostics_observer_(identity_manager()) {}
 
   ~AccountsMutatorTest() override {}
@@ -99,7 +98,7 @@ class AccountsMutatorTest : public testing::Test {
   }
 
   TestIdentityManagerObserver* identity_manager_observer() {
-    return &identity_manager_observer_;
+    return identity_test_env_.identity_manager_observer();
   }
 
   TestIdentityManagerDiagnosticsObserver*
@@ -116,7 +115,6 @@ class AccountsMutatorTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
-  TestIdentityManagerObserver identity_manager_observer_;
   TestIdentityManagerDiagnosticsObserver identity_manager_diagnostics_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorTest);

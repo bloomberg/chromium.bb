@@ -18,6 +18,7 @@
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
+#include "services/identity/public/cpp/test_identity_manager_observer.h"
 
 #if !defined(OS_CHROMEOS)
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
@@ -281,6 +282,9 @@ IdentityTestEnvironment::IdentityTestEnvironment(
         std::move(accounts_mutator), std::move(accounts_cookie_mutator));
   }
 
+  test_identity_manager_observer_ =
+      std::make_unique<TestIdentityManagerObserver>(this->identity_manager());
+
   this->identity_manager()->AddDiagnosticsObserver(this);
 }
 
@@ -294,6 +298,11 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
 
   return raw_identity_manager_ ? raw_identity_manager_
                                : owned_identity_manager_.get();
+}
+
+TestIdentityManagerObserver*
+IdentityTestEnvironment::identity_manager_observer() {
+  return test_identity_manager_observer_.get();
 }
 
 CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
