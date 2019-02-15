@@ -227,6 +227,13 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 const base::Feature kUIExperimentVerticalMargin{
     "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to color "blue" the generic search icon and search terms.
+// Technically, this makes the search icon and search terms match the color of
+// Omnibox link text, which is blue by convention.
+const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery{
+    "OmniboxUIExperimentBlueSearchLoopAndSearchQuery",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to show a " - Google Search", " - Bing Search", etc. suffix on
 // all search suggestions instead of just the first one in each cluster.
 const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{

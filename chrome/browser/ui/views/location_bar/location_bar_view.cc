@@ -1232,6 +1232,7 @@ gfx::ImageSkia LocationBarView::GetLocationIcon(
                    GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                    GetSecurityChipColor(
                        GetLocationBarModel()->GetSecurityLevel(false)),
+                   GetColor(OmniboxPart::RESULTS_TEXT_URL),
                    std::move(on_icon_fetched))
              : gfx::ImageSkia();
 }
