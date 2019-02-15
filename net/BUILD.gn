@@ -477,8 +477,6 @@ component("net") {
       "base/network_activity_monitor.h",
       "base/network_change_notifier.cc",
       "base/network_change_notifier.h",
-      "base/network_change_notifier_chromeos.cc",
-      "base/network_change_notifier_chromeos.h",
       "base/network_change_notifier_factory.h",
       "base/network_change_notifier_linux.cc",
       "base/network_change_notifier_linux.h",
@@ -1871,6 +1869,13 @@ component("net") {
       } else {
         sources += [ "disk_cache/blockfile/mapped_file_posix.cc" ]
       }
+    }
+
+    if (is_android || is_chromeos) {
+      sources += [
+        "base/network_change_notifier_posix.cc",
+        "base/network_change_notifier_posix.h",
+      ]
     }
 
     if (is_win) {
@@ -4800,7 +4805,6 @@ test("net_unittests") {
     "base/mime_util_unittest.cc",
     "base/net_string_util_unittest.cc",
     "base/network_activity_monitor_unittest.cc",
-    "base/network_change_notifier_chromeos_unittest.cc",
     "base/network_change_notifier_unittest.cc",
     "base/network_change_notifier_win_unittest.cc",
     "base/network_interfaces_linux_unittest.cc",
@@ -5431,6 +5435,10 @@ test("net_unittests") {
 
   if (is_posix || is_fuchsia) {
     sources += [ "socket/udp_socket_posix_unittest.cc" ]
+  }
+
+  if (is_android || is_chromeos) {
+    sources += [ "base/network_change_notifier_posix_unittest.cc" ]
   }
 
   if (enable_reporting) {

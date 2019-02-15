@@ -1892,7 +1892,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 
 #if defined(OS_CHROMEOS)
 // There's an extra network change event on ChromeOS, likely from
-// NetworkChangeNotifierChromeos that makes these tests flaky on ChromeOS when
+// NetworkChangeNotifierPosix that makes these tests flaky on ChromeOS when
 // there's an out of process network stack.
 //
 // TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.

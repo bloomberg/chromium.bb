@@ -15,7 +15,7 @@
 #include "chromeos/network/network_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_chromeos.h"
+#include "net/base/network_change_notifier_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -112,7 +112,7 @@ class NetworkChangeManagerClientUpdateTest : public testing::Test {
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
     proxy_.reset(new NetworkChangeManagerClient(
-        static_cast<net::NetworkChangeNotifierChromeos*>(
+        static_cast<net::NetworkChangeNotifierPosix*>(
             network_change_notifier_.get())));
   }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
-#define NET_BASE_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
+#ifndef NET_BASE_NETWORK_CHANGE_NOTIFIER_POSIX_H_
+#define NET_BASE_NETWORK_CHANGE_NOTIFIER_POSIX_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -18,13 +18,13 @@
 namespace net {
 
 // A NetworkChangeNotifier that needs to be told about network changes by some
-// other object. This class can't directly listen for network changes because
-// on ChromeOS only objects running in the browser process can listen for
-// network state changes.
-class NET_EXPORT NetworkChangeNotifierChromeos : public NetworkChangeNotifier {
+// other object. This class can't directly listen for network changes because on
+// ChromeOS and Android only objects running in the browser process can listen
+// for network state changes.
+class NET_EXPORT NetworkChangeNotifierPosix : public NetworkChangeNotifier {
  public:
-  NetworkChangeNotifierChromeos();
-  ~NetworkChangeNotifierChromeos() override;
+  NetworkChangeNotifierPosix();
+  ~NetworkChangeNotifierPosix() override;
 
   // These methods are used to notify this object that a network property has
   // changed. These must be called from the thread that owns this object.
@@ -45,9 +45,7 @@ class NET_EXPORT NetworkChangeNotifierChromeos : public NetworkChangeNotifier {
       ConnectionType* connection_type) const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NetworkChangeNotifierChromeosTest,
-                           ConnectionTypeFromShill);
-  friend class NetworkChangeNotifierChromeosTest;
+  friend class NetworkChangeNotifierPosixTest;
 
   class DnsConfigService;
 
@@ -75,7 +73,7 @@ class NET_EXPORT NetworkChangeNotifierChromeos : public NetworkChangeNotifier {
   // Calculates parameters used for network change notifier online/offline
   // signals.
   static NetworkChangeNotifier::NetworkChangeCalculatorParams
-  NetworkChangeCalculatorParamsChromeos();
+  NetworkChangeCalculatorParamsPosix();
 
   THREAD_CHECKER(thread_checker_);
 
@@ -86,9 +84,9 @@ class NET_EXPORT NetworkChangeNotifierChromeos : public NetworkChangeNotifier {
 
   NotifierThread notifier_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierPosix);
 };
 
 }  // namespace net
 
-#endif  // NET_BASE_NETWORK_CHANGE_NOTIFIER_CHROMEOS_H_
+#endif  // NET_BASE_NETWORK_CHANGE_NOTIFIER_POSIX_H_

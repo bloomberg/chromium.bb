@@ -33,6 +33,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
 #include "net/base/load_flags.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
@@ -295,6 +296,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
+  net::test::MockNetworkChangeNotifier network_change_notifier_;
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;
 };

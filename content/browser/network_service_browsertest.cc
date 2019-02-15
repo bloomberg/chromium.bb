@@ -302,6 +302,60 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   EXPECT_GT(base::ComputeDirectorySize(GetCacheIndexDirectory()),
             directory_size);
 }
+
+class NetworkConnectionObserver
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
+ public:
+  NetworkConnectionObserver() {
+    content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+    content::GetNetworkConnectionTracker()->GetConnectionType(
+        &last_connection_type_,
+        base::BindOnce(&NetworkConnectionObserver::OnConnectionChanged,
+                       base::Unretained(this)));
+  }
+
+  ~NetworkConnectionObserver() override {
+    content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
+        this);
+  }
+
+  void WaitForConnectionType(network::mojom::ConnectionType type) {
+    type_to_wait_for_ = type;
+    if (last_connection_type_ == type_to_wait_for_)
+      return;
+
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    last_connection_type_ = type;
+    if (run_loop_ && type_to_wait_for_ == type)
+      run_loop_->Quit();
+  }
+
+ private:
+  network::mojom::ConnectionType type_to_wait_for_ =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  network::mojom::ConnectionType last_connection_type_ =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+                       ConnectionTypeChangeSyncedToNetworkProcess) {
+  NetworkConnectionObserver observer;
+  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  observer.WaitForConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+
+  net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  observer.WaitForConnectionType(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
+}
 #endif
 
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
