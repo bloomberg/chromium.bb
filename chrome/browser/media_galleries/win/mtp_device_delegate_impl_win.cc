@@ -531,9 +531,8 @@ void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
   PortableDeviceMapService::GetInstance()->MarkPortableDeviceForDeletion(
       storage_device_info_.registered_device_path);
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DeletePortableDeviceOnBlockingPoolThread,
-                 storage_device_info_.registered_device_path));
+      FROM_HERE, base::BindOnce(&DeletePortableDeviceOnBlockingPoolThread,
+                                storage_device_info_.registered_device_path));
   while (!pending_tasks_.empty())
     pending_tasks_.pop();
   delete this;

@@ -402,7 +402,7 @@ void MockChromeCleanerProcess::SendScanResults(
     // request is sent to the parent process and before the response gets
     // handled on the IPC thread.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind([]() { exit(kDeliberateCrashExitCode); }));
+        FROM_HERE, base::BindOnce([]() { exit(kDeliberateCrashExitCode); }));
   }
 
   (*chrome_prompt_ptr_)

@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
       PasswordBubbleViewBase::manage_password_bubble();
   bool ran_event_task = false;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(press_button, bubble, &ran_event_task));
+      FROM_HERE, base::BindOnce(press_button, bubble, &ran_event_task));
   EXPECT_TRUE(IsBubbleShowing());
 
   // Close the tab.

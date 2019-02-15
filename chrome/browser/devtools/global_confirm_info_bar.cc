@@ -239,8 +239,8 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
       is_closing_ = true;
 
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&GlobalConfirmInfoBar::Close, weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&GlobalConfirmInfoBar::Close,
+                                    weak_factory_.GetWeakPtr()));
     }
     return;
   }

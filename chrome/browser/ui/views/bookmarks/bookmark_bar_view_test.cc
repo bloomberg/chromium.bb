@@ -2292,7 +2292,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BookmarkBarViewTest26::Step3, base::Unretained(this)));
+        base::BindOnce(&BookmarkBarViewTest26::Step3, base::Unretained(this)));
   }
 
   void Step3() {

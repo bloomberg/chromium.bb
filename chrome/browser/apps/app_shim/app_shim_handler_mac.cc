@@ -69,7 +69,7 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
       // Post this to give AppWindows a chance to remove themselves from the
       // registry.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&TerminateIfNoAppWindows));
+          FROM_HERE, base::BindOnce(&TerminateIfNoAppWindows));
     }
   }
 

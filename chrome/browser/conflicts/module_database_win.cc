@@ -172,9 +172,10 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
   // is never freed.
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ModuleDatabase::OnModuleLoad,
-                              base::Unretained(this), process_type, module_path,
-                              module_size, module_time_date_stamp));
+        FROM_HERE,
+        base::BindOnce(&ModuleDatabase::OnModuleLoad, base::Unretained(this),
+                       process_type, module_path, module_size,
+                       module_time_date_stamp));
     return;
   }
 

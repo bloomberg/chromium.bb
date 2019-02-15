@@ -614,7 +614,7 @@ void InProcessBrowserTest::QuitBrowsers() {
   // AttemptExit exits the message loop after everything has been
   // shut down properly.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&chrome::AttemptExit));
+      FROM_HERE, base::BindOnce(&chrome::AttemptExit));
   RunUntilBrowserProcessQuits();
 
 #if defined(OS_MACOSX)

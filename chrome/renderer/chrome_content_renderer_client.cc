@@ -326,8 +326,8 @@ void OnModuleEvent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
   // |module_event_sink|: it is owned by a ChromeContentRendererClient, which is
   // a leaked singleton in the process.
   io_task_runner->PostTask(
-      FROM_HERE, base::Bind(&HandleModuleEventOnIOThread,
-                            base::ConstRef(module_event_sink), event));
+      FROM_HERE, base::BindOnce(&HandleModuleEventOnIOThread,
+                                base::ConstRef(module_event_sink), event));
 }
 #endif
 

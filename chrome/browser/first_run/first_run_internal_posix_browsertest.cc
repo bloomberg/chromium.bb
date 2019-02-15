@@ -55,8 +55,8 @@ class FirstRunInternalPosixTest : public InProcessBrowserTest {
   void SetupNestedTask() {
     EXPECT_TRUE(base::SequencedTaskRunnerHandle::Get());
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FirstRunInternalPosixTest::InspectState,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&FirstRunInternalPosixTest::InspectState,
+                                  base::Unretained(this)));
   }
 
   // A task queued up to run once the first-run dialog starts pumping messages

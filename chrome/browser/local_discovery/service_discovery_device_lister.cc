@@ -103,9 +103,10 @@ class ServiceDiscoveryDeviceListerImpl : public ServiceDiscoveryDeviceLister {
       // service to detect non-graceful shutdowns.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&ServiceDiscoveryDeviceListerImpl::OnServiceUpdated,
-                     weak_factory_.GetWeakPtr(), ServiceWatcher::UPDATE_CHANGED,
-                     service_description.service_name),
+          base::BindOnce(&ServiceDiscoveryDeviceListerImpl::OnServiceUpdated,
+                         weak_factory_.GetWeakPtr(),
+                         ServiceWatcher::UPDATE_CHANGED,
+                         service_description.service_name),
           base::TimeDelta::FromSeconds(kMacServiceResolvingIntervalSecs));
 #endif
     } else {

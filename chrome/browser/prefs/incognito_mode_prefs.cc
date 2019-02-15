@@ -196,7 +196,7 @@ bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
 void IncognitoModePrefs::InitializePlatformParentalControls() {
   base::CreateCOMSTATaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-      ->PostTask(FROM_HERE, base::Bind(base::IgnoreResult(
+      ->PostTask(FROM_HERE, base::BindOnce(base::IgnoreResult(
                                 &PlatformParentalControlsValue::GetInstance)));
 }
 #endif

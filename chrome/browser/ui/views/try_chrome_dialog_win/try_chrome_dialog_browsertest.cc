@@ -135,8 +135,8 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
   // process.
   void PostRendezvousTask() {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&TryChromeDialog::OnProcessNotification,
-                              base::Unretained(dialog_.get())));
+        FROM_HERE, base::BindOnce(&TryChromeDialog::OnProcessNotification,
+                                  base::Unretained(dialog_.get())));
   }
 
   // Runs a loop until it is quit via either the dialog being shown (by way of

@@ -132,7 +132,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, VerifyLaunchD) {
 // Flaky: https://crbug.com/903823
 TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteFile) {
   GetIOTaskRunner()->PostTask(FROM_HERE,
-                              base::Bind(&DeleteFunc, executable_path()));
+                              base::BindOnce(&DeleteFunc, executable_path()));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -140,7 +140,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, DISABLED_DeleteFile) {
 
 TEST_F(ServiceProcessStateFileManipulationTest, DeleteBundle) {
   GetIOTaskRunner()->PostTask(FROM_HERE,
-                              base::Bind(&DeleteFunc, bundle_path()));
+                              base::BindOnce(&DeleteFunc, bundle_path()));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -148,8 +148,8 @@ TEST_F(ServiceProcessStateFileManipulationTest, DeleteBundle) {
 
 TEST_F(ServiceProcessStateFileManipulationTest, MoveBundle) {
   base::FilePath new_loc = GetTempDirPath().AppendASCII("MoveBundle");
-  GetIOTaskRunner()->PostTask(FROM_HERE,
-                              base::Bind(&MoveFunc, bundle_path(), new_loc));
+  GetIOTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&MoveFunc, bundle_path(), new_loc));
   Run();
   ASSERT_TRUE(mock_launchd()->restart_called());
   ASSERT_TRUE(mock_launchd()->write_called());
@@ -158,7 +158,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, MoveBundle) {
 TEST_F(ServiceProcessStateFileManipulationTest, MoveFile) {
   base::FilePath new_loc = GetTempDirPath().AppendASCII("MoveFile");
   GetIOTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&MoveFunc, executable_path(), new_loc));
+      FROM_HERE, base::BindOnce(&MoveFunc, executable_path(), new_loc));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -166,8 +166,9 @@ TEST_F(ServiceProcessStateFileManipulationTest, MoveFile) {
 
 TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   GetIOTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&ServiceProcessStateFileManipulationTest::TrashFunc,
-                            base::Unretained(this), bundle_path()));
+      FROM_HERE,
+      base::BindOnce(&ServiceProcessStateFileManipulationTest::TrashFunc,
+                     base::Unretained(this), bundle_path()));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());
@@ -179,7 +180,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
 TEST_F(ServiceProcessStateFileManipulationTest, ChangeAttr) {
   ScopedAttributesRestorer restorer(bundle_path(), 0777);
   GetIOTaskRunner()->PostTask(FROM_HERE,
-                              base::Bind(&ChangeAttr, bundle_path(), 0222));
+                              base::BindOnce(&ChangeAttr, bundle_path(), 0222));
   Run();
   ASSERT_TRUE(mock_launchd()->remove_called());
   ASSERT_TRUE(mock_launchd()->delete_called());

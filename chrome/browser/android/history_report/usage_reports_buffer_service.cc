@@ -90,17 +90,17 @@ UsageReportsBufferService::~UsageReportsBufferService() {
 
 void UsageReportsBufferService::Init() {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&UsageReportsBufferServiceDoInit,
-                                    base::Unretained(backend_.get())));
+                         base::BindOnce(&UsageReportsBufferServiceDoInit,
+                                        base::Unretained(backend_.get())));
 }
 
 void UsageReportsBufferService::AddVisit(const std::string& id,
                                          int64_t timestamp_ms,
                                          bool typed_visit) {
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsageReportsBufferServiceDoAddVisit,
-                            base::Unretained(backend_.get()), id, timestamp_ms,
-                            typed_visit));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&UsageReportsBufferServiceDoAddVisit,
+                                        base::Unretained(backend_.get()), id,
+                                        timestamp_ms, typed_visit));
 }
 
 std::unique_ptr<std::vector<UsageReport>>
@@ -112,9 +112,9 @@ UsageReportsBufferService::GetUsageReportsBatch(int32_t batch_size) {
   // call.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UsageReportsBufferServiceDoGetUsageReportsBatch,
-                 base::Unretained(backend_.get()), batch_size,
-                 base::Unretained(&finished), base::Unretained(&result)));
+      base::BindOnce(&UsageReportsBufferServiceDoGetUsageReportsBatch,
+                     base::Unretained(backend_.get()), batch_size,
+                     base::Unretained(&finished), base::Unretained(&result)));
   finished.Wait();
   return result;
 }
@@ -125,11 +125,11 @@ void UsageReportsBufferService::Remove(
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&UsageReportsBufferServiceDoRemove,
-                 base::Unretained(backend_.get()),
-                 base::Unretained(&report_ids), base::Unretained(&finished)));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&UsageReportsBufferServiceDoRemove,
+                                        base::Unretained(backend_.get()),
+                                        base::Unretained(&report_ids),
+                                        base::Unretained(&finished)));
   finished.Wait();
 }
 
@@ -139,9 +139,9 @@ void UsageReportsBufferService::Clear() {
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&UsageReportsBufferServiceDoClear,
-                                    base::Unretained(backend_.get()),
-                                    base::Unretained(&finished)));
+                         base::BindOnce(&UsageReportsBufferServiceDoClear,
+                                        base::Unretained(backend_.get()),
+                                        base::Unretained(&finished)));
   finished.Wait();
 }
 
@@ -151,10 +151,11 @@ std::string UsageReportsBufferService::Dump() {
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   // It's ok to pass unretained pointers here because this is a synchronous
   // call.
-  task_runner_->PostTask(FROM_HERE, base::Bind(&UsageReportsBufferServiceDoDump,
-                                               base::Unretained(backend_.get()),
-                                               base::Unretained(&finished),
-                                               base::Unretained(&dump)));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UsageReportsBufferServiceDoDump,
+                     base::Unretained(backend_.get()),
+                     base::Unretained(&finished), base::Unretained(&dump)));
   finished.Wait();
   return dump;
 }

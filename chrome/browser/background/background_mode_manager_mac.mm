@@ -119,14 +119,15 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
       // a new one - just check to see if the user removed it so we don't
       // ever create another one.
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(CheckForUserRemovedLoginItemOnWorkerThread));
+          FROM_HERE,
+          base::BindOnce(CheckForUserRemovedLoginItemOnWorkerThread));
     } else {
       bool need_migration = !service->GetBoolean(
           prefs::kMigratedLoginItemPref);
       service->SetBoolean(prefs::kMigratedLoginItemPref, true);
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(EnableLaunchOnStartupOnWorkerThread, need_migration));
+          base::BindOnce(EnableLaunchOnStartupOnWorkerThread, need_migration));
     }
   } else {
     PrefService* service = g_browser_process->local_state();
@@ -140,12 +141,12 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
     // If the user removed our login item, note this so we don't ever create
     // another one.
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(CheckForUserRemovedLoginItemOnWorkerThread));
+        FROM_HERE, base::BindOnce(CheckForUserRemovedLoginItemOnWorkerThread));
 
     // Call to the File thread to remove the login item since it requires
     // accessing the disk.
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(DisableLaunchOnStartupOnWorkerThread));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(DisableLaunchOnStartupOnWorkerThread));
   }
 }
 

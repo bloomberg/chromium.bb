@@ -114,8 +114,8 @@ void TaskManagerIoThreadHelper::OnNetworkBytesTransferred(
     // them after one second from now.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&TaskManagerIoThreadHelper::OnMultipleBytesTransferredIO,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&TaskManagerIoThreadHelper::OnMultipleBytesTransferredIO,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(1));
   }
 

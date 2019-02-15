@@ -135,9 +135,10 @@ static void JNI_UmaSessionStats_ChangeMetricsReportingConsent(
   // will ensure that the consent file contains the ClientID. The ID is passed
   // to the renderer for crash reporting when things go wrong.
   GoogleUpdateSettings::CollectStatsConsentTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(
-                                GoogleUpdateSettings::SetCollectStatsConsent),
-                            consent));
+      FROM_HERE,
+      base::BindOnce(
+          base::IgnoreResult(GoogleUpdateSettings::SetCollectStatsConsent),
+          consent));
 }
 
 // Initialize the local consent bool variable to false. Used only for testing.

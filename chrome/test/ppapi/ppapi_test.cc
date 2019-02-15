@@ -97,8 +97,8 @@ void PPAPITestBase::InfoBarObserver::OnInfoBarAdded(
   // InfoBarContainer) may still need to access it.  Instead, post a task to
   // do all necessary infobar manipulation as soon as this call stack returns.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&InfoBarObserver::VerifyInfoBarState, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&InfoBarObserver::VerifyInfoBarState,
+                                base::Unretained(this)));
 }
 
 void PPAPITestBase::InfoBarObserver::OnManagerShuttingDown(

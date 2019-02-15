@@ -291,9 +291,9 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
     // user types.
     GetExtensionFileTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&ExtensionAssetsManagerChromeOS::InstallLocalExtension, id,
-                   version, unpacked_extension_root, local_install_dir,
-                   callback));
+        base::BindOnce(&ExtensionAssetsManagerChromeOS::InstallLocalExtension,
+                       id, version, unpacked_extension_root, local_install_dir,
+                       callback));
     return;
   }
 
@@ -324,7 +324,7 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
 
     // unpacked_extension_root will be deleted by CrxInstaller.
     GetExtensionFileTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, base::FilePath(shared_path)));
+        FROM_HERE, base::BindOnce(callback, base::FilePath(shared_path)));
   } else {
     // Desired version is not found in shared location.
     ExtensionAssetsManagerHelper* helper =
@@ -334,8 +334,9 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
       // There is no install in progress for given <id, version> so run install.
       GetExtensionFileTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&ExtensionAssetsManagerChromeOS::InstallSharedExtension,
-                     id, version, unpacked_extension_root));
+          base::BindOnce(
+              &ExtensionAssetsManagerChromeOS::InstallSharedExtension, id,
+              version, unpacked_extension_root));
     }
   }
 }
@@ -374,9 +375,9 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
           pending_installs[i];
       GetExtensionFileTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&ExtensionAssetsManagerChromeOS::InstallLocalExtension, id,
-                     version, info.unpacked_extension_root,
-                     info.local_install_dir, info.callback));
+          base::BindOnce(&ExtensionAssetsManagerChromeOS::InstallLocalExtension,
+                         id, version, info.unpacked_extension_root,
+                         info.local_install_dir, info.callback));
     }
     return;
   }
@@ -401,7 +402,7 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
       users->AppendString(info.profile->GetProfileUserName());
 
       GetExtensionFileTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(info.callback, shared_version_dir));
+          FROM_HERE, base::BindOnce(info.callback, shared_version_dir));
   }
   version_info->Set(kSharedExtensionUsers, std::move(users));
   extension_info_weak->SetWithoutPathExpansion(version,
@@ -463,8 +464,8 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
       }
       GetExtensionFileTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&ExtensionAssetsManagerChromeOS::DeleteSharedVersion,
-                     base::FilePath(shared_path)));
+          base::BindOnce(&ExtensionAssetsManagerChromeOS::DeleteSharedVersion,
+                         base::FilePath(shared_path)));
       extension_info->RemoveWithoutPathExpansion(*it, NULL);
     }
   }

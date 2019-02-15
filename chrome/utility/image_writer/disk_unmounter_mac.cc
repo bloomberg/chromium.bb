@@ -38,8 +38,8 @@ void DiskUnmounterMac::Unmount(const std::string& device_path,
   failure_continuation_ = failure_continuation;
 
   cf_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DiskUnmounterMac::UnmountOnWorker,
-                            base::Unretained(this), device_path));
+      FROM_HERE, base::BindOnce(&DiskUnmounterMac::UnmountOnWorker,
+                                base::Unretained(this), device_path));
 }
 
 // static

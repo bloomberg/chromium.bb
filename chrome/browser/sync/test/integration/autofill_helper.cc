@@ -86,7 +86,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
       AutofillWebDataServiceObserverOnDBSequence*) =
       &AutofillWebDataService::AddObserver;
   wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(add_observer_func, wds, &mock_observer));
+      FROM_HERE, base::BindOnce(add_observer_func, wds, &mock_observer));
 
   wds->RemoveFormValueForElementName(key.name(), key.value());
   done_event.Wait();
@@ -95,7 +95,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
       AutofillWebDataServiceObserverOnDBSequence*) =
       &AutofillWebDataService::RemoveObserver;
   wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(remove_observer_func, wds, &mock_observer));
+      FROM_HERE, base::BindOnce(remove_observer_func, wds, &mock_observer));
 }
 
 void GetAllAutofillEntriesOnDBSequence(AutofillWebDataService* wds,
@@ -108,8 +108,8 @@ void GetAllAutofillEntriesOnDBSequence(AutofillWebDataService* wds,
 std::vector<AutofillEntry> GetAllAutofillEntries(AutofillWebDataService* wds) {
   std::vector<AutofillEntry> entries;
   wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&GetAllAutofillEntriesOnDBSequence,
-                            base::Unretained(wds), &entries));
+      FROM_HERE, base::BindOnce(&GetAllAutofillEntriesOnDBSequence,
+                                base::Unretained(wds), &entries));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
   return entries;
 }
@@ -236,7 +236,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
       AutofillWebDataServiceObserverOnDBSequence*) =
       &AutofillWebDataService::AddObserver;
   wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(add_observer_func, wds, &mock_observer));
+      FROM_HERE, base::BindOnce(add_observer_func, wds, &mock_observer));
 
   wds->AddFormFields(form_fields);
   done_event.Wait();
@@ -246,7 +246,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
       AutofillWebDataServiceObserverOnDBSequence*) =
       &AutofillWebDataService::RemoveObserver;
   wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(remove_observer_func, wds, &mock_observer));
+      FROM_HERE, base::BindOnce(remove_observer_func, wds, &mock_observer));
 }
 
 void RemoveKey(int profile, const AutofillKey& key) {
