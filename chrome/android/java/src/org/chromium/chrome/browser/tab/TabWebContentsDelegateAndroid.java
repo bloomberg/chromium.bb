@@ -34,8 +34,6 @@ import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
@@ -525,20 +523,17 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public int getTopControlsHeight() {
-        FullscreenManager manager = mTab.getFullscreenManager();
-        return manager != null ? manager.getTopControlsHeight() : 0;
+        return mTab.getTopControlsHeight();
     }
 
     @Override
     public int getBottomControlsHeight() {
-        FullscreenManager manager = mTab.getFullscreenManager();
-        return manager != null ? manager.getBottomControlsHeight() : 0;
+        return mTab.getBottomControlsHeight();
     }
 
     @Override
     public boolean controlsResizeView() {
-        FullscreenManager manager = mTab.getFullscreenManager();
-        return manager != null ? ((ChromeFullscreenManager) manager).controlsResizeView() : false;
+        return mTab.controlsResizeView();
     }
 
     /**
