@@ -12,16 +12,10 @@
 #include "components/drive/chromeos/file_cache.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
-#include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
-#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 
 class PrefRegistrySimple;
-
-namespace net {
-class IOBuffer;
-}  // namespace net
 
 namespace drive {
 
