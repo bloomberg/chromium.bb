@@ -41,10 +41,6 @@ void AssertBlockingAllowed() {
 
 }  // namespace internal
 
-void AssertBlockingAllowedDeprecated() {
-  internal::AssertBlockingAllowed();
-}
-
 void DisallowBlocking() {
   g_blocking_disallowed.Get().Set(true);
 }

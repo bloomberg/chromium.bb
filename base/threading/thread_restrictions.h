@@ -291,14 +291,6 @@ INLINE_IF_DCHECK_IS_OFF void AssertBlockingAllowed()
 
 }  // namespace internal
 
-// Asserts that blocking calls are allowed in the current scope.
-//
-// DEPRECATED: Use ScopedBlockingCall, which serves as a precise annotation of
-// the scope that may/will block.
-// TODO(etiennep): Complete migration and delete this method.
-INLINE_IF_DCHECK_IS_OFF void AssertBlockingAllowedDeprecated()
-    EMPTY_BODY_IF_DCHECK_IS_OFF;
-
 // Disallows blocking on the current thread.
 INLINE_IF_DCHECK_IS_OFF void DisallowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
 
