@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/app/blink_test_platform_support.h"
+#include "skia/ext/test_fonts.h"
 
 #include "skia/ext/fontmgr_default.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -27,14 +27,9 @@ const char kFontDirectory[] = DEVICE_SOURCE_ROOT_DIR "fonts/";
 
 }  // namespace
 
-namespace content {
+namespace skia {
 
-bool CheckLayoutSystemDeps() {
-  return true;
-}
-
-bool BlinkTestPlatformInitialize() {
-  // Initialize Skia with the font configuration files crafted for web tests.
+void ConfigureTestFont() {
   SkFontMgr_Android_CustomFonts custom;
   custom.fSystemFontUse = SkFontMgr_Android_CustomFonts::kOnlyCustom;
   custom.fBasePath = kFontDirectory;
@@ -43,7 +38,6 @@ bool BlinkTestPlatformInitialize() {
   custom.fIsolated = false;
 
   skia::OverrideDefaultSkFontMgr(SkFontMgr_New_Android(&custom));
-  return true;
 }
 
-}  // namespace content
+}  // namespace skia

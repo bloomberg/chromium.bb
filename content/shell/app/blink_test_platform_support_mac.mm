@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/logging.h"
-#include "base/mac/bundle_locations.h"
-#include "base/path_service.h"
-#include "base/stl_util.h"
 #include "content/shell/app/blink_test_platform_support.h"
 
 #include <AppKit/AppKit.h>
@@ -17,7 +12,7 @@ namespace content {
 namespace {
 
 void SetDefaultsToWebTestValues(void) {
-  // So we can match the Blnk web tests, we want to force a bunch of
+  // So we can match the Blink web tests, we want to force a bunch of
   // preferences that control appearance to match.
   // (We want to do this as early as possible in application startup so
   // the settings are in before any higher layers could cache values.)
@@ -50,42 +45,8 @@ void SetDefaultsToWebTestValues(void) {
 
 }  // namespace
 
-bool CheckLayoutSystemDeps() {
-  return true;
-}
-
-bool BlinkTestPlatformInitialize() {
+void BlinkTestPlatformInitialize() {
   SetDefaultsToWebTestValues();
-
-  // Load font files in the resource folder.
-  static const char* const kFontFileNames[] = {"Ahem.TTF",
-                                               "ChromiumAATTest.ttf"};
-
-  // mainBundle is Content Shell Helper.app.  Go two levels up to find
-  // Content Shell.app. Due to DumpRenderTree injecting the font files into
-  // its direct dependents, it's not easily possible to put the ttf files into
-  // the helper's resource directory instead of the outer bundle's resource
-  // directory.
-  NSString* bundle = [base::mac::FrameworkBundle() bundlePath];
-  bundle = [bundle stringByAppendingPathComponent:@"../.."];
-  NSURL* resources_directory = [[NSBundle bundleWithPath:bundle] resourceURL];
-
-  NSMutableArray* font_urls = [NSMutableArray array];
-  for (unsigned i = 0; i < base::size(kFontFileNames); ++i) {
-    NSURL* font_url = [resources_directory
-        URLByAppendingPathComponent:
-            [NSString stringWithUTF8String:kFontFileNames[i]]];
-    [font_urls addObject:[font_url absoluteURL]];
-  }
-
-  CFArrayRef errors = 0;
-  if (!CTFontManagerRegisterFontsForURLs((CFArrayRef)font_urls,
-                                         kCTFontManagerScopeProcess,
-                                         &errors)) {
-    DLOG(FATAL) << "Fail to activate fonts.";
-    CFRelease(errors);
-  }
-  return true;
 }
 
 }  // namespace content
