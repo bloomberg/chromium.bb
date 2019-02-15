@@ -207,8 +207,8 @@ void UDPSocketTest::ConnectTest(bool use_nonblocking_io) {
   // Client sends to the server.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&UDPSocketTest::WriteSocketIgnoreResult,
-                 base::Unretained(this), client.get(), simple_message));
+      base::BindOnce(&UDPSocketTest::WriteSocketIgnoreResult,
+                     base::Unretained(this), client.get(), simple_message));
   run_loop.Run();
   EXPECT_EQ(simple_message.length(), static_cast<size_t>(read_result));
   EXPECT_EQ(simple_message, std::string(buffer_->data(), read_result));

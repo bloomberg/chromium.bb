@@ -126,8 +126,8 @@ void QuicChromiumClientStream::Handle::OnError(int error) {
   // the call stack of the owner of the handle.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientStream::Handle::InvokeCallbacksOnClose,
-                 weak_factory_.GetWeakPtr(), error));
+      base::BindOnce(&QuicChromiumClientStream::Handle::InvokeCallbacksOnClose,
+                     weak_factory_.GetWeakPtr(), error));
 }
 
 void QuicChromiumClientStream::Handle::InvokeCallbacksOnClose(int error) {
@@ -620,7 +620,7 @@ void QuicChromiumClientStream::NotifyHandleOfInitialHeadersAvailableLater() {
   DCHECK(handle_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &QuicChromiumClientStream::NotifyHandleOfInitialHeadersAvailable,
           weak_factory_.GetWeakPtr()));
 }
@@ -637,7 +637,7 @@ void QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailableLater() {
   DCHECK(handle_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &QuicChromiumClientStream::NotifyHandleOfTrailingHeadersAvailable,
           weak_factory_.GetWeakPtr()));
 }
@@ -689,8 +689,8 @@ void QuicChromiumClientStream::NotifyHandleOfDataAvailableLater() {
   DCHECK(handle_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientStream::NotifyHandleOfDataAvailable,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicChromiumClientStream::NotifyHandleOfDataAvailable,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void QuicChromiumClientStream::NotifyHandleOfDataAvailable() {

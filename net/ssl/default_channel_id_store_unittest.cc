@@ -106,7 +106,7 @@ void MockPersistentStore::Load(const LoadedCallback& loaded_callback) {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(loaded_callback, base::Passed(&channel_ids)));
+      FROM_HERE, base::BindOnce(loaded_callback, std::move(channel_ids)));
 }
 
 void MockPersistentStore::AddChannelID(

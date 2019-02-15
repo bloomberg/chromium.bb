@@ -225,7 +225,7 @@ int ClientSocketPoolBaseHelper::RequestSocket(
     if (group->CanUseAdditionalSocketSlot(max_sockets_per_group_)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools,
               weak_factory_.GetWeakPtr()));
     }
@@ -1129,8 +1129,8 @@ void ClientSocketPoolBaseHelper::InvokeUserCallbackLater(
     handle->socket()->ApplySocketTag(socket_tag);
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ClientSocketPoolBaseHelper::InvokeUserCallback,
-                            weak_factory_.GetWeakPtr(), handle));
+      FROM_HERE, base::BindOnce(&ClientSocketPoolBaseHelper::InvokeUserCallback,
+                                weak_factory_.GetWeakPtr(), handle));
 }
 
 void ClientSocketPoolBaseHelper::InvokeUserCallback(

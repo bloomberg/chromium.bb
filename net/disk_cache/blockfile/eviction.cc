@@ -154,8 +154,8 @@ void Eviction::TrimCache(bool empty) {
     if (!empty && (deleted_entries > 20 ||
                    (TimeTicks::Now() - start).InMilliseconds() > 20)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&Eviction::TrimCache, ptr_factory_.GetWeakPtr(), false));
+          FROM_HERE, base::BindOnce(&Eviction::TrimCache,
+                                    ptr_factory_.GetWeakPtr(), false));
       break;
     }
   }
@@ -222,7 +222,8 @@ void Eviction::PostDelayedTrim() {
   delay_trim_ = true;
   trim_delays_++;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&Eviction::DelayedTrim, ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&Eviction::DelayedTrim, ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(1000));
 }
 
@@ -370,8 +371,8 @@ void Eviction::TrimCacheV2(bool empty) {
       if (!empty && (deleted_entries > 20 ||
                      (TimeTicks::Now() - start).InMilliseconds() > 20)) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::Bind(&Eviction::TrimCache, ptr_factory_.GetWeakPtr(), false));
+            FROM_HERE, base::BindOnce(&Eviction::TrimCache,
+                                      ptr_factory_.GetWeakPtr(), false));
         break;
       }
     }
@@ -383,8 +384,8 @@ void Eviction::TrimCacheV2(bool empty) {
     TrimDeleted(true);
   } else if (ShouldTrimDeleted()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&Eviction::TrimDeleted, ptr_factory_.GetWeakPtr(), empty));
+        FROM_HERE, base::BindOnce(&Eviction::TrimDeleted,
+                                  ptr_factory_.GetWeakPtr(), empty));
   }
 
   if (empty) {
@@ -516,8 +517,8 @@ void Eviction::TrimDeleted(bool empty) {
 
   if (deleted_entries && !empty && ShouldTrimDeleted()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&Eviction::TrimDeleted, ptr_factory_.GetWeakPtr(), false));
+        FROM_HERE, base::BindOnce(&Eviction::TrimDeleted,
+                                  ptr_factory_.GetWeakPtr(), false));
   }
 
   CACHE_UMA(AGE_MS, "TotalTrimDeletedTime", 0, start);

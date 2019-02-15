@@ -110,7 +110,7 @@ class PollingProxyConfigService::Core
     base::AutoLock lock(lock_);
     if (origin_task_runner_.get()) {
       origin_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&Core::GetConfigCompleted, this, config));
+          FROM_HERE, base::BindOnce(&Core::GetConfigCompleted, this, config));
     }
   }
 

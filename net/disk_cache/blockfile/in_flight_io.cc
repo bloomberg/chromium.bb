@@ -77,7 +77,7 @@ void InFlightIO::OnIOComplete(BackgroundIO* operation) {
 #endif
 
   callback_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&BackgroundIO::OnIOSignalled, operation));
+      FROM_HERE, base::BindOnce(&BackgroundIO::OnIOSignalled, operation));
   operation->io_completed()->Signal();
 }
 

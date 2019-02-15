@@ -353,7 +353,8 @@ class OCSPRequestSession
     lock_.AssertAcquired();
     if (io_task_runner_) {
       io_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&OCSPRequestSession::CancelURLRequest, this));
+          FROM_HERE,
+          base::BindOnce(&OCSPRequestSession::CancelURLRequest, this));
     }
   }
 

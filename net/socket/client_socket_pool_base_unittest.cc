@@ -415,18 +415,18 @@ class TestConnectJob : public ConnectJob {
         // time functions, so this change would be rather invasive.
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(), true /* successful */,
-                       true /* async */, false /* recoverable */),
+            base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
+                           weak_factory_.GetWeakPtr(), true /* successful */,
+                           true /* async */, false /* recoverable */),
             base::TimeDelta::FromMilliseconds(kPendingConnectDelay));
         return ERR_IO_PENDING;
       case kMockPendingFailingJob:
         set_load_state(LOAD_STATE_CONNECTING);
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(), false /* error */,
-                       true /* async */, false /* recoverable */),
+            base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
+                           weak_factory_.GetWeakPtr(), false /* error */,
+                           true /* async */, false /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockWaitingJob:
@@ -441,9 +441,9 @@ class TestConnectJob : public ConnectJob {
         set_load_state(LOAD_STATE_CONNECTING);
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(), false /* error */,
-                       true /* async */, true /* recoverable */),
+            base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
+                           weak_factory_.GetWeakPtr(), false /* error */,
+                           true /* async */, true /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockAdditionalErrorStateJob:
@@ -455,9 +455,9 @@ class TestConnectJob : public ConnectJob {
         store_additional_error_state_ = true;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(base::IgnoreResult(&TestConnectJob::DoConnect),
-                       weak_factory_.GetWeakPtr(), false /* error */,
-                       true /* async */, false /* recoverable */),
+            base::BindOnce(base::IgnoreResult(&TestConnectJob::DoConnect),
+                           weak_factory_.GetWeakPtr(), false /* error */,
+                           true /* async */, false /* recoverable */),
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockUnreadDataJob: {

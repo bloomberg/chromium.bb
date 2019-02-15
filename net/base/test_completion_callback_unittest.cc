@@ -74,8 +74,8 @@ class ExampleEmployer::ExampleWorker
 void ExampleEmployer::ExampleWorker::DoWork() {
   // In a real worker thread, some work would be done here.
   // Pretend it is, and send the completion callback.
-  origin_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&ExampleWorker::DoCallback, this));
+  origin_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ExampleWorker::DoCallback, this));
 }
 
 void ExampleEmployer::ExampleWorker::DoCallback() {
@@ -99,7 +99,7 @@ bool ExampleEmployer::DoSomething(CompletionOnceCallback callback) {
   request_ = new ExampleWorker(this, std::move(callback));
 
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ExampleWorker::DoWork, request_))) {
+          FROM_HERE, base::BindOnce(&ExampleWorker::DoWork, request_))) {
     NOTREACHED();
     request_ = NULL;
     return false;

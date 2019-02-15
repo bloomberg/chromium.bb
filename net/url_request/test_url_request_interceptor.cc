@@ -155,24 +155,22 @@ TestURLRequestInterceptor::TestURLRequestInterceptor(
                              network_task_runner_,
                              worker_task_runner)) {
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Delegate::Register, base::Unretained(delegate_)));
+      FROM_HERE,
+      base::BindOnce(&Delegate::Register, base::Unretained(delegate_)));
 }
 
 TestURLRequestInterceptor::~TestURLRequestInterceptor() {
   network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Delegate::Unregister, scheme_, hostname_));
+      FROM_HERE, base::BindOnce(&Delegate::Unregister, scheme_, hostname_));
 }
 
 void TestURLRequestInterceptor::SetResponse(const GURL& url,
                                             const base::FilePath& path) {
   CHECK_EQ(scheme_, url.scheme());
   CHECK_EQ(hostname_, url.host());
-  network_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&Delegate::SetResponse,
-                                            base::Unretained(delegate_),
-                                            url,
-                                            path,
-                                            false));
+  network_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Delegate::SetResponse,
+                                base::Unretained(delegate_), url, path, false));
 }
 
 void TestURLRequestInterceptor::SetResponseIgnoreQuery(
@@ -180,12 +178,9 @@ void TestURLRequestInterceptor::SetResponseIgnoreQuery(
     const base::FilePath& path) {
   CHECK_EQ(scheme_, url.scheme());
   CHECK_EQ(hostname_, url.host());
-  network_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&Delegate::SetResponse,
-                                            base::Unretained(delegate_),
-                                            url,
-                                            path,
-                                            true));
+  network_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Delegate::SetResponse,
+                                base::Unretained(delegate_), url, path, true));
 }
 
 int TestURLRequestInterceptor::GetHitCount() {

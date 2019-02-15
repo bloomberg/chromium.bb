@@ -250,8 +250,8 @@ void NetworkThrottleManagerImpl::OnThrottleDestroyed(ThrottleImpl* throttle) {
     // Via PostTask so there aren't upcalls from within destructors.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&NetworkThrottleManagerImpl::MaybeUnblockThrottles,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&NetworkThrottleManagerImpl::MaybeUnblockThrottles,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

@@ -107,8 +107,8 @@ BidirectionalStream::BidirectionalStream(
   if (!request_info_->url.SchemeIs(url::kHttpsScheme)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BidirectionalStream::NotifyFailed,
-                   weak_factory_.GetWeakPtr(), ERR_DISALLOWED_URL_SCHEME));
+        base::BindOnce(&BidirectionalStream::NotifyFailed,
+                       weak_factory_.GetWeakPtr(), ERR_DISALLOWED_URL_SCHEME));
     return;
   }
 

@@ -180,8 +180,8 @@ void QuicSimpleServer::StartReading() {
     if (dispatcher_->HasChlosBuffered()) {
       // No more packets to read, so yield before processing buffered packets.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&QuicSimpleServer::StartReading,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&QuicSimpleServer::StartReading,
+                                    weak_factory_.GetWeakPtr()));
     }
     return;
   }
@@ -191,8 +191,8 @@ void QuicSimpleServer::StartReading() {
     // Schedule the processing through the message loop to 1) prevent infinite
     // recursion and 2) avoid blocking the thread for too long.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&QuicSimpleServer::OnReadComplete,
-                              weak_factory_.GetWeakPtr(), result));
+        FROM_HERE, base::BindOnce(&QuicSimpleServer::OnReadComplete,
+                                  weak_factory_.GetWeakPtr(), result));
   } else {
     OnReadComplete(result);
   }

@@ -357,8 +357,8 @@ void MockHostResolverBase::ResolveAllPending() {
   DCHECK(ondemand_mode_);
   for (auto i = requests_.begin(); i != requests_.end(); ++i) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&MockHostResolverBase::ResolveNow, AsWeakPtr(), i->first));
+        FROM_HERE, base::BindOnce(&MockHostResolverBase::ResolveNow,
+                                  AsWeakPtr(), i->first));
   }
 }
 

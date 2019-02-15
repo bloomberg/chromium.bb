@@ -175,8 +175,9 @@ void NetworkQualityStore::AddNetworkQualitiesCacheObserver(
   // Notify the |observer| on the next message pump since |observer| may not
   // be completely set up for receiving the callbacks.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&NetworkQualityStore::NotifyCacheObserverIfPresent,
-                            weak_ptr_factory_.GetWeakPtr(), observer));
+      FROM_HERE,
+      base::BindOnce(&NetworkQualityStore::NotifyCacheObserverIfPresent,
+                     weak_ptr_factory_.GetWeakPtr(), observer));
 }
 
 void NetworkQualityStore::RemoveNetworkQualitiesCacheObserver(

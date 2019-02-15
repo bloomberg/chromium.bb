@@ -611,8 +611,8 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
  private:
   void PostCallback() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&EchoeyFakeWebSocketStream::DoCallback,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&EchoeyFakeWebSocketStream::DoCallback,
+                                  base::Unretained(this)));
   }
 
   void DoCallback() {

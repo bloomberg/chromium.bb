@@ -269,7 +269,7 @@ void EntryWrapper::DoIdle() {
   g_data->pendig_operations--;
   DCHECK(g_data->pendig_operations);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&LoopTask));
+                                                base::BindOnce(&LoopTask));
 }
 
 // The task that keeps the main thread busy. Whenever an entry becomes idle this
@@ -290,7 +290,7 @@ void LoopTask() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&LoopTask));
+                                                base::BindOnce(&LoopTask));
 }
 
 // This thread will loop forever, adding and removing entries from the cache.
@@ -333,7 +333,7 @@ void StressTheCache(int iteration) {
     g_data->keys[i] = GenerateStressKey();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&LoopTask));
+                                                base::BindOnce(&LoopTask));
   base::RunLoop().Run();
 }
 
@@ -361,7 +361,7 @@ void CrashCallback() {
 
 void RunSoon(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   const base::TimeDelta kTaskDelay = base::TimeDelta::FromSeconds(10);
-  task_runner->PostDelayedTask(FROM_HERE, base::Bind(&CrashCallback),
+  task_runner->PostDelayedTask(FROM_HERE, base::BindOnce(&CrashCallback),
                                kTaskDelay);
 }
 

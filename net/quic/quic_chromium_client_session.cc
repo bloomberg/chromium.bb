@@ -587,8 +587,8 @@ void QuicChromiumClientSession::StreamRequest::OnRequestCompleteFailure(
     // Avoid re-entrancy if the callback calls into the session.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&QuicChromiumClientSession::StreamRequest::DoCallback,
-                   weak_factory_.GetWeakPtr(), rv));
+        base::BindOnce(&QuicChromiumClientSession::StreamRequest::DoCallback,
+                       weak_factory_.GetWeakPtr(), rv));
   }
 }
 
@@ -1773,9 +1773,9 @@ int QuicChromiumClientSession::HandleWriteError(
   // Post a task to migrate the session onto a new network.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientSession::MigrateSessionOnWriteError,
-                 weak_factory_.GetWeakPtr(), error_code,
-                 connection()->writer()));
+      base::BindOnce(&QuicChromiumClientSession::MigrateSessionOnWriteError,
+                     weak_factory_.GetWeakPtr(), error_code,
+                     connection()->writer()));
 
   // Store packet in the session since the actual migration and packet rewrite
   // can happen via this posted task or via an async network notification.
@@ -1893,8 +1893,8 @@ void QuicChromiumClientSession::OnNoNewNetwork() {
   // Post a task to maybe close the session if the alarm fires.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientSession::OnMigrationTimeout,
-                 weak_factory_.GetWeakPtr(), sockets_.size()),
+      base::BindOnce(&QuicChromiumClientSession::OnMigrationTimeout,
+                     weak_factory_.GetWeakPtr(), sockets_.size()),
       base::TimeDelta::FromSeconds(kWaitTimeForNewNetworkSecs));
 }
 
@@ -2801,8 +2801,8 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosedLater() {
   DCHECK(!connection()->connected());
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&QuicChromiumClientSession::NotifyFactoryOfSessionClosed,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&QuicChromiumClientSession::NotifyFactoryOfSessionClosed,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
@@ -2918,8 +2918,8 @@ bool QuicChromiumClientSession::MigrateToSocket(
   // socket. This avoids reentrancy issues if there is a write error
   // on the write to the new socket.
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&QuicChromiumClientSession::WriteToNewSocket,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&QuicChromiumClientSession::WriteToNewSocket,
+                                weak_factory_.GetWeakPtr()));
   return true;
 }
 

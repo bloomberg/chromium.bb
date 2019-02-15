@@ -584,8 +584,9 @@ void HttpStreamFactory::Job::RunLoop(int result) {
 
   if (job_type_ == PRECONNECT) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&HttpStreamFactory::Job::OnPreconnectsComplete,
-                              ptr_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&HttpStreamFactory::Job::OnPreconnectsComplete,
+                       ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -597,8 +598,8 @@ void HttpStreamFactory::Job::RunLoop(int result) {
     next_state_ = STATE_WAITING_USER_ACTION;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&HttpStreamFactory::Job::OnCertificateErrorCallback,
-                   ptr_factory_.GetWeakPtr(), result, ssl_info));
+        base::BindOnce(&HttpStreamFactory::Job::OnCertificateErrorCallback,
+                       ptr_factory_.GetWeakPtr(), result, ssl_info));
     return;
   }
 
@@ -609,8 +610,9 @@ void HttpStreamFactory::Job::RunLoop(int result) {
       if (!connection_.get()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(&Job::OnStreamFailedCallback, ptr_factory_.GetWeakPtr(),
-                       ERR_PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION));
+            base::BindOnce(&Job::OnStreamFailedCallback,
+                           ptr_factory_.GetWeakPtr(),
+                           ERR_PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION));
         return;
       }
       CHECK(connection_->socket());
@@ -621,16 +623,17 @@ void HttpStreamFactory::Job::RunLoop(int result) {
           static_cast<ProxyClientSocket*>(connection_->socket());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&Job::OnNeedsProxyAuthCallback, ptr_factory_.GetWeakPtr(),
-                     *proxy_socket->GetConnectResponseInfo(),
-                     base::RetainedRef(proxy_socket->GetAuthController())));
+          base::BindOnce(&Job::OnNeedsProxyAuthCallback,
+                         ptr_factory_.GetWeakPtr(),
+                         *proxy_socket->GetConnectResponseInfo(),
+                         base::RetainedRef(proxy_socket->GetAuthController())));
       return;
     }
 
     case ERR_SSL_CLIENT_AUTH_CERT_NEEDED:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
               base::RetainedRef(
                   connection_->ssl_error_response_info().cert_request_info)));
@@ -661,36 +664,37 @@ void HttpStreamFactory::Job::RunLoop(int result) {
       next_state_ = STATE_DONE;
       if (new_spdy_session_.get()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&Job::OnNewSpdySessionReadyCallback,
-                                  ptr_factory_.GetWeakPtr()));
+            FROM_HERE, base::BindOnce(&Job::OnNewSpdySessionReadyCallback,
+                                      ptr_factory_.GetWeakPtr()));
       } else if (is_websocket_) {
         DCHECK(websocket_stream_);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::Bind(&Job::OnWebSocketHandshakeStreamReadyCallback,
-                                  ptr_factory_.GetWeakPtr()));
+            FROM_HERE,
+            base::BindOnce(&Job::OnWebSocketHandshakeStreamReadyCallback,
+                           ptr_factory_.GetWeakPtr()));
       } else if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
         if (!bidirectional_stream_impl_) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE, base::Bind(&Job::OnStreamFailedCallback,
-                                    ptr_factory_.GetWeakPtr(), ERR_FAILED));
+              FROM_HERE, base::BindOnce(&Job::OnStreamFailedCallback,
+                                        ptr_factory_.GetWeakPtr(), ERR_FAILED));
         } else {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(&Job::OnBidirectionalStreamImplReadyCallback,
-                         ptr_factory_.GetWeakPtr()));
+              base::BindOnce(&Job::OnBidirectionalStreamImplReadyCallback,
+                             ptr_factory_.GetWeakPtr()));
         }
       } else {
         DCHECK(stream_.get());
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::Bind(&Job::OnStreamReadyCallback, ptr_factory_.GetWeakPtr()));
+            FROM_HERE, base::BindOnce(&Job::OnStreamReadyCallback,
+                                      ptr_factory_.GetWeakPtr()));
       }
       return;
 
     default:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&Job::OnStreamFailedCallback,
-                                ptr_factory_.GetWeakPtr(), result));
+          FROM_HERE, base::BindOnce(&Job::OnStreamFailedCallback,
+                                    ptr_factory_.GetWeakPtr(), result));
       return;
   }
 }

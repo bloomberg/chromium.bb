@@ -180,8 +180,8 @@ void EmbeddedTestServer::StartAcceptingConnections() {
   CHECK(io_thread_->WaitUntilThreadStarted());
 
   io_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedTestServer::DoAcceptLoop, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&EmbeddedTestServer::DoAcceptLoop,
+                                base::Unretained(this)));
 }
 
 bool EmbeddedTestServer::ShutdownAndWaitUntilComplete() {

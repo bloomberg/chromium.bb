@@ -797,8 +797,8 @@ class AsyncFailDhcpFetcher
             const NetworkTrafficAnnotationTag traffic_annotation) override {
     callback_ = std::move(callback);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&AsyncFailDhcpFetcher::CallbackWithFailure, AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&AsyncFailDhcpFetcher::CallbackWithFailure,
+                                  AsWeakPtr()));
     return ERR_IO_PENDING;
   }
 

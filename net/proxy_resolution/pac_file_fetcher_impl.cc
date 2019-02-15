@@ -206,8 +206,8 @@ int PacFileFetcherImpl::Fetch(
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PacFileFetcherImpl::OnTimeout, weak_factory_.GetWeakPtr(),
-                 cur_request_id_),
+      base::BindOnce(&PacFileFetcherImpl::OnTimeout, weak_factory_.GetWeakPtr(),
+                     cur_request_id_),
       max_duration_);
 
   // Start the request.

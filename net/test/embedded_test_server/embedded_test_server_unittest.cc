@@ -425,9 +425,9 @@ class InfiniteResponse : public BasicHttpResponse {
   void SendInfinite(const SendBytesCallback& send) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(send, "echo",
-                   base::Bind(&InfiniteResponse::SendInfinite,
-                              weak_ptr_factory_.GetWeakPtr(), send)));
+        base::BindOnce(send, "echo",
+                       base::Bind(&InfiniteResponse::SendInfinite,
+                                  weak_ptr_factory_.GetWeakPtr(), send)));
   }
 
   base::WeakPtrFactory<InfiniteResponse> weak_ptr_factory_;

@@ -1013,7 +1013,8 @@ void HttpCache::DoomEntryValidationNoMatch(ActiveEntry* entry) {
   for (auto* transaction : entry->add_to_entry_queue) {
     transaction->ResetCachePendingState();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(transaction->io_callback(), net::ERR_CACHE_RACE));
+        FROM_HERE,
+        base::BindOnce(transaction->io_callback(), net::ERR_CACHE_RACE));
   }
   entry->add_to_entry_queue.clear();
 }
@@ -1082,8 +1083,8 @@ void HttpCache::ProcessQueuedTransactions(ActiveEntry* entry) {
   // Post a task instead of invoking the io callback of another transaction here
   // to avoid re-entrancy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&HttpCache::OnProcessQueuedTransactions, GetWeakPtr(), entry));
+      FROM_HERE, base::BindOnce(&HttpCache::OnProcessQueuedTransactions,
+                                GetWeakPtr(), entry));
 }
 
 void HttpCache::ProcessAddToEntryQueue(ActiveEntry* entry) {
@@ -1474,8 +1475,8 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
     pending_op->writer = std::move(pending_item);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&HttpCache::OnBackendCreated, GetWeakPtr(),
-                              result, pending_op));
+        FROM_HERE, base::BindOnce(&HttpCache::OnBackendCreated, GetWeakPtr(),
+                                  result, pending_op));
   } else {
     building_backend_ = false;
     DeletePendingOp(pending_op);

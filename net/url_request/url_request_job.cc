@@ -568,7 +568,7 @@ void URLRequestJob::OnDone(const URLRequestStatus& status, bool notify_done) {
     // delegate if we're done because of a synchronous call.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&URLRequestJob::NotifyDone, weak_factory_.GetWeakPtr()));
+        base::BindOnce(&URLRequestJob::NotifyDone, weak_factory_.GetWeakPtr()));
   }
 }
 

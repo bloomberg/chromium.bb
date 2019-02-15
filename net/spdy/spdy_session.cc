@@ -1761,8 +1761,8 @@ void SpdySession::ProcessPendingStreamRequests() {
     // possible that the un-stalled stream will be stalled again if it loses.
     // TODO(jgraettinger): Provide stronger ordering guarantees.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SpdySession::CompleteStreamRequest,
-                              weak_factory_.GetWeakPtr(), pending_request));
+        FROM_HERE, base::BindOnce(&SpdySession::CompleteStreamRequest,
+                                  weak_factory_.GetWeakPtr(), pending_request));
   }
 }
 
@@ -1917,8 +1917,8 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SpdySession::CancelPushedStreamIfUnclaimed, GetWeakPtr(),
-                 stream_id),
+      base::BindOnce(&SpdySession::CancelPushedStreamIfUnclaimed, GetWeakPtr(),
+                     stream_id),
       base::TimeDelta::FromSeconds(kPushedStreamLifetimeSeconds));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -2146,8 +2146,8 @@ int SpdySession::DoReadLoop(ReadState expected_read_state, int result) {
          time_func_() > yield_after_time)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
-                     READ_STATE_DO_READ, OK));
+          base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
+                         READ_STATE_DO_READ, OK));
       result = ERR_IO_PENDING;
       break;
     }
@@ -2251,8 +2251,8 @@ void SpdySession::MaybePostWriteLoop() {
     write_state_ = WRITE_STATE_DO_WRITE;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
-                   WRITE_STATE_DO_WRITE, OK));
+        base::BindOnce(&SpdySession::PumpWriteLoop, weak_factory_.GetWeakPtr(),
+                       WRITE_STATE_DO_WRITE, OK));
   }
 }
 
@@ -2603,8 +2603,9 @@ void SpdySession::PlanToCheckPingStatus() {
 
   check_ping_status_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&SpdySession::CheckPingStatus,
-                            weak_factory_.GetWeakPtr(), time_func_()),
+      FROM_HERE,
+      base::BindOnce(&SpdySession::CheckPingStatus, weak_factory_.GetWeakPtr(),
+                     time_func_()),
       hung_interval_);
 }
 
@@ -2629,8 +2630,9 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   // Check the status of connection after a delay.
   const base::TimeDelta delay = last_read_time_ + hung_interval_ - now;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&SpdySession::CheckPingStatus,
-                            weak_factory_.GetWeakPtr(), now),
+      FROM_HERE,
+      base::BindOnce(&SpdySession::CheckPingStatus, weak_factory_.GetWeakPtr(),
+                     now),
       delay);
 }
 

@@ -213,8 +213,8 @@ void MDnsConnection::PostOnError(SocketHandler* loop, int rv) {
   VLOG(1) << "Socket error. id=" << id << ", error=" << rv;
   // Post to allow deletion of this object by delegate.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MDnsConnection::OnError, weak_ptr_factory_.GetWeakPtr(), rv));
+      FROM_HERE, base::BindOnce(&MDnsConnection::OnError,
+                                weak_ptr_factory_.GetWeakPtr(), rv));
 }
 
 void MDnsConnection::OnError(int rv) {
@@ -395,8 +395,8 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
     // Schedule the actual removal for later in case the listener removal
     // happens while iterating over the observer list.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MDnsClientImpl::Core::CleanupObserverList,
-                              AsWeakPtr(), key));
+        FROM_HERE, base::BindOnce(&MDnsClientImpl::Core::CleanupObserverList,
+                                  AsWeakPtr(), key));
   }
 }
 

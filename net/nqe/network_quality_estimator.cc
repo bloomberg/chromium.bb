@@ -1055,9 +1055,10 @@ void NetworkQualityEstimator::AddEffectiveConnectionTypeObserver(
   // Notify the |observer| on the next message pump since |observer| may not
   // be completely set up for receiving the callbacks.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&NetworkQualityEstimator::
-                                NotifyEffectiveConnectionTypeObserverIfPresent,
-                            weak_ptr_factory_.GetWeakPtr(), observer));
+      FROM_HERE,
+      base::BindOnce(&NetworkQualityEstimator::
+                         NotifyEffectiveConnectionTypeObserverIfPresent,
+                     weak_ptr_factory_.GetWeakPtr(), observer));
 }
 
 void NetworkQualityEstimator::RemoveEffectiveConnectionTypeObserver(
@@ -1076,9 +1077,9 @@ void NetworkQualityEstimator::AddRTTAndThroughputEstimatesObserver(
   // be completely set up for receiving the callbacks.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&NetworkQualityEstimator::
-                     NotifyRTTAndThroughputEstimatesObserverIfPresent,
-                 weak_ptr_factory_.GetWeakPtr(), observer));
+      base::BindOnce(&NetworkQualityEstimator::
+                         NotifyRTTAndThroughputEstimatesObserverIfPresent,
+                     weak_ptr_factory_.GetWeakPtr(), observer));
 }
 
 void NetworkQualityEstimator::RemoveRTTAndThroughputEstimatesObserver(

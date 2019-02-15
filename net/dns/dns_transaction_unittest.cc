@@ -465,8 +465,8 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&URLRequestMockDohJob::StartAsync,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&URLRequestMockDohJob::StartAsync,
+                                  weak_factory_.GetWeakPtr()));
   }
 
   ~URLRequestMockDohJob() override {

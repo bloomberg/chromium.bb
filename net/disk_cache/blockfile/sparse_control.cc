@@ -147,7 +147,7 @@ void ChildrenDeleter::DeleteChildren() {
 
   // Post a task to delete the next child.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ChildrenDeleter::DeleteChildren, this));
+      FROM_HERE, base::BindOnce(&ChildrenDeleter::DeleteChildren, this));
 }
 
 // Returns the NetLog event type corresponding to a SparseOperation.
@@ -375,11 +375,11 @@ void SparseControl::DeleteChildren(EntryImpl* entry) {
   if (buffer) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ChildrenDeleter::Start, deleter, buffer, data_len));
+        base::BindOnce(&ChildrenDeleter::Start, deleter, buffer, data_len));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ChildrenDeleter::ReadData, deleter, address, data_len));
+        base::BindOnce(&ChildrenDeleter::ReadData, deleter, address, data_len));
   }
 }
 

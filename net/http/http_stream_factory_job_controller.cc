@@ -736,8 +736,8 @@ void HttpStreamFactory::JobController::RunLoop(int result) {
     DCHECK(!alternative_job_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&HttpStreamFactory::JobController::NotifyRequestFailed,
-                   ptr_factory_.GetWeakPtr(), rv));
+        base::BindOnce(&HttpStreamFactory::JobController::NotifyRequestFailed,
+                       ptr_factory_.GetWeakPtr(), rv));
   }
 }
 

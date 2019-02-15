@@ -273,8 +273,9 @@ class DnsConfigServicePosix::Watcher {
     // Ignore transient flutter of resolv.conf by delaying the signal a bit.
     const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(50);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&Watcher::OnConfigChangedDelayed,
-                              weak_factory_.GetWeakPtr(), succeeded),
+        FROM_HERE,
+        base::BindOnce(&Watcher::OnConfigChangedDelayed,
+                       weak_factory_.GetWeakPtr(), succeeded),
         kDelay);
   }
 

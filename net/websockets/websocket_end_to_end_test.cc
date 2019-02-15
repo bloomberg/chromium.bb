@@ -202,9 +202,9 @@ void ConnectTestingEventInterface::OnSSLCertificateError(
     const SSLInfo& ssl_info,
     bool fatal) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SSLErrorCallbacks::CancelSSLRequest,
-                            base::Owned(ssl_error_callbacks.release()),
-                            ERR_SSL_PROTOCOL_ERROR, &ssl_info));
+      FROM_HERE, base::BindOnce(&SSLErrorCallbacks::CancelSSLRequest,
+                                base::Owned(ssl_error_callbacks.release()),
+                                ERR_SSL_PROTOCOL_ERROR, &ssl_info));
 }
 
 int ConnectTestingEventInterface::OnAuthRequired(
