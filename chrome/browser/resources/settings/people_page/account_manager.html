@@ -40,13 +40,13 @@
         width: 24px;
       }
 
-      #error-badge {
+      .error-badge {
         left: 60%;
         position: relative;
         top: 60%;
       }
 
-      :host-context([dir='rtl']) #error-badge {
+      :host-context([dir='rtl']) .error-badge {
         left: auto;
         right: 60%;
       }
@@ -71,7 +71,8 @@
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]">
             <template is="dom-if" if="[[!item.isSignedIn]]">
-              <img id="error-badge" src="chrome://resources/images/error_badge.svg">
+              <img class="error-badge"
+                  src="chrome://resources/images/error_badge.svg">
             </template>
           </div>
 
@@ -83,15 +84,21 @@
               </template>
               <!-- Else, display a re-authentication message -->
               <template is="dom-if" if="[[!item.isSignedIn]]">
-                <span style="color:red">$i18n{accountManagerSignedOutAccountName}</span>
+                <span style="color:red">
+                  $i18n{accountManagerSignedOutAccountName}
+                </span>
               </template>
 
               <div class="secondary">[[item.email]]</div>
             </div>
           </div>
 
-          <template is="dom-if" if="[[shouldShowReauthenticationButton_(item)]]">
-            <paper-button on-click="onReauthenticationTap_">$i18n{accountManagerReauthenticationLabel}</paper-button>
+          <template is="dom-if"
+              if="[[shouldShowReauthenticationButton_(item)]]">
+            <paper-button class="reauth-button"
+                on-click="onReauthenticationTap_">
+              $i18n{accountManagerReauthenticationLabel}
+            </paper-button>
           </template>
 
           <paper-icon-button-light class="icon-more-vert"

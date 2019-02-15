@@ -9,6 +9,7 @@ cr.define('settings_people_page_account_manager', function() {
       super([
         'getAccounts',
         'addAccount',
+        'reauthenticateAccount',
         'removeAccount',
         'showWelcomeDialogIfRequired',
       ]);
@@ -24,6 +25,7 @@ cr.define('settings_people_page_account_manager', function() {
             id: '123',
             accountType: 1,
             isDeviceAccount: true,
+            isSignedIn: true,
             fullName: 'Device Account',
             email: 'admin@domain.com',
             pic: 'data:image/png;base64,abc123',
@@ -32,10 +34,20 @@ cr.define('settings_people_page_account_manager', function() {
             id: '456',
             accountType: 1,
             isDeviceAccount: false,
-            fullName: 'Secondary Account',
-            email: 'user@domain.com',
+            isSignedIn: true,
+            fullName: 'Secondary Account 1',
+            email: 'user1@example.com',
             pic: '',
           },
+          {
+            id: '789',
+            accountType: 1,
+            isDeviceAccount: false,
+            isSignedIn: false,
+            fullName: 'Secondary Account 2',
+            email: 'user2@example.com',
+            pic: '',
+          }
         ]);
       });
     }
@@ -43,6 +55,11 @@ cr.define('settings_people_page_account_manager', function() {
     /** @override */
     addAccount() {
       this.methodCalled('addAccount');
+    }
+
+    /** @override */
+    reauthenticateAccount(account_email) {
+      this.methodCalled('reauthenticateAccount', account_email);
     }
 
     /** @override */
@@ -83,14 +100,26 @@ cr.define('settings_people_page_account_manager', function() {
     test('AccountListIsPopulatedAtStartup', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();
-        // 2 accounts were added in |getAccounts()| mock above.
-        assertEquals(2, accountList.items.length);
+        // 3 accounts were added in |getAccounts()| mock above.
+        assertEquals(3, accountList.items.length);
       });
     });
 
     test('AddAccount', function() {
       accountManager.$$('#add-account-button').click();
       assertEquals(1, browserProxy.getCallCount('addAccount'));
+    });
+
+    test('ReauthenticateAccount', function() {
+      return browserProxy.whenCalled('getAccounts').then(() => {
+        Polymer.dom.flush();
+        accountManager.root.querySelectorAll('.reauth-button')[0].click();
+        assertEquals(1, browserProxy.getCallCount('reauthenticateAccount'));
+        return browserProxy.whenCalled('reauthenticateAccount')
+            .then((account_email) => {
+              assertEquals('user2@example.com', account_email);
+            });
+      });
     });
 
     test('RemoveAccount', function() {
