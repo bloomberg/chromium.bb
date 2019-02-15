@@ -376,12 +376,6 @@ const char kEnableAudioFocusEnforcementDescription[] =
     "Enables enforcement of a single media session having audio focus at "
     "any one time. Requires #enable-media-session-service to be enabled too.";
 
-const char kEnableWebPaymentsSingleAppUiSkipName[] =
-    "Enable Web Payments single app UI skip";
-const char kEnableWebPaymentsSingleAppUiSkipDescription[] =
-    "Enable Web Payments to skip showing its UI if the developer specifies a "
-    "single app.";
-
 const char kEnableAutocompleteDataRetentionPolicyName[] =
     "Enable automatic cleanup of expired Autocomplete entries.";
 const char kEnableAutocompleteDataRetentionPolicyDescription[] =
@@ -1211,12 +1205,6 @@ const char kJavascriptHarmonyShippingDescription[] =
     "conflict with the latest JavaScript features. This flag allows disabling "
     "support of those features for compatibility with such pages.";
 
-const char kJustInTimeServiceWorkerPaymentAppName[] =
-    "Just-in-time service worker payment app";
-const char kJustInTimeServiceWorkerPaymentAppDescription[] =
-    "Allow crawling just-in-time service worker payment app when there is no "
-    "installed service worker payment app for a payment request.";
-
 const char kKeepAliveRendererForKeepaliveRequestsName[] =
     "Keep a renderer alive for keepalive fetch requests";
 const char kKeepAliveRendererForKeepaliveRequestsDescription[] =
@@ -1691,10 +1679,6 @@ const char kSendTabToSelfDescription[] =
     "Allows users to push tabs from Android devices to other synced "
     "devices, in order to easily transition those tabs to the new device ";
 
-const char kServiceWorkerPaymentAppsName[] = "Service Worker payment apps";
-const char kServiceWorkerPaymentAppsDescription[] =
-    "Enable Service Worker applications to integrate as payment apps";
-
 const char kServiceWorkerImportedScriptUpdateCheckName[] =
     "Enable update check for service worker importScripts() resources";
 const char kServiceWorkerImportedScriptUpdateCheckDescription[] =
@@ -2055,17 +2039,6 @@ const char kWebglDraftExtensionsDescription[] =
 const char kWebMidiName[] = "Web MIDI API";
 const char kWebMidiDescription[] = "Enable Web MIDI API experimental support.";
 
-const char kWebPaymentsName[] = "Web Payments";
-const char kWebPaymentsDescription[] =
-    "Enable Web Payments API integration, a JavaScript API for merchants.";
-
-const char kWebPaymentsModifiersName[] = "Enable web payment modifiers";
-const char kWebPaymentsModifiersDescription[] =
-    "If the website provides modifiers in the payment request, show the custom "
-    "total for each payment instrument, update the shopping cart when "
-    "instruments are switched, and send modified payment method specific data "
-    "to the payment app.";
-
 const char kWebrtcEchoCanceller3Name[] = "WebRTC Echo Canceller 3.";
 const char kWebrtcEchoCanceller3Description[] =
     "Experimental WebRTC echo canceller (AEC3).";
@@ -2210,10 +2183,6 @@ const char kAppNotificationStatusMessagingDescription[] =
     "Enables messaging in site permissions UI informing user when "
     "notifications are disabled for the entire app.";
 
-const char kAndroidPaymentAppsName[] = "Android payment apps";
-const char kAndroidPaymentAppsDescription[] =
-    "Enable third party Android apps to integrate as payment apps";
-
 const char kAsyncDnsName[] = "Async DNS resolver";
 const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
 
@@ -2345,14 +2314,6 @@ const char kDownloadHomeV2Name[] = "Enable download home v2";
 const char kDownloadHomeV2Description[] =
     "Enables the new UI for download home";
 
-const char kEnableAndroidPayIntegrationV1Name[] = "Enable Android Pay v1";
-const char kEnableAndroidPayIntegrationV1Description[] =
-    "Enable integration with Android Pay using the first version of the API";
-
-const char kEnableAndroidPayIntegrationV2Name[] = "Enable Android Pay v2";
-const char kEnableAndroidPayIntegrationV2Description[] =
-    "Enable integration with Android Pay using the second version of the API";
-
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =
@@ -2452,12 +2413,6 @@ const char kEnableOskOverscrollDescription[] =
 
 const char kEnableWebNfcName[] = "WebNFC";
 const char kEnableWebNfcDescription[] = "Enable WebNFC support.";
-
-const char kEnableWebPaymentsMethodSectionOrderV2Name[] =
-    "Enable Web Payments method section order V2.";
-const char kEnableWebPaymentsMethodSectionOrderV2Description[] =
-    "Enable this option to display payment method section above address "
-    "section instead of below it.";
 
 const char kEphemeralTabName[] = "An Ephemeral Tab in an Overlay Panel";
 const char kEphemeralTabDescription[] =
@@ -2646,11 +2601,6 @@ const char kOffliningRecentPagesName[] =
 const char kOffliningRecentPagesDescription[] =
     "Enable storing recently visited pages locally for offline use. Requires "
     "Offline Pages to be enabled.";
-
-const char kPayWithGoogleV1Name[] = "Pay with Google v1";
-const char kPayWithGoogleV1Description[] =
-    "Enable Pay with Google integration into Web Payments with API version "
-    "'1'.";
 
 const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =

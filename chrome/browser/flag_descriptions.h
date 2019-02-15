@@ -575,9 +575,6 @@ extern const char kEnableWasmDescription[];
 extern const char kEnableWebAuthenticationCableSupportName[];
 extern const char kEnableWebAuthenticationCableSupportDescription[];
 
-extern const char kEnableWebPaymentsSingleAppUiSkipName[];
-extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
-
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 
@@ -730,9 +727,6 @@ extern const char kJavascriptHarmonyDescription[];
 
 extern const char kJavascriptHarmonyShippingName[];
 extern const char kJavascriptHarmonyShippingDescription[];
-
-extern const char kJustInTimeServiceWorkerPaymentAppName[];
-extern const char kJustInTimeServiceWorkerPaymentAppDescription[];
 
 extern const char kKeepAliveRendererForKeepaliveRequestsName[];
 extern const char kKeepAliveRendererForKeepaliveRequestsDescription[];
@@ -1007,9 +1001,6 @@ extern const char kSavePageAsMhtmlDescription[];
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
 
-extern const char kServiceWorkerPaymentAppsName[];
-extern const char kServiceWorkerPaymentAppsDescription[];
-
 extern const char kServiceWorkerImportedScriptUpdateCheckName[];
 extern const char kServiceWorkerImportedScriptUpdateCheckDescription[];
 
@@ -1221,12 +1212,6 @@ extern const char kWebglDraftExtensionsDescription[];
 extern const char kWebMidiName[];
 extern const char kWebMidiDescription[];
 
-extern const char kWebPaymentsName[];
-extern const char kWebPaymentsDescription[];
-
-extern const char kWebPaymentsModifiersName[];
-extern const char kWebPaymentsModifiersDescription[];
-
 extern const char kWebrtcEchoCanceller3Name[];
 extern const char kWebrtcEchoCanceller3Description[];
 
@@ -1304,9 +1289,6 @@ extern const char kAllowRemoteContextForNotificationsDescription[];
 
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
-
-extern const char kAndroidPaymentAppsName[];
-extern const char kAndroidPaymentAppsDescription[];
 
 extern const char kAndroidSurfaceControl[];
 extern const char kAndroidSurfaceControlDescription[];
@@ -1392,12 +1374,6 @@ extern const char kDownloadProgressInfoBarDescription[];
 extern const char kDownloadHomeV2Name[];
 extern const char kDownloadHomeV2Description[];
 
-extern const char kEnableAndroidPayIntegrationV1Name[];
-extern const char kEnableAndroidPayIntegrationV1Description[];
-
-extern const char kEnableAndroidPayIntegrationV2Name[];
-extern const char kEnableAndroidPayIntegrationV2Description[];
-
 extern const char kAutofillManualFallbackAndroidName[];
 extern const char kAutofillManualFallbackAndroidDescription[];
 
@@ -1451,9 +1427,6 @@ extern const char kEnableOskOverscrollDescription[];
 
 extern const char kEnableWebNfcName[];
 extern const char kEnableWebNfcDescription[];
-
-extern const char kEnableWebPaymentsMethodSectionOrderV2Name[];
-extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
 
 extern const char kEphemeralTabName[];
 extern const char kEphemeralTabDescription[];
@@ -1562,9 +1535,6 @@ extern const char kOfflinePagesSvelteConcurrentLoadingDescription[];
 
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];
-
-extern const char kPayWithGoogleV1Name[];
-extern const char kPayWithGoogleV1Description[];
 
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
