@@ -71,6 +71,7 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
     PROTOBUF_NOT_PARSED,
     ILLEGAL_DATA_RETURNED,
     ALREADY_COLLECTING,
+    UNABLE_TO_COLLECT,
     NUM_OUTCOMES
   };
 

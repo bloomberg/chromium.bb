@@ -6323,6 +6323,9 @@ histogram as enum -->
   <int value="6" label="Already collecting">
     Another profile collection was already active.
   </int>
+  <int value="7" label="Failed to start collection">
+    Collection could not start due to failing prerequisites.
+  </int>
 </enum>
 
 <enum name="ChromeOSRecoveryReason">
