@@ -131,6 +131,7 @@ vs-chromium-project.txt
 /chrome/test/chromeos/autotest/files/client/deps/perf_data_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/pyauto_dep/test_src/
 /chrome/test/chromeos/autotest/files/client/deps/telemetry_dep/test_src/
+/chrome/test/data/autofill/captured_sites
 /chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin
 /chrome/test/data/firefox2_profile/searchplugins
 /chrome/test/data/firefox2_searchplugins
