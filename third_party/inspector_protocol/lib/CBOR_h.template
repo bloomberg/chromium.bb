@@ -407,6 +407,9 @@ class CBORTokenizer {
   uint64_t token_start_internal_value_;
 };
 
+void DumpCBOR(span<uint8_t> cbor);
+
+
 {% for namespace in config.protocol.namespace %}
 } // namespace {{namespace}}
 {% endfor %}

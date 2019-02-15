@@ -258,7 +258,7 @@ class JSONToCBOREncoder : public JSONParserHandler {
     assert(!envelopes_.empty());
     envelopes_.back().EncodeStop(out_);
     envelopes_.pop_back();
-  };
+  }
 
   void HandleArrayBegin() override {
     envelopes_.emplace_back();
@@ -271,7 +271,7 @@ class JSONToCBOREncoder : public JSONParserHandler {
     assert(!envelopes_.empty());
     envelopes_.back().EncodeStop(out_);
     envelopes_.pop_back();
-  };
+  }
 
   void HandleString16(std::vector<uint16_t> chars) override {
     for (uint16_t ch : chars) {
@@ -290,7 +290,7 @@ class JSONToCBOREncoder : public JSONParserHandler {
     EncodeBinary(span<uint8_t>(bytes.data(), bytes.size()), out_);
   }
 
-  void HandleDouble(double value) override { EncodeDouble(value, out_); };
+  void HandleDouble(double value) override { EncodeDouble(value, out_); }
 
   void HandleInt32(int32_t value) override { EncodeInt32(value, out_); }
 
@@ -721,5 +721,74 @@ void CBORTokenizer::SetError(Error error) {
   token_tag_ = CBORTokenTag::ERROR_VALUE;
   status_.error = error;
 }
+
+#if 0
+void DumpCBOR(span<uint8_t> cbor) {
+  std::string indent;
+  CBORTokenizer tokenizer(cbor);
+  while (true) {
+    fprintf(stderr, "%s", indent.c_str());
+    switch (tokenizer.TokenTag()) {
+      case CBORTokenTag::ERROR_VALUE:
+        fprintf(stderr, "ERROR {status.error=%d, status.pos=%ld}\n",
+               tokenizer.Status().error, tokenizer.Status().pos);
+        return;
+      case CBORTokenTag::DONE:
+        fprintf(stderr, "DONE\n");
+        return;
+      case CBORTokenTag::TRUE_VALUE:
+        fprintf(stderr, "TRUE_VALUE\n");
+        break;
+      case CBORTokenTag::FALSE_VALUE:
+        fprintf(stderr, "FALSE_VALUE\n");
+        break;
+      case CBORTokenTag::NULL_VALUE:
+        fprintf(stderr, "NULL_VALUE\n");
+        break;
+      case CBORTokenTag::INT32:
+        fprintf(stderr, "INT32 [%d]\n", tokenizer.GetInt32());
+        break;
+      case CBORTokenTag::DOUBLE:
+        fprintf(stderr, "DOUBLE [%lf]\n", tokenizer.GetDouble());
+        break;
+      case CBORTokenTag::STRING8: {
+        span<uint8_t> v = tokenizer.GetString8();
+        std::string t(v.begin(), v.end());
+        fprintf(stderr, "STRING8 [%s]\n", t.c_str());
+        break;
+      }
+      case CBORTokenTag::STRING16: {
+        span<uint8_t> v = tokenizer.GetString16WireRep();
+        std::string t(v.begin(), v.end());
+        fprintf(stderr, "STRING16 [%s]\n", t.c_str());
+        break;
+      }
+      case CBORTokenTag::BINARY: {
+        span<uint8_t> v = tokenizer.GetBinary();
+        std::string t(v.begin(), v.end());
+        fprintf(stderr, "BINARY [%s]\n", t.c_str());
+        break;
+      }
+      case CBORTokenTag::MAP_START:
+        fprintf(stderr, "MAP_START\n");
+        indent += "  ";
+        break;
+      case CBORTokenTag::ARRAY_START:
+        fprintf(stderr, "ARRAY_START\n");
+        indent += "  ";
+        break;
+      case CBORTokenTag::STOP:
+        fprintf(stderr, "STOP\n");
+        indent.erase(0, 2);
+        break;
+      case CBORTokenTag::ENVELOPE:
+        fprintf(stderr, "ENVELOPE\n");
+        tokenizer.EnterEnvelope();
+        continue;
+    }
+    tokenizer.Next();
+  }
+}
+#endif
 
 }  // namespace inspector_protocol
