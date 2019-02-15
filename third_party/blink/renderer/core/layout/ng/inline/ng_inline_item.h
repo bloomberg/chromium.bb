@@ -80,9 +80,7 @@ class CORE_EXPORT NGInlineItem {
   NGInlineItemType Type() const { return static_cast<NGInlineItemType>(type_); }
   const char* NGInlineItemTypeToString(int val) const;
 
-  scoped_refptr<const ShapeResult> TextShapeResult() const {
-    return shape_result_;
-  }
+  const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
   NGLayoutInlineShapeOptions ShapeOptions() const {
     return static_cast<NGLayoutInlineShapeOptions>(shape_options_);
   }
