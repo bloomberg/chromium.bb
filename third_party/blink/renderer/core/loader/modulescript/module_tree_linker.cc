@@ -349,7 +349,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
     // specifier must have been previously successful with these same two
     // arguments.
     CHECK(url.IsValid()) << "ModuleScript::ResolveModuleSpecifier() impl must "
-                            "return either a valid url or null.";
+                            "return a valid url.";
 
     // [FD] Step 5.3. If visited set does not contain url, then:
     if (!visited_set_.Contains(url)) {
@@ -522,7 +522,7 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
     // moduleScript would have been marked as itself having a parse error.)
     CHECK(child_url.IsValid())
         << "ModuleScript::ResolveModuleSpecifier() impl must "
-           "return either a valid url or null.";
+           "return a valid url.";
 
     // [FFPE] Step 7. Let childModules be the list obtained by getting each
     // value in moduleMap whose key is given by an item of childURLs.
