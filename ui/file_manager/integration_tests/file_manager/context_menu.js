@@ -686,8 +686,7 @@ async function checkUnmountRootsContextMenu(entryLabel) {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Mount removable volumes.
-  await sendTestMessage({name: 'mountUsbWithPartitions'});
-  await sendTestMessage({name: 'mountFakeUsb'});
+  await sendTestMessage({name: 'mountFakePartitions'});
 
   // Wait for removable volume to appear in the directory tree.
   const removable = await remoteCall.waitForElement(appId, query);
@@ -710,14 +709,14 @@ async function checkUnmountRootsContextMenu(entryLabel) {
  * root with child partitions.
  */
 testcase.checkRemovableRootContextMenu = async function() {
-  return checkUnmountRootsContextMenu('Drive Label');
+  return checkUnmountRootsContextMenu('PARTITION_DRIVE_LABEL');
 };
 
 /**
  * Checks that the unmount command is shown in the context menu for a USB.
  */
 testcase.checkUsbContextMenu = async function() {
-  return checkUnmountRootsContextMenu('fake-usb');
+  return checkUnmountRootsContextMenu('singleUSB');
 };
 
 /**
@@ -736,7 +735,7 @@ testcase.checkPartitionContextMenu = async function() {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Mount removable volumes.
-  await sendTestMessage({name: 'mountUsbWithPartitions'});
+  await sendTestMessage({name: 'mountFakePartitions'});
 
   // Wait for partition-1 to appear in the directory tree.
   const removable = await remoteCall.waitForElement(appId, partitionQuery);

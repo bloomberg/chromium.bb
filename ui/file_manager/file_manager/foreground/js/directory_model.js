@@ -1253,18 +1253,13 @@ DirectoryModel.prototype.hasCurrentDirEntryBeenUnmounted_ = function(
     return false;
   }
 
-  if (!util.isFakeEntry(entry)) {
+  if (util.isNativeEntry(entry)) {
     return !this.volumeManager_.getVolumeInfo(entry);
   }
 
   const rootType = this.getCurrentRootType();
   for (let volume of removedVolumes) {
     if (volume.fakeEntries[rootType]) {
-      return true;
-    }
-    // The removable root is selected and one of its child partitions has been
-    // unmounted.
-    if (volume.prefixEntry === entry) {
       return true;
     }
   }
