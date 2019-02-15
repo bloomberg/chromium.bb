@@ -151,7 +151,7 @@ public class SelectionPopupControllerTest {
 
         mContentResolver = RuntimeEnvironment.application.getContentResolver();
         // To let isDeviceProvisioned() call in showSelectionMenu() return true.
-        Settings.System.putInt(mContentResolver, Settings.Global.DEVICE_PROVISIONED, 1);
+        Settings.Global.putInt(mContentResolver, Settings.Global.DEVICE_PROVISIONED, 1);
 
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mContext.getContentResolver()).thenReturn(mContentResolver);
@@ -446,7 +446,7 @@ public class SelectionPopupControllerTest {
     @Feature({"TextInput", "SmartSelection"})
     public void testBlockSelectionClientWhenUnprovisioned() {
         // Device is not provisioned.
-        Settings.System.putInt(mContentResolver, Settings.Global.DEVICE_PROVISIONED, 0);
+        Settings.Global.putInt(mContentResolver, Settings.Global.DEVICE_PROVISIONED, 0);
 
         TestSelectionClient client = Mockito.mock(TestSelectionClient.class);
         InOrder order = inOrder(mLogger, client);
