@@ -15,6 +15,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/service_directory_client.h"
+#include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
@@ -74,7 +75,9 @@ void WebContentRunner::StartComponent(
   }
 
   std::unique_ptr<WebComponent> component = std::make_unique<WebComponent>(
-      this, std::move(startup_info), std::move(controller_request));
+      this,
+      std::make_unique<base::fuchsia::StartupContext>(std::move(startup_info)),
+      std::move(controller_request));
   component->LoadUrl(url);
   RegisterComponent(std::move(component));
 }

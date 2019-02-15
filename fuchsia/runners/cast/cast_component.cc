@@ -20,31 +20,22 @@ constexpr int kBindingsFailureExitCode = 129;
 
 CastComponent::CastComponent(
     CastRunner* runner,
-    fuchsia::sys::StartupInfo startup_info,
+    std::unique_ptr<base::fuchsia::StartupContext> context,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request)
-    : WebComponent(runner,
-                   std::move(startup_info),
-                   std::move(controller_request)),
+    : WebComponent(runner, std::move(context), std::move(controller_request)),
       navigation_observer_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
-  if (!additional_services() || std::find(additional_service_names().begin(),
-                                          additional_service_names().end(),
-                                          chromium::cast::CastChannel::Name_) ==
-                                    additional_service_names().end()) {
-    LOG(ERROR) << "Component instantiated without required service: "
-               << chromium::cast::CastChannel::Name_;
-    DestroyComponent(1, fuchsia::sys::TerminationReason::UNSUPPORTED);
-    return;
-  }
-
   cast_channel_ = std::make_unique<CastChannelBindings>(
       frame(), &connector_,
-      additional_services()->ConnectToService<chromium::cast::CastChannel>(),
+      startup_context()
+          ->incoming_services()
+          ->ConnectToService<chromium::cast::CastChannel>(),
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+
   frame()->SetNavigationEventObserver(
       navigation_observer_binding_.NewBinding());
 }

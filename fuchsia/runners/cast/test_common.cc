@@ -21,7 +21,6 @@ fidl::InterfaceHandle<fuchsia::io::Directory> StartCastComponent(
     fidl::Binding<chromium::cast::CastChannel>* cast_channel_binding) {
   // Construct, bind, and populate a ServiceDirectory for publishing
   // the CastChannel service to the CastComponent.
-  auto service_list = std::make_unique<fuchsia::sys::ServiceList>();
   fidl::InterfaceHandle<fuchsia::io::Directory> directory;
   base::fuchsia::ServiceDirectory cast_channel_directory(
       directory.NewRequest());
@@ -35,21 +34,20 @@ fidl::InterfaceHandle<fuchsia::io::Directory> StartCastComponent(
       },
       base::Passed(service_connect_runloop.QuitClosure()),
       base::Unretained(cast_channel_binding)));
-  service_list->names.push_back(chromium::cast::CastChannel::Name_);
-  service_list->host_directory = directory.TakeChannel();
 
   // Configure the Runner, including a service directory channel to publish
   // services to.
   fuchsia::sys::StartupInfo startup_info;
   startup_info.launch_info.url = cast_url.as_string();
-  startup_info.launch_info.additional_services = std::move(service_list);
+
   fidl::InterfaceHandle<fuchsia::io::Directory> component_services;
   startup_info.launch_info.directory_request =
       component_services.NewRequest().TakeChannel();
 
-  // The FlatNamespace vectors must be non-null, but may be empty.
-  startup_info.flat_namespace.paths.resize(0);
-  startup_info.flat_namespace.directories.resize(0);
+  // Publish the ServiceDirectory into the FlatNamespace for CastChannel to be
+  // picked up from.
+  startup_info.flat_namespace.paths.emplace_back("/svc");
+  startup_info.flat_namespace.directories.emplace_back(directory.TakeChannel());
 
   fuchsia::sys::Package package;
   package.resolved_url = cast_url.as_string();

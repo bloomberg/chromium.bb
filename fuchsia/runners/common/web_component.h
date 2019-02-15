@@ -17,6 +17,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/service_directory_client.h"
+#include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl.h"
 #include "url/gurl.h"
@@ -32,12 +33,12 @@ class WebComponent : public fuchsia::sys::ComponentController,
                      public fuchsia::ui::app::ViewProvider {
  public:
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
-  // will be published to the service-directory specified in |startup_info|, and
-  // if |controller_request| is valid then it will be bound to this component,
-  // and the component configured to teardown if that channel closes.
+  // will be published to the service-directory specified by |startup_context|,
+  // and if |controller_request| is valid then it will be bound to this
+  // component, and the componentconfigured to teardown if that channel closes.
   // |runner| must outlive this component.
   WebComponent(WebContentRunner* runner,
-               fuchsia::sys::StartupInfo startup_info,
+               std::unique_ptr<base::fuchsia::StartupContext> startup_context,
                fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                    controller_request);
 
@@ -65,23 +66,15 @@ class WebComponent : public fuchsia::sys::ComponentController,
   virtual void DestroyComponent(int termination_exit_code,
                                 fuchsia::sys::TerminationReason reason);
 
-  // Returns the directory of incoming services provided to the component, or
-  // nullptr if none was provided.
-  base::fuchsia::ServiceDirectoryClient* additional_services() const {
-    return additional_services_.get();
-  }
-
-  // Returns the names of services available in additional_services().
-  const std::vector<std::string>& additional_service_names() const {
-    return additional_service_names_;
-  }
-
-  base::fuchsia::ServiceDirectory* service_directory() const {
-    return service_directory_.get();
+  // Returns the component's startup context (e.g. incoming services, public
+  // service directory, etc).
+  base::fuchsia::StartupContext* startup_context() const {
+    return startup_context_.get();
   }
 
  private:
   WebContentRunner* const runner_ = nullptr;
+  const std::unique_ptr<base::fuchsia::StartupContext> startup_context_;
 
   chromium::web::FramePtr frame_;
 

@@ -1421,6 +1421,8 @@ jumbo_component("base") {
       "fuchsia/service_directory_client.h",
       "fuchsia/service_provider_impl.cc",
       "fuchsia/service_provider_impl.h",
+      "fuchsia/startup_context.cc",
+      "fuchsia/startup_context.h",
       "memory/platform_shared_memory_region_fuchsia.cc",
       "memory/protected_memory_posix.cc",
       "memory/shared_memory_fuchsia.cc",
