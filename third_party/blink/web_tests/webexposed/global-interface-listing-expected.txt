@@ -10469,6 +10469,11 @@ interface XRInputSourceEvent : Event
 interface XRLayer
     attribute @@toStringTag
     method constructor
+interface XRPose
+    attribute @@toStringTag
+    getter emulatedPosition
+    getter transform
+    method constructor
 interface XRPresentationContext
     attribute @@toStringTag
     getter canvas
@@ -10546,9 +10551,8 @@ interface XRView
     getter transform
     getter viewMatrix
     method constructor
-interface XRViewerPose
+interface XRViewerPose : XRPose
     attribute @@toStringTag
-    getter transform
     getter views
     method constructor
 interface XRViewport

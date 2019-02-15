@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
-#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
 namespace blink {
@@ -14,9 +13,7 @@ namespace blink {
 XRViewerPose::XRViewerPose(
     XRSession* session,
     std::unique_ptr<TransformationMatrix> pose_model_matrix)
-    : session_(session),
-      transform_(MakeGarbageCollected<XRRigidTransform>(
-          std::move(pose_model_matrix))) {
+    : XRPose(std::move(pose_model_matrix), session->EmulatedPosition()) {
   // Can only update views with an invertible matrix.
   TransformationMatrix inv_pose_matrix = transform_->InverseMatrix();
 
@@ -30,10 +27,8 @@ XRViewerPose::XRViewerPose(
 }
 
 void XRViewerPose::Trace(blink::Visitor* visitor) {
-  visitor->Trace(session_);
-  visitor->Trace(transform_);
   visitor->Trace(views_);
-  ScriptWrappable::Trace(visitor);
+  XRPose::Trace(visitor);
 }
 
 }  // namespace blink
