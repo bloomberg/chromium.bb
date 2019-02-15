@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("mdnsresponder_warning_disables") {
+config("mdnsresponder_config") {
   cflags_c = []
+
   if (is_gcc) {
     cflags_c += [
       "-Wno-array-bounds",
@@ -11,10 +12,18 @@ config("mdnsresponder_warning_disables") {
       "-Wno-unused-value",
     ]
   }
+
   if (is_clang) {
     cflags_c += [
       "-Wno-address-of-packed-member",
       "-Wno-array-bounds",
+
+      # We need to rename some linked symbols in order to avoid multiple
+      # definitions.
+      "-DMD5_Update=MD5_Update_mDNS",
+      "-DMD5_Init=MD5_Init_mDNS",
+      "-DMD5_Final=MD5_Final_mDNS",
+      "-DMD5_Transform=MD5_Transform_mDNS",
     ]
   }
 }
@@ -35,7 +44,7 @@ source_set("core") {
   configs -= [ "//build/config:symbol_visibility_hidden" ]
   configs += [
     "//build/config:symbol_visibility_default",
-    ":mdnsresponder_warning_disables",
+    ":mdnsresponder_config",
   ]
 
   if (is_debug) {

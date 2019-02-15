@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -17,8 +17,12 @@ function check_clang_format() {
 }
 
 function check_include_guard() {
-  guard_name=$(echo "$1" | sed ':a;s/\//_/;ta;s/\.h$/_h_/')
+  # Replace all folder slashes with underscores, and add "_" suffix.
+  guard_name=${1//[\/\.]/_}_
+
+  # This to-uppercase syntax is available in bash 4.0+
   guard_name=${guard_name^^}
+
   ifndef_count=$(grep -E "^#ifndef $guard_name\$" "$1" | wc -l)
   define_count=$(grep -E "^#define $guard_name\$" "$1" | wc -l)
   endif_count=$(grep -E "^#endif  // $guard_name\$" "$1" | wc -l)
@@ -40,18 +44,26 @@ function check_gn_format() {
   fi
 }
 
+if [[ "${BASH_VERSION:0:1}" -le 4 ]]; then
+  echo "This script requires at least bash version 4.0, please upgrade!"
+  echo "Your version: " $BASH_VERSION
+  exit $fail
+fi
+
 for f in $(git diff --name-only --diff-filter=d @{u}); do
-  if echo $f | sed -n '/^third_party/q0;q1'; then
+  # Skip third party files, except our custom BUILD.gns
+  if [[ $f =~ third_party/[^\/]*/src ]]; then
     continue;
   fi
-  if echo $f | sed -n '/\.\(cc\|h\)$/q0;q1'; then
+
+  if [[ $f =~ \.(cc|h)$ ]]; then
     # clang-format check.
     check_clang_format "$f"
     # Include guard check.
-    if echo $f | sed -n '/\.h$/q0;q1'; then
+    if [[ $f =~ \.h$ ]]; then
       check_include_guard "$f"
     fi
-  elif echo $f | sed -n '/\.gni\?$/q0;q1'; then
+  elif [[ $f =~ \.gn(i)?$ ]]; then
     check_gn_format "$f"
   fi
 done
