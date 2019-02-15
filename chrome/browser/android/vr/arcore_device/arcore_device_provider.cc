@@ -20,6 +20,7 @@ void ArCoreDeviceProvider::Initialize(
     base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   if (vr::IsArCoreSupported()) {
+    DVLOG(2) << __func__ << ": ARCore is supported, creating device";
     arcore_device_ = std::make_unique<ArCoreDevice>();
 
     add_device_callback.Run(arcore_device_->GetId(),

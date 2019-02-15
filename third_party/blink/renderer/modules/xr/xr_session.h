@@ -33,6 +33,7 @@ class XRCanvasInputProvider;
 class XRSpace;
 class XRInputSourceEvent;
 class XRPresentationContext;
+class XRRay;
 class XRReferenceSpaceOptions;
 class XRRenderState;
 class XRRenderStateInit;
@@ -100,8 +101,7 @@ class XRSession final : public EventTargetWithInlineData,
   HeapVector<Member<XRInputSource>> getInputSources() const;
 
   ScriptPromise requestHitTest(ScriptState* script_state,
-                               NotShared<DOMFloat32Array> origin,
-                               NotShared<DOMFloat32Array> direction,
+                               XRRay* ray,
                                XRSpace* space);
 
   // Called by JavaScript to manually end the session.

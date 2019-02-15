@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+
 namespace blink {
 
 DOMFloat32Array* transformationMatrixToDOMFloat32Array(
@@ -21,6 +23,23 @@ DOMFloat32Array* transformationMatrixToDOMFloat32Array(
       static_cast<float>(matrix.M43()), static_cast<float>(matrix.M44())};
 
   return DOMFloat32Array::Create(array, 16);
+}
+
+std::unique_ptr<TransformationMatrix> DOMFloat32ArrayToTransformationMatrix(
+    DOMFloat32Array* m) {
+  DCHECK_EQ(m->length(), 16u);
+
+  auto* data = m->Data();
+
+  return TransformationMatrix::Create(
+      static_cast<double>(data[0]), static_cast<double>(data[1]),
+      static_cast<double>(data[2]), static_cast<double>(data[3]),
+      static_cast<double>(data[4]), static_cast<double>(data[5]),
+      static_cast<double>(data[6]), static_cast<double>(data[7]),
+      static_cast<double>(data[8]), static_cast<double>(data[9]),
+      static_cast<double>(data[10]), static_cast<double>(data[11]),
+      static_cast<double>(data[12]), static_cast<double>(data[13]),
+      static_cast<double>(data[14]), static_cast<double>(data[15]));
 }
 
 // Normalize to have length = 1.0

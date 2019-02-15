@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 214 tests; 187 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 214 tests; 188 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -132,7 +132,7 @@ PASS XRRay interface: existence and properties of interface prototype object's "
 PASS XRRay interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRRay interface: attribute origin
 PASS XRRay interface: attribute direction
-FAIL XRRay interface: attribute matrix assert_true: The prototype object must have a property "matrix" expected true got false
+PASS XRRay interface: attribute matrix
 FAIL XRPose interface: existence and properties of interface object assert_own_property: self does not have own property "XRPose" expected property "XRPose" missing
 FAIL XRPose interface object length assert_own_property: self does not have own property "XRPose" expected property "XRPose" missing
 FAIL XRPose interface object name assert_own_property: self does not have own property "XRPose" expected property "XRPose" missing

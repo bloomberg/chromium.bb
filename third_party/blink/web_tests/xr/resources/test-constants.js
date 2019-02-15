@@ -2,8 +2,11 @@
 // use assert_approx_equals with this constant instead
 const FLOAT_EPSILON = 0.001;
 
-// A valid pose matrix for  when we don't care about specific values
-const IDENTITY_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+// Identity matrix
+const IDENTITY_MATRIX = [1, 0, 0, 0,
+                         0, 1, 0, 0,
+                         0, 0, 1, 0,
+                         0, 0, 0, 1];
 
 // A valid pose matrix for  when we don't care about specific values
 const VALID_POSE_MATRIX = [0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1];

@@ -40,7 +40,7 @@ enum XREnvironmentBlendMode {
 
   [MeasureAs=XRSessionGetInputSources] FrozenArray<XRInputSource> getInputSources();
 
-  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<FrozenArray<XRHitResult>> requestHitTest(Float32Array origin, Float32Array direction, XRSpace space);
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
 
   [CallWith=ScriptState] Promise<void> end();
 };

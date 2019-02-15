@@ -171,16 +171,22 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
 }
 
 void ArCoreImpl::Pause() {
+  DVLOG(2) << __func__;
+
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
+
   ArStatus status = ArSession_pause(arcore_session_.get());
   DLOG_IF(ERROR, status != AR_SUCCESS)
       << "ArSession_pause failed: status = " << status;
 }
 
 void ArCoreImpl::Resume() {
+  DVLOG(2) << __func__;
+
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
+
   ArStatus status = ArSession_resume(arcore_session_.get());
   DLOG_IF(ERROR, status != AR_SUCCESS)
       << "ArSession_resume failed: status = " << status;
@@ -210,6 +216,10 @@ gfx::Transform ArCoreImpl::GetProjectionMatrix(float near, float far) {
 bool ArCoreImpl::RequestHitTest(
     const mojom::XRRayPtr& ray,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", direction=" << ray->direction.ToString();
+
+  DCHECK(hit_results);
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
@@ -237,6 +247,8 @@ bool ArCoreImpl::RequestHitTest(
   int arcore_hit_result_list_size = 0;
   ArHitResultList_getSize(arcore_session_.get(), arcore_hit_result_list.get(),
                           &arcore_hit_result_list_size);
+  DVLOG(2) << __func__
+           << ": arcore_hit_result_list_size=" << arcore_hit_result_list_size;
 
   // Go through the list in reverse order so the first hit we encounter is the
   // furthest.
@@ -273,6 +285,8 @@ bool ArCoreImpl::RequestHitTest(
     // Only consider hits with plane trackables
     // TODO(874985): make this configurable or re-evaluate this decision
     if (AR_TRACKABLE_PLANE != ar_trackable_type) {
+      DVLOG(2) << __func__
+               << ": hit a trackable that is not a plane, ignoring it";
       continue;
     }
 
@@ -295,8 +309,12 @@ bool ArCoreImpl::RequestHitTest(
       ArPlane* ar_plane = ArAsPlane(ar_trackable.get());
       ArPlane_isPoseInPolygon(arcore_session_.get(), ar_plane,
                               arcore_pose.get(), &in_polygon);
-      if (!in_polygon)
+      if (!in_polygon) {
+        DVLOG(2) << __func__
+                 << ": hit a trackable that is not within detected polygon, "
+                    "ignoring it";
         continue;
+      }
     }
 
     mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
@@ -307,6 +325,8 @@ bool ArCoreImpl::RequestHitTest(
     // Insert new results at head to preserver order from ArCore
     hit_results->insert(hit_results->begin(), std::move(mojo_hit));
   }
+
+  DVLOG(2) << __func__ << ": hit_results->size()=" << hit_results->size();
   return true;
 }
 

@@ -1275,7 +1275,7 @@ var XRRay =
 function XRRay() {
   var origin = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : new DOMPointReadOnly$1(0, 0, 0, 1);
   var direction = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : new DOMPointReadOnly$1(0, 0, -1, 0);
-  var transformMatrix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : new Float32Array(16);
+  var matrix = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : new Float32Array(16);
   classCallCheck(this, XRRay);
   if (!(origin instanceof DOMPointReadOnly$1)) {
     throw new Error('origin must be a DOMPointReadOnly');
@@ -1283,8 +1283,8 @@ function XRRay() {
   if (!(direction instanceof DOMPointReadOnly$1)) {
     throw new Error('direction must be a DOMPointReadOnly');
   }
-  if (!(transformMatrix instanceof Float32Array)) {
-    throw new Error('transformMatrix must be a Float32Array');
+  if (!(matrix instanceof Float32Array)) {
+    throw new Error('matrix must be a Float32Array');
   }
   Object.defineProperties(this, {
     origin: {
@@ -1295,8 +1295,8 @@ function XRRay() {
       value: direction,
       writable: false
     },
-    transformMatrix: {
-      value: transformMatrix,
+    matrix: {
+      value: matrix,
       writable: false
     }
   });

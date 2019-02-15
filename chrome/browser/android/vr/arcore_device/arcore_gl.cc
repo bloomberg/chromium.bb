@@ -272,6 +272,9 @@ void ArCoreGl::ProduceFrame(
 void ArCoreGl::RequestHitTest(
     mojom::XRRayPtr ray,
     mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", direction=" << ray->direction.ToString();
+
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
@@ -352,8 +353,7 @@ HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
 }
 
 ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
-                                        NotShared<DOMFloat32Array> origin,
-                                        NotShared<DOMFloat32Array> direction,
+                                        XRRay* ray,
                                         XRSpace* space) {
   if (ended_) {
     return ScriptPromise::RejectWithDOMException(
@@ -365,12 +365,6 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(), "No XRSpace specified."));
-  }
-
-  if (origin.View()->length() != 3 || direction.View()->length() != 3) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                           "Invalid ray"));
   }
 
   // TODO(https://crbug.com/846411): use space.
@@ -386,17 +380,17 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                              "Device does not support hit-test!"));
   }
 
-  device::mojom::blink::XRRayPtr ray = device::mojom::blink::XRRay::New();
+  device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
 
-  ray->origin = gfx::mojom::blink::Point3F::New();
-  ray->origin->x = origin.View()->Data()[0];
-  ray->origin->y = origin.View()->Data()[1];
-  ray->origin->z = origin.View()->Data()[2];
+  ray_mojo->origin = gfx::mojom::blink::Point3F::New();
+  ray_mojo->origin->x = ray->origin()->x();
+  ray_mojo->origin->y = ray->origin()->y();
+  ray_mojo->origin->z = ray->origin()->z();
 
-  ray->direction = gfx::mojom::blink::Vector3dF::New();
-  ray->direction->x = direction.View()->Data()[0];
-  ray->direction->y = direction.View()->Data()[1];
-  ray->direction->z = direction.View()->Data()[2];
+  ray_mojo->direction = gfx::mojom::blink::Vector3dF::New();
+  ray_mojo->direction->x = ray->direction()->x();
+  ray_mojo->direction->y = ray->direction()->y();
+  ray_mojo->direction->z = ray->direction()->z();
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -404,7 +398,7 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   // TODO(https://crbug.com/845520): Promise should be rejected if session
   // is deleted.
   xr_->xrEnvironmentProviderPtr()->RequestHitTest(
-      std::move(ray),
+      std::move(ray_mojo),
       WTF::Bind(&XRSession::OnHitTestResults, WrapWeakPersistent(this),
                 WrapPersistent(resolver)));
 
