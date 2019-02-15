@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -35,6 +36,13 @@ class SequencedTaskRunner;
 // This class is not thread safe and it enforces safety via a SEQUENCE_CHECKER.
 class ModuleInspector : public ModuleDatabaseObserver {
  public:
+  // Temporary feature to control whether or not modules are inspected in a
+  // background sequence. It will be used to assess the impact of this work on
+  // Chrome's overall performance.
+  // TODO(pmonette): Remove when no longer needed. See https://crbug.com/928846.
+  static constexpr base::Feature kEnableBackgroundModuleInspection = {
+      "EnableBackgroundModuleInspection", base::FEATURE_ENABLED_BY_DEFAULT};
+
   using OnModuleInspectedCallback =
       base::Callback<void(const ModuleInfoKey& module_key,
                           ModuleInspectionResult inspection_result)>;
@@ -121,6 +129,11 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // connection error occurs. This is to prevent the degenerate case where the
   // service always fails to start and the restart cycle happens infinitely.
   int connection_error_retry_count_;
+
+  // Indicates if background inspection is enabled. Generally equal to the
+  // kBackgroundModuleInspection feature state, but will be set unconditionally
+  // to true if IncreaseInspectionPriority() is called.
+  bool background_inspection_enabled_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

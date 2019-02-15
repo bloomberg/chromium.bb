@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -93,6 +92,9 @@ void WriteInspectionResultCacheOnBackgroundSequence(
 
 }  // namespace
 
+// static
+constexpr base::Feature ModuleInspector::kEnableBackgroundModuleInspection;
+
 ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
@@ -106,6 +108,8 @@ ModuleInspector::ModuleInspector(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       inspection_results_cache_read_(false),
       connection_error_retry_count_(kConnectionErrorRetryCount),
+      background_inspection_enabled_(
+          base::FeatureList::IsEnabled(kEnableBackgroundModuleInspection)),
       weak_ptr_factory_(this) {
   // Use AfterStartupTaskUtils to be notified when startup is finished.
   AfterStartupTaskUtils::PostTask(
@@ -139,6 +143,14 @@ void ModuleInspector::IncreaseInspectionPriority() {
 
   // Assume startup is finished to immediately begin inspecting modules.
   OnStartupFinished();
+
+  // Special case where this instance could be ready to start inspecting but
+  // wasn't because the background inspection feature was disabled.
+  if (!background_inspection_enabled_ && inspection_results_cache_read_ &&
+      !queue_.empty()) {
+    background_inspection_enabled_ = true;
+    StartInspectingModule();
+  }
 }
 
 bool ModuleInspector::IsIdle() {
@@ -201,6 +213,9 @@ void ModuleInspector::OnUtilWinServiceConnectionError() {
 void ModuleInspector::StartInspectingModule() {
   DCHECK(inspection_results_cache_read_);
   DCHECK(!queue_.empty());
+
+  if (!background_inspection_enabled_)
+    return;
 
   const ModuleInfoKey& module_key = queue_.front();
 
