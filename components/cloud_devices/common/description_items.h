@@ -63,7 +63,7 @@ class ListCapability {
     return base::ContainsValue(options_, option);
   }
 
-  void AddOption(const Option& option) { options_.push_back(option); }
+  void AddOption(Option&& option) { options_.emplace_back(std::move(option)); }
 
  private:
   typedef std::vector<Option> OptionVector;
@@ -81,10 +81,18 @@ template <class Option, class Traits>
 class SelectionCapability {
  public:
   SelectionCapability();
+  SelectionCapability(SelectionCapability&& other);
   ~SelectionCapability();
+
+  SelectionCapability& operator=(SelectionCapability&& other);
+
+  bool operator==(const SelectionCapability& other) const;
 
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;
+
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
 
   void Reset() {
     options_.clear();

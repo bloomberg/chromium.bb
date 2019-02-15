@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -33,8 +34,12 @@ const char kSectionPrinter[] = "printer";
 
 const char kKeyCustomDisplayName[] = "custom_display_name";
 const char kKeyContentType[] = "content_type";
+const char kKeyDisplayName[] = "display_name";
+const char kKeyId[] = "id";
 const char kKeyName[] = "name";
 const char kKeyType[] = "type";
+const char kKeyValue[] = "value";
+const char kKeyValueType[] = "value_type";
 const char kKeyVendorId[] = "vendor_id";
 
 // extern is required to be used in templates.
@@ -51,6 +56,10 @@ extern const char kOptionPageOrientation[] = "page_orientation";
 extern const char kOptionPageRange[] = "page_range";
 extern const char kOptionReverse[] = "reverse_order";
 extern const char kOptionPwgRasterConfig[] = "pwg_raster_config";
+extern const char kOptionRangeCapability[] = "range_cap";
+extern const char kOptionSelectCapability[] = "select_cap";
+extern const char kOptionTypedValueCapability[] = "typed_value_cap";
+extern const char kOptionVendorCapability[] = "vendor_capability";
 
 const char kMarginBottom[] = "bottom_microns";
 const char kMarginLeft[] = "left_microns";
@@ -72,6 +81,22 @@ const char kPwgRasterDocumentTypeSupported[] = "document_type_supported";
 const char kPwgRasterDocumentSheetBack[] = "document_sheet_back";
 const char kPwgRasterReverseOrderStreaming[] = "reverse_order_streaming";
 const char kPwgRasterRotateAllPages[] = "rotate_all_pages";
+
+const char kVendorCapabilityMinValue[] = "min";
+const char kVendorCapabilityMaxValue[] = "max";
+const char kVendorCapabilityDefaultValue[] = "default";
+
+const char kTypeRangeVendorCapabilityFloat[] = "FLOAT";
+const char kTypeRangeVendorCapabilityInteger[] = "INTEGER";
+
+const char kTypeTypedValueVendorCapabilityBoolean[] = "BOOLEAN";
+const char kTypeTypedValueVendorCapabilityFloat[] = "FLOAT";
+const char kTypeTypedValueVendorCapabilityInteger[] = "INTEGER";
+const char kTypeTypedValueVendorCapabilityString[] = "STRING";
+
+const char kTypeVendorCapabilityRange[] = "RANGE";
+const char kTypeVendorCapabilitySelect[] = "SELECT";
+const char kTypeVendorCapabilityTypedValue[] = "TYPED_VALUE";
 
 const char kTypeColorColor[] = "STANDARD_COLOR";
 const char kTypeColorMonochrome[] = "STANDARD_MONOCHROME";
@@ -104,6 +129,38 @@ const char kTypeDocumentSheetBackNormal[] = "NORMAL";
 const char kTypeDocumentSheetBackRotated[] = "ROTATED";
 const char kTypeDocumentSheetBackManualTumble[] = "MANUAL_TUMBLE";
 const char kTypeDocumentSheetBackFlipped[] = "FLIPPED";
+
+const struct RangeVendorCapabilityTypeNames {
+  RangeVendorCapability::ValueType id;
+  const char* json_name;
+} kRangeVendorCapabilityTypeNames[] = {
+    {RangeVendorCapability::ValueType::FLOAT, kTypeRangeVendorCapabilityFloat},
+    {RangeVendorCapability::ValueType::INTEGER,
+     kTypeRangeVendorCapabilityInteger},
+};
+
+const struct TypedValueVendorCapabilityTypeNames {
+  TypedValueVendorCapability::ValueType id;
+  const char* json_name;
+} kTypedValueVendorCapabilityTypeNames[] = {
+    {TypedValueVendorCapability::ValueType::BOOLEAN,
+     kTypeTypedValueVendorCapabilityBoolean},
+    {TypedValueVendorCapability::ValueType::FLOAT,
+     kTypeTypedValueVendorCapabilityFloat},
+    {TypedValueVendorCapability::ValueType::INTEGER,
+     kTypeTypedValueVendorCapabilityInteger},
+    {TypedValueVendorCapability::ValueType::STRING,
+     kTypeTypedValueVendorCapabilityString},
+};
+
+const struct VendorCapabilityTypeNames {
+  VendorCapability::Type id;
+  const char* json_name;
+} kVendorCapabilityTypeNames[] = {
+    {VendorCapability::Type::RANGE, kTypeVendorCapabilityRange},
+    {VendorCapability::Type::SELECT, kTypeVendorCapabilitySelect},
+    {VendorCapability::Type::TYPED_VALUE, kTypeVendorCapabilityTypedValue},
+};
 
 const struct ColorNames {
   ColorType id;
@@ -418,6 +475,336 @@ PwgRasterConfig::PwgRasterConfig()
 
 PwgRasterConfig::~PwgRasterConfig() {}
 
+RangeVendorCapability::RangeVendorCapability() = default;
+
+RangeVendorCapability::RangeVendorCapability(ValueType value_type,
+                                             const std::string& min_value,
+                                             const std::string& max_value)
+    : RangeVendorCapability(value_type,
+                            min_value,
+                            max_value,
+                            /*default_value=*/"") {}
+
+RangeVendorCapability::RangeVendorCapability(ValueType value_type,
+                                             const std::string& min_value,
+                                             const std::string& max_value,
+                                             const std::string& default_value)
+    : value_type_(value_type),
+      min_value_(min_value),
+      max_value_(max_value),
+      default_value_(default_value) {}
+
+RangeVendorCapability::RangeVendorCapability(RangeVendorCapability&& other) =
+    default;
+
+RangeVendorCapability::~RangeVendorCapability() = default;
+
+RangeVendorCapability& RangeVendorCapability::operator=(
+    RangeVendorCapability&& other) = default;
+
+bool RangeVendorCapability::operator==(
+    const RangeVendorCapability& other) const {
+  return value_type_ == other.value_type_ && min_value_ == other.min_value_ &&
+         max_value_ == other.max_value_ &&
+         default_value_ == other.default_value_;
+}
+
+bool RangeVendorCapability::IsValid() const {
+  if (min_value_.empty() || max_value_.empty())
+    return false;
+  switch (value_type_) {
+    case ValueType::FLOAT: {
+      double min_value;
+      double max_value;
+      if (!base::StringToDouble(min_value_, &min_value) ||
+          !base::StringToDouble(max_value_, &max_value) ||
+          min_value > max_value) {
+        return false;
+      }
+      if (!default_value_.empty()) {
+        double default_value;
+        if (!base::StringToDouble(default_value_, &default_value) ||
+            default_value < min_value || default_value > max_value) {
+          return false;
+        }
+      }
+      return true;
+    }
+    case ValueType::INTEGER: {
+      int min_value;
+      int max_value;
+      if (!base::StringToInt(min_value_, &min_value) ||
+          !base::StringToInt(max_value_, &max_value) || min_value > max_value) {
+        return false;
+      }
+      if (!default_value_.empty()) {
+        int default_value;
+        if (!base::StringToInt(default_value_, &default_value) ||
+            default_value < min_value || default_value > max_value) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  NOTREACHED() << "Bad range capability value type";
+  return false;
+}
+
+bool RangeVendorCapability::LoadFrom(const base::Value& dict) {
+  const std::string* value_type_str = dict.FindStringKey(kKeyValueType);
+  if (!value_type_str || !TypeFromString(kRangeVendorCapabilityTypeNames,
+                                         *value_type_str, &value_type_)) {
+    return false;
+  }
+  const std::string* min_value_str =
+      dict.FindStringKey(kVendorCapabilityMinValue);
+  if (!min_value_str)
+    return false;
+  min_value_ = *min_value_str;
+  const std::string* max_value_str =
+      dict.FindStringKey(kVendorCapabilityMaxValue);
+  if (!max_value_str)
+    return false;
+  max_value_ = *max_value_str;
+  const std::string* default_value_str =
+      dict.FindStringKey(kVendorCapabilityDefaultValue);
+  if (default_value_str)
+    default_value_ = *default_value_str;
+  return IsValid();
+}
+
+void RangeVendorCapability::SaveTo(base::Value* dict) const {
+  DCHECK(IsValid());
+  dict->SetKey(
+      kKeyValueType,
+      base::Value(TypeToString(kRangeVendorCapabilityTypeNames, value_type_)));
+  dict->SetKey(kVendorCapabilityMinValue, base::Value(min_value_));
+  dict->SetKey(kVendorCapabilityMaxValue, base::Value(max_value_));
+  if (!default_value_.empty())
+    dict->SetKey(kVendorCapabilityDefaultValue, base::Value(default_value_));
+}
+
+SelectVendorCapabilityOption::SelectVendorCapabilityOption() = default;
+
+SelectVendorCapabilityOption::SelectVendorCapabilityOption(
+    const std::string& value,
+    const std::string& display_name)
+    : value(value), display_name(display_name) {}
+
+SelectVendorCapabilityOption::~SelectVendorCapabilityOption() = default;
+
+bool SelectVendorCapabilityOption::operator==(
+    const SelectVendorCapabilityOption& other) const {
+  return value == other.value && display_name == other.display_name;
+}
+
+bool SelectVendorCapabilityOption::IsValid() const {
+  return !value.empty() && !display_name.empty();
+}
+
+TypedValueVendorCapability::TypedValueVendorCapability() = default;
+
+TypedValueVendorCapability::TypedValueVendorCapability(ValueType value_type)
+    : TypedValueVendorCapability(value_type, /*default_value=*/"") {}
+
+TypedValueVendorCapability::TypedValueVendorCapability(
+    ValueType value_type,
+    const std::string& default_value)
+    : value_type_(value_type), default_value_(default_value) {}
+
+TypedValueVendorCapability::TypedValueVendorCapability(
+    TypedValueVendorCapability&& other) = default;
+
+TypedValueVendorCapability::~TypedValueVendorCapability() = default;
+
+TypedValueVendorCapability& TypedValueVendorCapability::operator=(
+    TypedValueVendorCapability&& other) = default;
+
+bool TypedValueVendorCapability::operator==(
+    const TypedValueVendorCapability& other) const {
+  return value_type_ == other.value_type_ &&
+         default_value_ == other.default_value_;
+}
+
+bool TypedValueVendorCapability::IsValid() const {
+  if (default_value_.empty())
+    return true;
+  switch (value_type_) {
+    case ValueType::BOOLEAN:
+      return default_value_ == "true" || default_value_ == "false";
+    case ValueType::FLOAT: {
+      double value;
+      return base::StringToDouble(default_value_, &value);
+    }
+    case ValueType::INTEGER: {
+      int value;
+      return base::StringToInt(default_value_, &value);
+    }
+    case ValueType::STRING:
+      return true;
+  }
+  NOTREACHED() << "Bad typed value capability value type";
+  return false;
+}
+
+bool TypedValueVendorCapability::LoadFrom(const base::Value& dict) {
+  const std::string* value_type_str = dict.FindStringKey(kKeyValueType);
+  if (!value_type_str || !TypeFromString(kTypedValueVendorCapabilityTypeNames,
+                                         *value_type_str, &value_type_)) {
+    return false;
+  }
+  const std::string* default_value_str =
+      dict.FindStringKey(kVendorCapabilityDefaultValue);
+  if (default_value_str)
+    default_value_ = *default_value_str;
+  return IsValid();
+}
+
+void TypedValueVendorCapability::SaveTo(base::Value* dict) const {
+  DCHECK(IsValid());
+  dict->SetKey(kKeyValueType,
+               base::Value(TypeToString(kTypedValueVendorCapabilityTypeNames,
+                                        value_type_)));
+  if (!default_value_.empty())
+    dict->SetKey(kVendorCapabilityDefaultValue, base::Value(default_value_));
+}
+
+VendorCapability::VendorCapability() = default;
+
+VendorCapability::VendorCapability(Type type,
+                                   const std::string& id,
+                                   const std::string& display_name,
+                                   RangeVendorCapability range_capability)
+    : type_(type),
+      id_(id),
+      display_name_(display_name),
+      range_capability_(std::move(range_capability)) {}
+
+VendorCapability::VendorCapability(Type type,
+                                   const std::string& id,
+                                   const std::string& display_name,
+                                   SelectVendorCapability select_capability)
+    : type_(type),
+      id_(id),
+      display_name_(display_name),
+      select_capability_(std::move(select_capability)) {}
+
+VendorCapability::VendorCapability(
+    Type type,
+    const std::string& id,
+    const std::string& display_name,
+    TypedValueVendorCapability typed_value_capability)
+    : type_(type),
+      id_(id),
+      display_name_(display_name),
+      typed_value_capability_(std::move(typed_value_capability)) {}
+
+VendorCapability::VendorCapability(VendorCapability&& other) = default;
+
+VendorCapability::~VendorCapability() = default;
+
+bool VendorCapability::operator==(const VendorCapability& other) const {
+  return type_ == other.type_ && id_ == other.id_ &&
+         display_name_ == other.display_name_ &&
+         range_capability_ == other.range_capability_ &&
+         select_capability_ == other.select_capability_ &&
+         typed_value_capability_ == other.typed_value_capability_;
+}
+
+bool VendorCapability::IsValid() const {
+  if (id_.empty() || display_name_.empty())
+    return false;
+  switch (type_) {
+    case Type::RANGE:
+      return !select_capability_ && !typed_value_capability_ &&
+             range_capability_ && range_capability_.value().IsValid();
+    case Type::SELECT:
+      return !range_capability_ && !typed_value_capability_ &&
+             select_capability_ && select_capability_.value().IsValid();
+    case Type::TYPED_VALUE:
+      return !range_capability_ && !select_capability_ &&
+             typed_value_capability_ &&
+             typed_value_capability_.value().IsValid();
+  }
+  NOTREACHED() << "Bad vendor capability type";
+  return false;
+}
+
+bool VendorCapability::LoadFrom(const base::Value& dict) {
+  const std::string* type_str = dict.FindStringKey(kKeyType);
+  if (!type_str ||
+      !TypeFromString(kVendorCapabilityTypeNames, *type_str, &type_)) {
+    return false;
+  }
+  const std::string* id_str = dict.FindStringKey(kKeyId);
+  if (!id_str)
+    return false;
+  id_ = *id_str;
+  const std::string* display_name_str = dict.FindStringKey(kKeyDisplayName);
+  if (!display_name_str)
+    return false;
+  display_name_ = *display_name_str;
+
+  const base::Value* range_capability_value =
+      dict.FindKey(kOptionRangeCapability);
+  if (range_capability_value) {
+    if (!range_capability_value->is_dict())
+      return false;
+    range_capability_ = RangeVendorCapability();
+    if (!range_capability_.value().LoadFrom(*range_capability_value))
+      return false;
+  }
+
+  const base::Value* select_capability_value =
+      dict.FindKey(kOptionSelectCapability);
+  if (select_capability_value) {
+    if (!select_capability_value->is_dict())
+      return false;
+    select_capability_ = SelectVendorCapability();
+    if (!select_capability_.value().LoadFrom(*select_capability_value))
+      return false;
+  }
+
+  const base::Value* typed_value_capability_value =
+      dict.FindKey(kOptionTypedValueCapability);
+  if (typed_value_capability_value) {
+    if (!typed_value_capability_value->is_dict())
+      return false;
+    typed_value_capability_ = TypedValueVendorCapability();
+    if (!typed_value_capability_.value().LoadFrom(
+            *typed_value_capability_value)) {
+      return false;
+    }
+  }
+
+  return IsValid();
+}
+
+void VendorCapability::SaveTo(base::Value* dict) const {
+  DCHECK(IsValid());
+  dict->SetKey(kKeyType,
+               base::Value(TypeToString(kVendorCapabilityTypeNames, type_)));
+  dict->SetKey(kKeyId, base::Value(id_));
+  dict->SetKey(kKeyDisplayName, base::Value(display_name_));
+
+  if (range_capability_) {
+    base::Value range_capability_value(base::Value::Type::DICTIONARY);
+    range_capability_.value().SaveTo(&range_capability_value);
+    dict->SetKey(kOptionRangeCapability, std::move(range_capability_value));
+  } else if (select_capability_) {
+    base::Value select_capability_value(base::Value::Type::DICTIONARY);
+    select_capability_.value().SaveTo(&select_capability_value);
+    dict->SetKey(kOptionSelectCapability, std::move(select_capability_value));
+  } else {
+    DCHECK(typed_value_capability_);
+    base::Value typed_value_capability_value(base::Value::Type::DICTIONARY);
+    typed_value_capability_.value().SaveTo(&typed_value_capability_value);
+    dict->SetKey(kOptionTypedValueCapability,
+                 std::move(typed_value_capability_value));
+  }
+}
+
 Color::Color() : type(ColorType::AUTO_COLOR) {}
 
 Color::Color(ColorType type) : type(type) {
@@ -655,6 +1042,48 @@ class PwgRasterConfigTraits : public NoValueValidation,
       dict->SetKey(kPwgRasterRotateAllPages,
                    base::Value(option.rotate_all_pages));
     }
+  }
+};
+
+class VendorCapabilityTraits : public ItemsTraits<kOptionVendorCapability> {
+ public:
+  static bool IsValid(const VendorCapability& option) {
+    return option.IsValid();
+  }
+
+  static bool Load(const base::Value& dict, VendorCapability* option) {
+    return option->LoadFrom(dict);
+  }
+
+  static void Save(const VendorCapability& option, base::Value* dict) {
+    option.SaveTo(dict);
+  }
+};
+
+class SelectVendorCapabilityTraits
+    : public ItemsTraits<kOptionSelectCapability> {
+ public:
+  static bool IsValid(const SelectVendorCapabilityOption& option) {
+    return option.IsValid();
+  }
+
+  static bool Load(const base::Value& dict,
+                   SelectVendorCapabilityOption* option) {
+    const std::string* value = dict.FindStringKey(kKeyValue);
+    if (!value)
+      return false;
+    option->value = *value;
+    const std::string* display_name = dict.FindStringKey(kKeyDisplayName);
+    if (!display_name)
+      return false;
+    option->display_name = *display_name;
+    return true;
+  }
+
+  static void Save(const SelectVendorCapabilityOption& option,
+                   base::Value* dict) {
+    dict->SetKey(kKeyValue, base::Value(option.value));
+    dict->SetKey(kKeyDisplayName, base::Value(option.display_name));
   }
 };
 
@@ -926,6 +1355,9 @@ using namespace printer;
 
 template class ListCapability<ContentType, ContentTypeTraits>;
 template class ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>;
+template class ListCapability<VendorCapability, VendorCapabilityTraits>;
+template class SelectionCapability<SelectVendorCapabilityOption,
+                                   SelectVendorCapabilityTraits>;
 template class SelectionCapability<Color, ColorTraits>;
 template class SelectionCapability<DuplexType, DuplexTraits>;
 template class SelectionCapability<OrientationType, OrientationTraits>;
