@@ -1015,10 +1015,6 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
        element != password_info->password_field))
     return true;
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "PasswordManager.AutocompletePopupSuppressedByGeneration",
-      generation_popup_showing);
-
   if (generation_popup_showing)
     return false;
 
