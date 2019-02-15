@@ -263,5 +263,8 @@ class CBORTokenizer {
   cbor::MajorType token_start_type_;
   uint64_t token_start_internal_value_;
 };
+
+void DumpCBOR(span<uint8_t> cbor);
+
 }  // namespace inspector_protocol
 #endif  // INSPECTOR_PROTOCOL_ENCODING_CBOR_H_

@@ -139,6 +139,7 @@ std::unique_ptr<Value> parseValue(
       return nullptr;
     case CBORTokenTag::BINARY: {
       span<uint8_t> payload = tokenizer->GetBinary();
+      tokenizer->Next();
       return BinaryValue::create(Binary::fromSpan(payload.data(), payload.size()));
     }
     case CBORTokenTag::MAP_START:
@@ -169,6 +170,7 @@ std::unique_ptr<DictionaryValue> parseMap(
     if (tokenizer->TokenTag() == CBORTokenTag::STRING8) {
       span<uint8_t> key_span = tokenizer->GetString8();
       key = StringUtil::fromUTF8(key_span.data(), key_span.size());
+      tokenizer->Next();
     } else if (tokenizer->TokenTag() == CBORTokenTag::STRING16) {
       return nullptr;  // STRING16 not supported yet.
     } else {
@@ -178,6 +180,7 @@ std::unique_ptr<DictionaryValue> parseMap(
     // Parse value.
     auto value = parseValue(stack_depth, tokenizer);
     if (!value) return nullptr;
+    dict->setValue(key, std::move(value));
   }
   tokenizer->Next();
   return dict;
