@@ -588,6 +588,27 @@ void AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcStateFunction::~AutotestPrivateGetArcStateFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetArcStateFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetArcStateFunction";
+
+  api::autotest_private::ArcState arc_state;
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+
+  if (!arc::IsArcAllowedForProfile(profile))
+    return RespondNow(Error("ARC is not available for the current user"));
+
+  arc_state.provisioned = arc::IsArcProvisioned(profile);
+  arc_state.tos_needed = arc::IsArcTermsOfServiceNegotiationNeeded(profile);
+  return RespondNow(OneArgument(arc_state.ToValue()));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateGetPlayStoreStateFunction
 ///////////////////////////////////////////////////////////////////////////////
 
