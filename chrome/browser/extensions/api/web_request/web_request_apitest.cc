@@ -90,6 +90,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -285,6 +286,10 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       bool wait_for_extension_loaded_in_incognito,
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
+
+  // Ensures requests made by the |worker_script_name| service worker can be
+  // intercepted by extensions.
+  void RunServiceWorkerFetchTest(const std::string& worker_script_name);
 
   network::mojom::URLLoaderFactoryPtr CreateURLLoaderFactory() {
     network::mojom::URLLoaderFactoryParamsPtr params =
@@ -726,6 +731,48 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
       "window.domAutomationController.send(document.body.textContent)",
       &body));
   EXPECT_EQ(exptected_content_incognito_window, body);
+}
+
+void ExtensionWebRequestApiTest::RunServiceWorkerFetchTest(
+    const std::string& worker_script_name) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request Service Worker Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest", "webRequestBlocking"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
+          details.requestHeaders.push({name: 'foo', value: 'bar'});
+          return {requestHeaders: details.requestHeaders};
+        }, {urls: ['*://*/echoheader*']}, ['blocking', 'requestHeaders']);
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Register the |worker_script_name| as a service worker.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "register('" + worker_script_name + "');"));
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/service_worker/fetch_from_page.html")));
+  // Ensure the extension was able to intercept the service worker request and
+  // modify the request headers.
+  EXPECT_EQ("bar", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                          "fetch_from_page('/echoheader?foo');"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
@@ -2451,6 +2498,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RemoveHeaderUMAs) {
       WebRequestSpecialRequestHeaderModification::kNone, 1);
   tester.ExpectUniqueSample(
       "Extensions.WebRequest.SetCookieResponseHeaderChanged", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFetch) {
+  RunServiceWorkerFetchTest("fetch_event_respond_with_fetch.js");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFallback) {
+  RunServiceWorkerFetchTest("fetch_event_pass_through.js");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       ServiceWorkerNoFetchHandler) {
+  RunServiceWorkerFetchTest("empty.js");
 }
 
 }  // namespace extensions
