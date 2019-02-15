@@ -107,10 +107,6 @@ bool CheckStudyLocale(const Study::Filter& filter, const std::string& locale) {
 }
 
 bool CheckStudyPlatform(const Study::Filter& filter, Study::Platform platform) {
-  // An empty platform list matches all platforms.
-  if (filter.platform_size() == 0)
-    return true;
-
   for (int i = 0; i < filter.platform_size(); ++i) {
     if (filter.platform(i) == platform)
       return true;
