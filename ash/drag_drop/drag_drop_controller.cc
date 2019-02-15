@@ -524,8 +524,8 @@ void DragDropController::AnimationEnded(const gfx::Animation* animation) {
     } else {
       // See comment about this in OnGestureEvent().
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&DragDropController::ForwardPendingLongTap,
-                                weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&DragDropController::ForwardPendingLongTap,
+                                    weak_factory_.GetWeakPtr()));
     }
   }
 }

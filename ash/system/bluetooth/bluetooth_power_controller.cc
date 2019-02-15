@@ -182,8 +182,9 @@ void BluetoothPowerController::AdapterPresentChanged(
     // it has "initialized" signal in the future (http://crbug.com/765390).
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&BluetoothPowerController::TriggerRunPendingBluetoothTasks,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &BluetoothPowerController::TriggerRunPendingBluetoothTasks,
+            weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kBluetoothInitializationDelay));
   }
 }

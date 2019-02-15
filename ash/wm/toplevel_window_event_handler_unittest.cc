@@ -138,8 +138,9 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
       ::wm::GetWindowMoveClient(w1->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
-                 base::Unretained(window_state), base::Unretained(w1.get())));
+      base::BindOnce(&ContinueAndCompleteDrag, base::Unretained(&generator),
+                     base::Unretained(window_state),
+                     base::Unretained(w1.get())));
   EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
                                      ::wm::WINDOW_MOVE_SOURCE_MOUSE));
@@ -156,8 +157,9 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
   generator.PressLeftButton();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
-                 base::Unretained(window_state), base::Unretained(w1.get())));
+      base::BindOnce(&ContinueAndCompleteDrag, base::Unretained(&generator),
+                     base::Unretained(window_state),
+                     base::Unretained(w1.get())));
   EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
                                      ::wm::WINDOW_MOVE_SOURCE_MOUSE));
@@ -983,9 +985,9 @@ TEST_F(ToplevelWindowEventHandlerTest, CaptureLossAfterMouseRelease) {
   ::wm::WindowMoveClient* move_client =
       ::wm::GetWindowMoveClient(window->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&SendMouseReleaseAndReleaseCapture,
-                 base::Unretained(&generator), base::Unretained(window.get())));
+      FROM_HERE, base::BindOnce(&SendMouseReleaseAndReleaseCapture,
+                                base::Unretained(&generator),
+                                base::Unretained(window.get())));
   EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
                                      ::wm::WINDOW_MOVE_SOURCE_MOUSE));
@@ -1010,8 +1012,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
   ::wm::WindowMoveClient* move_client =
       ::wm::GetWindowMoveClient(window->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CheckHasCaptureAndReleaseCapture,
-                            base::Unretained(window.get())));
+      FROM_HERE, base::BindOnce(&CheckHasCaptureAndReleaseCapture,
+                                base::Unretained(window.get())));
   EXPECT_EQ(::wm::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
                                      ::wm::WINDOW_MOVE_SOURCE_TOUCH));
