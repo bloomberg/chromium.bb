@@ -2218,11 +2218,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "gesture-editing",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "gesture-typing",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

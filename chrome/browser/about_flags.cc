@@ -1708,9 +1708,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"gesture-typing", flag_descriptions::kGestureTypingName,
      flag_descriptions::kGestureTypingDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},
-    {"gesture-editing", flag_descriptions::kGestureEditingName,
-     flag_descriptions::kGestureEditingDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureEditing)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",

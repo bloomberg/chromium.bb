@@ -2015,9 +2015,6 @@ extern const char kFirstRunUiTransitionsDescription[];
 extern const char kForceEnableStylusToolsName[];
 extern const char kForceEnableStylusToolsDescription[];
 
-extern const char kGestureEditingName[];
-extern const char kGestureEditingDescription[];
-
 extern const char kGestureTypingName[];
 extern const char kGestureTypingDescription[];
 
