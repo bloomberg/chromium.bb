@@ -52,6 +52,7 @@ class ArcPictureInPictureWindowControllerImpl
   void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   void SkipAd() override;
   void NextTrack() override;
+  void PreviousTrack() override;
 
  private:
   arc::ArcPipBridge* const arc_pip_bridge_;

@@ -61,6 +61,7 @@ class OverlayWindow {
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
   virtual void SetSkipAdButtonVisibility(bool is_visible) = 0;
   virtual void SetNextTrackButtonVisibility(bool is_visible) = 0;
+  virtual void SetPreviousTrackButtonVisibility(bool is_visible) = 0;
 
   // Retrieves the ui::Layers corresponding to the window and video.
   virtual ui::Layer* GetWindowBackgroundLayer() = 0;

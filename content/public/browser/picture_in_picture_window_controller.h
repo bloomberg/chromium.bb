@@ -73,6 +73,9 @@ class PictureInPictureWindowController {
   // Called when the user interacts with the "Next Track" control.
   virtual void NextTrack() = 0;
 
+  // Called when the user interacts with the "Previous Track" control.
+  virtual void PreviousTrack() = 0;
+
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this
   // call.

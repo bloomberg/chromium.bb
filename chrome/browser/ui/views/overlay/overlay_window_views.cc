@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/views/overlay/back_to_tab_image_button.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
-#include "chrome/browser/ui/views/overlay/next_track_image_button.h"
 #include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/browser/ui/views/overlay/skip_ad_label_button.h"
+#include "chrome/browser/ui/views/overlay/track_image_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
@@ -128,7 +128,8 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
          window->GetFirstCustomControlsBounds().Contains(point) ||
          window->GetSecondCustomControlsBounds().Contains(point) ||
          window->GetPlayPauseControlsBounds().Contains(point) ||
-         window->GetNextTrackControlsBounds().Contains(point))) {
+         window->GetNextTrackControlsBounds().Contains(point) ||
+         window->GetPreviousTrackControlsBounds().Contains(point))) {
       return window_component;
     }
 
@@ -202,7 +203,16 @@ OverlayWindowViews::OverlayWindowViews(
       resize_handle_view_(new views::ResizeHandleButton(this)),
 #endif
       play_pause_controls_view_(new views::PlaybackImageButton(this)),
-      next_track_controls_view_(new views::NextTrackImageButton(this)),
+      next_track_controls_view_(new views::TrackImageButton(
+          this,
+          vector_icons::kMediaNextTrackIcon,
+          l10n_util::GetStringUTF16(
+              IDS_PICTURE_IN_PICTURE_NEXT_TRACK_CONTROL_ACCESSIBLE_TEXT))),
+      previous_track_controls_view_(new views::TrackImageButton(
+          this,
+          vector_icons::kMediaPreviousTrackIcon,
+          l10n_util::GetStringUTF16(
+              IDS_PICTURE_IN_PICTURE_PREVIOUS_TRACK_CONTROL_ACCESSIBLE_TEXT))),
       hide_controls_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
@@ -386,6 +396,9 @@ void OverlayWindowViews::SetUpViews() {
   // views::View that holds the next-track image button. ----------------------
   next_track_controls_view_->set_owned_by_client();
 
+  // views::View that holds the previous-track image button. ------------------
+  previous_track_controls_view_->set_owned_by_client();
+
 #if defined(OS_CHROMEOS)
   // views::View that shows the affordance that the window can be resized. ----
   resize_handle_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
@@ -397,6 +410,7 @@ void OverlayWindowViews::SetUpViews() {
   // Set up view::Views hierarchy. --------------------------------------------
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
   controls_parent_view_->AddChildView(next_track_controls_view_.get());
+  controls_parent_view_->AddChildView(previous_track_controls_view_.get());
   GetContentsView()->AddChildView(controls_scrim_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
   GetContentsView()->AddChildView(skip_ad_controls_view_.get());
@@ -442,6 +456,8 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
                                         !always_hide_play_pause_button_);
   next_track_controls_view_->ToggleVisibility(is_visible &&
                                               show_next_track_button_);
+  previous_track_controls_view_->ToggleVisibility(is_visible &&
+                                                  show_previous_track_button_);
   GetControlsScrimLayer()->SetVisible(is_visible);
   GetControlsParentLayer()->SetVisible(is_visible);
   GetBackToTabControlsLayer()->SetVisible(is_visible);
@@ -476,13 +492,20 @@ void OverlayWindowViews::UpdateControlsBounds() {
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
 
   // FIXME: Merge with UpdateControlsPositions when custom controls are removed.
-  if (show_next_track_button_) {
+  if (show_next_track_button_ || show_previous_track_button_) {
     int mid_window_x = GetBounds().size().width() / 2;
     play_pause_controls_view_->SetBoundsRect(CalculateControlsBounds(
         mid_window_x - button_size_.width() / 2, button_size_));
-    next_track_controls_view_->SetBoundsRect(CalculateControlsBounds(
-        mid_window_x + button_size_.width() / 2 + kControlButtonMargin,
-        next_track_controls_view_->GetLastVisibleSize()));
+    if (show_next_track_button_)
+      next_track_controls_view_->SetBoundsRect(CalculateControlsBounds(
+          mid_window_x + button_size_.width() / 2 + kControlButtonMargin,
+          next_track_controls_view_->GetLastVisibleSize()));
+    if (show_previous_track_button_)
+      previous_track_controls_view_->SetBoundsRect(CalculateControlsBounds(
+          mid_window_x - button_size_.width() / 2 -
+              previous_track_controls_view_->GetLastVisibleSize().width() -
+              kControlButtonMargin,
+          previous_track_controls_view_->GetLastVisibleSize()));
   } else {
     UpdateControlsPositions();
   }
@@ -534,6 +557,7 @@ void OverlayWindowViews::UpdateButtonControlsSize() {
   gfx::Size track_button_size =
       gfx::ScaleToRoundedSize(button_size_, kTrackButtonSizeScale);
   next_track_controls_view_->SetSize(track_button_size);
+  previous_track_controls_view_->SetSize(track_button_size);
 }
 
 void OverlayWindowViews::CreateCustomControl(
@@ -680,6 +704,14 @@ void OverlayWindowViews::SetNextTrackButtonVisibility(bool is_visible) {
     return;
 
   show_next_track_button_ = is_visible;
+  UpdateControlsBounds();
+}
+
+void OverlayWindowViews::SetPreviousTrackButtonVisibility(bool is_visible) {
+  if (show_previous_track_button_ == is_visible)
+    return;
+
+  show_previous_track_button_ = is_visible;
   UpdateControlsBounds();
 }
 
@@ -871,6 +903,9 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   } else if (GetNextTrackControlsBounds().Contains(event->location())) {
     controller_->NextTrack();
     event->SetHandled();
+  } else if (GetPreviousTrackControlsBounds().Contains(event->location())) {
+    controller_->PreviousTrack();
+    event->SetHandled();
   }
 }
 
@@ -891,6 +926,9 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
 
   if (sender == next_track_controls_view_.get())
     controller_->NextTrack();
+
+  if (sender == previous_track_controls_view_.get())
+    controller_->PreviousTrack();
 
   if (sender == first_custom_controls_view_.get())
     controller_->CustomControlPressed(first_custom_controls_view_->id());
@@ -921,6 +959,10 @@ gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
 
 gfx::Rect OverlayWindowViews::GetNextTrackControlsBounds() {
   return next_track_controls_view_->GetMirroredBounds();
+}
+
+gfx::Rect OverlayWindowViews::GetPreviousTrackControlsBounds() {
+  return previous_track_controls_view_->GetMirroredBounds();
 }
 
 gfx::Rect OverlayWindowViews::GetFirstCustomControlsBounds() {
@@ -976,9 +1018,14 @@ OverlayWindowViews::play_pause_controls_view_for_testing() const {
   return play_pause_controls_view_.get();
 }
 
-views::NextTrackImageButton*
+views::TrackImageButton*
 OverlayWindowViews::next_track_controls_view_for_testing() const {
   return next_track_controls_view_.get();
+}
+
+views::TrackImageButton*
+OverlayWindowViews::previous_track_controls_view_for_testing() const {
+  return previous_track_controls_view_.get();
 }
 
 gfx::Point OverlayWindowViews::back_to_tab_image_position_for_testing() const {

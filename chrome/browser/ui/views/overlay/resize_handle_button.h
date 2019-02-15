@@ -13,7 +13,7 @@ namespace views {
 // An image button representing a white resize handle affordance.
 class ResizeHandleButton : public views::ImageButton {
  public:
-  explicit ResizeHandleButton(ButtonListener* listener);
+  explicit ResizeHandleButton(ButtonListener*);
   ~ResizeHandleButton() override;
 
   void SetPosition(const gfx::Size& size,

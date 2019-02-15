@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/overlay/next_track_image_button.h"
+#include "chrome/browser/ui/views/overlay/track_image_button.h"
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
@@ -14,43 +14,40 @@
 
 namespace {
 
-SkColor kNextTrackIconColor = SK_ColorWHITE;
+SkColor kTrackIconColor = SK_ColorWHITE;
 
 }  // namespace
 
 namespace views {
 
-NextTrackImageButton::NextTrackImageButton(ButtonListener* listener)
-    : ImageButton(listener) {
+TrackImageButton::TrackImageButton(ButtonListener* listener,
+                                   const gfx::VectorIcon& icon,
+                                   base::string16 label)
+    : ImageButton(listener), icon_(icon) {
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
 
   // Accessibility.
   SetFocusForPlatform();
-  const base::string16 next_track_button_label(l10n_util::GetStringUTF16(
-      IDS_PICTURE_IN_PICTURE_NEXT_TRACK_CONTROL_ACCESSIBLE_TEXT));
-  SetAccessibleName(next_track_button_label);
-  SetTooltipText(next_track_button_label);
+  SetAccessibleName(label);
+  SetTooltipText(label);
   SetInstallFocusRingOnFocus(true);
 }
 
-NextTrackImageButton::~NextTrackImageButton() = default;
+TrackImageButton::~TrackImageButton() = default;
 
-gfx::Size NextTrackImageButton::GetLastVisibleSize() const {
+gfx::Size TrackImageButton::GetLastVisibleSize() const {
   return size().IsEmpty() ? last_visible_size_ : size();
 }
 
-void NextTrackImageButton::OnBoundsChanged(const gfx::Rect&) {
+void TrackImageButton::OnBoundsChanged(const gfx::Rect&) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(vector_icons::kMediaNextTrackIcon,
-                                 GetLastVisibleSize().width() / 2,
-                                 kNextTrackIconColor));
+           gfx::CreateVectorIcon(icon_, size().width() / 2, kTrackIconColor));
 }
 
-void NextTrackImageButton::ToggleVisibility(bool is_visible) {
-  if (is_visible && !size().IsEmpty()) {
+void TrackImageButton::ToggleVisibility(bool is_visible) {
+  if (is_visible && !size().IsEmpty())
     last_visible_size_ = size();
-  }
 
   SetVisible(is_visible);
   SetEnabled(is_visible);

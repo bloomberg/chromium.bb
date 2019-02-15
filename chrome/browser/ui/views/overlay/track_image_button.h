@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_OVERLAY_NEXT_TRACK_IMAGE_BUTTON_H_
-#define CHROME_BROWSER_UI_VIEWS_OVERLAY_NEXT_TRACK_IMAGE_BUTTON_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_OVERLAY_TRACK_IMAGE_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_OVERLAY_TRACK_IMAGE_BUTTON_H_
 
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #include "ui/views/controls/button/image_button.h"
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace views {
 
-// A resizable next track image button.
-class NextTrackImageButton : public views::ImageButton {
+// A resizable previous/next track image button.
+class TrackImageButton : public views::ImageButton {
  public:
-  explicit NextTrackImageButton(ButtonListener*);
-  ~NextTrackImageButton() override;
+  explicit TrackImageButton(ButtonListener*,
+                            const gfx::VectorIcon& icon,
+                            base::string16 label);
+  ~TrackImageButton() override;
 
   // Get button size when visible.
   gfx::Size GetLastVisibleSize() const;
@@ -27,12 +33,14 @@ class NextTrackImageButton : public views::ImageButton {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
+  const gfx::VectorIcon& icon_;
+
   // Last visible size of the image button.
   gfx::Size last_visible_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(NextTrackImageButton);
+  DISALLOW_COPY_AND_ASSIGN(TrackImageButton);
 };
 
 }  // namespace views
 
-#endif  // CHROME_BROWSER_UI_VIEWS_OVERLAY_NEXT_TRACK_IMAGE_BUTTON_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_OVERLAY_TRACK_IMAGE_BUTTON_H_

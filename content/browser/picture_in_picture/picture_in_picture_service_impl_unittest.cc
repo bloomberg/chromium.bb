@@ -62,6 +62,7 @@ class TestOverlayWindow : public OverlayWindow {
   gfx::Rect GetVideoBounds() override { return gfx::Rect(); }
   void SetSkipAdButtonVisibility(bool is_visible) override {}
   void SetNextTrackButtonVisibility(bool is_visible) override {}
+  void SetPreviousTrackButtonVisibility(bool is_visible) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
