@@ -38,13 +38,11 @@ void OnMediaDrmStorageInit(base::UnguessableToken* out_origin_id,
   *out_origin_id = origin_id;
 }
 
-void CreateOriginId(
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  std::move(callback).Run(base::UnguessableToken::Create());
+void CreateOriginId(MediaDrmStorageImpl::OriginIdObtainedCB callback) {
+  std::move(callback).Run(true, base::UnguessableToken::Create());
 }
 
-void CreateOriginIdAsync(
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+void CreateOriginIdAsync(MediaDrmStorageImpl::OriginIdObtainedCB callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&CreateOriginId, std::move(callback)));
 }

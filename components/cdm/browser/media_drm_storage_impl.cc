@@ -480,7 +480,7 @@ class InitializationSerializer {
     base::UnguessableToken origin_id =
         GetOriginIdForOrigin(storage_dict, origin);
     if (origin_id) {
-      std::move(origin_id_obtained_cb).Run(origin_id);
+      std::move(origin_id_obtained_cb).Run(true, origin_id);
       return;
     }
 
@@ -512,6 +512,7 @@ class InitializationSerializer {
  private:
   void OnOriginIdObtained(PrefService* pref_service,
                           const url::Origin& origin,
+                          bool success,
                           const base::UnguessableToken& origin_id) {
     DVLOG(3) << __func__ << " origin: " << origin;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -531,7 +532,7 @@ class InitializationSerializer {
     pending_requests_.erase(entry);
 
     for (auto& callback : callbacks)
-      std::move(callback).Run(origin_id);
+      std::move(callback).Run(success, origin_id);
   }
 
   // Note that this map is never deleted. As entries are removed when an origin
@@ -683,10 +684,11 @@ void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
 }
 
 void MediaDrmStorageImpl::OnOriginIdObtained(
+    bool success,
     const base::UnguessableToken& origin_id) {
   is_initialized_ = true;
   origin_id_ = origin_id;
-  std::move(init_cb_).Run(true, origin_id_);
+  std::move(init_cb_).Run(success, origin_id_);
 }
 
 void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {

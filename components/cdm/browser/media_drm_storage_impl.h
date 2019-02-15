@@ -37,8 +37,10 @@ namespace cdm {
 class MediaDrmStorageImpl final
     : public content::FrameServiceBase<media::mojom::MediaDrmStorage> {
  public:
+  // |success| is true if an origin ID was obtained and |origin_id| is
+  // specified, false otherwise.
   using OriginIdObtainedCB =
-      base::OnceCallback<void(const base::UnguessableToken&)>;
+      base::OnceCallback<void(bool success, const base::UnguessableToken&)>;
   using GetOriginIdCB = base::RepeatingCallback<void(OriginIdObtainedCB)>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -86,8 +88,9 @@ class MediaDrmStorageImpl final
   ~MediaDrmStorageImpl() final;
 
   // Called when |get_origin_id_cb_| asynchronously returns a origin ID as part
-  // of Initialize();
-  void OnOriginIdObtained(const base::UnguessableToken& origin_id);
+  // of Initialize().
+  void OnOriginIdObtained(bool success,
+                          const base::UnguessableToken& origin_id);
 
   PrefService* const pref_service_;
   GetOriginIdCB get_origin_id_cb_;
