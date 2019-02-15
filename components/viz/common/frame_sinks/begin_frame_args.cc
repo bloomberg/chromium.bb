@@ -98,20 +98,6 @@ void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("animate_only", animate_only);
 }
 
-// This is a hard-coded deadline adjustment that assumes 60Hz, to be used in
-// cases where a good estimated draw time is not known. Using 1/3 of the vsync
-// as the default adjustment gives the Browser the last 1/3 of a frame to
-// produce output, the Renderer Impl thread the middle 1/3 of a frame to produce
-// ouput, and the Renderer Main thread the first 1/3 of a frame to produce
-// output.
-base::TimeDelta BeginFrameArgs::DefaultEstimatedParentDrawTime() {
-  return base::TimeDelta::FromMicroseconds(16666 / 3);
-}
-
-base::TimeDelta BeginFrameArgs::DefaultInterval() {
-  return base::TimeDelta::FromMicroseconds(16666);
-}
-
 BeginFrameAck::BeginFrameAck()
     : source_id(0),
       sequence_number(BeginFrameArgs::kInvalidFrameNumber),

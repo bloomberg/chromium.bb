@@ -37,11 +37,11 @@ SyncControlVSyncProvider::SyncControlVSyncProvider() : gfx::VSyncProvider() {
 SyncControlVSyncProvider::~SyncControlVSyncProvider() {}
 
 void SyncControlVSyncProvider::GetVSyncParameters(
-    const UpdateVSyncCallback& callback) {
+    UpdateVSyncCallback callback) {
   base::TimeTicks timebase;
   base::TimeDelta interval;
   if (GetVSyncParametersIfAvailable(&timebase, &interval))
-    callback.Run(timebase, interval);
+    std::move(callback).Run(timebase, interval);
 }
 
 bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
