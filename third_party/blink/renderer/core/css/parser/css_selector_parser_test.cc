@@ -340,6 +340,7 @@ TEST(CSSSelectorParserTest, InternalPseudo) {
                               ":-internal-list-box",
                               ":-internal-shadow-host-has-appearance",
                               ":-internal-spatial-navigation-focus",
+                              ":-internal-spatial-navigation-interest",
                               ":-internal-video-persistent",
                               ":-internal-video-persistent-ancestor"};
   for (auto* test_case : test_cases) {
