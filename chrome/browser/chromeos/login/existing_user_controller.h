@@ -377,10 +377,6 @@ class ExistingUserController
   LoginPerformer::AuthorizationMode auth_mode_ =
       LoginPerformer::AUTH_MODE_EXTENSION;
 
-  // When the sign-in or GAIA UI is finished loading
-  // public session or ARC kiosk are ready to auto-launch.
-  bool auto_launch_ready_ = false;
-
   // Indicates use of local (not GAIA) authentication.
   bool auth_flow_offline_ = false;
 
