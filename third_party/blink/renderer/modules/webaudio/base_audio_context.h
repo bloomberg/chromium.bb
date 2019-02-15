@@ -387,14 +387,6 @@ class MODULES_EXPORT BaseAudioContext
   Mutex finished_source_handlers_mutex_;
   Vector<AudioHandler*> finished_source_handlers_;
 
-  // List of source nodes. This is either accessed when the graph lock is
-  // held, or on the main thread when the audio thread has finished.
-  // Oilpan: This Vector holds connection references. We must call
-  // AudioHandler::makeConnection when we add an AudioNode to this, and must
-  // call AudioHandler::breakConnection() when we remove an AudioNode from
-  // this.
-  HeapVector<Member<AudioNode>> active_source_nodes_;
-
   // When the context is going away, reject any pending script promise
   // resolvers.
   virtual void RejectPendingResolvers();

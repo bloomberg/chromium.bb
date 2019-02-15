@@ -185,6 +185,10 @@ class MODULES_EXPORT DeferredTaskHandler final
     DeferredTaskHandler& handler_;
   };
 
+  Vector<scoped_refptr<AudioHandler>>* GetActiveSourceHandlers() {
+    return &active_source_handlers_;
+  }
+
  private:
   explicit DeferredTaskHandler(scoped_refptr<base::SingleThreadTaskRunner>);
   void UpdateAutomaticPullNodes();
@@ -238,6 +242,13 @@ class MODULES_EXPORT DeferredTaskHandler final
   // Once the associated context closes, new tail processing handlers are not
   // accepted.
   bool accepts_tail_processing_ = true;
+
+  // When source nodes are started, we place the handlers here to keep track of
+  // these active sources.  This Vector holds connection references.  We must
+  // call AudioHandler::makeConnection when we add an AudioNode to this, and
+  // must call AudioHandler::breakConnection() when we remove an AudioNode from
+  // this.
+  Vector<scoped_refptr<AudioHandler>> active_source_handlers_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
