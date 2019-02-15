@@ -12,7 +12,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
-#include "ash/system/tray/tray_popup_utils.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -332,8 +331,6 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
     notification_indicator_->SetVisible(false);
     AddChildView(notification_indicator_);
   }
-
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
 ShelfAppButton::~ShelfAppButton() {
