@@ -362,7 +362,9 @@ NSString* const kTabUrlKey = @"url";
     headers->GetNormalizedHeader("content-disposition", &contentDisposition);
   std::string defaultFilename =
       l10n_util::GetStringUTF8(IDS_IOS_OPEN_IN_FILE_DEFAULT_TITLE);
-  const GURL& lastCommittedURL = self.webState->GetLastCommittedURL();
+  web::NavigationItem* item =
+      self.webState->GetNavigationManager()->GetLastCommittedItem();
+  const GURL& lastCommittedURL = item ? item->GetURL() : GURL::EmptyGURL();
   base::string16 filename =
       net::GetSuggestedFilename(lastCommittedURL, contentDisposition,
                                 "",                 // referrer-charset
