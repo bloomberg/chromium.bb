@@ -72,8 +72,6 @@ jumbo_static_library("content_shell_lib") {
     "android/shell_manager.cc",
     "android/shell_manager.h",
     "app/blink_test_platform_support.h",
-    "app/blink_test_platform_support_android.cc",
-    "app/blink_test_platform_support_linux.cc",
     "app/blink_test_platform_support_mac.mm",
     "app/blink_test_platform_support_win.cc",
     "app/paths_mac.h",
@@ -314,6 +312,7 @@ jumbo_static_library("content_shell_lib") {
     "//services/test/echo/public/cpp:manifest",
     "//services/test/echo/public/mojom",
     "//skia",
+    "//skia:test_fonts",
     "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
@@ -340,7 +339,6 @@ jumbo_static_library("content_shell_lib") {
   ]
 
   if (is_fuchsia) {
-    sources += [ "app/blink_test_platform_support_fuchsia.cc" ]
     deps -= [
       "//components/crash/content/app",
       "//components/crash/content/app:test_support",
@@ -498,12 +496,6 @@ group("resources") {
   public_deps = [
     ":copy_shell_resources",
   ]
-  deps = [
-    "//content/shell/test_runner:resources",
-  ]
-  data_deps = [
-    "//content/shell/test_runner:resources",
-  ]
 }
 
 repack("pak") {
@@ -579,11 +571,6 @@ if (is_android) {
     deps = [
       ":content_shell_framework_bundle_data",
       ":content_shell_resources_bundle_data",
-
-      # TODO(rsesek): Remove this after GYP is gone, since it only needs to
-      # be here per the comment in blink_test_platform_support_mac.mm about
-      # the bundle structure.
-      "//content/shell/test_runner:resources",
     ]
     info_plist_target = ":content_shell_plist"
     data_deps = [

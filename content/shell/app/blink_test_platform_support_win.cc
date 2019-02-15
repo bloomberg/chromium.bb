@@ -23,7 +23,7 @@ namespace content {
 
 namespace {
 
-bool SetupFonts() {
+void SetupFonts() {
   // Load Ahem font. Ahem.ttf is copied to the build directory by
   // //third_party/test_fonts .
   base::FilePath base_path;
@@ -36,8 +36,6 @@ bool SetupFonts() {
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   command_line.AppendSwitchASCII(kRegisterFontFiles,
                                  base::WideToUTF8(font_path.value()));
-
-  return true;
 }
 
 }  // namespace
@@ -72,8 +70,8 @@ bool CheckLayoutSystemDeps() {
   return errors.empty();
 }
 
-bool BlinkTestPlatformInitialize() {
-  return SetupFonts();
+void BlinkTestPlatformInitialize() {
+  SetupFonts();
 }
 
 }  // namespace content
