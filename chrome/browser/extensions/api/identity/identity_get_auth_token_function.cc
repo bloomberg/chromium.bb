@@ -4,14 +4,14 @@
 
 #include "chrome/browser/extensions/api/identity/identity_get_auth_token_function.h"
 
-#include <memory>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -24,6 +24,8 @@
 #include "chrome/common/extensions/api/identity.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -33,7 +35,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
@@ -76,7 +77,8 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
       token_key_(/*extension_id=*/std::string(),
                  /*account_id=*/std::string(),
                  /*scopes=*/std::set<std::string>()),
-      scoped_identity_manager_observer_(this) {
+      scoped_identity_manager_observer_(this),
+      weak_ptr_factory_(this) {
 }
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {
@@ -142,9 +144,12 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 
   if (gaia_id.empty() || IsPrimaryAccountOnly()) {
     // Try the primary account.
-    GetMojoIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
-        &IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo, this,
-        gaia_id));
+    // TODO(https://crbug.com/932400): collapse the asynchronicity
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(
+            &IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount,
+            weak_ptr_factory_.GetWeakPtr(), gaia_id));
   } else {
     // Get the AccountInfo for the account that the extension wishes to use.
     GetMojoIdentityManager()->GetAccountInfoFromGaiaId(
@@ -157,35 +162,36 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   return true;
 }
 
-void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
-    const std::string& extension_gaia_id,
-    const base::Optional<AccountInfo>& account_info,
-    const ::identity::AccountState& account_state) {
-  std::string primary_gaia_id;
-  if (account_info)
-    primary_gaia_id = account_info->gaia;
-
+void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
+    const std::string& extension_gaia_id) {
+  AccountInfo primary_account_info =
+      IdentityManagerFactory::GetForProfile(GetProfile())
+          ->GetPrimaryAccountInfo();
   bool primary_account_only = IsPrimaryAccountOnly();
 
   // Detect and handle the case where the extension is using an account other
   // than the primary account.
   if (primary_account_only && !extension_gaia_id.empty() &&
-      extension_gaia_id != primary_gaia_id) {
+      extension_gaia_id != primary_account_info.gaia) {
     // TODO(courage): should this be a different error?
     CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
     return;
   }
 
-  if (primary_account_only || !primary_gaia_id.empty()) {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
+  if (primary_account_only || !primary_account_info.gaia.empty()) {
     // The extension is using the primary account.
-    OnReceivedExtensionAccountInfo(primary_gaia_id, account_info,
-                                   account_state);
+    ::identity::AccountState account_state;
+    account_state.has_refresh_token =
+        identity_manager->HasAccountWithRefreshToken(
+            primary_account_info.account_id);
+    OnReceivedExtensionAccountInfo(
+        primary_account_info.gaia,
+        base::Optional<AccountInfo>(primary_account_info), account_state);
   } else {
     // No primary account, try the first account in cookies.
     DCHECK_EQ(AccountListeningMode::kNotListening, account_listening_mode_);
     account_listening_mode_ = AccountListeningMode::kListeningCookies;
-    identity::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForProfile(GetProfile());
     identity::AccountsInCookieJarInfo accounts_in_cookies =
         identity_manager->GetAccountsInCookieJar();
     if (accounts_in_cookies.accounts_are_fresh) {
