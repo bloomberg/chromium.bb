@@ -9,10 +9,13 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class DocumentOrShadowRoot {
+  STATIC_ONLY(DocumentOrShadowRoot);
+
  public:
   static Element* activeElement(Document& document) {
     return document.ActiveElement();
