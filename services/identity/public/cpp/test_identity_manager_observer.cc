@@ -75,15 +75,13 @@ TestIdentityManagerObserver::ErrorFromErrorStateOfRefreshTokenUpdatedCallback()
   return error_from_error_state_of_refresh_token_updated_callback_;
 }
 
-// This method uses a RepeatingCallback to simplify verification of multiple
-// removed tokens.
 void TestIdentityManagerObserver::SetOnRefreshTokenRemovedCallback(
-    base::RepeatingCallback<void(const std::string&)> callback) {
+    base::OnceClosure callback) {
   on_refresh_token_removed_callback_ = std::move(callback);
 }
 
 const std::string&
-TestIdentityManagerObserver::AccountFromRefreshTokenRemovedCallback() {
+TestIdentityManagerObserver::AccountIdFromRefreshTokenRemovedCallback() {
   return account_from_refresh_token_removed_callback_;
 }
 
@@ -186,7 +184,7 @@ void TestIdentityManagerObserver::OnRefreshTokenRemovedForAccount(
   batch_change_records_.rbegin()->emplace_back(account_id);
   account_from_refresh_token_removed_callback_ = account_id;
   if (on_refresh_token_removed_callback_)
-    on_refresh_token_removed_callback_.Run(account_id);
+    std::move(on_refresh_token_removed_callback_).Run();
 }
 
 void TestIdentityManagerObserver::OnErrorStateOfRefreshTokenUpdatedForAccount(
