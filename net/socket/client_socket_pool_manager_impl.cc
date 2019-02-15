@@ -50,6 +50,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     CTVerifier* cert_transparency_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     SSLClientSessionCache* ssl_client_session_cache,
+    SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
     SSLConfigService* ssl_config_service,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     ProxyDelegate* proxy_delegate,
@@ -65,6 +66,8 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       cert_transparency_verifier_(cert_transparency_verifier),
       ct_policy_enforcer_(ct_policy_enforcer),
       ssl_client_session_cache_(ssl_client_session_cache),
+      ssl_client_session_cache_privacy_mode_(
+          ssl_client_session_cache_privacy_mode),
       ssl_config_service_(ssl_config_service),
       proxy_delegate_(proxy_delegate),
       pool_type_(pool_type),
@@ -82,7 +85,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                     cert_transparency_verifier,
                     ct_policy_enforcer,
                     ssl_client_session_cache,
-                    ssl_session_cache_shard_,
+                    ssl_client_session_cache_privacy_mode,
                     ssl_config_service,
                     network_quality_estimator,
                     websocket_endpoint_lock_manager,
@@ -202,7 +205,7 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
               host_resolver_, proxy_delegate_, cert_verifier_,
               channel_id_service_, transport_security_state_,
               cert_transparency_verifier_, ct_policy_enforcer_,
-              ssl_client_session_cache_, ssl_session_cache_shard_,
+              ssl_client_session_cache_, ssl_client_session_cache_privacy_mode_,
               ssl_config_service_, socket_performance_watcher_factory_,
               network_quality_estimator_, net_log_,
               proxy_server.is_http_like()
@@ -259,8 +262,8 @@ ClientSocketPoolManagerImpl::CreateTransportSocketPool(
       sockets_per_proxy_server, sockets_per_group, socket_factory_,
       host_resolver_, proxy_delegate_, cert_verifier_, channel_id_service_,
       transport_security_state_, cert_transparency_verifier_,
-      ct_policy_enforcer_, ssl_client_session_cache_, ssl_session_cache_shard_,
-      ssl_config_service_,
+      ct_policy_enforcer_, ssl_client_session_cache_,
+      ssl_client_session_cache_privacy_mode_, ssl_config_service_,
       use_socket_performance_watcher_factory
           ? socket_performance_watcher_factory_
           : nullptr,

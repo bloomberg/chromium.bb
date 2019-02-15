@@ -10134,6 +10134,56 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   }
 }
 
+// Test that sessions started with privacy mode enabled cannot be resumed when
+// it is disabled, and vice versa.
+TEST_F(HTTPSRequestTest, NoSessionResumptionBetweenPrivacyModes) {
+  // Start a server.
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, SpawnedTestServer::SSLOptions(),
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(test_server.Start());
+  const auto url = test_server.GetURL("/");
+
+  auto ConnectAndCheckHandshake = [this, url](bool allow_credentials,
+                                              auto expected_handshake) {
+    // Construct request and indirectly set the privacy mode.
+    TestDelegate d;
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->set_allow_credentials(allow_credentials);
+
+    // Start the request and check the SSL handshake type.
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+    d.RunUntilComplete();
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_EQ(expected_handshake, r->ssl_info().handshake_type);
+  };
+
+  // Exhaustively check all pairs of privacy mode values. Note that we are using
+  // allow_credentials to indirectly enable/disable privacy mode.
+  const bool kAllowCredentialsValues[] = {false, true};
+  for (const auto allow_creds_1 : kAllowCredentialsValues) {
+    for (const auto allow_creds_2 : kAllowCredentialsValues) {
+      SCOPED_TRACE(base::StringPrintf("allow_creds_1=%d, allow_creds_2=%d",
+                                      allow_creds_1, allow_creds_2));
+
+      // The session cache starts off empty, so we expect a full handshake.
+      ConnectAndCheckHandshake(allow_creds_1, SSLInfo::HANDSHAKE_FULL);
+
+      // The second handshake depends on whether we are using the same session
+      // cache as the first request.
+      ConnectAndCheckHandshake(allow_creds_2, allow_creds_1 == allow_creds_2
+                                                  ? SSLInfo::HANDSHAKE_RESUME
+                                                  : SSLInfo::HANDSHAKE_FULL);
+      // Flush both session caches.
+      auto* network_session =
+          default_context_.http_transaction_factory()->GetSession();
+      network_session->ClearSSLSessionCache();
+    }
+  }
+}
+
 class HTTPSFallbackTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSFallbackTest() : context_(true) {

@@ -59,6 +59,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
       SSLClientSessionCache* ssl_client_session_cache,
+      SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
       SSLConfigService* ssl_config_service,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       ProxyDelegate* proxy_delegate,
@@ -111,6 +112,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   CTVerifier* const cert_transparency_verifier_;
   CTPolicyEnforcer* const ct_policy_enforcer_;
   SSLClientSessionCache* const ssl_client_session_cache_;
+  SSLClientSessionCache* const ssl_client_session_cache_privacy_mode_;
   const std::string ssl_session_cache_shard_;
   SSLConfigService* const ssl_config_service_;
   ProxyDelegate* const proxy_delegate_;

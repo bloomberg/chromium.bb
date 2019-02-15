@@ -353,29 +353,23 @@ int SSLConnectJob::DoSSLConnect() {
 
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
-  // If privacy mode is enabled and the session shard is non-empty, prefix the
-  // SSL session shard with "pm/". Otherwise, prefix with "nopm/".
-  // TODO(https://crbug.com/927084): Consider moving this up to the socket pool
-  // layer, after giving socket pools knowledge of privacy mode.
-  SSLClientSocketContext context_with_privacy_mode(
-      ssl_client_socket_context().cert_verifier,
-      ssl_client_socket_context().channel_id_service,
-      ssl_client_socket_context().transport_security_state,
-      ssl_client_socket_context().cert_transparency_verifier,
-      ssl_client_socket_context().ct_policy_enforcer,
-      ssl_client_socket_context().ssl_client_session_cache,
-      (params_->privacy_mode() == PRIVACY_MODE_ENABLED ? "pm/" : "nopm/") +
-          ssl_client_socket_context().ssl_session_cache_shard);
+  // TODO(mmenke): Consider moving this up to the socket pool layer, after
+  // giving socket pools knowledge of privacy mode.
+  const SSLClientSocketContext& context =
+      params_->privacy_mode() == PRIVACY_MODE_ENABLED
+          ? ssl_client_socket_context_privacy_mode()
+          : ssl_client_socket_context();
+
   if (nested_socket_.get()) {
     DCHECK(!transport_socket_handle_);
     ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
         std::move(nested_socket_), params_->host_and_port(),
-        params_->ssl_config(), context_with_privacy_mode);
+        params_->ssl_config(), context);
     nested_connect_job_.reset();
   } else {
     ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
         std::move(transport_socket_handle_), params_->host_and_port(),
-        params_->ssl_config(), context_with_privacy_mode);
+        params_->ssl_config(), context);
   }
   return ssl_socket_->Connect(callback_);
 }

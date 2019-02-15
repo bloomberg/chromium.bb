@@ -82,7 +82,7 @@ class HttpProxyClientSocketPoolTest
             session_deps_.cert_transparency_verifier.get(),
             session_deps_.ct_policy_enforcer.get(),
             nullptr /* ssl_client_session_cache */,
-            std::string() /* ssl_session_cache_shard */,
+            nullptr /* ssl_client_session_cache_privacy_mode */,
             session_deps_.ssl_config_service.get(),
             nullptr /* socket_performance_watcher_factory */,
             &estimator_,
@@ -103,7 +103,7 @@ class HttpProxyClientSocketPoolTest
         session_deps_.cert_transparency_verifier.get(),
         session_deps_.ct_policy_enforcer.get(),
         nullptr /* ssl_client_session_cache */,
-        std::string() /* ssl_session_cache_shard */,
+        nullptr /* ssl_client_session_cache_privacy_mode */,
         session_deps_.ssl_config_service.get(),
         nullptr /* socket_performance_watcher_factory */, &estimator_,
         nullptr /* net_log */);

@@ -114,7 +114,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
       SSLClientSessionCache* ssl_client_session_cache,
-      const std::string& ssl_session_cache_shard,
+      SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
       SSLConfigService* ssl_config_service,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       NetworkQualityEstimator* network_quality_estimator,
@@ -188,6 +188,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         HostResolver* host_resolver,
         ProxyDelegate* proxy_delegate,
         const SSLClientSocketContext& ssl_client_socket_context,
+        const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log,
@@ -206,6 +207,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     HostResolver* const host_resolver_;
     ProxyDelegate* const proxy_delegate_;
     const SSLClientSocketContext ssl_client_socket_context_;
+    const SSLClientSocketContext ssl_client_socket_context_privacy_mode_;
     SocketPerformanceWatcherFactory* const socket_performance_watcher_factory_;
     NetworkQualityEstimator* const network_quality_estimator_;
     NetLog* const net_log_;

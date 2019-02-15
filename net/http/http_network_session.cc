@@ -45,6 +45,7 @@ std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
     HttpNetworkSession::SocketPoolType pool_type,
     const HttpNetworkSession::Context& context,
     SSLClientSessionCache* ssl_client_session_cache,
+    SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager) {
   // TODO(yutak): Differentiate WebSocket pool manager and allow more
   // simultaneous connections for WebSockets.
@@ -57,8 +58,8 @@ std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
       context.cert_verifier, context.channel_id_service,
       context.transport_security_state, context.cert_transparency_verifier,
       context.ct_policy_enforcer, ssl_client_session_cache,
-      context.ssl_config_service, websocket_endpoint_lock_manager,
-      context.proxy_delegate, pool_type);
+      ssl_client_session_cache_privacy_mode, context.ssl_config_service,
+      websocket_endpoint_lock_manager, context.proxy_delegate, pool_type);
 }
 
 }  // unnamed namespace
@@ -194,6 +195,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       ssl_client_session_cache_(SSLClientSessionCache::Config()),
+      ssl_client_session_cache_privacy_mode_(SSLClientSessionCache::Config()),
       push_delegate_(nullptr),
       quic_stream_factory_(
           context.net_log,
@@ -260,9 +262,11 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
 
   normal_socket_pool_manager_ = CreateSocketPoolManager(
       NORMAL_SOCKET_POOL, context, &ssl_client_session_cache_,
+      &ssl_client_session_cache_privacy_mode_,
       &websocket_endpoint_lock_manager_);
   websocket_socket_pool_manager_ = CreateSocketPoolManager(
       WEBSOCKET_SOCKET_POOL, context, &ssl_client_session_cache_,
+      &ssl_client_session_cache_privacy_mode_,
       &websocket_endpoint_lock_manager_);
 
   if (params_.enable_http2) {
@@ -507,6 +511,7 @@ void HttpNetworkSession::DisableQuic() {
 
 void HttpNetworkSession::ClearSSLSessionCache() {
   ssl_client_session_cache_.Flush();
+  ssl_client_session_cache_privacy_mode_.Flush();
 }
 
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
