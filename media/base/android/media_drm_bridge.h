@@ -78,6 +78,10 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // supported or not. If false, per-device provisioning is used.
   static bool IsPerOriginProvisioningSupported();
 
+  // Returns true if this device supports per-application provisioning, false
+  // otherwise.
+  static bool IsPerApplicationProvisioningSupported();
+
   static bool IsPersistentLicenseTypeSupported(const std::string& key_system);
 
   // Returns the list of the platform-supported key system names that

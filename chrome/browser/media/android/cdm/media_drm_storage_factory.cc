@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/media/android/cdm/media_drm_origin_id_manager.h"
+#include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/prefs/pref_service.h"
@@ -16,15 +18,24 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/base/android/media_drm_bridge.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace {
 
-void CreateOriginId(
-    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
-  // origin ID.
-  std::move(callback).Run(base::UnguessableToken::Create());
+void CreateOriginId(Profile* profile,
+                    MediaDrmOriginIdManager::ProvisionedOriginIdCB callback) {
+  // Only need to origin IDs if MediaDrm supports it.
+  DCHECK(media::MediaDrmBridge::IsPerOriginProvisioningSupported());
+
+  auto* origin_id_manager =
+      MediaDrmOriginIdManagerFactory::GetForProfile(profile);
+  if (!origin_id_manager) {
+    std::move(callback).Run(false, base::UnguessableToken());
+    return;
+  }
+
+  origin_id_manager->GetOriginId(std::move(callback));
 }
 
 }  // namespace
@@ -56,6 +67,6 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   // The object will be deleted on connection error, or when the frame navigates
   // away. See FrameServiceBase for details.
   new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
-                               base::BindRepeating(&CreateOriginId),
+                               base::BindRepeating(&CreateOriginId, profile),
                                std::move(request));
 }

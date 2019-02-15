@@ -19,12 +19,14 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.media.MediaDrmSessionManager.SessionId;
 import org.chromium.media.MediaDrmSessionManager.SessionInfo;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.UUID;
 
 // Implementation Notes of MediaDrmBridge:
@@ -67,6 +69,7 @@ public class MediaDrmBridge {
     private static final String SESSION_SHARING = "sessionSharing";
     private static final String ENABLE = "enable";
     private static final long INVALID_NATIVE_MEDIA_DRM_BRIDGE = 0;
+    private static final String FIRST_API_LEVEL = "ro.product.first_api_level";
 
     // Scheme UUID for Widevine. See http://dashif.org/identifiers/protection/
     private static final UUID WIDEVINE_UUID =
@@ -398,6 +401,31 @@ public class MediaDrmBridge {
         }
 
         return MediaDrm.isCryptoSchemeSupported(cryptoScheme, containerMimeType);
+    }
+
+    /**
+     * Returns the first API level for this product.
+     *
+     * @return the converted value for FIRST_API_LEVEL if available,
+     * 0 otherwise.
+     */
+    @CalledByNative
+    private static int getFirstApiLevel() {
+        int firstApiLevel = 0;
+        Scanner scanner = null;
+        // If first_api_level property is set, return it.
+        try {
+            Process process = new ProcessBuilder("getprop", FIRST_API_LEVEL).start();
+            scanner = new Scanner(process.getInputStream());
+            firstApiLevel = Integer.parseInt(scanner.nextLine().trim());
+        } catch (IOException | NumberFormatException e) {
+            firstApiLevel = 0;
+        } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
+        }
+        return firstApiLevel;
     }
 
     /**
