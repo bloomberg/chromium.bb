@@ -74,6 +74,7 @@ class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
     @Override
     public boolean startUpdateFlowForResult(AppUpdateInfo appUpdateInfo,
             @AppUpdateType int appUpdateType, Activity activity, int requestCode) {
+        // TODO(dtrainor): Simulate exceptions being thrown or returning false from the super call.
         boolean success =
                 super.startUpdateFlowForResult(appUpdateInfo, appUpdateType, activity, requestCode);
         if (!success) return false;
