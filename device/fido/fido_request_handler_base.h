@@ -175,6 +175,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                                  base::OnceClosure success_callback,
                                  base::OnceClosure error_callback);
 
+  virtual void ProvidePIN(const std::string& old_pin, const std::string& pin);
+
   base::WeakPtr<FidoRequestHandlerBase> GetWeakPtr();
 
   void set_observer(TransportAvailabilityObserver* observer) {
@@ -220,6 +222,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   }
   TransportAvailabilityObserver* observer() const { return observer_; }
 
+  // FidoDiscoveryBase::Observer
+  void AuthenticatorAdded(FidoDiscoveryBase* discovery,
+                          FidoAuthenticator* authenticator) override;
+  void AuthenticatorRemoved(FidoDiscoveryBase* discovery,
+                            FidoAuthenticator* authenticator) override;
+  void AuthenticatorIdChanged(FidoDiscoveryBase* discovery,
+                              const std::string& previous_id,
+                              std::string new_id) override;
+  void AuthenticatorPairingModeChanged(FidoDiscoveryBase* discovery,
+                                       const std::string& device_id,
+                                       bool is_in_pairing_mode) override;
+
  private:
   friend class FidoRequestHandlerTest;
 
@@ -229,18 +243,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void InitDiscoveriesWin(
       const base::flat_set<FidoTransportProtocol>& available_transports);
 #endif
-
-  // FidoDiscoveryBase::Observer
-  void AuthenticatorAdded(FidoDiscoveryBase* discovery,
-                          FidoAuthenticator* authenticator) final;
-  void AuthenticatorRemoved(FidoDiscoveryBase* discovery,
-                            FidoAuthenticator* authenticator) final;
-  void AuthenticatorIdChanged(FidoDiscoveryBase* discovery,
-                              const std::string& previous_id,
-                              std::string new_id) final;
-  void AuthenticatorPairingModeChanged(FidoDiscoveryBase* discovery,
-                                       const std::string& device_id,
-                                       bool is_in_pairing_mode) final;
 
   void AddAuthenticator(FidoAuthenticator* authenticator);
   void NotifyObserverTransportAvailability();
