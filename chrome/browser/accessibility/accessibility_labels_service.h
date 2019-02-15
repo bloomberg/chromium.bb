@@ -30,6 +30,8 @@ class AccessibilityLabelsService : public KeyedService {
 
   ui::AXMode GetAXMode();
 
+  void EnableLabelsServiceOnce();
+
  private:
   friend class AccessibilityLabelsServiceFactory;
 

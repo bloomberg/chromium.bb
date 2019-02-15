@@ -85,50 +85,38 @@ IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
   EXPECT_EQ(0u, menu()->GetMenuSize());
 }
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
-                       AccessibilityLabelsShowWithChromevoxEnabled) {
+                       AccessibilityLabelsShowWithScreenReaderEnabled) {
+#if defined(OS_CHROMEOS)
+  // Enable Chromevox.
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
+#else
+  // Spoof a screen reader.
+  content::BrowserAccessibilityState::GetInstance()->AddAccessibilityModeFlags(
+      ui::AXMode::kScreenReader);
+#endif  // defined(OS_CHROMEOS)
   menu()->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
                                  false);
   InitMenu();
 
   // Shows but is not checked.
-  ASSERT_EQ(1u, menu()->GetMenuSize());
+  ASSERT_EQ(3u, menu()->GetMenuSize());
   MockRenderViewContextMenu::MockMenuItem item;
   menu()->GetMenuItem(0, &item);
-  EXPECT_EQ(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE, item.command_id);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS, item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
 
-  Reset(false);
-  // Shows and is checked when Chromevox and the setting are both on.
-  menu()->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled, true);
-  InitMenu();
-
-  ASSERT_EQ(1u, menu()->GetMenuSize());
-  menu()->GetMenuItem(0, &item);
+  // The submenu items exist.
+  menu()->GetMenuItem(1, &item);
   EXPECT_EQ(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE, item.command_id);
   EXPECT_TRUE(item.enabled);
-  EXPECT_TRUE(item.checked);
+  EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
-}
-#else
-IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
-                       AccessibilityLabelsShowWithScreenReaderEnabled) {
-  // Spoof a screen reader.
-  content::BrowserAccessibilityState::GetInstance()->AddAccessibilityModeFlags(
-      ui::AXMode::kScreenReader);
-  menu()->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
-                                 false);
-  InitMenu();
-
-  // Shows but is not checked.
-  ASSERT_EQ(1u, menu()->GetMenuSize());
-  MockRenderViewContextMenu::MockMenuItem item;
-  menu()->GetMenuItem(0, &item);
-  EXPECT_EQ(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE, item.command_id);
+  menu()->GetMenuItem(2, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE,
+            item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
@@ -145,4 +133,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityLabelsMenuObserverTest,
   EXPECT_TRUE(item.checked);
   EXPECT_FALSE(item.hidden);
 }
-#endif  // defined(OS_CHROMEOS)
+
+// TODO: Test kAccessibilityImageLabelsOptInAccepted doesn't show the bubble,
+// probably need a mock bubble class or similar.

@@ -68,10 +68,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   static void AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
                                        bool is_checked);
 
-  // Adds the accessibility labels service item to the context menu.
-  static void AddAccessibilityLabelsServiceItem(ui::SimpleMenuModel* menu,
-                                                bool is_checked);
-
   // RenderViewContextMenuBase:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdVisible(int command_id) const override;
@@ -253,6 +249,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // An observer that handles accessibility labels items.
   std::unique_ptr<AccessibilityLabelsMenuObserver>
       accessibility_labels_menu_observer_;
+  ui::SimpleMenuModel accessibility_labels_submenu_model_;
 
 #if !defined(OS_MACOSX)
   // An observer that handles the submenu for showing spelling options. This

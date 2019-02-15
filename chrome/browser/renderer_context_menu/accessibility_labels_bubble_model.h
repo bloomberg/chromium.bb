@@ -19,7 +19,8 @@ class WebContents;
 class AccessibilityLabelsBubbleModel : public ConfirmBubbleModel {
  public:
   AccessibilityLabelsBubbleModel(Profile* profile,
-                                 content::WebContents* web_contents);
+                                 content::WebContents* web_contents,
+                                 bool enable_always);
   ~AccessibilityLabelsBubbleModel() override;
 
   // ConfirmBubbleModel implementation.
@@ -38,6 +39,7 @@ class AccessibilityLabelsBubbleModel : public ConfirmBubbleModel {
 
   Profile* profile_;
   content::WebContents* web_contents_;
+  bool enable_always_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityLabelsBubbleModel);
 };
