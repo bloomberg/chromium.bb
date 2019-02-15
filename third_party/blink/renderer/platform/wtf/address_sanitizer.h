@@ -37,4 +37,10 @@
 #define NO_SANITIZE_THREAD
 #endif
 
+#if defined(__clang__)
+#define NO_SANITIZE_HWADDRESS __attribute__((no_sanitize("hwaddress")))
+#else
+#define NO_SANITIZE_HWADDRESS
+#endif
+
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_

@@ -5834,9 +5834,12 @@ enum GrowthDirection {
   kGrowsTowardsLower,
 };
 
-NOINLINE NO_SANITIZE_ADDRESS GrowthDirection StackGrowthDirection() {
+NOINLINE NO_SANITIZE_ADDRESS NO_SANITIZE_HWADDRESS GrowthDirection
+StackGrowthDirection() {
   // Disable ASan, otherwise its stack checking (use-after-return) will
-  // confuse the direction check.
+  // confuse the direction check. Similarly, HWASan will store a random value in
+  // the top byte of the address of each stack variable, causing the direction
+  // check to return the wrong answer half of the time.
   static char* previous = nullptr;
   char dummy;
   if (!previous) {
