@@ -140,16 +140,16 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
   }
 
   switch (length.GetType()) {
-    case kAuto:
-    case kFillAvailable: {
+    case Length::kAuto:
+    case Length::kFillAvailable: {
       LayoutUnit content_size = constraint_space.AvailableSize().inline_size;
       NGBoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
       return std::max(border_padding.InlineSum(),
                       content_size - margins.InlineSum());
     }
-    case kPercent:
-    case kFixed:
-    case kCalculated: {
+    case Length::kPercent:
+    case Length::kFixed:
+    case Length::kCalculated: {
       LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionInlineSize();
       LayoutUnit value = ValueForLength(length, percentage_resolution_size);
@@ -160,9 +160,9 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
       }
       return value;
     }
-    case kMinContent:
-    case kMaxContent:
-    case kFitContent: {
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFitContent: {
       DCHECK(min_and_max.has_value());
       LayoutUnit available_size = constraint_space.AvailableSize().inline_size;
       LayoutUnit value;
@@ -180,12 +180,12 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
       }
       return value;
     }
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
       FALLTHROUGH;
-    case kMaxSizeNone:
+    case Length::kMaxSizeNone:
     default:
       NOTREACHED();
       return border_padding.InlineSum();
@@ -254,15 +254,15 @@ LayoutUnit ResolveBlockLength(
   }
 
   switch (length.GetType()) {
-    case kFillAvailable: {
+    case Length::kFillAvailable: {
       LayoutUnit content_size = constraint_space.AvailableSize().block_size;
       NGBoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
       return std::max(border_padding.BlockSum(),
                       content_size - margins.BlockSum());
     }
-    case kPercent:
-    case kFixed:
-    case kCalculated: {
+    case Length::kPercent:
+    case Length::kFixed:
+    case Length::kCalculated: {
       LayoutUnit percentage_resolution_block_size =
           opt_percentage_resolution_block_size_for_min_max
               ? *opt_percentage_resolution_block_size_for_min_max
@@ -284,10 +284,10 @@ LayoutUnit ResolveBlockLength(
       }
       return value;
     }
-    case kAuto:
-    case kMinContent:
-    case kMaxContent:
-    case kFitContent:
+    case Length::kAuto:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFitContent:
 #if DCHECK_IS_ON()
       // Due to how content_size is calculated, it should always include border
       // and padding. We cannot check for this if we are block-fragmented,
@@ -298,12 +298,12 @@ LayoutUnit ResolveBlockLength(
         DCHECK_GE(content_size, border_padding.BlockSum());
 #endif  // DCHECK_IS_ON()
       return content_size;
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kExtendToZoom:
       NOTREACHED() << "These should only be used for viewport definitions";
       FALLTHROUGH;
-    case kMaxSizeNone:
+    case Length::kMaxSizeNone:
     default:
       NOTREACHED();
       return border_padding.BlockSum();
@@ -318,20 +318,20 @@ LayoutUnit ResolveMarginPaddingLength(LayoutUnit percentage_resolution_size,
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
   // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
   switch (length.GetType()) {
-    case kAuto:
+    case Length::kAuto:
       return LayoutUnit();
-    case kPercent:
-    case kFixed:
-    case kCalculated:
+    case Length::kPercent:
+    case Length::kFixed:
+    case Length::kCalculated:
       return ValueForLength(length, percentage_resolution_size);
-    case kMinContent:
-    case kMaxContent:
-    case kFillAvailable:
-    case kFitContent:
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFillAvailable:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       FALLTHROUGH;
     default:
       NOTREACHED();

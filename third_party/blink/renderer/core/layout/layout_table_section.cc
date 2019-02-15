@@ -58,14 +58,14 @@ void LayoutTableSection::TableGridRow::UpdateLogicalHeightForCell(
   const Length& cell_logical_height = cell->StyleRef().LogicalHeight();
   if (cell_logical_height.IsPositive()) {
     switch (cell_logical_height.GetType()) {
-      case kPercent:
+      case Length::kPercent:
         // TODO(alancutter): Make this work correctly for calc lengths.
         if (!(logical_height.IsPercentOrCalc()) ||
             (logical_height.IsPercent() &&
              logical_height.Percent() < cell_logical_height.Percent()))
           logical_height = cell_logical_height;
         break;
-      case kFixed:
+      case Length::kFixed:
         if (logical_height.IsAuto() ||
             (logical_height.IsFixed() &&
              logical_height.Value() < cell_logical_height.Value()))

@@ -172,16 +172,16 @@ CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
 CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     : CSSValue(kPrimitiveClass) {
   switch (length.GetType()) {
-    case kPercent:
+    case Length::kPercent:
       Init(UnitType::kPercentage);
       DCHECK(std::isfinite(length.Percent()));
       value_.num = length.Percent();
       break;
-    case kFixed:
+    case Length::kFixed:
       Init(UnitType::kPixels);
       value_.num = length.Value() / zoom;
       break;
-    case kCalculated: {
+    case Length::kCalculated: {
       const CalculationValue& calc = length.GetCalculationValue();
       if (calc.Pixels() && calc.Percent()) {
         Init(CSSCalcValue::Create(CSSCalcValue::CreateExpressionNode(
@@ -200,15 +200,15 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         value_.num = 0;
       break;
     }
-    case kAuto:
-    case kMinContent:
-    case kMaxContent:
-    case kFillAvailable:
-    case kFitContent:
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kAuto:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFillAvailable:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       break;
   }

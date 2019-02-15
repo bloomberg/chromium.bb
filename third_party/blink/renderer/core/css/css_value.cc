@@ -84,20 +84,20 @@ ASSERT_SIZE(CSSValue, SameSizeAsCSSValue);
 
 CSSValue* CSSValue::Create(const Length& value, float zoom) {
   switch (value.GetType()) {
-    case kAuto:
-    case kMinContent:
-    case kMaxContent:
-    case kFillAvailable:
-    case kFitContent:
-    case kExtendToZoom:
+    case Length::kAuto:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFillAvailable:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
       return CSSIdentifierValue::Create(value);
-    case kPercent:
-    case kFixed:
-    case kCalculated:
+    case Length::kPercent:
+    case Length::kFixed:
+    case Length::kCalculated:
       return CSSPrimitiveValue::Create(value, zoom);
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       break;
   }
