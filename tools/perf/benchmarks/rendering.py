@@ -37,7 +37,10 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetrics(['renderingMetric'])
+    options.config.chrome_trace_config.EnableUMAHistograms(
+        'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
+        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
+    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
 
 
@@ -70,5 +73,8 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
     options.config.enable_platform_display_trace = True
-    options.SetTimelineBasedMetrics(['renderingMetric'])
+    options.config.chrome_trace_config.EnableUMAHistograms(
+        'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
+        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
+    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
