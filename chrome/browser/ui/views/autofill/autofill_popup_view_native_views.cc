@@ -393,7 +393,7 @@ void AutofillPopupItemView::CreateContent() {
       (GetLayoutType() == PopupItemLayoutType::kLeadingIcon ||
        GetLayoutType() == PopupItemLayoutType::kTwoLinesLeadingIcon)) {
     AddIcon(icon);
-    AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
+    AddSpacerWithSize(GetHorizontalMargin(),
                       /*resize=*/false, layout_manager);
   }
 
@@ -430,7 +430,7 @@ void AutofillPopupItemView::CreateContent() {
     AddChildView(description_label);
 
   if (!icon.isNull() && GetLayoutType() == PopupItemLayoutType::kTrailingIcon) {
-    AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
+    AddSpacerWithSize(GetHorizontalMargin(),
                       /*resize=*/false, layout_manager);
     AddIcon(icon);
   }
