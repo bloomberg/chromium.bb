@@ -88,23 +88,4 @@ TEST(ProxyWindow, FindTargetForWindowWithResizeInset) {
   EXPECT_EQ(top_level, setup.root()->targeter()->FindTargetForEvent(
                            setup.root(), &mouse_event_2));
 }
-
-TEST(ProxyWindow, SetClientAreaPropagatesToClientSurfaceEmbedder) {
-  WindowServiceTestSetup setup;
-
-  aura::Window* top_level =
-      setup.window_tree_test_helper()->NewTopLevelWindow();
-  ASSERT_TRUE(top_level);
-  const gfx::Rect top_level_bounds(100, 200, 200, 200);
-  top_level->SetBounds(top_level_bounds);
-  const gfx::Insets top_level_insets(1, 2, 11, 12);
-  setup.window_tree_test_helper()->SetClientArea(top_level, top_level_insets);
-  aura::ClientSurfaceEmbedder* client_surface_embedder =
-      ClientRootTestHelper(
-          setup.window_tree()->GetClientRootForWindow(top_level))
-          .GetClientSurfaceEmbedder();
-  ASSERT_TRUE(client_surface_embedder);
-  EXPECT_EQ(top_level_insets, client_surface_embedder->client_area_insets());
-}
-
 }  // namespace ws
