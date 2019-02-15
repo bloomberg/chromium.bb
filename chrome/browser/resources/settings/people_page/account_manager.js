@@ -92,12 +92,11 @@ Polymer({
   },
 
   /**
-   * @param {!Event} event
+   * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
    */
   onReauthenticationTap_: function(event) {
-    this.browserProxy_.reauthenticateAccount(
-      this.$['account-list'].itemForElement(event.path[0]).email);
+    this.browserProxy_.reauthenticateAccount(event.model.item.email);
   },
 
   /**

@@ -10,6 +10,7 @@
  *   ABOUT_ABOUT: (undefined|!settings.Route),
  *   ACCESSIBILITY: (undefined|!settings.Route),
  *   ACCOUNTS: (undefined|!settings.Route),
+ *   ACCOUNT_MANAGER: (undefined|!settings.Route),
  *   ADVANCED: (undefined|!settings.Route),
  *   ADDRESSES: (undefined|!settings.Route),
  *   ANDROID_APPS: (undefined|!settings.Route),
