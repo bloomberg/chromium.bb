@@ -9789,6 +9789,10 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Checksum out of sync"/>
 </enum>
 
+<enum name="CryptohomeDeprecatedApiCalled">
+  <int value="0" label="InitializeCastKey"/>
+</enum>
+
 <enum name="CryptohomeDiskCleanupProgress">
   <int value="1" label="Ephemeral User Profiles cleaned">
     Ephemeral users were enabled. Removed all profiles except those currently
