@@ -25,7 +25,8 @@ URL: http://bgoffice.sourceforge.net/
      http://www.dicollecte.org/
      http://www.justlocal.com.au/
      http://sourceforge.net/projects/lilak/
-License: MPL 1.1/GPL 2.0/LGPL 2.1
+     http://techiaith.cymru/hunspell/cy_GB/
+License: MPL 1.1/GPL 2.0/LGPL 2.1/LPGL 3.0
 Security Critical: no
 Version: unknown
 
@@ -77,6 +78,8 @@ ca_ES:  Added words
         Added two words to .dic file with the ! flag to mark them forbidden/nosuggest.
 
 cs_CZ:  Added words
+
+cy_GB:  No changes
 
 da_DK:  Added words
         Changed "øvrigt/mk" to "øvrigt/" in da_DK.dic to make convert_dict work.
