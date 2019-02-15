@@ -113,7 +113,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   DISALLOW_COPY_AND_ASSIGN(CrosUsbDetectorTest);
 };
 
