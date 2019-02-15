@@ -25,6 +25,60 @@ Thread hopping between the main (parent) thread and a worker thread is handled b
 - `MessagingProxy` is the main (parent) thread side proxy that communicates to the worker thread.
 - `ObjectProxy` is the worker thread side proxy that communicates to the main (parent) thread. `Object` indicates a worker/worklet JavaScript object on the parent execution context.
 
+# Off-the-main-thread fetch
+
+All worker subresources, and some of worker/worklet top-level scripts,
+are fetched off-the-main-thread (i.e. on the worker/worklet thread).
+See following docs for more details.
+
+- [off-the-main-thread subresource fetch](https://docs.google.com/document/d/1829D6zllR1qfwvwDXHb9pjhIcbM4EZ70EiaFAaPj9YQ/edit?usp=sharing), Done.
+- [off-the-main-thread top-level script fetch](https://docs.google.com/document/d/1cI6UJGdeWvlavCzfxGh3hfWy7N62Yfsu_A98RxsCyys/edit?usp=sharing), ongoing.
+
+There are two types of network fetch on the worker/worklet thread:
+insideSettings and outsideSettings fetch.
+The terms insideSettings and outsideSettings are originated from
+[HTML spec](https://html.spec.whatwg.org/C/#worker-processing-model) and
+[Worklet spec](https://drafts.css-houdini.org/worklets/).
+
+## insideSettings fetch
+
+insideSettings fetch is subresource fetch.
+
+In the spec, insideSettings corresponds to the
+[worker environment settings object](https://html.spec.whatwg.org/multipage/workers.html#set-up-a-worker-environment-settings-object)
+of `WorkerOrWorkletGlobalScope`.
+
+In the implementation, insideSettings roughly corresponds to
+`WorkerOrWorkletGlobalScope`.
+`WorkerOrWorkletGlobalScope::Fetcher()`,
+its corresponding `WorkerFetchContext`, and
+`WorkerOrWorkletGlobalScope::GetContentSecurityPolicy()` are used.
+
+Currently, all subresource fetches are already off-the-main-thread.
+
+## outsideSettings fetch
+
+outsideSettings fetch is off-the-main-thread top-level worker/worklet
+script fetch.
+
+In the spec, an outsideSettings is the environment settings object of
+worker's parent context.
+
+In the implementation, outsideSettings should correspond to
+`Document` (or `WorkerOrWorkletGlobalScope` for nested workers), but
+the worker thread can't access these objects due to threading restriction.
+Therefore, we pass `FetchClientSettingsObjectSnapshot` that contains
+information of these objects across threads, and create
+`ResourceFetcher`, `WorkerFetchContext` and `ContentSecurityPolicy`
+(separate objects from those used for insideSettings fetch)
+on the worker thread.
+They work as if the parent context, and are used via
+`WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher()`.
+
+Note that, where off-the-main-thread top-level fetch is NOT enabled
+(e.g. classic workers), the worker scripts are fetched on the main thread and
+thus WorkerOrWorkletGlobalScope and the worker thread are not involved.
+
 # References
 
 - [Worker / Worklet Internals](https://docs.google.com/presentation/d/1GZJ3VnLIO_Pw0jr9nRw6_-trg68ol-AkliMxJ6jo6Bo/edit?usp=sharing) (April 19, 2018)
