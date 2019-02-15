@@ -318,8 +318,9 @@ int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
     [ReplyEventHandler pingProcessAndCall:on_ping_chrome_reply];
 
     main_message_loop.task_runner()->PostDelayedTask(
-        FROM_HERE, base::Bind(&AppShimController::OnPingChromeTimeout,
-                              base::Unretained(&controller)),
+        FROM_HERE,
+        base::BindOnce(&AppShimController::OnPingChromeTimeout,
+                       base::Unretained(&controller)),
         base::TimeDelta::FromSeconds(kPingChromeTimeoutSeconds));
   } else {
     // Chrome already running. Proceed to init. This could still fail if Chrome

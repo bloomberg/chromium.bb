@@ -96,14 +96,16 @@ DeltaFileService::~DeltaFileService() {
 
 void DeltaFileService::PageAdded(const GURL& url) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeltaFileServiceDoAddPage,
-                            base::Unretained(delta_file_backend_.get()), url));
+      FROM_HERE,
+      base::BindOnce(&DeltaFileServiceDoAddPage,
+                     base::Unretained(delta_file_backend_.get()), url));
 }
 
 void DeltaFileService::PageDeleted(const GURL& url) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeltaFileServiceDoDeletePage,
-                            base::Unretained(delta_file_backend_.get()), url));
+      FROM_HERE,
+      base::BindOnce(&DeltaFileServiceDoDeletePage,
+                     base::Unretained(delta_file_backend_.get()), url));
 }
 
 int64_t DeltaFileService::Trim(int64_t lower_bound) {
@@ -112,9 +114,9 @@ int64_t DeltaFileService::Trim(int64_t lower_bound) {
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeltaFileServiceDoTrim,
-                 base::Unretained(delta_file_backend_.get()), lower_bound,
-                 base::Unretained(&finished), base::Unretained(&result)));
+      base::BindOnce(&DeltaFileServiceDoTrim,
+                     base::Unretained(delta_file_backend_.get()), lower_bound,
+                     base::Unretained(&finished), base::Unretained(&result)));
   finished.Wait();
   return result;
 }
@@ -126,10 +128,10 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileService::Query(
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeltaFileServiceDoQuery,
-                            base::Unretained(delta_file_backend_.get()),
-                            last_seq_no, limit, base::Unretained(&finished),
-                            base::Unretained(&result)));
+      FROM_HERE, base::BindOnce(&DeltaFileServiceDoQuery,
+                                base::Unretained(delta_file_backend_.get()),
+                                last_seq_no, limit, base::Unretained(&finished),
+                                base::Unretained(&result)));
   finished.Wait();
   return result;
 }
@@ -140,17 +142,17 @@ bool DeltaFileService::Recreate(const std::vector<std::string>& urls) {
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeltaFileServiceDoRecreate,
-                 base::Unretained(delta_file_backend_.get()), urls,
-                 base::Unretained(&finished), base::Unretained(&result)));
+      base::BindOnce(&DeltaFileServiceDoRecreate,
+                     base::Unretained(delta_file_backend_.get()), urls,
+                     base::Unretained(&finished), base::Unretained(&result)));
   finished.Wait();
   return result;
 }
 
 void DeltaFileService::Clear() {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DeltaFileServiceDoClear,
-                            base::Unretained(delta_file_backend_.get())));
+      FROM_HERE, base::BindOnce(&DeltaFileServiceDoClear,
+                                base::Unretained(delta_file_backend_.get())));
 }
 
 std::string DeltaFileService::Dump() {
@@ -159,9 +161,9 @@ std::string DeltaFileService::Dump() {
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeltaFileServiceDoDump,
-                 base::Unretained(delta_file_backend_.get()),
-                 base::Unretained(&finished), base::Unretained(&dump)));
+      base::BindOnce(&DeltaFileServiceDoDump,
+                     base::Unretained(delta_file_backend_.get()),
+                     base::Unretained(&finished), base::Unretained(&dump)));
   finished.Wait();
   return dump;
 }

@@ -550,8 +550,8 @@ OfflinePageRequestHandler::GetNetworkState() const {
 
 void OfflinePageRequestHandler::Start() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&OfflinePageRequestHandler::StartAsync,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&OfflinePageRequestHandler::StartAsync,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestHandler::StartAsync() {

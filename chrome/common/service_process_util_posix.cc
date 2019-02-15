@@ -190,8 +190,9 @@ bool ServiceProcessState::SignalReady(
 
   state_->task_runner = std::move(task_runner);
   state_->task_runner->PostTask(
-      FROM_HERE, base::Bind(&ServiceProcessState::StateData::SignalReady,
-                            base::Unretained(state_), &signal_ready, &success));
+      FROM_HERE,
+      base::BindOnce(&ServiceProcessState::StateData::SignalReady,
+                     base::Unretained(state_), &signal_ready, &success));
   signal_ready.Wait();
   return success;
 }

@@ -480,7 +480,7 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
     // If we are yet to receive a reply then notify the client that the
     // child died.
     client_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
+        FROM_HERE, base::BindOnce(&Client::OnChildDied, client_.get()));
     ReportUmaEvent(SERVICE_UTILITY_DISCONNECTED);
   }
 
@@ -559,8 +559,8 @@ void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {
   ReportUmaEvent(success ? SERVICE_UTILITY_METAFILE_SUCCEEDED
                          : SERVICE_UTILITY_METAFILE_FAILED);
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::OnRenderPDFPagesToMetafileDone,
-                            client_.get(), success));
+      FROM_HERE, base::BindOnce(&Client::OnRenderPDFPagesToMetafileDone,
+                                client_.get(), success));
   pdf_to_emf_state_.reset();
 
   // The child process has finished at this point. This host is done as well.
@@ -574,8 +574,9 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
   ReportUmaEvent(SERVICE_UTILITY_CAPS_SUCCEEDED);
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(),
-                            true, printer_name, caps_and_defaults));
+      FROM_HERE,
+      base::BindOnce(&Client::OnGetPrinterCapsAndDefaults, client_.get(), true,
+                     printer_name, caps_and_defaults));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }
@@ -588,8 +589,8 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults, client_.get(),
-                 true, printer_name, caps_and_defaults));
+      base::BindOnce(&Client::OnGetPrinterSemanticCapsAndDefaults,
+                     client_.get(), true, printer_name, caps_and_defaults));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }
@@ -601,8 +602,8 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
-                 printer_name, printing::PrinterCapsAndDefaults()));
+      base::BindOnce(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
+                     printer_name, printing::PrinterCapsAndDefaults()));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }
@@ -613,9 +614,9 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
   ReportUmaEvent(SERVICE_UTILITY_SEMANTIC_CAPS_FAILED);
   waiting_for_reply_ = false;
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults,
-                            client_.get(), false, printer_name,
-                            printing::PrinterSemanticCapsAndDefaults()));
+      FROM_HERE, base::BindOnce(&Client::OnGetPrinterSemanticCapsAndDefaults,
+                                client_.get(), false, printer_name,
+                                printing::PrinterSemanticCapsAndDefaults()));
   // The child process disconnects itself and this host deletes itself via
   // OnChildDisconnected().
 }

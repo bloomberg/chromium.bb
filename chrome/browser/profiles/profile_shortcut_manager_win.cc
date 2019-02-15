@@ -830,7 +830,7 @@ void ProfileShortcutManagerWin::RemoveProfileShortcuts(
     const base::FilePath& profile_path) {
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
       ->PostTask(FROM_HERE,
-                 base::Bind(&DeleteDesktopShortcuts, profile_path, false));
+                 base::BindOnce(&DeleteDesktopShortcuts, profile_path, false));
 }
 
 void ProfileShortcutManagerWin::HasProfileShortcuts(
@@ -905,8 +905,9 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   }
 
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
-      ->PostTask(FROM_HERE, base::Bind(&DeleteDesktopShortcuts, profile_path,
-                                       deleting_down_to_last_profile));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&DeleteDesktopShortcuts, profile_path,
+                                deleting_down_to_last_profile));
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(
@@ -1000,9 +1001,9 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     }
   }
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
-      ->PostTask(
-          FROM_HERE,
-          base::Bind(&CreateOrUpdateDesktopShortcutsAndIconForProfile, params));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &CreateOrUpdateDesktopShortcutsAndIconForProfile, params));
 
   entry->SetShortcutName(params.profile_name);
 }

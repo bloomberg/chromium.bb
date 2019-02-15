@@ -35,8 +35,8 @@ void ExternalFileURLRequestJob::Start() {
   // delegate, because NotifyStartError is not legal to call synchronously in
   // Start().
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ExternalFileURLRequestJob::StartAsync,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ExternalFileURLRequestJob::StartAsync,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ExternalFileURLRequestJob::StartAsync() {

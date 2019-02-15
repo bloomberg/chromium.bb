@@ -156,12 +156,12 @@ base::string16 GetAppShortcutsSubdirName() {
 void DefaultWebClientWorker::StartCheckIsDefault() {
   g_sequenced_task_runner.Get()->PostTask(
       FROM_HERE,
-      base::Bind(&DefaultWebClientWorker::CheckIsDefault, this, false));
+      base::BindOnce(&DefaultWebClientWorker::CheckIsDefault, this, false));
 }
 
 void DefaultWebClientWorker::StartSetAsDefault() {
   g_sequenced_task_runner.Get()->PostTask(
-      FROM_HERE, base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
+      FROM_HERE, base::BindOnce(&DefaultWebClientWorker::SetAsDefault, this));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -109,8 +109,8 @@ void TaskbarIconFinder::RunOnComTask(
   gfx::Rect rect;
   DoOnComTask(&rect);
   finder_runner->PostTask(FROM_HERE,
-                          base::Bind(&TaskbarIconFinder::OnComplete,
-                                     base::Unretained(finder), rect));
+                          base::BindOnce(&TaskbarIconFinder::OnComplete,
+                                         base::Unretained(finder), rect));
 }
 
 // static

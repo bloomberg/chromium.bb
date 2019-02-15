@@ -322,8 +322,9 @@ bool BrowserMonitor::StartWatching(
   }
 
   if (!background_thread_.task_runner()->PostTask(
-          FROM_HERE, base::Bind(&BrowserMonitor::Watch, base::Unretained(this),
-                                base::Passed(&on_initialized_event)))) {
+          FROM_HERE,
+          base::BindOnce(&BrowserMonitor::Watch, base::Unretained(this),
+                         std::move(on_initialized_event)))) {
     background_thread_.Stop();
     return false;
   }
@@ -355,8 +356,9 @@ void BrowserMonitor::Watch(base::win::ScopedHandle on_initialized_event) {
   // Note that the browser has exited.
   browser_exited_.Signal();
 
-  main_thread_->PostTask(FROM_HERE,
-      base::Bind(&BrowserMonitor::BrowserExited, base::Unretained(this)));
+  main_thread_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserMonitor::BrowserExited, base::Unretained(this)));
 }
 
 void BrowserMonitor::BrowserExited() {

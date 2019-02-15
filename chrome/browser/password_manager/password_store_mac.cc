@@ -52,8 +52,8 @@ bool PasswordStoreMac::InitOnBackgroundSequence(
                                            /*changes=*/nullptr);
     initial_status_ = MigrationStatus::MIGRATION_STOPPED;
     main_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&PasswordStoreMac::UpdateStatusPref, this, initial_status_));
+        FROM_HERE, base::BindOnce(&PasswordStoreMac::UpdateStatusPref, this,
+                                  initial_status_));
   }
 
   UMA_HISTOGRAM_ENUMERATION(

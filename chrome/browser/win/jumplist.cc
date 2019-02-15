@@ -624,14 +624,14 @@ void JumpList::OnRunUpdateCompletion(
     base::FilePath icon_dir =
         GenerateJumplistIconDirName(profile_dir, FILE_PATH_LITERAL(""));
     delete_jumplisticons_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DeleteDirectory, std::move(icon_dir), kFileDeleteLimit));
+        FROM_HERE, base::BindOnce(&DeleteDirectory, std::move(icon_dir),
+                                  kFileDeleteLimit));
 
     base::FilePath icon_dir_old =
         GenerateJumplistIconDirName(profile_dir, FILE_PATH_LITERAL("Old"));
     delete_jumplisticons_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DeleteDirectory, std::move(icon_dir_old),
-                              kFileDeleteLimit));
+        FROM_HERE, base::BindOnce(&DeleteDirectory, std::move(icon_dir_old),
+                                  kFileDeleteLimit));
   }
 }
 

@@ -201,8 +201,8 @@ void CertificateProviderService::CertificateProviderImpl::GetCertificates(
           base::Bind(&PostIdentitiesToTaskRunner, source_task_runner, callback);
 
   service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GetCertificatesOnServiceThread, service_,
-                            callback_from_service_thread));
+      FROM_HERE, base::BindOnce(&GetCertificatesOnServiceThread, service_,
+                                callback_from_service_thread));
 }
 
 std::unique_ptr<CertificateProvider>

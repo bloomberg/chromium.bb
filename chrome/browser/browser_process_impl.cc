@@ -1458,7 +1458,8 @@ void BrowserProcessImpl::Unpin() {
 
 #if defined(OS_MACOSX)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
+      FROM_HERE,
+      base::BindOnce(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
 
 #if !defined(OS_ANDROID)

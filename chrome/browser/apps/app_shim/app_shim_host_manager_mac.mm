@@ -141,7 +141,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
 
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
       ->PostTask(FROM_HERE,
-                 base::Bind(&AppShimHostManager::ListenOnIOThread, this));
+                 base::BindOnce(&AppShimHostManager::ListenOnIOThread, this));
 }
 
 void AppShimHostManager::ListenOnIOThread() {
@@ -149,7 +149,7 @@ void AppShimHostManager::ListenOnIOThread() {
   if (!acceptor_->Listen()) {
     base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
         ->PostTask(FROM_HERE,
-                   base::Bind(&AppShimHostManager::OnListenError, this));
+                   base::BindOnce(&AppShimHostManager::OnListenError, this));
   }
 }
 

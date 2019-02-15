@@ -266,7 +266,7 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
   if (delegate_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&TestingProfile::FinishInit, base::Unretained(this)));
+        base::BindOnce(&TestingProfile::FinishInit, base::Unretained(this)));
   } else {
     FinishInit();
   }
@@ -326,7 +326,7 @@ TestingProfile::TestingProfile(
   if (delegate_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&TestingProfile::FinishInit, base::Unretained(this)));
+        base::BindOnce(&TestingProfile::FinishInit, base::Unretained(this)));
   } else {
     FinishInit();
   }

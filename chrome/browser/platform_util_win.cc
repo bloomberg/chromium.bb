@@ -114,7 +114,7 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   base::CreateCOMSTATaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
       ->PostTask(FROM_HERE,
-                 base::Bind(&ShowItemInFolderOnWorkerThread, full_path));
+                 base::BindOnce(&ShowItemInFolderOnWorkerThread, full_path));
 }
 
 namespace internal {
@@ -138,7 +138,7 @@ void OpenExternal(Profile* profile, const GURL& url) {
 
   base::CreateCOMSTATaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
-      ->PostTask(FROM_HERE, base::Bind(&OpenExternalOnWorkerThread, url));
+      ->PostTask(FROM_HERE, base::BindOnce(&OpenExternalOnWorkerThread, url));
 }
 
 }  // namespace platform_util

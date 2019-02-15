@@ -79,9 +79,10 @@ void ExtensionGarbageCollectorChromeOS::GarbageCollectSharedExtensions() {
   if (ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(&paths)) {
     if (!GetExtensionFileTaskRunner()->PostTask(
             FROM_HERE,
-            base::Bind(&GarbageCollectExtensionsOnFileThread,
-                       ExtensionAssetsManagerChromeOS::GetSharedInstallDir(),
-                       paths))) {
+            base::BindOnce(
+                &GarbageCollectExtensionsOnFileThread,
+                ExtensionAssetsManagerChromeOS::GetSharedInstallDir(),
+                paths))) {
       NOTREACHED();
     }
   }

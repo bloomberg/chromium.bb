@@ -350,8 +350,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
     // Run a query now.
     base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
-        ->PostTask(FROM_HERE, base::Bind(&CupsPrintJobManagerImpl::PostQuery,
-                                         weak_ptr_factory_.GetWeakPtr()));
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
+                                  weak_ptr_factory_.GetWeakPtr()));
     // Start the timer for ongoing queries.
     ScheduleQuery();
 

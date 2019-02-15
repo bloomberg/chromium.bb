@@ -240,7 +240,7 @@ void HistoryMenuBridge::SetIsMenuOpen(bool flag) {
   if (!is_menu_open_ && need_recreate_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&HistoryMenuBridge::CreateMenu, base::Unretained(this)));
+        base::BindOnce(&HistoryMenuBridge::CreateMenu, base::Unretained(this)));
   }
 }
 

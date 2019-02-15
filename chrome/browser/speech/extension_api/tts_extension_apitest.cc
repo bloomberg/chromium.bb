@@ -106,9 +106,9 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
   void SendEndEventOnSavedUtteranceId() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
-                   false, g_saved_utterance_id, content::TTS_EVENT_END, 0, 0,
-                   std::string()),
+        base::BindOnce(&MockTtsPlatformImpl::SendEvent,
+                       ptr_factory_.GetWeakPtr(), false, g_saved_utterance_id,
+                       content::TTS_EVENT_END, 0, 0, std::string()),
         base::TimeDelta());
   }
 
@@ -119,9 +119,10 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
                     const content::UtteranceContinuousParameters& params) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
-                   false, utterance_id, content::TTS_EVENT_END,
-                   utterance.size(), 0, std::string()),
+        base::BindOnce(&MockTtsPlatformImpl::SendEvent,
+                       ptr_factory_.GetWeakPtr(), false, utterance_id,
+                       content::TTS_EVENT_END, utterance.size(), 0,
+                       std::string()),
         base::TimeDelta());
   }
 
@@ -133,9 +134,10 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
       const content::UtteranceContinuousParameters& params) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
-                   true, utterance_id, content::TTS_EVENT_END, utterance.size(),
-                   0, std::string()),
+        base::BindOnce(&MockTtsPlatformImpl::SendEvent,
+                       ptr_factory_.GetWeakPtr(), true, utterance_id,
+                       content::TTS_EVENT_END, utterance.size(), 0,
+                       std::string()),
         base::TimeDelta());
   }
 
@@ -148,9 +150,9 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
       if (i == 0 || utterance[i - 1] == ' ') {
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(&MockTtsPlatformImpl::SendEvent,
-                       ptr_factory_.GetWeakPtr(), false, utterance_id,
-                       content::TTS_EVENT_WORD, i, 1, std::string()),
+            base::BindOnce(&MockTtsPlatformImpl::SendEvent,
+                           ptr_factory_.GetWeakPtr(), false, utterance_id,
+                           content::TTS_EVENT_WORD, i, 1, std::string()),
             base::TimeDelta());
       }
     }
@@ -167,9 +169,9 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
     if (wait_for_non_empty_queue && tts_controller->QueueSize() == 0) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
-                     true, utterance_id, event_type, char_index, length,
-                     message),
+          base::BindOnce(&MockTtsPlatformImpl::SendEvent,
+                         ptr_factory_.GetWeakPtr(), true, utterance_id,
+                         event_type, char_index, length, message),
           base::TimeDelta::FromMilliseconds(100));
       return;
     }

@@ -204,8 +204,8 @@ void DriveWebContentsManager::OnOfflineInit(
     // of a call stack for some routine of the contained WebContents.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&DriveWebContentsManager::RunCompletionCallback,
-                   weak_ptr_factory_.GetWeakPtr(), success, outcome));
+        base::BindOnce(&DriveWebContentsManager::RunCompletionCallback,
+                       weak_ptr_factory_.GetWeakPtr(), success, outcome));
     StopLoad();
   }
 }

@@ -238,10 +238,11 @@ void SelectFileDialogExtension::ExtensionTerminated(
   if (profile_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&extensions::ExtensionService::ReloadExtension,
-                   base::Unretained(extensions::ExtensionSystem::Get(profile_)
-                                        ->extension_service()),
-                   extension_id));
+        base::BindOnce(
+            &extensions::ExtensionService::ReloadExtension,
+            base::Unretained(extensions::ExtensionSystem::Get(profile_)
+                                 ->extension_service()),
+            extension_id));
   }
 
   dialog->GetWidget()->Close();

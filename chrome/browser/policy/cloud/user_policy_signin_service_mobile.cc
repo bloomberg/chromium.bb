@@ -137,8 +137,8 @@ void UserPolicySigninService::OnCloudPolicyServiceInitializationCompleted() {
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&UserPolicySigninService::RegisterCloudPolicyService,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&UserPolicySigninService::RegisterCloudPolicyService,
+                     weak_factory_.GetWeakPtr()),
       try_registration_delay);
 }
 

@@ -54,9 +54,9 @@ void JNI_ConnectivityChecker_PostCallback(
     ConnectivityCheckResult result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ExecuteCallback,
-                 base::android::ScopedJavaGlobalRef<jobject>(j_callback),
-                 result));
+      base::BindOnce(&ExecuteCallback,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback),
+                     result));
 }
 
 // A utility class for checking if the device is currently connected to the

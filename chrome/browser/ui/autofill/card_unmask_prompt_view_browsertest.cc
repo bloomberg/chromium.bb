@@ -95,9 +95,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&TestCardUnmaskPromptController::ShowVerificationResult,
-                   weak_factory_.GetWeakPtr(), verification_message,
-                   /*allow_retry=*/expected_failure_temporary_),
+        base::BindOnce(&TestCardUnmaskPromptController::ShowVerificationResult,
+                       weak_factory_.GetWeakPtr(), verification_message,
+                       /*allow_retry=*/expected_failure_temporary_),
         GetSuccessMessageDuration());
   }
 

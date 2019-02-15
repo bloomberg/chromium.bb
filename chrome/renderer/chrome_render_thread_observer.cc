@@ -94,8 +94,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     if (!weak_factory_.HasWeakPtrs()) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&RendererResourceDelegate::InformHostOfCacheStats,
-                     weak_factory_.GetWeakPtr()),
+          base::BindOnce(&RendererResourceDelegate::InformHostOfCacheStats,
+                         weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kCacheStatsDelayMS));
     }
 

@@ -52,7 +52,7 @@ void WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
     const Murmur2HashCallback& callback) {
   if (!icon_url.is_valid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, ""));
+                                                  base::BindOnce(callback, ""));
     return;
   }
 
@@ -63,8 +63,8 @@ void WebApkIconHasher::DownloadAndComputeMurmur2HashWithTimeout(
         !data.empty()) {
       hash = ComputeMurmur2Hash(data);
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, hash));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, hash));
     return;
   }
 

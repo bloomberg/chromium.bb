@@ -155,8 +155,8 @@ static void JNI_WebApkUpdateManager_UpdateWebApkFromFile(
   if (profile == nullptr) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&OnUpdated, callback_ref, WebApkInstallResult::FAILURE,
-                   false /* relax_updates */, "" /* webapk_package */));
+        base::BindOnce(&OnUpdated, callback_ref, WebApkInstallResult::FAILURE,
+                       false /* relax_updates */, "" /* webapk_package */));
     return;
   }
 

@@ -621,8 +621,9 @@ void DownloadManagerService::EnqueueDownloadAction(
 void DownloadManagerService::OnResumptionFailed(
     const std::string& download_guid) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DownloadManagerService::OnResumptionFailedInternal,
-                            base::Unretained(this), download_guid));
+      FROM_HERE,
+      base::BindOnce(&DownloadManagerService::OnResumptionFailedInternal,
+                     base::Unretained(this), download_guid));
   DownloadController::RecordDownloadCancelReason(
       DownloadController::CANCEL_REASON_NOT_CANCELED);
 }

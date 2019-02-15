@@ -610,8 +610,8 @@ void ThemeService::ClearAllThemeData() {
   // RemoveUnusedThemes is called on a task because ClearAllThemeData() may
   // be called as a result of OnExtensionUnloaded().
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ThemeService::RemoveUnusedThemes,
-                            weak_ptr_factory_.GetWeakPtr(), true));
+      FROM_HERE, base::BindOnce(&ThemeService::RemoveUnusedThemes,
+                                weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 void ThemeService::FixInconsistentPreferencesIfNeeded() {}
@@ -845,8 +845,9 @@ void ThemeService::OnExtensionServiceReady() {
 #endif
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ThemeService::RemoveUnusedThemes,
-                            weak_ptr_factory_.GetWeakPtr(), false),
+      FROM_HERE,
+      base::BindOnce(&ThemeService::RemoveUnusedThemes,
+                     weak_ptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromSeconds(kRemoveUnusedThemesStartupDelay));
 }
 
@@ -928,8 +929,8 @@ void ThemeService::OnThemeBuiltFromExtension(
 
   // Write the packed file to disk.
   extensions::GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&WritePackToDiskCallback, base::RetainedRef(pack),
-                            extension->path()));
+      FROM_HERE, base::BindOnce(&WritePackToDiskCallback,
+                                base::RetainedRef(pack), extension->path()));
 
   const std::string previous_theme_id = GetThemeID();
   const bool previous_using_system_theme = UsingSystemTheme();
