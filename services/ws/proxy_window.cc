@@ -157,6 +157,13 @@ class ProxyWindowEventHandler : public ui::EventHandler {
       target_client = !embedded ? owning : embedded;
     }
     DCHECK(target_client);
+
+    // Don't send located events to the client during a move loop. Normally
+    // the client shouldn't be the target at this point, but it's entirely
+    // possible for held events to be released, triggering a spurious call.
+    if (event->IsLocatedEvent() && target_client->IsMovingWindow())
+      return;
+
     target_client->SendEventToClient(window(), *event);
 
     // The event was forwarded to the remote client. We don't want it handled
