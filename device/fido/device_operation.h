@@ -20,8 +20,17 @@
 
 namespace device {
 
+// GenericDeviceOperation is a base class to allow a |DeviceOperation| to be
+// held in |std::unique_ptr| without having to know the concrete type of the
+// operation.
+class GenericDeviceOperation {
+ public:
+  virtual ~GenericDeviceOperation() {}
+  virtual void Start() = 0;
+};
+
 template <class Request, class Response>
-class DeviceOperation {
+class DeviceOperation : public GenericDeviceOperation {
  public:
   using DeviceResponseCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
