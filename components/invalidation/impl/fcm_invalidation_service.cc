@@ -129,6 +129,9 @@ void FCMInvalidationService::RequestDetailedStatus(
     const {
   return_callback.Run(diagnostic_info_.CollectDebugData());
   invalidator_registrar_.RequestDetailedStatus(return_callback);
+  if (identity_provider_) {
+    identity_provider_->RequestDetailedStatus(return_callback);
+  }
   if (IsStarted()) {
     invalidator_->RequestDetailedStatus(return_callback);
   }
