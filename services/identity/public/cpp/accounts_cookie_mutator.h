@@ -51,14 +51,6 @@ class AccountsCookieMutator {
   // know that the contents of the Gaia cookie might have changed.
   virtual void TriggerCookieJarUpdate() = 0;
 
-  // Notifies observers that |account_id| has been added to the Gaia cookie.
-  // Should only be invoked manually in cases where clients have detected that
-  // an account is in the Gaia cookie and want to ensure that observers are
-  // notified.
-  virtual void ForceTriggerOnAddAccountToCookieCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutator);
 };

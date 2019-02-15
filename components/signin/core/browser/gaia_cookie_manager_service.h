@@ -288,12 +288,6 @@ class GaiaCookieManagerService : public KeyedService,
   // Signout all accounts.
   void LogOutAllAccounts(gaia::GaiaSource source);
 
-  // Call observers when merge session completes.  This public so that callers
-  // that know that a given account is already in the cookie jar can simply
-  // inform the observers.
-  void SignalComplete(const std::string& account_id,
-                      const GoogleServiceAuthError& error);
-
   // Call observers when setting accounts in cookie completes.
   void SignalSetAccountsComplete(const GoogleServiceAuthError& error);
 
@@ -331,6 +325,10 @@ class GaiaCookieManagerService : public KeyedService,
                            MultiloginFailureInvalidGaiaCredentialsDesktop);
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
+  // Calls the AddAccountToCookie completion callback.
+  void SignalComplete(const std::string& account_id,
+                      const GoogleServiceAuthError& error);
 
   // Marks the list account being staled, and for iOS only, it triggers to fetch
   // the list of accounts (on iOS there is no OnCookieChange() notification).
