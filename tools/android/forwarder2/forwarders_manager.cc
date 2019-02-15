@@ -39,9 +39,9 @@ void ForwardersManager::CreateAndStartNewForwarder(
   // which is the only thread from which it's accessed.
   thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ForwardersManager::CreateNewForwarderOnInternalThread,
-                 base::Unretained(this), base::Passed(&socket1),
-                 base::Passed(&socket2)));
+      base::BindOnce(&ForwardersManager::CreateNewForwarderOnInternalThread,
+                     base::Unretained(this), std::move(socket1),
+                     std::move(socket2)));
 
   // Guarantees that the CreateNewForwarderOnInternalThread callback posted to
   // the internal thread gets executed immediately.
@@ -59,8 +59,8 @@ void ForwardersManager::CreateNewForwarderOnInternalThread(
 void ForwardersManager::WaitForEventsOnInternalThreadSoon() {
   thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ForwardersManager::WaitForEventsOnInternalThread,
-                 base::Unretained(this)));
+      base::BindOnce(&ForwardersManager::WaitForEventsOnInternalThread,
+                     base::Unretained(this)));
 }
 
 void ForwardersManager::WaitForEventsOnInternalThread() {
