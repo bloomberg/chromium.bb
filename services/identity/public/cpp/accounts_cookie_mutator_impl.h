@@ -42,10 +42,6 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
 
   void TriggerCookieJarUpdate() override;
 
-  void ForceTriggerOnAddAccountToCookieCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
-
  private:
   GaiaCookieManagerService* gaia_cookie_manager_service_;
 

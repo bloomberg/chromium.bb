@@ -725,16 +725,15 @@ void AccountReconcilor::FinishReconcile(
   // For each account known to chrome, PerformMergeAction() if the account is
   // not already in the cookie jar or its state is invalid, or signal merge
   // completed otherwise.  Make a copy of |add_to_cookie_| since calls to
-  // SignalComplete() will change the array.
+  // OnAddAccountToCookieCompleted() will change the array.
   std::vector<std::string> add_to_cookie_copy = add_to_cookie_;
   int added_to_cookie = 0;
   for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
     if (gaia_accounts.end() !=
         std::find_if(gaia_accounts.begin(), gaia_accounts.end(),
                      AccountEqualToFunc(AccountForId(add_to_cookie_copy[i])))) {
-      cookie_manager_service_->SignalComplete(
-          add_to_cookie_copy[i],
-          GoogleServiceAuthError::AuthErrorNone());
+      OnAddAccountToCookieCompleted(add_to_cookie_copy[i],
+                                    GoogleServiceAuthError::AuthErrorNone());
     } else {
       PerformMergeAction(add_to_cookie_copy[i]);
       if (original_gaia_accounts.end() ==

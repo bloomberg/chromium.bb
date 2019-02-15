@@ -46,10 +46,4 @@ void AccountsCookieMutatorImpl::TriggerCookieJarUpdate() {
   gaia_cookie_manager_service_->TriggerListAccounts();
 }
 
-void AccountsCookieMutatorImpl::ForceTriggerOnAddAccountToCookieCompleted(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  gaia_cookie_manager_service_->SignalComplete(account_id, error);
-}
-
 }  // namespace identity

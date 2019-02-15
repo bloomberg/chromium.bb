@@ -359,24 +359,4 @@ TEST_F(AccountsCookieMutatorTest, TriggerCookieJarUpdate_OneListedAccounts) {
             GoogleServiceAuthError::NONE);
 }
 
-// Test that calling ForceTriggerOnAddAccountToCookieCompleted() with an account
-// ID and a valid error runs the callback with that data passed through.
-TEST_F(AccountsCookieMutatorTest, ForceTriggerOnAddAccountToCookieCompleted) {
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnAddAccountToCookieCompletedCallback(
-      run_loop.QuitClosure());
-  accounts_cookie_mutator()->ForceTriggerOnAddAccountToCookieCompleted(
-      kTestUnavailableAccountId,
-      GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR));
-  run_loop.Run();
-
-  EXPECT_EQ(identity_manager_observer()
-                ->AccountFromAddAccountToCookieCompletedCallback(),
-            kTestUnavailableAccountId);
-  EXPECT_EQ(identity_manager_observer()
-                ->ErrorFromAddAccountToCookieCompletedCallback()
-                .state(),
-            GoogleServiceAuthError::TWO_FACTOR);
-}
-
 }  // namespace identity
