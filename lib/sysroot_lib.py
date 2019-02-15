@@ -389,32 +389,32 @@ class Sysroot(object):
 
     config = []
     chrome_binhost = board and self._ChromeBinhost(board)
-#    _, preflight_binhost_internal = self._PreflightBinhosts(
-#        board)
-#
-#    config.append("""
-## FULL_BINHOST is populated by the full builders. It is listed first because it
-## is the lowest priority binhost. It is better to download packages from the
-## preflight binhost because they are fresher packages.
-#PORTAGE_BINHOST="$FULL_BINHOST"
-#""")
+    preflight_binhost, preflight_binhost_internal = self._PreflightBinhosts(
+        board)
 
-#    if preflight_binhost:
-#      config.append("""
+    config.append("""
+# FULL_BINHOST is populated by the full builders. It is listed first because it
+# is the lowest priority binhost. It is better to download packages from the
+# preflight binhost because they are fresher packages.
+PORTAGE_BINHOST="$FULL_BINHOST"
+""")
+
+    if preflight_binhost:
+      config.append("""
 # PREFLIGHT_BINHOST is populated by the preflight builders. If the same
 # package is provided by both the preflight and full binhosts, the package is
 # downloaded from the preflight binhost.
-#source %s
-#PORTAGE_BINHOST="$PORTAGE_BINHOST $PREFLIGHT_BINHOST"
-#""" % preflight_binhost)
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PREFLIGHT_BINHOST"
+""" % preflight_binhost)
 
-#    if preflight_binhost_internal:
-#      config.append("""
+    if preflight_binhost_internal:
+      config.append("""
 # The internal PREFLIGHT_BINHOST is populated by the internal preflight
 # builders. It takes priority over the public preflight binhost.
-#source %s
-#PORTAGE_BINHOST="$PORTAGE_BINHOST $PREFLIGHT_BINHOST"
-#""" % preflight_binhost_internal)
+source %s
+PORTAGE_BINHOST="$PORTAGE_BINHOST $PREFLIGHT_BINHOST"
+""" % preflight_binhost_internal)
 
     if chrome_binhost:
       config.append("""
@@ -463,8 +463,6 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     Args:
       board: Board name.
     """
-    if board != "Some non-existing board":
-      return None, None
     prefixes = []
     arch = self.GetStandardField(STANDARD_FIELD_ARCH)
     if arch in _ARCH_MAPPING:
