@@ -164,7 +164,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   // Helper method to set the OnThrottleChecksComplete callback on the
   // NavigationHandle.
-  void PrepareCompleteCallbackOnHandle();
+  void PrepareCompleteCallbackOnHandle(NavigationHandleImpl* handle);
 
   // Check if the navigation corresponds to a same-document navigation.
   // Only use on renderer-initiated navigations.
@@ -207,8 +207,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   FrameTreeNode* frame_tree_node_;
 
-  // The NavigationHandle associated with this navigation.
-  NavigationHandleImpl* handle_;
+  // The NavigationRequest associated with this navigation.
+  NavigationRequest* request_;
 
   // Note: additional parameters to modify the navigation should be properly
   // initialized (if needed) in InitializeFromStartedRequest.
