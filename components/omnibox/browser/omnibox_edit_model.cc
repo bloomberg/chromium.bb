@@ -533,9 +533,6 @@ bool OmniboxEditModel::CanPasteAndGo(const base::string16& text) const {
   if (!client_->IsPasteAndGoEnabled())
     return false;
 
-  if (text.length() > kMaxPasteAndGoTextLength)
-    return false;
-
   AutocompleteMatch match;
   ClassifyString(text, &match, nullptr);
   return match.destination_url.is_valid();

@@ -88,4 +88,22 @@ TEST_F(ClipboardUtilsTest, GetClipboardText) {
   EXPECT_TRUE(GetClipboardText().empty());
 }
 
+TEST_F(ClipboardUtilsTest, TruncateLongText) {
+  const base::string16 almost_long_text =
+      base::ASCIIToUTF16(std::string(kMaxClipboardTextLength, '.'));
+  {
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteText(almost_long_text);
+  }
+  EXPECT_EQ(almost_long_text, GetClipboardText());
+
+  const base::string16 long_text =
+      base::ASCIIToUTF16(std::string(kMaxClipboardTextLength + 1, '.'));
+  {
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteText(long_text);
+  }
+  EXPECT_EQ(almost_long_text, GetClipboardText());
+}
+
 }  // namespace

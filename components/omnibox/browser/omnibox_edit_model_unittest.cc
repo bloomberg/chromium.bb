@@ -391,19 +391,6 @@ TEST_F(OmniboxEditModelTest, UnelideDoesNothingWhenFullURLAlreadyShown) {
   EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
 }
 
-TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
-  EXPECT_TRUE(model()->OmniboxEditModel::CanPasteAndGo(
-      base::ASCIIToUTF16("short text")));
-
-  base::string16 almost_long_text = base::ASCIIToUTF16(
-      std::string(OmniboxEditModel::kMaxPasteAndGoTextLength, '.'));
-  EXPECT_TRUE(model()->OmniboxEditModel::CanPasteAndGo(almost_long_text));
-
-  base::string16 long_text = base::ASCIIToUTF16(
-      std::string(OmniboxEditModel::kMaxPasteAndGoTextLength + 1, '.'));
-  EXPECT_FALSE(model()->OmniboxEditModel::CanPasteAndGo(long_text));
-}
-
 // The tab-switching system sometimes focuses the Omnibox even if it was not
 // previously focused. In those cases, ignore the saved focus state.
 TEST_F(OmniboxEditModelTest, IgnoreInvalidSavedFocusStates) {
