@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_HANDLER_H_
 
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -13,6 +14,11 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "components/policy/core/common/policy_service.h"
+#include "extensions/browser/extension_registry_observer.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // Constants defining the IDs for the localized strings sent to the page as
 // load time data.
@@ -66,7 +72,14 @@ class PolicyService;
 }  // namespace policy
 
 // The JavaScript message handler for the chrome://management page.
+// TODO(ydago): Increase test coverage of this class
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+class ManagementUIHandler : public content::WebUIMessageHandler,
+                            public extensions::ExtensionRegistryObserver,
+                            public policy::PolicyService::Observer {
+#else
 class ManagementUIHandler : public content::WebUIMessageHandler {
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
  public:
   ManagementUIHandler();
   ~ManagementUIHandler() override;
@@ -75,6 +88,8 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  void OnJavascriptDisallowed() override;
+
  protected:
   void AddExtensionReportingInfo(base::Value* report_sources);
 
@@ -105,6 +120,30 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
   void HandleGetReportingWeb(const base::ListValue* args);
 
   void HandleInitBrowserReportingInfo(const base::ListValue* args);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  void NotifyBrowserReportingInfoUpdated();
+
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
+
+  // policy::PolicyService::Observer
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
+
+  void AddObservers();
+  void RemoveObservers();
+
+  // To avoid double-removing the observers, which would cause a DCHECK()
+  // failure.
+  bool has_observers_ = false;
+  std::set<extensions::ExtensionId> reporting_extension_ids_;
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };

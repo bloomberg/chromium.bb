@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -300,9 +301,19 @@ const char* GetReportingTypeValue(ReportingType reportingType) {
 
 }  // namespace
 
-ManagementUIHandler::ManagementUIHandler() {}
+ManagementUIHandler::ManagementUIHandler() {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  reporting_extension_ids_ = {kOnPremReportingExtensionStableId,
+                              kOnPremReportingExtensionBetaId,
+                              kCloudReportingExtensionId};
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
 
-ManagementUIHandler::~ManagementUIHandler() {}
+ManagementUIHandler::~ManagementUIHandler() {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  RemoveObservers();
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
 
 void ManagementUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -346,6 +357,10 @@ void ManagementUIHandler::RegisterMessages() {
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+void ManagementUIHandler::OnJavascriptDisallowed() {
+  RemoveObservers();
+}
+
 void ManagementUIHandler::AddExtensionReportingInfo(
     base::Value* report_sources) {
   const extensions::Extension* cloud_reporting_extension =
@@ -656,7 +671,88 @@ void ManagementUIHandler::HandleInitBrowserReportingInfo(
   AllowJavascript();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   AddExtensionReportingInfo(&report_sources);
+  AddObservers();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void ManagementUIHandler::NotifyBrowserReportingInfoUpdated() {
+  base::Value report_sources(base::Value::Type::LIST);
+  AddExtensionReportingInfo(&report_sources);
+  FireWebUIListener("browser-reporting-info-updated", report_sources);
+}
+
+void ManagementUIHandler::OnExtensionLoaded(
+    content::BrowserContext* /*browser_context*/,
+    const extensions::Extension* extension) {
+  if (reporting_extension_ids_.find(extension->id()) !=
+      reporting_extension_ids_.end()) {
+    NotifyBrowserReportingInfoUpdated();
+  }
+}
+
+void ManagementUIHandler::OnExtensionUnloaded(
+    content::BrowserContext* /*browser_context*/,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason /*reason*/) {
+  if (reporting_extension_ids_.find(extension->id()) !=
+      reporting_extension_ids_.end()) {
+    NotifyBrowserReportingInfoUpdated();
+  }
+}
+
+void ManagementUIHandler::OnPolicyUpdated(
+    const policy::PolicyNamespace& ns,
+    const policy::PolicyMap& /*previous*/,
+    const policy::PolicyMap& /*current*/) {
+  const policy::PolicyNamespace
+      on_prem_reporting_extension_stable_policy_namespace =
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
+                                  kOnPremReportingExtensionStableId);
+  const policy::PolicyNamespace
+      on_prem_reporting_extension_beta_policy_namespace =
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_EXTENSIONS,
+                                  kOnPremReportingExtensionBetaId);
+
+  if (ns == on_prem_reporting_extension_stable_policy_namespace ||
+      ns == on_prem_reporting_extension_beta_policy_namespace) {
+    return;
+  }
+
+  NotifyBrowserReportingInfoUpdated();
+}
+
+void ManagementUIHandler::AddObservers() {
+  if (has_observers_)
+    return;
+
+  has_observers_ = true;
+
+  extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+      ->AddObserver(this);
+
+  policy::PolicyService* policy_service =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()))
+          ->policy_service();
+  policy_service->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
+}
+
+void ManagementUIHandler::RemoveObservers() {
+  if (!has_observers_)
+    return;
+
+  has_observers_ = false;
+
+  extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+      ->RemoveObserver(this);
+
+  policy::PolicyService* policy_service =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()))
+          ->policy_service();
+  policy_service->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
