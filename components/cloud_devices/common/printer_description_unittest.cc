@@ -270,6 +270,254 @@ const char kDocumentTypeNotListCdd[] =
     "  }"
     "}";
 
+const char kIntegerRangeVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'INTEGER',"
+    "  'min': '0',"
+    "  'max': '10'"
+    "}";
+
+const char kFloatDefaultRangeVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'FLOAT',"
+    "  'min': '0.0',"
+    "  'max': '1.0',"
+    "  'default': '0.5'"
+    "}";
+
+const char kInvalidTypeRangeVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'BOOLEAN',"
+    "  'min': '0.0',"
+    "  'max': '1.0'"
+    "}";
+
+const char kMissingMinValueRangeVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'INT',"
+    "  'max': '10'"
+    "}";
+
+const char kInvalidBoundariesRangeVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'INT',"
+    "  'min': '10',"
+    "  'max': '0'"
+    "}";
+
+const char kInvalidDefaultValueRangeVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'FLOAT',"
+    "  'min': '0.0',"
+    "  'max': '5.0',"
+    "  'default': '10.0'"
+    "}";
+
+const char kSelectVendorCapabilityJson[] =
+    "{"
+    "  'option': [ {"
+    "    'value': 'value_1',"
+    "    'display_name': 'name_1'"
+    "  }, {"
+    "    'value': 'value_2',"
+    "    'display_name': 'name_2',"
+    "    'is_default': true"
+    "  } ]"
+    "}";
+
+const char kNotListSelectVendorCapabilityJson[] =
+    "{"
+    "  'option': {"
+    "    'value': 'value',"
+    "    'display_name': 'name'"
+    "  }"
+    "}";
+
+const char kMissingValueSelectVendorCapabilityJson[] =
+    "{"
+    "  'option': [ {"
+    "    'display_name': 'name'"
+    "  } ]"
+    "}";
+
+const char kMissingDisplayNameSelectVendorCapabilityJson[] =
+    "{"
+    "  'option': [ {"
+    "    'value': 'value'"
+    "  } ]"
+    "}";
+
+const char kNoDefaultSelectVendorCapabilityJson[] =
+    "{"
+    "  'option': [ {"
+    "    'value': 'value',"
+    "    'display_name': 'name'"
+    "  } ]"
+    "}";
+
+const char kSeveralDefaultsSelectVendorCapabilityJson[] =
+    "{"
+    "  'option': [ {"
+    "    'value': 'value_1',"
+    "    'display_name': 'name_1',"
+    "    'is_default': true"
+    "  }, {"
+    "    'value': 'value_2',"
+    "    'display_name': 'name_2',"
+    "    'is_default': true"
+    "  } ]"
+    "}";
+
+const char kBooleanTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'BOOLEAN',"
+    "  'default': 'true'"
+    "}";
+
+const char kFloatTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'FLOAT',"
+    "  'default': '1.0'"
+    "}";
+
+const char kIntegerTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'INTEGER',"
+    "  'default': '10'"
+    "}";
+
+const char kStringTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'STRING',"
+    "  'default': 'value'"
+    "}";
+
+const char kMissingValueTypeTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'default': 'value'"
+    "}";
+
+const char kInvalidBooleanTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'BOOLEAN',"
+    "  'default': '1'"
+    "}";
+
+const char kInvalidFloatTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'FLOAT',"
+    "  'default': '1.1.1.1'"
+    "}";
+
+const char kInvalidIntegerTypedValueVendorCapabilityJson[] =
+    "{"
+    "  'value_type': 'INTEGER',"
+    "  'default': 'true'"
+    "}";
+
+const char kVendorCapabilityOnlyCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'vendor_capability': [ {"
+    "      'id': 'id_1',"
+    "      'display_name': 'name_1',"
+    "      'type': 'RANGE',"
+    "      'range_cap': {"
+    "       'value_type': 'INTEGER',"
+    "       'min': '1',"
+    "       'max': '10'"
+    "      }"
+    "    }, {"
+    "      'id': 'id_2',"
+    "      'display_name': 'name_2',"
+    "      'type': 'SELECT',"
+    "      'select_cap': {"
+    "        'option': [ {"
+    "          'value': 'value',"
+    "          'display_name': 'name',"
+    "          'is_default': true"
+    "         } ]"
+    "      }"
+    "    }, {"
+    "      'id': 'id_3',"
+    "      'display_name': 'name_3',"
+    "      'type': 'TYPED_VALUE',"
+    "      'typed_value_cap': {"
+    "       'value_type': 'INTEGER',"
+    "       'default': '1'"
+    "      }"
+    "    } ]"
+    "  }"
+    "}";
+
+const char kMissingIdVendorCapabilityCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'vendor_capability': [ {"
+    "      'display_name': 'name_1',"
+    "      'type': 'RANGE',"
+    "      'range_cap': {"
+    "       'value_type': 'INTEGER',"
+    "       'min': '1',"
+    "       'max': '10'"
+    "      }"
+    "    } ]"
+    "  }"
+    "}";
+
+const char kInvalidInnerCapabilityVendorCapabilityCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'vendor_capability': [ {"
+    "      'display_name': 'name_1',"
+    "      'type': 'RANGE',"
+    "      'range_cap': {"
+    "       'value_type': 'INTEGER',"
+    "       'min': '10',"
+    "       'max': '1'"
+    "      }"
+    "    } ]"
+    "  }"
+    "}";
+
+const char kNoInnerCapabilityVendorCapabilityCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'vendor_capability': [ {"
+    "      'display_name': 'name_1',"
+    "      'type': 'RANGE'"
+    "    } ]"
+    "  }"
+    "}";
+
+const char kSeveralInnerCapabilitiesVendorCapabilityCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'vendor_capability': [ {"
+    "      'id': 'id_1',"
+    "      'display_name': 'name_1',"
+    "      'type': 'RANGE',"
+    "      'range_cap': {"
+    "       'value_type': 'INTEGER',"
+    "       'min': '1',"
+    "       'max': '10'"
+    "      },"
+    "      'select_cap': {"
+    "        'option': [ {"
+    "          'value': 'value',"
+    "          'display_name': 'name',"
+    "          'is_default': true"
+    "         } ]"
+    "      }"
+    "    } ]"
+    "  }"
+    "}";
+
 const char kCjt[] =
     "{"
     "  'version': '1.0',"
@@ -337,6 +585,38 @@ const char kBadVersionCjt[] =
     "  'print': {"
     "  }"
     "}";
+
+const struct TestRangeCapabilities {
+  const char* const json_name;
+  RangeVendorCapability range_capability;
+} kTestRangeCapabilities[] = {
+    {kIntegerRangeVendorCapabilityJson,
+     RangeVendorCapability(RangeVendorCapability::ValueType::INTEGER,
+                           "0",
+                           "10")},
+    {kFloatDefaultRangeVendorCapabilityJson,
+     RangeVendorCapability(RangeVendorCapability::ValueType::FLOAT,
+                           "0.0",
+                           "1.0",
+                           "0.5")}};
+
+const struct TestTypedValueCapabilities {
+  const char* const json_name;
+  TypedValueVendorCapability typed_value_capability;
+} kTestTypedValueCapabilities[] = {
+    {kBooleanTypedValueVendorCapabilityJson,
+     TypedValueVendorCapability(TypedValueVendorCapability::ValueType::BOOLEAN,
+                                "true")},
+    {kFloatTypedValueVendorCapabilityJson,
+     TypedValueVendorCapability(TypedValueVendorCapability::ValueType::FLOAT,
+                                "1.0")},
+    {kIntegerTypedValueVendorCapabilityJson,
+     TypedValueVendorCapability(TypedValueVendorCapability::ValueType::INTEGER,
+                                "10")},
+    {kStringTypedValueVendorCapabilityJson,
+     TypedValueVendorCapability(TypedValueVendorCapability::ValueType::STRING,
+                                "value")},
+};
 
 TEST(PrinterDescriptionTest, CddInit) {
   CloudDeviceDescription description;
@@ -614,6 +894,194 @@ TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
     EXPECT_EQ(NormalizeJson(kDocumentTypeNoneCdd),
               NormalizeJson(description.ToString()));
   }
+}
+
+TEST(PrinterDescriptionTest, CddGetRangeVendorCapability) {
+  for (const auto& capacity : kTestRangeCapabilities) {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(NormalizeJson(capacity.json_name));
+    ASSERT_TRUE(value);
+    base::Value description = base::Value::FromUniquePtrValue(std::move(value));
+    RangeVendorCapability range_capability;
+    EXPECT_TRUE(range_capability.LoadFrom(description));
+    EXPECT_EQ(capacity.range_capability, range_capability);
+  }
+
+  const char* const kInvalidJsonNames[] = {
+      kMissingMinValueRangeVendorCapabilityJson,
+      kInvalidTypeRangeVendorCapabilityJson,
+      kInvalidBoundariesRangeVendorCapabilityJson,
+      kInvalidDefaultValueRangeVendorCapabilityJson};
+  for (const char* invalid_json_name : kInvalidJsonNames) {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(NormalizeJson(invalid_json_name));
+    ASSERT_TRUE(value);
+    base::Value description = base::Value::FromUniquePtrValue(std::move(value));
+    RangeVendorCapability range_capability;
+    EXPECT_FALSE(range_capability.LoadFrom(description));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddSetRangeVendorCapability) {
+  for (const auto& capacity : kTestRangeCapabilities) {
+    base::Value range_capability_value(base::Value::Type::DICTIONARY);
+    capacity.range_capability.SaveTo(&range_capability_value);
+    std::string range_capability_str;
+    EXPECT_TRUE(base::JSONWriter::WriteWithOptions(
+        range_capability_value, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+        &range_capability_str));
+    EXPECT_EQ(NormalizeJson(capacity.json_name),
+              NormalizeJson(range_capability_str));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddGetSelectVendorCapability) {
+  {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(NormalizeJson(kSelectVendorCapabilityJson));
+    ASSERT_TRUE(value);
+    base::Value description = base::Value::FromUniquePtrValue(std::move(value));
+    SelectVendorCapability select_capability;
+    EXPECT_TRUE(select_capability.LoadFrom(description));
+    EXPECT_EQ(2u, select_capability.size());
+    EXPECT_TRUE(select_capability.Contains(
+        SelectVendorCapabilityOption("value_1", "name_1")));
+    EXPECT_TRUE(select_capability.Contains(
+        SelectVendorCapabilityOption("value_2", "name_2")));
+    EXPECT_EQ(SelectVendorCapabilityOption("value_2", "name_2"),
+              select_capability.GetDefault());
+  }
+
+  const char* const kInvalidJsonNames[] = {
+      kNotListSelectVendorCapabilityJson,
+      kMissingValueSelectVendorCapabilityJson,
+      kMissingDisplayNameSelectVendorCapabilityJson,
+      kNoDefaultSelectVendorCapabilityJson,
+      kSeveralDefaultsSelectVendorCapabilityJson};
+  for (const char* invalid_json_name : kInvalidJsonNames) {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(NormalizeJson(invalid_json_name));
+    ASSERT_TRUE(value);
+    base::Value description = base::Value::FromUniquePtrValue(std::move(value));
+    SelectVendorCapability select_capability;
+    EXPECT_FALSE(select_capability.LoadFrom(description));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddSetSelectVendorCapability) {
+  SelectVendorCapability select_capability;
+  select_capability.AddOption(
+      SelectVendorCapabilityOption("value_1", "name_1"));
+  select_capability.AddDefaultOption(
+      SelectVendorCapabilityOption("value_2", "name_2"), true);
+  base::Value select_capability_value(base::Value::Type::DICTIONARY);
+  select_capability.SaveTo(&select_capability_value);
+  std::string select_capability_str;
+  EXPECT_TRUE(base::JSONWriter::WriteWithOptions(
+      select_capability_value, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &select_capability_str));
+  EXPECT_EQ(NormalizeJson(kSelectVendorCapabilityJson),
+            NormalizeJson(select_capability_str));
+}
+
+TEST(PrinterDescriptionTest, CddGetTypedValueVendorCapability) {
+  for (const auto& capacity : kTestTypedValueCapabilities) {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(NormalizeJson(capacity.json_name));
+    ASSERT_TRUE(value);
+    base::Value description = base::Value::FromUniquePtrValue(std::move(value));
+    TypedValueVendorCapability typed_value_capability;
+    EXPECT_TRUE(typed_value_capability.LoadFrom(description));
+    EXPECT_EQ(capacity.typed_value_capability, typed_value_capability);
+  }
+
+  const char* const kInvalidJsonNames[] = {
+      kMissingValueTypeTypedValueVendorCapabilityJson,
+      kInvalidBooleanTypedValueVendorCapabilityJson,
+      kInvalidFloatTypedValueVendorCapabilityJson,
+      kInvalidIntegerTypedValueVendorCapabilityJson};
+  for (const char* invalid_json_name : kInvalidJsonNames) {
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::Read(NormalizeJson(invalid_json_name));
+    ASSERT_TRUE(value);
+    base::Value description = base::Value::FromUniquePtrValue(std::move(value));
+    TypedValueVendorCapability typed_value_capability;
+    EXPECT_FALSE(typed_value_capability.LoadFrom(description));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddSetTypedValueVendorCapability) {
+  for (const auto& capacity : kTestTypedValueCapabilities) {
+    base::Value typed_value_capability_value(base::Value::Type::DICTIONARY);
+    capacity.typed_value_capability.SaveTo(&typed_value_capability_value);
+    std::string typed_value_capability_str;
+    EXPECT_TRUE(base::JSONWriter::WriteWithOptions(
+        typed_value_capability_value, base::JSONWriter::OPTIONS_PRETTY_PRINT,
+        &typed_value_capability_str));
+    EXPECT_EQ(NormalizeJson(capacity.json_name),
+              NormalizeJson(typed_value_capability_str));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddGetVendorCapability) {
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(
+        description.InitFromString(NormalizeJson(kVendorCapabilityOnlyCdd)));
+
+    VendorCapabilities vendor_capabilities;
+    EXPECT_TRUE(vendor_capabilities.LoadFrom(description));
+    EXPECT_EQ(3u, vendor_capabilities.size());
+    EXPECT_TRUE(vendor_capabilities.Contains(VendorCapability(
+        VendorCapability::Type::RANGE, "id_1", "name_1",
+        RangeVendorCapability(RangeVendorCapability::ValueType::INTEGER, "1",
+                              "10"))));
+    SelectVendorCapability select_capability;
+    select_capability.AddDefaultOption(
+        SelectVendorCapabilityOption("value", "name"), true);
+    EXPECT_TRUE(vendor_capabilities.Contains(
+        VendorCapability(VendorCapability::Type::SELECT, "id_2", "name_2",
+                         std::move(select_capability))));
+    EXPECT_TRUE(vendor_capabilities.Contains(VendorCapability(
+        VendorCapability::Type::TYPED_VALUE, "id_3", "name_3",
+        TypedValueVendorCapability(
+            TypedValueVendorCapability::ValueType::INTEGER, "1"))));
+  }
+
+  const char* const kInvalidJsonNames[] = {
+      kMissingIdVendorCapabilityCdd, kInvalidInnerCapabilityVendorCapabilityCdd,
+      kNoInnerCapabilityVendorCapabilityCdd,
+      kSeveralInnerCapabilitiesVendorCapabilityCdd};
+  for (const char* invalid_json_name : kInvalidJsonNames) {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(description.InitFromString(NormalizeJson(invalid_json_name)));
+    VendorCapabilities vendor_capabilities;
+    EXPECT_FALSE(vendor_capabilities.LoadFrom(description));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddSetVendorCapability) {
+  CloudDeviceDescription description;
+
+  VendorCapabilities vendor_capabilities;
+  vendor_capabilities.AddOption(VendorCapability(
+      VendorCapability::Type::RANGE, "id_1", "name_1",
+      RangeVendorCapability(RangeVendorCapability::ValueType::INTEGER, "1",
+                            "10")));
+  SelectVendorCapability select_capability;
+  select_capability.AddDefaultOption(
+      SelectVendorCapabilityOption("value", "name"), true);
+  vendor_capabilities.AddOption(VendorCapability(VendorCapability::Type::SELECT,
+                                                 "id_2", "name_2",
+                                                 std::move(select_capability)));
+  vendor_capabilities.AddOption(VendorCapability(
+      VendorCapability::Type::TYPED_VALUE, "id_3", "name_3",
+      TypedValueVendorCapability(TypedValueVendorCapability::ValueType::INTEGER,
+                                 "1")));
+
+  vendor_capabilities.SaveTo(&description);
+  EXPECT_EQ(NormalizeJson(kVendorCapabilityOnlyCdd),
+            NormalizeJson(description.ToString()));
 }
 
 TEST(PrinterDescriptionTest, CddGetAll) {

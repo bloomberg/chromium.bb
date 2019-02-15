@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "components/cloud_devices/common/description_items.h"
 
 // Defines printer options, CDD and CJT items.
@@ -19,6 +20,12 @@
 namespace cloud_devices {
 
 namespace printer {
+
+struct SelectVendorCapabilityOption;
+class SelectVendorCapabilityTraits;
+typedef SelectionCapability<SelectVendorCapabilityOption,
+                            SelectVendorCapabilityTraits>
+    SelectVendorCapability;
 
 typedef std::string ContentType;
 
@@ -42,6 +49,140 @@ struct PwgRasterConfig {
   DocumentSheetBack document_sheet_back;
   bool reverse_order_streaming;
   bool rotate_all_pages;
+};
+
+class RangeVendorCapability {
+ public:
+  enum class ValueType {
+    FLOAT,
+    INTEGER,
+  };
+
+  RangeVendorCapability();
+  RangeVendorCapability(ValueType value_type,
+                        const std::string& min_value,
+                        const std::string& max_value);
+  RangeVendorCapability(ValueType value_type,
+                        const std::string& min_value,
+                        const std::string& max_value,
+                        const std::string& default_value);
+  RangeVendorCapability(RangeVendorCapability&& other);
+  ~RangeVendorCapability();
+
+  RangeVendorCapability& operator=(RangeVendorCapability&& other);
+
+  bool operator==(const RangeVendorCapability& other) const;
+  bool operator!=(const RangeVendorCapability& other) const {
+    return !(*this == other);
+  }
+
+  bool IsValid() const;
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
+
+ private:
+  ValueType value_type_;
+  std::string min_value_;
+  std::string max_value_;
+  std::string default_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(RangeVendorCapability);
+};
+
+struct SelectVendorCapabilityOption {
+  SelectVendorCapabilityOption();
+  SelectVendorCapabilityOption(const std::string& value,
+                               const std::string& display_name);
+  ~SelectVendorCapabilityOption();
+
+  bool IsValid() const;
+  bool operator==(const SelectVendorCapabilityOption& other) const;
+  bool operator!=(const SelectVendorCapabilityOption& other) const {
+    return !(*this == other);
+  }
+
+  std::string value;
+  std::string display_name;
+};
+
+class TypedValueVendorCapability {
+ public:
+  enum class ValueType {
+    BOOLEAN,
+    FLOAT,
+    INTEGER,
+    STRING,
+  };
+
+  TypedValueVendorCapability();
+  explicit TypedValueVendorCapability(ValueType value_type);
+  TypedValueVendorCapability(ValueType value_type,
+                             const std::string& default_value);
+  TypedValueVendorCapability(TypedValueVendorCapability&& other);
+  ~TypedValueVendorCapability();
+
+  TypedValueVendorCapability& operator=(TypedValueVendorCapability&& other);
+
+  bool operator==(const TypedValueVendorCapability& other) const;
+  bool operator!=(const TypedValueVendorCapability& other) const {
+    return !(*this == other);
+  }
+
+  bool IsValid() const;
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
+
+ private:
+  ValueType value_type_;
+  std::string default_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(TypedValueVendorCapability);
+};
+
+class VendorCapability {
+ public:
+  enum class Type {
+    RANGE,
+    SELECT,
+    TYPED_VALUE,
+  };
+
+  VendorCapability();
+  VendorCapability(Type type,
+                   const std::string& id,
+                   const std::string& display_name,
+                   RangeVendorCapability range_capability);
+  VendorCapability(Type type,
+                   const std::string& id,
+                   const std::string& display_name,
+                   SelectVendorCapability select_capability);
+  VendorCapability(Type type,
+                   const std::string& id,
+                   const std::string& display_name,
+                   TypedValueVendorCapability typed_value_capability);
+  VendorCapability(VendorCapability&& other);
+  ~VendorCapability();
+
+  bool operator==(const VendorCapability& other) const;
+  bool operator!=(const VendorCapability& other) const {
+    return !(*this == other);
+  }
+
+  bool IsValid() const;
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
+
+ private:
+  Type type_;
+  std::string id_;
+  std::string display_name_;
+
+  // If the CDD is valid, exactly one of the capabilities has non-nullopt value.
+  base::Optional<RangeVendorCapability> range_capability_;
+  base::Optional<SelectVendorCapability> select_capability_;
+  base::Optional<TypedValueVendorCapability> typed_value_capability_;
+
+  DISALLOW_COPY_AND_ASSIGN(VendorCapability);
 };
 
 enum class ColorType {
@@ -343,6 +484,7 @@ typedef std::vector<Interval> PageRange;
 
 class ContentTypeTraits;
 class PwgRasterConfigTraits;
+class VendorCapabilityTraits;
 class ColorTraits;
 class DuplexTraits;
 class OrientationTraits;
@@ -357,6 +499,8 @@ class CollateTraits;
 typedef ListCapability<ContentType, ContentTypeTraits> ContentTypesCapability;
 typedef ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>
     PwgRasterConfigCapability;
+typedef ListCapability<VendorCapability, VendorCapabilityTraits>
+    VendorCapabilities;
 typedef SelectionCapability<Color, ColorTraits> ColorCapability;
 typedef SelectionCapability<DuplexType, DuplexTraits> DuplexCapability;
 typedef SelectionCapability<OrientationType, OrientationTraits>
