@@ -251,6 +251,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Nullable
     private NavigationController getNavigationController() {
+        if (getActivityTab() == null) return null;
+
         WebContents webContents = getActivityTab().getWebContents();
         return webContents == null ? null : webContents.getNavigationController();
     }
