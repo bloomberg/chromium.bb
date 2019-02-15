@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include <utility>
+
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 namespace {
@@ -22,8 +23,6 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver) {
   input->dependent_locality = "Venice";
   input->postal_code = "90291";
   input->sorting_code = "CEDEX";
-  input->language_code = "en";
-  input->script_code = "Latn";
   input->organization = "Google";
   input->recipient = "Jon Doe";
   input->phone = "Phone Number";
@@ -41,32 +40,9 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver) {
   EXPECT_EQ("Venice", output->dependentLocality());
   EXPECT_EQ("90291", output->postalCode());
   EXPECT_EQ("CEDEX", output->sortingCode());
-  EXPECT_EQ("en-Latn", output->languageCode());
   EXPECT_EQ("Google", output->organization());
   EXPECT_EQ("Jon Doe", output->recipient());
   EXPECT_EQ("Phone Number", output->phone());
-}
-
-TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
-  payments::mojom::blink::PaymentAddressPtr input =
-      payments::mojom::blink::PaymentAddress::New();
-  input->script_code = "Latn";
-
-  PaymentAddress* output =
-      MakeGarbageCollected<PaymentAddress>(std::move(input));
-
-  EXPECT_TRUE(output->languageCode().IsEmpty());
-}
-
-TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode) {
-  payments::mojom::blink::PaymentAddressPtr input =
-      payments::mojom::blink::PaymentAddress::New();
-  input->language_code = "en";
-
-  PaymentAddress* output =
-      MakeGarbageCollected<PaymentAddress>(std::move(input));
-
-  EXPECT_EQ("en", output->languageCode());
 }
 
 }  // namespace

@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(
   ExpectBodyContains(
       {"\"billingAddress\": {", "\"666 Erebus St.\"", "\"Apt 8\"",
        "\"city\": \"Elysium\"", "\"dependentLocality\": \"\"",
-       "\"country\": \"US\"", "\"sortingCode\": \"\"", "\"languageCode\": \"\"",
+       "\"country\": \"US\"", "\"sortingCode\": \"\"",
        "\"organization\": \"Underworld\"", "\"phone\": \"+16502111111\"",
        "\"postalCode\": \"91111\"", "\"recipient\": \"John H. Doe\"",
        "\"region\": \"CA\""});
@@ -96,13 +96,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseShippingAddressTest,
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the shipping address was sent to the merchant.
-  ExpectBodyContains({"\"country\": \"US\"", "\"123 Main Street\"",
-                      "\"Unit 1\"", "\"region\": \"MI\"",
-                      "\"city\": \"Greensdale\"", "\"dependentLocality\": \"\"",
-                      "\"postalCode\": \"48838\"", "\"sortingCode\": \"\"",
-                      "\"languageCode\": \"\"", "\"organization\": \"ACME\"",
-                      "\"recipient\": \"Jane A. Smith\"",
-                      "\"phone\": \"+13105557889\""});
+  ExpectBodyContains(
+      {"\"country\": \"US\"", "\"123 Main Street\"", "\"Unit 1\"",
+       "\"region\": \"MI\"", "\"city\": \"Greensdale\"",
+       "\"dependentLocality\": \"\"", "\"postalCode\": \"48838\"",
+       "\"sortingCode\": \"\"", "\"organization\": \"ACME\"",
+       "\"recipient\": \"Jane A. Smith\"", "\"phone\": \"+13105557889\""});
 
   // Test that the shipping option was sent to the merchant.
   ExpectBodyContains({"\"shippingOption\": \"freeShippingOption\""});

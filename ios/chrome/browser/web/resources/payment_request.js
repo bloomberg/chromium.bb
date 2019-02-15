@@ -1394,7 +1394,6 @@ window.PaymentItem;
  *   dependentLocality: string,
  *   postalCode: string,
  *   sortingCode: string,
- *   languageCode: string,
  *   organization: string,
  *   recipient: string,
  *   phone: string

@@ -60,59 +60,10 @@ bool PaymentsValidators::IsValidCountryCodeFormat(
   return false;
 }
 
-bool PaymentsValidators::IsValidLanguageCodeFormat(
-    const String& code,
-    String* optional_error_message) {
-  if (ScriptRegexp("^([a-z]{2,3})?$", kTextCaseSensitive).Match(code) == 0)
-    return true;
-
-  if (optional_error_message)
-    *optional_error_message =
-        "'" + code +
-        "' is not a valid BCP-47 language code, should be "
-        "2-3 lower case letters [a-z]";
-
-  return false;
-}
-
-bool PaymentsValidators::IsValidScriptCodeFormat(
-    const String& code,
-    String* optional_error_message) {
-  if (ScriptRegexp("^([A-Z][a-z]{3})?$", kTextCaseSensitive).Match(code) == 0)
-    return true;
-
-  if (optional_error_message)
-    *optional_error_message =
-        "'" + code +
-        "' is not a valid ISO 15924 script code, should be "
-        "an upper case letter [A-Z] followed by 3 lower "
-        "case letters [a-z]";
-
-  return false;
-}
-
 bool PaymentsValidators::IsValidShippingAddress(
     const payments::mojom::blink::PaymentAddressPtr& address,
     String* optional_error_message) {
-  if (!IsValidCountryCodeFormat(address->country, optional_error_message))
-    return false;
-
-  if (!IsValidLanguageCodeFormat(address->language_code,
-                                 optional_error_message))
-    return false;
-
-  if (!IsValidScriptCodeFormat(address->script_code, optional_error_message))
-    return false;
-
-  if (address->language_code.IsEmpty() && !address->script_code.IsEmpty()) {
-    if (optional_error_message)
-      *optional_error_message =
-          "If language code is empty, then script code should also be empty";
-
-    return false;
-  }
-
-  return true;
+  return IsValidCountryCodeFormat(address->country, optional_error_message);
 }
 
 bool PaymentsValidators::IsValidErrorMsgFormat(const String& error,
@@ -140,9 +91,6 @@ bool PaymentsValidators::IsValidAddressErrorsFormat(
           IsValidErrorMsgFormat(errors->country(), optional_error_message)) &&
          (!errors->hasDependentLocality() ||
           IsValidErrorMsgFormat(errors->dependentLocality(),
-                                optional_error_message)) &&
-         (!errors->hasLanguageCode() ||
-          IsValidErrorMsgFormat(errors->languageCode(),
                                 optional_error_message)) &&
          (!errors->hasOrganization() ||
           IsValidErrorMsgFormat(errors->organization(),

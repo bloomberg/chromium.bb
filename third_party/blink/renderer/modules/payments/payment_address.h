@@ -33,7 +33,6 @@ class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
   const String& dependentLocality() const { return dependent_locality_; }
   const String& postalCode() const { return postal_code_; }
   const String& sortingCode() const { return sorting_code_; }
-  const String& languageCode() const { return language_code_; }
   const String& organization() const { return organization_; }
   const String& recipient() const { return recipient_; }
   const String& phone() const { return phone_; }
@@ -46,7 +45,6 @@ class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
   String dependent_locality_;
   String postal_code_;
   String sorting_code_;
-  String language_code_;
   String organization_;
   String recipient_;
   String phone_;

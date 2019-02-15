@@ -59,47 +59,6 @@ bool PaymentsValidators::IsValidCountryCodeFormat(
 }
 
 // static
-bool PaymentsValidators::IsValidLanguageCodeFormat(
-    const std::string& code,
-    std::string* optional_error_message) {
-  if (RE2::FullMatch(code, "([a-z]{2,3})?"))
-    return true;
-
-  if (optional_error_message)
-    *optional_error_message =
-        "'" + code +
-        "' is not a valid BCP-47 language code, should be "
-        "2-3 lower case letters [a-z]";
-
-  return false;
-}
-
-// static
-bool PaymentsValidators::IsValidScriptCodeFormat(
-    const std::string& code,
-    std::string* optional_error_message) {
-  if (RE2::FullMatch(code, "([A-Z][a-z]{3})?"))
-    return true;
-
-  if (optional_error_message)
-    *optional_error_message =
-        "'" + code +
-        "' is not a valid ISO 15924 script code, should be "
-        "an upper case letter [A-Z] followed by 3 lower "
-        "case letters [a-z]";
-
-  return false;
-}
-
-// static
-void PaymentsValidators::SplitLanguageTag(const std::string& tag,
-                                          std::string* language_code,
-                                          std::string* script_code) {
-  RE2::FullMatch(tag, "^([a-z]{2})(-([A-Z][a-z]{3}))?(-[A-Za-z]+)*$",
-                 language_code, (void*)nullptr, script_code);
-}
-
-// static
 bool PaymentsValidators::IsValidErrorMsgFormat(
     const std::string& error,
     std::string* optional_error_message) {
@@ -123,7 +82,6 @@ bool PaymentsValidators::IsValidAddressErrorsFormat(
          IsValidErrorMsgFormat(errors->country, optional_error_message) &&
          IsValidErrorMsgFormat(errors->dependent_locality,
                                optional_error_message) &&
-         IsValidErrorMsgFormat(errors->language_code, optional_error_message) &&
          IsValidErrorMsgFormat(errors->organization, optional_error_message) &&
          IsValidErrorMsgFormat(errors->phone, optional_error_message) &&
          IsValidErrorMsgFormat(errors->postal_code, optional_error_message) &&

@@ -35,19 +35,8 @@ class MODULES_EXPORT PaymentsValidators final {
   static bool IsValidCountryCodeFormat(const String& code,
                                        String* optional_error_message);
 
-  // Returns true if |code| is a valid ISO 639 language code.
-  static bool IsValidLanguageCodeFormat(const String& code,
-                                        String* optional_error_message);
-
-  // Returns true if |code| is a valid ISO 15924 script code.
-  static bool IsValidScriptCodeFormat(const String& code,
-                                      String* optional_error_message);
-
   // Returns true if the payment address is valid:
   //  - Has a valid region code
-  //  - Has a valid language code, if any.
-  //  - Has a valid script code, if any.
-  // A script code should be present only if language code is present.
   static bool IsValidShippingAddress(
       const payments::mojom::blink::PaymentAddressPtr&,
       String* optional_error_message);

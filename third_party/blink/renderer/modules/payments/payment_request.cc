@@ -191,8 +191,6 @@ struct TypeConverter<AddressErrorsPtr, blink::AddressErrors*> {
     output->dependent_locality = input->hasDependentLocality()
                                      ? input->dependentLocality()
                                      : g_empty_string;
-    output->language_code =
-        input->hasLanguageCode() ? input->languageCode() : g_empty_string;
     output->organization =
         input->hasOrganization() ? input->organization() : g_empty_string;
     output->phone = input->hasPhone() ? input->phone() : g_empty_string;

@@ -5,6 +5,7 @@
 #include "components/payments/core/payments_validators.h"
 
 #include <ostream>  // NOLINT
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
@@ -149,108 +150,6 @@ INSTANTIATE_TEST_SUITE_P(CountryCodes,
                                          TestCase("USA", false),
                                          TestCase("", false)));
 
-class PaymentsLanguageValidatorTest : public testing::TestWithParam<TestCase> {
-};
-
-TEST_P(PaymentsLanguageValidatorTest, IsValidLanguageCodeFormat) {
-  std::string error_message;
-  EXPECT_EQ(GetParam().expected_valid,
-            payments::PaymentsValidators::IsValidLanguageCodeFormat(
-                GetParam().input, &error_message))
-      << error_message;
-  EXPECT_EQ(GetParam().expected_valid, error_message.empty()) << error_message;
-
-  EXPECT_EQ(GetParam().expected_valid,
-            payments::PaymentsValidators::IsValidLanguageCodeFormat(
-                GetParam().input, nullptr));
-}
-
-INSTANTIATE_TEST_SUITE_P(LanguageCodes,
-                         PaymentsLanguageValidatorTest,
-                         testing::Values(TestCase("", true),
-                                         TestCase("en", true),
-                                         TestCase("eng", true),
-                                         // Invalid language code formats
-                                         TestCase("e1", false),
-                                         TestCase("en1", false),
-                                         TestCase("e", false),
-                                         TestCase("engl", false),
-                                         TestCase("EN", false)));
-
-class PaymentsScriptValidatorTest : public testing::TestWithParam<TestCase> {};
-
-TEST_P(PaymentsScriptValidatorTest, IsValidScriptCodeFormat) {
-  std::string error_message;
-  EXPECT_EQ(GetParam().expected_valid,
-            payments::PaymentsValidators::IsValidScriptCodeFormat(
-                GetParam().input, &error_message))
-      << error_message;
-  EXPECT_EQ(GetParam().expected_valid, error_message.empty()) << error_message;
-
-  EXPECT_EQ(GetParam().expected_valid,
-            payments::PaymentsValidators::IsValidScriptCodeFormat(
-                GetParam().input, nullptr));
-}
-
-INSTANTIATE_TEST_SUITE_P(ScriptCodes,
-                         PaymentsScriptValidatorTest,
-                         testing::Values(TestCase("", true),
-                                         TestCase("Latn", true),
-                                         // Invalid script code formats
-                                         TestCase("Lat1", false),
-                                         TestCase("1lat", false),
-                                         TestCase("Latin", false),
-                                         TestCase("Lat", false),
-                                         TestCase("latn", false),
-                                         TestCase("LATN", false)));
-
-struct LanguageTagTestCase {
-  LanguageTagTestCase(const char* language_tag,
-                      const char* expected_language_code,
-                      const char* expected_script_code)
-      : language_tag(language_tag),
-        expected_language_code(expected_language_code),
-        expected_script_code(expected_script_code) {}
-  ~LanguageTagTestCase() {}
-
-  const char* language_tag;
-  const char* expected_language_code;
-  const char* expected_script_code;
-};
-
-class PaymentsLanguageTagSplitTest
-    : public testing::TestWithParam<LanguageTagTestCase> {};
-
-TEST_P(PaymentsLanguageTagSplitTest, Test) {
-  std::string language_code;
-  std::string script_code;
-
-  PaymentsValidators::SplitLanguageTag(GetParam().language_tag, &language_code,
-                                       &script_code);
-
-  EXPECT_EQ(GetParam().expected_language_code, language_code);
-  EXPECT_EQ(GetParam().expected_script_code, script_code);
-  EXPECT_TRUE(
-      PaymentsValidators::IsValidLanguageCodeFormat(language_code, nullptr));
-  EXPECT_TRUE(
-      PaymentsValidators::IsValidScriptCodeFormat(script_code, nullptr));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    LanguageTags,
-    PaymentsLanguageTagSplitTest,
-    testing::Values(LanguageTagTestCase("", "", ""),
-                    LanguageTagTestCase("ja", "ja", ""),
-                    LanguageTagTestCase("ja-Latn", "ja", "Latn"),
-                    LanguageTagTestCase("ja-Latn-JP", "ja", "Latn"),
-                    LanguageTagTestCase("ja-JP", "ja", ""),
-                    LanguageTagTestCase("Latn", "", ""),
-                    LanguageTagTestCase("JP", "", ""),
-                    LanguageTagTestCase("en", "en", ""),
-                    LanguageTagTestCase("en-Latn", "en", "Latn"),
-                    LanguageTagTestCase("en-Latn-US", "en", "Latn"),
-                    LanguageTagTestCase("en-US", "en", "")));
-
 struct ValidationErrorsTestCase {
   explicit ValidationErrorsTestCase(bool expected_valid)
       : expected_valid(expected_valid) {}
@@ -262,7 +161,6 @@ struct ValidationErrorsTestCase {
   const char* m_shipping_address_city = "";
   const char* m_shipping_address_country = "";
   const char* m_shipping_address_dependent_locality = "";
-  const char* m_shipping_address_language_code = "";
   const char* m_shipping_address_organization = "";
   const char* m_shipping_address_phone = "";
   const char* m_shipping_address_postal_code = "";
@@ -295,7 +193,6 @@ mojom::PaymentValidationErrorsPtr toPaymentValidationErrors(
   shipping_address->country = test_case.m_shipping_address_country;
   shipping_address->dependent_locality =
       test_case.m_shipping_address_dependent_locality;
-  shipping_address->language_code = test_case.m_shipping_address_language_code;
   shipping_address->organization = test_case.m_shipping_address_organization;
   shipping_address->phone = test_case.m_shipping_address_phone;
   shipping_address->postal_code = test_case.m_shipping_address_postal_code;
@@ -340,9 +237,6 @@ INSTANTIATE_TEST_SUITE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_dependent_locality,
                                     "test",
                                     true),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_language_code,
-                                    "test",
-                                    true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_organization,
                                     "test",
                                     true),
@@ -369,9 +263,6 @@ INSTANTIATE_TEST_SUITE_P(
                                     LongString2049(),
                                     false),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_dependent_locality,
-                                    LongString2049(),
-                                    false),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_language_code,
                                     LongString2049(),
                                     false),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_organization,

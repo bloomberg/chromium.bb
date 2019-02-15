@@ -5166,7 +5166,6 @@ interface PaymentAddress
     getter city
     getter country
     getter dependentLocality
-    getter languageCode
     getter organization
     getter phone
     getter postalCode

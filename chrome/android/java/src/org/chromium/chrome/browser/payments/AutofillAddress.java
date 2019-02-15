@@ -23,7 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -32,12 +31,6 @@ import java.util.regex.Pattern;
 public class AutofillAddress extends EditableOption {
     /** The pattern for a valid region code. */
     private static final String REGION_CODE_PATTERN = "^[A-Z]{2}$";
-
-    // Language/script code pattern and capture group numbers.
-    private static final String LANGUAGE_SCRIPT_CODE_PATTERN =
-            "^([a-z]{2})(-([A-Z][a-z]{3}))?(-[A-Za-z]+)*$";
-    private static final int LANGUAGE_CODE_GROUP = 1;
-    private static final int SCRIPT_CODE_GROUP = 3;
 
     @IntDef({CompletionStatus.COMPLETE, CompletionStatus.INVALID_ADDRESS,
             CompletionStatus.INVALID_PHONE_NUMBER, CompletionStatus.INVALID_RECIPIENT,
@@ -69,7 +62,6 @@ public class AutofillAddress extends EditableOption {
 
     private Context mContext;
     private AutofillProfile mProfile;
-    @Nullable private Pattern mLanguageScriptCodePattern;
     @Nullable private String mShippingLabelWithCountry;
     @Nullable private String mShippingLabelWithoutCountry;
     @Nullable private String mBillingLabel;
@@ -318,21 +310,7 @@ public class AutofillAddress extends EditableOption {
         result.sortingCode = mProfile.getSortingCode();
         result.organization = mProfile.getCompanyName();
         result.recipient = mProfile.getFullName();
-        result.languageCode = "";
-        result.scriptCode = "";
         result.phone = mProfile.getPhoneNumber();
-
-        if (mProfile.getLanguageCode() == null) return result;
-
-        if (mLanguageScriptCodePattern == null) {
-            mLanguageScriptCodePattern = Pattern.compile(LANGUAGE_SCRIPT_CODE_PATTERN);
-        }
-
-        Matcher matcher = mLanguageScriptCodePattern.matcher(mProfile.getLanguageCode());
-        if (matcher.matches()) {
-            result.languageCode = ensureNotNull(matcher.group(LANGUAGE_CODE_GROUP));
-            result.scriptCode = ensureNotNull(matcher.group(SCRIPT_CODE_GROUP));
-        }
 
         return result;
     }

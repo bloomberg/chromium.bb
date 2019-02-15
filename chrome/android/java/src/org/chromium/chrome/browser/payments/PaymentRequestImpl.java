@@ -1490,7 +1490,6 @@ public class PaymentRequestImpl
         return !TextUtils.isEmpty(errors.addressLine) || !TextUtils.isEmpty(errors.city)
                 || !TextUtils.isEmpty(errors.country)
                 || !TextUtils.isEmpty(errors.dependentLocality)
-                || !TextUtils.isEmpty(errors.languageCode)
                 || !TextUtils.isEmpty(errors.organization) || !TextUtils.isEmpty(errors.phone)
                 || !TextUtils.isEmpty(errors.postalCode) || !TextUtils.isEmpty(errors.recipient)
                 || !TextUtils.isEmpty(errors.region) || !TextUtils.isEmpty(errors.sortingCode);
