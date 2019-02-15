@@ -242,6 +242,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoHostContext,
     kPseudoShadow,
     kPseudoSpatialNavigationFocus,
+    kPseudoSpatialNavigationInterest,
     kPseudoIsHtml,
     kPseudoListBox,
     kPseudoHostHasAppearance,

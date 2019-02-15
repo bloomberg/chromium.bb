@@ -215,9 +215,9 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     return &focus_pseudo_class_rules_;
   }
   const HeapVector<Member<const RuleData>>*
-  SpatialNavigationFocusPseudoClassRules() const {
+  SpatialNavigationInterestPseudoClassRules() const {
     DCHECK(!pending_rules_);
-    return &spatial_navigation_focus_class_rules_;
+    return &spatial_navigation_interest_class_rules_;
   }
   const HeapVector<Member<const RuleData>>* UniversalRules() const {
     DCHECK(!pending_rules_);
@@ -334,7 +334,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   HeapVector<Member<const RuleData>> link_pseudo_class_rules_;
   HeapVector<Member<const RuleData>> cue_pseudo_rules_;
   HeapVector<Member<const RuleData>> focus_pseudo_class_rules_;
-  HeapVector<Member<const RuleData>> spatial_navigation_focus_class_rules_;
+  HeapVector<Member<const RuleData>> spatial_navigation_interest_class_rules_;
   HeapVector<Member<const RuleData>> universal_rules_;
   HeapVector<Member<const RuleData>> shadow_host_rules_;
   HeapVector<Member<const RuleData>> part_pseudo_rules_;
