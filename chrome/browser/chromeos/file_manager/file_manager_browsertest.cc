@@ -276,6 +276,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected")
             .EnableMyFilesVolume(),
+        TestCase("fileDisplayUnmountRemovableRoot"),
+        TestCase("fileDisplayUnmountFirstPartition"),
+        TestCase("fileDisplayUnmountLastPartition"),
         TestCase("fileSearchCaseInsensitive"),
         TestCase("fileSearchNotFound")));
 

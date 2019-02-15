@@ -744,6 +744,19 @@ void VolumeManager::AddVolumeForTesting(std::unique_ptr<Volume> volume) {
   DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
 }
 
+void VolumeManager::RemoveVolumeForTesting(const base::FilePath& path,
+                                           VolumeType volume_type,
+                                           chromeos::DeviceType device_type,
+                                           bool read_only,
+                                           const base::FilePath& device_path,
+                                           const std::string& drive_label) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DoUnmountEvent(
+      chromeos::MOUNT_ERROR_NONE,
+      *Volume::CreateForTesting(path, volume_type, device_type, read_only,
+                                device_path, drive_label));
+}
+
 void VolumeManager::OnFileSystemMounted() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

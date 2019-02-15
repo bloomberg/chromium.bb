@@ -345,6 +345,14 @@ class VolumeManager : public KeyedService,
   // For testing purpose, adds the volume info to the volume manager.
   void AddVolumeForTesting(std::unique_ptr<Volume> volume);
 
+  void RemoveVolumeForTesting(
+      const base::FilePath& path,
+      VolumeType volume_type,
+      chromeos::DeviceType device_type,
+      bool read_only,
+      const base::FilePath& device_path = base::FilePath(),
+      const std::string& drive_label = "");
+
   // drive::DriveIntegrationServiceObserver overrides.
   void OnFileSystemMounted() override;
   void OnFileSystemBeingUnmounted() override;
