@@ -107,8 +107,9 @@ bool FileManagerPrivateInternalExecuteTaskFunction::RunAsync() {
 
   const bool result = file_manager::file_tasks::ExecuteFileTask(
       GetProfile(), source_url(), task, urls,
-      base::Bind(&FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted,
-                 this));
+      base::BindOnce(
+          &FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted,
+          this));
   if (!result) {
     results_ =
         Create(extensions::api::file_manager_private::TASK_RESULT_FAILED);
@@ -188,7 +189,7 @@ void FileManagerPrivateInternalGetFileTasksFunction::
 
   file_manager::file_tasks::FindAllTypesOfTasks(
       GetProfile(), entries, urls_,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed,
           this));
 }

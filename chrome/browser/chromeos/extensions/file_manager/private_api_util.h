@@ -69,7 +69,7 @@ base::FilePath GetLocalPathFromURL(content::RenderFrameHost* render_frame_host,
                                    const GURL& url);
 
 // The callback type is used for GetSelectedFileInfo().
-typedef base::Callback<void(const std::vector<ui::SelectedFileInfo>&)>
+typedef base::OnceCallback<void(const std::vector<ui::SelectedFileInfo>&)>
     GetSelectedFileInfoCallback;
 
 // Option enum to control how to set the ui::SelectedFileInfo::local_path

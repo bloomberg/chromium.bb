@@ -37,15 +37,15 @@ namespace {
 // Does chmod o+r for the given path to ensure the file is readable from avfs.
 void EnsureReadableFilePermissionAsync(
     const base::FilePath& path,
-    const base::Callback<void(drive::FileError, const base::FilePath&)>&
+    base::OnceCallback<void(drive::FileError, const base::FilePath&)>
         callback) {
   int mode = 0;
   if (!base::GetPosixFilePermissions(path, &mode) ||
       !base::SetPosixFilePermissions(path, mode | S_IROTH)) {
-    callback.Run(drive::FILE_ERROR_ACCESS_DENIED, base::FilePath());
+    std::move(callback).Run(drive::FILE_ERROR_ACCESS_DENIED, base::FilePath());
     return;
   }
-  callback.Run(drive::FILE_ERROR_OK, path);
+  std::move(callback).Run(drive::FILE_ERROR_OK, path);
 }
 
 }  // namespace
@@ -80,9 +80,9 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
     const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
     file_system->GetFile(
         drive_path,
-        base::Bind(&FileManagerPrivateAddMountFunction::RunAfterGetDriveFile,
-                   this,
-                   drive_path));
+        base::BindOnce(
+            &FileManagerPrivateAddMountFunction::RunAfterGetDriveFile, this,
+            drive_path));
   } else {
     file_manager::VolumeManager* volume_manager =
         file_manager::VolumeManager::Get(GetProfile());
@@ -105,10 +105,10 @@ bool FileManagerPrivateAddMountFunction::RunAsync() {
       base::PostTaskWithTraits(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
           base::BindOnce(&EnsureReadableFilePermissionAsync, path,
-                         google_apis::CreateRelayCallback(
-                             base::Bind(&FileManagerPrivateAddMountFunction::
-                                            RunAfterMarkCacheFileAsMounted,
-                                        this, path.BaseName()))));
+                         google_apis::CreateRelayCallback(base::BindOnce(
+                             &FileManagerPrivateAddMountFunction::
+                                 RunAfterMarkCacheFileAsMounted,
+                             this, path.BaseName()))));
     } else {
       RunAfterMarkCacheFileAsMounted(
           path.BaseName(), drive::FILE_ERROR_OK, path);
@@ -285,7 +285,7 @@ bool FileManagerPrivateMarkCacheAsMountedFunction::RunAsync() {
   const base::FilePath drive_path = drive::util::ExtractDrivePath(path);
   file_system->GetFile(
       drive_path,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateMarkCacheAsMountedFunction::RunAfterGetDriveFile,
           this, drive_path, is_mounted));
   return true;

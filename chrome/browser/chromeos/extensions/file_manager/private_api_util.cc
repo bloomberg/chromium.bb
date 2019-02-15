@@ -52,61 +52,62 @@ struct GetSelectedFileInfoParams {
 
 // The callback type for GetFileNativeLocalPathFor{Opening,Saving}. It receives
 // the resolved local path when successful, and receives empty path for failure.
-typedef base::Callback<void(const base::FilePath&)> LocalPathCallback;
+typedef base::OnceCallback<void(const base::FilePath&)> LocalPathCallback;
 
 // Converts a callback from Drive file system to LocalPathCallback.
 void OnDriveGetFile(const base::FilePath& path,
-                    const LocalPathCallback& callback,
+                    LocalPathCallback callback,
                     drive::FileError error,
                     const base::FilePath& local_file_path,
                     std::unique_ptr<drive::ResourceEntry> entry) {
   if (error != drive::FILE_ERROR_OK)
     DLOG(ERROR) << "Failed to get " << path.value() << " with: " << error;
-  callback.Run(local_file_path);
+  std::move(callback).Run(local_file_path);
 }
 
 // Gets a resolved local file path of a non native |path| for file opening.
 void GetFileNativeLocalPathForOpening(Profile* profile,
                                       const base::FilePath& path,
-                                      const LocalPathCallback& callback) {
+                                      LocalPathCallback callback) {
   if (drive::util::IsUnderDriveMountPoint(path)) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(profile);
     if (!file_system) {
       DLOG(ERROR) << "Drive file selected while disabled: " << path.value();
-      callback.Run(base::FilePath());
+      std::move(callback).Run(base::FilePath());
       return;
     }
-    file_system->GetFile(drive::util::ExtractDrivePath(path),
-                         base::BindOnce(&OnDriveGetFile, path, callback));
+    file_system->GetFile(
+        drive::util::ExtractDrivePath(path),
+        base::BindOnce(&OnDriveGetFile, path, std::move(callback)));
     return;
   }
 
   VolumeManager::Get(profile)->snapshot_manager()->CreateManagedSnapshot(
-      path, callback);
+      path, std::move(callback));
 }
 
 // Gets a resolved local file path of a non native |path| for file saving.
 void GetFileNativeLocalPathForSaving(Profile* profile,
                                      const base::FilePath& path,
-                                     const LocalPathCallback& callback) {
+                                     LocalPathCallback callback) {
   if (drive::util::IsUnderDriveMountPoint(path)) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(profile);
     if (!file_system) {
       DLOG(ERROR) << "Drive file selected while disabled: " << path.value();
-      callback.Run(base::FilePath());
+      std::move(callback).Run(base::FilePath());
       return;
     }
     file_system->GetFileForSaving(
         drive::util::ExtractDrivePath(path),
-        base::BindOnce(&OnDriveGetFile, path, callback));
+        base::BindOnce(&OnDriveGetFile, path, std::move(callback)));
     return;
   }
 
   // TODO(kinaba): For now, the only writable non-local volume is Drive.
   NOTREACHED();
-  callback.Run(base::FilePath());
+  std::move(callback).Run(base::FilePath());
 }
 
 // Forward declarations of helper functions for GetSelectedFileInfo().
@@ -150,20 +151,16 @@ void GetSelectedFileInfoInternal(
         }
         case NEED_LOCAL_PATH_FOR_OPENING: {
           GetFileNativeLocalPathForOpening(
-              profile,
-              file_path,
-              base::Bind(&ContinueGetSelectedFileInfo,
-                         profile,
-                         base::Passed(&params)));
+              profile, file_path,
+              base::BindOnce(&ContinueGetSelectedFileInfo, profile,
+                             std::move(params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
         }
         case NEED_LOCAL_PATH_FOR_SAVING: {
           GetFileNativeLocalPathForSaving(
-              profile,
-              file_path,
-              base::Bind(&ContinueGetSelectedFileInfo,
-                         profile,
-                         base::Passed(&params)));
+              profile, file_path,
+              base::BindOnce(&ContinueGetSelectedFileInfo, profile,
+                             std::move(params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
         }
       }
@@ -188,7 +185,7 @@ void GetSelectedFileInfoInternal(
       params->selected_files.emplace_back(file_path, file_path);
     }
   }
-  params->callback.Run(params->selected_files);
+  std::move(params->callback).Run(params->selected_files);
 }
 
 // Part of GetSelectedFileInfo().
@@ -197,7 +194,7 @@ void ContinueGetSelectedFileInfo(
     std::unique_ptr<GetSelectedFileInfoParams> params,
     const base::FilePath& local_path) {
   if (local_path.empty()) {
-    params->callback.Run(std::vector<ui::SelectedFileInfo>());
+    std::move(params->callback).Run(std::vector<ui::SelectedFileInfo>());
     return;
   }
   const int index = params->selected_files.size();
@@ -432,7 +429,7 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
   std::unique_ptr<GetSelectedFileInfoParams> params(
       new GetSelectedFileInfoParams);
   params->local_path_option = local_path_option;
-  params->callback = callback;
+  params->callback = std::move(callback);
 
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const GURL& file_url = file_urls[i];
@@ -445,8 +442,8 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&GetSelectedFileInfoInternal, profile,
-                                base::Passed(&params)));
+      FROM_HERE,
+      base::BindOnce(&GetSelectedFileInfoInternal, profile, std::move(params)));
 }
 
 void SetupProfileFileAccessPermissions(int render_view_process_id,

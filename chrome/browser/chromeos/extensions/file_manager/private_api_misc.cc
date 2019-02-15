@@ -608,7 +608,7 @@ FileManagerPrivateConfigureVolumeFunction::Run() {
           service->GetProvidedFileSystem(volume->provider_id(),
                                          volume->file_system_id());
       if (file_system)
-        file_system->Configure(base::Bind(
+        file_system->Configure(base::BindOnce(
             &FileManagerPrivateConfigureVolumeFunction::OnCompleted, this));
       break;
     }
@@ -946,7 +946,7 @@ FileManagerPrivateInternalExecuteCustomActionFunction::Run() {
   DCHECK(file_system);
   file_system->ExecuteAction(
       paths, params->action_id,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalExecuteCustomActionFunction::OnCompleted,
           this));
   return RespondLater();
