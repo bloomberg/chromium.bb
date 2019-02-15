@@ -768,15 +768,21 @@ LogMessage::~LogMessage() {
         priority = ANDROID_LOG_FATAL;
         break;
     }
+    const char kAndroidLogTag[] = "chromium";
 #if DCHECK_IS_ON()
     // Split the output by new lines to prevent the Android system from
     // truncating the log.
-    for (const auto& line : base::SplitString(
-             str_newline, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL))
-      __android_log_write(priority, "chromium", line.c_str());
+    std::vector<std::string> lines = base::SplitString(
+        str_newline, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    // str_newline has an extra newline appended to it (at the top of this
+    // function), so skip the last split element to avoid needlessly
+    // logging an empty string.
+    lines.pop_back();
+    for (const auto& line : lines)
+      __android_log_write(priority, kAndroidLogTag, line.c_str());
 #else
     // The Android system may truncate the string if it's too long.
-    __android_log_write(priority, "chromium", str_newline.c_str());
+    __android_log_write(priority, kAndroidLogTag, str_newline.c_str());
 #endif
 #endif  // OS_ANDROID
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
