@@ -27,8 +27,10 @@ from gpu_tests import gpu_integration_test
 from gpu_tests import ipg_utils
 from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
+import logging
 import os
 import sys
+import time
 
 # Waits for [x] seconds after browser launch before measuring power to
 # avoid startup tasks affecting results.
@@ -83,6 +85,8 @@ _FULLSCREEN_SCRIPT = r"""
         var left = vid_rect.left - parent_rect.left;
         layer.style.top = top.toString() + "px";
         layer.style.left = left.toString() + "px";
+        // The following might mess with the layout of some sites.
+        video.parentNode.style.position = "relative";
         video.parentNode.appendChild(layer);
       }
       return video.currentTime > 0;
@@ -167,10 +171,13 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                       help="if a test is repeated multiples and outliers is "
                       "set to N, then N smallest results and N largest results "
                       "are discarded before computing mean and stdev.")
+    parser.add_option("--bypass-ipg", action="store_true", default=False,
+                      help="Do not launch Intel Power Gadget. This is for "
+                      "testing convenience on machines where Intel Power "
+                      "Gadget does not work.")
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('Basic', '-', {'test_func': 'Basic'})
     if options.url is not None:
       # This is for local testing convenience only and is not to be added to
       # any bots.
@@ -183,7 +190,12 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'logdir': options.logdir,
               'duration': options.duration,
               'delay': options.delay,
-              'resolution': options.resolution})
+              'resolution': options.resolution,
+              'bypass_ipg': options.bypass_ipg})
+    else:
+      yield ('Basic', '-',
+             {'test_func': 'Basic',
+              'bypass_ipg': options.bypass_ipg})
 
   @classmethod
   def SetUpProcess(cls):
@@ -194,9 +206,6 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.StartBrowser()
 
   def RunActualGpuTest(self, test_path, *args):
-    ipg_path = ipg_utils.LocateIPG()
-    if not ipg_path:
-      self.fail("Fail to locate Intel Power Gadget")
     test_params = args[0]
     assert test_params is not None and 'test_func' in test_params
     prefixed_test_func_name = '_RunTest_%s' % test_params['test_func']
@@ -210,14 +219,18 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   # Actual test functions
 
   def _RunTest_Basic(self, test_path, params):
+    bypass_ipg = params['bypass_ipg']
+    total_time = _POWER_MEASUREMENT_DURATION + _POWER_MEASUREMENT_DELAY
+    if bypass_ipg:
+      logging.info("Bypassing Intel Power Gadget")
+      time.sleep(total_time)
+      return
     logfile = None # Use the default path
-    ipg_utils.RunIPG(_POWER_MEASUREMENT_DURATION + _POWER_MEASUREMENT_DELAY,
-                     _POWER_MEASUREMENT_RESOLUTION,
-                     logfile)
+    ipg_utils.RunIPG(total_time, _POWER_MEASUREMENT_RESOLUTION, logfile)
     results = ipg_utils.AnalyzeIPGLogFile(logfile, _POWER_MEASUREMENT_DELAY)
     # TODO(zmo): output in a way that the results can be tracked at
     # chromeperf.appspot.com.
-    print "Results: ", results
+    logging.info("Results: %s", str(results))
 
 
   def _RunTest_URL(self, test_path, params):
@@ -229,13 +242,14 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     ipg_duration = params['duration']
     ipg_delay = params['delay']
     ipg_resolution = params['resolution']
+    bypass_ipg = params['bypass_ipg']
 
-    print ""
-    print "Total iterations: ", repeat
+    if repeat > 1:
+      logging.info("Total iterations: %d", repeat)
     logfiles = []
     for iteration in range(repeat):
-      run_label = "Iteration_%d" % iteration
-      print run_label
+      if repeat > 1:
+        logging.info("Iteration %d", iteration)
       if test_path:
         self.tab.action_runner.Navigate(test_path, _FULLSCREEN_SCRIPT)
         self.tab.WaitForDocumentReadyStateToBeComplete()
@@ -253,22 +267,29 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         self.tab.action_runner.ClickElement(element_function=(
             'locateFullscreenButton()'))
 
-      logfile = None
-      if ipg_logdir:
-        if not os.path.isdir(ipg_logdir):
-          self.fail("Folder " + ipg_logdir + " doesn't exist")
-        logfile = ipg_utils.GenerateIPGLogFilename(log_dir=ipg_logdir,
-                                                   timestamp=True)
-      ipg_utils.RunIPG(ipg_duration + ipg_delay, ipg_resolution, logfile)
-      logfiles.append(logfile)
+      if bypass_ipg:
+        logging.info("Bypassing Intel Power Gadget")
+        time.sleep(ipg_duration + ipg_delay)
+      else:
+        logfile = None
+        if ipg_logdir:
+          if not os.path.isdir(ipg_logdir):
+            self.fail("Folder " + ipg_logdir + " doesn't exist")
+          logfile = ipg_utils.GenerateIPGLogFilename(log_dir=ipg_logdir,
+                                                     timestamp=True)
+        ipg_utils.RunIPG(ipg_duration + ipg_delay, ipg_resolution, logfile)
+        logfiles.append(logfile)
 
       if repeat > 1 and iteration < repeat - 1:
         self.StopBrowser()
         self.StartBrowser()
 
+    if bypass_ipg:
+      return
+
     if repeat == 1:
       results = ipg_utils.AnalyzeIPGLogFile(logfiles[0], ipg_delay)
-      print "Results: ", results
+      logging.info("Results: %s", str(results))
     else:
       json_path = None
       if ipg_logdir:
@@ -277,7 +298,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
       summary = ipg_utils.ProcessResultsFromMultipleIPGRuns(
         logfiles, ipg_delay, outliers, json_path)
-      print 'Summary: ', summary
+      logging.info("Summary: %s", str(summary))
 
 
 def load_tests(loader, tests, pattern):
