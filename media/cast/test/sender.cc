@@ -315,21 +315,18 @@ int main(int argc, char** argv) {
   const int logging_duration_seconds = 10;
   io_message_loop.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WriteLogsToFileAndDestroySubscribers,
-                 cast_environment,
-                 base::Passed(&video_event_subscriber),
-                 base::Passed(&audio_event_subscriber),
-                 base::Passed(&video_log_file),
-                 base::Passed(&audio_log_file)),
+      base::BindOnce(&WriteLogsToFileAndDestroySubscribers, cast_environment,
+                     std::move(video_event_subscriber),
+                     std::move(audio_event_subscriber),
+                     std::move(video_log_file), std::move(audio_log_file)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
 
   io_message_loop.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WriteStatsAndDestroySubscribers,
-                 cast_environment,
-                 base::Passed(&video_stats_subscriber),
-                 base::Passed(&audio_stats_subscriber),
-                 base::Passed(&offset_estimator)),
+      base::BindOnce(&WriteStatsAndDestroySubscribers, cast_environment,
+                     std::move(video_stats_subscriber),
+                     std::move(audio_stats_subscriber),
+                     std::move(offset_estimator)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
 
   // CastSender initialization.
@@ -337,12 +334,12 @@ int main(int argc, char** argv) {
       media::cast::CastSender::Create(cast_environment, transport_sender.get());
   io_message_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&media::cast::CastSender::InitializeVideo,
-                 base::Unretained(cast_sender.get()),
-                 fake_media_source->get_video_config(),
-                 base::Bind(&QuitLoopOnInitializationResult),
-                 media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
-                 media::cast::CreateDefaultVideoEncodeMemoryCallback()));
+      base::BindOnce(&media::cast::CastSender::InitializeVideo,
+                     base::Unretained(cast_sender.get()),
+                     fake_media_source->get_video_config(),
+                     base::Bind(&QuitLoopOnInitializationResult),
+                     media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
+                     media::cast::CreateDefaultVideoEncodeMemoryCallback()));
   base::RunLoop().Run();  // Wait for video initialization.
   io_message_loop.task_runner()->PostTask(
       FROM_HERE,

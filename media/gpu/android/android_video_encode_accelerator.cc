@@ -208,9 +208,9 @@ bool AndroidVideoEncodeAccelerator::Initialize(const Config& config,
       2048;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&VideoEncodeAccelerator::Client::RequireBitstreamBuffers,
-                 client_ptr_factory_->GetWeakPtr(), frame_input_count,
-                 config.input_visible_size, output_buffer_capacity));
+      base::BindOnce(&VideoEncodeAccelerator::Client::RequireBitstreamBuffers,
+                     client_ptr_factory_->GetWeakPtr(), frame_input_count,
+                     config.input_visible_size, output_buffer_capacity));
   return true;
 }
 
@@ -443,9 +443,10 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&VideoEncodeAccelerator::Client::BitstreamBufferReady,
-                 client_ptr_factory_->GetWeakPtr(), bitstream_buffer.id(),
-                 BitstreamBufferMetadata(size, key_frame, frame_timestamp)));
+      base::BindOnce(
+          &VideoEncodeAccelerator::Client::BitstreamBufferReady,
+          client_ptr_factory_->GetWeakPtr(), bitstream_buffer.id(),
+          BitstreamBufferMetadata(size, key_frame, frame_timestamp)));
 }
 
 }  // namespace media

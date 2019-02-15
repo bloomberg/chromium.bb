@@ -60,9 +60,9 @@ class MojoAudioDecoderTest : public ::testing::Test {
     mojom::AudioDecoderPtr remote_audio_decoder;
     service_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&MojoAudioDecoderTest::ConnectToService,
-                   base::Unretained(this),
-                   base::Passed(mojo::MakeRequest(&remote_audio_decoder))));
+        base::BindOnce(&MojoAudioDecoderTest::ConnectToService,
+                       base::Unretained(this),
+                       base::Passed(mojo::MakeRequest(&remote_audio_decoder))));
     mojo_audio_decoder_.reset(new MojoAudioDecoder(
         message_loop_.task_runner(), std::move(remote_audio_decoder)));
   }

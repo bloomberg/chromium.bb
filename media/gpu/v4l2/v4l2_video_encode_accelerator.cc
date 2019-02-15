@@ -294,11 +294,11 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
 
   child_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::RequireBitstreamBuffers, client_, kInputBufferCount,
-                 image_processor_.get()
-                     ? image_processor_->input_layout().coded_size()
-                     : input_allocated_size_,
-                 output_buffer_byte_size_));
+      base::BindOnce(
+          &Client::RequireBitstreamBuffers, client_, kInputBufferCount,
+          image_processor_.get() ? image_processor_->input_layout().coded_size()
+                                 : input_allocated_size_,
+          output_buffer_byte_size_));
   return true;
 }
 
@@ -437,8 +437,8 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
       new BitstreamBufferRef(buffer.id(), std::move(shm)));
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-                 base::Unretained(this), base::Passed(&buffer_ref)));
+      base::BindOnce(&V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask,
+                     base::Unretained(this), std::move(buffer_ref)));
 }
 
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChange(
@@ -449,7 +449,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChange(
 
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask,
           base::Unretained(this), bitrate, framerate));
 }
@@ -494,7 +494,7 @@ void V4L2VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2VideoEncodeAccelerator::FlushTask,
-                     base::Unretained(this), base::Passed(&flush_callback)));
+                     base::Unretained(this), std::move(flush_callback)));
 }
 
 void V4L2VideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
@@ -865,13 +865,14 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
 
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Client::BitstreamBufferReady, client_, bitstream_buffer_id,
-                   BitstreamBufferMetadata(
-                       output_data_size, key_frame,
-                       base::TimeDelta::FromMicroseconds(
-                           dqbuf.timestamp.tv_usec +
-                           dqbuf.timestamp.tv_sec *
-                               base::Time::kMicrosecondsPerSecond))));
+        base::BindOnce(&Client::BitstreamBufferReady, client_,
+                       bitstream_buffer_id,
+                       BitstreamBufferMetadata(
+                           output_data_size, key_frame,
+                           base::TimeDelta::FromMicroseconds(
+                               dqbuf.timestamp.tv_usec +
+                               dqbuf.timestamp.tv_sec *
+                                   base::Time::kMicrosecondsPerSecond))));
     if ((encoder_state_ == kFlushing) && (dqbuf.flags & V4L2_BUF_FLAG_LAST)) {
       // Notify client that flush has finished successfully. The flush callback
       // should be called after notifying the last buffer is ready.
@@ -1128,9 +1129,9 @@ void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       encoder_thread_.task_runner();
   if (task_runner && !task_runner->BelongsToCurrentThread()) {
-    task_runner->PostTask(FROM_HERE,
-                          base::Bind(&V4L2VideoEncodeAccelerator::SetErrorState,
-                                     base::Unretained(this), error));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::SetErrorState,
+                                  base::Unretained(this), error));
     return;
   }
 

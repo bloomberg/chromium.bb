@@ -329,9 +329,9 @@ void DemuxerStreamAdapter::OnFrameWritten(bool success) {
 
   // Contiune to read decoder buffer until reaching |read_until_count_| or
   // end of stream.
-  media_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&DemuxerStreamAdapter::RequestBuffer,
-                                          weak_factory_.GetWeakPtr()));
+  media_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DemuxerStreamAdapter::RequestBuffer,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void DemuxerStreamAdapter::SendReadAck() {

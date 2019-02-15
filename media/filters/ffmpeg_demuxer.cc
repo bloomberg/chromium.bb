@@ -1033,7 +1033,7 @@ void FFmpegDemuxer::AbortPendingReads() {
   // Aborting the read may cause EOF to be marked, undo this.
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UnmarkEndOfStreamAndClearError, glue_->format_context()));
+      base::BindOnce(&UnmarkEndOfStreamAndClearError, glue_->format_context()));
   pending_read_ = false;
 
   // TODO(dalecurtis): We probably should report PIPELINE_ERROR_ABORT here

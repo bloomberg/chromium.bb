@@ -73,8 +73,8 @@ void FakeJpegDecodeAccelerator::DecodeOnDecoderThread(
 
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeJpegDecodeAccelerator::OnDecodeDoneOnClientThread,
-                 weak_factory_.GetWeakPtr(), bitstream_buffer.id()));
+      base::BindOnce(&FakeJpegDecodeAccelerator::OnDecodeDoneOnClientThread,
+                     weak_factory_.GetWeakPtr(), bitstream_buffer.id()));
 }
 
 bool FakeJpegDecodeAccelerator::IsSupported() {
@@ -85,8 +85,8 @@ void FakeJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
                                             Error error) {
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeJpegDecodeAccelerator::NotifyErrorOnClientThread,
-                 weak_factory_.GetWeakPtr(), bitstream_buffer_id, error));
+      base::BindOnce(&FakeJpegDecodeAccelerator::NotifyErrorOnClientThread,
+                     weak_factory_.GetWeakPtr(), bitstream_buffer_id, error));
 }
 
 void FakeJpegDecodeAccelerator::NotifyErrorOnClientThread(

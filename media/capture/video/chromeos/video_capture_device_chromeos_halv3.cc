@@ -151,9 +151,9 @@ void VideoCaptureDeviceChromeOSHalv3::OpenDevice() {
   // sure |device_context_| outlives |camera_device_delegate_|.
   camera_device_ipc_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&CameraDeviceDelegate::AllocateAndStart,
-                 camera_device_delegate_->GetWeakPtr(), capture_params_,
-                 base::Unretained(device_context_.get())));
+      base::BindOnce(&CameraDeviceDelegate::AllocateAndStart,
+                     camera_device_delegate_->GetWeakPtr(), capture_params_,
+                     base::Unretained(device_context_.get())));
   camera_device_ipc_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&CameraDeviceDelegate::SetRotation,
@@ -239,8 +239,8 @@ void VideoCaptureDeviceChromeOSHalv3::SetRotation(int rotation) {
   if (camera_device_ipc_thread_.IsRunning()) {
     camera_device_ipc_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&CameraDeviceDelegate::SetRotation,
-                   camera_device_delegate_->GetWeakPtr(), rotation_));
+        base::BindOnce(&CameraDeviceDelegate::SetRotation,
+                       camera_device_delegate_->GetWeakPtr(), rotation_));
   }
 }
 

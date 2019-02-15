@@ -191,8 +191,8 @@ void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
 
   // The gpu::CommandBufferProxyImpl is going away; error out this VDA.
   media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuVideoDecodeAcceleratorHost::OnChannelError, weak_this_));
+      FROM_HERE, base::BindOnce(&GpuVideoDecodeAcceleratorHost::OnChannelError,
+                                weak_this_));
 }
 
 void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {

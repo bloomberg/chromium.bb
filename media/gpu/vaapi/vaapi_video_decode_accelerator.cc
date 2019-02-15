@@ -146,9 +146,9 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
 void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   if (!task_runner_->BelongsToCurrentThread()) {
     DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&VaapiVideoDecodeAccelerator::NotifyError,
-                                      weak_this_, error));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VaapiVideoDecodeAccelerator::NotifyError,
+                                  weak_this_, error));
     return;
   }
 
@@ -476,10 +476,10 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
         VLOGF(2) << "Decoder requesting a new set of surfaces";
         task_runner_->PostTask(
             FROM_HERE,
-            base::Bind(&VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
-                       weak_this_, decoder_->GetRequiredNumOfPictures(),
-                       decoder_->GetPicSize(),
-                       decoder_->GetNumReferenceFrames()));
+            base::BindOnce(
+                &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
+                weak_this_, decoder_->GetRequiredNumOfPictures(),
+                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
 
@@ -577,8 +577,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
     DVLOGF(2) << "Awaiting pending output/surface release callbacks to finish";
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange,
-                   weak_this_));
+        base::BindOnce(&VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange,
+                       weak_this_));
     return;
   }
 
@@ -821,7 +821,7 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VaapiVideoDecodeAccelerator::FinishFlush, weak_this_));
+      base::BindOnce(&VaapiVideoDecodeAccelerator::FinishFlush, weak_this_));
 }
 
 void VaapiVideoDecodeAccelerator::Flush() {
@@ -860,7 +860,7 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
   }
 
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Client::NotifyFlushDone, client_));
+                         base::BindOnce(&Client::NotifyFlushDone, client_));
 }
 
 void VaapiVideoDecodeAccelerator::ResetTask() {
@@ -881,7 +881,7 @@ void VaapiVideoDecodeAccelerator::ResetTask() {
   // And let client know that we are done with reset.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VaapiVideoDecodeAccelerator::FinishReset, weak_this_));
+      base::BindOnce(&VaapiVideoDecodeAccelerator::FinishReset, weak_this_));
 }
 
 void VaapiVideoDecodeAccelerator::Reset() {
@@ -926,14 +926,14 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
     // Let the surface set change finish first before resetting.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VaapiVideoDecodeAccelerator::FinishReset, weak_this_));
+        base::BindOnce(&VaapiVideoDecodeAccelerator::FinishReset, weak_this_));
     return;
   }
 
   state_ = kIdle;
 
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Client::NotifyResetDone, client_));
+                         base::BindOnce(&Client::NotifyResetDone, client_));
 
   // The client might have given us new buffers via Decode() while we were
   // resetting and might be waiting for our move, and not call Decode() anymore
@@ -998,8 +998,8 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VaapiVideoDecodeAccelerator::SurfaceReady, weak_this_,
-                   dec_surface, bitstream_id, visible_rect, color_space));
+        base::BindOnce(&VaapiVideoDecodeAccelerator::SurfaceReady, weak_this_,
+                       dec_surface, bitstream_id, visible_rect, color_space));
     return;
   }
 

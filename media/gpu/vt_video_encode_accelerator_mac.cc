@@ -171,9 +171,9 @@ bool VTVideoEncodeAccelerator::Initialize(const Config& config,
   }
 
   client_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Client::RequireBitstreamBuffers, client_, kNumInputBuffers,
-                 input_visible_size_, bitstream_buffer_size_));
+      FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, client_,
+                                kNumInputBuffers, input_visible_size_,
+                                bitstream_buffer_size_));
   return true;
 }
 
@@ -212,8 +212,8 @@ void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VTVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-                 base::Unretained(this), base::Passed(&buffer_ref)));
+      base::BindOnce(&VTVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
+                     base::Unretained(this), std::move(buffer_ref)));
 }
 
 void VTVideoEncodeAccelerator::RequestEncodingParametersChange(
@@ -225,8 +225,9 @@ void VTVideoEncodeAccelerator::RequestEncodingParametersChange(
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VTVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
-                 base::Unretained(this), bitrate, framerate));
+      base::BindOnce(
+          &VTVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
+          base::Unretained(this), bitrate, framerate));
 }
 
 void VTVideoEncodeAccelerator::Destroy() {
@@ -398,7 +399,7 @@ void VTVideoEncodeAccelerator::CompressionCallback(void* encoder_opaque,
       FROM_HERE,
       base::BindOnce(&VTVideoEncodeAccelerator::CompressionCallbackTask,
                      encoder->encoder_weak_ptr_, status,
-                     base::Passed(&encode_output)));
+                     std::move(encode_output)));
 }
 
 void VTVideoEncodeAccelerator::CompressionCallbackTask(
@@ -435,9 +436,9 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
     DVLOG(2) << " frame dropped";
     client_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id,
-                   BitstreamBufferMetadata(0, false,
-                                           encode_output->capture_timestamp)));
+        base::BindOnce(&Client::BitstreamBufferReady, client_, buffer_ref->id,
+                       BitstreamBufferMetadata(
+                           0, false, encode_output->capture_timestamp)));
     return;
   }
 
@@ -460,9 +461,10 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
 
   client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id,
-                 BitstreamBufferMetadata(used_buffer_size, keyframe,
-                                         encode_output->capture_timestamp)));
+      base::BindOnce(
+          &Client::BitstreamBufferReady, client_, buffer_ref->id,
+          BitstreamBufferMetadata(used_buffer_size, keyframe,
+                                  encode_output->capture_timestamp)));
 }
 
 bool VTVideoEncodeAccelerator::ResetCompressionSession() {

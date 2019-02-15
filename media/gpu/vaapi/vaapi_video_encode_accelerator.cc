@@ -644,8 +644,8 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-                 base::Unretained(this), base::Passed(&buffer_ref)));
+      base::BindOnce(&VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
+                     base::Unretained(this), std::move(buffer_ref)));
 }
 
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
@@ -672,7 +672,7 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
   allocation.SetBitrate(0, 0, bitrate);
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
           base::Unretained(this), allocation, framerate));
 }
@@ -686,7 +686,7 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChange(
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask,
           base::Unretained(this), bitrate_allocation, framerate));
 }

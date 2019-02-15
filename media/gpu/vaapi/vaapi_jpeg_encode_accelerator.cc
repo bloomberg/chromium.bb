@@ -322,8 +322,8 @@ void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
     VLOGF(1) << "Failed to map output buffer";
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VaapiJpegEncodeAccelerator::NotifyError, weak_this_,
-                   buffer_id, INACCESSIBLE_OUTPUT_BUFFER));
+        base::BindOnce(&VaapiJpegEncodeAccelerator::NotifyError, weak_this_,
+                       buffer_id, INACCESSIBLE_OUTPUT_BUFFER));
     return;
   }
 
@@ -333,8 +333,8 @@ void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
 
   encoder_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VaapiJpegEncodeAccelerator::Encoder::EncodeTask,
-                 base::Unretained(encoder_.get()), base::Passed(&request)));
+      base::BindOnce(&VaapiJpegEncodeAccelerator::Encoder::EncodeTask,
+                     base::Unretained(encoder_.get()), std::move(request)));
 }
 
 }  // namespace media

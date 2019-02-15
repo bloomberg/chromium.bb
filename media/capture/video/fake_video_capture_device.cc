@@ -695,9 +695,9 @@ void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(
   const base::TimeDelta delay = next_execution_time - current_time;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeVideoCaptureDevice::OnNextFrameDue,
-                 weak_factory_.GetWeakPtr(), next_execution_time,
-                 current_session_id_),
+      base::BindOnce(&FakeVideoCaptureDevice::OnNextFrameDue,
+                     weak_factory_.GetWeakPtr(), next_execution_time,
+                     current_session_id_),
       delay);
 }
 

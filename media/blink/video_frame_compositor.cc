@@ -205,8 +205,8 @@ void VideoFrameCompositor::PaintSingleFrame(
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&VideoFrameCompositor::PaintSingleFrame,
-                   base::Unretained(this), frame, repaint_duplicate_frame));
+        base::BindOnce(&VideoFrameCompositor::PaintSingleFrame,
+                       base::Unretained(this), frame, repaint_duplicate_frame));
     return;
   }
   if (ProcessNewFrame(frame, repaint_duplicate_frame) &&

@@ -43,8 +43,8 @@ void VideoDecodeAcceleratorTestEnvironment::SetUp() {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   rendering_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&RenderingHelper::InitializeOneOff, use_gl_renderer_, &done));
+      FROM_HERE, base::BindOnce(&RenderingHelper::InitializeOneOff,
+                                use_gl_renderer_, &done));
   done.Wait();
 
 #if defined(OS_CHROMEOS)

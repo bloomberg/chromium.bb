@@ -538,10 +538,10 @@ void AlsaPcmOutputStream::ScheduleNextWrite(bool source_exhausted) {
     next_fill_time = base::TimeDelta::FromMilliseconds(10);
   }
 
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AlsaPcmOutputStream::WriteTask, weak_factory_.GetWeakPtr()),
-      next_fill_time);
+  task_runner_->PostDelayedTask(FROM_HERE,
+                                base::BindOnce(&AlsaPcmOutputStream::WriteTask,
+                                               weak_factory_.GetWeakPtr()),
+                                next_fill_time);
 }
 
 std::string AlsaPcmOutputStream::FindDeviceForChannels(uint32_t channels) {

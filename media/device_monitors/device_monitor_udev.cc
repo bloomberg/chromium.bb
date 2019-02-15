@@ -42,7 +42,7 @@ DeviceMonitorLinux::DeviceMonitorLinux(
     : io_task_runner_(io_task_runner) {
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceMonitorLinux::Initialize, base::Unretained(this)));
+      base::BindOnce(&DeviceMonitorLinux::Initialize, base::Unretained(this)));
 }
 
 DeviceMonitorLinux::~DeviceMonitorLinux() = default;

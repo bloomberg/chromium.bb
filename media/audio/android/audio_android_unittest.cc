@@ -450,10 +450,8 @@ class AudioAndroidOutputTest : public testing::Test {
           base::WaitableEvent::InitialState::NOT_SIGNALED);
       audio_manager()->GetTaskRunner()->PostTask(
           FROM_HERE,
-          base::Bind(&AudioAndroidOutputTest::RunOnAudioThreadImpl,
-                     base::Unretained(this),
-                     closure,
-                     &event));
+          base::BindOnce(&AudioAndroidOutputTest::RunOnAudioThreadImpl,
+                         base::Unretained(this), closure, &event));
       event.Wait();
     } else {
       closure.Run();

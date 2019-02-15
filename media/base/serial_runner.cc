@@ -76,10 +76,9 @@ SerialRunner::SerialRunner(const Queue& bound_fns,
   // Respect both cancellation and calling stack guarantees for |done_cb|
   // when empty.
   if (bound_fns_.empty()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&SerialRunner::RunNextInSeries,
-                                      weak_factory_.GetWeakPtr(),
-                                      PIPELINE_OK));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&SerialRunner::RunNextInSeries,
+                                  weak_factory_.GetWeakPtr(), PIPELINE_OK));
     return;
   }
 

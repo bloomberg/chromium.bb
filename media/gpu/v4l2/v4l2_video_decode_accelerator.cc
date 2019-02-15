@@ -115,7 +115,7 @@ V4L2VideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
   if (input_id >= 0) {
     client_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&Client::NotifyEndOfBitstreamBuffer, client, input_id));
+        base::BindOnce(&Client::NotifyEndOfBitstreamBuffer, client, input_id));
   }
 }
 
@@ -344,8 +344,8 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
 
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2VideoDecodeAccelerator::AssignPictureBuffersTask,
-                 base::Unretained(this), buffers));
+      base::BindOnce(&V4L2VideoDecodeAccelerator::AssignPictureBuffersTask,
+                     base::Unretained(this), buffers));
 }
 
 void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
@@ -494,9 +494,9 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
   }
 
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2VideoDecodeAccelerator::AssignEGLImage,
-                            base::Unretained(this), buffer_index,
-                            picture_buffer_id, egl_image));
+      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::AssignEGLImage,
+                                base::Unretained(this), buffer_index,
+                                picture_buffer_id, egl_image));
 }
 
 void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
@@ -601,9 +601,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
 
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2VideoDecodeAccelerator::ImportBufferForPictureTask,
-                 base::Unretained(this), picture_buffer_id,
-                 base::Passed(&dmabuf_fds), stride));
+      base::BindOnce(&V4L2VideoDecodeAccelerator::ImportBufferForPictureTask,
+                     base::Unretained(this), picture_buffer_id,
+                     std::move(dmabuf_fds), stride));
 }
 
 void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
@@ -680,8 +680,8 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     if (iter->egl_image != EGL_NO_IMAGE_KHR) {
       child_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage), device_,
-                     egl_display_, iter->egl_image));
+          base::BindOnce(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
+                         device_, egl_display_, iter->egl_image));
     }
 
     size_t index = iter - output_buffer_map_.begin();
@@ -694,7 +694,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
           FROM_HERE,
           base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
                          weak_this_, index, picture_buffer_id,
-                         base::Passed(&dmabuf_fds), iter->texture_id,
+                         std::move(dmabuf_fds), iter->texture_id,
                          egl_image_size_, egl_image_format_fourcc_));
 
       // Early return, AssignEGLImage will make the buffer available for
@@ -741,7 +741,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
       FROM_HERE,
       base::BindOnce(&V4L2VideoDecodeAccelerator::ReusePictureBufferTask,
                      base::Unretained(this), picture_buffer_id,
-                     base::Passed(&egl_fence)));
+                     std::move(egl_fence)));
 }
 
 void V4L2VideoDecodeAccelerator::Flush() {
@@ -1317,8 +1317,8 @@ void V4L2VideoDecodeAccelerator::CheckGLFences() {
 
         decoder_thread_.task_runner()->PostDelayedTask(
             FROM_HERE,
-            base::Bind(&V4L2VideoDecodeAccelerator::Enqueue,
-                       base::Unretained(this)),
+            base::BindOnce(&V4L2VideoDecodeAccelerator::Enqueue,
+                           base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(resched_delay));
       }
       break;
@@ -1719,8 +1719,8 @@ void V4L2VideoDecodeAccelerator::NofityFlushDone() {
   decoder_delay_bitstream_buffer_id_ = -1;
   decoder_flushing_ = false;
   VLOGF(2) << "returning flush";
-  child_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&Client::NotifyFlushDone, client_));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Client::NotifyFlushDone, client_));
 }
 
 bool V4L2VideoDecodeAccelerator::IsDecoderCmdSupported() {
@@ -1859,8 +1859,8 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
 
   decoder_partial_frame_pending_ = false;
   decoder_delay_bitstream_buffer_id_ = -1;
-  child_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&Client::NotifyResetDone, client_));
+  child_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Client::NotifyResetDone, client_));
 
   // While we were resetting, we early-outed DecodeBufferTask()s.
   ScheduleDecodeBufferTaskIfNeeded();
@@ -2576,8 +2576,8 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
     if (output_record.egl_image != EGL_NO_IMAGE_KHR) {
       child_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage), device_,
-                     egl_display_, output_record.egl_image));
+          base::BindOnce(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
+                         device_, egl_display_, output_record.egl_image));
     }
 
     DVLOGF(3) << "dismissing PictureBuffer id=" << output_record.picture_id;
@@ -2638,7 +2638,7 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
       // all pictures are cleared at the beginning.
       decode_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&Client::PictureReady, decode_client_, picture));
+          base::BindOnce(&Client::PictureReady, decode_client_, picture));
       pending_picture_ready_.pop();
     } else if (!cleared || send_now) {
       DVLOGF(4) << "cleared=" << pending_picture_ready_.front().cleared
