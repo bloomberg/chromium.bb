@@ -10,6 +10,8 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'requestRemoveCrostini',
       'getCrostiniSharedPathsDisplayText',
       'removeCrostiniSharedPath',
+      'exportCrostiniContainer',
+      'importCrostiniContainer',
     ]);
     this.enabled = false;
     this.sharedPaths = ['path1', 'path2'];
@@ -36,5 +38,15 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   /** override */
   removeCrostiniSharedPath(path) {
     this.sharedPaths = this.sharedPaths.filter(p => p !== path);
+  }
+
+  /** override */
+  exportCrostiniContainer() {
+    this.methodCalled('exportCrostiniContainer');
+  }
+
+  /** override */
+  importCrostiniContainer() {
+    this.methodCalled('importCrostiniContainer');
   }
 }

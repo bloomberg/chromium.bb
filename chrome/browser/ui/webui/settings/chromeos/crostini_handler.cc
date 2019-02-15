@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -38,6 +39,14 @@ void CrostiniHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "removeCrostiniSharedPath",
       base::BindRepeating(&CrostiniHandler::HandleRemoveCrostiniSharedPath,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "exportCrostiniContainer",
+      base::BindRepeating(&CrostiniHandler::HandleExportCrostiniContainer,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "importCrostiniContainer",
+      base::BindRepeating(&CrostiniHandler::HandleImportCrostiniContainer,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -87,6 +96,20 @@ void CrostiniHandler::HandleRemoveCrostiniSharedPath(
             }
           },
           path));
+}
+
+void CrostiniHandler::HandleExportCrostiniContainer(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  crostini::CrostiniExportImport::GetForProfile(profile_)->ExportContainer(
+      web_ui()->GetWebContents());
+}
+
+void CrostiniHandler::HandleImportCrostiniContainer(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+  crostini::CrostiniExportImport::GetForProfile(profile_)->ImportContainer(
+      web_ui()->GetWebContents());
 }
 
 }  // namespace settings

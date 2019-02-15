@@ -438,7 +438,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 }
 
 #if defined(OS_CHROMEOS)
-void AddCrostiniStrings(content::WebUIDataSource* html_source) {
+void AddCrostiniStrings(content::WebUIDataSource* html_source,
+                        Profile* profile) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
@@ -453,6 +454,11 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_REMOVE},
       {"crostiniSharedPathsRemoveSharing",
        IDS_SETTINGS_CROSTINI_SHARED_PATHS_REMOVE_SHARING},
+      {"crostiniExportImportTitle", IDS_SETTINGS_CROSTINI_EXPORT_IMPORT_TITLE},
+      {"crostiniExport", IDS_SETTINGS_CROSTINI_EXPORT},
+      {"crostiniExportLabel", IDS_SETTINGS_CROSTINI_EXPORT_LABEL},
+      {"crostiniImport", IDS_SETTINGS_CROSTINI_IMPORT},
+      {"crostiniImportLabel", IDS_SETTINGS_CROSTINI_IMPORT_LABEL},
       {"crostiniSharedUsbDevicesLabel",
        IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL},
       {"crostiniSharedUsbDevicesDescription",
@@ -471,6 +477,9 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
           IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_LOCATE,
           base::ASCIIToUTF16(
               crostini::ContainerChromeOSBaseDirectory().value())));
+  html_source->AddBoolean(
+      "showCrostiniExportImport",
+      crostini::IsCrostiniExportImportUIAllowedForProfile(profile));
   html_source->AddBoolean(
       "enableCrostiniUsbDeviceSupport",
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
@@ -2825,7 +2834,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
-  AddCrostiniStrings(html_source);
+  AddCrostiniStrings(html_source, profile);
   AddContainedShellStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);

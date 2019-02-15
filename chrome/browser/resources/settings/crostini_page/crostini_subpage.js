@@ -30,6 +30,16 @@ Polymer({
       },
     },
 
+    /**
+     * Whether export / import UI should be displayed.
+     * @private {boolean}
+     */
+    showCrostiniExportImport_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showCrostiniExportImport');
+      },
+    },
   },
 
   observers: ['onCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
@@ -54,6 +64,16 @@ Polymer({
   /** @private */
   onSharedPathsTap_: function(event) {
     settings.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
+  },
+
+  /** @private */
+  onExportClick_: function(event) {
+    settings.CrostiniBrowserProxyImpl.getInstance().exportCrostiniContainer();
+  },
+
+  /** @private */
+  onImportClick_: function(event) {
+    settings.CrostiniBrowserProxyImpl.getInstance().importCrostiniContainer();
   },
 
   /** @private */
