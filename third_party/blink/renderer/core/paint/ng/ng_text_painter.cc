@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -60,6 +61,11 @@ void NGTextPainter::PaintInternalFragment(
     // TODO(npm): Check that there are non-whitespace characters. See
     // crbug.com/788444.
     graphics_context_.GetPaintController().SetTextPainted();
+    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+      PaintTimingDetector::NotifyTextPaint(
+          *fragment_.GetLayoutObject(),
+          graphics_context_.GetPaintController().CurrentPaintChunkProperties());
+    }
   }
 }
 

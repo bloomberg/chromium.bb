@@ -13,6 +13,10 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
 
@@ -35,14 +39,33 @@ void PaintTimingDetector::NotifyObjectPrePaint(
   if (!frame_view_->GetFrame().IsMainFrame())
     return;
 
-  if (object.IsText()) {
-    text_paint_timing_detector_->RecordText(object, painting_layer);
-  }
   if (object.IsLayoutImage() || object.IsVideo() || object.IsSVGImage() ||
       ImagePaintTimingDetector::HasContentfulBackgroundImage(object)) {
     image_paint_timing_detector_->RecordImage(object, painting_layer);
   }
   // Todo(maxlg): add other detectors here.
+}
+
+void PaintTimingDetector::NotifyTextPaint(
+    const Node* node,
+    const PropertyTreeState& current_paint_chunk_properties) {
+  if (!node)
+    return;
+  LayoutObject* object = node->GetLayoutObject();
+  if (!object)
+    return;
+  NotifyTextPaint(*object, current_paint_chunk_properties);
+}
+
+void PaintTimingDetector::NotifyTextPaint(
+    const LayoutObject& object,
+    const PropertyTreeState& current_paint_chunk_properties) {
+  LocalFrameView* frame_view = object.GetFrameView();
+  if (!frame_view || !frame_view->GetFrame().IsMainFrame())
+    return;
+  PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
+  detector.GetTextPaintTimingDetector().RecordText(
+      object, current_paint_chunk_properties);
 }
 
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
@@ -89,14 +112,23 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
 uint64_t PaintTimingDetector::CalculateVisualSize(
     const LayoutRect& invalidated_rect,
     const PaintLayer& painting_layer) const {
+  return CalculateVisualSize(invalidated_rect, painting_layer.GetLayoutObject()
+                                                   .FirstFragment()
+                                                   .LocalBorderBoxProperties());
+}
+
+uint64_t PaintTimingDetector::CalculateVisualSize(
+    const LayoutRect& invalidated_rect,
+    const PropertyTreeState& current_paint_chunk_properties) const {
   // This case should be dealt with outside the function.
   DCHECK(!invalidated_rect.IsEmpty());
 
   // As Layout objects live in different transform spaces, the object's rect
   // should be projected to the viewport's transform space.
-  IntRect visual_rect = SaturatedRect(EnclosedIntRect(invalidated_rect));
-  painting_layer.GetLayoutObject().FirstFragment().MapRectToFragment(
-      painting_layer.GetLayoutObject().View()->FirstFragment(), visual_rect);
+  FloatClipRect visual_rect = FloatClipRect(FloatRect(invalidated_rect));
+  GeometryMapper::LocalToAncestorVisualRect(
+      current_paint_chunk_properties, PropertyTreeState::Root(), visual_rect);
+  FloatRect& visual_rect_float = visual_rect.Rect();
 
   // A visual rect means the part of the rect that's visible within
   // the viewport. We define the size of it as visual size.
@@ -104,8 +136,9 @@ uint64_t PaintTimingDetector::CalculateVisualSize(
   DCHECK(scrollable_area);
   IntRect viewport = scrollable_area->VisibleContentRect();
   // Use saturated rect to avoid integer-overflow.
-  visual_rect.Intersect(SaturatedRect(viewport));
-  return visual_rect.Size().Area();
+
+  visual_rect_float.Intersect(SaturatedRect(viewport));
+  return visual_rect_float.Size().Area();
 }
 
 void PaintTimingDetector::Dispose() {

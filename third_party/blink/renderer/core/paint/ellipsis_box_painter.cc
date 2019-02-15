@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -69,6 +70,13 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    // We should consider using the text node as the tracking node, instead of
+    // the line layout item.
+    PaintTimingDetector::NotifyTextPaint(
+        ellipsis_box_.GetLineLayoutItem().GetNode(),
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+  }
 }
 
 }  // namespace blink

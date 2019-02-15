@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -185,14 +186,16 @@ void TextPaintTimingDetector::ReportSwapTime(
   awaiting_swap_promise_ = false;
 }
 
-void TextPaintTimingDetector::RecordText(const LayoutObject& object,
-                                         const PaintLayer& painting_layer) {
+void TextPaintTimingDetector::RecordText(
+    const LayoutObject& object,
+    const PropertyTreeState& current_paint_chunk_properties) {
   if (!is_recording_)
     return;
   Node* node = object.GetNode();
   if (!node)
     return;
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
+  DCHECK_NE(node_id, kInvalidDOMNodeId);
 
   // This metric defines the size of a text by its first size. So it
   // early-returns if the text has been recorded.
@@ -204,10 +207,12 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
   // the text's first invalidation.
 
   uint64_t rect_size = 0;
-  LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
-  if (!invalidated_rect.IsEmpty()) {
+  // Compared to object.FirstFragment().VisualRect(), this will include other
+  // fragments of the object.
+  LayoutRect visual_rect = object.FragmentsVisualRectBoundingBox();
+  if (!visual_rect.IsEmpty()) {
     rect_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-        invalidated_rect, painting_layer);
+        visual_rect, current_paint_chunk_properties);
   }
 
   // When rect_size == 0, it either means the text size is 0 or the text is out
@@ -220,7 +225,13 @@ void TextPaintTimingDetector::RecordText(const LayoutObject& object,
     record.node_id = node_id;
     record.first_size = rect_size;
 #ifndef NDEBUG
-    record.text = ToLayoutText(&object)->GetText();
+    if (object.IsText()) {
+      record.text = ToLayoutText(&object)->GetText();
+    } else if (object.IsFileUploadControl()) {
+      record.text = ToLayoutFileUploadControl(&object)->FileTextValue();
+    } else {
+      record.text = String("NON-TEXT_OBJECT");
+    }
 #endif
     texts_to_record_swap_time_.push_back(record);
   }
