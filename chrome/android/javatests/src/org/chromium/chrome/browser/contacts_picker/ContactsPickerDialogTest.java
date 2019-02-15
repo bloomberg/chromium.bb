@@ -12,7 +12,6 @@ import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
-import android.util.JsonWriter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -37,7 +36,6 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.ContactsPickerListener;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -65,13 +63,13 @@ public class ContactsPickerDialogTest
     // The selection delegate for the dialog.
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
 
-    // The last action recorded in the dialog (e.g. photo selected).
+    // The last action recorded in the dialog (e.g. contacts selected).
     private @ContactsPickerAction int mLastActionRecorded;
 
-    // The final set of contacts picked by the dialog (json string).
-    private String mLastSelectedContacts;
+    // The final set of contacts picked by the dialog.
+    private List<ContactsPickerListener.Contact> mLastSelectedContacts;
 
-    // The list of currently selected photos (built piecemeal).
+    // The list of currently selected contacts (built piecemeal).
     private List<ContactDetails> mCurrentContactSelection;
 
     // A callback that fires when something is selected in the dialog.
@@ -104,15 +102,15 @@ public class ContactsPickerDialogTest
     public void onContactsPickerUserAction(@ContactsPickerAction int action, String contactsJson,
             List<ContactsPickerListener.Contact> contacts) {
         mLastActionRecorded = action;
-        mLastSelectedContacts = contactsJson;
+        mLastSelectedContacts = (contacts != null) ? new ArrayList<>(contacts) : null;
         onActionCallback.notifyCalled();
     }
 
     // SelectionObserver:
 
     @Override
-    public void onSelectionStateChange(List<ContactDetails> photosSelected) {
-        mCurrentContactSelection = photosSelected;
+    public void onSelectionStateChange(List<ContactDetails> contactsSelected) {
+        mCurrentContactSelection = contactsSelected;
         onSelectionCallback.notifyCalled();
     }
 
@@ -225,19 +223,6 @@ public class ContactsPickerDialogTest
         });
     }
 
-    private void addContact(JsonWriter writer, String displayName) throws Throwable {
-        writer.beginObject();
-        writer.name("name");
-        writer.value(displayName);
-        writer.name("emails");
-        writer.beginArray();
-        writer.endArray();
-        writer.name("phoneNumbers");
-        writer.beginArray();
-        writer.endArray();
-        writer.endObject();
-    }
-
     @Test
     @LargeTest
     public void testOriginString() throws Throwable {
@@ -273,7 +258,7 @@ public class ContactsPickerDialogTest
         clickView(0, expectedSelectionCount, /* expectSelection = */ true);
         clickCancel();
 
-        Assert.assertNull(mLastSelectedContacts);
+        Assert.assertEquals(null, mLastSelectedContacts);
         Assert.assertEquals(ContactsPickerAction.CANCEL, mLastActionRecorded);
 
         dismissDialog();
@@ -293,14 +278,10 @@ public class ContactsPickerDialogTest
         clickView(1, expectedSelectionCount, /* expectSelection = */ true);
         clickDone();
 
-        StringWriter out = new StringWriter();
-        final JsonWriter writer = new JsonWriter(out);
-        writer.beginArray();
-        addContact(writer, mTestContacts.get(1).getDisplayName());
-        writer.endArray();
-
         Assert.assertEquals(ContactsPickerAction.CONTACTS_SELECTED, mLastActionRecorded);
-        Assert.assertEquals(out.toString(), mLastSelectedContacts);
+        Assert.assertEquals(1, mLastSelectedContacts.size());
+        Assert.assertEquals(
+                mTestContacts.get(1).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
 
         dismissDialog();
     }
@@ -321,15 +302,13 @@ public class ContactsPickerDialogTest
         clickDone();
 
         Assert.assertEquals(ContactsPickerAction.CONTACTS_SELECTED, mLastActionRecorded);
-
-        StringWriter out = new StringWriter();
-        final JsonWriter writer = new JsonWriter(out);
-        writer.beginArray();
-        addContact(writer, mTestContacts.get(4).getDisplayName());
-        addContact(writer, mTestContacts.get(2).getDisplayName());
-        addContact(writer, mTestContacts.get(0).getDisplayName());
-        writer.endArray();
-        Assert.assertEquals(out.toString(), mLastSelectedContacts);
+        Assert.assertEquals(3, mLastSelectedContacts.size());
+        Assert.assertEquals(
+                mTestContacts.get(4).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
+        Assert.assertEquals(
+                mTestContacts.get(2).getDisplayName(), mLastSelectedContacts.get(1).names.get(0));
+        Assert.assertEquals(
+                mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(2).names.get(0));
 
         dismissDialog();
     }
