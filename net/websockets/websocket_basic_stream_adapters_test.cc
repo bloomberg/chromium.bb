@@ -72,6 +72,7 @@ class WebSocketClientSocketHandleAdapterTest
             nullptr,
             nullptr,
             nullptr,
+            nullptr,
             &websocket_endpoint_lock_manager_,
             nullptr,
             HttpNetworkSession::NORMAL_SOCKET_POOL)),

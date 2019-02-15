@@ -22,6 +22,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     HostResolver* host_resolver,
     ProxyDelegate* proxy_delegate,
     const SSLClientSocketContext& ssl_client_socket_context,
+    const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
@@ -33,6 +34,8 @@ CommonConnectJobParams::CommonConnectJobParams(
       host_resolver(host_resolver),
       proxy_delegate(proxy_delegate),
       ssl_client_socket_context(ssl_client_socket_context),
+      ssl_client_socket_context_privacy_mode(
+          ssl_client_socket_context_privacy_mode),
       socket_performance_watcher_factory(socket_performance_watcher_factory),
       network_quality_estimator(network_quality_estimator),
       net_log(net_log),

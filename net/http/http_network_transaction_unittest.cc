@@ -695,7 +695,7 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
                  NULL,
                  NULL,
                  NULL,
-                 "",
+                 NULL,
                  NULL,
                  NULL,
                  NULL,
@@ -14284,7 +14284,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       session_deps_.cert_transparency_verifier.get(),
       session_deps_.ct_policy_enforcer.get(),
       nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       session_deps_.ssl_config_service.get(),
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, session_deps_.net_log);

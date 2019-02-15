@@ -54,7 +54,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
       SSLClientSessionCache* ssl_client_session_cache,
-      const std::string& ssl_session_cache_shard,
+      SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
       SSLConfigService* ssl_config_service,
       NetworkQualityEstimator* network_quality_estimator,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
@@ -202,6 +202,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   HostResolver* const host_resolver_;
   ProxyDelegate* const proxy_delegate_;
   const SSLClientSocketContext ssl_client_socket_context_;
+  const SSLClientSocketContext ssl_client_socket_context_privacy_mode_;
   NetworkQualityEstimator* const network_quality_estimator_;
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;
   const int max_sockets_;

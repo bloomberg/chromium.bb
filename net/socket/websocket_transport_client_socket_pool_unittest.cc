@@ -78,7 +78,7 @@ class WebSocketTransportClientSocketPoolTest
               nullptr /* cert_transparency_verifier */,
               nullptr /* ct_policy_enforcer */,
               nullptr /* ssl_client_session_cache */,
-              std::string() /* ssl_session_cache_shard */,
+              nullptr /* ssl_client_session_cache_privacy_mode */,
               nullptr /* ssl_config_service */,
               nullptr /* network_quality_estimator */,
               &websocket_endpoint_lock_manager_,
@@ -545,7 +545,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -591,7 +591,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -636,7 +636,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -673,7 +673,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -711,7 +711,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -753,7 +753,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -803,7 +803,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -847,7 +847,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
@@ -895,7 +895,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
       nullptr /* transport_security_state */,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */, nullptr /* ssl_client_session_cache */,
-      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_client_session_cache_privacy_mode */,
       nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
   const base::TimeDelta connect_job_timeout =

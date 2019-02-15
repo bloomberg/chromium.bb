@@ -419,7 +419,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_client_session_cache_(context.ssl_client_session_cache),
-      ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
       in_confirm_handshake_(false),
       disconnected_(false),
@@ -455,7 +454,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_client_session_cache_(context.ssl_client_session_cache),
-      ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
       in_confirm_handshake_(false),
       disconnected_(false),
@@ -1655,8 +1653,6 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
   std::string result = host_and_port_.ToString();
-  result.push_back('/');
-  result.append(ssl_session_cache_shard_);
 
   result.push_back('/');
   result.push_back(ssl_config_.version_interference_probe ? '1' : '0');

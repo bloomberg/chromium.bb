@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -794,15 +795,14 @@ class SSLClientSocketTest : public PlatformTest,
         ct_verifier_(new DoNothingCTVerifier),
         ct_policy_enforcer_(new MockCTPolicyEnforcer),
         ssl_client_session_cache_(
-            new SSLClientSessionCache(SSLClientSessionCache::Config())) {
+            new SSLClientSessionCache(SSLClientSessionCache::Config())),
+        context_(cert_verifier_.get(),
+                 nullptr /* channel_id_service */,
+                 transport_security_state_.get(),
+                 ct_verifier_.get(),
+                 ct_policy_enforcer_.get(),
+                 ssl_client_session_cache_.get()) {
     cert_verifier_->set_default_result(OK);
-    context_.cert_verifier = cert_verifier_.get();
-    context_.transport_security_state = transport_security_state_.get();
-    context_.cert_transparency_verifier = ct_verifier_.get();
-    context_.ct_policy_enforcer = ct_policy_enforcer_.get();
-    // Set a dummy session cache (and shard) to enable session caching.
-    context_.ssl_client_session_cache = ssl_client_session_cache_.get();
-    context_.ssl_session_cache_shard = "shard";
 
     EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
         .WillRepeatedly(
@@ -4788,40 +4788,6 @@ TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
   EXPECT_EQ(1u, stats.cert_count);
   EXPECT_LT(0u, stats.cert_size);
   EXPECT_EQ(stats.cert_size, stats.total_size);
-}
-
-// Test that session caches are properly sharded.
-TEST_F(SSLClientSocketTest, SessionCacheShard) {
-  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
-
-  // Perform a full handshake.
-  context_.ssl_session_cache_shard = "A";
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  ASSERT_THAT(rv, IsOk());
-  SSLInfo ssl_info;
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-
-  // The next connection resumes the session.
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  ASSERT_THAT(rv, IsOk());
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
-
-  // A different shard does not resume.
-  context_.ssl_session_cache_shard = "B";
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  ASSERT_THAT(rv, IsOk());
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-
-  // The original shard still resumes.
-  context_.ssl_session_cache_shard = "A";
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  ASSERT_THAT(rv, IsOk());
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
 }
 
 TEST_F(SSLClientSocketTest, Tag) {

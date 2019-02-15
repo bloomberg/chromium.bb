@@ -425,14 +425,10 @@ class SSLServerSocketTest : public PlatformTest,
         new FakeSocket(channel_2_.get(), channel_1_.get()));
 
     HostPortPair host_and_pair("unittest", 0);
-    SSLClientSocketContext context;
-    context.cert_verifier = cert_verifier_.get();
-    context.transport_security_state = transport_security_state_.get();
-    context.cert_transparency_verifier = ct_verifier_.get();
-    context.ct_policy_enforcer = ct_policy_enforcer_.get();
-    // Set a dummy session cache (and shard) to enable session caching.
-    context.ssl_client_session_cache = ssl_client_session_cache_.get();
-    context.ssl_session_cache_shard = "shard";
+    SSLClientSocketContext context(
+        cert_verifier_.get(), nullptr, transport_security_state_.get(),
+        ct_verifier_.get(), ct_policy_enforcer_.get(),
+        ssl_client_session_cache_.get());
 
     client_socket_ = socket_factory_->CreateSSLClientSocket(
         std::move(client_connection), host_and_pair, client_ssl_config_,

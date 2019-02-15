@@ -70,9 +70,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   ~SSLClientSocketImpl() override;
 
   const HostPortPair& host_and_port() const { return host_and_port_; }
-  const std::string& ssl_session_cache_shard() const {
-    return ssl_session_cache_shard_;
-  }
 
   // Log SSL key material to |logger|. Must be called before any
   // SSLClientSockets are created.
@@ -176,8 +173,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // the |ssl_info|.signed_certificate_timestamps list.
   void AddCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
-  // Returns a unique key string for the SSL session cache for this socket. This
-  // must not be called if |ssl_session_cache_shard_| is empty.
+  // Returns a unique key string for the SSL session cache for this socket.
   std::string GetSessionCacheKey() const;
 
   // Returns true if renegotiations are allowed.
@@ -281,10 +277,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   SSLConfig ssl_config_;
   // ssl_client_session_cache_ is a non-owning pointer to session cache
   SSLClientSessionCache* ssl_client_session_cache_;
-  // ssl_session_cache_shard_ is an opaque string that partitions the SSL
-  // session cache. i.e. sessions created with one value will not attempt to
-  // resume on the socket with a different value.
-  const std::string ssl_session_cache_shard_;
 
   enum State {
     STATE_NONE,

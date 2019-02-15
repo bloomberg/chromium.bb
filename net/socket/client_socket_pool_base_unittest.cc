@@ -339,6 +339,7 @@ class TestConnectJob : public ConnectJob {
                 nullptr /* host_resolver */,
                 nullptr /* proxy_delegate */,
                 SSLClientSocketContext(),
+                SSLClientSocketContext(),
                 nullptr /* socket_performance_watcher_factory */,
                 nullptr /* network_quality_estimator */,
                 net_log,
