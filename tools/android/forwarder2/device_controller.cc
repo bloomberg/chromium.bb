@@ -55,8 +55,8 @@ DeviceController::DeviceController(std::unique_ptr<Socket> host_socket,
 
 void DeviceController::AcceptHostCommandSoon() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&DeviceController::AcceptHostCommandInternal,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&DeviceController::AcceptHostCommandInternal,
+                                base::Unretained(this)));
 }
 
 void DeviceController::AcceptHostCommandInternal() {

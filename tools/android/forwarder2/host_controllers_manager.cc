@@ -38,9 +38,9 @@ void HostControllersManager::HandleRequest(
   InitOnce();
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&HostControllersManager::HandleRequestOnInternalThread,
-                 base::Unretained(this), adb_path, device_serial, command,
-                 device_port, host_port, base::Passed(&client_socket)));
+      base::BindOnce(&HostControllersManager::HandleRequestOnInternalThread,
+                     base::Unretained(this), adb_path, device_serial, command,
+                     device_port, host_port, std::move(client_socket)));
 }
 
 // static
