@@ -13,10 +13,10 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-class PaintLayer;
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
+class PropertyTreeState;
 
 struct TextRecord {
   DOMNodeId node_id = kInvalidDOMNodeId;
@@ -57,7 +57,7 @@ class CORE_EXPORT TextPaintTimingDetector final
 
  public:
   TextPaintTimingDetector(LocalFrameView* frame_view);
-  void RecordText(const LayoutObject& object, const PaintLayer& painting_layer);
+  void RecordText(const LayoutObject& object, const PropertyTreeState&);
   TextRecord* FindLargestPaintCandidate();
   TextRecord* FindLastPaintCandidate();
   void OnPrePaintFinished();
