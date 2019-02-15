@@ -41,11 +41,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   const GoogleServiceAuthError&
   ErrorFromErrorStateOfRefreshTokenUpdatedCallback() const;
 
-  // This method uses a RepeatingCallback to simplify verification of multiple
-  // removed tokens.
-  void SetOnRefreshTokenRemovedCallback(
-      base::RepeatingCallback<void(const std::string&)> callback);
-  const std::string& AccountFromRefreshTokenRemovedCallback();
+  void SetOnRefreshTokenRemovedCallback(base::OnceClosure callback);
+  const std::string& AccountIdFromRefreshTokenRemovedCallback();
 
   void SetOnRefreshTokensLoadedCallback(base::OnceClosure callback);
 
@@ -118,8 +115,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   GoogleServiceAuthError
       error_from_error_state_of_refresh_token_updated_callback_;
 
-  base::RepeatingCallback<void(const std::string&)>
-      on_refresh_token_removed_callback_;
+  base::OnceClosure on_refresh_token_removed_callback_;
   std::string account_from_refresh_token_removed_callback_;
 
   base::OnceClosure on_refresh_tokens_loaded_callback_;

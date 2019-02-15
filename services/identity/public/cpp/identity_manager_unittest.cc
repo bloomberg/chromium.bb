@@ -1437,7 +1437,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
 
   EXPECT_EQ(
       account_id,
-      identity_manager_observer()->AccountFromRefreshTokenRemovedCallback());
+      identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
 
 TEST_F(IdentityManagerTest,
@@ -1479,7 +1479,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnSecondaryAccountRefreshTokenRemoval) {
 
   EXPECT_EQ(
       expected_account_info.account_id,
-      identity_manager_observer()->AccountFromRefreshTokenRemovedCallback());
+      identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
 
 #if !defined(OS_CHROMEOS)
@@ -1543,7 +1543,7 @@ TEST_F(IdentityManagerTest,
 
   EXPECT_EQ(
       expected_account_info.account_id,
-      identity_manager_observer()->AccountFromRefreshTokenRemovedCallback());
+      identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
 #endif
 
@@ -1563,7 +1563,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {
 
   EXPECT_EQ(
       dummy_account_id,
-      identity_manager_observer()->AccountFromRefreshTokenRemovedCallback());
+      identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
 }
 
 TEST_F(
