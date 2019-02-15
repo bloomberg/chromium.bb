@@ -117,6 +117,16 @@ Display::Display(
 }
 
 Display::~Display() {
+#if defined(OS_ANDROID)
+  // In certain cases, drivers hang when tearing down the display. Finishing
+  // before teardown appears to address this. As we're during display teardown,
+  // an additional finish should have minimal impact.
+  // TODO(ericrk): Add a more robust workaround. crbug.com/899705
+  if (auto* context = output_surface_->context_provider()) {
+    context->ContextGL()->Finish();
+  }
+#endif
+
   for (auto& observer : observers_)
     observer.OnDisplayDestroyed();
   observers_.Clear();
