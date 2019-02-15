@@ -7,16 +7,16 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV",
+      "name": "LayoutBlockFlow (relative positioned) DIV id='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#FF0000",
+      "backgroundColor": "#FA8072",
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [8, 8],
-      "bounds": [50, 50],
+      "name": "LayoutBlockFlow (relative positioned) DIV id='squashed'",
+      "position": [8, 58],
+      "bounds": [100, 50],
       "contentsOpaque": true,
       "backgroundColor": "#008000"
     }
@@ -28,7 +28,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 8, 0, 1]
+        [8, 58, 0, 1]
       ]
     }
   ]

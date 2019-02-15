@@ -21,6 +21,8 @@ TEST
     {
       "name": "LayoutBlockFlow DIV class='transform'",
       "bounds": [100, 30],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF",
       "transform": 1
     }
   ],

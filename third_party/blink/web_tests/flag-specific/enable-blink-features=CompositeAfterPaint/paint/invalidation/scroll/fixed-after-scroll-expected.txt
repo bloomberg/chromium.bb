@@ -2,22 +2,24 @@
   "layers": [
     {
       "name": "Scrolling background of LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='red fixed'",
+      "position": [8, 200],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 96, 186, 64],
+          "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
+          "rect": [0, 0, 100, 100],
           "reason": "chunk appeared"
         }
       ]
-    },
-    {
-      "name": "LayoutTableCell TD",
-      "position": [24, 22],
-      "bounds": [10, 19],
-      "transform": 1
     }
   ],
   "transforms": [
@@ -27,7 +29,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [72, 96, 0, 1]
+        [0, -500, 0, 1]
       ]
     }
   ]

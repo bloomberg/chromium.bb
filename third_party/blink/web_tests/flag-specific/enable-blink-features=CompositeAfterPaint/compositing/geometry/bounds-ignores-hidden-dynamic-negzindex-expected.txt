@@ -7,17 +7,19 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV",
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "backgroundColor": "#FF0000",
+      "name": "LayoutImage (positioned) IMG",
+      "bounds": [500, 250],
+      "backgroundColor": "#000000"
+    },
+    {
+      "name": "LayoutImage (positioned) IMG",
+      "bounds": [150, 150],
+      "backgroundColor": "#000000",
       "transform": 1
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
-      "position": [8, 8],
-      "bounds": [50, 50],
-      "contentsOpaque": true,
+      "name": "LayoutBlockFlow (positioned) DIV class='indicator box'",
+      "bounds": [100, 350],
       "backgroundColor": "#008000"
     }
   ],
@@ -28,7 +30,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 8, 0, 1]
+        [0, 250, 0, 1]
       ]
     }
   ]

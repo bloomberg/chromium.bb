@@ -13,11 +13,10 @@
     },
     {
       "name": "LayoutBlockFlow DIV",
-      "position": [20, 20],
       "bounds": [400, 400],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
@@ -29,11 +28,10 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV",
-      "position": [20, 20],
       "bounds": [100, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FF00FF",
-      "transform": 2
+      "transform": 4
     }
   ],
   "transforms": [
@@ -56,6 +54,26 @@
         [0, 0, 0, 1]
       ],
       "origin": [120, 120]
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 20, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [20, 20, 0, 1]
+      ]
     }
   ]
 }
