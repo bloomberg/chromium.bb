@@ -16,6 +16,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
@@ -34,7 +35,8 @@ namespace storage {
 
 class SpecialStoragePolicy;
 
-// All the methods of this class must run on the DB thread.
+// All the methods of this class, except the constructor, must run on the DB
+// thread.
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
  public:
   struct COMPONENT_EXPORT(STORAGE_BROWSER) OriginInfoTableEntry {
@@ -218,6 +220,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   static const TableSchema kTables[];
   static const IndexSchema kIndexes[];
 
+  SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };
 
