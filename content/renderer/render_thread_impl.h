@@ -480,8 +480,6 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
-  void RequestPurgeMemory();
-
   struct RendererMemoryMetrics {
     size_t partition_alloc_kb;
     size_t blink_gc_kb;

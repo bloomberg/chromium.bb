@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/memory_purge_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/prioritize_compositing_after_input_experiment.h"
@@ -304,6 +305,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void AddPageScheduler(PageSchedulerImpl*);
   void RemovePageScheduler(PageSchedulerImpl*);
+
+  // Called by an associated PageScheduler when frozen or unfrozen.
+  void OnPageFrozen();
+  void OnPageUnfrozen();
 
   void AddTaskTimeObserver(base::sequence_manager::TaskTimeObserver*);
   void RemoveTaskTimeObserver(base::sequence_manager::TaskTimeObserver*);
@@ -748,6 +753,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   IdleMemoryReclaimer idle_memory_reclaimer_;
   std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
+  MemoryPurgeManager memory_purge_manager_;
 
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> compositor_task_queue_;

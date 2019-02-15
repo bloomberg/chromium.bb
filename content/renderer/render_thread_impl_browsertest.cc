@@ -17,14 +17,12 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/app/mojo/mojo_init.h"
@@ -239,28 +237,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
  protected:
   IPC::Sender* sender() { return channel_.get(); }
 
-  void SetProcessBackgrounded(bool backgrounded) {
-    mojom::Renderer* renderer_interface = thread_;
-    renderer_interface->SetProcessBackgrounded(backgrounded);
-  }
-
-  void RegisterMemoryPressureListener() {
-    memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
-        base::BindRepeating(&RenderThreadImplBrowserTest::OnMemoryPressure,
-                            base::Unretained(this)));
-  }
-
-  void ExpectMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel level) {
-    EXPECT_CALL(*this, OnMemoryPressure(level)).Times(1);
-    run_loop_->RunUntilIdle();
-  }
-
-  void ExpectNoMemoryPressure() {
-    EXPECT_CALL(*this, OnMemoryPressure(testing::_)).Times(0);
-    run_loop_->RunUntilIdle();
-  }
-
   scoped_refptr<TestTaskCounter> test_task_counter_;
   TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
@@ -281,13 +257,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
   base::FieldTrialList field_trial_list_;
 
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
   std::unique_ptr<base::RunLoop> run_loop_;
 
  private:
-  MOCK_METHOD1(OnMemoryPressure,
-               void(base::MemoryPressureListener::MemoryPressureLevel));
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImplBrowserTest);
 };
 
@@ -316,79 +288,6 @@ TEST_F(RenderThreadImplBrowserTest,
   run_loop_->Run();
 
   EXPECT_EQ(0, test_task_counter_->NumTasksPosted());
-}
-
-// Verify that RequestPurgeMemory() triggers a memory pressure notification
-// in a backgrounded renderer when the kFreezePurgeMemoryBackgroundedOnly
-// feature is disabled.
-TEST_F(RenderThreadImplBrowserTest, RequestMemoryPurgeBackgrounded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */,
-      {features::kFreezePurgeMemoryBackgroundedOnly} /* disabled */);
-
-  RegisterMemoryPressureListener();
-
-  SetProcessBackgrounded(true);
-  RenderThreadImpl::current()->RequestPurgeMemory();
-  ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
-                           MEMORY_PRESSURE_LEVEL_CRITICAL);
-  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
-}
-
-// Verify that RequestPurgeMemory() triggers a memory pressure notification
-// in a foregrounded renderer when the kFreezePurgeMemoryBackgroundedOnly
-// feature is disabled.
-TEST_F(RenderThreadImplBrowserTest, RequestMemoryPurgeForegrounded) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled */,
-      {features::kFreezePurgeMemoryBackgroundedOnly} /* disabled */);
-
-  RegisterMemoryPressureListener();
-
-  SetProcessBackgrounded(false);
-  RenderThreadImpl::current()->RequestPurgeMemory();
-  ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
-                           MEMORY_PRESSURE_LEVEL_CRITICAL);
-  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
-}
-
-// Verify that RequestPurgeMemory() triggers a memory pressure notification
-// in a backgrounded renderer when the kFreezePurgeMemoryBackgroundedOnly
-// feature is enabled.
-TEST_F(RenderThreadImplBrowserTest,
-       RequestMemoryPurgeBackgroundedPreventForegroundedRenderer) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kFreezePurgeMemoryBackgroundedOnly} /* enabled */,
-      {} /* disabled */);
-
-  RegisterMemoryPressureListener();
-
-  SetProcessBackgrounded(true);
-  RenderThreadImpl::current()->RequestPurgeMemory();
-  ExpectMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel::
-                           MEMORY_PRESSURE_LEVEL_CRITICAL);
-  EXPECT_TRUE(base::MemoryPressureListener::AreNotificationsSuppressed());
-}
-
-// Verify that RequestPurgeMemory() does not trigger a memory pressure
-// notification in a foregrounded renderer when the
-// kFreezePurgeMemoryBackgroundedOnly feature is enabled.
-TEST_F(RenderThreadImplBrowserTest,
-       RequestMemoryPurgeForegroundedPreventForegroundedRenderer) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kFreezePurgeMemoryBackgroundedOnly} /* enabled */,
-      {} /* disabled */);
-
-  RegisterMemoryPressureListener();
-
-  SetProcessBackgrounded(false);
-  RenderThreadImpl::current()->RequestPurgeMemory();
-  ExpectNoMemoryPressure();
-  EXPECT_FALSE(base::MemoryPressureListener::AreNotificationsSuppressed());
 }
 
 enum NativeBufferFlag { kDisableNativeBuffers, kEnableNativeBuffers };

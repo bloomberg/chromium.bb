@@ -717,14 +717,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  // Memory ------------------------------------------------------------
-
-  // Requests purging memory. The platform may or may not purge memory,
-  // depending on memory pressure.
-  virtual void RequestPurgeMemory() {}
-
-  virtual void SetMemoryPressureNotificationsSuppressed(bool suppressed) {}
-
   // V8 Context Snapshot --------------------------------------------------
 
   // This method returns true only when

@@ -1733,16 +1733,6 @@ void RenderThreadImpl::EnableV8LowMemoryMode() {
     low_memory_mode_controller_.reset(new LowMemoryModeController());
 }
 
-void RenderThreadImpl::RequestPurgeMemory() {
-  if (base::FeatureList::IsEnabled(
-          features::kFreezePurgeMemoryBackgroundedOnly) &&
-      !is_backgrounded_)
-    return;
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  base::MemoryPressureListener::SetNotificationsSuppressed(true);
-}
-
 bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {
   DCHECK(memory_metrics);

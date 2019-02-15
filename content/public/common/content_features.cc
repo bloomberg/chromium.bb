@@ -175,9 +175,6 @@ const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
 const base::Feature kFreezeFramesOnVisibility{
     "FreezeFramesOnVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kFreezePurgeMemoryBackgroundedOnly{
-    "FreezePurgeMemoryBackgroundedOnly", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables haptic vibration effects on supported gamepads.
 const base::Feature kGamepadVibration{"GamepadVibration",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

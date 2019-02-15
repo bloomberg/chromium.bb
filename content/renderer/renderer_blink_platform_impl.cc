@@ -1069,18 +1069,6 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
 }
 
 //------------------------------------------------------------------------------
-void RendererBlinkPlatformImpl::RequestPurgeMemory() {
-  auto* render_thread = RenderThreadImpl::current();
-  // RenderThreadImpl is null in some tests.
-  if (!render_thread)
-    return;
-  render_thread->RequestPurgeMemory();
-}
-
-void RendererBlinkPlatformImpl::SetMemoryPressureNotificationsSuppressed(
-    bool suppressed) {
-  base::MemoryPressureListener::SetNotificationsSuppressed(suppressed);
-}
 
 void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
   if (!web_database_host_) {

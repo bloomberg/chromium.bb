@@ -234,8 +234,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<network::SharedURLLoaderFactory> factory) override;
   std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) override;
-  void RequestPurgeMemory() override;
-  void SetMemoryPressureNotificationsSuppressed(bool suppressed) override;
 
   // Returns non-null.
   // It is invalid to call this in an incomplete env where
