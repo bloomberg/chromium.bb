@@ -71,18 +71,7 @@ int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
 
   content::Compositor::Initialize();
 
-  // Chrome on Android does not use default MessageLoop. It has its own
-  // Android specific MessageLoop.
-  DCHECK(!main_message_loop_.get());
-
-  // Create the MessageLoop if doesn't yet exist (and bind it to the native Java
-  // loop). This is a critical point in the startup process.
-  {
-    TRACE_EVENT0("startup",
-      "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:CreateUiMsgLoop");
-    if (!base::MessageLoopCurrent::IsSet())
-      main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
-  }
+  CHECK(base::MessageLoopCurrent::IsSet());
 
   return ChromeBrowserMainParts::PreEarlyInitialization();
 }

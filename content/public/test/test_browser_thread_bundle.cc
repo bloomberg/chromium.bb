@@ -84,7 +84,7 @@ void TestBrowserThreadBundle::Init() {
   CHECK(com_initializer_->Succeeded());
 #endif
 
-  BrowserTaskExecutor::Create();
+  BrowserTaskExecutor::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
 
   if (HasIOMainLoop()) {
     CHECK(base::MessageLoopCurrentForIO::IsSet());

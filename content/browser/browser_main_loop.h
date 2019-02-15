@@ -36,7 +36,6 @@ class CommandLine;
 class FilePath;
 class HighResolutionTimerManager;
 class MemoryPressureMonitor;
-class MessageLoop;
 class PowerMonitor;
 class SingleThreadTaskRunner;
 class SystemMonitor;
@@ -303,7 +302,6 @@ class CONTENT_EXPORT BrowserMainLoop {
       scoped_execution_fence_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
-  std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   // Members initialized in |PostMainMessageLoopStart()| -----------------------
   std::unique_ptr<BrowserProcessSubThread> io_thread_;

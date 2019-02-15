@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_SCHEDULER_BROWSER_TASK_EXECUTOR_H_
 #define CONTENT_BROWSER_SCHEDULER_BROWSER_TASK_EXECUTOR_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -18,9 +21,24 @@ namespace content {
 // browser process.
 class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
  public:
-  // Creates and registers a BrowserTaskExecutor that facilitates posting tasks
-  // to a BrowserThread via //base/task/post_task.h.
+  // Creates and registers a BrowserTaskExecutor on the current thread, which
+  // owns a MessageLoopForUI. This facilitates posting tasks to a BrowserThread
+  // via //base/task/post_task.h.
   static void Create();
+
+  // Creates and registers a BrowserTaskExecutor on the current thread, which
+  // defers to a task runner from a previously created MessageLoopForUI.
+  static void CreateForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
+
+  // This must be called after the FeatureList has been initialized in order
+  // for scheduling experiments to function.
+  static void PostFeatureListSetup();
+
+  // Winds down the BrowserTaskExecutor, after this no tasks can be executed
+  // and the base::TaskExecutor APIs are non-functional but won't crash if
+  // called.
+  static void Shutdown();
 
   // Unregister and delete the TaskExecutor after a test.
   static void ResetForTesting();
@@ -57,7 +75,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
                            BestEffortTasksRunAfterStartup);
 
-  BrowserTaskExecutor();
+  // TODO(alexclarke): Replace with a BrowserUIThreadScheduler.
+  BrowserTaskExecutor(
+      std::unique_ptr<base::MessageLoopForUI> message_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~BrowserTaskExecutor() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
@@ -72,6 +93,9 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 
   static scoped_refptr<base::SingleThreadTaskRunner>
   GetAfterStartupTaskRunnerForThread(BrowserThread::ID id);
+
+  std::unique_ptr<base::MessageLoopForUI> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };

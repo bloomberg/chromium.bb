@@ -340,8 +340,10 @@ void BrowserTestBase::SetUp() {
   field_trial_list_ = SetUpFieldTrialsAndFeatureList();
   StartBrowserTaskScheduler();
   BrowserTaskExecutor::Create();
+  BrowserTaskExecutor::PostFeatureListSetup();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);
+  BrowserTaskExecutor::ResetForTesting();
 #else
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
