@@ -1428,7 +1428,7 @@ typedef testing::Types<OfflinePageRequestJobBuilder,
                        OfflinePageURLLoaderBuilder>
     MyTypes;
 
-TYPED_TEST_CASE(OfflinePageRequestHandlerTest, MyTypes);
+TYPED_TEST_SUITE(OfflinePageRequestHandlerTest, MyTypes);
 
 TYPED_TEST(OfflinePageRequestHandlerTest, FailedToCreateRequestJob) {
   this->SimulateHasNetworkConnectivity(false);

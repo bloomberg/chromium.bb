@@ -167,7 +167,7 @@ typedef ::testing::Types<base::WritableSharedMemoryRegion,
                          base::UnsafeSharedMemoryRegion,
                          base::ReadOnlySharedMemoryRegion>
     AllSharedMemoryRegionTypes;
-TYPED_TEST_CASE(SharedMemoryRegionTypedTest, AllSharedMemoryRegionTypes);
+TYPED_TEST_SUITE(SharedMemoryRegionTypedTest, AllSharedMemoryRegionTypes);
 
 TYPED_TEST(SharedMemoryRegionTypedTest, WriteAndRead) {
   const size_t size = 2314;

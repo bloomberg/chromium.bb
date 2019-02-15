@@ -495,8 +495,8 @@ using InterfaceTypes = testing::Types<
                false,
                BindingsTestSerializationMode::kNeverSerialize>>;
 
-TYPED_TEST_CASE(SyncMethodCommonTest, InterfaceTypes);
-TYPED_TEST_CASE(SequencedTaskRunnerTestLauncher, InterfaceTypes);
+TYPED_TEST_SUITE(SyncMethodCommonTest, InterfaceTypes);
+TYPED_TEST_SUITE(SequencedTaskRunnerTestLauncher, InterfaceTypes);
 
 TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
   using Interface = typename TypeParam::Interface;

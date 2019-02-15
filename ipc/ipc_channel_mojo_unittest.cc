@@ -1541,8 +1541,8 @@ const char ReadOnlyRegionTraits::kClientName[] =
 typedef ::testing::
     Types<WritableRegionTraits, UnsafeRegionTraits, ReadOnlyRegionTraits>
         AllSharedMemoryRegionTraits;
-TYPED_TEST_CASE(IPCChannelMojoSharedMemoryRegionTypedTest,
-                AllSharedMemoryRegionTraits);
+TYPED_TEST_SUITE(IPCChannelMojoSharedMemoryRegionTypedTest,
+                 AllSharedMemoryRegionTraits);
 
 template <class SharedMemoryRegionType>
 class ListenerThatExpectsSharedMemoryRegion : public TestListenerBase {

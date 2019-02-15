@@ -7,8 +7,8 @@
 // enabled on certain platforms. However, preprocessor directives in macro
 // arguments result in undefined behavior (and don't work on MSVC). Instead,
 // 'parameterized' tests should typedef TypesToTest (which is used to
-// instantiate the tests using the TYPED_TEST_CASE macro) and then #include this
-// header.
+// instantiate the tests using the TYPED_TEST_SUITE macro) and then #include
+// this header.
 // TODO(dcheng): This is really horrible. In general, all tests should run on
 // all platforms, to avoid this mess.
 
@@ -102,7 +102,7 @@ struct NullClipboardTraits {
 
 // |NamesOfTypesToTest| provides a way to differentiate between different
 // clipboard tests that include this file. See docs in gtest-typed-test.h
-TYPED_TEST_CASE(ClipboardTest, TypesToTest, NamesOfTypesToTest);
+TYPED_TEST_SUITE(ClipboardTest, TypesToTest, NamesOfTypesToTest);
 
 TYPED_TEST(ClipboardTest, ClearTest) {
   {

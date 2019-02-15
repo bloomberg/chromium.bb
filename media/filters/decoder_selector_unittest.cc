@@ -309,7 +309,7 @@ class DecoderSelectorTest : public ::testing::Test {
 using DecoderSelectorTestParams =
     ::testing::Types<AudioDecoderSelectorTestParam,
                      VideoDecoderSelectorTestParam>;
-TYPED_TEST_CASE(DecoderSelectorTest, DecoderSelectorTestParams);
+TYPED_TEST_SUITE(DecoderSelectorTest, DecoderSelectorTestParams);
 
 // Tests for clear streams. CDM will not be used for clear streams so
 // DecryptorCapability doesn't really matter.

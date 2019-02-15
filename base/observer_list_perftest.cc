@@ -58,7 +58,7 @@ class ObserverListPerfTest : public ::testing::Test {
 };
 
 typedef ::testing::Types<UnsafeObserver, TestCheckedObserver> ObserverTypes;
-TYPED_TEST_CASE(ObserverListPerfTest, ObserverTypes);
+TYPED_TEST_SUITE(ObserverListPerfTest, ObserverTypes);
 
 // Performance test for base::ObserverList and Checked Observers.
 TYPED_TEST(ObserverListPerfTest, NotifyPerformance) {

@@ -28,7 +28,7 @@ class UncheckedBase {
   virtual int GetValue() const { return 0; }
 };
 
-// Helper for TYPED_TEST_CASE machinery to pick the ObserverList under test.
+// Helper for TYPED_TEST_SUITE machinery to pick the ObserverList under test.
 // Keyed off the observer type since ObserverList has too many template args and
 // it gets ugly.
 template <class Foo>
@@ -186,7 +186,7 @@ class ObserverListTest : public ObserverListTestBase, public ::testing::Test {
 };
 
 using ObserverTypes = ::testing::Types<CheckedBase, UncheckedBase>;
-TYPED_TEST_CASE(ObserverListTest, ObserverTypes);
+TYPED_TEST_SUITE(ObserverListTest, ObserverTypes);
 
 // TYPED_TEST causes the test parent class to be a template parameter, which
 // makes the syntax for referring to the types awkward. Create aliases in local
