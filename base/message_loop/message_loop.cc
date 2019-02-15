@@ -29,10 +29,6 @@ namespace {
 
 MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = nullptr;
 
-std::unique_ptr<MessagePump> ReturnPump(std::unique_ptr<MessagePump> pump) {
-  return pump;
-}
-
 }  // namespace
 
 // Unfortunately since we're not on C++17 we're required to provide an out of
@@ -45,13 +41,16 @@ constexpr MessageLoop::Type MessageLoop::TYPE_IO;
 constexpr MessageLoop::Type MessageLoop::TYPE_JAVA;
 #endif
 
-MessageLoop::MessageLoop(Type type)
-    : MessageLoop(type, MessagePumpFactoryCallback()) {
+MessageLoop::MessageLoop(Type type) : MessageLoop(type, nullptr) {
+  // For TYPE_CUSTOM you must either use
+  // MessageLoop(std::unique_ptr<MessagePump> pump) or
+  // MessageLoop::CreateUnbound()
+  DCHECK_NE(type_, TYPE_CUSTOM);
   BindToCurrentThread();
 }
 
 MessageLoop::MessageLoop(std::unique_ptr<MessagePump> pump)
-    : MessageLoop(TYPE_CUSTOM, BindOnce(&ReturnPump, std::move(pump))) {
+    : MessageLoop(TYPE_CUSTOM, std::move(pump)) {
   BindToCurrentThread();
 }
 
@@ -165,22 +164,17 @@ MessageLoopBase* MessageLoop::GetMessageLoopBase() {
 //------------------------------------------------------------------------------
 
 // static
-std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
-    Type type,
-    MessagePumpFactoryCallback pump_factory) {
-  return WrapUnique(new MessageLoop(type, std::move(pump_factory)));
+std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(Type type) {
+  return WrapUnique(new MessageLoop(type, nullptr));
 }
 
-MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
+MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
     : backend_(sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
           sequence_manager::SequenceManager::Settings{.message_loop_type =
                                                           type})),
       default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
-      pump_factory_(std::move(pump_factory)) {
-  // If type is TYPE_CUSTOM non-null pump_factory must be given.
-  DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
-
+      custom_pump_(std::move(custom_pump)) {
   // Bound in BindToCurrentThread();
   DETACH_FROM_THREAD(bound_thread_checker_);
 }
@@ -213,8 +207,8 @@ void MessageLoop::BindToCurrentThread() {
 }
 
 std::unique_ptr<MessagePump> MessageLoop::CreateMessagePump() {
-  if (!pump_factory_.is_null()) {
-    return std::move(pump_factory_).Run();
+  if (custom_pump_) {
+    return std::move(custom_pump_);
   } else {
     return CreateMessagePumpForType(type_);
   }

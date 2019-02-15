@@ -612,8 +612,7 @@ class MessageLoopTypedTest
   }
 
   std::unique_ptr<MessageLoop> CreateMessageLoop() {
-    auto message_loop = base::WrapUnique(
-        new MessageLoop(GetParam(), MessageLoop::MessagePumpFactoryCallback()));
+    auto message_loop = base::WrapUnique(new MessageLoop(GetParam(), nullptr));
     message_loop->BindToCurrentThread();
     return message_loop;
   }
@@ -2236,8 +2235,8 @@ TEST_F(MessageLoopTest, DeleteUnboundLoop) {
   // It should be possible to delete an unbound message loop on a thread which
   // already has another active loop. This happens when thread creation fails.
   MessageLoop loop;
-  std::unique_ptr<MessageLoop> unbound_loop(MessageLoop::CreateUnbound(
-      MessageLoop::TYPE_DEFAULT, MessageLoop::MessagePumpFactoryCallback()));
+  std::unique_ptr<MessageLoop> unbound_loop(
+      MessageLoop::CreateUnbound(MessageLoop::TYPE_DEFAULT));
   unbound_loop.reset();
   EXPECT_TRUE(loop.IsBoundToCurrentThread());
   EXPECT_EQ(loop.task_runner(), ThreadTaskRunnerHandle::Get());
