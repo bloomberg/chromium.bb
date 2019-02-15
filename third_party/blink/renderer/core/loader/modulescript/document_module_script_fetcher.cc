@@ -41,7 +41,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
   ModuleScriptCreationParams params(
       script_resource->GetResponse().CurrentRequestUrl(),
-      script_resource->SourceText(),
+      script_resource->SourceText(), script_resource->CacheHandler(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, error_messages);
 }
@@ -72,8 +72,10 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
     return true;
   }
 
+  // TODO(hiroshige): Support V8 Code Cache for Layered API.
   ModuleScriptCreationParams params(
       layered_api_url, ParkableString(source_text.ReleaseImpl()),
+      nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
   return true;
