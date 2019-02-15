@@ -274,6 +274,10 @@ vars = {
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
   "libunwind_revision": "69d9b84cca8354117b9fe9705a4430d789ee599b",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling ios_webkit
+  # and whatever else without interference from each other.
+  "ios_webkit_revision": "59e9de61b7b36507836fa8b098e8839d7d995b13",
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -452,7 +456,8 @@ deps = {
   },
 
   'src/ios/third_party/webkit/src': {
-      'url': Var('chromium_git') + '/external/github.com/WebKit/webkit.git' + '@' + 'c56dd8a91c62afcfd0de4a5fe6dbb46484ea1fb5',
+      'url': Var('chromium_git') + '/external/github.com/WebKit/webkit.git' +
+             '@' + Var('ios_webkit_revision'),
       'condition': 'checkout_ios and checkout_ios_webkit'
   },
 
