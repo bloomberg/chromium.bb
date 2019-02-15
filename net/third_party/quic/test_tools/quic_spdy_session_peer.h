@@ -35,14 +35,12 @@ class QuicSpdySessionPeer {
   static void SetMaxUncompressedHeaderBytes(
       QuicSpdySession* session,
       size_t set_max_uncompressed_header_bytes);
-  static size_t WriteHeadersImpl(
+  static size_t WriteHeadersOnHeadersStream(
       QuicSpdySession* session,
       QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
-      int weight,
-      QuicStreamId parent_stream_id,
-      bool exclusive,
+      spdy::SpdyPriority priority,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
   // Helper functions for stream ids, to allow test logic to abstract
   // over the HTTP stream numbering scheme (i.e. whether one or

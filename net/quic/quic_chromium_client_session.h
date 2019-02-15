@@ -453,7 +453,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::QuicSocketAddress& peer_address) override;
 
   // quic::QuicSpdySession methods:
-  size_t WriteHeaders(
+  size_t WriteHeadersOnHeadersStream(
       quic::QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,

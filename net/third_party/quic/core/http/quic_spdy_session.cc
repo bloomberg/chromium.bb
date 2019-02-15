@@ -457,38 +457,16 @@ size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov) {
                                    iov.iov_len);
 }
 
-size_t QuicSpdySession::WriteHeaders(
+size_t QuicSpdySession::WriteHeadersOnHeadersStream(
     QuicStreamId id,
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  return WriteHeadersImpl(
-      id, std::move(headers), fin, Spdy3PriorityToHttp2Weight(priority),
-      /*parent_stream_id=*/0, /*exclusive=*/false, std::move(ack_listener));
-}
-
-size_t QuicSpdySession::WriteHeadersImpl(
-    QuicStreamId id,
-    SpdyHeaderBlock headers,
-    bool fin,
-    int weight,
-    QuicStreamId parent_stream_id,
-    bool exclusive,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  SpdyHeadersIR headers_frame(id, std::move(headers));
-  headers_frame.set_fin(fin);
-  if (perspective() == Perspective::IS_CLIENT) {
-    headers_frame.set_has_priority(true);
-    headers_frame.set_weight(weight);
-    headers_frame.set_parent_stream_id(parent_stream_id);
-    headers_frame.set_exclusive(exclusive);
-  }
-  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
-  headers_stream_->WriteOrBufferData(
-      QuicStringPiece(frame.data(), frame.size()), false,
-      std::move(ack_listener));
-  return frame.size();
+  return WriteHeadersOnHeadersStreamImpl(
+      id, std::move(headers), fin,
+      /* parent_stream_id = */ 0, Spdy3PriorityToHttp2Weight(priority),
+      /* exclusive = */ false, std::move(ack_listener));
 }
 
 size_t QuicSpdySession::WritePriority(QuicStreamId id,
@@ -550,6 +528,29 @@ void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
 bool QuicSpdySession::ShouldBufferIncomingStream(QuicStreamId id) const {
   DCHECK_EQ(QUIC_VERSION_99, connection()->transport_version());
   return !QuicUtils::IsBidirectionalStreamId(id);
+}
+
+size_t QuicSpdySession::WriteHeadersOnHeadersStreamImpl(
+    QuicStreamId id,
+    spdy::SpdyHeaderBlock headers,
+    bool fin,
+    QuicStreamId parent_stream_id,
+    int weight,
+    bool exclusive,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+  SpdyHeadersIR headers_frame(id, std::move(headers));
+  headers_frame.set_fin(fin);
+  if (perspective() == Perspective::IS_CLIENT) {
+    headers_frame.set_has_priority(true);
+    headers_frame.set_parent_stream_id(parent_stream_id);
+    headers_frame.set_weight(weight);
+    headers_frame.set_exclusive(exclusive);
+  }
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
+  headers_stream_->WriteOrBufferData(
+      QuicStringPiece(frame.data(), frame.size()), false,
+      std::move(ack_listener));
+  return frame.size();
 }
 
 void QuicSpdySession::OnPromiseHeaderList(QuicStreamId stream_id,

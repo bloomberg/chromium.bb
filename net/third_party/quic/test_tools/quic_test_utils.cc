@@ -583,16 +583,6 @@ void MockQuicSpdySession::SetCryptoStream(QuicCryptoStream* crypto_stream) {
   crypto_stream_.reset(crypto_stream);
 }
 
-size_t MockQuicSpdySession::WriteHeaders(
-    QuicStreamId id,
-    spdy::SpdyHeaderBlock headers,
-    bool fin,
-    spdy::SpdyPriority priority,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  write_headers_ = std::move(headers);
-  return WriteHeadersMock(id, write_headers_, fin, priority, ack_listener);
-}
-
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
     QuicConnection* connection,
     const QuicConfig& config,

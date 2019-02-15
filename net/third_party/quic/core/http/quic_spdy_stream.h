@@ -216,6 +216,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   virtual void OnTrailingHeadersComplete(bool fin,
                                          size_t frame_len,
                                          const QuicHeaderList& header_list);
+  virtual size_t WriteHeadersImpl(
+      spdy::SpdyHeaderBlock header_block,
+      bool fin,
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+
   QuicSpdySession* spdy_session() const { return spdy_session_; }
   Visitor* visitor() { return visitor_; }
 

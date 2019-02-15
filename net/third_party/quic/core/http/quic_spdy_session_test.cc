@@ -1193,12 +1193,14 @@ TEST_P(QuicSpdySessionTestServer,
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
     headers["header"] = QuicStrCat(random.RandUint64(), random.RandUint64(),
                                    random.RandUint64());
-    session_.WriteHeaders(stream_id, headers.Clone(), true, 0, nullptr);
+    session_.WriteHeadersOnHeadersStream(stream_id, headers.Clone(), true, 0,
+                                         nullptr);
     stream_id += IdDelta();
   }
   // Write once more to ensure that the headers stream has buffered data. The
   // random headers may have exactly filled the flow control window.
-  session_.WriteHeaders(stream_id, std::move(headers), true, 0, nullptr);
+  session_.WriteHeadersOnHeadersStream(stream_id, std::move(headers), true, 0,
+                                       nullptr);
   EXPECT_TRUE(headers_stream->HasBufferedData());
 
   EXPECT_TRUE(headers_stream->flow_controller()->IsBlocked());

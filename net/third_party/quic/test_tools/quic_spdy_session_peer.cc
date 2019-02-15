@@ -50,18 +50,15 @@ void QuicSpdySessionPeer::SetMaxUncompressedHeaderBytes(
 }
 
 // static
-size_t QuicSpdySessionPeer::WriteHeadersImpl(
+size_t QuicSpdySessionPeer::WriteHeadersOnHeadersStream(
     QuicSpdySession* session,
     QuicStreamId id,
     spdy::SpdyHeaderBlock headers,
     bool fin,
-    int weight,
-    QuicStreamId parent_stream_id,
-    bool exclusive,
+    spdy::SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  return session->WriteHeadersImpl(id, std::move(headers), fin, weight,
-                                   parent_stream_id, exclusive,
-                                   std::move(ack_listener));
+  return session->WriteHeadersOnHeadersStream(
+      id, std::move(headers), fin, priority, std::move(ack_listener));
 }
 
 //  static

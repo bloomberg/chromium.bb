@@ -112,7 +112,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // If |fin| is true, then no more data will be sent for the stream |id|.
   // If provided, |ack_notifier_delegate| will be registered to be notified when
   // we have seen ACKs for all packets resulting from this call.
-  virtual size_t WriteHeaders(
+  virtual size_t WriteHeadersOnHeadersStream(
       QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
@@ -180,15 +180,12 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // Overridden to buffer incoming streams for version 99.
   bool ShouldBufferIncomingStream(QuicStreamId id) const override;
 
-  // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
-  // separate from QuicSpdySession::WriteHeaders because tests call
-  // this but mock the latter.
-  size_t WriteHeadersImpl(
+  size_t WriteHeadersOnHeadersStreamImpl(
       QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
-      int weight,
       QuicStreamId parent_stream_id,
+      int weight,
       bool exclusive,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 

@@ -51,6 +51,11 @@ class TestStream : public QuicSpdyStream {
              bool should_process_data)
       : QuicSpdyStream(id, session, BIDIRECTIONAL),
         should_process_data_(should_process_data) {}
+  ~TestStream() override = default;
+
+  using QuicSpdyStream::set_ack_listener;
+  using QuicStream::CloseWriteSide;
+  using QuicStream::WriteOrBufferData;
 
   void OnBodyAvailable() override {
     if (!should_process_data_) {
@@ -64,14 +69,23 @@ class TestStream : public QuicSpdyStream {
     data_ += QuicString(buffer, bytes_read);
   }
 
-  using QuicSpdyStream::set_ack_listener;
-  using QuicStream::CloseWriteSide;
-  using QuicStream::WriteOrBufferData;
+  MOCK_METHOD1(WriteHeadersMock, void(bool fin));
+
+  size_t WriteHeadersImpl(spdy::SpdyHeaderBlock header_block,
+                          bool fin,
+                          QuicReferenceCountedPointer<QuicAckListenerInterface>
+                              ack_listener) override {
+    saved_headers_ = std::move(header_block);
+    WriteHeadersMock(fin);
+    return 0;
+  }
 
   const QuicString& data() const { return data_; }
+  const spdy::SpdyHeaderBlock& saved_headers() const { return saved_headers_; }
 
  private:
   bool should_process_data_;
+  spdy::SpdyHeaderBlock saved_headers_;
   QuicString data_;
 };
 
@@ -129,17 +143,18 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   }
 
   void Initialize(bool stream_should_process_data) {
-    connection_ = new testing::StrictMock<MockQuicConnection>(
+    connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
         SupportedVersions(GetParam()));
-    session_ =
-        QuicMakeUnique<testing::StrictMock<MockQuicSpdySession>>(connection_);
+    session_ = QuicMakeUnique<StrictMock<MockQuicSpdySession>>(connection_);
     session_->Initialize();
-    stream_ = new TestStream(GetNthClientInitiatedBidirectionalId(0),
-                             session_.get(), stream_should_process_data);
+    stream_ =
+        new StrictMock<TestStream>(GetNthClientInitiatedBidirectionalId(0),
+                                   session_.get(), stream_should_process_data);
     session_->ActivateStream(QuicWrapUnique(stream_));
-    stream2_ = new TestStream(GetNthClientInitiatedBidirectionalId(1),
-                              session_.get(), stream_should_process_data);
+    stream2_ =
+        new StrictMock<TestStream>(GetNthClientInitiatedBidirectionalId(1),
+                                   session_.get(), stream_should_process_data);
     session_->ActivateStream(QuicWrapUnique(stream2_));
   }
 
@@ -1043,17 +1058,15 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersSendsAFin) {
   // Test that writing trailers will send a FIN, as Trailers are the last thing
   // to be sent on a stream.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
 
   // Write the initial headers, without a FIN.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(false));
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Writing trailers implicitly sends a FIN.
   SpdyHeaderBlock trailers;
   trailers["trailer key"] = "trailer value";
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(true));
   stream_->WriteTrailers(std::move(trailers), nullptr);
   EXPECT_TRUE(stream_->fin_sent());
 }
@@ -1062,15 +1075,15 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   // Test that when writing trailers, the trailers that are actually sent to the
   // peer contain the final offset field indicating last byte of data.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
 
   // Write the initial headers.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(false));
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data to force a non-zero final offset.
-  QuicString body(1024, 'x');  // 1 MB
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
+      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
+  QuicString body(1024, 'x');  // 1 kB
   QuicByteCount header_length = 0;
   if (IsVersion99()) {
     std::unique_ptr<char[]> buf;
@@ -1086,9 +1099,9 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   SpdyHeaderBlock trailers_with_offset(trailers.Clone());
   trailers_with_offset[kFinalOffsetHeaderKey] =
       QuicTextUtils::Uint64ToString(body.length() + header_length);
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(true));
   stream_->WriteTrailers(std::move(trailers), nullptr);
-  EXPECT_EQ(trailers_with_offset, session_->GetWriteHeaders());
+  EXPECT_EQ(trailers_with_offset, stream_->saved_headers());
 }
 
 TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
@@ -1097,7 +1110,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
   Initialize(kShouldProcessData);
 
   // Write the initial headers.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(false));
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data.
@@ -1109,7 +1122,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
 
   // Headers and body have been fully written, there is no queued data. Writing
   // trailers marks the end of this stream, and thus the write side is closed.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(true));
   stream_->WriteTrailers(SpdyHeaderBlock(), nullptr);
   EXPECT_TRUE(stream_->write_side_closed());
 }
@@ -1119,15 +1132,13 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   // while there are still body bytes queued.
   testing::InSequence seq;
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
 
   // Write the initial headers.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(false));
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/false, nullptr);
 
   // Write non-zero body data, but only consume partially, ensuring queueing.
-  const int kBodySize = 1 * 1024;  // 1 KB
+  const int kBodySize = 1 * 1024;  // 1 kB
   if (IsVersion99()) {
     EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
         .WillOnce(Return(QuicConsumedData(3, false)));
@@ -1139,7 +1150,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 
   // Writing trailers will send a FIN, but not close the write side of the
   // stream as there are queued bytes.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, true, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(true));
   stream_->WriteTrailers(SpdyHeaderBlock(), nullptr);
   EXPECT_TRUE(stream_->fin_sent());
   EXPECT_FALSE(stream_->write_side_closed());
@@ -1159,11 +1170,9 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
 
   // Test that it is not possible to write Trailers after a FIN has been sent.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
 
   // Write the initial headers, with a FIN.
-  EXPECT_CALL(*session_, WriteHeadersMock(_, _, _, _, _));
+  EXPECT_CALL(*stream_, WriteHeadersMock(true));
   stream_->WriteHeaders(SpdyHeaderBlock(), /*fin=*/true, nullptr);
   EXPECT_TRUE(stream_->fin_sent());
 
@@ -1260,11 +1269,11 @@ TEST_P(QuicSpdyStreamTest, OnPriorityFrameAfterSendingData) {
 }
 
 TEST_P(QuicSpdyStreamTest, SetPriorityBeforeUpdateStreamPriority) {
-  MockQuicConnection* connection = new testing::StrictMock<MockQuicConnection>(
+  MockQuicConnection* connection = new StrictMock<MockQuicConnection>(
       &helper_, &alarm_factory_, Perspective::IS_SERVER,
       SupportedVersions(GetParam()));
   std::unique_ptr<TestMockUpdateStreamSession> session(
-      new testing::StrictMock<TestMockUpdateStreamSession>(connection));
+      new StrictMock<TestMockUpdateStreamSession>(connection));
   TestStream* stream = new TestStream(
       QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(*session,
                                                                       0),
