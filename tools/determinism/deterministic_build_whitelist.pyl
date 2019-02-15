@@ -33,6 +33,8 @@
     'ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe',
     'test_data/ppapi/tests/extensions/packaged_app/nonsfi/ppapi_tests_extensions_packaged_app_pnacl_newlib_x32_nonsfi.nexe',
 
+    # https://crbug.com/932387
+    'performance_browser_tests',
   ],
 
   'linux_component': [
@@ -193,5 +195,8 @@
     # reason.
     'nacl_irt_x86_32.nexe',
     'nacl_irt_x86_32.nexe.debug',
+
+    # https://crbug.com/932387
+    'performance_browser_tests',
   ],
 }
