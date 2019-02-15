@@ -3354,11 +3354,6 @@ const char kForceEnableStylusToolsDescription[] =
     "Forces display of the stylus tools menu in the shelf and the stylus "
     "section in settings, even if there is no attached stylus device.";
 
-const char kGestureEditingName[] = "Gesture editing for the virtual keyboard.";
-const char kGestureEditingDescription[] =
-    "Enable/Disable gesture editing option in the settings page for the "
-    "virtual keyboard.";
-
 const char kGestureTypingName[] = "Gesture typing for the virtual keyboard.";
 const char kGestureTypingDescription[] =
     "Enable/Disable gesture typing option in the settings page for the virtual "
