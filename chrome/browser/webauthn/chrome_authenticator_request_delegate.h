@@ -87,7 +87,7 @@ class ChromeAuthenticatorRequestDelegate
   void DisableUI() override;
   bool IsWebAuthnUIEnabled() override;
 
-  // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
+  // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(
       device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
   bool EmbedderControlsAuthenticatorDispatch(

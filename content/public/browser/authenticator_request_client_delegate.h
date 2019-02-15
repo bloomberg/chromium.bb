@@ -31,7 +31,7 @@ namespace content {
 //
 // [1]: See https://www.w3.org/TR/webauthn/.
 class CONTENT_EXPORT AuthenticatorRequestClientDelegate
-    : public device::FidoRequestHandlerBase::TransportAvailabilityObserver {
+    : public device::FidoRequestHandlerBase::Observer {
  public:
   // Failure reasons that might be of interest to the user, so the embedder may
   // decide to inform the user.
@@ -109,7 +109,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
 
   virtual bool IsWebAuthnUIEnabled();
 
-  // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
+  // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(
       device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
   // If true, the request handler will defer dispatch of its request onto the
