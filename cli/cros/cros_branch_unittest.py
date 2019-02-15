@@ -1368,7 +1368,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
 
     # Finally, we must create a local checkout of the remote. This is where
     # the `cros branch` will sync and do its job.
-    self.repo_url = FileUrl(constants.CHROOT_SOURCE_ROOT, '.repo/repo')
+    self.repo_url = FileUrl(constants.SOURCE_ROOT, '.repo/repo')
     self.local_root = self.CreateTempDir('local')
     repo_util.Repository.Initialize(
         root=self.local_root,
