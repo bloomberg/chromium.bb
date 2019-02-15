@@ -81,9 +81,9 @@ class UsageStatsDatabaseTest : public testing::Test {
   MOCK_METHOD1(OnUpdateDone, void(UsageStatsDatabase::Error));
   MOCK_METHOD2(OnGetEventsDone,
                void(UsageStatsDatabase::Error, std::vector<WebsiteEvent>));
-  MOCK_METHOD2(OnGetAllSuspensionsDone,
+  MOCK_METHOD2(OnGetSuspensionsDone,
                void(UsageStatsDatabase::Error, std::vector<std::string>));
-  MOCK_METHOD2(OnGetAllTokenMappingsDone,
+  MOCK_METHOD2(OnGetTokenMappingsDone,
                void(UsageStatsDatabase::Error, UsageStatsDatabase::TokenMap));
 
  private:
@@ -105,66 +105,90 @@ TEST_F(UsageStatsDatabaseTest, Initialization) {
   ASSERT_NE(nullptr, fake_website_event_db());
   ASSERT_NE(nullptr, fake_suspension_db());
   ASSERT_NE(nullptr, fake_token_mapping_db());
+
+  // Expect that Init has been called on all ProtoDatabases. If it hasn't, then
+  // InitStatusCallback will cause the test to crash.
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 }
 
 // Website Event Tests
 TEST_F(UsageStatsDatabaseTest, GetAllEventsSuccess) {
-  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
-                                     ElementsAre()));
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre()));
 
   fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllEventsFailure) {
-  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kUnknownError,
-                                     ElementsAre()));
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kUnknownError,
+                                     ElementsAre()));
 
   fake_website_event_db()->LoadCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddEventsEmpty) {
-  std::vector<WebsiteEvent> events;
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+  std::vector<WebsiteEvent> events;
 
   usage_stats_database()->AddEvents(
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_website_event_db()->UpdateCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Add 1 event.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
   std::vector<WebsiteEvent> events({event1});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->AddEvents(
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 event.
-  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
-                                     ElementsAre(EqualsWebsiteEvent(event1))));
-
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event1))));
 
   fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndQueryEventsInRange) {
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Add 2 events at time 5 and 10.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 5, WebsiteEvent::START_BROWSING);
@@ -172,61 +196,67 @@ TEST_F(UsageStatsDatabaseTest, AddAndQueryEventsInRange) {
       CreateWebsiteEvent(kFqdn2, 10, WebsiteEvent::STOP_BROWSING);
   std::vector<WebsiteEvent> events({event1, event2});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->AddEvents(
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_website_event_db()->UpdateCallback(true);
 
   // Get events between time 0 (inclusive) and 9 (exclusive).
   // This test validates the correct lexicographic ordering of timestamps such
   // that key(0) <= key(5) < key(9) <= key(10).
-  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
-                                     ElementsAre(EqualsWebsiteEvent(event1))));
-
   usage_stats_database()->QueryEventsInRange(
       0, 9,
       base::BindOnce(&UsageStatsDatabaseTest::OnGetEventsDone,
                      base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event1))));
+
   fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteAllEvents) {
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Add 1 event.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
   std::vector<WebsiteEvent> events({event1});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->AddEvents(
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_website_event_db()->UpdateCallback(true);
 
   // Delete all events.
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->DeleteAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnUpdateDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_website_event_db()->UpdateCallback(true);
 
   // Get all events (expecting none).
-  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
-                                     ElementsAre()));
-
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre()));
 
   fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Add 3 events.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
@@ -236,36 +266,39 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
       CreateWebsiteEvent(kFqdn1, 10, WebsiteEvent::START_BROWSING);
   std::vector<WebsiteEvent> events({event1, event2, event3});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->AddEvents(
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_website_event_db()->UpdateCallback(true);
 
   // Delete events between time 1 (inclusive) and 10 (exclusive).
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->DeleteEventsInRange(
       1, 10,
       base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                      base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_website_event_db()->LoadCallback(true);
   fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 remaining event outside range (at time 10).
-  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
-                                     ElementsAre(EqualsWebsiteEvent(event3))));
-
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event3))));
 
   fake_website_event_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Add 3 events.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
@@ -275,253 +308,347 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
       CreateWebsiteEvent(kFqdn2, 1, WebsiteEvent::START_BROWSING);
   std::vector<WebsiteEvent> events({event1, event2, event3});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->AddEvents(
       events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                              base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_website_event_db()->UpdateCallback(true);
 
   // Delete 2 events by FQDN.
   base::flat_set<std::string> domains({kFqdn1});
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   usage_stats_database()->DeleteEventsWithMatchingDomains(
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_website_event_db()->UpdateCallback(true);
 
   // Get 1 remaining event with non-matching FQDN.
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
   EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
                                      ElementsAre(EqualsWebsiteEvent(event3))));
 
+  fake_website_event_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, GetAllEventsDeferred) {
+  // Don't complete the database initialization yet.
+
+  // Make request to database.
   usage_stats_database()->GetAllEvents(base::BindOnce(
       &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  // Expect callback to be run after initialization succeeds.
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre()));
+
+  fake_website_event_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
   fake_website_event_db()->LoadCallback(true);
 }
 
 // Suspension Tests
 TEST_F(UsageStatsDatabaseTest, SetSuspensionsSuccess) {
-  base::flat_set<std::string> domains({kFqdn1, kFqdn2});
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+  base::flat_set<std::string> domains({kFqdn1, kFqdn2});
 
   usage_stats_database()->SetSuspensions(
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_suspension_db()->UpdateCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetSuspensionsFailure) {
-  base::flat_set<std::string> domains({kFqdn1, kFqdn2});
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kUnknownError));
+  base::flat_set<std::string> domains({kFqdn1, kFqdn2});
 
   usage_stats_database()->SetSuspensions(
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kUnknownError));
 
   fake_suspension_db()->UpdateCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllSuspensionsSuccess) {
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   std::vector<std::string> expected;
 
-  EXPECT_CALL(*this, OnGetAllSuspensionsDone(
-                         UsageStatsDatabase::Error::kNoError, expected));
+  usage_stats_database()->GetAllSuspensions(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetSuspensionsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllSuspensions(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetSuspensionsDone(UsageStatsDatabase::Error::kNoError,
+                                          expected));
 
   fake_suspension_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllSuspensionsFailure) {
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   std::vector<std::string> expected;
 
-  EXPECT_CALL(*this, OnGetAllSuspensionsDone(
-                         UsageStatsDatabase::Error::kUnknownError, expected));
+  usage_stats_database()->GetAllSuspensions(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetSuspensionsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllSuspensions(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetSuspensionsDone(
+                         UsageStatsDatabase::Error::kUnknownError, expected));
 
   fake_suspension_db()->LoadCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetAndGetSuspension) {
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Insert 1 suspension.
   base::flat_set<std::string> domains({kFqdn1});
-
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   usage_stats_database()->SetSuspensions(
       domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_suspension_db()->UpdateCallback(true);
 
   // Get 1 suspension.
   std::vector<std::string> expected({kFqdn1});
 
-  EXPECT_CALL(*this, OnGetAllSuspensionsDone(
-                         UsageStatsDatabase::Error::kNoError, expected));
+  usage_stats_database()->GetAllSuspensions(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetSuspensionsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllSuspensions(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetSuspensionsDone(UsageStatsDatabase::Error::kNoError,
+                                          expected));
 
   fake_suspension_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetSuspension) {
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Insert 2 suspensions.
   base::flat_set<std::string> domains1({kFqdn1, kFqdn2});
-
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   usage_stats_database()->SetSuspensions(
       domains1, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_suspension_db()->UpdateCallback(true);
 
   // Insert 1 suspension, and remove the other.
   base::flat_set<std::string> domains2({kFqdn1});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->SetSuspensions(
       domains2, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_suspension_db()->UpdateCallback(true);
 
   // Get 1 suspension.
   std::vector<std::string> expected({kFqdn1});
 
-  EXPECT_CALL(*this, OnGetAllSuspensionsDone(
-                         UsageStatsDatabase::Error::kNoError, expected));
+  usage_stats_database()->GetAllSuspensions(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetSuspensionsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllSuspensions(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllSuspensionsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetSuspensionsDone(UsageStatsDatabase::Error::kNoError,
+                                          expected));
+
+  fake_suspension_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, SetAndGetSuspensionDeferred) {
+  // Fail to initialize the database.
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kError);
+
+  // Insert 1 suspension.
+  base::flat_set<std::string> domains({kFqdn1});
+
+  usage_stats_database()->SetSuspensions(
+      domains, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                              base::Unretained(this)));
+
+  // Get 1 suspension.
+  std::vector<std::string> expected({kFqdn1});
+
+  usage_stats_database()->GetAllSuspensions(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetSuspensionsDone, base::Unretained(this)));
+
+  // Now successfully initialize database, and expect previous callbacks to be
+  // run.
+  fake_suspension_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  fake_suspension_db()->UpdateCallback(true);
+
+  EXPECT_CALL(*this, OnGetSuspensionsDone(UsageStatsDatabase::Error::kNoError,
+                                          expected));
 
   fake_suspension_db()->LoadCallback(true);
 }
 
 // Token Mapping Tests
-
 TEST_F(UsageStatsDatabaseTest, SetTokenMappingsSuccess) {
-  UsageStatsDatabase::TokenMap mappings({{kToken1, kFqdn1}, {kToken2, kFqdn2}});
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+  UsageStatsDatabase::TokenMap mappings({{kToken1, kFqdn1}, {kToken2, kFqdn2}});
 
   usage_stats_database()->SetTokenMappings(
       mappings, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_token_mapping_db()->UpdateCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetTokenMappingsFailure) {
-  UsageStatsDatabase::TokenMap mappings({{kToken1, kFqdn1}, {kToken2, kFqdn2}});
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kUnknownError));
+  UsageStatsDatabase::TokenMap mappings({{kToken1, kFqdn1}, {kToken2, kFqdn2}});
 
   usage_stats_database()->SetTokenMappings(
       mappings, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kUnknownError));
+
   fake_token_mapping_db()->UpdateCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllTokenMappingsSuccess) {
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   UsageStatsDatabase::TokenMap expected;
 
-  EXPECT_CALL(*this, OnGetAllTokenMappingsDone(
-                         UsageStatsDatabase::Error::kNoError, expected));
+  usage_stats_database()->GetAllTokenMappings(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetTokenMappingsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllTokenMappings(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetTokenMappingsDone(UsageStatsDatabase::Error::kNoError,
+                                            expected));
 
   fake_token_mapping_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllTokenMappingsFailure) {
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   UsageStatsDatabase::TokenMap expected;
 
-  EXPECT_CALL(*this, OnGetAllTokenMappingsDone(
-                         UsageStatsDatabase::Error::kUnknownError, expected));
+  usage_stats_database()->GetAllTokenMappings(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetTokenMappingsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllTokenMappings(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetTokenMappingsDone(
+                         UsageStatsDatabase::Error::kUnknownError, expected));
 
   fake_token_mapping_db()->LoadCallback(false);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetAndGetTokenMapping) {
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   UsageStatsDatabase::TokenMap mapping({{kToken1, kFqdn1}});
 
   // Insert 1 token mapping.
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->SetTokenMappings(
       mapping, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                               base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_token_mapping_db()->UpdateCallback(true);
 
   // Get 1 token mapping.
-  EXPECT_CALL(*this, OnGetAllTokenMappingsDone(
-                         UsageStatsDatabase::Error::kNoError, mapping));
+  usage_stats_database()->GetAllTokenMappings(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetTokenMappingsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllTokenMappings(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetTokenMappingsDone(UsageStatsDatabase::Error::kNoError,
+                                            mapping));
 
   fake_token_mapping_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, SetRemoveAndGetTokenMapping) {
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kOK);
+
   // Insert 2 token mappings.
   UsageStatsDatabase::TokenMap mappings1(
       {{kToken1, kFqdn1}, {kToken2, kFqdn2}});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->SetTokenMappings(
       mappings1, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                 base::Unretained(this)));
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
   fake_token_mapping_db()->UpdateCallback(true);
 
   // Re-insert 1 token mapping, and remove the other.apping) {
   UsageStatsDatabase::TokenMap mappings2({{kToken1, kFqdn1}});
 
-  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
-
   usage_stats_database()->SetTokenMappings(
       mappings2, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
                                 base::Unretained(this)));
 
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
   fake_token_mapping_db()->UpdateCallback(true);
 
   // Get 1 remaining token mapping.
-  EXPECT_CALL(*this, OnGetAllTokenMappingsDone(
-                         UsageStatsDatabase::Error::kNoError, mappings2));
+  usage_stats_database()->GetAllTokenMappings(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetTokenMappingsDone, base::Unretained(this)));
 
-  usage_stats_database()->GetAllTokenMappings(
-      base::BindOnce(&UsageStatsDatabaseTest::OnGetAllTokenMappingsDone,
-                     base::Unretained(this)));
+  EXPECT_CALL(*this, OnGetTokenMappingsDone(UsageStatsDatabase::Error::kNoError,
+                                            mappings2));
 
   fake_token_mapping_db()->LoadCallback(true);
 }
+
+TEST_F(UsageStatsDatabaseTest, SetTokenMappingsUninitialized) {
+  // Fail to initialize database.
+  fake_token_mapping_db()->InitStatusCallback(
+      leveldb_proto::Enums::InitStatus::kError);
+
+  UsageStatsDatabase::TokenMap mappings({{kToken1, kFqdn1}, {kToken2, kFqdn2}});
+
+  // Expect callback will not be run.
+  EXPECT_CALL(*this, OnUpdateDone).Times(0);
+
+  usage_stats_database()->SetTokenMappings(
+      mappings, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                               base::Unretained(this)));
+}
+
 }  // namespace usage_stats

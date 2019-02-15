@@ -10,9 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database.h"
@@ -81,6 +84,17 @@ class UsageStatsDatabase {
   void SetTokenMappings(TokenMap mappings, StatusCallback callback);
 
  private:
+  void InitializeDBs();
+
+  void OnWebsiteEventInitDone(bool retry,
+                              leveldb_proto::Enums::InitStatus status);
+
+  void OnSuspensionInitDone(bool retry,
+                            leveldb_proto::Enums::InitStatus status);
+
+  void OnTokenMappingInitDone(bool retry,
+                              leveldb_proto::Enums::InitStatus status);
+
   void OnUpdateEntries(StatusCallback callback, bool isSuccess);
 
   void OnLoadEntriesForGetAllEvents(
@@ -111,6 +125,16 @@ class UsageStatsDatabase {
   std::unique_ptr<ProtoDatabase<WebsiteEvent>> website_event_db_;
   std::unique_ptr<ProtoDatabase<Suspension>> suspension_db_;
   std::unique_ptr<ProtoDatabase<TokenMapping>> token_mapping_db_;
+
+  // Track initialization state of proto databases.
+  bool website_event_db_initialized_;
+  bool suspension_db_initialized_;
+  bool token_mapping_db_initialized_;
+
+  // Store callbacks for delayed execution once database is initialized.
+  base::queue<base::OnceClosure> website_event_db_callbacks_;
+  base::queue<base::OnceClosure> suspension_db_callbacks_;
+  base::queue<base::OnceClosure> token_mapping_db_callbacks_;
 
   base::WeakPtrFactory<UsageStatsDatabase> weak_ptr_factory_;
 
