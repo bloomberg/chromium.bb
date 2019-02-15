@@ -102,8 +102,7 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   ClientSurfaceEmbedder* client_surface_embedder =
       WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
   ASSERT_TRUE(client_surface_embedder);
-  viz::SurfaceId primary_surface_id =
-      client_surface_embedder->GetSurfaceIdForTesting();
+  viz::SurfaceId primary_surface_id = client_surface_embedder->GetSurfaceId();
   EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
 }
 
@@ -139,9 +138,8 @@ TEST_F(WindowPortMusTest,
   ClientSurfaceEmbedder* client_surface_embedder =
       WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
   ASSERT_TRUE(client_surface_embedder);
-  EXPECT_EQ(
-      updated_id,
-      client_surface_embedder->GetSurfaceIdForTesting().local_surface_id());
+  EXPECT_EQ(updated_id,
+            client_surface_embedder->GetSurfaceId().local_surface_id());
 
   // The server is notified of a bounds change, so that it sees the new
   // LocalSurfaceId.
@@ -218,7 +216,7 @@ TEST_F(WindowPortMusTest, PrepareForEmbed) {
   ClientSurfaceEmbedder* client_surface_embedder =
       WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
   ASSERT_TRUE(client_surface_embedder);
-  EXPECT_TRUE(client_surface_embedder->HasPrimarySurfaceId());
+  EXPECT_TRUE(client_surface_embedder->GetSurfaceId().is_valid());
 }
 
 class TestDragDropDelegate : public client::DragDropDelegate {

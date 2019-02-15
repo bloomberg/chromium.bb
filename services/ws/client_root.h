@@ -27,10 +27,6 @@ namespace aura_extra {
 class WindowPositionInRootMonitor;
 }
 
-namespace gfx {
-class Insets;
-}
-
 namespace viz {
 class LocalSurfaceIdAllocation;
 class SurfaceInfo;
@@ -53,11 +49,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
  public:
   ClientRoot(WindowTree* window_tree, aura::Window* window, bool is_top_level);
   ~ClientRoot() override;
-
-  // Called when the client area of the window changes. If the window is a
-  // top-level window, then this propagates the insets to the
-  // ClientSurfaceEmbedder.
-  void SetClientAreaInsets(const gfx::Insets& client_area_insets);
 
   // Registers the necessary state needed for embedding in viz.
   void RegisterVizEmbeddingSupport();
@@ -166,11 +157,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
 
   bool is_moving_across_displays_ = false;
   base::Optional<gfx::Rect> scheduled_change_old_bounds_;
-
-  // If non-null then the fallback SurfaceInfo was supplied before the primary
-  // surface. This will be pushed to the Layer once the primary surface is
-  // supplied.
-  std::unique_ptr<viz::SurfaceInfo> fallback_surface_info_;
 
   // Used for non-top-levels to watch for changes in screen coordinates.
   std::unique_ptr<aura_extra::WindowPositionInRootMonitor>

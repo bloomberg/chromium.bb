@@ -59,8 +59,8 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
   window_->AddObserver(this);
   if (window_->GetHost())
     window->GetHost()->AddObserver(this);
-  client_surface_embedder_ = std::make_unique<aura::ClientSurfaceEmbedder>(
-      window_, is_top_level, gfx::Insets());
+  client_surface_embedder_ =
+      std::make_unique<aura::ClientSurfaceEmbedder>(window_);
   if (ShouldAssignLocalSurfaceIdImpl(window, is_top_level_))
     parent_local_surface_id_allocator_.emplace();
   // Ensure there is a valid LocalSurfaceId (if necessary).
@@ -82,13 +82,6 @@ ClientRoot::~ClientRoot() {
   viz::HostFrameSinkManager* host_frame_sink_manager =
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   host_frame_sink_manager->InvalidateFrameSinkId(proxy_window->frame_sink_id());
-}
-
-void ClientRoot::SetClientAreaInsets(const gfx::Insets& client_area_insets) {
-  if (!is_top_level_)
-    return;
-
-  client_surface_embedder_->SetClientAreaInsets(client_area_insets);
 }
 
 void ClientRoot::RegisterVizEmbeddingSupport() {
@@ -257,12 +250,6 @@ void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
   // ensures smooth resizes.
   if (ShouldAssignLocalSurfaceId() && window_->GetHost())
     window_->GetHost()->compositor()->OnChildResizing();
-
-  if (fallback_surface_info_) {
-    client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
-    fallback_surface_info_.reset();
-  }
-  client_surface_embedder_->UpdateSizeAndGutters();
 }
 
 void ClientRoot::CheckForScaleFactorChange() {
@@ -414,24 +401,15 @@ void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
 
 void ClientRoot::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(sky): saman says the SetFallbackSurfaceInfo() should not be needed
-  // anymore.
+  if (window_tree_->client_name().empty())
+    return;
+
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
-  if (proxy_window->local_surface_id_allocation().has_value()) {
-    DCHECK(!fallback_surface_info_);
-    if (!client_surface_embedder_->HasPrimarySurfaceId())
-      UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
-    client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
-  } else {
-    fallback_surface_info_ = std::make_unique<viz::SurfaceInfo>(surface_info);
-  }
-  if (!window_tree_->client_name().empty()) {
-    // OnFirstSurfaceActivation() should only be called after
-    // AttachCompositorFrameSink().
-    DCHECK(proxy_window->attached_compositor_frame_sink());
-    window_tree_->window_service()->OnFirstSurfaceActivation(
-        window_tree_->client_name());
-  }
+  // OnFirstSurfaceActivation() should only be called after
+  // AttachCompositorFrameSink().
+  DCHECK(proxy_window->attached_compositor_frame_sink());
+  window_tree_->window_service()->OnFirstSurfaceActivation(
+      window_tree_->client_name());
 }
 
 void ClientRoot::OnFrameTokenChanged(uint32_t frame_token) {

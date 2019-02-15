@@ -465,11 +465,6 @@ void ProxyWindow::SetClientArea(
 
   additional_client_areas_ = additional_client_areas;
   client_area_ = insets;
-  ClientRoot* client_root =
-      owning_window_tree_ ? owning_window_tree_->GetClientRootForWindow(window_)
-                          : nullptr;
-  if (client_root)
-    client_root->SetClientAreaInsets(insets);
 }
 
 void ProxyWindow::SetHitTestInsets(const gfx::Insets& mouse,

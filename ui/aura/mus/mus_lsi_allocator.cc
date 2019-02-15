@@ -46,8 +46,8 @@ ParentAllocator::ParentAllocator(WindowPortMus* window_port_mus,
                                  bool is_embedder)
     : MusLsiAllocator(window_port_mus, window_tree_client) {
   if (is_embedder) {
-    client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
-        GetWindow(), /* inject_gutter */ false, gfx::Insets());
+    client_surface_embedder_ =
+        std::make_unique<ClientSurfaceEmbedder>(GetWindow());
   }
 }
 
@@ -129,7 +129,6 @@ void ParentAllocator::Update(bool send_bounds_change) {
     viz::SurfaceId surface_id(GetWindow()->GetFrameSinkId(),
                               GetLocalSurfaceIdAllocation().local_surface_id());
     client_surface_embedder_->SetSurfaceId(surface_id);
-    client_surface_embedder_->UpdateSizeAndGutters();
   }
 }
 
