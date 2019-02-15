@@ -1557,12 +1557,33 @@ AtomicString XMLHttpRequest::FinalResponseMIMETypeWithFallback() const {
   return AtomicString("text/xml");
 }
 
-String XMLHttpRequest::FinalResponseCharset() const {
+// https://xhr.spec.whatwg.org/#final-charset
+WTF::TextEncoding XMLHttpRequest::FinalResponseCharset() const {
+  // 1. Let label be null. [spec text]
+  //
+  // 2. If response MIME type's parameters["charset"] exists, then set label to
+  // it. [spec text]
+  String label = response_.TextEncodingName();
+
+  // 3. If override MIME type's parameters["charset"] exists, then set label to
+  // it. [spec text]
   String override_response_charset =
       ExtractCharsetFromMediaType(mime_type_override_);
   if (!override_response_charset.IsEmpty())
-    return override_response_charset;
-  return response_.TextEncodingName();
+    label = override_response_charset;
+
+  // 4. If label is null, then return null. [spec text]
+  //
+  // 5. Let encoding be the result of getting an encoding from label. [spec
+  // text]
+  //
+  // 6. If encoding is failure, then return null. [spec text]
+  //
+  // 7. Return encoding. [spec text]
+  //
+  // We rely on WTF::TextEncoding() to return invalid TextEncoding for
+  // null, empty, or invalid/unsupported |label|.
+  return WTF::TextEncoding(label);
 }
 
 void XMLHttpRequest::UpdateContentTypeAndCharset(
@@ -1812,15 +1833,12 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   if (response_type_code_ == kResponseTypeJSON)
     return TextResourceDecoder::Create(decoder_options_for_utf8_plain_text);
 
-  String final_response_charset = FinalResponseCharset();
-  if (!final_response_charset.IsEmpty()) {
-    // If the final charset is given, use the charset without sniffing the
-    // content.
-    // TODO(crbug/905968): If WTF::TextEncoding::IsValid() is false, this
-    // currently falls back to Latin1Encoding(). Fallback to UTF-8 instead.
+  WTF::TextEncoding final_response_charset = FinalResponseCharset();
+  if (final_response_charset.IsValid()) {
+    // If the final charset is given and valid, use the charset without
+    // sniffing the content.
     return TextResourceDecoder::Create(TextResourceDecoderOptions(
-        TextResourceDecoderOptions::kPlainTextContent,
-        WTF::TextEncoding(final_response_charset)));
+        TextResourceDecoderOptions::kPlainTextContent, final_response_charset));
   }
 
   TextResourceDecoderOptions decoder_options_for_xml(
