@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -19,6 +20,8 @@
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/trace_constants.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/host_resolver_source.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_request.h"
@@ -173,18 +176,19 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     return base::WeakPtr<SpdySession>();
 
   // Look up IP addresses from resolver cache.
-  HostResolver::RequestInfo resolve_info(key.host_port_pair());
-  AddressList addresses;
-  int rv = resolver_->ResolveFromCache(resolve_info, &addresses, net_log);
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<HostResolver::ResolveHostRequest> request =
+      resolver_->CreateRequest(key.host_port_pair(), net_log, parameters);
+
+  int rv = request->Start(base::BindOnce([](int error) { NOTREACHED(); }));
   DCHECK_NE(rv, ERR_IO_PENDING);
   if (rv != OK)
     return base::WeakPtr<SpdySession>();
 
   // Check if we have a session through a domain alias.
-  for (AddressList::const_iterator address_it = addresses.begin();
-       address_it != addresses.end();
-       ++address_it) {
-    auto range = aliases_.equal_range(*address_it);
+  for (const auto& address : request->GetAddressResults().value().endpoints()) {
+    auto range = aliases_.equal_range(address);
     for (auto alias_it = range.first; alias_it != range.second; ++alias_it) {
       // We found an alias.
       const SpdySessionKey& alias_key = alias_it->second;

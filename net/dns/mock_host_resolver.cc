@@ -362,6 +362,12 @@ void MockHostResolverBase::ResolveAllPending() {
   }
 }
 
+size_t MockHostResolverBase::last_id() {
+  if (requests_.empty())
+    return 0;
+  return requests_.rbegin()->first;
+}
+
 void MockHostResolverBase::ResolveNow(size_t id) {
   auto it = requests_.find(id);
   if (it == requests_.end())
@@ -841,8 +847,12 @@ class HangingHostResolver::RequestImpl
     : public HostResolver::Request,
       public HostResolver::ResolveHostRequest {
  public:
-  RequestImpl(base::WeakPtr<HangingHostResolver> resolver, bool is_running)
-      : resolver_(resolver), is_running_(is_running) {}
+  RequestImpl(base::WeakPtr<HangingHostResolver> resolver,
+              bool is_running,
+              bool is_local_only)
+      : resolver_(resolver),
+        is_running_(is_running),
+        is_local_only_(is_local_only) {}
 
   ~RequestImpl() override {
     if (is_running_ && resolver_)
@@ -851,27 +861,41 @@ class HangingHostResolver::RequestImpl
 
   int Start(CompletionOnceCallback callback) override {
     DCHECK(resolver_);
+    if (is_local_only_)
+      return ERR_DNS_CACHE_MISS;
+
     is_running_ = true;
     return ERR_IO_PENDING;
   }
 
   const base::Optional<AddressList>& GetAddressResults() const override {
-    IMMEDIATE_CRASH();
+    DCHECK(is_local_only_);
+    static const base::NoDestructor<base::Optional<AddressList>> nullopt_result;
+    return *nullopt_result;
   }
 
   const base::Optional<std::vector<std::string>>& GetTextResults()
       const override {
-    IMMEDIATE_CRASH();
+    DCHECK(is_local_only_);
+    static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+        nullopt_result;
+    return *nullopt_result;
   }
 
   const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
       const override {
-    IMMEDIATE_CRASH();
+    DCHECK(is_local_only_);
+    static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+        nullopt_result;
+    return *nullopt_result;
   }
 
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
-    IMMEDIATE_CRASH();
+    DCHECK(is_local_only_);
+    static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>
+        nullopt_result;
+    return *nullopt_result;
   }
 
   void ChangeRequestPriority(RequestPriority priority) override {}
@@ -881,6 +905,7 @@ class HangingHostResolver::RequestImpl
   // outstanding request objects.
   base::WeakPtr<HangingHostResolver> resolver_;
   bool is_running_;
+  bool is_local_only_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
 };
@@ -894,8 +919,12 @@ HangingHostResolver::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
+  bool is_local_only =
+      optional_parameters
+          ? optional_parameters.value().source == HostResolverSource::LOCAL_ONLY
+          : false;
   return std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
-                                       false /* started */);
+                                       false /* started */, is_local_only);
 }
 
 int HangingHostResolver::Resolve(const RequestInfo& info,
@@ -905,7 +934,8 @@ int HangingHostResolver::Resolve(const RequestInfo& info,
                                  std::unique_ptr<Request>* request,
                                  const NetLogWithSource& net_log) {
   *request = std::make_unique<RequestImpl>(weak_ptr_factory_.GetWeakPtr(),
-                                           true /* started */);
+                                           true /* started */,
+                                           false /* is_local_only */);
   return ERR_IO_PENDING;
 }
 
