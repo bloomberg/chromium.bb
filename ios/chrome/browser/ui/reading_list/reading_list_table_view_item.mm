@@ -81,7 +81,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
 
 #pragma mark - ListItem
 
-- (void)configureCell:(UITableViewCell*)cell
+- (void)configureCell:(TableViewCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);

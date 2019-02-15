@@ -7,11 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-// SettingsSwitchCell implements a UITableViewCell subclass containing an icon,
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
+
+// SettingsSwitchCell implements a TableViewCell subclass containing an icon,
 // a text label, a detail text and a switch.
 // If the preferred content size category is an accessibility category, the
 // switch is displayed below the label. Otherwise, it is on the trailing side.
-@interface SettingsSwitchCell : UITableViewCell
+@interface SettingsSwitchCell : TableViewCell
 
 // UILabel corresponding to |text| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

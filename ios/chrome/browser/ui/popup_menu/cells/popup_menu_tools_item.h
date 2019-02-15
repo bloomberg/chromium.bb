@@ -29,7 +29,7 @@
 @end
 
 // Associated cell for the PopupMenuToolsItem.
-@interface PopupMenuToolsCell : UITableViewCell
+@interface PopupMenuToolsCell : TableViewCell
 
 // Image view to display the image.
 @property(nonatomic, strong, readonly) UIImageView* imageView;

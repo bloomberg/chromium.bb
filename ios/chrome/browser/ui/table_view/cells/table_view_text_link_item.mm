@@ -35,7 +35,7 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
   return self;
 }
 
-- (void)configureCell:(UITableViewCell*)tableCell
+- (void)configureCell:(TableViewCell*)tableCell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:tableCell withStyler:styler];
   TableViewTextLinkCell* cell =

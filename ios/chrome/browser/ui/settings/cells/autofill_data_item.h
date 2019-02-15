@@ -27,7 +27,7 @@
 
 // Cell for autofill data with two leading text labels and one trailing text
 // label.
-@interface AutofillDataCell : UITableViewCell
+@interface AutofillDataCell : TableViewCell
 
 @property(nonatomic, readonly, strong) UILabel* textLabel;
 @property(nonatomic, readonly, strong) UILabel* leadingDetailTextLabel;

@@ -29,7 +29,7 @@
 // imageView. The imageView is vertical-centered and leading aligned.
 // If item/cell is disabled the image and text alpha will be set to 0.5 and
 // user interaction will be disabled.
-@interface TableViewAccountCell : UITableViewCell
+@interface TableViewAccountCell : TableViewCell
 
 // Rounded image used for the account user picture.
 @property(nonatomic, readonly, strong) UIImageView* imageView;

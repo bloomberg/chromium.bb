@@ -26,11 +26,11 @@
 
 @end
 
-// SettingsDetailCell implements an UITableViewCell subclass containing an
+// SettingsDetailCell implements an TableViewCell subclass containing an
 // optional leading icon and two text labels: a "main" label and a "detail"
 // label. The two labels are laid out side-by-side and fill the full width of
 // the cell. Labels are truncated as needed to fit in the cell.
-@interface SettingsDetailCell : UITableViewCell
+@interface SettingsDetailCell : TableViewCell
 
 // UILabels corresponding to |text| and |detailText| from the item.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

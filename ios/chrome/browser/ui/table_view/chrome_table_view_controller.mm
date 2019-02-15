@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
@@ -195,7 +197,9 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
 
     // |cell| may be nil if the row is not currently on screen.
     if (cell) {
-      [item configureCell:cell withStyler:self.styler];
+      TableViewCell* tableViewCell =
+          base::mac::ObjCCastStrict<TableViewCell>(cell);
+      [item configureCell:tableViewCell withStyler:self.styler];
     }
   }
 }
@@ -226,7 +230,8 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   UITableViewCell* cell =
       [self.tableView dequeueReusableCellWithIdentifier:reuseIdentifier
                                            forIndexPath:indexPath];
-  [item configureCell:cell withStyler:self.styler];
+  TableViewCell* tableViewCell = base::mac::ObjCCastStrict<TableViewCell>(cell);
+  [item configureCell:tableViewCell withStyler:self.styler];
 
   return cell;
 }

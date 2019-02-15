@@ -27,7 +27,7 @@
 
 // Cell to display a Credential where the username and password are interactable
 // and send the data to the delegate.
-@interface ManualFillPasswordCell : UITableViewCell
+@interface ManualFillPasswordCell : TableViewCell
 
 // Updates the cell with the |credential|. If the user iteracts with it, the
 // |delegate| will be notified.

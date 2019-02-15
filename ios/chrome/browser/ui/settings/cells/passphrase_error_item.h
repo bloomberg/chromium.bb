@@ -16,7 +16,7 @@
 @end
 
 // Cell class associated to PassphraseErrorItem.
-@interface PassphraseErrorCell : UITableViewCell
+@interface PassphraseErrorCell : TableViewCell
 
 // Label for the error text.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

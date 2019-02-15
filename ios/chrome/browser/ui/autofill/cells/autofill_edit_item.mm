@@ -274,7 +274,7 @@ const CGFloat kEditIconLength = 18;
   }
 }
 
-#pragma mark UITableViewCell
+#pragma mark - UITableViewCell
 
 - (void)prepareForReuse {
   [super prepareForReuse];

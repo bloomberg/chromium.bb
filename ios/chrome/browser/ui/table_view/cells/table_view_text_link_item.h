@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 class GURL;
@@ -27,8 +28,8 @@ class GURL;
 @property(nonatomic, assign) GURL linkURL;
 @end
 
-// UITableViewCell that displays a text label that might contain a link.
-@interface TableViewTextLinkCell : UITableViewCell
+// TableViewCell that displays a text label that might contain a link.
+@interface TableViewTextLinkCell : TableViewCell
 // The text to display.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
 // Delegate for the TableViewTextLinkCell. Is notified when a link is

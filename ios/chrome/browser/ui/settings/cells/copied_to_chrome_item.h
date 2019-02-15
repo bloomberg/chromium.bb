@@ -15,7 +15,7 @@
 
 // A cell indicating that the credit card has been copied to Chrome. Includes a
 // button to clear the copy.
-@interface CopiedToChromeCell : UITableViewCell
+@interface CopiedToChromeCell : TableViewCell
 
 // Text label displaying the item's text.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
