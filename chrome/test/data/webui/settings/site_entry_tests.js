@@ -78,15 +78,16 @@ suite('SiteEntry', function() {
   test('displays the correct number of origins', function() {
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     Polymer.dom.flush();
-    assertEquals(
-        3, testElement.$.collapseChild.querySelectorAll('.list-item').length);
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    assertEquals(3, collapseChild.querySelectorAll('.list-item').length);
   });
 
   test('expands and closes to show more origins', function() {
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     assertTrue(testElement.grouped_(testElement.siteGroup));
     assertEquals('false', toggleButton.getAttribute('aria-expanded'));
-    const originList = testElement.root.querySelector('iron-collapse');
+    const originList = testElement.$.originList.get();
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
 
@@ -100,7 +101,7 @@ suite('SiteEntry', function() {
     testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
     assertFalse(testElement.grouped_(testElement.siteGroup));
     assertEquals('false', toggleButton.getAttribute('aria-expanded'));
-    const originList = testElement.root.querySelector('iron-collapse');
+    const originList = testElement.$.originList.get();
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
 
@@ -118,8 +119,9 @@ suite('SiteEntry', function() {
   test('with multiple origins navigates to Site Details', function() {
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     Polymer.dom.flush();
-    const originList =
-        testElement.$.collapseChild.querySelectorAll('.list-item');
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const originList = collapseChild.querySelectorAll('.list-item');
     assertEquals(3, originList.length);
 
     // Test clicking on one of these origins takes the user to Site Details,
@@ -148,14 +150,14 @@ suite('SiteEntry', function() {
             JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         Polymer.dom.flush();
         toggleButton.click();
-        assertTrue(testElement.$.collapseChild.opened);
+        assertTrue(testElement.$.originList.get().opened);
 
         // Remove all origins except one, then make sure it's not still
         // expanded.
         testElement.siteGroup.origins.splice(1);
         assertEquals(1, testElement.siteGroup.origins.length);
         testElement.onSiteGroupChanged_(testElement.siteGroup);
-        assertFalse(testElement.$.collapseChild.opened);
+        assertFalse(testElement.$.originList.get().opened);
       });
 
   test('cookies show correctly for grouped entries', function() {

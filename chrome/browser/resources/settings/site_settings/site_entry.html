@@ -94,41 +94,48 @@
         </div>
       </div>
 
-      <iron-collapse id="collapseChild" no-animation>
-        <div class="list-frame">
-          <template is="dom-repeat" items="[[siteGroup.origins]]">
-            <div class="settings-box list-item" on-click="onOriginTap_"
-                actionable>
-              <site-favicon url="[[item.origin]]"></site-favicon>
-              <div class="site-representation middle text-elide">
-                <span id="originSiteRepresentation" class="url-directionality">
-                  [[siteRepresentation_(siteGroup, index)]]
-                </span>
-                <span class="secondary"
-                    hidden$="[[!scheme_(siteGroup, index)]]">
-                  &nbsp;$i18nPolymer{siteSettingsSiteRepresentationSeparator}&nbsp;
-                </span>
-                <span class="secondary"
-                    hidden$="[[!scheme_(siteGroup, index)]]">
-                  [[scheme_(siteGroup, index)]]
-                </span>
-                <span class="secondary data-unit" hidden$="[[!item.usage]]">
-                  [[originUsagesItem_(originUsages_.*, index)]]
-                </span>
-                <span class="secondary data-unit"
-                    hidden$="[[!item.numCookies]]">
-                  &middot; [[originCookiesItem_(cookiesNum_.*, index)]]
-                </span>
-              </div>
-              <paper-icon-button-light class="subpage-arrow">
-                <button aria-labelledby$="originSiteRepresentation"
-                    focus-row-control focus-type="detailed-sites">
-                </button>
-              </paper-icon-button-light>
+      <cr-lazy-render id="originList">
+        <template>
+          <iron-collapse id="collapseChild" no-animation>
+            <div class="list-frame">
+              <template is="dom-repeat" items="[[siteGroup.origins]]">
+                <div class="settings-box list-item" on-click="onOriginTap_"
+                    actionable>
+                  <site-favicon url="[[item.origin]]"></site-favicon>
+                  <div class="site-representation middle text-elide">
+                    <span id="originSiteRepresentation"
+                        class="url-directionality">
+                      [[siteRepresentation_(siteGroup, index)]]
+                    </span>
+                    <span class="secondary"
+                        hidden$="[[!scheme_(siteGroup, index)]]">
+                      &nbsp;
+                          $i18nPolymer{siteSettingsSiteRepresentationSeparator}
+                          &nbsp;
+                    </span>
+                    <span class="secondary"
+                        hidden$="[[!scheme_(siteGroup, index)]]">
+                      [[scheme_(siteGroup, index)]]
+                    </span>
+                    <span class="secondary data-unit" hidden$="[[!item.usage]]">
+                      [[originUsagesItem_(originUsages_.*, index)]]
+                    </span>
+                    <span class="secondary data-unit"
+                        hidden$="[[!item.numCookies]]">
+                      &middot; [[originCookiesItem_(cookiesNum_.*, index)]]
+                    </span>
+                  </div>
+                  <paper-icon-button-light class="subpage-arrow">
+                    <button aria-labelledby$="originSiteRepresentation"
+                        focus-row-control focus-type="detailed-sites">
+                    </button>
+                  </paper-icon-button-light>
+                </div>
+              </template>
             </div>
-          </template>
-        </div>
-      </iron-collapse>
+          </iron-collapse>
+      </template>
+    </cr-lazy-render>
     </div>
   </template>
   <script src="site_entry.js"></script>

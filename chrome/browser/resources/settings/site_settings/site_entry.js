@@ -159,7 +159,8 @@ Polymer({
 
     if (!this.grouped_(siteGroup)) {
       // Ensure ungrouped |siteGroup|s do not get stuck in an opened state.
-      if (this.$.collapseChild.opened) {
+      const collapseChild = this.$.originList.getIfExists();
+      if (collapseChild && collapseChild.opened) {
         this.toggleCollapsible_();
       }
     }
@@ -332,7 +333,7 @@ Polymer({
    */
   toggleCollapsible_: function() {
     const collapseChild =
-        /** @type {IronCollapseElement} */ (this.$.collapseChild);
+        /** @type {IronCollapseElement} */ (this.$.originList.get());
     collapseChild.toggle();
     this.$.toggleButton.setAttribute('aria-expanded', collapseChild.opened);
     this.$.expandIcon.toggleClass('icon-expand-more');
