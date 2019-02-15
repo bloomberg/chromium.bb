@@ -789,9 +789,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
-    // TODO(https://crbug.com/929790): This seems to be because sk_surface_ for
-    // GL has kBottomLeft_kBottomLeft_GrSurfaceOrigin.
-    bool flipped = true;
+    bool flipped = !capabilities_.flipped_output_surface;
 
     base::Optional<ScopedSurfaceToTexture> texture_mapper;
     if (id) {
@@ -1101,6 +1099,7 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
   context_state_ = gpu_service->GetContextStateForVulkan();
   DCHECK(context_state_);
   supports_alpha_ = true;
+  capabilities_.flipped_output_surface = true;
 }
 
 void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
@@ -1145,10 +1144,13 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForGL() {
   framebuffer_info.fFormat = supports_alpha_ ? GL_RGBA8 : GL_RGB8_OES;
   GrBackendRenderTarget render_target(size_.width(), size_.height(), 0, 8,
                                       framebuffer_info);
+  auto origin = capabilities_.flipped_output_surface
+                    ? kTopLeft_GrSurfaceOrigin
+                    : kBottomLeft_GrSurfaceOrigin;
   auto color_type =
       supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
   sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context(), render_target, kBottomLeft_GrSurfaceOrigin, color_type,
+      gr_context(), render_target, origin, color_type,
       color_space_.ToSkColorSpace(), &surface_props);
   DCHECK(sk_surface_);
 }
