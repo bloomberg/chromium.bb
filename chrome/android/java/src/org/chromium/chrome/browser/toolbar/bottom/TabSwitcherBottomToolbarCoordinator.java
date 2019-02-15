@@ -71,6 +71,7 @@ public class TabSwitcherBottomToolbarCoordinator {
         mCloseAllTabsButton.setIncognitoStateProvider(incognitoStateProvider);
         mCloseAllTabsButton.setThemeColorProvider(themeColorProvider);
         mCloseAllTabsButton.setTabCountProvider(tabCountProvider);
+        mCloseAllTabsButton.setVisibility(View.INVISIBLE);
 
         mNewTabButton = root.findViewById(R.id.tab_switcher_new_tab_button);
         mNewTabButton.setOnClickListener(newTabClickListener);
