@@ -49,7 +49,7 @@ run_jsbundler("switch_access_copied_files") {
     "menu_panel.css",
     "menu_panel.html",
     "menu_panel.js",
-    "message_handler.js",
+    "menu_panel_interface.js",
     "navigation_manager.js",
     "options.css",
     "options.html",
@@ -157,18 +157,17 @@ js_type_check("closure_compile") {
     ":commands",
     ":keyboard_handler",
     ":menu_manager",
-    ":message_handler",
+    ":menu_panel_interface",
     ":navigation_manager",
     ":options",
     ":prefs",
+    ":switch_access",
+    ":switch_access_interface",
     ":switch_access_predicate",
     ":text_input_manager",
     "../chromevox:constants",
     "../chromevox:tree_walker",
     "../select_to_speak:closure_shim",
-
-    # ":switch_access",
-    ":switch_access_interface",
   ]
 }
 
@@ -181,6 +180,7 @@ js_library("auto_scan_manager") {
 js_library("navigation_manager") {
   deps = [
     ":menu_manager",
+    ":menu_panel_interface",
     ":switch_access_predicate",
     ":text_input_manager",
     "../chromevox:constants",
@@ -214,11 +214,12 @@ js_library("keyboard_handler") {
 
 js_library("menu_manager") {
   deps = [
+    ":menu_panel_interface",
     ":switch_access_interface",
   ]
 }
 
-js_library("message_handler") {
+js_library("menu_panel_interface") {
 }
 
 js_library("options") {
@@ -241,7 +242,7 @@ js_library("switch_access") {
     ":auto_scan_manager",
     ":commands",
     ":keyboard_handler",
-    ":message_handler",
+    ":menu_panel_interface",
     ":navigation_manager",
     ":prefs",
   ]
@@ -252,6 +253,9 @@ js_library("switch_access") {
 }
 
 js_library("switch_access_interface") {
+  deps = [
+    ":menu_panel_interface",
+  ]
 }
 
 js_library("switch_access_predicate") {

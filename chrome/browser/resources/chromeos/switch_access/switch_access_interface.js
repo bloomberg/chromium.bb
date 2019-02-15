@@ -113,4 +113,11 @@ class SwitchAccessInterface {
    * @return {boolean}
    */
   keyCodeIsUsed(keyCode) {}
+
+  /**
+   * Sets up the connection between the menuPanel and the menuManager.
+   * @param {!PanelInterface} menuPanel
+   * @return {MenuManager}
+   */
+  connectMenuPanel(menuPanel) {}
 }
