@@ -589,6 +589,8 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
             EXTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions',
             INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal',
         ))
+    self.make_dirs = self.PatchObject(osutils, 'SafeMakedirs')
+    self.initialize = self.PatchObject(repo_util.Repository, 'Initialize')
     self.match_branch_name = self.PatchObject(git, 'MatchBranchName',
                                               return_value=['branch'])
     self.get_current_branch = self.PatchObject(git, 'GetCurrentBranch',
@@ -602,6 +604,30 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.increment_version = self.PatchObject(VersionInfo, 'IncrementVersion')
     self.update_version = self.PatchObject(VersionInfo, 'UpdateVersionFile')
     constants.CHROMITE_DIR = '/run-root/chromite'
+
+  def testInitialize(self):
+    """Test Initialize calls the correct functions with the correct data."""
+    self.PatchObject(git, 'FindRepoCheckoutRoot', return_value=None)
+    checkout = CrosCheckout.Initialize(
+        '/root', 'manifest.com', repo_url='repo', repo_branch='default')
+    self.assertEqual(checkout.root, '/root')
+    self.assertEqual(checkout.manifest_url, 'manifest.com')
+    self.assertEqual(checkout.repo_url, 'repo')
+    self.assertEqual(self.make_dirs.call_count, 1)
+    self.assertEqual(
+        self.initialize.call_args_list,
+        [mock.call('/root', 'manifest.com', repo_url='repo',
+                   repo_branch='default')])
+
+  def testInitializeNoRepoInit(self):
+    """Test Initialize does not call repo init when already initialized."""
+    self.PatchObject(git, 'FindRepoCheckoutRoot', return_value='/root')
+    checkout = CrosCheckout.Initialize(
+        '/root', 'manifest.com', repo_url='repo', repo_branch='default')
+    self.assertEqual(checkout.root, '/root')
+    self.assertEqual(checkout.manifest_url, 'manifest.com')
+    self.assertEqual(checkout.repo_url, 'repo')
+    self.assertFalse(self.initialize.call_count)
 
   def testSyncVersionMinimal(self):
     """Test SyncVersion passes minimal args to repo_sync_manifest."""
@@ -1042,8 +1068,11 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.PatchObject(ReleaseBranch, 'Create')
     self.PatchObject(Branch, 'Rename')
     self.PatchObject(Branch, 'Delete')
+    self.PatchObject(repo_util, 'Repository')
     self.PatchObject(repo_util.Repository, 'Manifest',
                      return_value=self.full_manifest)
+    self.PatchObject(CrosCheckout, 'Initialize',
+                     return_value=CrosCheckout('', manifest=self.full_manifest))
     self.PatchObject(CrosCheckout, 'ReadVersion',
                      return_value=VersionInfo('1.2.0'))
     self.PatchObject(CrosCheckout, 'BranchExists', return_value=False)
@@ -1315,10 +1344,10 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     # because remotes typically know about each other.
     self.cros_root = self.CreateTempDir(REMOTES.CROS)
     self.cros_internal_root = self.CreateTempDir(REMOTES.CROS_INTERNAL)
+
+    # The tests frequently branch full manifests, so parse and write them.
     self.full_manifest = self.ParseManifest(FULL_TOT_XML)
     self.full_branched_manifest = self.ParseManifest(FULL_BRANCHED_XML)
-
-    # The tests frequently branch the full manifest, so write it.
     self.full_manifest_path = os.path.join(self.tempdir, 'manifest.xml')
     self.full_manifest.Write(self.full_manifest_path)
 
@@ -1366,15 +1395,12 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.cros_snapshot = self.Snapshot(self.cros_root)
     self.cros_internal_snapshot = self.Snapshot(self.cros_internal_root)
 
+    # Use the existing repo checkout to avoid network calls to repo remote.
+    self.repo_url = FileUrl(constants.SOURCE_ROOT, '.repo/repo')
+
     # Finally, we must create a local checkout of the remote. This is where
     # the `cros branch` will sync and do its job.
-    self.repo_url = FileUrl(constants.SOURCE_ROOT, '.repo/repo')
     self.local_root = self.CreateTempDir('local')
-    repo_util.Repository.Initialize(
-        root=self.local_root,
-        manifest_url=self.manifest_internal_root,
-        repo_url=self.repo_url,
-        repo_branch='default')
 
   def tearDown(self):
     osutils.EmptyDir(self.tempdir)
@@ -1592,6 +1618,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1609,6 +1636,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         ['cros', 'branch',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1624,6 +1652,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1643,6 +1672,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push', '--force',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1661,6 +1691,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1682,6 +1713,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1700,6 +1732,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'rename',
          'old-branch', 'new-branch'])
@@ -1716,6 +1749,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         ['cros', 'branch',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'rename',
          'old-branch', 'new-branch'])
@@ -1732,6 +1766,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push', '--force',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'create',
          '--file', self.full_manifest_path,
@@ -1751,6 +1786,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push', '--force',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'rename',
          'old-branch', 'new-branch'])
@@ -1768,6 +1804,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'rename',
          'master', 'old-branch'],
@@ -1784,6 +1821,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push', '--force',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'delete', 'old-branch'])
 
@@ -1795,6 +1833,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
         ['cros', 'branch',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'delete', 'old-branch'])
 
@@ -1807,6 +1846,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
          '--push',
          '--root', self.local_root,
          '--repo-url', self.repo_url,
+         '--repo-branch', 'default',
          '--manifest-url', self.manifest_internal_root,
          'delete', 'old-branch'],
         error_code_ok=True,

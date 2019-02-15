@@ -22,6 +22,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
 
@@ -199,19 +200,35 @@ class ManifestRepository(object):
 class CrosCheckout(object):
   """Represents a checkout of chromiumos on disk."""
 
-  def __init__(self, root, manifest=None, repo_url=None, manifest_url=None):
+  def __init__(self, root, manifest=None, manifest_url=None, repo_url=None):
     """Read the checkout manifest.
 
     Args:
       root: The repo root.
       manifest: The checkout manifest. Read from `repo manifest` if None.
-      repo_url: Repo repository URL. Uses default googlesource repo if None.
-      manifest_url: Manifest repository URL. Uses manifest-internal if None.
+      manifest_url: Manifest repository URL. repo_sync_manifest sets default.
+      repo_url: Repo repository URL. repo_sync_manifest sets default.
     """
     self.root = root
     self.manifest = manifest or repo_util.Repository(root).Manifest()
-    self.repo_url = repo_url
     self.manifest_url = manifest_url
+    self.repo_url = repo_url
+
+  @classmethod
+  def Initialize(cls, root, manifest_url, repo_url=None, repo_branch=None):
+    """Initialize the checkout if necessary. Otherwise a no-op.
+
+    Args:
+      root: The repo root.
+      manifest_url: Manifest repository URL.
+      repo_url: Repo repository URL. Uses default googlesource repo if None.
+      repo_branch: Repo repository branch.
+    """
+    osutils.SafeMakedirs(root)
+    if git.FindRepoCheckoutRoot(root) is None:
+      repo_util.Repository.Initialize(
+          root, manifest_url, repo_url=repo_url, repo_branch=repo_branch)
+    return cls(root, manifest_url=manifest_url, repo_url=repo_url)
 
   def _Sync(self, manifest_args):
     """Run repo_sync_manifest command.
@@ -705,11 +722,21 @@ Delete Examples:
     sync_group.add_argument(
         '--root',
         default=constants.SOURCE_ROOT,
-        help='Repo root of local checkout to branch. If not specificed, this '
+        help='Repo root of local checkout to branch. If the root does not '
+             'exist, this tool will create it. If the root is not initialized, '
+             'this tool will initialize it. If --root is not specificed, this '
              'tool will branch the checkout from which it is run.')
-    sync_group.add_argument('--repo-url', help='Repo repository location.')
     sync_group.add_argument(
-        '--manifest-url', help='URL of the manifest to be checked out.')
+        '--repo-url',
+        help='Repo repository location. Defaults to repo '
+             'googlesource URL.')
+    sync_group.add_argument('--repo-branch', help='Branch to checkout repo to.')
+    sync_group.add_argument(
+        '--manifest-url',
+        default='https://chrome-internal.googlesource.com'
+                '/chromeos/manifest-internal.git',
+        help='URL of the manifest to be checked out. Defaults to googlesource '
+             'URL for manifest-internal.')
 
     # Create subcommand and flags.
     subparser = parser.add_subparsers(dest='subcommand')
@@ -788,10 +815,11 @@ Delete Examples:
     delete_parser.add_argument('branch', help='Name of the branch to delete.')
 
   def Run(self):
-    checkout = CrosCheckout(
+    checkout = CrosCheckout.Initialize(
         self.options.root,
+        self.options.manifest_url,
         repo_url=self.options.repo_url,
-        manifest_url=self.options.manifest_url)
+        repo_branch=self.options.repo_branch)
     push = self.options.push
     force = self.options.force
 
