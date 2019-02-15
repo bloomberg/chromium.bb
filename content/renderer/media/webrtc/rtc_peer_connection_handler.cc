@@ -602,6 +602,17 @@ MediaStreamTrackMetrics::Kind MediaStreamTrackMetricsKind(
              : MediaStreamTrackMetrics::Kind::kVideo;
 }
 
+bool IsHostnameCandidate(const blink::WebRTCICECandidate& candidate) {
+  // Currently the legitimate hostname candidates have only the .local
+  // top-level domain, which are gathered when the mDNS concealment of local
+  // IPs is enabled.
+  const char kLocalTld[] = ".local";
+  if (!candidate.Address().ContainsOnlyASCII())
+    return false;
+  return base::EndsWith(candidate.Address().Ascii(), kLocalTld,
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
@@ -2245,7 +2256,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(
       ++num_local_candidates_ipv4_;
     } else if (address_family == AF_INET6) {
       ++num_local_candidates_ipv6_;
-    } else {
+    } else if (!IsHostnameCandidate(*web_candidate)) {
       NOTREACHED();
     }
   }
