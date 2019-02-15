@@ -153,7 +153,7 @@ std::vector<AccountInfo> GetSecondaryAccountsForSignedInProfile(
   // The vector returned by GetAccountsWithRefreshTokens() contains
   // the primary account too, so we need to remove it from the list.
   DCHECK(identity_manager->HasPrimaryAccount());
-  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+  CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
 
   auto primary_index = std::find_if(
       accounts.begin(), accounts.end(),
