@@ -1302,6 +1302,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self setupContextBar];
 }
 
+- (BOOL)scrimIsVisible {
+  return self.scrimView.superview ? YES : NO;
+}
+
 #pragma mark - Loading and Empty States
 
 // Shows loading spinner background view.
@@ -1693,8 +1697,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
        shouldReceiveTouch:(UITouch*)touch {
-  // Ignore long press in edit mode.
-  if (self.sharedState.currentlyInEditMode) {
+  // Ignore long press in edit mode or search mode.
+  if (self.sharedState.currentlyInEditMode || [self scrimIsVisible]) {
     return NO;
   }
   return YES;

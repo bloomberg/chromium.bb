@@ -918,6 +918,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   }
 }
 
+- (BOOL)scrimIsVisible {
+  return self.scrimView.superview ? YES : NO;
+}
+
 #pragma mark Navigation Toolbar Configuration
 
 // Animates the view configuration after flipping the current status of |[self
@@ -975,6 +979,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     (UILongPressGestureRecognizer*)gestureRecognizer {
   if (gestureRecognizer.numberOfTouches != 1 || self.editing ||
       gestureRecognizer.state != UIGestureRecognizerStateBegan) {
+    return;
+  }
+  if ([self scrimIsVisible]) {
+    self.searchController.active = NO;
     return;
   }
 
