@@ -1378,11 +1378,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-media-controls-expand-gesture",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76
@@ -1394,11 +1389,6 @@
   },
   {
     "name": "enable-modal-permission-dialog-view",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-modern-media-controls",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1549,11 +1539,6 @@
   },
   {
     "name": "enable-osk-overscroll",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-overflow-icons-for-media-controls",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },

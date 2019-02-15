@@ -366,6 +366,7 @@ const base::Feature kAutoplayWhitelistSettings{
 
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.
+// TODO(beccahughes): Remove this.
 const base::Feature kMediaControlsExpandGesture{
     "MediaControlsExpandGesture", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -427,10 +428,12 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 }
 
 // Adds icons to the overflow menu on the native media controls.
+// TODO(steimel): Remove this.
 const base::Feature kOverflowIconsForMediaControls{
     "OverflowIconsForMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the new redesigned media controls.
+// TODO(steimel): Remove this.
 const base::Feature kUseModernMediaControls{"UseModernMediaControls",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -3269,11 +3269,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kAsyncDns)},
 #endif  // defined(OS_ANDROID)
 
-    {"enable-overflow-icons-for-media-controls",
-     flag_descriptions::kOverflowIconsForMediaControlsName,
-     flag_descriptions::kOverflowIconsForMediaControlsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kOverflowIconsForMediaControls)},
-
 #if defined(OS_ANDROID)
     {"enable-downloads-location-change",
      flag_descriptions::kDownloadsLocationChangeName,
@@ -3346,11 +3341,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClipboardContentSettingName,
      flag_descriptions::kClipboardContentSettingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClipboardContentSetting)},
-
-    {"enable-modern-media-controls",
-     flag_descriptions::kUseModernMediaControlsName,
-     flag_descriptions::kUseModernMediaControlsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kUseModernMediaControls)},
 
     {"enable-network-logging-to-file",
      flag_descriptions::kEnableNetworkLoggingToFileName,
@@ -3721,13 +3711,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"upcoming-ui-features", flag_descriptions::kExperimentalUiName,
      flag_descriptions::kExperimentalUiDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalUi)},
-
-#if defined(OS_ANDROID)
-    {"enable-media-controls-expand-gesture",
-     flag_descriptions::kEnableMediaControlsExpandGestureName,
-     flag_descriptions::kEnableMediaControlsExpandGestureDescription,
-     kOsAndroid, FEATURE_VALUE_TYPE(media::kMediaControlsExpandGesture)},
-#endif
 
 #if defined(OS_ANDROID)
     {"cct-module", flag_descriptions::kCCTModuleName,

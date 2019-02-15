@@ -1443,11 +1443,6 @@ const char kOriginTrialsName[] = "Origin Trials";
 const char kOriginTrialsDescription[] =
     "Enables origin trials for controlling access to feature/API experiments.";
 
-const char kOverflowIconsForMediaControlsName[] =
-    "Icons on Media Controls Overflow Menu";
-const char kOverflowIconsForMediaControlsDescription[] =
-    "Displays icons on the overflow menu of the native media controls";
-
 const char kOverlayScrollbarsName[] = "Overlay Scrollbars";
 const char kOverlayScrollbarsDescription[] =
     "Enable the experimental overlay scrollbars implementation. You must also "
@@ -1975,10 +1970,6 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
-const char kUseModernMediaControlsName[] = "New Media Controls";
-const char kUseModernMediaControlsDescription[] =
-    "Enables the new style native media controls.";
-
 const char kUsePdfCompositorServiceName[] =
     "Use PDF compositor service for printing";
 const char kUsePdfCompositorServiceDescription[] =
@@ -2354,12 +2345,6 @@ const char kEnableCustomContextMenuName[] = "Enable custom context menu";
 const char kEnableCustomContextMenuDescription[] =
     "Enables a new context menu when a link, image, or video is pressed within "
     "Chrome.";
-
-const char kEnableMediaControlsExpandGestureName[] =
-    "Enable Media Controls Expand Gesture";
-const char kEnableMediaControlsExpandGestureDescription[] =
-    "Enables a gesture to be used on the media controls to extend the video "
-    "into the Display Cutout area.";
 
 const char kEnableOmniboxClipboardProviderName[] =
     "Omnibox clipboard URL suggestions";
