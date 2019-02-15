@@ -177,7 +177,8 @@ using SetupProcessCallback = base::OnceCallback<void(
 // ServiceWorkerScriptLoaderFactory and the other is for passing to the
 // renderer. These bundles include factories for non-network URLs like
 // chrome-extension:// as needed.
-void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
+void SetupOnUIThread(int embedded_worker_id,
+                     base::WeakPtr<ServiceWorkerProcessManager> process_manager,
                      bool can_use_existing_process,
                      blink::mojom::EmbeddedWorkerStartParamsPtr params,
                      blink::mojom::EmbeddedWorkerInstanceClientRequest request,
@@ -207,8 +208,8 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   // Get a process.
   blink::ServiceWorkerStatusCode status =
       process_manager->AllocateWorkerProcess(
-          params->embedded_worker_id, params->script_url,
-          can_use_existing_process, process_info.get());
+          embedded_worker_id, params->script_url, can_use_existing_process,
+          process_info.get());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
@@ -534,7 +535,6 @@ class EmbeddedWorkerInstance::StartTask {
     bool can_use_existing_process =
         context->GetVersionFailureCount(params->service_worker_version_id) <
         kMaxSameProcessFailureCount;
-    DCHECK_EQ(params->embedded_worker_id, instance_->embedded_worker_id_);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
                                       this);
     base::WeakPtr<ServiceWorkerProcessManager> process_manager =
@@ -545,8 +545,9 @@ class EmbeddedWorkerInstance::StartTask {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &SetupOnUIThread, process_manager, can_use_existing_process,
-            std::move(params), std::move(request_), context.get(), context,
+            &SetupOnUIThread, instance_->embedded_worker_id(), process_manager,
+            can_use_existing_process, std::move(params), std::move(request_),
+            context.get(), context,
             base::BindOnce(&StartTask::OnSetupCompleted,
                            weak_factory_.GetWeakPtr(), process_manager)));
   }
@@ -686,7 +687,6 @@ void EmbeddedWorkerInstance::Start(
   for (auto& observer : listener_list_)
     observer.OnStarting();
 
-  params->embedded_worker_id = embedded_worker_id_;
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
   params->v8_cache_options = GetV8CacheOptions();
