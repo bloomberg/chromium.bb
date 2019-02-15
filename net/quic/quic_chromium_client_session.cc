@@ -918,24 +918,27 @@ void QuicChromiumClientSession::Initialize() {
   set_max_uncompressed_header_bytes(kMaxUncompressedHeaderSize);
 }
 
-size_t QuicChromiumClientSession::WriteHeaders(
+size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
     quic::QuicStreamId id,
     spdy::SpdyHeaderBlock headers,
     bool fin,
     spdy::SpdyPriority priority,
     quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
-        ack_notifier_delegate) {
+        ack_listener) {
   spdy::SpdyStreamId parent_stream_id = 0;
   int weight = 0;
   bool exclusive = false;
+
   if (headers_include_h2_stream_dependency_) {
     priority_dependency_state_.OnStreamCreation(id, priority, &parent_stream_id,
                                                 &weight, &exclusive);
   } else {
     weight = spdy::Spdy3PriorityToHttp2Weight(priority);
   }
-  return WriteHeadersImpl(id, std::move(headers), fin, weight, parent_stream_id,
-                          exclusive, std::move(ack_notifier_delegate));
+
+  return WriteHeadersOnHeadersStreamImpl(id, std::move(headers), fin,
+                                         parent_stream_id, weight, exclusive,
+                                         std::move(ack_listener));
 }
 
 void QuicChromiumClientSession::UnregisterStreamPriority(quic::QuicStreamId id,

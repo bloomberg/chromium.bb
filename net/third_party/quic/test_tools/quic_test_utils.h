@@ -670,7 +670,6 @@ class MockQuicSpdySession : public QuicSpdySession {
   QuicCryptoStream* GetMutableCryptoStream() override;
   const QuicCryptoStream* GetCryptoStream() const override;
   void SetCryptoStream(QuicCryptoStream* crypto_stream);
-  const spdy::SpdyHeaderBlock& GetWriteHeaders() { return write_headers_; }
 
   // From QuicSession.
   MOCK_METHOD3(OnConnectionClosed,
@@ -722,22 +721,6 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD2(OnPriorityFrame,
                void(QuicStreamId id, spdy::SpdyPriority priority));
 
-  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
-  // mocked directly.
-  size_t WriteHeaders(QuicStreamId id,
-                      spdy::SpdyHeaderBlock headers,
-                      bool fin,
-                      spdy::SpdyPriority priority,
-                      QuicReferenceCountedPointer<QuicAckListenerInterface>
-                          ack_listener) override;
-  MOCK_METHOD5(
-      WriteHeadersMock,
-      size_t(QuicStreamId id,
-             const spdy::SpdyHeaderBlock& headers,
-             bool fin,
-             spdy::SpdyPriority priority,
-             const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-                 ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
   MOCK_METHOD4(
       OnStreamFrameData,
@@ -747,7 +730,6 @@ class MockQuicSpdySession : public QuicSpdySession {
 
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
-  spdy::SpdyHeaderBlock write_headers_;
 };
 
 class TestQuicSpdyServerSession : public QuicServerSessionBase {

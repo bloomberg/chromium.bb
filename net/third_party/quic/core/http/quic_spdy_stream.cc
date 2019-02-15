@@ -168,8 +168,8 @@ size_t QuicSpdyStream::WriteHeaders(
     SpdyHeaderBlock header_block,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  size_t bytes_written = spdy_session_->WriteHeaders(
-      id(), std::move(header_block), fin, priority(), std::move(ack_listener));
+  size_t bytes_written =
+      WriteHeadersImpl(std::move(header_block), fin, std::move(ack_listener));
   if (fin) {
     // TODO(rch): Add test to ensure fin_sent_ is set whenever a fin is sent.
     set_fin_sent(true);
@@ -226,8 +226,7 @@ size_t QuicSpdyStream::WriteTrailers(
   // trailers are the last thing to be sent on a stream.
   const bool kFin = true;
   size_t bytes_written =
-      spdy_session_->WriteHeaders(id(), std::move(trailer_block), kFin,
-                                  priority(), std::move(ack_listener));
+      WriteHeadersImpl(std::move(trailer_block), kFin, std::move(ack_listener));
   set_fin_sent(kFin);
 
   // Trailers are the last thing to be sent on a stream, but if there is still
@@ -433,6 +432,14 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
   trailers_decompressed_ = true;
   OnStreamFrame(
       QuicStreamFrame(id(), fin, final_byte_offset, QuicStringPiece()));
+}
+
+size_t QuicSpdyStream::WriteHeadersImpl(
+    spdy::SpdyHeaderBlock header_block,
+    bool fin,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+  return spdy_session_->WriteHeadersOnHeadersStream(
+      id(), std::move(header_block), fin, priority(), std::move(ack_listener));
 }
 
 void QuicSpdyStream::OnPriorityFrame(SpdyPriority priority) {

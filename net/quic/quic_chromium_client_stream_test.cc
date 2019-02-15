@@ -94,17 +94,17 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
   MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
   // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
   // cannot be mocked directly.
-  size_t WriteHeaders(
+  size_t WriteHeadersOnHeadersStream(
       quic::QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
       spdy::SpdyPriority priority,
       quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
           ack_listener) override {
-    return WriteHeadersMock(id, headers, fin, priority,
-                            std::move(ack_listener));
+    return WriteHeadersOnHeadersStreamMock(id, headers, fin, priority,
+                                           std::move(ack_listener));
   }
-  MOCK_METHOD5(WriteHeadersMock,
+  MOCK_METHOD5(WriteHeadersOnHeadersStreamMock,
                size_t(quic::QuicStreamId id,
                       const spdy::SpdyHeaderBlock& headers,
                       bool fin,
