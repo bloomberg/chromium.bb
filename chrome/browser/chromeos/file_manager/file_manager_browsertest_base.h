@@ -136,7 +136,6 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   std::unique_ptr<FakeTestVolume> mtp_volume_;
   std::unique_ptr<RemovableTestVolume> partition_1_;
   std::unique_ptr<RemovableTestVolume> partition_2_;
-  std::unique_ptr<RemovableTestVolume> single_usb_volume_;
 
   drive::DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
