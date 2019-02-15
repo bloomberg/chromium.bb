@@ -308,12 +308,8 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
       IdentityManagerFactory::GetForProfile(profile_);
   // With the account consistency enabled let the account Reconcilor handles
   // everything.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  const std::string& primary_acct = identity_manager->GetPrimaryAccountId();
-
-  static_cast<OAuth2TokenServiceDelegateAndroid*>(token_service->GetDelegate())
-      ->ValidateAccounts(primary_acct, true);
+  // TODO(https://crbug.com/930094): Determine the right long-term flow here.
+  identity_manager->LegacyReloadAccountsFromSystem();
 }
 
 jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
