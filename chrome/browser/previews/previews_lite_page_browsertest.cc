@@ -66,6 +66,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_quality_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -75,7 +76,9 @@ const int kTimeoutMs = 250;
 const int kRedirectLoopCount = 3;
 }
 
-class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
+class PreviewsLitePageServerBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
   PreviewsLitePageServerBrowserTest() {}
 
@@ -230,6 +233,13 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},
         {});
+
+    if (GetParam()) {
+      url_loader_feature_list_.InitWithFeatures(
+          {network::features::kNetworkService,
+           previews::features::kHTTPSServerPreviewsUsingURLLoader},
+          {});
+    }
   }
 
   void SetUpOnMainThread() override {
@@ -272,19 +282,22 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         PreviewsUITabHelper::FromWebContents(GetWebContents());
     previews::PreviewsUserData* previews_data =
         ui_tab_helper->previews_user_data();
-
-    EXPECT_TRUE(previews_data->server_lite_page_info());
-    EXPECT_EQ(previews_data->server_lite_page_info()->status, status);
-
+    if (!GetParam()) {
+      EXPECT_TRUE(previews_data->server_lite_page_info());
+      EXPECT_EQ(previews_data->server_lite_page_info()->status, status);
+    }
     // This UMA is not recorded for an unknown or control group status
     if (status == previews::ServerLitePageStatus::kUnknown ||
         status == previews::ServerLitePageStatus::kControl) {
       return;
     }
-    histogram_tester->ExpectTotalCount(
-        "Previews.ServerLitePage.Penalty." +
-            previews::ServerLitePageStatusToString(status),
-        1);
+
+    if (!GetParam()) {
+      histogram_tester->ExpectTotalCount(
+          "Previews.ServerLitePage.Penalty." +
+              previews::ServerLitePageStatusToString(status),
+          1);
+    }
   }
 
   void VerifyPreviewLoaded() const {
@@ -308,36 +321,41 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
     const GURL loaded_url = GetLoadedURL();
     const GURL previews_host = previews_server();
-    EXPECT_TRUE(loaded_url.DomainIs(previews_host.host()) &&
-                loaded_url.EffectiveIntPort() ==
-                    previews_host.EffectiveIntPort());
+    EXPECT_TRUE(loaded_url.DomainIs(previews_host.host()));
+    EXPECT_EQ(loaded_url.EffectiveIntPort(), previews_host.EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
 
-    // server_lite_page_info does not exist on forward/back navigations.
-    if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
-      EXPECT_TRUE(previews_data->server_lite_page_info());
-      EXPECT_NE(
-          previews_data->server_lite_page_info()->original_navigation_start,
-          base::TimeTicks());
-      EXPECT_NE(previews_data->server_lite_page_info()->page_id, 0U);
-      EXPECT_NE(previews_data->server_lite_page_info()->drp_session_key, "");
+    if (!GetParam()) {
+      // server_lite_page_info does not exist on forward/back navigations.
+      if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
+        EXPECT_TRUE(previews_data->server_lite_page_info());
+        EXPECT_NE(
+            previews_data->server_lite_page_info()->original_navigation_start,
+            base::TimeTicks());
+        EXPECT_NE(previews_data->server_lite_page_info()->page_id, 0U);
+        EXPECT_NE(previews_data->server_lite_page_info()->drp_session_key, "");
+      }
     }
 
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
     const GURL virtual_url = entry->GetVirtualURL();
 
-    // The loaded url should be the previews version of the virtual url.
-    EXPECT_EQ(
-        loaded_url,
-        PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(virtual_url));
+    if (!GetParam()) {
+      // The loaded url should be the previews version of the virtual url.
+      EXPECT_EQ(loaded_url,
+                PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+                    virtual_url));
+    }
 
     // The Virtual URL should not be on the previews server.
     // TODO(crbug.com/894854): Use a different hostname and check that here.
-    EXPECT_FALSE(virtual_url.DomainIs(previews_host.host()) &&
-                 virtual_url.EffectiveIntPort() ==
-                     previews_host.EffectiveIntPort());
+    if (!GetParam()) {
+      EXPECT_FALSE(virtual_url.DomainIs(previews_host.host()) &&
+                   virtual_url.EffectiveIntPort() ==
+                       previews_host.EffectiveIntPort());
+    }
   }
 
   void VerifyPreviewNotLoaded() const {
@@ -433,9 +451,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpLitePageURL(PreviewsServerAction action,
                        std::string* headers = nullptr,
                        int delay_ms = 0) const {
-    std::string query = "resp=" + base::NumberToString(action);
+    std::string query = "resp=" + base::IntToString(action);
     if (delay_ms != 0)
-      query += "&delay_ms=" + base::NumberToString(delay_ms);
+      query += "&delay_ms=" + base::IntToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
@@ -696,6 +714,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_parameterized_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList url_loader_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
@@ -714,6 +733,11 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   int subresources_requested_ = 0;
 };
 
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageServerBrowserTest,
+                        testing::Bool());
+
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
@@ -723,8 +747,10 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 #define DISABLE_ON_WIN_MAC(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsTriggering)) {
+  if (GetParam())
+    return;
   // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
   // The histograms in these tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -933,8 +959,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReloadEnabled)) {
+  if (GetParam())
+    return;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {}, {previews::features::kPreviewsDisallowedOnReloads});
@@ -956,8 +984,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReloadDisabled)) {
+  if (GetParam())
+    return;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviewsDisallowedOnReloads}, {});
@@ -969,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewNotLoaded();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsLoadOriginal)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -981,8 +1011,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewNotLoaded();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsRedirect)) {
+  if (GetParam())
+    return;
   {
     // Verify the preview is triggered when an HTTP page redirects to HTTPS.
     base::HistogramTester histogram_tester;
@@ -1042,8 +1074,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsResponse)) {
+  if (GetParam())
+    return;
   {
     // Verify the preview is not triggered when the server responds with bypass
     // 307.
@@ -1126,8 +1160,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsLoadshed)) {
+  if (GetParam())
+    return;
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(previews_service);
@@ -1171,8 +1207,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewLoaded();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePageURLNotReportedToHistory)) {
+  if (GetParam())
+    return;
   base::CancelableTaskTracker tracker_;
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(browser()->profile(),
@@ -1231,8 +1269,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ClearDeciderState();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReportSavings)) {
+  if (GetParam())
+    return;
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                     true);
@@ -1252,8 +1292,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   EXPECT_EQ(GetDataUsage(), 20U);
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsClientRedirect)) {
+  if (GetParam())
+    return;
   // Navigate to a non-preview first.
   ui_test_utils::NavigateToURL(browser(), https_media_url());
   VerifyPreviewNotLoaded();
@@ -1266,8 +1308,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
             https_media_url());
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsNavigation)) {
+  if (GetParam())
+    return;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
@@ -1307,8 +1351,15 @@ class PreviewsLitePageServerTimeoutBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageServerTimeoutBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsTimeout)) {
+  if (GetParam())
+    return;
   {
     // Ensure that a hung previews navigation doesn't wind up at the previews
     // server.
@@ -1348,8 +1399,15 @@ class PreviewsLitePageServerBadServerBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageServerBadServerBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBadServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsBadServer)) {
+  if (GetParam())
+    return;
   // TODO(crbug.com/874150): Use ExpectUniqueSample in this tests.
   // The histograms in this tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -1395,8 +1453,15 @@ class PreviewsLitePageServerDataSaverBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageServerDataSaverBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerDataSaverBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsDSTriggering)) {
+  if (GetParam())
+    return;
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1426,9 +1491,16 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
     DISABLE_ON_WIN_MAC(LitePagePreviewsDSNoHeaderTriggering)) {
+  if (GetParam())
+    return;
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1457,9 +1529,16 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageNotificationDSEnabledBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSEnabledBrowserTest,
     DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarDataSaverUser)) {
+  if (GetParam())
+    return;
   // Ensure the preview is not shown the first time before the infobar is shown
   // for users who have DRP enabled.
   base::HistogramTester histogram_tester;
@@ -1522,9 +1601,16 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageNotificationDSDisabledBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSDisabledBrowserTest,
     DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarNonDataSaverUser)) {
+  if (GetParam())
+    return;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
   ClearDeciderState();
@@ -1545,8 +1631,15 @@ class PreviewsLitePageControlBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageControlBrowserTest,
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageControlBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageControlBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsControlGroup)) {
+  if (GetParam())
+    return;
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1616,11 +1709,18 @@ class PreviewsLitePageAndPageHintsBrowserTest
       test_hints_component_creator_;
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
+                        PreviewsLitePageAndPageHintsBrowserTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageAndPageHintsBrowserTest,
     DISABLE_ON_WIN_MAC(LitePagePreviewsDoesNotOverridePageHints)) {
   base::HistogramTester histogram_tester;
 
+  if (GetParam())
+    return;
   // Whitelist test URL for resource loading hints.
   GURL url = HttpsLitePageURL(kSuccess);
   SetResourceLoadingHints({url.host()});

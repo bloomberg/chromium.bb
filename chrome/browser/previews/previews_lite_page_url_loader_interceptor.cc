@@ -4,12 +4,21 @@
 
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/profiles/profile_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "net/http/http_request_headers.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace previews {
 
@@ -31,14 +40,40 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   return true;
 }
 
+net::HttpRequestHeaders GetChromeProxyHeaders(
+    content::ResourceContext* context) {
+  net::HttpRequestHeaders headers;
+  // Return empty headers for unittests.
+  if (!context)
+    return headers;
+  // TODO(ryansturm): If this switches to the UI thread, this needs to be
+  // re-worked. This information is all available on the UI thread.
+  // https://crbug.com/931786
+  auto* io_data = ProfileIOData::FromResourceContext(context);
+  if (io_data && io_data->data_reduction_proxy_io_data()) {
+    DCHECK(data_reduction_proxy::params::IsEnabledWithNetworkService());
+    data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
+        io_data->data_reduction_proxy_io_data()->request_options();
+    request_options->AddRequestHeader(&headers,
+                                      request_options->GeneratePageId());
+
+    headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
+                      net::GetNameForEffectiveConnectionType(
+                          io_data->data_reduction_proxy_io_data()
+                              ->GetEffectiveConnectionType()));
+  }
+
+  return headers;
+}
+
 }  // namespace
 
 PreviewsLitePageURLLoaderInterceptor::PreviewsLitePageURLLoaderInterceptor(
-    int frame_tree_node_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(ryansturm): use frame_tree_node_id and pass in other members.
-  // https://crbug.com/921740
-}
+    const scoped_refptr<network::SharedURLLoaderFactory>&
+        network_loader_factory,
+    int frame_tree_node_id)
+    : network_loader_factory_(network_loader_factory),
+      frame_tree_node_id_(frame_tree_node_id) {}
 
 PreviewsLitePageURLLoaderInterceptor::~PreviewsLitePageURLLoaderInterceptor() {}
 
@@ -47,6 +82,14 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
     content::ResourceContext* resource_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (serving_url_loader_) {
+    RequestHandler handler = serving_url_loader_->ServingResponseHandler();
+    // The serving loader manages its own lifetime at this point.
+    serving_url_loader_.release();
+    std::move(callback).Run(std::move(handler));
+    return;
+  }
 
   // TODO(ryansturm): Handle reloads by handling non-intercepted attempts at
   // fetching the lite page server. https://crbug.com/921756
@@ -68,12 +111,16 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
 
   RecordInterceptAttempt(true);
 
-  redirect_url_loader_ =
-      PreviewsLitePageRedirectURLLoader::AttemptRedirectToPreview(
-          tentative_resource_request,
-          base::BindOnce(
-              &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
-              base::Unretained(this), std::move(callback)));
+  redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
+      tentative_resource_request,
+      base::BindOnce(
+          &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
+          base::Unretained(this), std::move(callback)));
+
+  // |redirect_url_loader_| can be null after this call.
+  redirect_url_loader_->StartRedirectToPreview(
+      GetChromeProxyHeaders(resource_context), network_loader_factory_,
+      frame_tree_node_id_);
 }
 
 void PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader(
@@ -82,11 +129,20 @@ void PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader(
     RequestHandler handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Handle any failure by using default loader.
-  // For now, only fallback is allowed.
-  DCHECK(!serving_url_loader);
-  DCHECK(handler.is_null());
-  redirect_url_loader_.reset();
-  std::move(callback).Run({});
+  if (!serving_url_loader) {
+    DCHECK(handler.is_null());
+    redirect_url_loader_.reset();
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Save the serving loader to handle the next request.
+  serving_url_loader_ = std::move(serving_url_loader);
+
+  // |redirect_url_loader_| now manages its own lifetime via a mojo channel.
+  // |handler| is guaranteed to be called.
+  redirect_url_loader_.release();
+  std::move(callback).Run(std::move(handler));
 }
 
 }  // namespace previews

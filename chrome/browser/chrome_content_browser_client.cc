@@ -4864,7 +4864,9 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
 ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
     content::NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
+    int frame_tree_node_id,
+    const scoped_refptr<network::SharedURLLoaderFactory>&
+        network_loader_factory) {
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
       interceptors;
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -4876,14 +4878,15 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   }
 #endif
 
-  // TODO(ryansturm): plumb a network service url loader factory and page id
-  // generator through here. https://crbug.com/921740
+  // TODO(ryansturm): Once this is on the UI thread, stop passing
+  // |network_loader_factory| and have interceptors create one themselves.
+  // https://crbug.com/931786
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       base::FeatureList::IsEnabled(
           previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
     interceptors.push_back(
         std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(
-            frame_tree_node_id));
+            network_loader_factory, frame_tree_node_id));
   }
 
   return interceptors;

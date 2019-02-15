@@ -5,10 +5,14 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
 
+#include <memory>
+
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/previews/previews_lite_page_redirect_url_loader.h"
 #include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace previews {
@@ -18,13 +22,11 @@ namespace previews {
 // code. Currently, not fully implemented.
 class PreviewsLitePageURLLoaderInterceptor
     : public content::URLLoaderRequestInterceptor {
-  using RequestHandler =
-      base::OnceCallback<void(const network::ResourceRequest& resource_request,
-                              network::mojom::URLLoaderRequest,
-                              network::mojom::URLLoaderClientPtr)>;
-
  public:
-  explicit PreviewsLitePageURLLoaderInterceptor(int frame_tree_node_id);
+  PreviewsLitePageURLLoaderInterceptor(
+      const scoped_refptr<network::SharedURLLoaderFactory>&
+          network_loader_factory,
+      int frame_tree_node_id);
   ~PreviewsLitePageURLLoaderInterceptor() override;
 
   // content::URLLaoderRequestInterceptor:
@@ -50,6 +52,18 @@ class PreviewsLitePageURLLoaderInterceptor
   // with the lite page server and serving redirects. Once, a decision has been
   // made regarding serving the preview, this object will be null.
   std::unique_ptr<PreviewsLitePageRedirectURLLoader> redirect_url_loader_;
+
+  // Once a decision to serve the lite page has been made (based on server
+  // response), this object will exist until a redirect to the lite page URL has
+  // been handed off to the navigation stack and the next request is being
+  // handled.
+  std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader_;
+
+  // Factory to create a network service URLLoader.
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
+
+  // Used to create the network service URLLoader.
+  int frame_tree_node_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
