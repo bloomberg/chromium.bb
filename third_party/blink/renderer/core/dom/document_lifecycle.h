@@ -186,6 +186,8 @@ class CORE_EXPORT DocumentLifecycle {
   // layout or style computation is allowed.
   // This class should never be used outside of debugging.
   class PostponeTransitionScope {
+    USING_FAST_MALLOC(PostponeTransitionScope);
+
    public:
     explicit PostponeTransitionScope(DocumentLifecycle& document_lifecycle)
         : document_lifecycle_(document_lifecycle) {

@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -22,6 +23,8 @@ namespace blink {
 // TODO(crbug/805271): Deduplicate identical maps as SpaceSplitString does so
 // that elements with identical exportparts attributes share instances.
 class CORE_EXPORT NamesMap {
+  USING_FAST_MALLOC(NamesMap);
+
  public:
   NamesMap() = default;
   explicit NamesMap(const AtomicString& string);

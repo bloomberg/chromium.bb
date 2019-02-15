@@ -6,10 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_H_
 
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class ChildNode {
+  STATIC_ONLY(ChildNode);
+
  public:
   static void before(Node& node,
                      const HeapVector<NodeOrString>& nodes,
