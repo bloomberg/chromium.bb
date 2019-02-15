@@ -652,16 +652,8 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.load_timing.receive_headers_end = now;
 
   std::string digest_header_value;
-  if (!response_head.headers->EnumerateHeader(nullptr, kDigestHeader,
-                                              &digest_header_value)) {
-    // TODO(https://crbug.com/803774): Detect this error in
-    // SignedExchangeEnvelope::Parse().
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(), "Signed exchange has no Digest: header");
-    RunErrorCallback(SignedExchangeLoadResult::kHeaderParseError,
-                     net::ERR_INVALID_SIGNED_EXCHANGE);
-    return;
-  }
+  response_head.headers->EnumerateHeader(nullptr, kDigestHeader,
+                                         &digest_header_value);
   auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(
       digest_header_value, std::move(source_));
 
