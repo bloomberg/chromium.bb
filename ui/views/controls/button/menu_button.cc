@@ -18,8 +18,9 @@ const int MenuButton::kMenuMarkerPaddingLeft = 3;
 const int MenuButton::kMenuMarkerPaddingRight = -1;
 
 MenuButton::MenuButton(const base::string16& text,
-                       MenuButtonListener* menu_button_listener)
-    : LabelButton(nullptr, text),
+                       MenuButtonListener* menu_button_listener,
+                       int button_context)
+    : LabelButton(nullptr, text, button_context),
       menu_button_event_handler_(this, menu_button_listener) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
