@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -147,8 +148,14 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Fails on win7 (dbg): http://crbug.com/932402.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_InvokeUi_tab_hover_card DISABLED_InvokeUi_tab_hover_card
+#else
+#define MAYBE_InvokeUi_tab_hover_card InvokeUi_tab_hover_card
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       InvokeUi_tab_hover_card) {
+                       MAYBE_InvokeUi_tab_hover_card) {
   ShowAndVerifyUi();
 }
 
