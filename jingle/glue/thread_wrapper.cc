@@ -192,10 +192,9 @@ void JingleThreadWrapper::Send(const rtc::Location& posted_from,
   // Need to signal |pending_send_event_| here in case the thread is
   // sending message to another thread.
   pending_send_event_.Signal();
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&JingleThreadWrapper::ProcessPendingSends,
-                                    weak_ptr_));
-
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&JingleThreadWrapper::ProcessPendingSends, weak_ptr_));
 
   while (!pending_send.done_event.IsSignaled()) {
     base::WaitableEvent* events[] = {&pending_send.done_event,
@@ -247,14 +246,14 @@ void JingleThreadWrapper::PostTaskInternal(const rtc::Location& posted_from,
   }
 
   if (delay_ms <= 0) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&JingleThreadWrapper::RunTask,
-                                      weak_ptr_, task_id));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&JingleThreadWrapper::RunTask, weak_ptr_, task_id));
   } else {
-    task_runner_->PostDelayedTask(FROM_HERE,
-                                  base::Bind(&JingleThreadWrapper::RunTask,
-                                             weak_ptr_, task_id),
-                                  base::TimeDelta::FromMilliseconds(delay_ms));
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&JingleThreadWrapper::RunTask, weak_ptr_, task_id),
+        base::TimeDelta::FromMilliseconds(delay_ms));
   }
 }
 

@@ -25,8 +25,8 @@ void TaskPump::WakeTasks() {
   if (!stopped_ && !posted_wake_) {
     // Do the requested wake up.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&TaskPump::CheckAndRunTasks, weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&TaskPump::CheckAndRunTasks,
+                                  weak_factory_.GetWeakPtr()));
     posted_wake_ = true;
   }
 }
