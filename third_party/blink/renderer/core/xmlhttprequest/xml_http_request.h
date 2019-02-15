@@ -217,7 +217,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   AtomicString FinalResponseMIMETypeWithFallback() const;
   // Returns the "final charset" defined in
   // https://xhr.spec.whatwg.org/#final-charset.
-  String FinalResponseCharset() const;
+  WTF::TextEncoding FinalResponseCharset() const;
   bool ResponseIsXML() const;
   bool ResponseIsHTML() const;
 
