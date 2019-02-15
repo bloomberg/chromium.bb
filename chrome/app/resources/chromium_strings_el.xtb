@@ -93,6 +93,7 @@
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="407254336480250557">Επιλέξτε <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Ανακαλύψτε καταπληκτικές εφαρμογές, παιχνίδια, επεκτάσεις και θέματα για το Chromium.</translation>
+<translation id="4216212958613226427">Αυτή η γλώσσα χρησιμοποιείται για την προβολή της διεπαφής Chromium</translation>
 <translation id="4222580632002216401">Έχετε πλέον συνδεθεί στο Chromium! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="4224199872375172890">Το Chromium έχει ενημερωθεί.</translation>
 <translation id="4230135487732243613">Να συνδεθούν τα δεδομένα σας στο Chromium με αυτόν το λογαριασμό;</translation>
@@ -137,6 +138,7 @@
 <translation id="5680901439334282664">σύνδεση στο Chromium</translation>
 <translation id="5698481217667032250">Να εμφανίζεται το Chromium σε αυτήν τη γλώσσα</translation>
 <translation id="5712253116097046984">Ο διαχειριστής σας ζητάει να επανεκκινήσετε το Chromium OS, προκειμένου να εφαρμοστεί αυτή η ενημέρωση</translation>
+<translation id="5756484659843248772">Αυτή η γλώσσα χρησιμοποιείται για την προβολή της διεπαφής Chromium OS</translation>
 <translation id="5768914737813585044">Να εμφανίζεται το Chromium OS σε αυτήν τη γλώσσα</translation>
 <translation id="5796460469508169315">Το Chromium είναι σχεδόν έτοιμο.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -181,6 +183,7 @@
 <translation id="6810143991807788455">Συμβάλετε στη βελτίωση του Chromium αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (αντιγράφηκε στο Chromium)</translation>
+<translation id="6877899728743402439">Ο διαχειριστής συστήματος έχει διαμορφώσει το Chromium έτσι ώστε να ανοίγει άλλο πρόγραμμα περιήγησης.</translation>
 <translation id="6893813176749746474">Το Chromium έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
 <translation id="692832138936263906">Το Chromium μπορεί να αναγνωρίσει εικόνες και κείμενο σε μια εικόνα, αποστέλλοντας εικόνες της σελίδας σε διακομιστές της Google, επιτρέποντάς σας να κατανοήσετε καλύτερα το περιεχόμενο της σελίδας.</translation>
 <translation id="6964305034639999644">Άνοιγμα συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chromium</translation>

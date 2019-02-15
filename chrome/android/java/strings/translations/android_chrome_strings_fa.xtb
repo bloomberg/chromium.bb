@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">پایه</translation>
 <translation id="1671236975893690980">بارگیری معلق است…</translation>
 <translation id="1672586136351118594">دیگر نشان داده نشود</translation>
+<translation id="1692118695553449118">همگام‌سازی روشن است</translation>
 <translation id="1709438864123551175">صرفه‌جویی داده</translation>
 <translation id="1718835860248848330">ساعت قبل</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> به‌روزرسانی شده است</translation>
@@ -1001,7 +1002,6 @@
 <translation id="8445448999790540984">گذرواژه‌ها صادر نشدند</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
 <translation id="8461694314515752532">رمزگذاری داده‌های همگام‌سازی‌شده با عبارت عبور همگام‌سازی خودتان</translation>
-<translation id="8477071352266846533">همگام‌سازی برای <ph name="SYNC_ACCOUNT_USER_NAME" /> خاموش است</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
 <translation id="8489271220582375723">باز کردن صفحه سابقه</translation>

@@ -97,6 +97,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="1670399744444387456">De bază</translation>
 <translation id="1671236975893690980">Descărcare în așteptare…</translation>
 <translation id="1672586136351118594">Nu mai afișa</translation>
+<translation id="1692118695553449118">Sincronizarea este activată</translation>
 <translation id="1709438864123551175">Economizor de date</translation>
 <translation id="1718835860248848330">Ultima oră</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – actualizat <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8445448999790540984">Nu se pot exporta parole</translation>
 <translation id="8447861592752582886">Revocă permisiunea de accesare a dispozitivului</translation>
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>
-<translation id="8477071352266846533">Sincronizare dezactivată pentru <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponibil offline</translation>
 <translation id="8489271220582375723">Deschide pagina Istoric</translation>

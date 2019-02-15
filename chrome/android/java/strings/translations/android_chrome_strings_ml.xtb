@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">അടിസ്ഥാനം</translation>
 <translation id="1671236975893690980">ഡൗൺലോഡ് തീർച്ചപ്പെടുത്തിയിട്ടില്ല...</translation>
 <translation id="1672586136351118594">വീണ്ടും കാണിക്കരുത്</translation>
+<translation id="1692118695553449118">സമന്വയം ഓണാണ്</translation>
 <translation id="1709438864123551175">ഡാറ്റ സേവർ</translation>
 <translation id="1718835860248848330">കഴിഞ്ഞ മണിക്കൂര്‍‌</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> അപ്‌ഡേറ്റ് ചെയ്‌തു</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8445448999790540984">പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാനാവുന്നില്ല</translation>
 <translation id="8447861592752582886">ഉപകരണ അനുമതി റദ്ദാക്കുക</translation>
 <translation id="8461694314515752532">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച്, സമന്വയിപ്പിച്ച ഡാറ്റ എൻക്രി‌പ്‌റ്റ് ചെയ്യുക</translation>
-<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> എന്നയാളുടെ സമന്വയം ഓഫാണ്</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">ഓഫ്‌ലൈനില്‍ ലഭ്യമാണ്</translation>
 <translation id="8489271220582375723">ചരിത്ര പേജ് തുറക്കുക</translation>

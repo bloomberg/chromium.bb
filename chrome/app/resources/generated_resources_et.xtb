@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Google'i tabel</translation>
 <translation id="2544853746127077729">Võrk lükkas autentimissertifikaadi tagasi</translation>
 <translation id="2547921442987553570">Lisa laiendusse <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Alusta salvestamist</translation>
 <translation id="2550212893339833758">Saalitud mälu</translation>
 <translation id="2550596535588364872">Kas soovite lubada laiendusel <ph name="EXTENSION_NAME" /> avada faili <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> ei suutnud ühenduda võrku <ph name="NETWORK_ID" />. Valige muu võrk või proovige uuesti.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">USER nimed</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">See kustutab kõik seadmes olevad andmed, mille loetletud saidid salvestasid. Kas soovite jätkata?</translation>
-<translation id="3127919023693423797">Autentimine...</translation>
 <translation id="3129173833825111527">Vasak veeris</translation>
 <translation id="3130528281680948470">Teie seade lähtestatakse ja kõik kasutajakontod ja kohalikud andmed kustutatakse. Seda ei saa tagasi võtta.</translation>
 <translation id="313205617302240621">Kas olete parooli unustanud?</translation>
@@ -2033,6 +2033,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="404299405565920089">Siin saab hallata kõiki teie Google'i kontosid, kuhu olete rakendustes ja veebisaitidel sisse loginud. Rakendused ja veebisaidid, millel on teie luba, pääsevad juurde konto teabele, mida on vaja ootuspäraseks toimimiseks.</translation>
 <translation id="4044612648082411741">Sisestage oma sertifikaadi parool</translation>
 <translation id="404493185430269859">Vaikeotsingumootor</translation>
+<translation id="4046123991198612571">Järgmine lugu</translation>
 <translation id="4052120076834320548">Tilluke</translation>
 <translation id="4055023634561256217">Seade tuleb taaskäivitada, enne kui saate selle Powerwashiga lähtestada.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3352,6 +3353,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6069671174561668781">Taustapildi valimine</translation>
 <translation id="6071181508177083058">parooli kinnitamine</translation>
 <translation id="6071576563962215370">Süsteemil ei õnnestunud määrata seadme installiaegsete atribuutide lukustust.</translation>
+<translation id="6073451960410192870">Peata salvestamine</translation>
 <translation id="6073903501322152803">Juurdepääsetavuse funktsioonide lisamine</translation>
 <translation id="6074825444536523002">Google'i vorm</translation>
 <translation id="6075731018162044558">Vabandust! Süsteemil ei õnnestunud selle seadme jaoks saada pikaajalist API juurdepääsuluba.</translation>
@@ -3575,7 +3577,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6410328738210026208">Muuda kanalit ja Powerwashi</translation>
 <translation id="6410668567036790476">Otsingumootori lisamine</translation>
 <translation id="641081527798843608">Teema vaste</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# akent on avatud}}</translation>
 <translation id="6412931879992742813">Uus inkognitoaken</translation>
 <translation id="6415900369006735853">Looge Interneti-ühendus telefoni kaudu</translation>
 <translation id="6417265370957905582">Google'i assistent</translation>
@@ -3899,7 +3900,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6915804003454593391">Kasutaja:</translation>
 <translation id="6916590542764765824">Laienduste haldamine</translation>
 <translation id="6920989436227028121">Ava tavalise vahelehena</translation>
-<translation id="6921104647315081813">Kustuta tegevused</translation>
 <translation id="6921709132208495314">Katkesta sel lehel andmemahu kasutamine</translation>
 <translation id="6922128026973287222">Salvestage andmeid ja sirvige kiiremini Google'i andmemahu säästjaga. Lisateabe saamiseks klõpsake.</translation>
 <translation id="6923132443355966645">Kerimine/klõpsamine</translation>

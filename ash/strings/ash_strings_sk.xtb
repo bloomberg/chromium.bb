@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
+<translation id="5465662442746197494">Potrebujete pomoc?</translation>
 <translation id="5496819745535887422">Správca obnovuje vaše zariadenie. Pri reštartovaní zariadenia sa odstránia všetky dáta.</translation>
 <translation id="553675580533261935">Ukončuje sa relácia</translation>
 <translation id="5537725057119320332">Prenášať</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Pripojenie Wi‑Fi je zapnuté.</translation>
 <translation id="847056008324733326">Nastavenia hustoty zobrazenia</translation>
 <translation id="8477270416194247200">Ak to chcete zrušiť, stlačte klávesy Alt+Hľadať alebo Shift.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Opätovné pripájanie...</translation>
 <translation id="8513108775083588393">Automatické otáčanie</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8627191004499078455">Pripojené k zariadeniu <ph name="DEVICE_NAME" /></translation>

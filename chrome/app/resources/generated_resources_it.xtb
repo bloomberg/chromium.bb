@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Tabella Google</translation>
 <translation id="2544853746127077729">Certificato di autenticazione rifiutato dalla rete</translation>
 <translation id="2547921442987553570">Aggiungi all'estensione <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Avvia registrazione</translation>
 <translation id="2550212893339833758">Memoria sostituita</translation>
 <translation id="2550596535588364872">Vuoi consentire a <ph name="EXTENSION_NAME" /> di aprire <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> non è riuscito a collegarsi a <ph name="NETWORK_ID" />. Seleziona un'altra rete o riprova.</translation>
@@ -1405,7 +1406,6 @@
 <translation id="3124111068741548686">Handle UTENTE</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Verranno eliminati tutti i dati memorizzati sul dispositivo relativi a tutti i siti mostrati. Vuoi continuare?</translation>
-<translation id="3127919023693423797">Autenticazione in corso...</translation>
 <translation id="3129173833825111527">Margine sinistro</translation>
 <translation id="3130528281680948470">Il dispositivo verrà ripristinato e tutti gli account utente e i dati locali verranno rimossi. L'operazione non può essere annullata.</translation>
 <translation id="313205617302240621">Hai dimenticato la password?</translation>
@@ -2029,6 +2029,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="404299405565920089">Qui puoi gestire tutti i tuoi Account Google a cui accedi da app e siti web. Le app e i siti web autorizzati possono accedere ai dati degli account necessari per il loro corretto funzionamento.</translation>
 <translation id="4044612648082411741">Inserisci la password del certificato</translation>
 <translation id="404493185430269859">Motore di ricerca predefinito</translation>
+<translation id="4046123991198612571">Traccia successiva</translation>
 <translation id="4052120076834320548">Minuscolo</translation>
 <translation id="4055023634561256217">È necessario riavviare prima che il dispositivo possa essere reimpostato con Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3347,6 +3348,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6069671174561668781">Imposta sfondo</translation>
 <translation id="6071181508177083058">conferma password</translation>
 <translation id="6071576563962215370">Il sistema non è riuscito a stabilire il blocco degli attributi installation-time del dispositivo.</translation>
+<translation id="6073451960410192870">Interrompi registrazione</translation>
 <translation id="6073903501322152803">Aggiungi funzioni di accessibilità</translation>
 <translation id="6074825444536523002">Modulo Google</translation>
 <translation id="6075731018162044558">Spiacenti, il sistema non è riuscito a ottenere un token di accesso API a lungo termine per questo dispositivo.</translation>
@@ -3570,7 +3572,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6410328738210026208">Cambia canale ed esegui Powerwash</translation>
 <translation id="6410668567036790476">Aggiungi motore di ricerca</translation>
 <translation id="641081527798843608">Corrispondenza oggetto</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# finestre sono aperte}}</translation>
 <translation id="6412931879992742813">Nuova finestra di navigazione in incognito</translation>
 <translation id="6415900369006735853">Connettiti a Internet tramite il telefono</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
@@ -3894,7 +3895,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6915804003454593391">Utente:</translation>
 <translation id="6916590542764765824">Gestisci estensioni</translation>
 <translation id="6920989436227028121">Apri in una scheda normale</translation>
-<translation id="6921104647315081813">Cancella attività</translation>
 <translation id="6921709132208495314">Interrompi l'utilizzo dei dati su questa pagina</translation>
 <translation id="6922128026973287222">Memorizza dati e naviga più velocemente utilizzando il servizio Risparmio dati di Google. Fai clic per avere ulteriori informazioni.</translation>
 <translation id="6923132443355966645">Scorri/fai clic</translation>

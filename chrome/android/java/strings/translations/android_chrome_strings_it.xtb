@@ -97,6 +97,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="1670399744444387456">Di base</translation>
 <translation id="1671236975893690980">Download in attesa...</translation>
 <translation id="1672586136351118594">Non visualizzare più</translation>
+<translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="1709438864123551175">Risparmio dati</translation>
 <translation id="1718835860248848330">Ultima ora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Aggiornato <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8445448999790540984">Impossibile esportare le password</translation>
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
 <translation id="8461694314515752532">Cripta i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
-<translation id="8477071352266846533">Sincronizzazione di <ph name="SYNC_ACCOUNT_USER_NAME" /> disattivata</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="8489271220582375723">Apri la pagina Cronologia</translation>

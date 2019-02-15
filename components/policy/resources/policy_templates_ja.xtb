@@ -486,17 +486,6 @@
       このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効になっている場合にのみ有効です。また、マシンは <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> に登録されます。</translation>
 <translation id="2127599828444728326">これらのサイトの通知を許可する</translation>
 <translation id="2131902621292742709">画面が暗くなるまでの時間（バッテリー電源での実行時）</translation>
-<translation id="2132732175597591362">自動再生を常に有効にする URL パターンのホワイトリストを指定します。
-
-      自動再生を有効にすると、<ph name="PRODUCT_NAME" /> でユーザーの同意なしに動画の音声コンテンツが自動的に再生されます。
-
-      URL のパターンは、https://www.chromium.org/administrators/url-blacklist-filter-format で定められている形式で指定する必要があります。
-
-      AutoplayAllowed ポリシーが True に設定されている場合、このポリシーは無視されます。
-
-      AutoplayAllowed ポリシーが False に設定されている場合、このポリシーで指定した URL パターンで再生が許可されます。
-
-      <ph name="PRODUCT_NAME" /> の実行中にこのポリシーを変更した場合、変更内容は新しく開かれるタブにのみ適用されます。そのため、一部のタブでは変更前の動作が見られる場合があります。</translation>
 <translation id="2134437727173969994">画面のロックを許可</translation>
 <translation id="2137064848866899664">このポリシーが設定されている場合、個々のディスプレイは再起動のときに毎回と、ポリシーの値が変更されてから最初に接続が行われるときに、指定方向に回転します。ユーザーはログイン後に設定ページからディスプレイの回転方法を変更することができますが、次に再起動したときにはポリシーの値が再適用されます。
 

@@ -1033,6 +1033,7 @@
 <translation id="2542049655219295786">Google টেবিল</translation>
 <translation id="2544853746127077729">নেটওয়ার্কের দ্বারা প্রমাণীকরণ সার্টিফিকেট প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> এ যোগ করুন</translation>
+<translation id="2549985041256363841">রেকর্ডিং শুরু করুন</translation>
 <translation id="2550212893339833758">অদলবদল করা মেমরি</translation>
 <translation id="2550596535588364872"><ph name="FILE_NAME" /> খোলার জন্য <ph name="EXTENSION_NAME" />-কে অনুমতি দিন?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />, <ph name="NETWORK_ID" /> এর সাথে সংযোগ স্থাপনে অক্ষম ছিল৷ দয়া করে অন্য একটি নেটওয়ার্ক বেছে নিন বা আবার চেষ্টা করুন৷</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">ব্যবহারকারীর হ্যান্ডলগুলি</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">এটি প্রদর্শিত সমস্ত সাইটের জন্য আপনার ডিভাইসে সঞ্চিত যেকোনো ডেটা মুছে ফেলবে। আপনি কি চালিয়ে যেতে চান?</translation>
-<translation id="3127919023693423797">প্রমাণ করা হচ্ছে...</translation>
 <translation id="3129173833825111527">বাঁ মার্জিন</translation>
 <translation id="3130528281680948470">আপনার ডিভাইস আবার সেট করা হবে এবং সব ব্যবহারকারীর অ্যাকাউন্ট এবং স্থানীয় তথ্য মুছে ফেলা হবে। এটিকে পূর্বাবস্থায় ফেরানো যাবে না।</translation>
 <translation id="313205617302240621">পাসওয়ার্ড ভুলে গেছেন?</translation>
@@ -2029,6 +2029,7 @@
 <translation id="404299405565920089">অ্যাপ এবং ওয়েবসাইটে আপনার সাইন-ইন করা সমস্ত Google অ্যাকাউন্ট এখানে ম্যানেজ করা যাবে। সঠিকভাবে কাজ করার জন্য যেসব অ্যাপ এবং ওয়েবসাইটকে আপনি অ্যাকাউন্ট সংক্রান্ত তথ্য অ্যাক্সেস করার অনুমতি দিয়েছেন, সেগুলি সেই তথ্য অ্যাক্সেস করতে পারবে।</translation>
 <translation id="4044612648082411741">আপনার সার্টিফিকেটের পাসওয়ার্ড লিখুন</translation>
 <translation id="404493185430269859">ডিফল্ট সার্চ ইঞ্জিন</translation>
+<translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
 <translation id="4052120076834320548">অতি ক্ষুদ্র</translation>
 <translation id="4055023634561256217">আপনার যন্ত্র পাওয়ারওয়াশের মাধ্যমে আবার সেট করার আগে একটি পুনারম্ভ করা দরকার৷</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3348,6 +3349,7 @@
 <translation id="6069671174561668781">ওয়ালপেপার সেট করুন</translation>
 <translation id="6071181508177083058">পাসওয়ার্ড নিশ্চিত করুন</translation>
 <translation id="6071576563962215370">সিস্টেমটি ডিভাইস ইনস্টলেশন-টাইম অ্যাট্রিবিউট লক স্থাপন করতে পারেনি।</translation>
+<translation id="6073451960410192870">রেকর্ডিং বন্ধ করুন</translation>
 <translation id="6073903501322152803">অ্যাক্সেসযোগ্যতার বৈশিষ্ট্যগুলি যোগ করুন</translation>
 <translation id="6074825444536523002">Google ফর্ম</translation>
 <translation id="6075731018162044558">ওহো! সিস্টেমটি এই ডিভাইসের জন্য দীর্ঘমেয়াদী API অ্যাক্সেস টোকেন অর্জন করতে ব্যর্থ হয়েছে৷</translation>
@@ -3572,7 +3574,6 @@
 <translation id="6410328738210026208">চ্যানেল পরিবর্তন  করুন এবং পাওয়ারওয়াশ করুন</translation>
 <translation id="6410668567036790476">সার্চ ইঞ্জিন যোগ করুন</translation>
 <translation id="641081527798843608">বিষয়ের মিল</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{#টি উইন্ডো খোলা আছে}other{#টি উইন্ডো খোলা আছে}}</translation>
 <translation id="6412931879992742813">নতুন ছদ্মবেশ উইন্ডো</translation>
 <translation id="6415900369006735853">আপনার ফোনের মাধ্যমে ইন্টারনেটে কানেক্ট করুন</translation>
 <translation id="6417265370957905582">Google সহায়ক</translation>
@@ -3896,7 +3897,6 @@
 <translation id="6915804003454593391">ব্যবহারকারী:</translation>
 <translation id="6916590542764765824">এক্সটেনশানগুলি পরিচালনা করুন</translation>
 <translation id="6920989436227028121">নিয়মিত ট্যাব রূপে খুলুন</translation>
-<translation id="6921104647315081813">অ্যাক্টিভিটি খালি করুন</translation>
 <translation id="6921709132208495314">এই পৃষ্ঠাটিতে ডেটা ব্যবহার করা বন্ধ করুন</translation>
 <translation id="6922128026973287222">Google ডেটা সেভার ব্যবহার করে তথ্য সেভ করুন এবং দ্রুত ব্রাউস করুন৷ আরও জানতে ক্লিক করুন৷</translation>
 <translation id="6923132443355966645">স্ক্রোল / ক্লিক করুন</translation>

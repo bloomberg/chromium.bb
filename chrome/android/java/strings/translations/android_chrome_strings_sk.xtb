@@ -97,6 +97,7 @@ Nie ste však neviditeľný/-á. Používanie súkromného režimu neukryje vaš
 <translation id="1670399744444387456">Základné</translation>
 <translation id="1671236975893690980">Čaká sa na stiahnutie…</translation>
 <translation id="1672586136351118594">Nabudúce nezobrazovať</translation>
+<translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="1709438864123551175">Šetrič dát</translation>
 <translation id="1718835860248848330">Posledná hodina</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – aktualizované <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8445448999790540984">Heslá sa nepodarilo exportovať</translation>
 <translation id="8447861592752582886">Odvolať povolenie pre zariadenie</translation>
 <translation id="8461694314515752532">Šifrovať synchronizované údaje pomocou vlastnej prístupovej frázy synchronizácie</translation>
-<translation id="8477071352266846533">Synchronizácia účtu <ph name="SYNC_ACCOUNT_USER_NAME" /> je vypnutá</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">K dispozícii offline</translation>
 <translation id="8489271220582375723">Otvorenie stránky História</translation>

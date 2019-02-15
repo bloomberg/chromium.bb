@@ -494,17 +494,6 @@
       Ši politika galioja, tik kai įgalintas „<ph name="CHROME_REPORTING_EXTENSION_NAME" />“ ir įrenginyje užregistruota „<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />“.</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
-<translation id="2132732175597591362">Valdo į baltąjį sąrašą įtrauktus URL šablonus, kur automatinis paleidimas bus visada įgalintas.
-
-      Jei automatinis paleidimas įgalintas, sistemoje „<ph name="PRODUCT_NAME" />“ vaizdo įrašus galima leisti automatiškai (be naudotojo sutikimo) su garso turiniu.
-
-      URL šablonas turi būti suformatuotas atsižvelgiant į gaires, pateikiamas adresu https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Jei politika „AutoplayAllowed“ nustatyta į „True“, ši politika neturės jokio poveikio.
-
-      Jei politika „AutoplayAllowed“ nustatyta į „False“, bus galima leisti turinį, atitinkantį šioje politikoje nustatytus URL šablonus.
-
-      Atminkite, kad pakeitus šią politiką veikiant „<ph name="PRODUCT_NAME" />“, ji bus taikoma tik naujuose atidarytuose skirtukuose. Todėl kai kuriuose skirtukuose gali išlikti ankstesnė elgsena.</translation>
 <translation id="2134437727173969994">Leidimas užrakinti ekraną</translation>
 <translation id="2137064848866899664">Jei ši politika nustatyta, kiekvienas ekranas pasukamas
       nurodyta kryptimi kiekvieną kartą paleidus įrenginį iš naujo ir pirmą kartą

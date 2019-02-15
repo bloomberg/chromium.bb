@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Google-tabel</translation>
 <translation id="2544853746127077729">Verificatiecertificaat geweigerd door netwerk</translation>
 <translation id="2547921442987553570">Toevoegen aan <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Opname starten</translation>
 <translation id="2550212893339833758">Wisselgeheugen</translation>
 <translation id="2550596535588364872">Toestaan dat <ph name="EXTENSION_NAME" /> het bestand <ph name="FILE_NAME" /> opent?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kan geen verbinding maken met <ph name="NETWORK_ID" />. Probeer een ander netwerk of probeer het opnieuw.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">USER-handles</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Hiermee worden gegevens die zijn opgeslagen op je apparaat, verwijderd voor alle weergegeven sites. Wil je doorgaan?</translation>
-<translation id="3127919023693423797">Verifiëren...</translation>
 <translation id="3129173833825111527">Marge links</translation>
 <translation id="3130528281680948470">Je apparaat wordt opnieuw ingesteld en alle gebruikersaccounts en lokale gegevens worden verwijderd. Dit kan niet ongedaan worden gemaakt.</translation>
 <translation id="313205617302240621">Wachtwoord vergeten?</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">Al je ingelogde Google-accounts voor apps en websites kunnen hier worden beheerd. Apps en websites die je daarvoor toestemming hebt gegeven, hebben toegang tot de accountgegevens die ze nodig hebben om goed te kunnen werken.</translation>
 <translation id="4044612648082411741">Geef je certificaatwachtwoord op</translation>
 <translation id="404493185430269859">Standaard­zoekmachine</translation>
+<translation id="4046123991198612571">Volgend nummer</translation>
 <translation id="4052120076834320548">Heel klein</translation>
 <translation id="4055023634561256217">Opnieuw starten is vereist voordat je apparaat opnieuw kan worden ingesteld met Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3353,6 +3354,7 @@
 <translation id="6069671174561668781">Achtergrond instellen</translation>
 <translation id="6071181508177083058">wachtwoord bevestigen</translation>
 <translation id="6071576563962215370">Het systeem kan de vergrendeling van de instellingen ten tijde van de apparaatinstallatie niet uitvoeren.</translation>
+<translation id="6073451960410192870">Opname stoppen</translation>
 <translation id="6073903501322152803">Toegankelijkheidsfuncties toevoegen</translation>
 <translation id="6074825444536523002">Google-formulier</translation>
 <translation id="6075731018162044558">Het opvragen van een langdurige API-toegangstoken voor dit apparaat is mislukt.</translation>
@@ -3576,7 +3578,6 @@
 <translation id="6410328738210026208">Kanaal wijzigen en Powerwash uitvoeren</translation>
 <translation id="6410668567036790476">Zoekmachine toevoegen</translation>
 <translation id="641081527798843608">Overeenkomst van onderwerp</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{Er zijn # vensters geopend}}</translation>
 <translation id="6412931879992742813">Nieuw incognitovenster</translation>
 <translation id="6415900369006735853">Verbinding maken met internet via je telefoon</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -3900,7 +3901,6 @@
 <translation id="6915804003454593391">Gebruiker:</translation>
 <translation id="6916590542764765824">Extensies beheren</translation>
 <translation id="6920989436227028121">Openen als normaal tabblad</translation>
-<translation id="6921104647315081813">Activiteiten wissen</translation>
 <translation id="6921709132208495314">Geen data meer gebruiken op deze pagina</translation>
 <translation id="6922128026973287222">Sla gegevens op en surf sneller met Databesparing van Google. Klik voor meer informatie.</translation>
 <translation id="6923132443355966645">Scroll/klik</translation>

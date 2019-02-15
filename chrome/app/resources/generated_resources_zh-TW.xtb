@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Google 表格</translation>
 <translation id="2544853746127077729">網路已拒絕驗證憑證</translation>
 <translation id="2547921442987553570">加入「<ph name="EXTENSION_NAME" />」中</translation>
+<translation id="2549985041256363841">開始錄影</translation>
 <translation id="2550212893339833758">交換的記憶體</translation>
 <translation id="2550596535588364872">要允許「<ph name="EXTENSION_NAME" />」開啟「<ph name="FILE_NAME" />」嗎？</translation>
 <translation id="2553340429761841190">「<ph name="PRODUCT_NAME" />」無法連線至<ph name="NETWORK_ID" />，請選取其他網路，或再試一次。</translation>
@@ -1406,7 +1407,6 @@
 <translation id="3124111068741548686">USER 控制代碼</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">這會將顯示的所有網站儲存在你裝置上的資料全部刪除。你要繼續操作嗎？</translation>
-<translation id="3127919023693423797">驗證中...</translation>
 <translation id="3129173833825111527">左邊界</translation>
 <translation id="3130528281680948470">你的裝置將會進行重設，且所有使用者帳戶和本機資料都會遭到移除。這項操作無法復原。</translation>
 <translation id="313205617302240621">忘記密碼了嗎？</translation>
@@ -2031,6 +2031,7 @@
 <translation id="404299405565920089">這個頁面可讓你管理你在應用程式和網站中登入的所有 Google 帳戶。應用程式和網站如果取得了你的授權，將可存取正常運作所需的帳戶資訊。</translation>
 <translation id="4044612648082411741">輸入您的憑證密碼</translation>
 <translation id="404493185430269859">預設搜尋引擎</translation>
+<translation id="4046123991198612571">下一首曲目</translation>
 <translation id="4052120076834320548">最小</translation>
 <translation id="4055023634561256217">你必須先重新啟動裝置，才能透過 Powerwash 重設裝置。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3350,6 +3351,7 @@
 <translation id="6069671174561668781">設定桌布</translation>
 <translation id="6071181508177083058">確認密碼</translation>
 <translation id="6071576563962215370">系統無法鎖定裝置安裝時的屬性。</translation>
+<translation id="6073451960410192870">停止錄影</translation>
 <translation id="6073903501322152803">新增協助工具功能</translation>
 <translation id="6074825444536523002">Google 表單</translation>
 <translation id="6075731018162044558">糟糕！系統無法為這個裝置取得長期 API 存取符記。</translation>
@@ -3573,7 +3575,6 @@
 <translation id="6410328738210026208">變更版本並執行 Powerwash</translation>
 <translation id="6410668567036790476">新增搜尋引擎</translation>
 <translation id="641081527798843608">主題比對</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{已開啟 # 個視窗}}</translation>
 <translation id="6412931879992742813">新增無痕式視窗</translation>
 <translation id="6415900369006735853">透過手機連上網際網路</translation>
 <translation id="6417265370957905582">Google 助理</translation>
@@ -3893,7 +3894,6 @@
 <translation id="6915804003454593391">使用者：</translation>
 <translation id="6916590542764765824">管理擴充功能</translation>
 <translation id="6920989436227028121">在一般分頁中開啟</translation>
-<translation id="6921104647315081813">清除活動</translation>
 <translation id="6921709132208495314">停止這個網頁使用數據流量</translation>
 <translation id="6922128026973287222">使用 Google Data Saver 不僅能節約數據流量，還可讓您享有更快速的瀏覽體驗。按一下即可瞭解詳情。</translation>
 <translation id="6923132443355966645">捲動/點選</translation>

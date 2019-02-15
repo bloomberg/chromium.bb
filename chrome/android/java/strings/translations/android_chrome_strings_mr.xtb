@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">मूलभूत</translation>
 <translation id="1671236975893690980">डाउनलोड प्रलंबित आहे...</translation>
 <translation id="1672586136351118594">पुन्हा दाखवू नका</translation>
+<translation id="1692118695553449118">संकालन चालू आहे</translation>
 <translation id="1709438864123551175">डेटा बचतकर्ता</translation>
 <translation id="1718835860248848330">शेवटच्या तासामधील</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> रोजी अपडेट केले</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8445448999790540984">पासवर्ड एक्सपोर्ट करू शकत नाही</translation>
 <translation id="8447861592752582886">डिव्हाइस परवानगी रद्द करा</translation>
 <translation id="8461694314515752532">तुमच्या स्वतःच्या सिंक पासफ्रेजसह सिंक केलेला डेटा एंक्रिप्ट करा</translation>
-<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> साठी सिंक करणे बंद आहे</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">ऑफलाइन उपलब्ध</translation>
 <translation id="8489271220582375723">इतिहास पृष्ठ उघडा</translation>

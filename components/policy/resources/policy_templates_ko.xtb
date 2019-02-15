@@ -493,17 +493,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록되어 있는 경우에만 적용됩니다.</translation>
 <translation id="2127599828444728326">이 사이트에서 알림 허용</translation>
 <translation id="2131902621292742709">배터리 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
-<translation id="2132732175597591362">자동재생을 항상 사용하도록 설정할 URL 패턴의 허용 목록을 제어합니다.
-
-      자동재생이 사용 설정되면 <ph name="PRODUCT_NAME" />에서 오디오 콘텐츠가 포함된 동영상이 사용자 동의 없이 자동으로 재생될 수 있습니다.
-
-      URL 패턴은 https://www.chromium.org/administrators/url-blacklist-filter-format 페이지에 따라 형식이 지정되어야 합니다.
-
-      AutoplayAllowed 정책을 True로 설정하면 이 정책은 아무 효과가 없습니다.
-
-      AutoplayAllowed 정책을 False로 설정하면 이 정책에 설정된 URL 패턴이 계속 재생되도록 허용됩니다.
-
-      <ph name="PRODUCT_NAME" />이(가) 실행 중이며 이 정책이 변경되면 새로 열린 탭에만 변경사항이 적용됩니다. 따라서 일부 탭에서는 이전과 같은 행동이 계속 나타날 수 있습니다.</translation>
 <translation id="2134437727173969994">화면 잠금 허용</translation>
 <translation id="2137064848866899664">이 정책이 설정되면 각 디스플레이는
       재부팅될 때마다, 그리고 정책 값이 변경된 후

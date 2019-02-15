@@ -626,7 +626,6 @@
 <translation id="4881695831933465202">열기</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{외 웹페이지 1개}other{외 웹페이지 #개}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">페이지가 알 수 없는 언어에서 <ph name="LANGUAGE_LANGUAGE" />(으)로 번역되었습니다.</translation>
 <translation id="4923459931733593730">결제</translation>
 <translation id="4926049483395192435">지정해야 합니다.</translation>

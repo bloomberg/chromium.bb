@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">ダウンロードを待機しています...</translation>
 <translation id="1672586136351118594">次回から表示しない</translation>
+<translation id="1692118695553449118">同期は有効です</translation>
 <translation id="1709438864123551175">データセーバー</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" />に更新</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8445448999790540984">パスワードをエクスポートできません</translation>
 <translation id="8447861592752582886">端末の許可を取り消します</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
-<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> の同期はオフです</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8489271220582375723">履歴ページを開く</translation>

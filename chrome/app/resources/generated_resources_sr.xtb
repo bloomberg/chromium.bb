@@ -1032,6 +1032,7 @@
 <translation id="2542049655219295786">Google табела</translation>
 <translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
 <translation id="2547921442987553570">Додај у <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Започни снимање</translation>
 <translation id="2550212893339833758">Замењена меморија</translation>
 <translation id="2550596535588364872">Желите ли да дозволите да <ph name="EXTENSION_NAME" /> отвори <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> није успео да се повеже са мрежом <ph name="NETWORK_ID" />. Изаберите другу мрежу или покушајте поново.</translation>
@@ -1403,7 +1404,6 @@
 <translation id="3124111068741548686">КОРИСНИЧКИ надимци</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Овим ћете избрисати све податке сачуване на уређају за све приказане сајтове. Желите ли да наставите?</translation>
-<translation id="3127919023693423797">Потврђивање идентитета...</translation>
 <translation id="3129173833825111527">Лева маргина</translation>
 <translation id="3130528281680948470">Уређај ће бити ресетован и сви кориснички налози и локални подаци ће бити уклоњени. То не може да се опозове.</translation>
 <translation id="313205617302240621">Заборавили сте лозинку?</translation>
@@ -2029,6 +2029,7 @@
 <translation id="404299405565920089">Одавде можете да управљате свим Google налозима на које сте пријављени у апликацијама и на веб-сајтовима. Апликације и веб-сајтови који имају дозволи могу да приступају информацијама о налогу које су им потребне да би нормално радили.</translation>
 <translation id="4044612648082411741">Унесите лозинку за сертификат</translation>
 <translation id="404493185430269859">Подразумевани претраживач</translation>
+<translation id="4046123991198612571">Следећа песма</translation>
 <translation id="4052120076834320548">Сићушна</translation>
 <translation id="4055023634561256217">Морате поново да покренете уређај да бисте могли да га вратите на почетне вредности помоћу Powerwash-а.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2059,7 +2060,7 @@
 <translation id="4089235344645910861">Подешавања су сачувана. Синхронизација је почела.</translation>
 <translation id="4090103403438682346">Омогућите верификовани приступ</translation>
 <translation id="4090947011087001172">Желите ли да ресетујете дозволе за сајт <ph name="SITE" />?</translation>
-<translation id="4091434297613116013">листови папира</translation>
+<translation id="4091434297613116013"> лист(ов)а папира</translation>
 <translation id="4093955363990068916">Локална датотека:</translation>
 <translation id="4095507791297118304">Главни приказ</translation>
 <translation id="409579654357498729">Додај у Cloud штампање</translation>
@@ -3350,6 +3351,7 @@
 <translation id="6069671174561668781">Подешавање позадине</translation>
 <translation id="6071181508177083058">потврдите лозинку</translation>
 <translation id="6071576563962215370">Систем није успео да одреди закључавање атрибута за време инсталације уређаја.</translation>
+<translation id="6073451960410192870">Заустави снимање</translation>
 <translation id="6073903501322152803">Додај функције приступачности</translation>
 <translation id="6074825444536523002">Google образац</translation>
 <translation id="6075731018162044558">Упс! Систем није успео да добије токен за дугорочни приступ API-ју за овај уређај.</translation>
@@ -3573,7 +3575,6 @@
 <translation id="6410328738210026208">Промени канал и обави Powerwash</translation>
 <translation id="6410668567036790476">Додавање претраживача</translation>
 <translation id="641081527798843608">Подударање наслова</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{Отворен је # прозор}few{Отворена су # прозора}other{Отворено је # прозора}}</translation>
 <translation id="6412931879992742813">Нови прозор без архивирања</translation>
 <translation id="6415900369006735853">Повежите се на интернет помоћу телефона</translation>
 <translation id="6417265370957905582">Google помоћник</translation>
@@ -3897,7 +3898,6 @@
 <translation id="6915804003454593391">Корисник:</translation>
 <translation id="6916590542764765824">Управљајте додацима</translation>
 <translation id="6920989436227028121">Отвори као уобичајену картицу</translation>
-<translation id="6921104647315081813">Обришите активности</translation>
 <translation id="6921709132208495314">Прекини употребу података на овој страници</translation>
 <translation id="6922128026973287222">Уштедите на подацима и прегледајте брже помоћу Google уштеде података. Кликните да бисте сазнали више.</translation>
 <translation id="6923132443355966645">Померајте/кликните</translation>

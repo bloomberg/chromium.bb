@@ -97,6 +97,7 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1671236975893690980">Transferência pendente…</translation>
 <translation id="1672586136351118594">Não mostrar de novo</translation>
+<translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="1709438864123551175">Poupança de dados</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atualizado <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8445448999790540984">Não é possível exportar as palavras-passe</translation>
 <translation id="8447861592752582886">Revogar autorização do dispositivo</translation>
 <translation id="8461694314515752532">Encriptar dados sincronizados com a sua própria frase de acesso de sincronização</translation>
-<translation id="8477071352266846533">Sincronização desativada para <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8489271220582375723">Abrir a página do histórico</translation>

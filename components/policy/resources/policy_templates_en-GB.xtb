@@ -175,10 +175,25 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
+<translation id="1383493480903114193">This policy forces networking code to run in the browser process.
+
+      This policy is disabled by default, and if enabled, leaves users open to the security issues once the networking process is sandboxed.
+
+      This policy is intended to give enterprises a chance to migrate to third-party software that does not depend on hooking the networking APIs. Proxy servers are recommended over LSPs and Win32 API patching.
+
+      If this policy is not set, networking code may run out of the browser process depending on field trials of the Network Service experiment.</translation>
 <translation id="1384459581748403878">Reference: <ph name="REFERENCE_URL" /></translation>
+<translation id="1384653327213929024">Allow users to manage installed certificates.</translation>
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="1404043648050567997">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+
+      This policy only prevents users from proceeding on Safe Browsing warnings (e.g. malware and phishing) not for SSL certificate-related issues such as invalid or expired certificates.
+
+      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
+
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="1413936351612032792">Report information about usage of Linux apps</translation>
 <translation id="142346659686073702">Allow unaffiliated users to use Crostini</translation>
 <translation id="1426410128494586442">Yes</translation>
@@ -271,6 +286,7 @@
       When this policy is set to False, extensions and plug-in data are not gathered.
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="156076725332905550">Reboot after user sign-out if Android has started.</translation>
 <translation id="1561424797596341174">Policy overrides for Debug builds of the remote access host</translation>
 <translation id="1561967320164410511">U2F plus extensions for individual attestation</translation>
 <translation id="1574554504290354326">This setting is deprecated – use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
@@ -494,17 +510,6 @@
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
-<translation id="2132732175597591362">Controls the whitelist of URL patterns on which auto-play will always be enabled.
-
-      If auto-play is enabled then videos containing audio content can play automatically (without user consent) <ph name="PRODUCT_NAME" />.
-
-      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      If the Auto-PlayAllowed policy is set to True, then this policy will have no effect.
-
-      If the Auto-PlayAllowed policy is set to False, then any URL patterns set in this policy will still be allowed to play.
-
-      Note that if <ph name="PRODUCT_NAME" /> is running and this policy changes, it will only be applied to newly opened tabs. Therefore, some tabs might still observe the previous behaviour.</translation>
 <translation id="2134437727173969994">Permit locking the screen</translation>
 <translation id="2137064848866899664">If this policy is set, each display is rotated to the
       specified orientation on every reboot and the first time that it is connected
@@ -973,6 +978,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="3165808775394012744">These policies are included here to make them easy to remove.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
+<translation id="3167893218284969605">
+      This policy, when set to ArcSession, forces the device to reboot after user sign-out if Android has started.
+      When set to Always, it forces the device to reboot after every user sign-out.
+      If left unset, it has no effect and no reboot is forced after user sign-out. The same applies if set to Never.
+      </translation>
 <translation id="3171369832001535378">Device network hostname template</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>
@@ -1139,6 +1149,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="355118380775352753">Websites to open in alternative browser</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
+<translation id="357917253161699596">Allow users to manage user certificates</translation>
 <translation id="3583230441447348508">Specifies a list of pre-configured network file shares.
 
       Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be either "drop_down" or "pre_mount". "drop_down" mode indicates that "share_url" will be added to the share discovery drop-down. "pre_mount" mode indicates that "share_url" will be mounted.</translation>
@@ -1475,7 +1486,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
 <translation id="437791893267799639">Policy unset, disallow data migration and ARC</translation>
+<translation id="4389073105055031853">Allow users to manage all certificates</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
+<translation id="4405680940102715001">Force device reboot after user sign-out</translation>
 <translation id="4408428864159735559">List of pre-configured network file shares.</translation>
 <translation id="4410236409016356088">Enable throttling network bandwidth</translation>
 <translation id="441217499641439905">Disable Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
@@ -1724,6 +1737,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is set to 0, machine account password change is disabled.
 
       Note that passwords might get older than the specified number of days if the client has been offline for a longer period of time.</translation>
+<translation id="510196893779239086">This policy controls whether to close Chrome completely when the last tab would switch to another browser.
+
+      When this policy is left unset, or is set to true, Chrome will keep at least one tab open, after switching to an alternative browser.
+
+      When this policy is set to false, Chrome will close the tab after switching to an alternative browser, even if it was the last tab. This will cause Chrome to exit completely.</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
 <translation id="5113732180192599620">This policy controls the list of websites that will never cause a browser switch.
@@ -2327,6 +2345,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6440051664870270040">Allow sites to simultaneously navigate and open pop-ups</translation>
 <translation id="6447948611083700881">Backup and restore disabled</translation>
+<translation id="6449476513004303784">Disallow users from managing certificates</translation>
 <translation id="645425387487868471">Enable force sign-in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="6464074037294098618">Enable AutoFill for addresses</translation>
 <translation id="6473623140202114570">Configure the list of domains on which Safe Browsing will not trigger warnings.</translation>
@@ -2388,6 +2407,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If you set this policy, users can temporarily override it by enabling or disabling the on-screen keyboard. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard any time and its status on the login screen is persisted between users.</translation>
+<translation id="6570691255874112762">This policy controls whether users are able to import and remove certificates via Certificate Manager.
+
+      If this policy is set to 'Allow users to manage all certificates' or left not set, users will be able to manage certificates.
+
+      If this policy is set to 'Allow users to manage user certificates', users will be able to manage user certificates, but not device-wide certificates.
+
+      If this policy is set to 'Disallow users to manage certificates', users will not be able to manage certificates, they can only view certificates.</translation>
 <translation id="6573305661369899995">Set an external source of URL restrictions</translation>
 <translation id="6598235178374410284">User avatar image</translation>
 <translation id="6603004149426829878">Always send any available location signals to the server while resolving time zone</translation>
@@ -2728,6 +2754,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier at any time and its status on the login screen is persisted between users.</translation>
 <translation id="7249828445670652637">Enable <ph name="PRODUCT_OS_NAME" /> CA certificates to ARC-apps</translation>
+<translation id="7252681704926980614">Send username and filename to native printers server with every print job. The default is not to send.
+
+      Setting this policy to true also disables printers that use protocols other than IPPS, USB or IPP-over-USB, as username and filename shouldn't be sent over the network openly.</translation>
 <translation id="7258823566580374486">Enable curtaining of remote access hosts</translation>
 <translation id="7260277299188117560">Auto update p2p enabled</translation>
 <translation id="7261252191178797385">Device wallpaper image</translation>
@@ -2793,6 +2822,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="7336785017449297672">Controls clock and time zone settings.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
+<translation id="7339315111520512972">Force networking code to run in the browser process</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
 <translation id="7349338075015720646">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled or disabled by the user.
@@ -3021,6 +3051,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           For detailed examples, visit:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="7922358664346625612">Keep last tab open in Chrome.</translation>
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
 <translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
@@ -3615,6 +3646,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       When this policy is set to ClientCertificate (value 1), client certificate authentication is used for newly added users which log in via SAML. No passwords are used for such users, and their cached local data is protected using corresponding cryptographic keys. For instance, this setting allows configuring smart card-based user authentication (note that smart card middleware apps have to be installed via the DeviceLoginScreenAppInstallList policy).
 
       This policy only affects users who authenticate using SAML.</translation>
+<translation id="9213202360779959016">Always reboot after user sign-out.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,
@@ -3630,6 +3662,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
+<translation id="933586407110825531">Do not reboot after user sign-out.</translation>
 <translation id="944817693306670849">Set disk cache size</translation>
 <translation id="981346395360763138">Google Location services disabled</translation>
 <translation id="982497069985795632">Enable spellcheck</translation>

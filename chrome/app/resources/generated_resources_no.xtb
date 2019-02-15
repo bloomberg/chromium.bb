@@ -1032,6 +1032,7 @@
 <translation id="2542049655219295786">Google-tabell</translation>
 <translation id="2544853746127077729">Autentiseringssertifikatet ble avvist av nettverket</translation>
 <translation id="2547921442987553570">Legg til i <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Start opptak</translation>
 <translation id="2550212893339833758">Virtuelt minne</translation>
 <translation id="2550596535588364872">Vil du gi <ph name="EXTENSION_NAME" /> tillatelse til å åpne <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kan ikke koble til <ph name="NETWORK_ID" />. Velg et annet nettverk eller prøv på nytt senere.</translation>
@@ -1403,7 +1404,6 @@
 <translation id="3124111068741548686">BRUKEREN håndterer</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Dette fører til at alle data de viste nettstedene har lagret på enheten din, blir slettet. Vil du fortsette?</translation>
-<translation id="3127919023693423797">Autentiserer ...</translation>
 <translation id="3129173833825111527">Venstre marg</translation>
 <translation id="3130528281680948470">Enheten blir tilbakestilt, og alle brukerkontoer og lokale data blir fjernet. Dette kan ikke reverseres.</translation>
 <translation id="313205617302240621">Glemt passordet?</translation>
@@ -2026,6 +2026,7 @@
 <translation id="404299405565920089">Her kan du administrere alle Google-kontoer du er logget på via apper og nettsteder. Apper og nettsteder du gir tillatelse, får tilgang til kontoinformasjonen de trenger for å fungere som de skal.</translation>
 <translation id="4044612648082411741">Angi sertifikatpassordet ditt</translation>
 <translation id="404493185430269859">Standard søkemotor</translation>
+<translation id="4046123991198612571">Neste spor</translation>
 <translation id="4052120076834320548">Bitteliten</translation>
 <translation id="4055023634561256217">En omstart er nødvendig før enheten din kan tilbakestilles med Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3345,6 +3346,7 @@
 <translation id="6069671174561668781">Angi bakgrunnsbilde</translation>
 <translation id="6071181508177083058">bekreft passordet</translation>
 <translation id="6071576563962215370">Systemet kunne ikke opprette enhetens attributtlås under installasjonen.</translation>
+<translation id="6073451960410192870">Stopp opptaket</translation>
 <translation id="6073903501322152803">Legg til tilgjengelighetsfunksjoner</translation>
 <translation id="6074825444536523002">Google-skjema</translation>
 <translation id="6075731018162044558">Beklager. Systemet kunne ikke hente noe langvarig API-tilgangstoken for denne enheten.</translation>
@@ -3568,7 +3570,6 @@
 <translation id="6410328738210026208">Bytt kanal og bruk Powerwash</translation>
 <translation id="6410668567036790476">Legg til søkemotor</translation>
 <translation id="641081527798843608">Emnetreff</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# vinduer er åpne}}</translation>
 <translation id="6412931879992742813">Nytt inkognitovindu</translation>
 <translation id="6415900369006735853">Koble til internett via telefonen</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -3892,7 +3893,6 @@
 <translation id="6915804003454593391">Bruker:</translation>
 <translation id="6916590542764765824">Administrer utvidelser</translation>
 <translation id="6920989436227028121">Åpne som vanlig fane</translation>
-<translation id="6921104647315081813">Tøm aktivitetsloggen</translation>
 <translation id="6921709132208495314">Ikke bruk data på denne siden</translation>
 <translation id="6922128026973287222">Lagre data og bla gjennom dem raskere ved hjelp av Google Datasparing. Klikk for å lese mer.</translation>
 <translation id="6923132443355966645">Rull/klikk</translation>

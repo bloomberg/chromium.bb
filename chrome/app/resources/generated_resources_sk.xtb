@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Tabuľka Google</translation>
 <translation id="2544853746127077729">Certifikát na overenie totožnosti bol zamietnutý sieťou</translation>
 <translation id="2547921442987553570">Pridať do rozšírenia <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Spustiť zaznamenávanie</translation>
 <translation id="2550212893339833758">Swapovaná pamäť</translation>
 <translation id="2550596535588364872">Povoliť rozšíreniu <ph name="EXTENSION_NAME" /> otvoriť súbor <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190">Systém <ph name="PRODUCT_NAME" /> sa nemohol pripojiť k sieti <ph name="NETWORK_ID" />. Vyberte inú sieť alebo to skúste znova.</translation>
@@ -1405,7 +1406,6 @@
 <translation id="3124111068741548686">POUŽÍVATEĽ – popisovače</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Táto akcia odstráni všetky dáta uložené v zariadení pre všetky zobrazené weby. Chcete pokračovať?</translation>
-<translation id="3127919023693423797">Overovanie...</translation>
 <translation id="3129173833825111527">Ľavý okraj</translation>
 <translation id="3130528281680948470">Vaše zariadenie sa obnoví a všetky používateľské účty a miestne údaje budú odstránené. Túto akciu nie je možné vrátiť späť.</translation>
 <translation id="313205617302240621">Zabudli ste heslo?</translation>
@@ -2031,6 +2031,7 @@
 <translation id="404299405565920089">Tu môžete spravovať všetky účty Google aplikácií a webov, do ktorých ste sa prihlásili. Aplikácie a weby s týmto povolením môžu používať informácie o účte, ktoré potrebujú na správne fungovanie.</translation>
 <translation id="4044612648082411741">Zadajte heslo certifikátu</translation>
 <translation id="404493185430269859">Predvolený vyhľadávač</translation>
+<translation id="4046123991198612571">Ďalšia skladba</translation>
 <translation id="4052120076834320548">Drobné</translation>
 <translation id="4055023634561256217">Pred resetovaním zariadenia pomocou funkcie Powerwash sa vyžaduje jeho reštart.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3350,6 +3351,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6069671174561668781">Nastavenie tapety</translation>
 <translation id="6071181508177083058">potvrdenie hesla</translation>
 <translation id="6071576563962215370">Systému sa nepodarilo nastaviť v zariadení zámku atribútov z inštalácie.</translation>
+<translation id="6073451960410192870">Zastaviť zaznamenávanie</translation>
 <translation id="6073903501322152803">Pridať funkcie dostupnosti</translation>
 <translation id="6074825444536523002">Formulár Google</translation>
 <translation id="6075731018162044558">Ojoj!  Systému sa nepodarilo získať dlhodobý prístupový token rozhrania API pre toto zariadenie.</translation>
@@ -3573,7 +3575,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6410328738210026208">Zmeniť kanál a použiť funkciu Powerwash</translation>
 <translation id="6410668567036790476">Pridať vyhľadávač</translation>
 <translation id="641081527798843608">Zhoda predmetu</translation>
-<translation id="6412516638504297304">{0,plural, =1{}few{Sú otvorené # okná}many{# windows are open}other{Je otvorených # okien}}</translation>
 <translation id="6412931879992742813">Nové okno inkognito</translation>
 <translation id="6415900369006735853">Pripojte sa k internetu cez telefón</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
@@ -3897,7 +3898,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6915804003454593391">Používateľ:</translation>
 <translation id="6916590542764765824">Spravovať rozšírenia</translation>
 <translation id="6920989436227028121">Otvoriť ako bežnú kartu</translation>
-<translation id="6921104647315081813">Vymazať aktivity</translation>
 <translation id="6921709132208495314">Prestať používať dáta na tejto stránke</translation>
 <translation id="6922128026973287222">Ukladajte údaje a prehliadajte rýchlejšie pomocou funkcie Šetrič Dát Google. Kliknutím získate ďalšie informácie.</translation>
 <translation id="6923132443355966645">Posunúť/kliknúť</translation>

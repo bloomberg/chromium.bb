@@ -465,17 +465,6 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
       Tato zásada je účinná, když je zapnuto rozšíření <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Povolit na těchto stránkách oznámení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>
-<translation id="2132732175597591362">Určuje seznam povolených vzorů adres URL, na nichž bude vždy povoleno automatické přehrávání.
-
-      Pokud je povoleno automatické přehrávání, mohou se videa v prohlížeči <ph name="PRODUCT_NAME" /> přehrávat automaticky (bez souhlasu uživatele), včetně zvuku.
-
-      Vzor adres URL musí být naformátován podle pokynů na stránce https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Je-li zásada AutoplayAllowed nastavena na hodnotu True, nemá tato zásada žádný účinek.
-
-      Je-li zásada AutoplayAllowed nastavena na hodnotu False, u všech vzorů adres URL nastavených v této zásadě bude přehrávání přesto povoleno.
-
-      Pokud je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn a tato zásada se změní, použije se nové nastavení pouze na nově otevřené karty. Některé karty proto mohou nadále vykazovat předchozí chování.</translation>
 <translation id="2134437727173969994">Povolit uzamknutí obrazovky</translation>
 <translation id="2137064848866899664">Pokud je tato zásada nastavena, každý displej se při prvním připojení po změně hodnoty zásady a při každém restartu otočí do požadované orientace. Uživatelé mohou otočení displeje po přihlášení na stránce nastavení změnit, ale při příštím restartu se jejich nastavení hodnotou zásady přepíše.
 

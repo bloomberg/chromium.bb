@@ -627,7 +627,6 @@
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{এবং আরও ১টি ওয়েব পৃষ্ঠা}one{এবং আরও #টি ওয়েব পৃষ্ঠা}other{এবং আরও #টি ওয়েব পৃষ্ঠা}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE" />-এ অনুবাদ করা হয়েছে</translation>
 <translation id="4923459931733593730">অর্থপ্রদান</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>

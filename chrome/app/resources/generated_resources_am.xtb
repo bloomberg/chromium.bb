@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Google ሠንጠረዥ</translation>
 <translation id="2544853746127077729">የማረጋገጫ ምስክር ወረቀት በአውታረ መረቡ ተቀባይነት አላገኘም</translation>
 <translation id="2547921442987553570">ወደ <ph name="EXTENSION_NAME" /> አክል</translation>
+<translation id="2549985041256363841">መቅረጽ ጀምር</translation>
 <translation id="2550212893339833758">የተተካ ማህደረ ትውስታ</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" /> <ph name="FILE_NAME" />ን እንዲከፍት ይፈቀድለት?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> ከ<ph name="NETWORK_ID" /> ጋር ሊገናኝ አልቻለም። እባክዎ ሌላ አውታረ መረብ ይሞክሩ ወይም እንደገና ይሞክሩ።</translation>
@@ -1406,7 +1407,6 @@
 <translation id="3124111068741548686">የተጠቃሚ መያዣዎች</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">ይህ ለሁሉም ለሚታዩት ጣቢያዎች በእርስዎ መሣሪያ ላይ የተክማቸ ማናቸውንም ውሂብ ይሰርዛል። ለመቀጠል ይፈልጋሉ?</translation>
-<translation id="3127919023693423797">በማረጋገጥ ላይ...</translation>
 <translation id="3129173833825111527">የግራ ኅዳግ</translation>
 <translation id="3130528281680948470">የእርስዎ መሣሪያ ዳግመኛ ይዘጋጃል እና ሁሉም የተጠቃሚ መለያዎች እና የአካባቢ ውሂቦች ይወገዳሉ። ይህ አንዴ ከተደረገ በኋላ ሊቀለበስ አይችልም።</translation>
 <translation id="313205617302240621">የይለፍ ቃል ረሱ?</translation>
@@ -2032,6 +2032,7 @@
 <translation id="404299405565920089">በመተግበሪያዎች እና ድር ጣቢያዎች ላይ ሁሉም የተገባባቸው የGoogle መለያዎች እዚህ ላይ ሊቀናበሩ ይችላሉ። የእርስዎ ፈቃድ ያላቸው መተግበሪያዎች እና የድር ጣቢያዎች በአግባቡ እንዲሠሩ የሚያስፈልጋቸውን የመለያ መረጃ መድረስ ይችላሉ።</translation>
 <translation id="4044612648082411741">የእርስዎን የዕውቅና ማረጋገጫ ይለፍ ቃል ያስገቡ</translation>
 <translation id="404493185430269859">ነባሪ የፍለጋ ፕሮግራም</translation>
+<translation id="4046123991198612571">ቀጣይ ትራክ</translation>
 <translation id="4052120076834320548">በጣም ትንሽ</translation>
 <translation id="4055023634561256217">መሣሪያዎ በPowerwash ዳግም ሊጀምር ከመቻሉ በፊት ዳግም ማስጀመር ያስፈልጋል።</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3348,6 +3349,7 @@
 <translation id="6069671174561668781">ልጣፍ  ያዘጋጁ</translation>
 <translation id="6071181508177083058">የይለፍ ቃል ያረጋግጡ</translation>
 <translation id="6071576563962215370">ሥርዓቱ የመሣሪያ ጭነት-ጊዜ ዓይነታዎች ቁልፉን መመሥረት አልተሳካለትም።</translation>
+<translation id="6073451960410192870">መቅረጽ አቁም</translation>
 <translation id="6073903501322152803">የተደራሽነት ባህሪያትን ያክሉ</translation>
 <translation id="6074825444536523002">Google ቅጽ</translation>
 <translation id="6075731018162044558">ውይ!  ስርዓቱ የዚህ መሣሪያ የረጅም ጊዜ ኤ ፒ አይ መዳረሻ ማስመሰያ ማግኘት አልቻለም።</translation>
@@ -3571,7 +3573,6 @@
 <translation id="6410328738210026208">ሰርጥ ቀይር እና Powerwash</translation>
 <translation id="6410668567036790476">የፍለጋ ፕሮግራም ያክሉ</translation>
 <translation id="641081527798843608">የርዕሰ ጉዳይ ተዛማጅ</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# መስኮቶች ክፍት ናቸው}other{# መስኮቶች ክፍት ናቸው}}</translation>
 <translation id="6412931879992742813">አዲስ ስውር መስኮት</translation>
 <translation id="6415900369006735853">በስልክዎ በኩል ከበይነመረቡ ጋር ይገናኙ</translation>
 <translation id="6417265370957905582">Google ረዳት</translation>
@@ -3895,7 +3896,6 @@
 <translation id="6915804003454593391">ተጠቃሚ፦</translation>
 <translation id="6916590542764765824">ቅጥያዎችን አስተዳድር</translation>
 <translation id="6920989436227028121">እንደ መደበኛ ትር ክፈት</translation>
-<translation id="6921104647315081813">እንቅስቃሴዎችን አጽዳ</translation>
 <translation id="6921709132208495314">በዚህ ገጽ ላይ ውሂብ መጠቀም ያቁሙ</translation>
 <translation id="6922128026973287222">Google የውሂብ አስቀማጭን በመጠቀም በበለጠ ፍጥነት ውሂብ ያስቀምጡ እና ያስሱ። የበለጠ ለመረዳት ጠቅ ያድርጉ።</translation>
 <translation id="6923132443355966645">ይሸብልሉ / ጠቅ ያድርጉ</translation>

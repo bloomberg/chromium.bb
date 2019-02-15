@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
+<translation id="5465662442746197494">Нужна ви е помощ?</translation>
 <translation id="5496819745535887422">Администраторът връща устройството ви към по-ранна версия. Всички данни ще бъдат изтрити след рестартирането му.</translation>
 <translation id="553675580533261935">Излизане от сесията</translation>
 <translation id="5537725057119320332">Предаване</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wi-Fi е включен.</translation>
 <translation id="847056008324733326">Настройки за мащаба на показване</translation>
 <translation id="8477270416194247200">Натиснете Alt + клавиша „търсене“ или само Shift, за да анулирате.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
 <translation id="8513108775083588393">Автоматична ориентация</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8627191004499078455">Установена е връзка (<ph name="DEVICE_NAME" />)</translation>

@@ -625,7 +625,6 @@
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> และ <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{และหน้าเว็บอีก 1 หน้า}other{และหน้าเว็บอีก # หน้า}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">หน้านี้แปลจากภาษาที่ไม่รู้จักเป็นภาษา <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">การชำระเงิน</translation>
 <translation id="4926049483395192435">ต้องระบุ</translation>

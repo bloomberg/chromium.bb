@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Google 표</translation>
 <translation id="2544853746127077729">인증서가 네트워크에 의해 거부됨</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" />에 추가</translation>
+<translation id="2549985041256363841">녹화 시작</translation>
 <translation id="2550212893339833758">교체된 메모리</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" />에서 <ph name="FILE_NAME" /> 파일을 열도록 허용하시겠습니까?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />에서 <ph name="NETWORK_ID" />에 연결할 수 없습니다. 다른 네트워크를 선택하거나 다시 시도하세요.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">사용자 핸들</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">기기에 저장된 데이터 중 표시된 모든 사이트의 데이터가 삭제됩니다. 계속하시겠습니까?</translation>
-<translation id="3127919023693423797">인증하는 중...</translation>
 <translation id="3129173833825111527">왼쪽 여백</translation>
 <translation id="3130528281680948470">기기가 초기화되고 사용자 계정과 로컬 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
 <translation id="313205617302240621">비밀번호 찾기</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">앱 및 웹사이트에서 로그인한 모든 Google 계정을 여기에서 관리할 수 있습니다. 사용자가 허가한 앱 및 웹사이트는 정상적으로 작동하기 위해 필요한 계정 정보에 액세스할 수 있습니다.</translation>
 <translation id="4044612648082411741">인증서 비밀번호를 입력하세요.</translation>
 <translation id="404493185430269859">기본 검색엔진</translation>
+<translation id="4046123991198612571">다음 트랙</translation>
 <translation id="4052120076834320548">작게</translation>
 <translation id="4055023634561256217">기기를 Powerwash로 재설정하기 전에 다시 시작해야 합니다.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3350,6 +3351,7 @@
 <translation id="6069671174561668781">배경화면 설정</translation>
 <translation id="6071181508177083058">비밀번호 확인</translation>
 <translation id="6071576563962215370">시스템에서 기기 설치 시간 속성 잠금을 설정하지 못했습니다.</translation>
+<translation id="6073451960410192870">녹화 중지</translation>
 <translation id="6073903501322152803">접근성 기능 추가</translation>
 <translation id="6074825444536523002">Google 양식</translation>
 <translation id="6075731018162044558">시스템이 이 기기에 대한 장기 API 액세스 토큰을 획득하지 못했습니다.</translation>
@@ -3573,7 +3575,6 @@
 <translation id="6410328738210026208">채널 변경 및 Powerwash</translation>
 <translation id="6410668567036790476">검색 엔진 추가</translation>
 <translation id="641081527798843608">주제 일치</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{창 #개가 열려 있습니다.}}</translation>
 <translation id="6412931879992742813">새 시크릿 창</translation>
 <translation id="6415900369006735853">휴대전화를 통해 인터넷에 연결합니다.</translation>
 <translation id="6417265370957905582">Google 어시스턴트</translation>
@@ -3897,7 +3898,6 @@
 <translation id="6915804003454593391">사용자:</translation>
 <translation id="6916590542764765824">확장 프로그램 관리</translation>
 <translation id="6920989436227028121">일반 탭으로 열기</translation>
-<translation id="6921104647315081813">활동 삭제</translation>
 <translation id="6921709132208495314">이 페이지에서 데이터 사용 중지</translation>
 <translation id="6922128026973287222">Google 데이터 절약 모드를 사용하여 더 빠르게 데이터를 저장하고 탐색하세요. 자세히 알아보려면 클릭하세요.</translation>
 <translation id="6923132443355966645">스크롤/클릭</translation>

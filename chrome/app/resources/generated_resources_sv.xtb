@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Tabell i Google Dokument</translation>
 <translation id="2544853746127077729">Autentiseringscertifikatet godkändes inte av nätverket</translation>
 <translation id="2547921442987553570">Lägg till i <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Börja spela in</translation>
 <translation id="2550212893339833758">Växlingsminne</translation>
 <translation id="2550596535588364872">Tillåter du att <ph name="FILE_NAME" /> öppnas med <ph name="EXTENSION_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kunde inte ansluta till <ph name="NETWORK_ID" />. Välj ett annat nätverk eller försök igen.</translation>
@@ -1406,7 +1407,6 @@
 <translation id="3124111068741548686">USER-handtag</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Det här raderar all data som lagrats på enheten av alla webbplatser som visas. Vill du fortsätta?</translation>
-<translation id="3127919023693423797">Autentiserar...</translation>
 <translation id="3129173833825111527">Vänstermarginal</translation>
 <translation id="3130528281680948470">Enheten kommer att återställas och alla användarkonton och lokala uppgifter tas bort. Det går inte att ångra åtgärden.</translation>
 <translation id="313205617302240621">Glömt lösenordet?</translation>
@@ -2032,6 +2032,7 @@
 <translation id="404299405565920089">Alla inloggade Google-konton från appar och webbplatser kan hanteras här. Appar och webbplatser som du har gett behörighet kan använda den kontoinformation de behöver för att fungera som de ska.</translation>
 <translation id="4044612648082411741">Ange certifikatlösenordet</translation>
 <translation id="404493185430269859">Standardsökmotor</translation>
+<translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4052120076834320548">Mycket liten</translation>
 <translation id="4055023634561256217">En omstart krävs innan enheten kan återställas med Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2697,7 +2698,7 @@
 <translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5127881134400491887">Hantera nätverksanslutningar</translation>
 <translation id="512903556749061217">ansluten</translation>
-<translation id="5133483819862530305">Soluppgång till solnedgång</translation>
+<translation id="5133483819862530305">Solnedgång till soluppgång</translation>
 <translation id="5135533361271311778">Det gick inte att skapa bokmärkesobjektet.</translation>
 <translation id="5137501176474113045">Ta bort det här objektet</translation>
 <translation id="5138227688689900538">Visa färre</translation>
@@ -3351,6 +3352,7 @@
 <translation id="6069671174561668781">Ange bakgrund</translation>
 <translation id="6071181508177083058">bekräfta lösenord</translation>
 <translation id="6071576563962215370">Det gick inte att fastställa enhetens attributlås för installationstid.</translation>
+<translation id="6073451960410192870">Sluta spela in</translation>
 <translation id="6073903501322152803">Lägg till tillgänglighetsfunktioner</translation>
 <translation id="6074825444536523002">Formulär från Google</translation>
 <translation id="6075731018162044558">Hoppsan! Det gick inte att komma åt någon långsiktig API-åtkomsttoken för den här enheten.</translation>
@@ -3574,7 +3576,6 @@
 <translation id="6410328738210026208">Byt kanal och Powerwash</translation>
 <translation id="6410668567036790476">Lägg till sökmotor</translation>
 <translation id="641081527798843608">Ämnesmatchning</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# fönster är öppna}}</translation>
 <translation id="6412931879992742813">Nytt inkognitofönster</translation>
 <translation id="6415900369006735853">Anslut till internet via mobilen</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -3898,7 +3899,6 @@
 <translation id="6915804003454593391">Användare:</translation>
 <translation id="6916590542764765824">Hantera tillägg</translation>
 <translation id="6920989436227028121">Öppna som en vanlig flik</translation>
-<translation id="6921104647315081813">Rensa aktiviteter</translation>
 <translation id="6921709132208495314">Sluta använda data på den här sidan</translation>
 <translation id="6922128026973287222">Spara data och bläddra snabbare med Google Databesparing. Klicka här om du vill veta mer.</translation>
 <translation id="6923132443355966645">Rulla/klicka</translation>

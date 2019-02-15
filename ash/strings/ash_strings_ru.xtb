@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Мгновенная точка доступа</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
+<translation id="5465662442746197494">Справка</translation>
 <translation id="5496819745535887422">Администратор возвращает ваше устройство к прежней версии системы. После перезагрузки все данные с устройства будут удалены.</translation>
 <translation id="553675580533261935">Завершение сеанса</translation>
 <translation id="5537725057119320332">Cast</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wi-Fi включен</translation>
 <translation id="847056008324733326">Настройки масштаба экрана</translation>
 <translation id="8477270416194247200">Для отмены нажмите ALT + SEARCH или SHIFT.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: повторное подключение...</translation>
 <translation id="8513108775083588393">Автоповорот</translation>
 <translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
 <translation id="8627191004499078455">Подключено устройство "<ph name="DEVICE_NAME" />"</translation>

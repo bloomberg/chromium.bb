@@ -626,7 +626,6 @@
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i jeszcze 1 strona}few{i jeszcze # strony}many{i jeszcze # stron}other{i jeszcze # strony}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Płatność</translation>
 <translation id="4926049483395192435">Musi być określona.</translation>

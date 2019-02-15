@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">기본</translation>
 <translation id="1671236975893690980">다운로드 대기 중...</translation>
 <translation id="1672586136351118594">다시 표시하지 않음</translation>
+<translation id="1692118695553449118">동기화 사용 중</translation>
 <translation id="1709438864123551175">데이터 절약 모드</translation>
 <translation id="1718835860248848330">지난 1시간</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />: <ph name="TIME_SINCE_UPDATE" />에 업데이트됨</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8445448999790540984">비밀번호를 내보낼 수 없음</translation>
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
 <translation id="8461694314515752532">나만의 동기화 암호로 동기화된 데이터 암호화</translation>
-<translation id="8477071352266846533"><ph name="SYNC_ACCOUNT_USER_NAME" /> 동기화 해제됨</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">오프라인으로 사용 가능</translation>
 <translation id="8489271220582375723">방문 기록 페이지 열기</translation>

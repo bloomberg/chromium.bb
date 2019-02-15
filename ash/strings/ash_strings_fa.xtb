@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">اتصال فوری به اینترنت با تلفن همراه</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمام کاربران موجود قبلاً به این جلسه اضافه شده‌اند.</translation>
+<translation id="5465662442746197494">به راهنمایی نیاز دارید؟</translation>
 <translation id="5496819745535887422">سرپرست درحال عقب‌گرد کردن دستگاهتان است. همه داده‌ها بعد از بازراه‌اندازی دستگاه پاک می‌شود.</translation>
 <translation id="553675580533261935">خروج از جلسه</translation>
 <translation id="5537725057119320332">فرستادن</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
 <translation id="847056008324733326">تنظیمات مقیاس نمایش</translation>
 <translation id="8477270416194247200">‏برای لغو کردن Alt+Search یا Shift را فشار دهید.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
 <translation id="8513108775083588393">چرخش خودکار</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8627191004499078455">متصل به <ph name="DEVICE_NAME" /></translation>

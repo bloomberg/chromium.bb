@@ -463,17 +463,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Questa norma viene applicata soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con la norma <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
-<translation id="2132732175597591362">Consente di definire la whitelist di pattern URL su cui la riproduzione automatica sarà sempre attiva.
-
-      Se viene attivata la riproduzione automatica, i video possono essere riprodotti automaticamente (senza il consenso dell'utente) con i contenuti audio in <ph name="PRODUCT_NAME" />.
-
-      Il formato dei pattern URL deve essere quello indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Se il criterio AutoplayAllowed viene impostato su True, questo criterio non avrà effetto.
-
-      Se il criterio AutoplayAllowed viene impostato su False, sarà consentita la riproduzione dei pattern URL definiti in questo criterio.
-
-      Tieni presente che se questo criterio viene cambiato mentre <ph name="PRODUCT_NAME" /> è in esecuzione, il criterio viene applicato soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
 <translation id="2137064848866899664">Se la norma viene impostata, ogni schermo viene ruotato secondo l'orientamento specificato, a ogni riavvio e la prima volta che viene collegato in seguito alla modifica della norma. Dopo aver eseguito l'accesso, gli utenti possono modificare la rotazione dello schermo tramite la pagina delle impostazioni ma, al successivo riavvio, la loro impostazione viene sostituita dal valore della norma.
 

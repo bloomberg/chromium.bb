@@ -490,17 +490,6 @@
       Dit beleid is alleen van toepassing wanneer de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
-<translation id="2132732175597591362">Hiermee wordt de witte lijst van URL-patronen beheerd waarvoor autoplay altijd is ingeschakeld.
-
-      Als autoplay (automatisch afspelen) is ingeschakeld, kunnen video's automatisch worden afgespeeld (zonder toestemming van de gebruiker) met audiocontent in <ph name="PRODUCT_NAME" />.
-
-      URL-patronen moeten worden opgemaakt volgens https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Als het beleid AutoplayAllowed is ingesteld op 'True', heeft dit beleid geen effect.
-
-      Als het beleid AutoplayAllowed is ingesteld op 'False', kunnen URL-patronen die in dit beleid zijn opgenomen nog steeds worden afgespeeld.
-
-      Als <ph name="PRODUCT_NAME" /> wordt uitgevoerd en dit beleid wordt gewijzigd, wordt het beleid alleen toegepast op nieuw geopende tabbladen. Het is dus mogelijk dat sommige tabbladen het eerdere gedrag nog vertonen.</translation>
 <translation id="2134437727173969994">Schermvergrendeling toestaan</translation>
 <translation id="2137064848866899664">Als dit beleid is ingesteld, wordt elke display bij opnieuw opstarten
       gedraaid tot de gespecificeerde stand, plus de eerste keer dat de

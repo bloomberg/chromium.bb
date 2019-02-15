@@ -626,7 +626,6 @@
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Плащане</translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>

@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">インスタント テザリング</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
+<translation id="5465662442746197494">不明点がある場合</translation>
 <translation id="5496819745535887422">管理者がお使いの端末をロールバックしています。端末の再起動時にデータはすべて削除されます。</translation>
 <translation id="553675580533261935">セッションの終了</translation>
 <translation id="5537725057119320332">キャスト</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="847056008324733326">表示スケールの設定</translation>
 <translation id="8477270416194247200">キャンセルするには Alt+ 検索キーまたは Shift キーを押します。</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: 再接続しています...</translation>
 <translation id="8513108775083588393">自動回転</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンのままでは充電できない可能性があります。</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> と接続しました</translation>

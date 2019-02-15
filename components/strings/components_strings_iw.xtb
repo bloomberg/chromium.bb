@@ -630,7 +630,6 @@ Del</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ועוד דף אינטרנט אחד}two{ועוד # דפי אינטרנט}many{ועוד # דפי אינטרנט}other{ועוד # דפי אינטרנט}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>

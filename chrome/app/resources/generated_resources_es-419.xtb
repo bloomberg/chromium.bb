@@ -1032,6 +1032,7 @@
 <translation id="2542049655219295786">Tabla de Google</translation>
 <translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
 <translation id="2547921442987553570">Agregar a <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Comenzar grabación</translation>
 <translation id="2550212893339833758">Memoria en el espacio de intercambio</translation>
 <translation id="2550596535588364872">¿Quieres permitir que <ph name="EXTENSION_NAME" /> abra <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no se pudo conectar a <ph name="NETWORK_ID" />. Selecciona otra red o inténtalo de nuevo.</translation>
@@ -1404,7 +1405,6 @@
 <translation id="3124111068741548686">A cargo del USUARIO</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Se borrarán todos los datos que se almacenan en tu dispositivo y se restablecerán los permisos para todos los sitios que se mostraron. ¿Deseas continuar?</translation>
-<translation id="3127919023693423797">Autenticando...</translation>
 <translation id="3129173833825111527">Margen izquierdo</translation>
 <translation id="3130528281680948470">El dispositivo se restablecerá y todas las cuentas de usuario y los datos locales se eliminarán. Esta acción no se puede deshacer.</translation>
 <translation id="313205617302240621">¿Olvidaste la contraseña?</translation>
@@ -2030,6 +2030,7 @@
 <translation id="404299405565920089">Aquí puedes administrar todas las Cuentas de Google con las que hayas accedido en apps y sitios web. Las apps y los sitios web que tienen tu permiso pueden acceder a la información de la cuenta que necesitan para funcionar correctamente.</translation>
 <translation id="4044612648082411741">Ingresar la contraseña del certificado</translation>
 <translation id="404493185430269859">Motor de búsqueda predeterminado</translation>
+<translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4052120076834320548">Diminuto</translation>
 <translation id="4055023634561256217">Es necesario que reinicies tu dispositivo para poder restablecerlo con Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3349,6 +3350,7 @@
 <translation id="6069671174561668781">Establecer fondo de pantalla</translation>
 <translation id="6071181508177083058">confirmar contraseña</translation>
 <translation id="6071576563962215370">El sistema no pudo establecer el bloqueo de atributos del tiempo de instalación del dispositivo.</translation>
+<translation id="6073451960410192870">Detener grabación</translation>
 <translation id="6073903501322152803">Agregar funciones de accesibilidad</translation>
 <translation id="6074825444536523002">Formulario de Google</translation>
 <translation id="6075731018162044558">El sistema no pudo obtener un token de acceso a la API a largo plazo para este dispositivo.</translation>
@@ -3572,7 +3574,6 @@
 <translation id="6410328738210026208">Cambiar canal y Powerwash</translation>
 <translation id="6410668567036790476">Agregar motor de búsqueda</translation>
 <translation id="641081527798843608">Coincidencia de asunto</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# ventanas están abiertas}}</translation>
 <translation id="6412931879992742813">Nueva ventana de incógnito</translation>
 <translation id="6415900369006735853">Conéctate a Internet a través de tu teléfono</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
@@ -3896,7 +3897,6 @@
 <translation id="6915804003454593391">Usuario:</translation>
 <translation id="6916590542764765824">Administrar extensiones</translation>
 <translation id="6920989436227028121">Abrir como pestaña regular</translation>
-<translation id="6921104647315081813">Borrar actividades</translation>
 <translation id="6921709132208495314">Dejar de usar datos en esta página</translation>
 <translation id="6922128026973287222">Guarda los datos y explóralos más rápidamente con la extensión Ahorro de datos de Google. Haz clic aquí para obtener más información.</translation>
 <translation id="6923132443355966645">Desplazar/Hacer clic</translation>

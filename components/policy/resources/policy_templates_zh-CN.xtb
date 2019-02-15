@@ -453,17 +453,6 @@
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
-<translation id="2132732175597591362">控制自动播放始终启用的网址格式白名单。
-
-      如果自动播放已启用，则 <ph name="PRODUCT_NAME" /> 中的视频不经用户同意即可有声地自动播放。
-
-      必须根据 https://www.chromium.org/administrators/url-blacklist-filter-format 来设置网址格式。
-
-      如果 AutoplayAllowed 政策设为 True，则此政策不会产生任何效果。
-
-      如果 AutoplayAllowed 政策设为 False，则此政策中设置的任何网址格式仍可有声地自动播放视频。
-
-      请注意，如果此政策在 <ph name="PRODUCT_NAME" /> 运行期间发生了更改，更改后的设置将会仅应用于新打开的标签页。因此，部分标签页或许仍会遵循先前的处理方式。</translation>
 <translation id="2134437727173969994">允许锁定屏幕</translation>
 <translation id="2137064848866899664">如果您设置了此政策，那么每个显示屏在每次重新启动后或在此政策的值更改后首次连入时，都会旋转到指定方向。用户可以在登录后通过“设置”页面更改显示屏旋转角度，但在显示屏下次重新启动后，他们设置的旋转角度将会被此政策的值覆盖。
 

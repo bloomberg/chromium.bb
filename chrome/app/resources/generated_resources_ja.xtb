@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Google Table</translation>
 <translation id="2544853746127077729">認証証明書がネットワークによって拒否されました</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> に追加</translation>
+<translation id="2549985041256363841">撮影を開始</translation>
 <translation id="2550212893339833758">スワップ対象メモリ</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" /> が <ph name="FILE_NAME" /> を開くことを許可しますか？</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> は <ph name="NETWORK_ID" /> に接続できませんでした。別のネットワークを選択するか、もう一度お試しください。</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">USER ハンドル</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">表示されているすべてのサイトについて、端末に保存されているデータを削除します。続行しますか？</translation>
-<translation id="3127919023693423797">認証中...</translation>
 <translation id="3129173833825111527">左余白</translation>
 <translation id="3130528281680948470">デバイスをリセットし、すべてのユーザー アカウントとローカルデータを削除します。この操作は元に戻せません。</translation>
 <translation id="313205617302240621">パスワードをお忘れの場合</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">アプリやウェブサイトからログインしているすべての Google アカウントをここで管理できます。許可している場合、アプリやウェブサイトは正しく動作するために必要なアカウント情報にアクセスできます。</translation>
 <translation id="4044612648082411741">証明書のパスワードを入力してください</translation>
 <translation id="404493185430269859">デフォルトの検索エンジン</translation>
+<translation id="4046123991198612571">次のトラック</translation>
 <translation id="4052120076834320548">極小</translation>
 <translation id="4055023634561256217">デバイスを Powerwash でリセットするには再起動が必要です。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3352,6 +3353,7 @@
 <translation id="6069671174561668781">壁紙の設定</translation>
 <translation id="6071181508177083058">パスワードの確認入力</translation>
 <translation id="6071576563962215370">端末の installation-time 属性のロックを確立できませんでした。</translation>
+<translation id="6073451960410192870">撮影を停止</translation>
 <translation id="6073903501322152803">ユーザー補助機能を追加</translation>
 <translation id="6074825444536523002">Google フォーム</translation>
 <translation id="6075731018162044558">このデバイスの長期 API アクセス トークンを取得できませんでした。</translation>
@@ -3575,7 +3577,6 @@
 <translation id="6410328738210026208">チャンネルを変更して Powerwash</translation>
 <translation id="6410668567036790476">検索エンジンの追加</translation>
 <translation id="641081527798843608">件名の一致</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# 個のウィンドウが開いています}}</translation>
 <translation id="6412931879992742813">新しいシークレット ウィンドウ</translation>
 <translation id="6415900369006735853">スマートフォンを使用してインターネットに接続します</translation>
 <translation id="6417265370957905582">Google アシスタント</translation>
@@ -3899,7 +3900,6 @@
 <translation id="6915804003454593391">ユーザー:</translation>
 <translation id="6916590542764765824">拡張機能を管理</translation>
 <translation id="6920989436227028121">通常のタブとして開く</translation>
-<translation id="6921104647315081813">アクティビティを削除</translation>
 <translation id="6921709132208495314">このページでデータの使用を停止する</translation>
 <translation id="6922128026973287222">Google データセーバーを使うとデータの保存や閲覧が速くなります。クリックして詳細をご確認ください。</translation>
 <translation id="6923132443355966645">スクロール / クリック</translation>

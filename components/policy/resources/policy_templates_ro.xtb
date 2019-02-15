@@ -473,17 +473,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Politica se aplică doar când este activată <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permiteți notificări pentru aceste site-uri</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>
-<translation id="2132732175597591362">Controlează lista albă cu șabloane de adrese URL pentru care redarea automată va fi întotdeauna activată.
-
-      Dacă redarea automată este activată, videoclipurile se pot reda automat (fără consimțământul utilizatorului) cu conținut audio în <ph name="PRODUCT_NAME" />.
-
-      Un șablon de adrese URL trebuie să fie formatat conform instrucțiunilor de la https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Dacă politica AutoplayAllowed este activată, aceasta nu va avea niciun efect.
-
-      Dacă politica AutoplayAllowed este dezactivată, va fi permisă în continuare redarea pentru toate șabloanele de adrese URL setate în această politică.
-
-      Reține că, dacă <ph name="PRODUCT_NAME" /> rulează și această politică se modifică, ea se va aplica doar filelor nou deschise. Astfel, este posibil ca unele file să mențină comportamentul anterior.</translation>
 <translation id="2134437727173969994">Permite blocarea ecranului</translation>
 <translation id="2137064848866899664">Dacă această politică este configurată, după fiecare repornire și la prima conectare
       după ce s-a schimbat valoarea politicii, fiecare afișaj este rotit la

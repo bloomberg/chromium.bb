@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Automatsko modemsko povezivanje</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Svi dostupni korisnici već su dodani ovoj sesiji.</translation>
+<translation id="5465662442746197494">Trebate pomoć?</translation>
 <translation id="5496819745535887422">Vaš administrator vraća uređaj na prethodnu verziju sustava. Svi će se podaci izbrisati kada se uređaj ponovo pokrene.</translation>
 <translation id="553675580533261935">Napuštanje sesije</translation>
 <translation id="5537725057119320332">Emitiraj</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wi-Fi je uključen.</translation>
 <translation id="847056008324733326">Postavke skale prikaza</translation>
 <translation id="8477270416194247200">Pritisnite Alt + Pretraživanje ili Shift da biste otkazali.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: ponovno povezivanje...</translation>
 <translation id="8513108775083588393">Automatsko zakretanje</translation>
 <translation id="8517041960877371778">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen.</translation>
 <translation id="8627191004499078455">Povezano s uređajem <ph name="DEVICE_NAME" /></translation>

@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Tabela Google</translation>
 <translation id="2544853746127077729">Certyfikat uwierzytelniania został odrzucony przez sieć</translation>
 <translation id="2547921442987553570">Dodaj do rozszerzenia <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Zacznij nagrywanie</translation>
 <translation id="2550212893339833758">Zamieniona pamięć</translation>
 <translation id="2550596535588364872">Pozwolić rozszerzeniu <ph name="EXTENSION_NAME" /> otworzyć plik <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> nie może nawiązać połączenia z siecią <ph name="NETWORK_ID" />. Wybierz inną sieć lub spróbuj ponownie.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">Uchwyty USER</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Spowoduje to usunięcie wszystkich zapisanych na urządzeniu danych dotyczących wszystkich wyświetlonych witryn. Czy chcesz kontynuować?</translation>
-<translation id="3127919023693423797">Uwierzytelnianie...</translation>
 <translation id="3129173833825111527">Lewy margines</translation>
 <translation id="3130528281680948470">Twoje urządzenie zostanie zresetowane. Wszystkie zapisane lokalnie konta użytkowników i dane zostaną usunięte. Tej czynności nie można cofnąć.</translation>
 <translation id="313205617302240621">Nie pamiętasz hasła?</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">W tym miejscu możesz zarządzać wszystkimi kontami Google, na które logujesz się na stronach i w aplikacjach. Aplikacje i strony mające Twoje pozwolenie mogą korzystać z informacji o koncie, których potrzebują do prawidłowego działania.</translation>
 <translation id="4044612648082411741">Podaj hasło certyfikatu</translation>
 <translation id="404493185430269859">Domyślna wyszukiwarka</translation>
+<translation id="4046123991198612571">Następny utwór</translation>
 <translation id="4052120076834320548">Malutki</translation>
 <translation id="4055023634561256217">Przed zresetowaniem urządzenia przy użyciu Powerwash trzeba je zrestartować.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3352,6 +3353,7 @@
 <translation id="6069671174561668781">Ustaw tapetę</translation>
 <translation id="6071181508177083058">potwierdź hasło</translation>
 <translation id="6071576563962215370">System nie mógł ustanowić blokady atrybutów instalacyjnych urządzenia.</translation>
+<translation id="6073451960410192870">Zatrzymaj nagrywanie</translation>
 <translation id="6073903501322152803">Dodaj ułatwienia dostępu</translation>
 <translation id="6074825444536523002">Formularz Google</translation>
 <translation id="6075731018162044558">Ups. System nie może uzyskać długoterminowego tokena dostępu API dla tego urządzenia.</translation>
@@ -3575,7 +3577,6 @@
 <translation id="6410328738210026208">Zmień kanał i wykonaj Powerwash</translation>
 <translation id="6410668567036790476">Dodaj wyszukiwarkę</translation>
 <translation id="641081527798843608">Dopasowanie do tematu</translation>
-<translation id="6412516638504297304">{0,plural, =1{}few{Otwarte są # okna}many{Otwartych jest # okien}other{Otwarte jest # okna}}</translation>
 <translation id="6412931879992742813">Nowe okno incognito</translation>
 <translation id="6415900369006735853">Łącz się z internetem przez telefon</translation>
 <translation id="6417265370957905582">Asystent Google</translation>
@@ -3899,7 +3900,6 @@
 <translation id="6915804003454593391">Użytkownik:</translation>
 <translation id="6916590542764765824">Zarządzaj rozszerzeniami</translation>
 <translation id="6920989436227028121">Otwórz jako zwykłą kartę</translation>
-<translation id="6921104647315081813">Wyczyść aktypurplewności</translation>
 <translation id="6921709132208495314">Zatrzymaj przesyłanie danych na tej stronie</translation>
 <translation id="6922128026973287222">Zmniejsz ilość przesyłanych danych i swobodnie przeglądaj strony dzięki Oszczędzaniu danych Google. Kliknij, by dowiedzieć się więcej.</translation>
 <translation id="6923132443355966645">Przewiń/kliknij</translation>

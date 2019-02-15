@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">Основные настройки</translation>
 <translation id="1671236975893690980">Ожидание скачивания…</translation>
 <translation id="1672586136351118594">Больше не показывать</translation>
+<translation id="1692118695553449118">Синхронизация включена</translation>
 <translation id="1709438864123551175">Экономия трафика</translation>
 <translation id="1718835860248848330">Последний час</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />. Обновление <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -749,7 +750,7 @@
 <translation id="6573096386450695060">Разрешать всегда</translation>
 <translation id="6573431926118603307">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>
 <translation id="6583199322650523874">Добавить страницу в закладки</translation>
-<translation id="6593061639179217415">Полная версия</translation>
+<translation id="6593061639179217415">Версия для ПК</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ГБ</translation>
 <translation id="6610147964972079463">Закрыть вкладки инкогнито</translation>
@@ -1002,7 +1003,6 @@
 <translation id="8445448999790540984">Не удалось экспортировать пароли</translation>
 <translation id="8447861592752582886">Отключить доступ к устройству</translation>
 <translation id="8461694314515752532">Выполнить шифрование синхронизированных данных, используя кодовую фразу</translation>
-<translation id="8477071352266846533">Синхронизация с аккаунтом <ph name="SYNC_ACCOUNT_USER_NAME" /> отключена.</translation>
 <translation id="8485434340281759656"><ph name="DESCRIPTION" /> <ph name="FILE_SIZE" /> <ph name="SEPARATOR" /></translation>
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
 <translation id="8489271220582375723">Открыть страницу "История"</translation>

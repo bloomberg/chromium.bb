@@ -626,7 +626,6 @@
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i 1 pàgina web més}other{i # pàgines web més}}</translation>
-<translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagament</translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>

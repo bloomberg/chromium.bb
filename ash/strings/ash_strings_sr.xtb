@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Тренутно привезивање</translation>
 <translation id="5431825016875453137">Отворени VPN/L2TP</translation>
 <translation id="544691375626129091">Сви доступни корисници су већ додати у ову сесију.</translation>
+<translation id="5465662442746197494">Потребна вам је помоћ?</translation>
 <translation id="5496819745535887422">Администратор враћа уређај на ранију верзију. Сви подаци ће бити избрисани када се уређај рестартује.</translation>
 <translation id="553675580533261935">Напуштање сесије</translation>
 <translation id="5537725057119320332">Пребацуј</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="847056008324733326">Подешавања размере приказа</translation>
 <translation id="8477270416194247200">Притисните Alt + тастер за претрагу или Shift да бисте отказали.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Поново се повезујете...</translation>
 <translation id="8513108775083588393">Аутоматско ротирање</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>
 <translation id="8627191004499078455">Повезани сте са уређајем <ph name="DEVICE_NAME" /></translation>

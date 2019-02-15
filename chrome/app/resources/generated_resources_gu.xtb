@@ -1031,6 +1031,7 @@
 <translation id="2542049655219295786">Google કોષ્ટક</translation>
 <translation id="2544853746127077729">નેટવર્ક દ્વારા પ્રમાણીકરણ પ્રમાણપત્ર નકારવામાં આવ્યું</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> માં ઉમેરો</translation>
+<translation id="2549985041256363841">રેકોર્ડિંગ શરૂ કરો</translation>
 <translation id="2550212893339833758">સ્વૅપ કરેલ મેમરી</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" />ને <ph name="FILE_NAME" /> ખોલવાની મંજૂરી આપવી છે?</translation>
 <translation id="2553340429761841190"><ph name="NETWORK_ID" /> ને કનેક્ટ કરવામાં <ph name="PRODUCT_NAME" /> અક્ષમ હતું. કૃપા કરીને બીજું નેટવર્ક પસંદ કરો અથવા ફરી પ્રયાસ કરો.</translation>
@@ -1403,7 +1404,6 @@
 <translation id="3124111068741548686">વપરાશકર્તા હેન્ડલ કરે છે</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">બતાવેલી તમામ સાઇટ માટે આ તમારા ડિવાઇસ પર સંગ્રહિત કોઈ પણ ડેટાને ડિલીટ કરશે. શું તમે ચાલુ રાખવા માગો છો?</translation>
-<translation id="3127919023693423797">પ્રમાણિત કરી રહ્યું છે...</translation>
 <translation id="3129173833825111527">ડાબો હાસિયો</translation>
 <translation id="3130528281680948470">તમારું ઉપકરણ ફરીથી સેટ કરવામાં આવશે અને તમામ વપરાશકર્તા એકાઉન્ટ્સ અને સ્થાનિક ડેટા દૂર કરવામાં આવશે. આ પૂર્વવત્‌ કરી શકાતું નથી.</translation>
 <translation id="313205617302240621">પાસવર્ડ ભૂલી ગયા?</translation>
@@ -2029,6 +2029,7 @@
 <translation id="404299405565920089">ઍપ અને વેબસાઇટમાંથી સાઇન ઇન કરેલ તમારા બધા Google એકાઉન્ટને અહીં મેનેજ કરી શકાય છે. તમારી પરવાનગી ધરાવતી ઍપ અને વેબસાઇટ, તેમને યોગ્ય રીતે કામ કરવા માટે જરૂરી હોય તેવી એકાઉન્ટની માહિતી ઍક્સેસ કરી શકે છે.</translation>
 <translation id="4044612648082411741">તમારો પ્રમાણપત્ર પાસવર્ડ દાખલ કરો</translation>
 <translation id="404493185430269859">ડિફોલ્ટ શોધ એન્જિન</translation>
+<translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4052120076834320548">નાનું</translation>
 <translation id="4055023634561256217">તમારું ઉપકરણ Powerwash સાથે ફરીથી સેટ થઈ શકે તે પહેલા એક પુનર્પ્રારંભ આવશ્યક છે.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3349,6 +3350,7 @@
 <translation id="6069671174561668781">વૉલપેપર સેટ કરો</translation>
 <translation id="6071181508177083058">પાસવર્ડની પુષ્ટિ કરો</translation>
 <translation id="6071576563962215370">સિસ્ટમ ડિવાઇસ ઇન્સ્ટૉલેશન-સમય એટ્રિબ્યુશનનું લૉક સ્થાપિત કરવામાં નિષ્ફળ ગયું.</translation>
+<translation id="6073451960410192870">રેકોર્ડિંગ બંધ કરો</translation>
 <translation id="6073903501322152803">ઍક્સેસિબિલિટી સુવિધાઓ ઉમેરો</translation>
 <translation id="6074825444536523002">Google ફોર્મ</translation>
 <translation id="6075731018162044558">અરેરે!  સિસ્ટમ આ ડિવાઇસ માટે એક લાંબા ગાળાનું API ઍક્સેસ ટોકન મેળવવામાં નિષ્ફળ.</translation>
@@ -3572,7 +3574,6 @@
 <translation id="6410328738210026208">ચેનલ બદલો અને Powerwash કરો</translation>
 <translation id="6410668567036790476">શોધ એંજિન ઉમેરો</translation>
 <translation id="641081527798843608">વિષય મેળ</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# વિંડો ખુલ્લી છે}other{# વિંડો ખુલ્લી છે}}</translation>
 <translation id="6412931879992742813">નવી છુપી વિંડો</translation>
 <translation id="6415900369006735853">તમારા ફોન મારફત ઇન્ટરનેટ સાથે કનેક્ટ કરો</translation>
 <translation id="6417265370957905582">Google સહાયક</translation>
@@ -3896,7 +3897,6 @@
 <translation id="6915804003454593391">વપરાશકર્તા: </translation>
 <translation id="6916590542764765824">એક્સટેન્શન્સ સંચાલિત કરો</translation>
 <translation id="6920989436227028121">નિયમિત ટૅબ તરીકે ખોલો</translation>
-<translation id="6921104647315081813">પ્રવૃત્તિઓ સાફ કરો</translation>
 <translation id="6921709132208495314">આ પેજ પર ડેટાનો ઉપયોગ કરવાનું બંધ કરો</translation>
 <translation id="6922128026973287222">Google ડેટા સેવરનો ઉપયોગ કરીને ડેટા બચાવો અને ઝડપથી બ્રાઉઝ કરો. વધુ જાણવા માટે ક્લિક કરો.</translation>
 <translation id="6923132443355966645">સ્ક્રૉલ કરો/ ક્લિક કરો</translation>

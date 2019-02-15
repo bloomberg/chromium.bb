@@ -496,17 +496,6 @@
       Reegel kehtib ainult juhul, kui <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on lubatud ja seade on reeglis <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> registreeritud.</translation>
 <translation id="2127599828444728326">Luba märguanded nendel saitidel</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>
-<translation id="2132732175597591362">Juhib lubatud loendit URL-i mustritest, mille puhul on automaatesitus alati lubatud.
-
-      Kui automaatesitus on lubatud, võib teenuses <ph name="PRODUCT_NAME" /> videoid koos helisisuga automaatselt (kasutajalt luba küsimata) esitada.
-
-      URL-i muster peab olema vormindatud järgmiste juhiste kohaselt: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Kui reegel AutoplayAllowed on seatud väärtusele Tõene, ei ole sellel reeglil mingit mõju.
-
-      Kui reegel AutoplayAllowed on seatud väärtusele Väär, on selles reeglis määratud URL-i mustrite esitamine lubatud.
-
-      Pange tähele, et kui <ph name="PRODUCT_NAME" /> töötab ja reeglit muudetakse, rakendub see ainult uutele vahelehtedele. Seetõttu võite teatud vahelehtedel märgata eelmist käitumismustrit.</translation>
 <translation id="2134437727173969994">Keela ekraani lukustamine</translation>
 <translation id="2137064848866899664">Selle reegli määramisel pööratakse iga ekraan
       määratud suunda igal taaskäivitamisel ja esimesel korral, kui see pärast

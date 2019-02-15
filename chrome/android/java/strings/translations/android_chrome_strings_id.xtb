@@ -97,6 +97,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="1670399744444387456">Dasar</translation>
 <translation id="1671236975893690980">Proses download tertunda...</translation>
 <translation id="1672586136351118594">Jangan tampilkan lagi</translation>
+<translation id="1692118695553449118">Sinkronisasi aktif</translation>
 <translation id="1709438864123551175">Penghemat Kuota Internet</translation>
 <translation id="1718835860248848330">1 jam terakhir</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Diupdate <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8445448999790540984">Tidak dapat mengekspor sandi</translation>
 <translation id="8447861592752582886">Cabut izin perangkat</translation>
 <translation id="8461694314515752532">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda sendiri</translation>
-<translation id="8477071352266846533">Sinkronisasi dinonaktifkan untuk <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8489271220582375723">Membuka halaman histori</translation>

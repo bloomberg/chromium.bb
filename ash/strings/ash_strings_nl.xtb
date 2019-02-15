@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Instant-tethering</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle beschikbare gebruikers zijn al aan deze sessie toegevoegd.</translation>
+<translation id="5465662442746197494">Heb je hulp nodig?</translation>
 <translation id="5496819745535887422">Je beheerder zet je apparaat terug naar een oudere versie. Alle gegevens worden verwijderd wanneer het apparaat opnieuw wordt opgestart.</translation>
 <translation id="553675580533261935">Sessie sluiten</translation>
 <translation id="5537725057119320332">Cast</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
 <translation id="847056008324733326">Instellingen voor weergaveschaal</translation>
 <translation id="8477270416194247200">Druk op Alt+Zoeken of Shift om te annuleren.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Opnieuw verbinding maken...</translation>
 <translation id="8513108775083588393">Automatisch draaien</translation>
 <translation id="8517041960877371778">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen terwijl deze is ingeschakeld.</translation>
 <translation id="8627191004499078455">Verbonden met <ph name="DEVICE_NAME" /></translation>

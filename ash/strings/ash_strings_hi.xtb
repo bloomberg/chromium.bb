@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">इंस्टैंट टेदरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सभी उपलब्‍ध उपयोगकर्ता पहले से इस सत्र में जोड़ दिए गए हैं.</translation>
+<translation id="5465662442746197494">सहायता चाहिए?</translation>
 <translation id="5496819745535887422">आपका एडमिन आपके डिवाइस को बहाल कर रहा है. डिवाइस रीस्टार्ट होने पर उसका सारा डेटा मिटा दिया जाएगा.</translation>
 <translation id="553675580533261935">सत्र से बाहर निकलें</translation>
 <translation id="5537725057119320332">कास्‍ट करें</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
 <translation id="847056008324733326">प्रदर्शन पैमाने की सेटिंग</translation>
 <translation id="8477270416194247200">रद्द करने के लिए Alt+Search या Shift दबाएं.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (अॉटो-रोटेट)</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> से कनेक्ट है</translation>

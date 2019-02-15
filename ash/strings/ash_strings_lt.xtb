@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">Momentinis įrenginio kaip modemo naudojimas</translation>
 <translation id="5431825016875453137">„OpenVPN“ / L2TP</translation>
 <translation id="544691375626129091">Prie šio seanso jau pridėti visi galimi naudotojai.</translation>
+<translation id="5465662442746197494">Reikia pagalbos?</translation>
 <translation id="5496819745535887422">Administratorius atkuria įrenginį. Visi duomenys bus ištrinti, kai įrenginys bus paleistas iš naujo.</translation>
 <translation id="553675580533261935">Išeinama iš sesijos</translation>
 <translation id="5537725057119320332">Perduoti</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">„Wi-Fi“ ryšys įjungtas.</translation>
 <translation id="847056008324733326">Ekrano mastelio nustatymai</translation>
 <translation id="8477270416194247200">Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišą arba „Alt“ + „Shift“.</translation>
-<translation id="8484916590211895857">„<ph name="NAME" />“: prisijungiama iš naujo...</translation>
 <translation id="8513108775083588393">Automatiškai pasukti</translation>
 <translation id="8517041960877371778">„<ph name="DEVICE_TYPE" />“ gali nebūti kraunamas, kai yra įjungtas.</translation>
 <translation id="8627191004499078455">Prisijungta prie „<ph name="DEVICE_NAME" />“</translation>

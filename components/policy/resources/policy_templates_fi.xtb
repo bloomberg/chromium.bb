@@ -484,17 +484,6 @@
       Käytäntö on voimassa vain, kun <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on käytössä ja koneella on käytössä <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Salli ilmoitukset näillä sivustoilla</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
-<translation id="2132732175597591362">Hallinnoi sellaisten URL-osoitemallien sallittujen luetteloa, joiden automaattinen toisto on aina käytössä
-
-      Jos automaattinen toisto on käytössä, videoita ja niiden äänisisältöä voidaan toistaa automaattisesti (ilman käyttäjän suostumusta) tuotteessa <ph name="PRODUCT_NAME" />.
-
-      URL-osoitemallin muotoilun on noudatettava tätä mallia: https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Jos AutoplayAllowed-käytännön arvoksi on määritetty tosi, tällä käytännöllä ei ole vaikutusta.
-
-      Jos AutoplayAllowed-käytännön arvoksi on määritetty epätosi, kaikki tässä käytännössä määritetyt URL-mallit voidaan silti toistaa.
-
-      Huomaa, että jos <ph name="PRODUCT_NAME" /> on käytössä ja tämä käytäntö muuttuu, sitä sovelletaan vain uusiin avattuihin välilehtiin. Tämän vuoksi jotkin välilehdet saattavat edelleen noudattaa edellistä käytäntöä.</translation>
 <translation id="2134437727173969994">Salli näytön lukitseminen</translation>
 <translation id="2137064848866899664">Kun tämä käytäntö on määritetty, jokaista näyttöä kierretään
       käytännön mukaisesti aina laitteen uudelleenkäynnistyksen yhteydessä ja 

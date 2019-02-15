@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">Yhteyden pikajakaminen</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
+<translation id="5465662442746197494">Tarvitsetko apua?</translation>
 <translation id="5496819745535887422">Järjestelmänvalvoja palauttaa laitetta. Kaikki data poistetaan laitteen käynnistyessä uudelleen.</translation>
 <translation id="553675580533261935">Käyttökerran lopettaminen</translation>
 <translation id="5537725057119320332">Lähetä</translation>
@@ -452,7 +453,6 @@
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="847056008324733326">Näytön skaalauksen asetukset</translation>
 <translation id="8477270416194247200">Peruuta painamalla Alt+haku tai vaihto.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
 <translation id="8513108775083588393">Automaattinen kääntö</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
 <translation id="8627191004499078455">Yhdistetty: <ph name="DEVICE_NAME" /></translation>

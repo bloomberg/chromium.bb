@@ -14,6 +14,7 @@
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Clear all</translation>
+<translation id="123828989343052515">New Desk</translation>
 <translation id="1247372569136754018">Microphone (internal)</translation>
 <translation id="1252999807265626933">Charging from <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">What's the weather?</translation>
@@ -73,6 +74,7 @@
 <translation id="2016340657076538683">Type a message</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Keyboard brightness</translation>
+<translation id="209965399369889474">Not connected to network</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="2135456203358955318">Docked magnifier</translation>
 <translation id="2144487987174258011">Restart to update Adobe Flash Player</translation>
@@ -261,6 +263,7 @@
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">All available users have already been added to this session.</translation>
+<translation id="5465662442746197494">Need help?</translation>
 <translation id="5496819745535887422">Your administrator is rolling back your device. All data will be deleted when the device is restarted.</translation>
 <translation id="553675580533261935">Exiting session</translation>
 <translation id="5537725057119320332">Cast</translation>
@@ -434,6 +437,7 @@
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8297006494302853456">Weak</translation>
 <translation id="8308637677604853869">Previous menu</translation>
+<translation id="8332664326438198339">Back to launcher</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Create note</translation>
 <translation id="8375916635258623388">This <ph name="DEVICE_NAME" /> and your phone will connect automatically</translation>
@@ -449,7 +453,6 @@
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="847056008324733326">Display scale settings</translation>
 <translation id="8477270416194247200">Press Alt+Search or Shift to cancel.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: Reconnecting...</translation>
 <translation id="8513108775083588393">Auto-rotate</translation>
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
 <translation id="8627191004499078455">Connected to <ph name="DEVICE_NAME" /></translation>

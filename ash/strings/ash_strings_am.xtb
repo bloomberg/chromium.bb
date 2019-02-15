@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">ቅጽበታዊ እንደ ሞደም መሰካት</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">ሁሉም የሚገኙ ተጤቃሚዎች አስቀድመው ወደዚህ ክፍለ-ጊዜ ታክለዋል።</translation>
+<translation id="5465662442746197494">እገዛ አስፈለገዎት?</translation>
 <translation id="5496819745535887422">የእርስዎ አስተዳዳሪ የእርስዎን መሣሪያ እየቀነሰው ነው። መሣሪያው ዳግም እንዲጀምር ሲደረግ ሁሉም ውሂብ ይሰረዛል።</translation>
 <translation id="553675580533261935">ከክፍለ-ጊዜ በመውጣት ላይ</translation>
 <translation id="5537725057119320332">Cast</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
 <translation id="847056008324733326">የልኬት ቅንብሮችን አሳይ</translation>
 <translation id="8477270416194247200">ለመሰረዝ Alt+Search ወይም Shift ይጫኑ።</translation>
-<translation id="8484916590211895857"><ph name="NAME" />፦ ዳግም በማገናኘት ላይ...</translation>
 <translation id="8513108775083588393">በራስ ሰር አሽከርክር</translation>
 <translation id="8517041960877371778">የእርሰዎ <ph name="DEVICE_TYPE" /> እንደበራ ኃይል መሙላት አይችሉ ይሆናል።</translation>
 <translation id="8627191004499078455">ከ<ph name="DEVICE_NAME" /> ጋር ተገናኝቷል</translation>

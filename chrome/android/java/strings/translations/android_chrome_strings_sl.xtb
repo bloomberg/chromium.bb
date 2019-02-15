@@ -97,6 +97,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="1670399744444387456">Osnovno</translation>
 <translation id="1671236975893690980">Prenos na čakanju …</translation>
 <translation id="1672586136351118594">Tega ne prikaži več</translation>
+<translation id="1692118695553449118">Sinhroniziranje je vklopljeno</translation>
 <translation id="1709438864123551175">Varčevanje s podatki</translation>
 <translation id="1718835860248848330">Zadnja ura</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Posodobljeno: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1001,7 +1002,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8445448999790540984">Gesel ni mogoče izvoziti</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
 <translation id="8461694314515752532">Šifriranje sinhroniziranih podatkov z vašim geslom za sinhronizacijo</translation>
-<translation id="8477071352266846533">Sinhronizacija je izklopljena za uporabnika <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /><ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8489271220582375723">Odpiranje strani z zgodovino</translation>

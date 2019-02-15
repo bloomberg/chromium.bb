@@ -97,6 +97,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="1670399744444387456">Cơ bản</translation>
 <translation id="1671236975893690980">Đang chờ tải xuống...</translation>
 <translation id="1672586136351118594">Không hiển thị lại</translation>
+<translation id="1692118695553449118">Đồng bộ hóa đang bật</translation>
 <translation id="1709438864123551175">Trình tiết kiệm dữ liệu</translation>
 <translation id="1718835860248848330">Giờ vừa qua</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Đã cập nhật <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8445448999790540984">Không xuất được mật khẩu</translation>
 <translation id="8447861592752582886">Thu hồi quyền truy cập thiết bị</translation>
 <translation id="8461694314515752532">Mã hóa dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
-<translation id="8477071352266846533">Đã tắt đồng bộ hóa cho <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8489271220582375723">Mở trang lịch sử</translation>

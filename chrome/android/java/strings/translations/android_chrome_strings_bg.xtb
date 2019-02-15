@@ -97,6 +97,7 @@
 <translation id="1670399744444387456">Основни</translation>
 <translation id="1671236975893690980">Предстои изтегляне…</translation>
 <translation id="1672586136351118594">Да не се показва отново</translation>
+<translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="1709438864123551175">Икономия на данни</translation>
 <translation id="1718835860248848330">Последния час</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – актуализирано <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1003,7 +1004,6 @@
 <translation id="8445448999790540984">Паролите не могат да бъдат експортирани</translation>
 <translation id="8447861592752582886">Отмяна на разрешението за достъп до устройството</translation>
 <translation id="8461694314515752532">Шифроване на синхронизираните данни със собствения ви пропуск за синхронизиране</translation>
-<translation id="8477071352266846533">Синхронизирането е изключено за <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
 <translation id="8489271220582375723">Отваряне на страницата „История“</translation>

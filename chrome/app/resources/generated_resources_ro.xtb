@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Tabel Google</translation>
 <translation id="2544853746127077729">Certificatul de autentificare a fost respins de rețea</translation>
 <translation id="2547921442987553570">Adaugă la <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Pornește înregistrarea</translation>
 <translation id="2550212893339833758">Dimensiunea memoriei de swap</translation>
 <translation id="2550596535588364872">Permiți ca <ph name="EXTENSION_NAME" /> să deschidă <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> nu s-a putut conecta la <ph name="NETWORK_ID" />. Selectează altă rețea sau încearcă din nou.</translation>
@@ -1407,7 +1408,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3124111068741548686">Handle-uri USER</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Astfel, se vor șterge toate datele stocate pe dispozitiv pentru site-urile afișate. Vrei să continui?</translation>
-<translation id="3127919023693423797">Se autentifică...</translation>
 <translation id="3129173833825111527">Margine la stânga</translation>
 <translation id="3130528281680948470">Dispozitivul va fi resetat, iar toate conturile de utilizator și datele locale vor fi eliminate. Această operațiune nu poate fi anulată.</translation>
 <translation id="313205617302240621">Ai uitat parola?</translation>
@@ -2033,6 +2033,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="404299405565920089">Toate conturile tale Google conectate din aplicații și site-uri pot fi gestionate aici. Aplicațiile și site-urile care au permisiunea ta pot accesa informațiile despre cont de care au nevoie pentru a funcționa corect.</translation>
 <translation id="4044612648082411741">Introdu parola pentru certificat</translation>
 <translation id="404493185430269859">Motor de căutare prestabilit</translation>
+<translation id="4046123991198612571">Melodia următoare</translation>
 <translation id="4052120076834320548">Mic</translation>
 <translation id="4055023634561256217">Trebuie să reporniți dispozitivul înainte de a fi resetat folosind Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3352,6 +3353,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6069671174561668781">Setați o imagine de fundal</translation>
 <translation id="6071181508177083058">confirmă parola</translation>
 <translation id="6071576563962215370">Sistemul nu a blocat atributele necesare în momentul instalării dispozitivului.</translation>
+<translation id="6073451960410192870">Oprește înregistrarea</translation>
 <translation id="6073903501322152803">Adaugă funcții de accesibilitate</translation>
 <translation id="6074825444536523002">Formular Google</translation>
 <translation id="6075731018162044558">Hopa! Sistemul nu a putut obține un indicativ de acces pe termen lung la API pentru acest dispozitiv.</translation>
@@ -3575,7 +3577,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6410328738210026208">Schimbați canalul și porniți Powerwash</translation>
 <translation id="6410668567036790476">Adaugă motorul de căutare</translation>
 <translation id="641081527798843608">Potrivirea subiectului</translation>
-<translation id="6412516638504297304">{0,plural, =1{}few{# ferestre sunt deschise}other{# de ferestre sunt deschise}}</translation>
 <translation id="6412931879992742813">Fereastră incognito nouă</translation>
 <translation id="6415900369006735853">Conectează-te la internet folosind telefonul</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
@@ -3899,7 +3900,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6915804003454593391">Utilizator:</translation>
 <translation id="6916590542764765824">Gestionează extensiile</translation>
 <translation id="6920989436227028121">Deschide ca filă obișnuită</translation>
-<translation id="6921104647315081813">Șterge activitățile</translation>
 <translation id="6921709132208495314">Nu mai folosi datele din această pagină</translation>
 <translation id="6922128026973287222">Economisește date și navighează mai rapid folosind Economizorul de date Google. Dă clic pentru a afla mai multe.</translation>
 <translation id="6923132443355966645">Derulează / Dă clic</translation>

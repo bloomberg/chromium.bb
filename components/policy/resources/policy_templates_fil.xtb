@@ -492,17 +492,6 @@
       May bisa lang ang patakarang ito kapag naka-enable ang <ph name="CHROME_REPORTING_EXTENSION_NAME" />, at naka-enroll sa <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> ang machine.</translation>
 <translation id="2127599828444728326">Payagan ang mga notification sa mga site na ito</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>
-<translation id="2132732175597591362">Kinokontrol ang whitelist ng mga pattern ng URL kung saan palaging naka-enable ang autoplay.
-
-      Kung naka-enable ang autoplay, maaaring awtomatikong mag-play ang mga video (nang walang pahintulot ng user) na may content na audio sa <ph name="PRODUCT_NAME" />.
-
-      Kailangang naka-format ang pattern ng URL ayon sa https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Kung nakatakda sa True ang patakarang AutoplayAllowed, hindi magkakaroon ng epekto ang patakarang ito.
-
-      Kung nakatakda sa False ang patakarang AutoplayAllowed, papayagan pa ring ma-play ang anumang pattern ng URL na nakatakda sa patakarang ito.
-
-      Tandaang kung gumagana ang <ph name="PRODUCT_NAME" /> at magbabago ang patakarang ito, ilalapat lang ito sa mga bagong bukas na tab. Samakatuwid, maaari pa ring magawa ng ilang tab ang nakaraang nagagawa nito.</translation>
 <translation id="2134437727173969994">Payagan ang pagla-lock ng screen</translation>
 <translation id="2137064848866899664">Kung itatakda ang patakarang ito, iro-rotate ang bawat display sa
       nakatakdang oryentasyon sa bawat pag-reboot, at sa unang pagkakataon na ikokonekta ito

@@ -97,6 +97,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="1670399744444387456">Bendrieji</translation>
 <translation id="1671236975893690980">Laukiama atsisiuntimo...</translation>
 <translation id="1672586136351118594">Daugiau neberodyti</translation>
+<translation id="1692118695553449118">Sinchronizavimas įjungtas</translation>
 <translation id="1709438864123551175">Duomenų taupymo priemonė</translation>
 <translation id="1718835860248848330">Paskutinė valanda</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atnaujinta <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8445448999790540984">Nepavyksta eksportuoti slaptažodžių</translation>
 <translation id="8447861592752582886">Anuliuoti įrenginio leidimą</translation>
 <translation id="8461694314515752532">Šifruokite sinchronizuojamus duomenis taikydami savo sinchronizavimo slaptafrazę</translation>
-<translation id="8477071352266846533">Sinchronizavimas su <ph name="SYNC_ACCOUNT_USER_NAME" /> išjungtas</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
 <translation id="8489271220582375723">Atidaryti istorijos puslapį</translation>

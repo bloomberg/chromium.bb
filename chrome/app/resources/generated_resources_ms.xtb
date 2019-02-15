@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Jadual Google</translation>
 <translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
 <translation id="2547921442987553570">Tambahkan pada <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Mulakan rakaman</translation>
 <translation id="2550212893339833758">Memori ditukar</translation>
 <translation id="2550596535588364872">Benarkan <ph name="EXTENSION_NAME" /> membuka <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> tidak dapat menyambung ke <ph name="NETWORK_ID" />. Sila pilih rangkaian lain atau cuba semula.</translation>
@@ -1408,7 +1409,6 @@
 <translation id="3124111068741548686">Pemegang USER</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Tindakan ini akan memadamkan mana-mana data yang disimpan pada peranti anda untuk semua tapak yang ditunjukkan. Anda ingin teruskan?</translation>
-<translation id="3127919023693423797">Mengesahkan...</translation>
 <translation id="3129173833825111527">Jidar kiri</translation>
 <translation id="3130528281680948470">Peranti anda akan ditetapkan semula dan semua akaun pengguna serta data setempat akan dipadamkan. Proses ini tidak boleh dibuat asal.</translation>
 <translation id="313205617302240621">Terlupa kata laluan?</translation>
@@ -2034,6 +2034,7 @@
 <translation id="404299405565920089">Semua Akaun Google anda yang dilog masuk daripada apl dan tapak web boleh diurus di sini. Apl dan tapak web yang mempunyai kebenaran anda dapat mengakses maklumat akaun yang diperlukan untuk berfungsi dengan betul.</translation>
 <translation id="4044612648082411741">Masukkan kata laluan sijil anda</translation>
 <translation id="404493185430269859">Enjin carian lalai</translation>
+<translation id="4046123991198612571">Lagu seterusnya</translation>
 <translation id="4052120076834320548">Sangat Kecil</translation>
 <translation id="4055023634561256217">Mula semula diperlukan sebelum peranti anda boleh ditetapkan semula dengan Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3353,6 +3354,7 @@
 <translation id="6069671174561668781">Tetapkan Kertas Dinding</translation>
 <translation id="6071181508177083058">sahkan kata laluan</translation>
 <translation id="6071576563962215370">Sistem gagal mewujudkan kunci atribut masa pemasangan peranti.</translation>
+<translation id="6073451960410192870">Hentikan rakaman</translation>
 <translation id="6073903501322152803">Tambahkan ciri kebolehaksesan</translation>
 <translation id="6074825444536523002">Borang Google</translation>
 <translation id="6075731018162044558">Op!  Sistem gagal mencapai token akses API jangka panjang untuk peranti ini.</translation>
@@ -3576,7 +3578,6 @@
 <translation id="6410328738210026208">Tukar saluran dan Powerwash</translation>
 <translation id="6410668567036790476">Tambah enjin carian</translation>
 <translation id="641081527798843608">Padanan subjek</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# tetingkap dibuka}}</translation>
 <translation id="6412931879992742813">Tetingkap incognito baharu</translation>
 <translation id="6415900369006735853">Sambung ke Internet melalui telefon anda</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -3900,7 +3901,6 @@
 <translation id="6915804003454593391">Pengguna:</translation>
 <translation id="6916590542764765824">Urus Sambungan</translation>
 <translation id="6920989436227028121">Buka seperti tab biasa</translation>
-<translation id="6921104647315081813">Kosongkan aktiviti</translation>
 <translation id="6921709132208495314">Berhenti menggunakan data pada halaman ini</translation>
 <translation id="6922128026973287222">Simpan data dan semak imbas dengan lebih pantas menggunakan Penjimat Data Google. Klik untuk mengetahui lebih lanjut.</translation>
 <translation id="6923132443355966645">Tatal / Klik</translation>

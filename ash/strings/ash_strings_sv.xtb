@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
+<translation id="5465662442746197494">Behöver du hjälp?</translation>
 <translation id="5496819745535887422">Enheten återställs av administratören. All data raderas när enheten startas om.</translation>
 <translation id="553675580533261935">Sessionen avslutas</translation>
 <translation id="5537725057119320332">Casta</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Wi-Fi är aktiverat.</translation>
 <translation id="847056008324733326">Inställningar för skala på skärmen</translation>
 <translation id="8477270416194247200">Avbryt genom att trycka på Alt + söktangenten eller Skift.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
 <translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
 <translation id="8627191004499078455">Ansluten till <ph name="DEVICE_NAME" /></translation>

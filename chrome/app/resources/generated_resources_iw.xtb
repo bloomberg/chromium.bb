@@ -1032,6 +1032,7 @@
 <translation id="2542049655219295786">‏טבלה של Google</translation>
 <translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
 <translation id="2547921442987553570">הוסף אל <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">התחלת צילום סרטון</translation>
 <translation id="2550212893339833758">זיכרון מוחלף</translation>
 <translation id="2550596535588364872">האם להתיר ל-<ph name="EXTENSION_NAME" /> לפתוח את <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> לא הצליח להתחבר אל <ph name="NETWORK_ID" />. בחר רשת אחרת או נסה שוב.</translation>
@@ -1404,7 +1405,6 @@
 <translation id="3124111068741548686">מזהים ייחודיים של משתמש</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">פעולה זו תמחק את כל הנתונים שנשמרו במכשיר עבור כל האתרים המוצגים. האם אתה רוצה להמשיך?</translation>
-<translation id="3127919023693423797">מאמת...</translation>
 <translation id="3129173833825111527">שוליים שמאליים</translation>
 <translation id="3130528281680948470">יתבצע איפוס של המכשיר שלך וכל חשבונות המשתמשים והנתונים המקומיים יוסרו ממנו. לא ניתן לבטל פעולה זו.</translation>
 <translation id="313205617302240621">שכחת את הסיסמה?</translation>
@@ -2030,6 +2030,7 @@
 <translation id="404299405565920089">‏כאן אפשר לנהל את כל חשבונות Google שלך שעמם נכנסת אל אפליקציות ואתרים. אפליקציות ואתרים שהענקת להם הרשאה יכולים לגשת אל פרטי החשבון הנחוצים לתפקוד שלהם.</translation>
 <translation id="4044612648082411741">הזן את סיסמת האישור</translation>
 <translation id="404493185430269859">מנוע החיפוש המוגדר כברירת מחדל</translation>
+<translation id="4046123991198612571">הרצועה הבאה</translation>
 <translation id="4052120076834320548">זעיר</translation>
 <translation id="4055023634561256217">כדי לבצע איפוס באמצעות שחזור הגדרות יצרן, עליך להפעיל תחילה את המכשיר מחדש.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3350,6 +3351,7 @@
 <translation id="6069671174561668781">הגדר טפט</translation>
 <translation id="6071181508177083058">אשר סיסמה</translation>
 <translation id="6071576563962215370">המערכת לא הצליחה ליצור את נעילת המאפיינים של המכשיר בזמן ההתקנה.</translation>
+<translation id="6073451960410192870">הפסקת צילום הסרטון</translation>
 <translation id="6073903501322152803">הוסף תכונות נגישות</translation>
 <translation id="6074825444536523002">Google Forms</translation>
 <translation id="6075731018162044558">‏אופס!  המערכת לא הצליחה לקבל אסימון גישה לממשק ה-API לטווח ארוך עבור מכשיר זה.</translation>
@@ -3573,7 +3575,6 @@
 <translation id="6410328738210026208">‏מעבר לערוץ אחר וביצוע Powerwash</translation>
 <translation id="6410668567036790476">הוספת מנוע חיפוש</translation>
 <translation id="641081527798843608">התאמת נושא</translation>
-<translation id="6412516638504297304">{0,plural, =1{}two{# חלונות פתוחים}many{# חלונות פתוחים}other{# חלונות פתוחים}}</translation>
 <translation id="6412931879992742813">חלון חדש של גלישה בסתר</translation>
 <translation id="6415900369006735853">חיבור לאינטרנט דרך הטלפון</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -3897,7 +3898,6 @@
 <translation id="6915804003454593391">משתמש:</translation>
 <translation id="6916590542764765824">נהל תוספים</translation>
 <translation id="6920989436227028121">פתח ככרטיסייה רגילה</translation>
-<translation id="6921104647315081813">ניקוי הפעילויות</translation>
 <translation id="6921709132208495314">הפסקת השימוש בנתונים בדף הזה</translation>
 <translation id="6922128026973287222">‏חוסכים בנתונים וגולשים מהר יותר באמצעות Data Saver של Google. אפשר ללחוץ לקריאת מידע נוסף.</translation>
 <translation id="6923132443355966645">גלילה / לחיצה</translation>

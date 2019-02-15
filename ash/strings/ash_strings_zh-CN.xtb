@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">即时网络共享</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
+<translation id="5465662442746197494">需要帮助？</translation>
 <translation id="5496819745535887422">您的管理员正在回滚您的设备。设备重启后，所有数据都会被删除。</translation>
 <translation id="553675580533261935">退出会话</translation>
 <translation id="5537725057119320332">投射</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">Wi-Fi 已打开。</translation>
 <translation id="847056008324733326">显示比例设置</translation>
 <translation id="8477270416194247200">按 Alt+搜索键或按 Shift 键可取消。</translation>
-<translation id="8484916590211895857"><ph name="NAME" />：正在重新连接…</translation>
 <translation id="8513108775083588393">自动旋转屏幕</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
 <translation id="8627191004499078455">已连接到<ph name="DEVICE_NAME" /></translation>

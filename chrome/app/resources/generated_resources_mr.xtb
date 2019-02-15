@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Google सारणी</translation>
 <translation id="2544853746127077729">अॉथेंटिकेशन सर्टिफिकेट नेटवर्कद्वारे नाकारले</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> मध्ये जोडा</translation>
+<translation id="2549985041256363841">रेकॉर्डिंग सुरू करा</translation>
 <translation id="2550212893339833758">स्वॅप केलेली मेमरी</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" /> ला <ph name="FILE_NAME" /> उघडू द्यायचे?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> <ph name="NETWORK_ID" /> शी कनेक्ट करण्यात अक्षम आहे. कृपया दुसरे नेटवर्क निवडा किंवा पुन्हा प्रयत्न करा. </translation>
@@ -1406,7 +1407,6 @@
 <translation id="3124111068741548686">वापरकर्ता हँडल</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">दर्शविलेल्या सर्व साइटसाठी आपल्या डिव्हाइसवर संचयित केलेल्या कोणत्याही डेटास हे हटवेल. तुम्ही सुरु ठेवू इच्छिता?</translation>
-<translation id="3127919023693423797">प्रमाणीकरण करीत आहे...</translation>
 <translation id="3129173833825111527">डावा समास</translation>
 <translation id="3130528281680948470">तुमचे डिव्हाइस रीसेट केले जाईल आणि सर्व वापरकर्ता खाती आणि स्थानिक डेटा काढला जाईल. हे पूर्ववत केले जाऊ शकत नाही.</translation>
 <translation id="313205617302240621">पासवर्ड विसरलात?</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">अ‍ॅप्स आणि वेबसाइटवरील तुमची सर्व साइन इन केलेली Google खाती येथे व्यवस्थापित करता येतील. तुमची परवानगी असलेली अ‍ॅप्स आणि वेबसाइट त्यांना योग्यरीत्या काम करण्यासाठी आवश्यक असलेली खाते माहिती अ‍ॅक्सेस करू शकतात.</translation>
 <translation id="4044612648082411741">तुमचा सर्टिफिकेट पासवर्ड एंटर करा</translation>
 <translation id="404493185430269859">डीफॉल्ट शोध इंजिन</translation>
+<translation id="4046123991198612571">पुढील ट्रॅक</translation>
 <translation id="4052120076834320548"> लघु</translation>
 <translation id="4055023634561256217">Powerwash सह तुमचा डिव्हाइस रीसेट केला जाण्यापूर्वी रीस्टार्ट
  करणे आवश्यक आहे.</translation>
@@ -3352,6 +3353,7 @@
 <translation id="6069671174561668781">वॉलपेपर सेट करा</translation>
 <translation id="6071181508177083058">संकेतशब्दाची पुष्टी करा</translation>
 <translation id="6071576563962215370">सिस्टमला डिव्हाइस इंस्टॉलेशन वेळ विशेषता लॉक स्थापित करता आले नाही.</translation>
+<translation id="6073451960410192870">रेकॉर्डिंग थांबवा</translation>
 <translation id="6073903501322152803">प्रवेशयोग्यता वैशिष्ट्ये जोडा</translation>
 <translation id="6074825444536523002">Google फॉर्म</translation>
 <translation id="6075731018162044558">अरेरे! या डिव्हाइससाठी दीर्घ-मुदतीचा API प्रवेश टोकन मिळवण्यात सिस्टम अयशस्वी झाली.</translation>
@@ -3575,7 +3577,6 @@
 <translation id="6410328738210026208">चॅनेल बदला आणि Powerwash करा</translation>
 <translation id="6410668567036790476">शोध इंजिन जोडा</translation>
 <translation id="641081527798843608">जुळणारा विषय</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# विंडो खुली आहे}other{# विंडो खुली आहेत}}</translation>
 <translation id="6412931879992742813">नवीन गुप्त विंडो</translation>
 <translation id="6415900369006735853">तुमच्या फोनमधून इंटरनेटशी कनेक्ट करा</translation>
 <translation id="6417265370957905582">Google साहाय्यक</translation>
@@ -3899,7 +3900,6 @@
 <translation id="6915804003454593391">वापरकर्ता:</translation>
 <translation id="6916590542764765824">विस्तार व्यवस्थापित करा</translation>
 <translation id="6920989436227028121">नियमित टॅब म्हणून वापरा</translation>
-<translation id="6921104647315081813">अ‍ॅक्टिव्हिटी साफ करा</translation>
 <translation id="6921709132208495314">या पेजवर डेटा वापरणे थांबवा</translation>
 <translation id="6922128026973287222">Google डेटा बचतकर्ता वापरून डेटा सेव्ह करा आणि अधिक जलद ब्राउझ करा. अधिक जाणून घेण्यासाठी क्लिक करा.</translation>
 <translation id="6923132443355966645">स्क्रोल करा / क्लिक करा</translation>

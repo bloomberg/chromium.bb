@@ -1032,6 +1032,7 @@
 <translation id="2542049655219295786">‏جدول Google </translation>
 <translation id="2544853746127077729">گواهینامه راستی‌آزمایی توسط شبکه رد شد</translation>
 <translation id="2547921442987553570">افزودن به <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">شروع ضبط</translation>
 <translation id="2550212893339833758">حافظه جابه‌جاشده</translation>
 <translation id="2550596535588364872">به <ph name="EXTENSION_NAME" /> اجازه می‌دهید <ph name="FILE_NAME" /> را باز کند؟</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> نتوانست به <ph name="NETWORK_ID" /> متصل شود. لطفاً یک شبکه دیگر را انتخاب کرده یا دوباره امتحان کنید.</translation>
@@ -1403,7 +1404,6 @@
 <translation id="3124111068741548686">کنترل‌های کاربر</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">این کار باعث حذف داده‌های ذخیره‌شده روی دستگاهتان برای همه سایت‌های نشان‌داده‌شده می‌شود. می‌خواهید ادامه دهید؟</translation>
-<translation id="3127919023693423797">در حال راستی‌آزمایی...</translation>
 <translation id="3129173833825111527">حاشیه چپ</translation>
 <translation id="3130528281680948470">دستگاه شما بازنشانی می‌شود و همه حساب‌های کاربری و داده‌های محلی حذف می‌شوند. این کار قابل بازگشت نیست.</translation>
 <translation id="313205617302240621">گذرواژه را فراموش کردید؟</translation>
@@ -2029,6 +2029,7 @@
 <translation id="404299405565920089">‏می‌توانید همه حساب‌های Google خود را که از برنامه‌ها و وب‌سایت‌ها به سیستم وارد شده‌اند، از اینجا مدیریت کنید. برنامه‌ها و وب‌سایت‌هایی که از شما مجوز دارند، می‌توانند به اطلاعات حسابی که جهت کارکرد مناسب نیاز دارند دستری پیدا کنند.</translation>
 <translation id="4044612648082411741">گذرواژه گواهی‌تان را وارد کنید</translation>
 <translation id="404493185430269859">موتور جستجوی پیش‌‌فرض</translation>
+<translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4052120076834320548">بسیار کوچک</translation>
 <translation id="4055023634561256217">‏قبل از اینکه دستگاه شما با Powerwash بازنشانی شود، راه‌اندازی مجدد لازم است.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3348,6 +3349,7 @@
 <translation id="6069671174561668781">تنظیم تصویر زمینه</translation>
 <translation id="6071181508177083058">تأیید گذرواژه</translation>
 <translation id="6071576563962215370">این سیستم نتوانست قفل ویژگی‌های زمان نصب دستگاه را ایجاد کند.</translation>
+<translation id="6073451960410192870">توقف ضبط</translation>
 <translation id="6073903501322152803">افزودن قابلیت‌های دسترس‌پذیری</translation>
 <translation id="6074825444536523002">‏فرم Google</translation>
 <translation id="6075731018162044558">‏متأسفیم! سیستم نتوانست کد دسترسی دراز مدت به API را برای این دستگاه به دست آورد.</translation>
@@ -3571,7 +3573,6 @@
 <translation id="6410328738210026208">تغییر کانال و پاکسازی</translation>
 <translation id="6410668567036790476">افزودن موتور جستجو</translation>
 <translation id="641081527798843608">مطابقت موضوع</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# پنجره باز است}other{# پنجره باز است}}</translation>
 <translation id="6412931879992742813">پنجره جدید ناشناس</translation>
 <translation id="6415900369006735853">اتصال به اینترنت ازطریق تلفن</translation>
 <translation id="6417265370957905582">‏دستیار Google</translation>
@@ -3895,7 +3896,6 @@
 <translation id="6915804003454593391">کاربر:</translation>
 <translation id="6916590542764765824">مدیریت افزونه‌ها</translation>
 <translation id="6920989436227028121">باز کردن به‌عنوان برگه عادی</translation>
-<translation id="6921104647315081813">پاک کردن فعالیت‌ها</translation>
 <translation id="6921709132208495314">توقف استفاده از داده در این صفحه</translation>
 <translation id="6922128026973287222">‏با «صرفه‌جویی داده Google»، مصرف داده را بهینه کرده و سریع‌تر مرور کنید. برای اطلاعات بیشتر کلیک کنید.</translation>
 <translation id="6923132443355966645">پیمایش / کلیک</translation>

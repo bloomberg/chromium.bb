@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Google அட்டவணை</translation>
 <translation id="2544853746127077729">அங்கீகரிப்புச் சான்றிதழ் நெட்வொர்க்கால் நிராகரிக்கப்பட்டது</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> இல் சேர்</translation>
+<translation id="2549985041256363841">பதிவுசெய்யத் தொடங்கு</translation>
 <translation id="2550212893339833758">ஸ்வாப்டு மெமரி</translation>
 <translation id="2550596535588364872"><ph name="FILE_NAME" />ஐத் திறக்க <ph name="EXTENSION_NAME" />ஐ அனுமதிக்கவா?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> ஆல் <ph name="NETWORK_ID" /> உடன் இணைய முடியவில்லை. மற்றொரு நெட்வொர்க்கைத் தேர்ந்தெடுங்கள் அல்லது மீண்டும் முயற்சி செய்யுங்கள்.</translation>
@@ -1408,7 +1409,6 @@
 <translation id="3124111068741548686">USER ஹேண்டில்ஸ்</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">இவ்வாறு செய்வதால், காட்டப்படும் எல்லாத் தளங்களுக்கும் உங்கள் சாதனத்தில் சேமித்த தரவு நீக்கப்படும். தொடரவா?</translation>
-<translation id="3127919023693423797">அங்கீகரிக்கிறது...</translation>
 <translation id="3129173833825111527">இடது ஓரம்</translation>
 <translation id="3130528281680948470">உங்கள் சாதனம் மீட்டமைக்கப்படுவதோடு, எல்லா பயனர் கணக்குகளும் அகத் தரவும் அகற்றப்படும். இதைச் செயல்தவிர்க்க முடியாது.</translation>
 <translation id="313205617302240621">கடவுச்சொல்லை மறந்துவிட்டீர்களா?</translation>
@@ -2033,6 +2033,7 @@
 <translation id="404299405565920089">ஆப்ஸிலும் இணையதளங்களிலும் உள்நுழைந்துள்ள உங்கள் Google கணக்குகள் அனைத்தையும் இங்கு நிர்வகிக்கலாம். உங்களிடம் அனுமதி பெற்றுள்ள ஆப்ஸும் இணையதளங்களும் அவை சரியாக வேலை செய்வதற்குத் தேவையான கணக்குத் தகவலை அணுகலாம்.</translation>
 <translation id="4044612648082411741">சான்றிதழ் கடவுச்சொல்லை உள்ளிடவும்</translation>
 <translation id="404493185430269859">இயல்பு தேடல் இன்ஜின்</translation>
+<translation id="4046123991198612571">அடுத்த ட்ராக்</translation>
 <translation id="4052120076834320548">சிறிய</translation>
 <translation id="4055023634561256217">பவர்வாஷால் உங்கள் சாதனம் மீட்டமைக்கும் முன்பு மறுதொடக்கம் அவசியம்.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3353,6 +3354,7 @@
 <translation id="6069671174561668781">வால்பேப்பரை அமை</translation>
 <translation id="6071181508177083058">கடவுச்சொல்லை உறுதிசெய்க</translation>
 <translation id="6071576563962215370">சிஸ்டத்தால் சாதன நிறுவல்-நேரப் பண்புக்கூறுகளைப் பூட்ட முடியவில்லை.</translation>
+<translation id="6073451960410192870">பதிவுசெய்வதை நிறுத்து</translation>
 <translation id="6073903501322152803">அணுகல்தன்மை அம்சங்களைச் சேர்</translation>
 <translation id="6074825444536523002">Google படிவம்</translation>
 <translation id="6075731018162044558">அச்சச்சோ! இந்தச் சாதனத்திற்கான, நீண்டகால API அணுகல் டோக்கனை பெறுவதில் முறைமை தோல்வி.</translation>
@@ -3576,7 +3578,6 @@
 <translation id="6410328738210026208">சேனல் மற்றும் பவர்வாஷை மாற்று</translation>
 <translation id="6410668567036790476">தேடல் இன்ஜினைச் சேர்</translation>
 <translation id="641081527798843608">சப்ஜெக்ட் மேட்ச்</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# சாளரங்கள் திறந்துள்ளன}}</translation>
 <translation id="6412931879992742813">புதிய மறைநிலைச் சாளரம்</translation>
 <translation id="6415900369006735853">உங்கள் ஃபோனைப் பயன்படுத்தி இணையத்துடன் இணைக்கலாம்</translation>
 <translation id="6417265370957905582">Google அசிஸ்டண்ட்</translation>
@@ -3900,7 +3901,6 @@
 <translation id="6915804003454593391">பயனர்:</translation>
 <translation id="6916590542764765824">நீட்டிப்புகளை நிர்வகி</translation>
 <translation id="6920989436227028121">வழக்கமான தாவலாகத் திற</translation>
-<translation id="6921104647315081813">செயல்பாடுகளை அழி</translation>
 <translation id="6921709132208495314">இந்தப் பக்கத்தில் டேட்டா உபயோகத்தை நிறுத்து</translation>
 <translation id="6922128026973287222">Google தரவு சேமிப்பானைப் பயன்படுத்தி தரவைச் சேமிக்கலாம், வேகமாக உலாவலாம். மேலும் அறிய, கிளிக் செய்யவும்.</translation>
 <translation id="6923132443355966645">உருட்டு / கிளிக் செய்</translation>

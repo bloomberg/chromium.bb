@@ -1034,6 +1034,7 @@
 <translation id="2542049655219295786">Taula de Google</translation>
 <translation id="2544853746127077729">La xarxa ha rebutjat el certificat d'autenticació</translation>
 <translation id="2547921442987553570">Afegeix a <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Comença a gravar</translation>
 <translation id="2550212893339833758">Memòria intercanviada</translation>
 <translation id="2550596535588364872">Vols permetre que <ph name="EXTENSION_NAME" /> obri <ph name="FILE_NAME" />?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no s'ha pogut connectar a <ph name="NETWORK_ID" />. Seleccioneu una altra xarxa o bé torneu-ho a provar.</translation>
@@ -1405,7 +1406,6 @@
 <translation id="3124111068741548686">Controls d'USUARI</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Se suprimiran totes les dades emmagatzemades al dispositiu per a tots els llocs mostrats. Vols continuar?</translation>
-<translation id="3127919023693423797">S'està autenticant...</translation>
 <translation id="3129173833825111527">Marge esquerre</translation>
 <translation id="3130528281680948470">El dispositiu es restablirà i tots els comptes d'usuari i les dades del dispositiu s'eliminaran. Aquesta acció no es pot desfer.</translation>
 <translation id="313205617302240621">Has oblidat la contrasenya?</translation>
@@ -2029,6 +2029,7 @@
 <translation id="404299405565920089">Aquí pots gestionar tots els teus Comptes de Google amb la sessió iniciada en aplicacions i llocs web. Les aplicacions i els llocs web que tinguin el teu permís podran accedir a la informació del compte que necessitin per funcionar correctament.</translation>
 <translation id="4044612648082411741">Introdueix la contrasenya del certificat</translation>
 <translation id="404493185430269859">Motor de cerca predeterminat</translation>
+<translation id="4046123991198612571">Pista següent</translation>
 <translation id="4052120076834320548">Minúscul</translation>
 <translation id="4055023634561256217">Es requereix reiniciar el dispositiu per poder-lo restablir amb Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" />: <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3350,6 +3351,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6069671174561668781">Definició del fons de pantalla</translation>
 <translation id="6071181508177083058">confirmeu la contrasenya</translation>
 <translation id="6071576563962215370">El sistema no ha pogut establir el bloqueig dels atributs de temps d'instal·lació del dispositiu.</translation>
+<translation id="6073451960410192870">Atura la gravació</translation>
 <translation id="6073903501322152803">Afegeix funcions d'accessibilitat</translation>
 <translation id="6074825444536523002">Formulari de Google</translation>
 <translation id="6075731018162044558">El sistema no ha pogut obtenir un testimoni d'accés a l'API de llarg termini per a aquest dispositiu.</translation>
@@ -3573,7 +3575,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6410328738210026208">Canvia el canal i fes Powerwash</translation>
 <translation id="6410668567036790476">Afegeix un motor de cerca</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{Hi ha # finestres obertes}}</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
 <translation id="6415900369006735853">Connecta't a Internet a través del telèfon</translation>
 <translation id="6417265370957905582">Assistent de Google</translation>
@@ -3897,7 +3898,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6915804003454593391">Usuari:</translation>
 <translation id="6916590542764765824">Gestiona les extensions</translation>
 <translation id="6920989436227028121">Obre-ho com a pestanya normal</translation>
-<translation id="6921104647315081813">Esborra les activitats</translation>
 <translation id="6921709132208495314">Deixa d'utilitzar dades en aquesta pàgina</translation>
 <translation id="6922128026973287222">Deseu les dades i agilitzeu la navegació amb Economitzador de dades de Google. Feu clic per obtenir més informació.</translation>
 <translation id="6923132443355966645">Desplaça't / fes clic</translation>

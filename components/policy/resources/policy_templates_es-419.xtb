@@ -484,17 +484,6 @@
       Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
-<translation id="2132732175597591362">Controla la lista blanca de los patrones de URL en los que la reproducción automática está siempre habilitada.
-
-      Si se habilita la reproducción automática, los videos se podrán reproducir automáticamente (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
-
-      El formato del patrón de URL debe cumplir con las pautas de https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Si se establece la política AutoplayAllowed como verdadera, esta política no tendrá efecto.
-
-      Si se establece la política AutoplayAllowed como falsa, podrá reproducirse cualquier patrón de URL que se establezca en esta política.
-
-      Ten en cuenta que, si <ph name="PRODUCT_NAME" /> está abierto y esta política cambia, solo se aplicará a las pestañas nuevas que se abran. Por lo tanto, es posible que notes el comportamiento anterior en algunas pestañas.</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
 <translation id="2137064848866899664">Si se establece esta política, la pantalla rotará en la orientación que se especifica en cada reinicio y la primera vez que se conecte luego de que se cambie el valor de la política. Los usuarios pueden cambiar la rotación de la pantalla a través de la página de configuración después de acceder, pero el valor de la política anulará la configuración en el siguiente reinicio.
 

@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Tableau Google</translation>
 <translation id="2544853746127077729">Certificat d'authentification rejeté par le réseau.</translation>
 <translation id="2547921442987553570">Ajouter à <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">Démarrer l'enregistrement</translation>
 <translation id="2550212893339833758">Espace mémoire d'échange</translation>
 <translation id="2550596535588364872">Autoriser <ph name="EXTENSION_NAME" /> à ouvrir le fichier <ph name="FILE_NAME" /> ?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> n'est pas parvenu à se connecter à <ph name="NETWORK_ID" />. Sélectionnez un autre réseau ou réessayez.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">Handles UTILISATEUR</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Toutes les données enregistrées sur votre appareil seront supprimées pour tous les sites affichés. Voulez-vous continuer ?</translation>
-<translation id="3127919023693423797">Authentification en cours...</translation>
 <translation id="3129173833825111527">Marge gauche</translation>
 <translation id="3130528281680948470">Votre appareil va être réinitialisé. Les données locales et les comptes utilisateur qu'il contient vont être supprimés. Cette opération est irréversible.</translation>
 <translation id="313205617302240621">Mot de passe oublié ?</translation>
@@ -2033,6 +2033,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="404299405565920089">Vous pouvez gérer ici tous vos comptes Google auxquels vous êtes connecté depuis des applications et des sites Web. Les applications et les sites Web qui disposent de votre autorisation peuvent accéder aux informations de compte dont ils ont besoin pour fonctionner correctement.</translation>
 <translation id="4044612648082411741">Saisissez le mot de passe du certificat.</translation>
 <translation id="404493185430269859">Moteur de recherche par défaut</translation>
+<translation id="4046123991198612571">Piste suivante</translation>
 <translation id="4052120076834320548">Très petite</translation>
 <translation id="4055023634561256217">Vous devez redémarrer votre appareil avant de pouvoir le réinitialiser avec le Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3353,6 +3354,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6069671174561668781">Sélectionner un fond d'écran</translation>
 <translation id="6071181508177083058">confirmer le mot de passe</translation>
 <translation id="6071576563962215370">Échec du verrouillage des attributs de temps d'installation de l'appareil.</translation>
+<translation id="6073451960410192870">Arrêter l'enregistrement</translation>
 <translation id="6073903501322152803">Ajouter des fonctionnalités d'accessibilité</translation>
 <translation id="6074825444536523002">Formulaire Google</translation>
 <translation id="6075731018162044558">Échec d'obtention d'un jeton d'accès aux API à long terme pour cet appareil.</translation>
@@ -3576,7 +3578,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6410328738210026208">Changer de version et Powerwash</translation>
 <translation id="6410668567036790476">Ajouter un moteur de recherche</translation>
 <translation id="641081527798843608">Correspondance d'objet</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# fenêtre ouverte}other{# fenêtres ouvertes}}</translation>
 <translation id="6412931879992742813">Nouvelle fenêtre de navigation privée</translation>
 <translation id="6415900369006735853">Se connecter à Internet via votre téléphone</translation>
 <translation id="6417265370957905582">Assistant Google</translation>
@@ -3900,7 +3901,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
 <translation id="6916590542764765824">Gérer les extensions</translation>
 <translation id="6920989436227028121">Ouvrir dans un onglet standard</translation>
-<translation id="6921104647315081813">Effacer les activités</translation>
 <translation id="6921709132208495314">Ne plus consommer de données sur cette page</translation>
 <translation id="6922128026973287222">Sauvegardez les données et bénéficiez d'une navigation plus rapide avec l'Économiseur de données Google. Cliquez ici pour en savoir plus.</translation>
 <translation id="6923132443355966645">Défilement/Clic</translation>

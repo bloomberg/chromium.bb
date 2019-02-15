@@ -97,6 +97,7 @@ Et ole kuitenkaan näkymätön. Yksityinen tila ei piilota selaustietojasi työn
 <translation id="1670399744444387456">Perusvaihtoehdot</translation>
 <translation id="1671236975893690980">Lataus odottaa…</translation>
 <translation id="1672586136351118594">Älä näytä uudelleen</translation>
+<translation id="1692118695553449118">Synkronointi on käytössä.</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">Viimeinen tunti</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – päivitettiin <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8445448999790540984">Salasanojen vienti epäonnistui</translation>
 <translation id="8447861592752582886">Peruuta laitteen käyttöoikeus</translation>
 <translation id="8461694314515752532">Salaa synkronoidut tiedot oman synkronoinnin tunnuslauseesi avulla</translation>
-<translation id="8477071352266846533">Synkronointi pois käytöstä: <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Käytettävissä offline-tilassa</translation>
 <translation id="8489271220582375723">Avaa Historia-sivu</translation>

@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">Google तालिका</translation>
 <translation id="2544853746127077729">नेटवर्क द्वारा प्रमाणीकरण प्रमाणपत्र अस्वीकार किया गया</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> में जोड़ें</translation>
+<translation id="2549985041256363841">रिकॉर्ड करना शुरू करें</translation>
 <translation id="2550212893339833758">स्वैप की गई मेमोरी</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" /> को <ph name="FILE_NAME" /> खोलने की मंज़ूरी दें?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />, <ph name="NETWORK_ID" /> से कनेक्‍ट करने में असमर्थ था. कृपया कोई अन्‍य नेटवर्क चुनें या पुन: प्रयास करें.</translation>
@@ -1407,7 +1408,6 @@
 <translation id="3124111068741548686">उपयोगकर्ता हैंडल</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">यह ऐसे किसी भी डेटा को हटा देगा जिसे दिखाई गईं सभी साइटों के लिए आपके डिवाइस पर संग्रहित किया गया है. क्या आप जारी रखना चाहते हैं?</translation>
-<translation id="3127919023693423797">प्रमाणित कर रहा है...</translation>
 <translation id="3129173833825111527">बायां हाशिया</translation>
 <translation id="3130528281680948470">आपका डिवाइस रीसेट कर दिया जाएगा और सभी उपयोगकर्ता खाते और स्‍थानीय डेटा हटा दिए जाएंगे. इसे पहले जैसा नहीं किया जा सकता.</translation>
 <translation id="313205617302240621">पासवर्ड भूल गए?</translation>
@@ -2032,6 +2032,7 @@
 <translation id="404299405565920089">ऐप्लिकेशन और वेबसाइटों पर आपके वे सभी खाते प्रबंधित किए जाते हैं जिन पर आपने साइन इन किया हुआ है. जिन ऐप्लिकेशन और वेबसाइटों को मंज़ूरी मिली हुई है, वे उस खाता जानकारी को एक्सेस कर सकते हैं, जो काम को ठीक तरीके से करने के लिए ज़रूरी है.</translation>
 <translation id="4044612648082411741">अपना प्रमाणपत्र पासवर्ड डालें</translation>
 <translation id="404493185430269859">डिफ़ॉल्ट खोज इंजन</translation>
+<translation id="4046123991198612571">अगला ट्रैक</translation>
 <translation id="4052120076834320548">छोटा</translation>
 <translation id="4055023634561256217">आपके डिवाइस को पॉवरवॉश द्वारा रीसेट किए जाने से पहले पुन:प्रारंभ करना आवश्यक है.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3351,6 +3352,7 @@
 <translation id="6069671174561668781">वॉलपेपर सेट करें</translation>
 <translation id="6071181508177083058">पासवर्ड की पुष्‍टि करें</translation>
 <translation id="6071576563962215370">सिस्टम, डिवाइस इंस्टॉलेशन-समय विशेषता लॉक को स्थापित नहीं कर सका.</translation>
+<translation id="6073451960410192870">रिकॉर्डिंग बंद करें</translation>
 <translation id="6073903501322152803">एक्सेस-योग्यता सुविधाएं जोड़ें</translation>
 <translation id="6074825444536523002">Google फ़ॉर्म</translation>
 <translation id="6075731018162044558">ओह!  सिस्टम इस डिवाइस के लिए, लंबे समय तक चलने वाला एक API (एपीआई) एक्सेस टोकन नहीं पा सका.</translation>
@@ -3574,7 +3576,6 @@
 <translation id="6410328738210026208">चैनल बदलें और पावरवॉश करें</translation>
 <translation id="6410668567036790476">खोज इंजन जोड़ें</translation>
 <translation id="641081527798843608">विषय मिलान</translation>
-<translation id="6412516638504297304">{0,plural, =1{}one{# विंडो खुली हैं}other{# विंडो खुली हैं}}</translation>
 <translation id="6412931879992742813">नई गुप्त विंडो</translation>
 <translation id="6415900369006735853">अपने फ़ोन पर इंटरनेट चालू करें</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -3898,7 +3899,6 @@
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6916590542764765824">एक्‍सटेंशन प्रबंधित करें</translation>
 <translation id="6920989436227028121">नियमित टैब के रूप में खोलें</translation>
-<translation id="6921104647315081813">गतिविधियां साफ़ करें</translation>
 <translation id="6921709132208495314">इस पेज पर डेटा का इस्तेमाल बंद करें</translation>
 <translation id="6922128026973287222">Google डेटा बचाने के साधन का उपयोग करके डेटा बचाएं और तेज़ी से ब्राउज़ करें. और जानने के लिए क्‍लिक करें.</translation>
 <translation id="6923132443355966645">स्क्रोल / क्लिक करें</translation>

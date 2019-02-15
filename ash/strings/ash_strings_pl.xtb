@@ -262,6 +262,7 @@
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
+<translation id="5465662442746197494">Potrzebujesz pomocy?</translation>
 <translation id="5496819745535887422">Administrator przywraca wcześniejszą wersję oprogramowania na urządzeniu. Po ponownym uruchomieniu urządzenia wszystkie dane zostaną usunięte.</translation>
 <translation id="553675580533261935">Zamykanie sesji</translation>
 <translation id="5537725057119320332">Przesyłaj</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">Wi-Fi włączone.</translation>
 <translation id="847056008324733326">Ustawienia skali wyświetlania</translation>
 <translation id="8477270416194247200">Aby anulować, naciśnij Alt + Szukaj lub Shift.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8513108775083588393">Autoobracanie</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8627191004499078455">Połączono z urządzeniem <ph name="DEVICE_NAME" /></translation>

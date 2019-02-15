@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">שיתוף אינטרנט מיידי בין ניידים</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
+<translation id="5465662442746197494">זקוק לעזרה?</translation>
 <translation id="5496819745535887422">מנהל המערכת מחזיר את המכשיר למצב קודם. כל הנתונים יימחקו אחרי שהמכשיר יופעל מחדש.</translation>
 <translation id="553675580533261935">יציאה מההפעלה</translation>
 <translation id="5537725057119320332">העברה</translation>
@@ -451,7 +452,6 @@
 <translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
 <translation id="847056008324733326">הגדרות קנה המידה של התצוגה</translation>
 <translation id="8477270416194247200">‏הקש על Alt+Search או על Shift כדי לבטל.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: מתחבר מחדש...</translation>
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
 <translation id="8627191004499078455">יש חיבור אל <ph name="DEVICE_NAME" /></translation>

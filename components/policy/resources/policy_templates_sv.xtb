@@ -495,17 +495,6 @@
       Principen träder bara i kraft när tillägget <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och enheten har registrerats med <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
-<translation id="2132732175597591362">Styr vitlista över webbadressmallar som automatisk uppspelning alltid är aktiverad för.
-
-      Om automatisk uppspelning är aktiverat kan videor spelas upp automatiskt (utan användarens tillstånd) tillsammans med ljudinnehåll <ph name="PRODUCT_NAME" />.
-
-      Webbadressmallar måste formateras i enlighet med https://www.chromium.org/administrators/url-blacklist-filter-format.
-
-      Om principen AutoplayAllowed är inställd på sant gäller inte värdet för den här principen.
-
-      Om principen AutoplayAllowed är inställd på falskt kan alla webbadressmallar som anges i den här principen fortfarande spela upp media automatiskt.
-
-      Observera att om <ph name="PRODUCT_NAME" /> körs när principen ändras tillämpas den endast på nya flikar som öppnas. Därför kan den tidigare inställningen gälla för vissa flikar.</translation>
 <translation id="2134437727173969994">Tillåt att skärmen låses</translation>
 <translation id="2137064848866899664">När den här principen har ställts in roteras alla skärmar till
       den angivna riktningen vid varje omstart och första gången som skärmen

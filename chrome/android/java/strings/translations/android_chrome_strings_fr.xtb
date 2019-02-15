@@ -97,6 +97,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1670399744444387456">Général</translation>
 <translation id="1671236975893690980">Téléchargement en attente…</translation>
 <translation id="1672586136351118594">Ne plus afficher</translation>
+<translation id="1692118695553449118">La synchronisation est activée.</translation>
 <translation id="1709438864123551175">Économiseur de données</translation>
 <translation id="1718835860248848330">Dernière heure</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Dernière mise à jour : <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -1002,7 +1003,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8445448999790540984">Impossible d'exporter les mots de passe</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
 <translation id="8461694314515752532">Chiffrer les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
-<translation id="8477071352266846533">Synchronisation désactivée pour <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8489271220582375723">Ouvrir la page "Historique"</translation>

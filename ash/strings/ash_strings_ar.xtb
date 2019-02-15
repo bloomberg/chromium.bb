@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">التوصيل الفوري</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">تمت إضافة كل المستخدمين المتوفرين لهذه الجلسة.</translation>
+<translation id="5465662442746197494">هل تريد المساعدة؟</translation>
 <translation id="5496819745535887422">‏يعمل المشرف على إعادة النسخة السابقة من نظام التشغيل Chrome إلى جهازك. وسيتم حذف جميع البيانات عند إعادة تشغيل الجهاز.</translation>
 <translation id="553675580533261935">جارٍ الخروج من الجلسة</translation>
 <translation id="5537725057119320332">إرسال</translation>
@@ -450,7 +451,6 @@
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
 <translation id="847056008324733326">عرض إعدادات المقياس</translation>
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
-<translation id="8484916590211895857"><ph name="NAME" /> : جارٍ إعادة الاتصال ...</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
 <translation id="8627191004499078455">تم الاتصال بجهاز <ph name="DEVICE_NAME" /></translation>

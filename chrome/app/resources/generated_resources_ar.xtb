@@ -1035,6 +1035,7 @@
 <translation id="2542049655219295786">‏جدول من Google</translation>
 <translation id="2544853746127077729">تمّ رفض شهادة المصادقة بواسطة الشبكة</translation>
 <translation id="2547921442987553570">إضافة إلى <ph name="EXTENSION_NAME" /></translation>
+<translation id="2549985041256363841">بدء التسجيل</translation>
 <translation id="2550212893339833758">ذاكرة مساحة التبديل</translation>
 <translation id="2550596535588364872">هل تريد السماح لـ <ph name="EXTENSION_NAME" /> بفتح <ph name="FILE_NAME" />؟</translation>
 <translation id="2553340429761841190">تعذر على <ph name="PRODUCT_NAME" /> الاتصال بـ <ph name="NETWORK_ID" />. يُرجى تحديد شبكة أخرى أو إعادة المحاولة.</translation>
@@ -1406,7 +1407,6 @@
 <translation id="3124111068741548686">معالجات المستخدم</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">سيؤدي هذا إلى حذف أي بيانات مخزنة على الجهاز لجميع المواقع المعروضة. هل ترغب في المتابعة؟</translation>
-<translation id="3127919023693423797">جارٍ المصادقة...</translation>
 <translation id="3129173833825111527">الهامش الأيسر</translation>
 <translation id="3130528281680948470">ستتم إعادة تعيين جهازك وستتم إزالة كل حسابات المستخدمين والبيانات المحلية. ولا يمكن التراجع عن ذلك.</translation>
 <translation id="313205617302240621">هل نسيت كلمة المرور؟</translation>
@@ -2028,6 +2028,7 @@
 <translation id="404299405565920089">‏يمكن إدارة جميع حساباتك على Google التي تمّ تسجيل الدخول إليها من التطبيقات والمواقع الإلكترونية هنا. يمكن للتطبيقات والمواقع الإلكترونية التي حصلت على إذن منك الوصول إلى معلومات الحساب التي تحتاج إليها للعمل بشكلٍ صحيح.</translation>
 <translation id="4044612648082411741">إدخال كلمة المرور للشهادة</translation>
 <translation id="404493185430269859">محرك البحث التلقائي</translation>
+<translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4052120076834320548">دقيق</translation>
 <translation id="4055023634561256217">‏يُتطلب إعادة تشغيل الجهاز حتى يتسنى لك إعادة تعيينه باستخدام Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3347,6 +3348,7 @@
 <translation id="6069671174561668781">تعيين خلفية</translation>
 <translation id="6071181508177083058">تأكيد كلمة المرور</translation>
 <translation id="6071576563962215370">تعذَّر على النظام إنشاء قفل سمات وقت تثبيت الجهاز.</translation>
+<translation id="6073451960410192870">إيقاف التسجيل</translation>
 <translation id="6073903501322152803">إضافة ميزات إمكانية الوصول</translation>
 <translation id="6074825444536523002">‏نموذج Google</translation>
 <translation id="6075731018162044558">عفوًا! تعذّر النظام في الحصول على رمز مميز للدخول لفترة زمنية طويلة إلى واجهة برمجة التطبيقات على هذا الجهاز.</translation>
@@ -3571,7 +3573,6 @@
 <translation id="6410328738210026208">‏تغيير القناة وPowerwash</translation>
 <translation id="6410668567036790476">إضافة محرّك بحث</translation>
 <translation id="641081527798843608">مطابقة الموضوع</translation>
-<translation id="6412516638504297304">{0,plural, =1{}zero{# نوافذ مفتوحة}two{نافذتان (#) مفتوحتان}few{# نوافذ مفتوحة}many{# نافذةً مفتوحة}other{# نافذة مفتوحة}}</translation>
 <translation id="6412931879992742813">نافذة جديدة للتصفح المتخفي</translation>
 <translation id="6415900369006735853">الاتصال بالإنترنت من خلال هاتفك</translation>
 <translation id="6417265370957905582">‏مساعد Google</translation>
@@ -3895,7 +3896,6 @@
 <translation id="6915804003454593391">المستخدم:</translation>
 <translation id="6916590542764765824">إدارة الإضافات</translation>
 <translation id="6920989436227028121">فتح كعلامة تبويب عادية</translation>
-<translation id="6921104647315081813">محو الأنشطة</translation>
 <translation id="6921709132208495314">إيقاف استخدام البيانات في هذه الصفحة</translation>
 <translation id="6922128026973287222">‏حفظ البيانات والاستمتاع بتصفح أسرع باستخدام ميزة توفير البيانات في Google. يمكن النقر للتعرف على المزيد من المعلومات.</translation>
 <translation id="6923132443355966645">التمرير / النقر على</translation>

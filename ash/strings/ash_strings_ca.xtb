@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Compartició de xarxa instantània</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
+<translation id="5465662442746197494">Necessiteu ajuda?</translation>
 <translation id="5496819745535887422">L'administrador està canviant la versió del dispositiu a una d'anterior. Quan es reiniciï el dispositiu, se'n suprimiran totes les dades.</translation>
 <translation id="553675580533261935">S'està tancant la sessió</translation>
 <translation id="5537725057119320332">Emet</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="847056008324733326">Configuració de l'escala de visualització</translation>
 <translation id="8477270416194247200">Prem Alt+Cerca o Maj per cancel·lar.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: s'està tornant a connectar…</translation>
 <translation id="8513108775083588393">Rotació automàtica</translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8627191004499078455">Connectat a <ph name="DEVICE_NAME" /></translation>

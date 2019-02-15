@@ -1031,6 +1031,7 @@
 <translation id="2542049655219295786">Google-Tabelle</translation>
 <translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
 <translation id="2547921442987553570">Zu <ph name="EXTENSION_NAME" /> hinzufügen</translation>
+<translation id="2549985041256363841">Aufnahme starten</translation>
 <translation id="2550212893339833758">Swap-Speicher</translation>
 <translation id="2550596535588364872">Zulassen, dass <ph name="EXTENSION_NAME" /> <ph name="FILE_NAME" /> öffnet?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> konnte keine Verbindung zu <ph name="NETWORK_ID" /> herstellen. Wählen Sie ein anderes Netzwerk oder versuchen Sie es erneut.</translation>
@@ -1402,7 +1403,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3124111068741548686">NUTZER-Handles</translation>
 <translation id="3126026824346185272">Strg</translation>
 <translation id="3127156390846601284">Dadurch werden sämtliche für alle angezeigten Websites auf dem Gerät gespeicherten Daten gelöscht. Möchten Sie fortfahren?</translation>
-<translation id="3127919023693423797">Authentifizierung wird durchgeführt...</translation>
 <translation id="3129173833825111527">Linker Rand</translation>
 <translation id="3130528281680948470">Ihr Gerät wird zurückgesetzt und alle Nutzerkonten und lokalen Daten werden gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.</translation>
 <translation id="313205617302240621">Passwort vergessen?</translation>
@@ -2028,6 +2028,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="404299405565920089">Hier können alle Ihre angemeldeten Google-Konten von Apps und Websites verwaltet werden. Apps und Websites, denen Sie die entsprechende Berechtigung erteilt haben, können auf die Kontoinformationen zugreifen, die sie benötigen, um ordnungsgemäß zu funktionieren.</translation>
 <translation id="4044612648082411741">Sie müssen Ihr Zertifikatspasswort eingeben</translation>
 <translation id="404493185430269859">Standardsuchmaschine</translation>
+<translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4052120076834320548">Winzig</translation>
 <translation id="4055023634561256217">Für das Zurücksetzen Ihres Geräts mit Powerwash ist ein Neustart erforderlich.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3347,6 +3348,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6069671174561668781">Hintergrund festlegen</translation>
 <translation id="6071181508177083058">Passwort bestätigen</translation>
 <translation id="6071576563962215370">Das System konnte die Attributsperre für die Geräteinstallationszeit nicht vornehmen.</translation>
+<translation id="6073451960410192870">Aufnahme beenden</translation>
 <translation id="6073903501322152803">Bedienungshilfen hinzufügen</translation>
 <translation id="6074825444536523002">Google-Formular</translation>
 <translation id="6075731018162044558">Hoppla! Das System hat kein langfristig gültiges API-Zugriffstoken für das Gerät erhalten.</translation>
@@ -3570,7 +3572,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6410328738210026208">Kanaländerung und Powerwash</translation>
 <translation id="6410668567036790476">Suchmaschine hinzufügen</translation>
 <translation id="641081527798843608">subject-match</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{# Fenster sind geöffnet}}</translation>
 <translation id="6412931879992742813">Neues Inkognitofenster</translation>
 <translation id="6415900369006735853">Internetverbindung über Ihr Smartphone herstellen</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -3894,7 +3895,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6915804003454593391">Nutzer:</translation>
 <translation id="6916590542764765824">Erweiterungen verwalten</translation>
 <translation id="6920989436227028121">In normalem Tab öffnen</translation>
-<translation id="6921104647315081813">Aktivitäten löschen</translation>
 <translation id="6921709132208495314">Datenverbrauch auf dieser Seite stoppen</translation>
 <translation id="6922128026973287222">Mit dem Google-Datensparmodus verbrauchen Sie weniger Daten und surfen schneller. Klicken Sie hier, um mehr zu erfahren.</translation>
 <translation id="6923132443355966645">Scrollen/Klicken</translation>

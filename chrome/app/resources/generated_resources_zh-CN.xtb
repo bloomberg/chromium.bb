@@ -1031,6 +1031,7 @@
 <translation id="2542049655219295786">Google 表格</translation>
 <translation id="2544853746127077729">身份验证证书遭到网络拒绝</translation>
 <translation id="2547921442987553570">添加到“<ph name="EXTENSION_NAME" />”</translation>
+<translation id="2549985041256363841">开始录制</translation>
 <translation id="2550212893339833758">已交换的内存</translation>
 <translation id="2550596535588364872">允许“<ph name="EXTENSION_NAME" />”打开“<ph name="FILE_NAME" />”？</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />无法连接到<ph name="NETWORK_ID" />。请选择其他网络或重试。</translation>
@@ -1402,7 +1403,6 @@
 <translation id="3124111068741548686">USER处理函数</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">此操作会删除所显示的全部网站在您设备上存储的所有数据。要继续吗？</translation>
-<translation id="3127919023693423797">正在验证身份…</translation>
 <translation id="3129173833825111527">左侧页边距</translation>
 <translation id="3130528281680948470">您的设备将被重置，且所有用户帐号和本地数据都将移除。此操作无法撤消。</translation>
 <translation id="313205617302240621">忘记了密码？</translation>
@@ -2025,6 +2025,7 @@
 <translation id="404299405565920089">您可在此处集中管理您的已通过应用和网站登录的所有 Google 帐号。已获得您的授权的应用和网站可访问其所需的帐号信息以正常运行。</translation>
 <translation id="4044612648082411741">输入您的证书密码</translation>
 <translation id="404493185430269859">默认搜索引擎</translation>
+<translation id="4046123991198612571">下一曲</translation>
 <translation id="4052120076834320548">最小</translation>
 <translation id="4055023634561256217">使用 Powerwash 重置您的设备之前必须重新启动该设备。</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -3339,6 +3340,7 @@
 <translation id="6069671174561668781">设置壁纸</translation>
 <translation id="6071181508177083058">确认密码</translation>
 <translation id="6071576563962215370">系统未能建立设备安装时间属性锁定。</translation>
+<translation id="6073451960410192870">停止录制</translation>
 <translation id="6073903501322152803">添加无障碍功能</translation>
 <translation id="6074825444536523002">Google 表单</translation>
 <translation id="6075731018162044558">糟糕！系统无法为此设备获得长期的 API 访问令牌。</translation>
@@ -3562,7 +3564,6 @@
 <translation id="6410328738210026208">变更版本并执行 Powerwash</translation>
 <translation id="6410668567036790476">添加搜索引擎</translation>
 <translation id="641081527798843608">主题匹配</translation>
-<translation id="6412516638504297304">{0,plural, =1{}other{已打开 # 个窗口}}</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6415900369006735853">通过手机连接到互联网</translation>
 <translation id="6417265370957905582">Google 助理</translation>
@@ -3886,7 +3887,6 @@
 <translation id="6915804003454593391">用户：</translation>
 <translation id="6916590542764765824">管理扩展程序</translation>
 <translation id="6920989436227028121">在常规标签页中打开</translation>
-<translation id="6921104647315081813">清除活动</translation>
 <translation id="6921709132208495314">停止在此网页上消耗数据流量</translation>
 <translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加速浏览。点击此处即可了解详情。</translation>
 <translation id="6923132443355966645">滚动/点击</translation>

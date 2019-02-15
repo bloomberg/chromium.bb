@@ -261,6 +261,7 @@
 <translation id="5430931332414098647">Tethering instantaneu</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
+<translation id="5465662442746197494">Ai nevoie de ajutor?</translation>
 <translation id="5496819745535887422">Administratorul restabilește o versiune anterioară a SO de pe dispozitiv. Toate datele vor fi șterse după repornirea dispozitivului.</translation>
 <translation id="553675580533261935">Se iese din sesiune</translation>
 <translation id="5537725057119320332">Proiectează</translation>
@@ -449,7 +450,6 @@
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
 <translation id="847056008324733326">Setările pentru scara afișajului</translation>
 <translation id="8477270416194247200">Apasă pe Alt + tasta de căutare sau pe Shift pentru a anula.</translation>
-<translation id="8484916590211895857"><ph name="NAME" />: se reconectează...</translation>
 <translation id="8513108775083588393">Rotire automată</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8627191004499078455">Conectat la <ph name="DEVICE_NAME" /></translation>
