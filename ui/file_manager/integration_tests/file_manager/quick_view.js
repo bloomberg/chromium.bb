@@ -166,8 +166,8 @@ testcase.openQuickViewRemovablePartitions = async function() {
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
-  // Mount USB device containing partitions.
-  await sendTestMessage({name: 'mountUsbWithPartitions'});
+  // Mount USB volume.
+  await sendTestMessage({name: 'mountFakePartitions'});
 
   // Wait for 2 removable partitions to appear in the directory tree.
   await repeatUntil(async () => {
