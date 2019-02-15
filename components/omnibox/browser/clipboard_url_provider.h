@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_PROVIDER_H_
-#define COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_URL_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_URL_PROVIDER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -15,12 +15,12 @@ class ClipboardRecentContent;
 class HistoryURLProvider;
 
 // Autocomplete provider offering content based on the clipboard's content.
-class ClipboardProvider : public AutocompleteProvider {
+class ClipboardURLProvider : public AutocompleteProvider {
  public:
-  ClipboardProvider(AutocompleteProviderClient* client,
-                    AutocompleteProviderListener* listener,
-                    HistoryURLProvider* history_url_provider,
-                    ClipboardRecentContent* clipboard_content);
+  ClipboardURLProvider(AutocompleteProviderClient* client,
+                       AutocompleteProviderListener* listener,
+                       HistoryURLProvider* history_url_provider,
+                       ClipboardRecentContent* clipboard_content);
 
   // AutocompleteProvider implementation.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -28,9 +28,9 @@ class ClipboardProvider : public AutocompleteProvider {
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ClipboardProviderTest, MatchesImage);
+  FRIEND_TEST_ALL_PREFIXES(ClipboardURLProviderTest, MatchesImage);
 
-  ~ClipboardProvider() override;
+  ~ClipboardURLProvider() override;
 
   // Handle the match created from one of the match creation methods and do
   // extra tracking and match adding.
@@ -75,9 +75,9 @@ class ClipboardProvider : public AutocompleteProvider {
 
   // Used to cancel image construction callbacks if autocomplete Stop() is
   // called.
-  base::WeakPtrFactory<ClipboardProvider> callback_weak_ptr_factory_;
+  base::WeakPtrFactory<ClipboardURLProvider> callback_weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClipboardProvider);
+  DISALLOW_COPY_AND_ASSIGN(ClipboardURLProvider);
 };
 
-#endif  // COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_URL_PROVIDER_H_
