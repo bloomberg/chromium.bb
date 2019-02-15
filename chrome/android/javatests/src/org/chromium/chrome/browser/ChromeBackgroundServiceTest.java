@@ -23,8 +23,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
-import java.util.HashMap;
-
 /**
  * Tests {@link ChromeBackgroundService}.
  */
@@ -80,13 +78,9 @@ public class ChromeBackgroundServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
-        features.put(ChromeFeatureList.BACKGROUND_TASK_SCHEDULER_FOR_BACKGROUND_SYNC, false);
-        ChromeFeatureList.setTestFeatures(features);
         BackgroundSyncLauncher.setGCMEnabled(false);
-        mSyncLauncher = BackgroundSyncLauncher.create();
-
         RecordHistogram.setDisabledForTests(true);
+        mSyncLauncher = BackgroundSyncLauncher.create();
         mSnippetsLauncher = SnippetsLauncher.create();
         mTaskService = new MockTaskService();
     }
