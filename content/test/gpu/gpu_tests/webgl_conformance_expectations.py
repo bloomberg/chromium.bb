@@ -550,6 +550,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', 'amd'], bug=905007)
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
+    self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['mac', 'amd'], bug=929009)
     # TODO(kbr): uncomment the following exepectation after test has
     # been made more robust.
     # self.Fail('conformance/rendering/texture-switch-performance.html',
