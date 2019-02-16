@@ -18,6 +18,7 @@ import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 
 /**
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
  */
 public class PlayInlineUpdateController
         implements InlineUpdateController, InstallStateUpdatedListener {
+    private static final String TAG = "PlayInline";
     private static final int RESULT_IN_APP_UPDATE_FAILED = 1;
     private static final int REQUEST_CODE = 8123;
 
@@ -77,8 +79,10 @@ public class PlayInlineUpdateController
         try {
             boolean success = mAppUpdateManager.startUpdateFlowForResult(
                     mAppUpdateInfo, AppUpdateType.FLEXIBLE, activity, REQUEST_CODE);
+            Log.i(TAG, "startUpdateFlowForResult() returned " + success);
         } catch (SendIntentException exception) {
             mInstallStatus = InstallStatus.FAILED;
+            Log.i(TAG, "startUpdateFlowForResult() threw an exception.");
         }
         // TODO(dtrainor): Use success.
     }
@@ -86,8 +90,12 @@ public class PlayInlineUpdateController
     @Override
     public void completeUpdate() {
         mAppUpdateManager.completeUpdate()
-                .addOnSuccessListener(unused -> { pushStatus(); })
+                .addOnSuccessListener(unused -> {
+                    Log.i(TAG, "completeUpdate() success.");
+                    pushStatus();
+                })
                 .addOnFailureListener(exception -> {
+                    Log.i(TAG, "completeUpdate() failed.");
                     mInstallStatus = InstallStatus.FAILED;
                     pushStatus();
                 });
@@ -96,6 +104,8 @@ public class PlayInlineUpdateController
     // InstallStateUpdatedListener implementation.
     @Override
     public void onStateUpdate(InstallState state) {
+        Log.i(TAG,
+                "onStateUpdate(" + state.installStatus() + ", " + state.installErrorCode() + ")");
         mInstallStatus = state.installStatus();
         pushStatus();
     }
@@ -106,12 +116,16 @@ public class PlayInlineUpdateController
                     mAppUpdateInfo = info;
                     mUpdateAvailability = info.updateAvailability();
                     mInstallStatus = info.installStatus();
+                    Log.i(TAG,
+                            "pullCurrentState(" + mUpdateAvailability + ", " + mInstallStatus
+                                    + ") success.");
                     pushStatus();
                 })
                 .addOnFailureListener(exception -> {
                     mAppUpdateInfo = null;
                     mUpdateAvailability = UpdateAvailability.UNKNOWN;
                     mInstallStatus = InstallStatus.UNKNOWN;
+                    Log.i(TAG, "pullCurrentState() failed.");
                     pushStatus();
                 });
     }
@@ -123,6 +137,7 @@ public class PlayInlineUpdateController
         int newState = toUpdateState(mUpdateAvailability, mInstallStatus);
         if (mUpdateState != null && mUpdateState == newState) return;
 
+        Log.i(TAG, "Pushing inline update state to " + newState);
         mUpdateState = newState;
         mCallback.run();
     }
