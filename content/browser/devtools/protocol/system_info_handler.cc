@@ -90,6 +90,10 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
   void EndVideoEncodeAcceleratorSupportedProfile() override {}
 
+  void BeginImageDecodeAcceleratorSupportedProfile() override {}
+
+  void EndImageDecodeAcceleratorSupportedProfile() override {}
+
   void BeginOverlayCapability() override {}
 
   void EndOverlayCapability() override {}

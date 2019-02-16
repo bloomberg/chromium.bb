@@ -76,6 +76,26 @@ struct VideoEncodeAcceleratorSupportedProfile {
   uint32 max_framerate_denominator;
 };
 
+// gpu::ImageDecodeAcceleratorType
+enum ImageDecodeAcceleratorType {
+  kJpeg,
+  kUnknown,
+};
+
+// gpu::ImageDecodeAcceleratorSubsampling
+enum ImageDecodeAcceleratorSubsampling {
+  k420,
+  k422,
+};
+
+// gpu::ImageDecodeAcceleratorSupportedProfile
+struct ImageDecodeAcceleratorSupportedProfile {
+  ImageDecodeAcceleratorType image_type;
+  gfx.mojom.Size min_encoded_dimensions;
+  gfx.mojom.Size max_encoded_dimensions;
+  array<ImageDecodeAcceleratorSubsampling> subsamplings;
+};
+
 // gpu::OverlayFormat
 [EnableIf=is_win]
 enum OverlayFormat {
@@ -142,6 +162,10 @@ struct GpuInfo {
   array<VideoEncodeAcceleratorSupportedProfile>
     video_encode_accelerator_supported_profiles;
   bool jpeg_decode_accelerator_supported;
+
+  array<ImageDecodeAcceleratorSupportedProfile>
+    image_decode_accelerator_supported_profiles;
+
   uint64 system_visual;
   uint64 rgba_visual;
   bool oop_rasterization_supported;

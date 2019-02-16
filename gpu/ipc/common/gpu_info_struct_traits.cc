@@ -5,6 +5,7 @@
 #include "gpu/ipc/common/gpu_info_struct_traits.h"
 #include "build/build_config.h"
 
+#include "base/logging.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
@@ -218,6 +219,77 @@ bool StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
          data.ReadMaxResolution(&out->max_resolution);
 }
 
+// static
+gpu::mojom::ImageDecodeAcceleratorType EnumTraits<
+    gpu::mojom::ImageDecodeAcceleratorType,
+    gpu::ImageDecodeAcceleratorType>::ToMojom(gpu::ImageDecodeAcceleratorType
+                                                  image_type) {
+  switch (image_type) {
+    case gpu::ImageDecodeAcceleratorType::kJpeg:
+      return gpu::mojom::ImageDecodeAcceleratorType::kJpeg;
+    case gpu::ImageDecodeAcceleratorType::kUnknown:
+      return gpu::mojom::ImageDecodeAcceleratorType::kUnknown;
+  }
+}
+
+// static
+bool EnumTraits<gpu::mojom::ImageDecodeAcceleratorType,
+                gpu::ImageDecodeAcceleratorType>::
+    FromMojom(gpu::mojom::ImageDecodeAcceleratorType input,
+              gpu::ImageDecodeAcceleratorType* out) {
+  switch (input) {
+    case gpu::mojom::ImageDecodeAcceleratorType::kJpeg:
+      *out = gpu::ImageDecodeAcceleratorType::kJpeg;
+      return true;
+    case gpu::mojom::ImageDecodeAcceleratorType::kUnknown:
+      *out = gpu::ImageDecodeAcceleratorType::kUnknown;
+      return true;
+  }
+  NOTREACHED() << "Invalid ImageDecodeAcceleratorType: " << input;
+  return false;
+}
+
+// static
+gpu::mojom::ImageDecodeAcceleratorSubsampling
+EnumTraits<gpu::mojom::ImageDecodeAcceleratorSubsampling,
+           gpu::ImageDecodeAcceleratorSubsampling>::
+    ToMojom(gpu::ImageDecodeAcceleratorSubsampling subsampling) {
+  switch (subsampling) {
+    case gpu::ImageDecodeAcceleratorSubsampling::k420:
+      return gpu::mojom::ImageDecodeAcceleratorSubsampling::k420;
+    case gpu::ImageDecodeAcceleratorSubsampling::k422:
+      return gpu::mojom::ImageDecodeAcceleratorSubsampling::k422;
+  }
+}
+
+// static
+bool EnumTraits<gpu::mojom::ImageDecodeAcceleratorSubsampling,
+                gpu::ImageDecodeAcceleratorSubsampling>::
+    FromMojom(gpu::mojom::ImageDecodeAcceleratorSubsampling input,
+              gpu::ImageDecodeAcceleratorSubsampling* out) {
+  switch (input) {
+    case gpu::mojom::ImageDecodeAcceleratorSubsampling::k420:
+      *out = gpu::ImageDecodeAcceleratorSubsampling::k420;
+      return true;
+    case gpu::mojom::ImageDecodeAcceleratorSubsampling::k422:
+      *out = gpu::ImageDecodeAcceleratorSubsampling::k422;
+      return true;
+  }
+  NOTREACHED() << "Invalid ImageDecodeAcceleratorSubsampling: " << input;
+  return false;
+}
+
+// static
+bool StructTraits<gpu::mojom::ImageDecodeAcceleratorSupportedProfileDataView,
+                  gpu::ImageDecodeAcceleratorSupportedProfile>::
+    Read(gpu::mojom::ImageDecodeAcceleratorSupportedProfileDataView data,
+         gpu::ImageDecodeAcceleratorSupportedProfile* out) {
+  return data.ReadImageType(&out->image_type) &&
+         data.ReadMinEncodedDimensions(&out->min_encoded_dimensions) &&
+         data.ReadMaxEncodedDimensions(&out->max_encoded_dimensions) &&
+         data.ReadSubsamplings(&out->subsamplings);
+}
+
 #if defined(OS_WIN)
 // static
 gpu::mojom::OverlayFormat
@@ -322,7 +394,9 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadVideoDecodeAcceleratorCapabilities(
              &out->video_decode_accelerator_capabilities) &&
          data.ReadVideoEncodeAcceleratorSupportedProfiles(
-             &out->video_encode_accelerator_supported_profiles);
+             &out->video_encode_accelerator_supported_profiles) &&
+         data.ReadImageDecodeAcceleratorSupportedProfiles(
+             &out->image_decode_accelerator_supported_profiles);
 }
 
 }  // namespace mojo
