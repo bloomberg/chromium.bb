@@ -131,8 +131,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
       const ViewHierarchyChangedDetails& details) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
-  void OnFocus() override;
-  void OnBlur() override;
 
   // Returns an InkDropImpl suitable for use with a square ink drop.
   // TODO(pbos): Rename to CreateDefaultSquareInkDropImpl.
@@ -190,6 +188,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
  private:
   class InkDropEventHandler;
+  class InkDropViewObserver;
   friend class test::InkDropHostViewTestApi;
 
   // The last user Event to trigger an ink drop ripple animation.
@@ -204,6 +203,9 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // Intentionally declared after |ink_drop_| so that it doesn't access a
   // destroyed |ink_drop_| during destruction.
   const std::unique_ptr<InkDropEventHandler> ink_drop_event_handler_;
+
+  // Used to observe changes to the host through the ViewObserver API.
+  const std::unique_ptr<InkDropViewObserver> ink_drop_view_observer_;
 
   float ink_drop_visible_opacity_ = 0.175f;
 
