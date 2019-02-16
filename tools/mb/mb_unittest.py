@@ -36,6 +36,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.sep = '/'
 
     self.files = {}
+    self.mtimes = {}
     self.calls = []
     self.cmds = []
     self.cross_compile = None
@@ -49,8 +50,12 @@ class FakeMBW(mb.MetaBuildWrapper):
   def Exists(self, path):
     return self.files.get(path) is not None
 
+  def Mtime(self, path):
+    return self.mtimes[path]
+
   def MaybeMakeDirectory(self, path):
     self.files[path] = True
+    self.mtimes[path] = 1
 
   def PathJoin(self, *comps):
     return self.sep.join(comps)
@@ -62,6 +67,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
     self.files[path] = contents
+    self.mtimes[path] =  1
 
   def Call(self, cmd, env=None, buffer_output=True):
     self.calls.append(cmd)
@@ -79,23 +85,26 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.out += sep.join(args) + end
 
   def TempFile(self, mode='w'):
-    return FakeFile(self.files)
+    return FakeFile(self.files, self.mtimes)
 
   def RemoveFile(self, path):
     del self.files[path]
+    del self.mtimes[path]
 
   def RemoveDirectory(self, path):
     self.rmdirs.append(path)
     files_to_delete = [f for f in self.files if f.startswith(path)]
     for f in files_to_delete:
       self.files[f] = None
+      self.mtimes[f] = None
 
 
 class FakeFile(object):
-  def __init__(self, files):
+  def __init__(self, files, mtimes):
     self.name = '/tmp/file'
     self.buf = ''
     self.files = files
+    self.mtimes = mtimes
 
   def write(self, contents):
     self.buf += contents
@@ -221,6 +230,8 @@ class UnitTest(unittest.TestCase):
     if files:
       for path, contents in files.items():
         mbw.files[path] = contents
+    for path in mbw.files:
+        mbw.mtimes[path] = 1
     return mbw
 
   def check(self, args, mbw=None, files=None, out=None, err=None, ret=None,
@@ -468,6 +479,35 @@ class UnitTest(unittest.TestCase):
     self.assertIn(
         'c:\\fake_src\\out\\Default\\cc_perftests_fuzzer.isolated.gen.json',
         mbw.files)
+
+  def disabled_test_find_right_runtime_deps(self):
+    # TODO(dpranke): Make this work right.
+    files = {
+      '/tmp/swarming_targets': 'foo_fuzzer\n',
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'foo_fuzzer': {"
+          "  'label': '//foo:foo_fuzzer',"
+          "  'type': 'fuzzer',"
+          "}}\n"
+      ),
+      '/fake_src/out/Default/foo_fuzzer.exe.runtime_deps': (
+          "stale entry\n"
+      ),
+      '/fake_src/out/Default/obj/foo_fuzzer.runtime_deps': (
+          "correct entry\n"
+      ),
+    }
+    mbw = self.fake_mbw(files=files)
+    mbw.mtimes[('/fake_src/out/Default/obj/foo_fuzzer.runtime_deps')] = 2
+
+    self.check(['gen',
+                '-c', 'debug_goma',
+                '--swarming-targets-file', '/tmp/swarming_targets',
+                '--isolate-map-file',
+                '/fake_src/testing/buildbot/gn_isolate_map.pyl',
+                '//out/Default'], mbw=mbw, ret=1)
+    self.assertIn('correct entry',
+       mbw.files['/fake_src/out/Default/foo_fuzzer.isolate'])
 
   def test_multiple_isolate_maps(self):
     files = {
