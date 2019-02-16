@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ class ImageBitmap;
 class ImageBitmapOptions;
 
 class CORE_EXPORT ImageBitmapSource {
+  DISALLOW_NEW();
+
  public:
   virtual IntSize BitmapSourceSize() const { return IntSize(); }
   virtual ScriptPromise CreateImageBitmap(ScriptState*,
