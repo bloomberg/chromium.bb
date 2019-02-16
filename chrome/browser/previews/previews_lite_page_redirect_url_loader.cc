@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_lite_page_redirect_url_loader.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -46,6 +47,30 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
   GURL lite_page_url = PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
       modified_resource_request_.url);
 
+  CreateRedirectInformation(lite_page_url);
+
+  modified_resource_request_.headers.MergeFrom(chrome_proxy_headers);
+
+  serving_url_loader_ = std::make_unique<PreviewsLitePageServingURLLoader>(
+      base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnResultDetermined,
+                     weak_ptr_factory_.GetWeakPtr()));
+  // |serving_url_loader_| can be null after this call.
+  serving_url_loader_->StartNetworkRequest(
+      modified_resource_request_, network_loader_factory, frame_tree_node_id);
+}
+
+void PreviewsLitePageRedirectURLLoader::StartRedirectToOriginalURL(
+    const GURL& original_url) {
+  CreateRedirectInformation(original_url);
+
+  std::move(callback_).Run(
+      nullptr, base::BindOnce(&PreviewsLitePageRedirectURLLoader::
+                                  StartHandlingRedirectToModifiedRequest,
+                              weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PreviewsLitePageRedirectURLLoader::CreateRedirectInformation(
+    const GURL& redirect_url) {
   bool insecure_scheme_was_upgraded = false;
   bool copy_fragment = true;
 
@@ -56,16 +81,13 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
       net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
       modified_resource_request_.referrer_policy,
       modified_resource_request_.referrer.spec(), net::HTTP_TEMPORARY_REDIRECT,
-      lite_page_url, base::nullopt, insecure_scheme_was_upgraded,
-      copy_fragment);
+      redirect_url, base::nullopt, insecure_scheme_was_upgraded, copy_fragment);
 
   bool should_clear_upload = false;
   net::RedirectUtil::UpdateHttpRequest(
       modified_resource_request_.url, modified_resource_request_.method,
       redirect_info_, base::nullopt, base::nullopt,
       &modified_resource_request_.headers, &should_clear_upload);
-
-  modified_resource_request_.headers.MergeFrom(chrome_proxy_headers);
 
   DCHECK(!should_clear_upload);
 
@@ -78,13 +100,6 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
   modified_resource_request_.referrer = GURL(redirect_info_.new_referrer);
   modified_resource_request_.referrer_policy =
       redirect_info_.new_referrer_policy;
-
-  serving_url_loader_ = std::make_unique<PreviewsLitePageServingURLLoader>(
-      base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnResultDetermined,
-                     weak_ptr_factory_.GetWeakPtr()));
-  // |serving_url_loader_| can be null after this call.
-  serving_url_loader_->StartNetworkRequest(
-      modified_resource_request_, network_loader_factory, frame_tree_node_id);
 }
 
 void PreviewsLitePageRedirectURLLoader::OnResultDetermined(
@@ -103,9 +118,9 @@ void PreviewsLitePageRedirectURLLoader::OnResultDetermined(
 void PreviewsLitePageRedirectURLLoader::OnLitePageSuccess() {
   std::move(callback_).Run(
       std::move(serving_url_loader_),
-      base::BindOnce(
-          &PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToLitePage,
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PreviewsLitePageRedirectURLLoader::
+                         StartHandlingRedirectToModifiedRequest,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PreviewsLitePageRedirectURLLoader::OnLitePageFallback() {
@@ -113,7 +128,7 @@ void PreviewsLitePageRedirectURLLoader::OnLitePageFallback() {
   std::move(callback_).Run(nullptr, {});
 }
 
-void PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToLitePage(
+void PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToModifiedRequest(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {

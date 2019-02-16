@@ -42,6 +42,13 @@ class PreviewsLitePageURLLoaderInterceptor
       content::ResourceContext* resource_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback);
 
+  // Creates a redirect URL loader that immediately serves a redirect to
+  // |original_url|.
+  void CreateOriginalURLLoader(
+      const network::ResourceRequest& tentative_resource_request,
+      const GURL& original_url,
+      content::URLLoaderRequestInterceptor::LoaderCallback callback);
+
   // Runs |callback| with |handler| and stores |serving_url_loader|.
   void HandleRedirectLoader(
       content::URLLoaderRequestInterceptor::LoaderCallback callback,

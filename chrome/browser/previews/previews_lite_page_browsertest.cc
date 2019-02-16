@@ -961,8 +961,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReloadEnabled)) {
-  if (GetParam())
-    return;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {}, {previews::features::kPreviewsDisallowedOnReloads});
@@ -986,8 +984,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsReloadDisabled)) {
-  if (GetParam())
-    return;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviewsDisallowedOnReloads}, {});
@@ -1609,8 +1605,6 @@ INSTANTIATE_TEST_CASE_P(URLLoaderImplementation,
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSDisabledBrowserTest,
     DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarNonDataSaverUser)) {
-  if (GetParam())
-    return;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
   ClearDeciderState();
