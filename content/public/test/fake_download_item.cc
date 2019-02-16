@@ -217,6 +217,10 @@ void FakeDownloadItem::SetLastModifiedTime(
   last_modified_time_ = last_modified_time;
 }
 
+void FakeDownloadItem::SetHash(const std::string& hash) {
+  hash_ = hash;
+}
+
 const std::string& FakeDownloadItem::GetLastModifiedTime() const {
   return last_modified_time_;
 }
@@ -367,8 +371,7 @@ FakeDownloadItem::GetTargetDisposition() const {
 }
 
 const std::string& FakeDownloadItem::GetHash() const {
-  NOTREACHED();
-  return dummy_string;
+  return hash_;
 }
 
 void FakeDownloadItem::DeleteFile(const base::Callback<void(bool)>& callback) {

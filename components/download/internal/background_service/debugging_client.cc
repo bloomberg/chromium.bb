@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/download/public/background_service/download_metadata.h"
 #include "services/network/public/cpp/resource_request_body.h"
 
 namespace download {
