@@ -121,7 +121,8 @@ if(NOT BUILD_SHARED_LIBS)
                 "${AOM_ROOT}/test/film_grain_table_test.cc"
                 "${AOM_ROOT}/test/segment_binarization_sync.cc"
                 "${AOM_ROOT}/test/superframe_test.cc"
-                "${AOM_ROOT}/test/tile_independence_test.cc")
+                "${AOM_ROOT}/test/tile_independence_test.cc"
+                "${AOM_ROOT}/test/yuv_temporal_filter_test.cc")
   endif()
 
   list(APPEND AOM_UNIT_TEST_COMMON_INTRIN_NEON

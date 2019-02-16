@@ -194,7 +194,7 @@ static INLINE void calculate_squared_errors(const uint8_t *s, int s_stride,
 
 static INLINE int get_filter_weight(unsigned int i, unsigned int j,
                                     unsigned int block_height,
-                                    unsigned int block_width, int *blk_fw,
+                                    unsigned int block_width, const int *blk_fw,
                                     int use_32x32) {
   if (use_32x32)
     // blk_fw[0] ~ blk_fw[3] are the same.
@@ -215,12 +215,12 @@ static INLINE int get_filter_weight(unsigned int i, unsigned int j,
   return filter_weight;
 }
 
-static void apply_temporal_filter(
+void av1_apply_temporal_filter_c(
     const uint8_t *y_frame1, int y_stride, const uint8_t *y_pred,
     int y_buf_stride, const uint8_t *u_frame1, const uint8_t *v_frame1,
     int uv_stride, const uint8_t *u_pred, const uint8_t *v_pred,
     int uv_buf_stride, unsigned int block_width, unsigned int block_height,
-    int ss_x, int ss_y, int strength, int *blk_fw, int use_32x32,
+    int ss_x, int ss_y, int strength, const int *blk_fw, int use_32x32,
     uint32_t *y_accumulator, uint16_t *y_count, uint32_t *u_accumulator,
     uint16_t *u_count, uint32_t *v_accumulator, uint16_t *v_count) {
   unsigned int i, j, k, m;
@@ -357,14 +357,14 @@ static INLINE void highbd_calculate_squared_errors(
   }
 }
 
-static void highbd_apply_temporal_filter(
+void av1_highbd_apply_temporal_filter_c(
     const uint8_t *yf, int y_stride, const uint8_t *yp, int y_buf_stride,
     const uint8_t *uf, const uint8_t *vf, int uv_stride, const uint8_t *up,
     const uint8_t *vp, int uv_buf_stride, unsigned int block_width,
-    unsigned int block_height, int ss_x, int ss_y, int strength, int *blk_fw,
-    int use_32x32, uint32_t *y_accumulator, uint16_t *y_count,
-    uint32_t *u_accumulator, uint16_t *u_count, uint32_t *v_accumulator,
-    uint16_t *v_count) {
+    unsigned int block_height, int ss_x, int ss_y, int strength,
+    const int *blk_fw, int use_32x32, uint32_t *y_accumulator,
+    uint16_t *y_count, uint32_t *u_accumulator, uint16_t *u_count,
+    uint32_t *v_accumulator, uint16_t *v_count) {
   unsigned int i, j, k, m;
   int64_t modifier;
   const int rounding = (1 << strength) >> 1;
@@ -494,7 +494,7 @@ static void highbd_apply_temporal_filter(
 void av1_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,
                                  uint8_t *frame2, unsigned int block_width,
                                  unsigned int block_height, int strength,
-                                 int *blk_fw, int use_32x32,
+                                 const int *blk_fw, int use_32x32,
                                  unsigned int *accumulator, uint16_t *count) {
   unsigned int i, j, k;
   int modifier;
@@ -917,7 +917,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
                     BH, adj_strength, blk_fw, use_32x32, accumulator, count);
               } else {
                 // Process 3 planes together.
-                highbd_apply_temporal_filter(
+                av1_highbd_apply_temporal_filter(
                     f->y_buffer + mb_y_src_offset, f->y_stride, predictor, BW,
                     f->u_buffer + mb_uv_src_offset,
                     f->v_buffer + mb_uv_src_offset, f->uv_stride,
@@ -936,7 +936,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
                     BH, strength, blk_fw, use_32x32, accumulator, count);
               } else {
                 // Process 3 planes together.
-                apply_temporal_filter(
+                av1_apply_temporal_filter(
                     f->y_buffer + mb_y_src_offset, f->y_stride, predictor, BW,
                     f->u_buffer + mb_uv_src_offset,
                     f->v_buffer + mb_uv_src_offset, f->uv_stride,
