@@ -31,7 +31,6 @@ import android.view.ViewGroup;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
@@ -80,7 +79,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private static final String PREF_SERVICES_CATEGORY = "services_category";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
-    private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
     private static final String PREF_NAVIGATION_ERROR = "navigation_error";
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
     private static final String PREF_SAFE_BROWSING_SCOUT_REPORTING =
@@ -118,7 +116,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private ChromeSwitchPreference mSyncRequested;
 
     private ChromeSwitchPreference mSearchSuggestions;
-    private ChromeSwitchPreference mNetworkPredictions;
     private ChromeSwitchPreference mNavigationError;
     private ChromeSwitchPreference mSafeBrowsing;
     private ChromeSwitchPreference mSafeBrowsingReporting;
@@ -168,10 +165,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mSearchSuggestions = (ChromeSwitchPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
         mSearchSuggestions.setOnPreferenceChangeListener(this);
         mSearchSuggestions.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-
-        mNetworkPredictions = (ChromeSwitchPreference) findPreference(PREF_NETWORK_PREDICTIONS);
-        mNetworkPredictions.setOnPreferenceChangeListener(this);
-        mNetworkPredictions.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mNavigationError = (ChromeSwitchPreference) findPreference(PREF_NAVIGATION_ERROR);
         mNavigationError.setOnPreferenceChangeListener(this);
@@ -315,9 +308,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             mPrefServiceBridge.setSafeBrowsingEnabled((boolean) newValue);
         } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
             mPrefServiceBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
-        } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-            mPrefServiceBridge.setNetworkPredictionEnabled((boolean) newValue);
-            recordNetworkPredictionEnablingUMA((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             mPrefServiceBridge.setResolveNavigationErrorEnabled((boolean) newValue);
         } else if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
@@ -483,11 +473,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         }
     }
 
-    private void recordNetworkPredictionEnablingUMA(boolean enabled) {
-        // Report user turning on and off NetworkPrediction.
-        RecordHistogram.recordBooleanHistogram("PrefService.NetworkPredictionEnabled", enabled);
-    }
-
     private static void removePreference(PreferenceGroup from, Preference preference) {
         boolean found = from.removePreference(preference);
         assert found : "Don't have such preference! Preference key: " + preference.getKey();
@@ -497,7 +482,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         updateSyncPreferences();
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
-        mNetworkPredictions.setChecked(mPrefServiceBridge.getNetworkPredictionEnabled());
         mNavigationError.setChecked(mPrefServiceBridge.isResolveNavigationErrorEnabled());
         mSafeBrowsing.setChecked(mPrefServiceBridge.isSafeBrowsingEnabled());
         mSafeBrowsingReporting.setChecked(
@@ -559,9 +543,6 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             }
             if (PREF_SAFE_BROWSING.equals(key)) {
                 return mPrefServiceBridge.isSafeBrowsingManaged();
-            }
-            if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-                return mPrefServiceBridge.isNetworkPredictionManaged();
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
                 return mPrefServiceBridge.isMetricsReportingManaged();
