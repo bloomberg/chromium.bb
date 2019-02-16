@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -301,7 +300,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     private static Bitmap createBitmap(int color) {
         int colors[] = {color};
-        return ShadowBitmap.createBitmap(colors, 1, 1, Bitmap.Config.ALPHA_8);
+        return Bitmap.createBitmap(colors, 1, 1, Bitmap.Config.ALPHA_8);
     }
 
     private static void updateIfNeeded(WebApkUpdateManager updateManager) {

@@ -7,10 +7,8 @@ package org.chromium.testing.local;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
-import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
-import org.robolectric.res.ResourcePath;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -37,13 +35,16 @@ public class GNManifestFactory implements ManifestFactory {
             throw new RuntimeException("Specify manifest path in GN build file.");
         }
 
-        return new ManifestIdentifier(null, null, null, config.packageName(), null);
-    }
-
-    @Override
-    public AndroidManifest create(ManifestIdentifier manifestIdentifier) {
         String manifestPath = System.getProperty(CHROMIUM_MANIFEST_PATH);
         String resourceDirs = System.getProperty(CHROMIUM_RES_DIRECTORIES);
+
+        FsFile manifestFile = null;
+        if (manifestPath != null) {
+            try {
+                manifestFile = Fs.fromURL(new File(manifestPath).toURI().toURL());
+            } catch (MalformedURLException e) {
+            }
+        }
 
         final List<FsFile> resourceDirsList = new ArrayList<FsFile>();
         if (resourceDirs != null) {
@@ -55,23 +56,11 @@ public class GNManifestFactory implements ManifestFactory {
             }
         }
 
-        FsFile manifestFile = null;
-        if (manifestPath != null) {
-            try {
-                manifestFile = Fs.fromURL(new File(manifestPath).toURI().toURL());
-            } catch (MalformedURLException e) {
-            }
+        List<ManifestIdentifier> libraries = new ArrayList<>();
+        for (FsFile resDir : resourceDirsList) {
+            libraries.add(new ManifestIdentifier(config.packageName(), null, resDir, null, null));
         }
 
-        return new AndroidManifest(manifestFile, null, null, manifestIdentifier.getPackageName()) {
-            @Override
-            public List<ResourcePath> getIncludedResourcePaths() {
-                List<ResourcePath> paths = super.getIncludedResourcePaths();
-                for (FsFile resourceDir : resourceDirsList) {
-                    paths.add(new ResourcePath(getRClass(), resourceDir, getAssetsDirectory()));
-                }
-                return paths;
-            }
-        };
+        return new ManifestIdentifier(config.packageName(), manifestFile, null, null, libraries);
     }
 }

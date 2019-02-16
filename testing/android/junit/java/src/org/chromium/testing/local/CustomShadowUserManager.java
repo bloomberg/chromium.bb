@@ -27,6 +27,7 @@ public class CustomShadowUserManager extends ShadowUserManager {
         return bundle != null ? bundle : new Bundle();
     }
 
+    @Override
     public void setApplicationRestrictions(String packageName, Bundle applicationRestrictions) {
         mApplicationRestrictions.put(packageName, applicationRestrictions);
     }

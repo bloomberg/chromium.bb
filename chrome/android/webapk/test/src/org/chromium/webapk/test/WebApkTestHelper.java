@@ -37,7 +37,7 @@ public class WebApkTestHelper {
         ShadowPackageManager packageManager =
                 Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
         Resources res = Mockito.mock(Resources.class);
-        packageManager.resources.put(packageName, res);
+        ShadowPackageManager.resources.put(packageName, res);
 
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
@@ -84,7 +84,7 @@ public class WebApkTestHelper {
     public static void setResource(String packageName, Resources res) {
         ShadowPackageManager packageManager =
                 Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
-        packageManager.resources.put(packageName, res);
+        ShadowPackageManager.resources.put(packageName, res);
     }
 
     private static PackageInfo newPackageInfo(String packageName, Bundle metaData,

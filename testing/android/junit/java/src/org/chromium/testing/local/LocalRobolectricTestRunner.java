@@ -13,7 +13,7 @@ import org.robolectric.internal.ManifestFactory;
  * A custom Robolectric Junit4 Test Runner with Chromium specific settings.
  */
 public class LocalRobolectricTestRunner extends RobolectricTestRunner {
-    public static final int DEFAULT_SDK = 26;
+    public static final int DEFAULT_SDK = 28;
     private static final String DEFAULT_PACKAGE_NAME = "org.robolectric.default";
 
     static {

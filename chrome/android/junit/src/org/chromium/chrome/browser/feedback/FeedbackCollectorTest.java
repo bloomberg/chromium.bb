@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -166,7 +167,7 @@ public class FeedbackCollectorTest {
 
             mDone = true;
             mBitmap = bitmap;
-            new Handler(ShadowLooper.getMainLooper()).post(mCallback);
+            new Handler(Looper.getMainLooper()).post(mCallback);
         }
     }
 
@@ -226,7 +227,7 @@ public class FeedbackCollectorTest {
             assertNotEquals(null, mCallback);
 
             mDone = true;
-            new Handler(ShadowLooper.getMainLooper()).post(mCallback);
+            new Handler(Looper.getMainLooper()).post(mCallback);
         }
     }
 
@@ -266,7 +267,7 @@ public class FeedbackCollectorTest {
 
     @Before
     public void setUp() {
-        ThreadUtils.setUiThread(ShadowLooper.getMainLooper());
+        ThreadUtils.setUiThread(Looper.getMainLooper());
     }
 
     @After
