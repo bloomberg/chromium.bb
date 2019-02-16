@@ -6,12 +6,13 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/debug/stack_trace.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/client_change.h"
 #include "services/ws/client_change_tracker.h"
+#include "services/ws/common/switches.h"
 #include "services/ws/proxy_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
@@ -90,8 +91,14 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
       ProxyWindow::GetMayBeNull(window_)->frame_sink_id();
+  // This code only needs first-surface-activation for tests.
+  const bool wants_first_surface_activation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseTestConfig);
   host_frame_sink_manager->RegisterFrameSinkId(
-      frame_sink_id, this, viz::ReportFirstSurfaceActivation::kYes);
+      frame_sink_id, this,
+      wants_first_surface_activation ? viz::ReportFirstSurfaceActivation::kYes
+                                     : viz::ReportFirstSurfaceActivation::kNo);
   window_->SetEmbedFrameSinkId(frame_sink_id);
 
   UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
@@ -403,6 +410,8 @@ void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
 
 void ClientRoot::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  // NOTE: this function is only called if kUseTestConfig is supplied. See
+  // call to RegisterFrameSinkId().
   if (window_tree_->client_name().empty())
     return;
 
