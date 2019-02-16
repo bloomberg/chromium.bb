@@ -162,6 +162,7 @@ cr.define('print_preview_test_utils', function() {
       certificateStatus: invalid ?
           print_preview.DestinationCertificateStatus.NO :
           print_preview.DestinationCertificateStatus.UNKNOWN,
+      account: 'foo@chromium.org',
     };
     const dest = new print_preview.Destination(
         id, print_preview.DestinationType.GOOGLE,

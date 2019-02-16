@@ -307,7 +307,7 @@ cr.define('destination_select_test', function() {
                 page.destinationStore_),
           ])
           .then(function() {
-            assertEquals(undefined, page.destination_);
+            assertEquals(null, page.destination_);
             const destinationSettings =
                 page.$$('print-preview-destination-settings');
             assertTrue(destinationSettings.$$('.throbber-container').hidden);

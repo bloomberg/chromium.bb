@@ -39,8 +39,8 @@
         margin-inline-start: 13px;
       }
 
-      print-preview-settings-section.destination-status-wrapper,
-      print-preview-settings-section.destination-status-wrapper div {
+      #destination-status-wrapper,
+      #destination-status-wrapper div {
         height: 100%;
         min-height: 0;
       }
@@ -48,25 +48,24 @@
     <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
-        <div class="throbber-container" hidden$="[[!shouldShowSpinner_]]">
+        <div class="throbber-container" hidden$="[[shouldHideSpinner_]]">
           <div class="throbber"></div>
-          <div class="destination-throbber-name"></div>
         </div>
         <print-preview-destination-select id="destinationSelect"
-            hidden$="[[shouldShowSpinner_]]"
+            hidden$="[[!shouldHideSpinner_]]"
             active-user="[[activeUser]]"
             app-kiosk-mode="[[appKioskMode]]"
             cloud-print-state="[[cloudPrintState]]"
             destination="[[destination]]"
             disabled="[[shouldDisableDropdown_(destinationStore, disabled,
-                                               shouldShowSpinner_, state)]]"
+                                               shouldHideSpinner_, state)]]"
             no-destinations-found="[[noDestinationsFound]]"
             recent-destination-list="[[recentDestinationList_]]"
             on-selected-option-change="onSelectedDestinationOptionChange_">
         </print-preview-destination-select>
       </div>
     </print-preview-settings-section>
-    <print-preview-settings-section class="destination-status-wrapper"
+    <print-preview-settings-section id="destination-status-wrapper"
         hidden$="[[!statusText_]]">
       <div slot="title"></div>
       <div slot="controls">
