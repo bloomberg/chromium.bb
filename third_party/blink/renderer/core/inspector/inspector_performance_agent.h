@@ -72,6 +72,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
   void ScriptEnds();
   void InnerEnable();
   TimeTicks GetTimeTicksNow();
+  TimeTicks GetThreadTimeNow();
 
   Member<InspectedFrames> inspected_frames_;
   TimeDelta layout_duration_;
@@ -84,12 +85,13 @@ class CORE_EXPORT InspectorPerformanceAgent final
   TimeTicks task_start_ticks_;
   TimeDelta v8compile_duration_;
   TimeTicks v8compile_start_ticks_;
+  TimeTicks thread_time_origin_;
   unsigned long long layout_count_ = 0;
   unsigned long long recalc_style_count_ = 0;
   int script_call_depth_ = 0;
   int layout_depth_ = 0;
-  bool use_thread_ticks_ = false;
   InspectorAgentState::Boolean enabled_;
+  InspectorAgentState::Boolean use_thread_ticks_;
   DISALLOW_COPY_AND_ASSIGN(InspectorPerformanceAgent);
 };
 

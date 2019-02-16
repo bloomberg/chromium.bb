@@ -27,6 +27,7 @@ title: test1
 	V8CompileDuration
 	TaskDuration
 	TaskOtherDuration
+	ThreadTime
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
@@ -60,6 +61,7 @@ title: test1
 	V8CompileDuration
 	TaskDuration
 	TaskOtherDuration
+	ThreadTime
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
@@ -93,6 +95,7 @@ title:
 	V8CompileDuration
 	TaskDuration
 	TaskOtherDuration
+	ThreadTime
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
