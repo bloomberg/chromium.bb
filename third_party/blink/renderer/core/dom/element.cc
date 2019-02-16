@@ -3312,8 +3312,7 @@ bool Element::SupportsSpatialNavigationFocus() const {
   // This is the way to make it possible to navigate to (focus) elements
   // which web designer meant for being active (made them respond to click
   // events).
-  if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) ||
-      SpatialNavigationIgnoresEventHandlers(GetDocument().GetFrame()))
+  if (!IsSpatialNavigationEnabled(GetDocument().GetFrame()))
     return false;
   if (HasEventListeners(event_type_names::kClick) ||
       HasEventListeners(event_type_names::kKeydown) ||

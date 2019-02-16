@@ -45,7 +45,6 @@ inline int FudgeFactor() {
 }
 
 CORE_EXPORT bool IsSpatialNavigationEnabled(const LocalFrame*);
-bool SpatialNavigationIgnoresEventHandlers(const LocalFrame*);
 
 struct FocusCandidate {
   STACK_ALLOCATED();

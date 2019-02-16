@@ -278,8 +278,6 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   page_->GetSettings().SetAcceleratedCompositingEnabled(true);
   page_->GetSettings().SetScriptEnabled(true);
   page_->GetSettings().SetAllowScriptsToCloseWindows(true);
-  page_->GetSettings().SetDeviceSupportsTouch(
-      main_settings.GetDeviceSupportsTouch());
   page_->GetSettings().SetMinimumFontSize(main_settings.GetMinimumFontSize());
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());

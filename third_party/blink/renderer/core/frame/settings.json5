@@ -273,17 +273,6 @@
       initial: false,
     },
 
-    // Limited use by features which behave differently depending on the input
-    // devices available.  For example, the pointer and hover media queries.
-    // Note that we need to be careful when basing behavior or UI on this -
-    // just because a device is present doesn't mean the user cares about it
-    // or uses it (i.e. Chromebook Pixel users generally don't want to give up
-    // screen real estate just because they happen to have a touchscreen).
-    {
-      name: "deviceSupportsTouch",
-      initial: false,
-    },
-
     // This value indicates the number of simultaneous multi-touch points supported
     // by the currently connected screen/digitizer that supports the most points.
     // From Pointer Events spec:
