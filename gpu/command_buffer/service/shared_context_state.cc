@@ -111,6 +111,7 @@ void SharedContextState::InitializeGrContext(
     options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
+    options.fDisallowGLSLBinaryCaching = workarounds.disable_program_disk_cache;
     owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
     gr_context_ = owned_gr_context_.get();
     if (!gr_context_) {

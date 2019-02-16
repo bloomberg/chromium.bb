@@ -97,8 +97,7 @@ GpuChannelManager::GpuChannelManager(
        gpu::kGpuFeatureStatusEnabled) ||
       features::IsUsingSkiaRenderer();
   const bool disable_disk_cache =
-      gpu_preferences_.disable_gpu_shader_disk_cache ||
-      gpu_driver_bug_workarounds_.disable_program_disk_cache;
+      gpu_preferences_.disable_gpu_shader_disk_cache;
   if (enable_gr_shader_cache && !disable_disk_cache)
     gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
 }
