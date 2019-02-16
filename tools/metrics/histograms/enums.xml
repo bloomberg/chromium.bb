@@ -40393,6 +40393,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="NSTemporaryDirectory"/>
   <int value="4" label="TMPDIR"/>
   <int value="5" label="/tmp"/>
+  <int value="6" label="/tmp, different volume"/>
 </enum>
 
 <enum name="OtherPossibleUsernamesUsage">

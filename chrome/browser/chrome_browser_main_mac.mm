@@ -296,34 +296,19 @@ enum class StagingDirectoryStep {
   kNSTemporaryDirectory,
   kTMPDIRDirectory,
   kTmpDirectory,
-  kMaxValue = kTmpDirectory,
+  kTmpDirectoryDifferentVolume,
+  kMaxValue = kTmpDirectoryDifferentVolume,
 };
 
 void LogStagingDirectoryLocation(StagingDirectoryStep step) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation", step);
+  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation2", step);
 }
 
 void RecordStagingDirectoryStats() {
   NSURL* bundle_url = [base::mac::OuterBundle() bundleURL];
   NSFileManager* file_manager = [NSFileManager defaultManager];
 
-  // 1. NSItemReplacementDirectory
-
-  NSError* error = nil;
-  NSURL* item_replacement_dir =
-      [file_manager URLForDirectory:NSItemReplacementDirectory
-                           inDomain:NSUserDomainMask
-                  appropriateForURL:bundle_url
-                             create:YES
-                              error:&error];
-  if (item_replacement_dir && !error &&
-      IsDirectoryWriteable([item_replacement_dir path])) {
-    LogStagingDirectoryLocation(
-        StagingDirectoryStep::kItemReplacementDirectory);
-    return;
-  }
-
-  // 2. A directory alongside Chromium.
+  // 1. A directory alongside Chromium.
 
   NSURL* bundle_parent_url =
       [[bundle_url URLByStandardizingPath] URLByDeletingLastPathComponent];
@@ -337,7 +322,7 @@ void RecordStagingDirectoryStats() {
                                          isDirectory:&is_directory];
 
   BOOL success = true;
-  error = nil;
+  NSError* error = nil;
   if (!path_existed) {
     success = [file_manager createDirectoryAtURL:sibling_dir
                      withIntermediateDirectories:YES
@@ -359,6 +344,22 @@ void RecordStagingDirectoryStats() {
 
   if (success) {
     LogStagingDirectoryLocation(StagingDirectoryStep::kSiblingDirectory);
+    return;
+  }
+
+  // 2. NSItemReplacementDirectory
+
+  error = nil;
+  NSURL* item_replacement_dir =
+      [file_manager URLForDirectory:NSItemReplacementDirectory
+                           inDomain:NSUserDomainMask
+                  appropriateForURL:bundle_url
+                             create:YES
+                              error:&error];
+  if (item_replacement_dir && !error &&
+      IsDirectoryWriteable([item_replacement_dir path])) {
+    LogStagingDirectoryLocation(
+        StagingDirectoryStep::kItemReplacementDirectory);
     return;
   }
 
@@ -389,7 +390,14 @@ void RecordStagingDirectoryStats() {
     return;
   }
 
-  // 6. Give up.
+  // 6. /tmp, but different volume
+
+  if (IsDirectoryWriteable(tmp)) {
+    LogStagingDirectoryLocation(StagingDirectoryStep::kTmpDirectory);
+    return;
+  }
+
+  // 7. Give up.
 
   LogStagingDirectoryLocation(StagingDirectoryStep::kFailedToFindDirectory);
 }
