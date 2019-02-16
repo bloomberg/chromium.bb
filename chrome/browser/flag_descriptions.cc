@@ -2688,15 +2688,25 @@ const char kUpdateMenuTypeName[] =
     "Forces the update menu type to a specific type";
 const char kUpdateMenuTypeDescription[] =
     "When set, forces the update type to be a specific one, which impacts "
-    "the app menu badge and menu item for updates.";
+    "the app menu badge and menu item for updates. For Inline Update, the "
+    "update available flag is implied. The 'Inline Update: Success' selection "
+    "goes through the whole inline update flow to the end with a successful "
+    "outcome. The other 'Inline Update' options go through the same flow, but "
+    "stop at various stages, see their error type for details.";
 const char kUpdateMenuTypeNone[] = "None";
 const char kUpdateMenuTypeUpdateAvailable[] = "Update Available";
 const char kUpdateMenuTypeUnsupportedOSVersion[] = "Unsupported OS Version";
-const char kUpdateMenuTypeInlineUpdateAvailable[] = "Inline Update Available";
-const char kUpdateMenuTypeInlineUpdateDownloading[] =
-    "Inline Update Downloading";
-const char kUpdateMenuTypeInlineUpdateReady[] = "Inline Update Ready";
-const char kUpdateMenuTypeInlineUpdateFailed[] = "Inline Update Failed";
+const char kUpdateMenuTypeInlineUpdateSuccess[] = "Inline Update: Success";
+const char kUpdateMenuTypeInlineUpdateDialogCanceled[] =
+    "Inline Update Error: Dialog Canceled";
+const char kUpdateMenuTypeInlineUpdateDialogFailed[] =
+    "Inline Update Error: Dialog Failed";
+const char kUpdateMenuTypeInlineUpdateDownloadFailed[] =
+    "Inline Update Error: Download Failed";
+const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
+    "Inline Update Error: Download Canceled";
+const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
+    "Inline Update Error: Install Failed";
 
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";

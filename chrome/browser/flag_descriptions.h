@@ -1587,10 +1587,12 @@ extern const char kUpdateMenuTypeDescription[];
 extern const char kUpdateMenuTypeNone[];
 extern const char kUpdateMenuTypeUpdateAvailable[];
 extern const char kUpdateMenuTypeUnsupportedOSVersion[];
-extern const char kUpdateMenuTypeInlineUpdateAvailable[];
-extern const char kUpdateMenuTypeInlineUpdateDownloading[];
-extern const char kUpdateMenuTypeInlineUpdateReady[];
-extern const char kUpdateMenuTypeInlineUpdateFailed[];
+extern const char kUpdateMenuTypeInlineUpdateSuccess[];
+extern const char kUpdateMenuTypeInlineUpdateDialogCanceled[];
+extern const char kUpdateMenuTypeInlineUpdateDialogFailed[];
+extern const char kUpdateMenuTypeInlineUpdateDownloadFailed[];
+extern const char kUpdateMenuTypeInlineUpdateDownloadCanceled[];
+extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
 extern const char kThirdPartyDoodlesName[];
 extern const char kThirdPartyDoodlesDescription[];
