@@ -82,11 +82,6 @@ bool IsSpatialNavigationEnabled(const LocalFrame* frame) {
           frame->GetSettings()->GetSpatialNavigationEnabled());
 }
 
-bool SpatialNavigationIgnoresEventHandlers(const LocalFrame* frame) {
-  return (frame && frame->GetSettings() &&
-          frame->GetSettings()->GetDeviceSupportsTouch());
-}
-
 static bool RectsIntersectOnOrthogonalAxis(SpatialNavigationDirection direction,
                                            const LayoutRect& a,
                                            const LayoutRect& b) {

@@ -113,7 +113,6 @@ class CORE_EXPORT DevToolsEmulator final
 
   bool touch_event_emulation_enabled_;
   bool double_tap_to_zoom_enabled_;
-  bool original_device_supports_touch_;
   int original_max_touch_points_;
 
   bool embedder_script_enabled_;

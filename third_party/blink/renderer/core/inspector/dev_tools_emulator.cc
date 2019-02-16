@@ -96,7 +96,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
               .GetMainFrameResizesAreOrientationChanges()),
       touch_event_emulation_enabled_(false),
       double_tap_to_zoom_enabled_(false),
-      original_device_supports_touch_(false),
       original_max_touch_points_(0),
       embedder_script_enabled_(
           web_view->GetPage()->GetSettings().GetScriptEnabled()),
@@ -477,8 +476,6 @@ float DevToolsEmulator::InputEventsScaleForEmulation() {
 void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
                                                      int max_touch_points) {
   if (!touch_event_emulation_enabled_) {
-    original_device_supports_touch_ =
-        web_view_->GetPage()->GetSettings().GetDeviceSupportsTouch();
     original_max_touch_points_ =
         web_view_->GetPage()->GetSettings().GetMaxTouchPoints();
   }
@@ -486,8 +483,6 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
   web_view_->GetPage()
       ->GetSettings()
       .SetForceTouchEventFeatureDetectionForInspector(enabled);
-  web_view_->GetPage()->GetSettings().SetDeviceSupportsTouch(
-      enabled ? true : original_device_supports_touch_);
   web_view_->GetPage()->GetSettings().SetMaxTouchPoints(
       enabled ? max_touch_points : original_max_touch_points_);
   web_view_->GetPage()->GetSettings().SetAvailablePointerTypes(
@@ -499,7 +494,7 @@ void DevToolsEmulator::SetTouchEventEmulationEnabled(bool enabled,
   web_view_->GetPage()->GetSettings().SetPrimaryHoverType(
       enabled ? kHoverTypeNone : embedder_primary_hover_type_);
   WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
-  if (!original_device_supports_touch_ && enabled && frame)
+  if (enabled && frame)
     frame->GetFrame()->GetEventHandler().ClearMouseEventManager();
 }
 
