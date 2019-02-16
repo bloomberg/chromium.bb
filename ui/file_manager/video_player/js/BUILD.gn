@@ -4,7 +4,7 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
-js_type_check("closure_compile") {
+js_type_check("closure_compile_module") {
   deps = [
     ":background",
     ":closure_compile_externs",
@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
     ":mouse_inactivity_watcher",
     ":video_player",
     ":video_player_metrics",
+    ":video_player_native_controls",
   ]
 }
 
@@ -51,6 +52,11 @@ js_library("mouse_inactivity_watcher") {
 }
 
 js_library("video_player_native_controls") {
+  deps = [
+    "//ui/file_manager/base/js:app_util",
+    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:util",
+  ]
 }
 
 js_library("video_player") {
@@ -76,5 +82,12 @@ js_library("video_player") {
 js_library("video_player_metrics") {
   deps = [
     "../../file_manager/common/js:metrics_base",
+  ]
+}
+
+group("closure_compile") {
+  testonly = true
+  deps = [
+    ":closure_compile_module",
   ]
 }
