@@ -179,6 +179,7 @@ void OculusDevice::RequestSession(
                      base::Unretained(render_loop_.get()),
                      std::move(on_presentation_ended), std::move(options),
                      std::move(on_request_present_result)));
+  outstanding_session_requests_count_++;
 }
 
 void OculusDevice::EnsureInitialized(int render_process_id,
@@ -207,11 +208,13 @@ void OculusDevice::OnRequestSessionResult(
     mojom::XRRuntime::RequestSessionCallback callback,
     bool result,
     mojom::XRSessionPtr session) {
+  outstanding_session_requests_count_--;
   if (!result) {
     std::move(callback).Run(nullptr, nullptr);
 
     // Start magic window again.
-    StartOvrSession();
+    if (outstanding_session_requests_count_ == 0)
+      StartOvrSession();
     return;
   }
 
@@ -251,10 +254,14 @@ void OculusDevice::OnPresentingControllerMojoConnectionError() {
 }
 
 void OculusDevice::OnPresentationEnded() {
-  StartOvrSession();
+  // If we are no-longer presenting, and there are no outstanding requests to
+  // start presenting, start the Oculus API to allow magic-window.
+  if (outstanding_session_requests_count_ == 0)
+    StartOvrSession();
 }
 
 void OculusDevice::StartOvrSession() {
+  DCHECK(outstanding_session_requests_count_ == 0);
   ovrInitParams initParams = {ovrInit_RequestVersion | ovrInit_Invisible,
                               OVR_MINOR_VERSION, NULL, 0, 0};
   ovrResult result = ovr_Initialize(&initParams);

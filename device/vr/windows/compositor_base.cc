@@ -170,7 +170,10 @@ void XRCompositorCommon::RequestSession(
     return;
   }
 
-  DCHECK(!on_presentation_ended_);
+  // If on_presentation_ended_ is not already null, we won't call to notify the
+  // runtime that that session has completed.  This is ok because the XRRuntime
+  // knows it has requested a new session, and isn't expecting that callback to
+  // be called.
   on_presentation_ended_ = std::move(on_presentation_ended);
 
   device::mojom::XRPresentationProviderPtr presentation_provider;
