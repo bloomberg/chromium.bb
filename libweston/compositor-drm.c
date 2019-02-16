@@ -2506,7 +2506,7 @@ drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode)
 	if (ret != 0)
 		weston_log("failed to create mode property blob: %m\n");
 
-	drm_debug(backend, "\t\t\t[atomic] created new mode blob %lu for %s",
+	drm_debug(backend, "\t\t\t[atomic] created new mode blob %lu for %s\n",
 		  (unsigned long) mode->blob_id, mode->mode_info.name);
 
 	return ret;
