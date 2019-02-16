@@ -215,7 +215,8 @@ void CheckExpectCTReport(const std::string& serialized_report,
                          const net::HostPortPair& host_port,
                          const std::string& expiration,
                          const net::SSLInfo& ssl_info) {
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(serialized_report));
+  std::unique_ptr<base::Value> value(
+      base::JSONReader::ReadDeprecated(serialized_report));
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->is_dict());
 

@@ -258,7 +258,7 @@ void HasMetadataValue(const perfetto::protos::ChromeMetadata& entry,
   EXPECT_TRUE(entry.has_json_value());
 
   std::unique_ptr<base::Value> child_dict =
-      base::JSONReader::Read(entry.json_value());
+      base::JSONReader::ReadDeprecated(entry.json_value());
   EXPECT_EQ(*child_dict, value);
 }
 

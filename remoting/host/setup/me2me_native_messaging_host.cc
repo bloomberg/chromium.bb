@@ -96,7 +96,8 @@ void Me2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   auto response = std::make_unique<base::DictionaryValue>();
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::ReadDeprecated(message);
   if (!message_value->is_dict()) {
     OnError("Received a message that's not a dictionary.");
     return;

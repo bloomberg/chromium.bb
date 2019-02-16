@@ -62,15 +62,16 @@ class JsonSanitizerTest : public ::testing::Test {
 void JsonSanitizerTest::CheckSuccess(const std::string& json) {
   SCOPED_TRACE(json);
   Sanitize(json);
-  std::unique_ptr<base::Value> parsed = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> parsed = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(parsed);
   EXPECT_EQ(State::STATE_SUCCESS, state_) << "Error: " << error_;
 
   // The JSON parser should accept the result.
   int error_code;
   std::string error;
-  std::unique_ptr<base::Value> reparsed = base::JSONReader::ReadAndReturnError(
-      result_, base::JSON_PARSE_RFC, &error_code, &error);
+  std::unique_ptr<base::Value> reparsed =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          result_, base::JSON_PARSE_RFC, &error_code, &error);
   EXPECT_TRUE(reparsed) << "Invalid result: " << error;
 
   // The parsed values should be equal.

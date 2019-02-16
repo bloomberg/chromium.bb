@@ -427,7 +427,7 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
         metadata_->SetBoolean(metadata.name(), metadata.bool_value());
       } else if (metadata.has_json_value()) {
         std::unique_ptr<base::Value> value(
-            base::JSONReader::Read(metadata.json_value()));
+            base::JSONReader::ReadDeprecated(metadata.json_value()));
         metadata_->Set(metadata.name(), std::move(value));
       } else {
         NOTREACHED();

@@ -75,8 +75,8 @@ bool ReadConfig(const base::FilePath& filename,
   }
 
   // Parse the JSON configuration, expecting it to contain a dictionary.
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+      file_content, base::JSON_ALLOW_TRAILING_COMMAS);
 
   base::DictionaryValue* dictionary;
   if (!value || !value->GetAsDictionary(&dictionary)) {
@@ -159,7 +159,8 @@ bool WriteConfig(const std::string& content) {
   }
 
   // Extract the configuration data that the user will verify.
-  std::unique_ptr<base::Value> config_value = base::JSONReader::Read(content);
+  std::unique_ptr<base::Value> config_value =
+      base::JSONReader::ReadDeprecated(content);
   if (!config_value.get()) {
     return false;
   }

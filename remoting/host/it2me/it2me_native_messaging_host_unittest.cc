@@ -93,10 +93,10 @@ base::DictionaryValue CreateConnectMessage(int id) {
   connect_message.SetString("directoryBotJid", kTestBotJid);
   connect_message.SetString("userName", kTestClientUsername);
   connect_message.SetString("authServiceWithToken", "oauth2:sometoken");
-  connect_message.Set(
-      "iceConfig",
-      base::JSONReader::Read("{ \"iceServers\": [ { \"urls\": [ \"stun:" +
-                             std::string(kTestStunServer) + "\" ] } ] }"));
+  connect_message.Set("iceConfig",
+                      base::JSONReader::ReadDeprecated(
+                          "{ \"iceServers\": [ { \"urls\": [ \"stun:" +
+                          std::string(kTestStunServer) + "\" ] } ] }"));
 
   return connect_message;
 }
@@ -355,7 +355,8 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
       return nullptr;
     }
 
-    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message =
+        base::JSONReader::ReadDeprecated(message_json);
     if (!message || !message->is_dict()) {
       LOG(ERROR) << "Malformed message:" << message_json;
       return nullptr;

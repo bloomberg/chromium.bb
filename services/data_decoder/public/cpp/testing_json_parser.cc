@@ -47,8 +47,9 @@ TestingJsonParser::~TestingJsonParser() {}
 void TestingJsonParser::Start() {
   int error_code;
   std::string error;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      unsafe_json_, base::JSON_PARSE_RFC, &error_code, &error);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          unsafe_json_, base::JSON_PARSE_RFC, &error_code, &error);
 
   // Run the callback asynchronously. Post the delete task first, so that the
   // completion callbacks may quit the run loop without leaking |this|.
