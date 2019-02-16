@@ -75,7 +75,9 @@ public class NotificationUmaTracker {
      * metric semantics the same over time.
      */
     @IntDef({ActionType.UNKNOWN, ActionType.DOWNLOAD_PAUSE, ActionType.DOWNLOAD_RESUME,
-            ActionType.DOWNLOAD_CANCEL})
+            ActionType.DOWNLOAD_CANCEL, ActionType.DOWNLOAD_PAGE_PAUSE,
+            ActionType.DOWNLOAD_PAGE_RESUME, ActionType.DOWNLOAD_PAGE_CANCEL,
+            ActionType.CONTENT_SUGGESTION_SETTINGS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         int UNKNOWN = -1;
@@ -91,8 +93,10 @@ public class NotificationUmaTracker {
         int DOWNLOAD_PAGE_RESUME = 4;
         // Cancel button on page download notification.
         int DOWNLOAD_PAGE_CANCEL = 5;
+        // Setting button on content suggestion notification.
+        int CONTENT_SUGGESTION_SETTINGS = 6;
 
-        int NUM_ENTRIES = 6;
+        int NUM_ENTRIES = 7;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
