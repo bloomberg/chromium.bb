@@ -24,7 +24,6 @@ class MediaControlOverflowMenuButtonElement final
 
  protected:
   const char* GetNameForHistograms() const override;
-  void UpdateShownState() final;
 
  private:
   void DefaultEventHandler(Event&) override;

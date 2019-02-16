@@ -93,11 +93,6 @@ public final class EventConstants {
     public static final String PREVIEWS_PAGE_LOADED = "preview_page_load";
 
     /**
-     * The download button for a media element was displayed.
-     */
-    public static final String MEDIA_DOWNLOAD_BUTTON_DISPLAYED = "media_download_button_displayed";
-
-    /**
      * Contextual Search panel was opened.
      */
     public static final String CONTEXTUAL_SEARCH_PANEL_OPENED = "contextual_search_panel_opened";

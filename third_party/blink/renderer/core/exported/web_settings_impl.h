@@ -197,7 +197,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetXSSAuditorEnabled(bool) override;
   void SetMediaControlsEnabled(bool) override;
   void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
-  void SetMediaDownloadInProductHelpEnabled(bool) override;
   void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) override;
 
   void SetLazyLoadEnabled(bool) override;

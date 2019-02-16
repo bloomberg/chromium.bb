@@ -19,15 +19,10 @@ import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
-import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.PopupWindow;
-import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
@@ -38,7 +33,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
@@ -59,7 +53,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -84,13 +77,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.widget.PulseDrawable;
-import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -99,7 +87,6 @@ import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -109,7 +96,6 @@ import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.WindowOpenDisposition;
-import org.chromium.ui.widget.AnchoredPopupWindow;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -340,16 +326,6 @@ public class Tab
      * {@link WindowAndroid}.
      */
     private boolean mIsDetached;
-
-    /**
-     * The Text bubble used to display In Product help widget for download feature on videos.
-     */
-    private TextBubble mDownloadIPHBubble;
-
-    /**
-     * The popup used to display the pulse around the download button on videos.
-     */
-    private PopupWindow mPulsePopupWindow;
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
@@ -1605,8 +1581,6 @@ public class Tab
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
         mObservers.clear();
 
-        hideMediaDownloadInProductHelp();
-
         mUserDataHost.destroy();
 
         NativePage currentNativePage = mNativePage;
@@ -2752,13 +2726,6 @@ public class Tab
     }
 
     /**
-     * Called when the orientation of the activity has changed.
-     */
-    public void onOrientationChange() {
-        hideMediaDownloadInProductHelp();
-    }
-
-    /**
      * Handle browser controls when a tab modal dialog is shown.
      * @param isShowing Whether a tab modal dialog is showing.
      */
@@ -2771,83 +2738,6 @@ public class Tab
      */
     public boolean areRendererInputEventsIgnored() {
         return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
-    }
-
-    @CalledByNative
-    private void showMediaDownloadInProductHelp(int x, int y, int width, int height) {
-        Rect rect = new Rect(x, y, x + width, y + height);
-
-        // If we are not currently showing the widget, ask the tracker if we can show it.
-        if (mDownloadIPHBubble == null) {
-            Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-            tracker.notifyEvent(EventConstants.MEDIA_DOWNLOAD_BUTTON_DISPLAYED);
-            if (!tracker.shouldTriggerHelpUI(FeatureConstants.MEDIA_DOWNLOAD_FEATURE)) {
-                // Inform native that the button was dismissed to notify the renderer that the
-                // request was rejected.
-                nativeMediaDownloadInProductHelpDismissed(mNativeTabAndroid);
-                return;
-            }
-
-            mDownloadIPHBubble = new TextBubble(getApplicationContext(), mContentView,
-                    R.string.iph_media_download_text,
-                    R.string.iph_media_download_accessibility_text, rect);
-            mDownloadIPHBubble.setDismissOnTouchInteraction(true);
-            mDownloadIPHBubble.addOnDismissListener(new OnDismissListener() {
-                @Override
-                public void onDismiss() {
-                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-                        @Override
-                        public void run() {
-                            hideMediaDownloadInProductHelp();
-                        }
-                    });
-                }
-            });
-        }
-
-        mDownloadIPHBubble.setPreferredVerticalOrientation(
-                AnchoredPopupWindow.VerticalOrientation.BELOW);
-        mDownloadIPHBubble.show();
-        createPulse(rect);
-    }
-
-    private void createPulse(Rect rect) {
-        if (mPulsePopupWindow == null) {
-            PulseDrawable pulseDrawable = PulseDrawable.createCircle(mThemedApplicationContext);
-            View view = new Button(getActivity());
-            view.setLayoutParams(new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            view.setBackground(pulseDrawable);
-
-            mPulsePopupWindow = new PopupWindow(getActivity());
-            mPulsePopupWindow.setBackgroundDrawable(null);
-            mPulsePopupWindow.setContentView(view);
-            mPulsePopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-            mPulsePopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-            mPulsePopupWindow.getContentView().setOnClickListener(
-                    v -> hideMediaDownloadInProductHelp());
-            mPulsePopupWindow.showAtLocation(
-                    getView(), Gravity.TOP | Gravity.START, rect.left, rect.top);
-            pulseDrawable.start();
-        }
-
-        mPulsePopupWindow.update(rect.left, rect.top, rect.width(), rect.height());
-    }
-
-    @CalledByNative
-    private void hideMediaDownloadInProductHelp() {
-        if (mPulsePopupWindow != null && mPulsePopupWindow.isShowing()) {
-            mPulsePopupWindow.dismiss();
-            mPulsePopupWindow = null;
-        }
-
-        if (mDownloadIPHBubble == null) return;
-
-        mDownloadIPHBubble.dismiss();
-        mDownloadIPHBubble = null;
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        tracker.dismissed(FeatureConstants.MEDIA_DOWNLOAD_FEATURE);
-        nativeMediaDownloadInProductHelpDismissed(mNativeTabAndroid);
     }
 
     /**
@@ -2900,6 +2790,5 @@ public class Tab
     private native void nativeSetPictureInPictureEnabled(long nativeTabAndroid, boolean enabled);
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
-    private native void nativeMediaDownloadInProductHelpDismissed(long nativeTabAndroid);
     private native boolean nativeAreRendererInputEventsIgnored(long nativeTabAndroid);
 }

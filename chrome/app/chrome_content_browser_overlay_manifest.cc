@@ -199,7 +199,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     autofill::mojom::PasswordManagerDriver,
                     blink::mojom::BadgeService, blink::mojom::CredentialManager,
                     blink::mojom::InstalledAppProvider,
-                    blink::mojom::MediaDownloadInProductHelp,
                     blink::mojom::ShareService,
                     blink::mojom::TextSuggestionHost,
                     chrome::mojom::OfflinePageAutoFetcher,
