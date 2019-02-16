@@ -4,6 +4,7 @@
 
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +15,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
@@ -91,8 +93,13 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
     return;
   }
 
-  // TODO(ryansturm): Handle reloads by handling non-intercepted attempts at
-  // fetching the lite page server. https://crbug.com/921756
+  std::string original_url;
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(
+          tentative_resource_request.url, &original_url)) {
+    CreateOriginalURLLoader(tentative_resource_request, GURL(original_url),
+                            std::move(callback));
+    return;
+  }
 
   if (ShouldCreateLoader(tentative_resource_request)) {
     CreateRedirectLoader(tentative_resource_request, resource_context,
@@ -123,20 +130,35 @@ void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
       frame_tree_node_id_);
 }
 
+void PreviewsLitePageURLLoaderInterceptor::CreateOriginalURLLoader(
+    const network::ResourceRequest& tentative_resource_request,
+    const GURL& original_url,
+    content::URLLoaderRequestInterceptor::LoaderCallback callback) {
+  redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
+      tentative_resource_request,
+      base::BindOnce(
+          &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
+          base::Unretained(this), std::move(callback)));
+
+  // |redirect_url_loader_| can be null after this call.
+  redirect_url_loader_->StartRedirectToOriginalURL(original_url);
+}
+
 void PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader(
     content::URLLoaderRequestInterceptor::LoaderCallback callback,
     std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader,
     RequestHandler handler) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Handle any failure by using default loader.
-  if (!serving_url_loader) {
-    DCHECK(handler.is_null());
+  if (handler.is_null()) {
+    DCHECK(!serving_url_loader_);
     redirect_url_loader_.reset();
     std::move(callback).Run({});
     return;
   }
 
-  // Save the serving loader to handle the next request.
+  // Save the serving loader to handle the next request. It can be null when
+  // serving the original URL on a reload.
   serving_url_loader_ = std::move(serving_url_loader);
 
   // |redirect_url_loader_| now manages its own lifetime via a mojo channel.

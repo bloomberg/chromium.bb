@@ -42,6 +42,9 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
           network_loader_factory,
       int frame_tree_node_id);
 
+  // Creates a redirect to |original_url|.
+  void StartRedirectToOriginalURL(const GURL& original_url);
+
  private:
   // network::mojom::URLLoader:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
@@ -64,7 +67,7 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
 
   // The handler when trying to serve the lite page to the user. Serves a
   // redirect to the lite page server URL.
-  void StartHandlingRedirectToLitePage(
+  void StartHandlingRedirectToModifiedRequest(
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderRequest request,
       network::mojom::URLLoaderClientPtr client);
@@ -76,6 +79,10 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
       const network::ResourceRequest& /* resource_request */,
       network::mojom::URLLoaderRequest request,
       network::mojom::URLLoaderClientPtr client);
+
+  // Helper method to create redirect information to |redirect_url| and modify
+  // |redirect_info_| and |modified_resource_request_|.
+  void CreateRedirectInformation(const GURL& redirect_url);
 
   // Mojo error handling. Deletes |this|.
   void OnConnectionClosed();
