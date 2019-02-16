@@ -327,6 +327,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   bool IsValid() const final;
   IntSize Size() const final { return size_; }
   scoped_refptr<StaticBitmapImage> Bitmap() final;
+
   bool OriginClean() const final { return is_origin_clean_; }
   void SetOriginClean(bool value) final { is_origin_clean_ = value; }
   scoped_refptr<CanvasResource> MakeAccelerated(
@@ -365,6 +366,70 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   GLuint texture_id_ = 0u;
   bool is_overlay_candidate_ = false;
   IntSize size_;
+
+  bool is_origin_clean_ = true;
+};
+
+// Resource type for a given opaque external resource described on construction
+// via a Mailbox; this CanvasResource IsAccelerated() by definition.
+class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
+ public:
+  static scoped_refptr<ExternalCanvasResource> Create(
+      const gpu::Mailbox&,
+      const IntSize&,
+      GLenum texture_target,
+      const CanvasColorParams&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      base::WeakPtr<CanvasResourceProvider>,
+      SkFilterQuality);
+  ~ExternalCanvasResource() override;
+  bool IsRecycleable() const final { return IsValid(); }
+  bool IsAccelerated() const final { return true; }
+  bool IsValid() const override;
+  bool SupportsAcceleratedCompositing() const override { return true; }
+  bool NeedsReadLockFences() const final { return false; }
+  bool OriginClean() const final { return is_origin_clean_; }
+  void SetOriginClean(bool value) final { is_origin_clean_ = value; }
+  scoped_refptr<CanvasResource> MakeAccelerated(
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
+    NOTREACHED();
+    return nullptr;
+  };
+  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
+    NOTREACHED();
+    return nullptr;
+  }
+  void Abandon() final;
+  IntSize Size() const final { return size_; }
+  void TakeSkImage(sk_sp<SkImage> image) final;
+
+  scoped_refptr<StaticBitmapImage> Bitmap() override;
+
+ private:
+  void TearDown() override;
+  GLenum TextureTarget() const final { return texture_target_; }
+  bool IsOverlayCandidate() const final { return true; }
+  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
+  bool HasGpuMailbox() const override;
+  const gpu::SyncToken GetSyncToken() override;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+      const override;
+
+  ExternalCanvasResource(const gpu::Mailbox&,
+                         const IntSize&,
+                         GLenum texture_target,
+                         const CanvasColorParams&,
+                         base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+                         base::WeakPtr<CanvasResourceProvider>,
+                         SkFilterQuality);
+
+  const base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+      context_provider_wrapper_;
+  const IntSize size_;
+  const GLenum texture_target_;
+  gpu::Mailbox mailbox_;
+  gpu::SyncToken sync_token_;
+
   bool is_origin_clean_ = true;
 };
 

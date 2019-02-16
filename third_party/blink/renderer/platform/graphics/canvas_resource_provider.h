@@ -54,7 +54,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kSoftwareCompositedResourceUsage,
     kAcceleratedResourceUsage,
     kAcceleratedCompositedResourceUsage,
-    kAcceleratedDirectResourceUsage,
+    kAcceleratedDirect2DResourceUsage,
+    kAcceleratedDirect3DResourceUsage,
   };
 
   enum PresentationMode {
@@ -123,6 +124,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // operation.
   void TryEnableSingleBuffering();
 
+  // Only works in single buffering mode.
+  bool ImportResource(scoped_refptr<CanvasResource>);
+
   void RecycleResource(scoped_refptr<CanvasResource>);
   void SetResourceRecyclingEnabled(bool);
   void ClearRecycledResources();
@@ -146,6 +150,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void Clear();
   ~CanvasResourceProvider() override;
 
+  base::WeakPtr<CanvasResourceProvider> CreateWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;
   GrContext* GetGrContext() const;
@@ -153,9 +161,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return context_provider_wrapper_;
   }
   SkFilterQuality FilterQuality() const { return filter_quality_; }
-  base::WeakPtr<CanvasResourceProvider> CreateWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
   scoped_refptr<StaticBitmapImage> SnapshotInternal();
 
   CanvasResourceProvider(const IntSize&,

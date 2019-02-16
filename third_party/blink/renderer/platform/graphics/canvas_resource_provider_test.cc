@@ -4,12 +4,14 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
+#include "base/test/gtest_util.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
@@ -142,6 +144,7 @@ TEST_F(CanvasResourceProviderTest,
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
       kSize, CanvasResourceProvider::kSoftwareCompositedResourceUsage,
@@ -218,14 +221,14 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
 }
 
 TEST_F(CanvasResourceProviderTest,
-       CanvasResourceProviderDirectGpuMemoryBuffer) {
+       CanvasResourceProviderDirect2DGpuMemoryBuffer) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kAcceleratedDirectResourceUsage,
+      kSize, CanvasResourceProvider::kAcceleratedDirect2DResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
@@ -243,6 +246,52 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_FALSE(provider->IsSingleBuffered());
   provider->TryEnableSingleBuffering();
   EXPECT_TRUE(provider->IsSingleBuffered());
+}
+
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderDirect3DGpuMemoryBuffer) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kAcceleratedDirect3DResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+
+  EXPECT_EQ(provider->Size(), kSize);
+  EXPECT_TRUE(provider->IsValid());
+  EXPECT_TRUE(provider->IsAccelerated());
+  EXPECT_TRUE(provider->SupportsDirectCompositing());
+  EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
+  EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
+  EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
+            kColorParams.GetOpacityMode());
+
+  EXPECT_FALSE(provider->IsSingleBuffered());
+  provider->TryEnableSingleBuffering();
+  EXPECT_TRUE(provider->IsSingleBuffered());
+
+#if GTEST_HAS_DEATH_TEST
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_DEATH(provider->NewOrRecycledResource(), "");
+  EXPECT_DEATH(provider->Snapshot(), "");
+#endif
+
+  gpu::Mailbox mailbox = gpu::Mailbox::Generate();
+  scoped_refptr<ExternalCanvasResource> resource =
+      ExternalCanvasResource::Create(
+          mailbox, kSize, GL_TEXTURE_2D, kColorParams,
+          SharedGpuContext::ContextProviderWrapper(), provider->CreateWeakPtr(),
+          kNone_SkFilterQuality);
+
+  EXPECT_TRUE(provider->ImportResource(resource));
+  EXPECT_EQ(provider->NewOrRecycledResource(), resource);
+  // NewOrRecycledResource() will always return the same |resource|.
+  EXPECT_EQ(provider->NewOrRecycledResource(), resource);
 }
 
 }  // namespace blink

@@ -51,6 +51,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
@@ -607,7 +608,8 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
       AcceleratedStaticBitmapImage::MailboxType::kSharedImageId);
 }
 
-scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateOrRecycleColorBuffer() {
+scoped_refptr<DrawingBuffer::ColorBuffer>
+DrawingBuffer::CreateOrRecycleColorBuffer() {
   DCHECK(state_restorer_);
   if (!recycled_color_buffer_queue_.IsEmpty()) {
     scoped_refptr<ColorBuffer> recycled =
@@ -635,6 +637,14 @@ DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer::
   if (doing_work_) {
     drawing_buffer_->CleanupRGBEmulationForBlitFramebuffer();
   }
+}
+
+scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
+    base::WeakPtr<CanvasResourceProvider> resource_provider) {
+  return ExternalCanvasResource::Create(
+      back_color_buffer_->mailbox, back_color_buffer_->size, texture_target_,
+      CanvasColorParams(), context_provider_->GetWeakPtr(), resource_provider,
+      kLow_SkFilterQuality);
 }
 
 DrawingBuffer::ColorBuffer::ColorBuffer(
