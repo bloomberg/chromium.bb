@@ -43,6 +43,12 @@ import java.util.Collection;
 @RunWith(ParameterizedRobolectricTestRunner.class)
 @Config(sdk = 21, manifest = Config.NONE)
 public class LocationProviderTest {
+    static {
+        // Setting robolectric.offline which tells Robolectric to look for runtime dependency
+        // JARs from a local directory and to not download them from Maven.
+        System.setProperty("robolectric.offline", "true");
+    }
+
     public static enum LocationProviderType { MOCK, ANDROID, GMS_CORE }
 
     @Parameters

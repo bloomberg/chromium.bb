@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,7 +22,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -37,12 +37,12 @@ import org.chromium.webapk.test.WebApkTestHelper;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, packageName = WebApkUtilsTest.WEBAPK_PACKAGE_NAME)
 public final class MainActivityTest {
-    private ShadowPackageManager mPackageManager;
+    private PackageManager mPackageManager;
     private static final String BROWSER_PACKAGE_NAME = "com.android.chrome";
 
     @Before
     public void setUp() {
-        mPackageManager = Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
+        mPackageManager = RuntimeEnvironment.application.getPackageManager();
         installBrowser(BROWSER_PACKAGE_NAME);
     }
 

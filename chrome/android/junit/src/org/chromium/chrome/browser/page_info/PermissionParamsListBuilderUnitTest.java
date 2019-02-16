@@ -72,9 +72,6 @@ public class PermissionParamsListBuilderUnitTest {
         assertEquals(1, params.size());
         PageInfoView.PermissionParams permissionParams = params.get(0);
 
-        assertEquals(context.getDrawable(R.drawable.permission_cookie),
-                context.getDrawable(permissionParams.iconResource));
-
         String expectedStatus = "Foo – " + context.getString(R.string.page_info_permission_allowed);
         assertEquals(expectedStatus, permissionParams.status.toString());
 
