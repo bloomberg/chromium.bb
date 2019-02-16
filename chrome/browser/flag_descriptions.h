@@ -1057,9 +1057,6 @@ extern const char kSiteSettingsDescription[];
 extern const char kSmoothScrollingName[];
 extern const char kSmoothScrollingDescription[];
 
-extern const char kSoftwareRasterizerName[];
-extern const char kSoftwareRasterizerDescription[];
-
 extern const char kSoleIntegrationName[];
 extern const char kSoleIntegrationDescription[];
 

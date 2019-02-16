@@ -1380,14 +1380,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"harmony-await-optimization", flag_descriptions::kAwaitOptimizationName,
      flag_descriptions::kAwaitOptimizationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kAwaitOptimization)},
-    {"disable-software-rasterizer", flag_descriptions::kSoftwareRasterizerName,
-     flag_descriptions::kSoftwareRasterizerDescription,
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
-     kOsAll,
-#else   // BUILDFLAG(ENABLE_SWIFTSHADER)
-     0,
-#endif  // BUILDFLAG(ENABLE_SWIFTSHADER)
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)},
     {"enable-gpu-rasterization", flag_descriptions::kGpuRasterizationName,
      flag_descriptions::kGpuRasterizationDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableGpuRasterizationChoices)},

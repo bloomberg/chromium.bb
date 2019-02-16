@@ -605,11 +605,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-software-rasterizer",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-system-timezone-automatic-detection",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
