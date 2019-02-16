@@ -40,14 +40,13 @@ class CORE_EXPORT V8CodeCache final {
     kProduceCodeCache,
   };
 
-  static uint32_t TagForParserCache(SingleCachedMetadataHandler*);
-  static uint32_t TagForCodeCache(SingleCachedMetadataHandler*);
-  static uint32_t TagForTimeStamp(SingleCachedMetadataHandler*);
+  static uint32_t TagForCodeCache(const SingleCachedMetadataHandler*);
+  static uint32_t TagForTimeStamp(const SingleCachedMetadataHandler*);
   static void SetCacheTimeStamp(SingleCachedMetadataHandler*);
 
   // Returns true iff the SingleCachedMetadataHandler contains a code cache
   // that can be consumed by V8.
-  static bool HasCodeCache(SingleCachedMetadataHandler*);
+  static bool HasCodeCache(const SingleCachedMetadataHandler*);
 
   static std::tuple<v8::ScriptCompiler::CompileOptions,
                     ProduceCacheOptions,
@@ -55,7 +54,7 @@ class CORE_EXPORT V8CodeCache final {
   GetCompileOptions(V8CacheOptions, const ScriptSourceCode&);
 
   static v8::ScriptCompiler::CachedData* CreateCachedData(
-      SingleCachedMetadataHandler*);
+      const SingleCachedMetadataHandler*);
 
   static void ProduceCache(v8::Isolate*,
                            v8::Local<v8::Script>,

@@ -45,7 +45,7 @@ uint32_t CacheTag(CacheTagKind kind, const String& encoding) {
 }
 
 // Check previously stored timestamp.
-bool IsResourceHotForCaching(SingleCachedMetadataHandler* cache_handler,
+bool IsResourceHotForCaching(const SingleCachedMetadataHandler* cache_handler,
                              int hot_hours) {
   const double hot_seconds = hot_hours * 60 * 60;
   scoped_refptr<CachedMetadata> cached_metadata =
@@ -62,7 +62,8 @@ bool IsResourceHotForCaching(SingleCachedMetadataHandler* cache_handler,
 
 }  // namespace
 
-bool V8CodeCache::HasCodeCache(SingleCachedMetadataHandler* cache_handler) {
+bool V8CodeCache::HasCodeCache(
+    const SingleCachedMetadataHandler* cache_handler) {
   if (!cache_handler)
     return false;
 
@@ -71,7 +72,7 @@ bool V8CodeCache::HasCodeCache(SingleCachedMetadataHandler* cache_handler) {
 }
 
 v8::ScriptCompiler::CachedData* V8CodeCache::CreateCachedData(
-    SingleCachedMetadataHandler* cache_handler) {
+    const SingleCachedMetadataHandler* cache_handler) {
   DCHECK(cache_handler);
   uint32_t code_cache_tag = V8CodeCache::TagForCodeCache(cache_handler);
   scoped_refptr<CachedMetadata> cached_metadata =
@@ -238,12 +239,12 @@ void V8CodeCache::ProduceCache(
 }
 
 uint32_t V8CodeCache::TagForCodeCache(
-    SingleCachedMetadataHandler* cache_handler) {
+    const SingleCachedMetadataHandler* cache_handler) {
   return CacheTag(kCacheTagCode, cache_handler->Encoding());
 }
 
 uint32_t V8CodeCache::TagForTimeStamp(
-    SingleCachedMetadataHandler* cache_handler) {
+    const SingleCachedMetadataHandler* cache_handler) {
   return CacheTag(kCacheTagTimeStamp, cache_handler->Encoding());
 }
 
