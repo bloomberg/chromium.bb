@@ -72,15 +72,32 @@ public class PrivacyPreferences extends PreferenceFragment
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
         canMakePaymentPref.setOnPreferenceChangeListener(this);
 
+        ChromeBaseCheckBoxPreference networkPredictionPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
+        networkPredictionPref.setChecked(prefServiceBridge.getNetworkPredictionEnabled());
+        networkPredictionPref.setOnPreferenceChangeListener(this);
+        networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
             // Remove preferences that were migrated to SyncAndServicesPreferences.
             preferenceScreen.removePreference(findPreference(PREF_NAVIGATION_ERROR));
             preferenceScreen.removePreference(findPreference(PREF_SEARCH_SUGGESTIONS));
             preferenceScreen.removePreference(findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING));
             preferenceScreen.removePreference(findPreference(PREF_SAFE_BROWSING));
-            preferenceScreen.removePreference(findPreference(PREF_NETWORK_PREDICTIONS));
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
             preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
+
+            // TODO(https://crbug.com/846376): Update strings in XML after UNIFIED_CONSENT launch.
+            networkPredictionPref.setTitle(R.string.preload_pages_title);
+            networkPredictionPref.setSummary(R.string.preload_pages_summary);
+
+            // Put networkPredictionPref after canMakePaymentPref by overriding order value.
+            // However, calling setOrder doesn't change existing order if Preference has already
+            // been added to PreferenceGroup. Remove and re-add it to work around this.
+            // TODO(https://crbug.com/846376): Reorder prefs in XML after UNIFIED_CONSENT launch.
+            preferenceScreen.removePreference(networkPredictionPref);
+            networkPredictionPref.setOrder(canMakePaymentPref.getOrder());
+            preferenceScreen.addPreference(networkPredictionPref);
 
             Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
             NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(view -> {
@@ -97,12 +114,6 @@ public class PrivacyPreferences extends PreferenceFragment
         }
         preferenceScreen.removePreference(findPreference(PREF_SYNC_AND_SERVICES_LINK_DIVIDER));
         preferenceScreen.removePreference(findPreference(PREF_SYNC_AND_SERVICES_LINK));
-
-        ChromeBaseCheckBoxPreference networkPredictionPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
-        networkPredictionPref.setChecked(prefServiceBridge.getNetworkPredictionEnabled());
-        networkPredictionPref.setOnPreferenceChangeListener(this);
-        networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         ChromeBaseCheckBoxPreference navigationErrorPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_NAVIGATION_ERROR);
