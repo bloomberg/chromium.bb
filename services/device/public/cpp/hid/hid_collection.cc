@@ -26,6 +26,9 @@ static constexpr uint32_t kMaxItemReportSizeBits = 32;
 // computing the maximum report size.
 static constexpr uint64_t kMaxReasonableReportLengthBits =
     std::numeric_limits<uint16_t>::max() * 8;
+
+// Limit the maximum depth of the parser when inspecting nested collections.
+static constexpr int kMaxReasonableCollectionDepth = 50;
 }  // namespace
 
 HidCollection::HidCollection(HidCollection* parent,
@@ -43,6 +46,7 @@ std::vector<std::unique_ptr<HidCollection>> HidCollection::BuildCollections(
   // This HID report descriptor parser implements a state machine described
   // in the HID specification. See section 6.2.2 Report Descriptor.
   HidItemStateTable state;
+  int depth = 0;
   for (const auto& current_item : items) {
     switch (current_item->tag()) {
       case HidReportDescriptorItem::kTagCollection:
@@ -50,15 +54,20 @@ std::vector<std::unique_ptr<HidCollection>> HidCollection::BuildCollections(
         // separate components of the device and are often treated as separate
         // devices. Nested components represent logical collections of fields
         // within a report.
-        AddCollection(*current_item, collections, state);
+        ++depth;
+        if (depth <= kMaxReasonableCollectionDepth)
+          AddCollection(*current_item, collections, state);
         state.local.Reset();
         break;
       case HidReportDescriptorItem::kTagEndCollection:
-        // Mark the end of the current collection. Subsequent items describe
-        // reports associated with the parent collection.
-        if (state.collection)
-          state.collection = state.collection->parent_;
+        if (depth <= kMaxReasonableCollectionDepth) {
+          // Mark the end of the current collection. Subsequent items describe
+          // reports associated with the parent collection.
+          if (state.collection)
+            state.collection = state.collection->parent_;
+        }
         state.local.Reset();
+        --depth;
         break;
       case HidReportDescriptorItem::kTagInput:
       case HidReportDescriptorItem::kTagOutput:

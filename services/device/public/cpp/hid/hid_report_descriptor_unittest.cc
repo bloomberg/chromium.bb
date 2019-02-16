@@ -1678,4 +1678,41 @@ TEST_F(HidReportDescriptorTest, UnreasonablyHugeReportIgnored) {
                       kUnreasonablyHugeReportDescriptorSize);
 }
 
+TEST_F(HidReportDescriptorTest, HighlyNestedReportLimitsDepth) {
+  // The HID report descriptor parser sets a maximum depth to prevent issues
+  // with descriptors that define many nested collections. The descriptor below
+  // nests a single constant inside 51 collections.
+  static const uint8_t kHighlyNestedReportDescriptor[] = {
+      0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0,
+      0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0,
+      0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0,
+      0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0,
+      0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0, 0xA0,
+
+      0x95, 0x01,  // Report Count (1)
+      0x75, 0x08,  // Report Size (8)
+      0x90         // Output
+  };
+  static const size_t kHighlyNestedReportDescriptorSize =
+      base::size(kHighlyNestedReportDescriptor);
+  auto info = HidCollectionInfo::New();
+  info->usage = HidUsageAndPage::New(0, 0);
+  AddTopCollectionInfo(std::move(info));
+  // The item in the innermost collection should still be reflected in the
+  // maximum report size.
+  ValidateDetails(false, 0, 1, 0, kHighlyNestedReportDescriptor,
+                  kHighlyNestedReportDescriptorSize);
+
+  // Construct nested collections up to the depth limit. The item from the
+  // innermost collection should be propagated to all its parents even though
+  // the depth limit has been reached.
+  auto* parent = AddTopCollection(0, kCollectionTypePhysical);
+  for (size_t i = 1; i < 50; ++i)
+    parent = AddChild(parent, 0, kCollectionTypePhysical);
+  SetReportSizeAndCount(8, 1);
+  AddReportConstant(parent, kOutput, kNonNullableArray);
+  ValidateCollections(kHighlyNestedReportDescriptor,
+                      kHighlyNestedReportDescriptorSize);
+}
+
 }  // namespace device
