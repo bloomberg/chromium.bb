@@ -427,18 +427,24 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
-  // Reserve a buffer from the pool for the next frame.
+  // Reserve a buffer from the pool for the next frame. Optimization: If there
+  // are no changes in the source that need to be captured AND there are no
+  // captures currently in-flight, attempt to resurrect the last frame from the
+  // pool (and there is no need to capture anything new into the frame).
   const OracleFrameNumber oracle_frame_number = oracle_.next_frame_number();
   const gfx::Size capture_size =
       AdjustSizeForPixelFormat(oracle_.capture_size());
   scoped_refptr<VideoFrame> frame;
-  if (dirty_rect_.IsEmpty()) {
+  bool using_resurrected_frame =
+      dirty_rect_.IsEmpty() &&
+      next_capture_frame_number_ == next_delivery_frame_number_;
+  if (using_resurrected_frame) {
     frame = frame_pool_.ResurrectLastVideoFrame(pixel_format_, capture_size);
     // If the resurrection failed, promote to a full frame capture.
     if (!frame) {
       TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
                            TRACE_EVENT_SCOPE_THREAD);
-      dirty_rect_ = kMaxRect;
+      using_resurrected_frame = false;
       frame = frame_pool_.ReserveVideoFrame(pixel_format_, capture_size);
     }
   } else {
@@ -537,8 +543,9 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
-  // For passive refreshes, just deliver the resurrected frame.
-  if (dirty_rect_.IsEmpty()) {
+  // If the frame is a resurrected one, just deliver it since it already
+  // contains the most up-to-date capture of the source content.
+  if (using_resurrected_frame) {
     DidCaptureFrame(frame_number, oracle_frame_number, content_rect,
                     std::move(frame));
     return;
@@ -564,7 +571,20 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // just the part of the result that would have changed due to aggregated
   // damage over all the frames that weren't captured.
   request->set_result_selection(gfx::Rect(content_rect.size()));
+
+  // Clear the |dirty_rect_|, to indicate all changes at the source are now
+  // being captured. This will also enable the "frame resurrection" optimization
+  // in future calls to this method. In other words, while the source content
+  // remains unchanged, there is no need to make any more CopyOutputRequests.
+  //
+  // Note that some optimistic assumptions are being made here: 1) that this
+  // |request| will succeed and it's image data successfully transferred to the
+  // VideoFrame; and 2) that delivery of the VideoFrame to the consumer will
+  // succeed. If, later in the pipeline, either of these assumptions is
+  // violated, the |dirty_rect_| will be changed to indicate that there might
+  // still be source changes requiring capture. See MaybeDeliverFrame().
   dirty_rect_ = gfx::Rect();
+
   resolved_target_->RequestCopyOfOutput(LocalSurfaceId(), std::move(request));
 }
 
@@ -687,8 +707,11 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
                            "success", false);
 
     // Mark the whole source as dirty, since this frame may have contained
-    // updated content that will not be delivered.
+    // updated content that will not be delivered. See the comment at the end of
+    // MaybeCaptureFrame() regarding "optimistic assumptions" for further
+    // discussion.
     dirty_rect_ = kMaxRect;
+
     ScheduleRefreshFrame();
     return;
   }
