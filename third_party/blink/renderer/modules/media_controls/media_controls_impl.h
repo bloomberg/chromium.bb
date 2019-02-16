@@ -66,7 +66,6 @@ class MediaControlTimelineElement;
 class MediaControlToggleClosedCaptionsButtonElement;
 class MediaControlVolumeControlContainerElement;
 class MediaControlVolumeSliderElement;
-class MediaDownloadInProductHelpManager;
 class ShadowRoot;
 class TextTrack;
 
@@ -158,11 +157,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateCurrentTimeDisplay();
 
   // Methods used for Download In-product help.
-  const MediaControlDownloadButtonElement& DownloadButton() const;
   const MediaControlOverflowMenuButtonElement& OverflowButton() const;
   MediaControlOverflowMenuButtonElement& OverflowButton();
-  void DidDismissDownloadInProductHelp();
-  MediaDownloadInProductHelpManager* DownloadInProductHelp();
 
   // Accessors for UI elements.
   const MediaControlCurrentTimeDisplayElement& CurrentTimeDisplay() const;
@@ -410,8 +406,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   IntSize size_;
 
   bool keep_showing_until_timer_fires_ : 1;
-
-  Member<MediaDownloadInProductHelpManager> download_iph_manager_;
 
   bool is_acting_as_audio_controls_ = false;
 
