@@ -38,7 +38,8 @@ static constexpr const char* kInstanceCounterNames[] = {
 InspectorPerformanceAgent::InspectorPerformanceAgent(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames),
-      enabled_(&agent_state_, /*default_value=*/false) {}
+      enabled_(&agent_state_, /*default_value=*/false),
+      use_thread_ticks_(&agent_state_, /*default_value=*/false) {}
 
 InspectorPerformanceAgent::~InspectorPerformanceAgent() = default;
 
@@ -55,6 +56,7 @@ void InspectorPerformanceAgent::InnerEnable() {
   task_start_ticks_ = TimeTicks();
   script_start_ticks_ = TimeTicks();
   v8compile_start_ticks_ = TimeTicks();
+  thread_time_origin_ = GetThreadTimeNow();
 }
 
 protocol::Response InspectorPerformanceAgent::enable() {
@@ -95,13 +97,13 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
   using namespace protocol::Performance::SetTimeDomain;
 
   if (time_domain == TimeDomainEnum::TimeTicks) {
-    use_thread_ticks_ = false;
+    use_thread_ticks_.Clear();
   } else if (time_domain == TimeDomainEnum::ThreadTicks) {
     if (!base::ThreadTicks::IsSupported()) {
       return Response::Error("Thread time is not supported on this platform.");
     }
     base::ThreadTicks::WaitUntilInitialized();
-    use_thread_ticks_ = true;
+    use_thread_ticks_.Set(true);
   } else {
     return Response::Error("Invalid time domain specification.");
   }
@@ -110,11 +112,14 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
 }
 
 TimeTicks InspectorPerformanceAgent::GetTimeTicksNow() {
-  return use_thread_ticks_
-             ? base::TimeTicks() +
-                   base::TimeDelta::FromMicroseconds(
-                       base::ThreadTicks::Now().since_origin().InMicroseconds())
-             : base::subtle::TimeTicksNowIgnoringOverride();
+  return use_thread_ticks_.Get() ? GetThreadTimeNow()
+                                 : base::subtle::TimeTicksNowIgnoringOverride();
+}
+
+TimeTicks InspectorPerformanceAgent::GetThreadTimeNow() {
+  return base::TimeTicks() +
+         base::TimeDelta::FromMicroseconds(
+             base::ThreadTicks::Now().since_origin().InMicroseconds());
 }
 
 Response InspectorPerformanceAgent::getMetrics(
@@ -169,6 +174,9 @@ Response InspectorPerformanceAgent::getMetrics(
       (script_duration + recalc_style_duration_ + layout_duration_);
   AppendMetric(result.get(), "TaskOtherDuration",
                other_tasks_duration.InSecondsF());
+
+  TimeDelta thread_time = GetThreadTimeNow() - thread_time_origin_;
+  AppendMetric(result.get(), "ThreadTime", thread_time.InSecondsF());
 
   v8::HeapStatistics heap_statistics;
   V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(&heap_statistics);
