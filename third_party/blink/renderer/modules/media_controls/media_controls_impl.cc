@@ -86,7 +86,6 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
-#include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -452,16 +451,6 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
     controls->rotate_to_fullscreen_delegate_ =
         MakeGarbageCollected<MediaControlsRotateToFullscreenDelegate>(
             ToHTMLVideoElement(media_element));
-  }
-
-  // Initialize download in-product-help for video elements if enabled.
-  if (media_element.GetDocument().GetSettings() &&
-      media_element.GetDocument()
-          .GetSettings()
-          ->GetMediaDownloadInProductHelpEnabled() &&
-      media_element.IsHTMLVideoElement()) {
-    controls->download_iph_manager_ =
-        MakeGarbageCollected<MediaDownloadInProductHelpManager>(*controls);
   }
 
   MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
@@ -1017,8 +1006,6 @@ void MediaControlsImpl::MaybeShow() {
   // Only make the controls visible if they won't get hidden by OnTimeUpdate.
   if (MediaElement().paused() || !ShouldHideMediaControls())
     MakeOpaque();
-  if (download_iph_manager_)
-    download_iph_manager_->SetControlsVisibility(true);
   if (loading_panel_)
     loading_panel_->OnControlsShown();
 
@@ -1037,8 +1024,6 @@ void MediaControlsImpl::Hide() {
 
   if (overlay_play_button_)
     overlay_play_button_->SetIsWanted(false);
-  if (download_iph_manager_)
-    download_iph_manager_->SetControlsVisibility(false);
   if (loading_panel_)
     loading_panel_->OnControlsHidden();
 
@@ -1133,10 +1118,6 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 
   // Don't hide the media controls when a panel is showing.
   if (text_track_list_->IsWanted() || overflow_list_->IsWanted())
-    return false;
-
-  // Don't hide the media controls while the in product help is showing.
-  if (download_iph_manager_ && download_iph_manager_->IsShowingInProductHelp())
     return false;
 
   // Don't hide if we have accessiblity focus.
@@ -1460,9 +1441,6 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   MaybeRecordElementsDisplayed();
 
-  if (download_iph_manager_)
-    download_iph_manager_->UpdateInProductHelp();
-
   UpdateOverflowAndTrackListCSSClassForPip();
   UpdateOverflowMenuItemCSSClass();
 }
@@ -1641,7 +1619,8 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
         MakeOpaqueFromPointerEvent();
-        StartHideMediaControlsIfNecessary();
+        if (ShouldHideMediaControls())
+          StartHideMediaControlsTimer();
       }
     }
   } else if (event->type() == event_type_names::kPointerout) {
@@ -1909,9 +1888,6 @@ void MediaControlsImpl::OnTimeUpdate() {
 
   if (IsVisible() && ShouldHideMediaControls())
     MakeTransparent();
-
-  if (download_iph_manager_)
-    download_iph_manager_->UpdateInProductHelp();
 }
 
 void MediaControlsImpl::OnDurationChange() {
@@ -1950,8 +1926,6 @@ void MediaControlsImpl::OnPlay() {
 
 void MediaControlsImpl::OnPlaying() {
   timeline_->OnPlaying();
-  if (download_iph_manager_)
-    download_iph_manager_->SetIsPlaying(true);
 
   StartHideMediaControlsTimer();
   UpdateCSSClassFromState();
@@ -1964,9 +1938,6 @@ void MediaControlsImpl::OnPause() {
   MakeOpaque();
 
   StopHideMediaControlsTimer();
-
-  if (download_iph_manager_)
-    download_iph_manager_->SetIsPlaying(false);
 
   UpdateCSSClassFromState();
 }
@@ -2185,9 +2156,6 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
     overlay_play_button_->SetDoesFit(does_fit);
   }
 
-  if (download_iph_manager_)
-    download_iph_manager_->UpdateInProductHelp();
-
   MaybeRecordElementsDisplayed();
 }
 
@@ -2318,11 +2286,6 @@ void MediaControlsImpl::HidePopupMenu() {
     ToggleTextTrackList();
 }
 
-void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
-  if (ShouldHideMediaControls())
-    StartHideMediaControlsTimer();
-}
-
 void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
   volume_slider_->OpenSlider();
   volume_control_container_->OpenContainer();
@@ -2368,11 +2331,6 @@ bool MediaControlsImpl::ShouldCloseVolumeSlider() const {
            volume_slider_->IsFocused() || mute_button_->IsFocused());
 }
 
-const MediaControlDownloadButtonElement& MediaControlsImpl::DownloadButton()
-    const {
-  return *download_button_;
-}
-
 const MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton()
     const {
   return *overflow_menu_;
@@ -2380,14 +2338,6 @@ const MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton()
 
 MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton() {
   return *overflow_menu_;
-}
-
-void MediaControlsImpl::DidDismissDownloadInProductHelp() {
-  StartHideMediaControlsIfNecessary();
-}
-
-MediaDownloadInProductHelpManager* MediaControlsImpl::DownloadInProductHelp() {
-  return download_iph_manager_;
 }
 
 void MediaControlsImpl::OnWaiting() {
@@ -2431,7 +2381,6 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(orientation_lock_delegate_);
   visitor->Trace(rotate_to_fullscreen_delegate_);
   visitor->Trace(display_cutout_delegate_);
-  visitor->Trace(download_iph_manager_);
   visitor->Trace(media_button_panel_);
   visitor->Trace(loading_panel_);
   visitor->Trace(display_cutout_fullscreen_button_);
