@@ -53,13 +53,15 @@ inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
 }
 
 inline bool InlineLengthMayChange(const Length& length,
+                                  LengthResolveType type,
                                   const NGConstraintSpace& new_space,
                                   const NGConstraintSpace& old_space) {
   // Percentage inline margins will affect the size if the size is unspecified
   // (auto and similar). So we need to check both available size and the
   // percentage resolution size in that case.
   bool is_unspecified =
-      length.IsAuto() || length.IsFitContent() || length.IsFillAvailable();
+      (length.IsAuto() && type != LengthResolveType::kMinSize) ||
+      length.IsFitContent() || length.IsFillAvailable();
   if (is_unspecified) {
     if (new_space.AvailableSize().inline_size !=
         old_space.AvailableSize().inline_size)
@@ -770,9 +772,15 @@ bool SizeMayChange(const ComputedStyle& style,
         old_space.AvailableSize().inline_size)
       return true;
   } else {
-    if (InlineLengthMayChange(style.LogicalWidth(), new_space, old_space) ||
-        InlineLengthMayChange(style.LogicalMaxWidth(), new_space, old_space) ||
-        InlineLengthMayChange(style.LogicalMaxWidth(), new_space, old_space))
+    if (InlineLengthMayChange(style.LogicalWidth(),
+                              LengthResolveType::kContentSize, new_space,
+                              old_space) ||
+        InlineLengthMayChange(style.LogicalMinWidth(),
+                              LengthResolveType::kMinSize, new_space,
+                              old_space) ||
+        InlineLengthMayChange(style.LogicalMaxWidth(),
+                              LengthResolveType::kMaxSize, new_space,
+                              old_space))
       return true;
   }
 
