@@ -127,7 +127,7 @@ struct ParsedNetLog {
   }
 
   base::JSONReader reader;
-  container = reader.ReadToValue(input);
+  container = reader.ReadToValueDeprecated(input);
   if (!container) {
     return ::testing::AssertionFailure() << reader.GetErrorMessage();
   }

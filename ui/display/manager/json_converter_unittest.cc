@@ -49,8 +49,9 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
       "}";
   int error_code = 0, error_line, error_column;
   std::string error_msg;
-  std::unique_ptr<base::Value> read_value(base::JSONReader::ReadAndReturnError(
-      data, 0, &error_code, &error_msg, &error_line, &error_column));
+  std::unique_ptr<base::Value> read_value(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          data, 0, &error_code, &error_msg, &error_line, &error_column));
   ASSERT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
                            << error_column;
   EXPECT_TRUE(value.Equals(read_value.get()));
@@ -72,8 +73,9 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
       "}";
   int error_code = 0, error_line, error_column;
   std::string error_msg;
-  std::unique_ptr<base::Value> read_value(base::JSONReader::ReadAndReturnError(
-      data, 0, &error_code, &error_msg, &error_line, &error_column));
+  std::unique_ptr<base::Value> read_value(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          data, 0, &error_code, &error_msg, &error_line, &error_column));
   ASSERT_EQ(0, error_code) << error_msg << " at " << error_line << ":"
                            << error_column;
 

@@ -53,7 +53,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
   const GURL& url() const override { return url_; }
   const std::string& json() const override { return json_; }
   std::unique_ptr<base::Value> GetValue() const override {
-    return base::JSONReader::Read(json_);
+    return base::JSONReader::ReadDeprecated(json_);
   }
 
   void Complete(ReportingUploader::Outcome outcome) override {

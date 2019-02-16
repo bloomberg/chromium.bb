@@ -26,7 +26,7 @@ class ReportingHeaderParserTest : public ReportingTestBase {
  protected:
   void ParseHeader(const GURL& url, const std::string& json) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read("[" + json + "]");
+        base::JSONReader::ReadDeprecated("[" + json + "]");
     if (value)
       ReportingHeaderParser::ParseHeader(context(), url, std::move(value));
   }

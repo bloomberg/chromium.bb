@@ -62,7 +62,7 @@ bool ReadTestCase(const char* filename,
     return false;
   }
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   if (!value.get()) {
     LOG(ERROR) << filename << ": couldn't parse JSON.";
     return false;

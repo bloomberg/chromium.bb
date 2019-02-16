@@ -47,7 +47,8 @@ const char kPrinterSettings[] = R"({
 }
 
 TEST(PrintSettingsConversionTest, ConversionTest) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(kPrinterSettings);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(kPrinterSettings);
   ASSERT_TRUE(value);
   PrintSettings settings;
   bool success = PrintSettingsFromJobSettings(
@@ -61,7 +62,8 @@ TEST(PrintSettingsConversionTest, ConversionTest) {
 
 #if defined(OS_CHROMEOS)
 TEST(PrintSettingsConversionTest, ConversionTest_DontSendUsername) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(kPrinterSettings);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(kPrinterSettings);
   ASSERT_TRUE(value);
   value->SetKey(kSettingSendUserInfo, base::Value(false));
   PrintSettings settings;

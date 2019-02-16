@@ -6664,7 +6664,7 @@ TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
   EXPECT_EQ("application/json; charset=utf-8",
             mock_report_sender.latest_content_type());
   std::unique_ptr<base::Value> value(
-      base::JSONReader::Read(mock_report_sender.latest_report()));
+      base::JSONReader::ReadDeprecated(mock_report_sender.latest_report()));
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->is_dict());
   base::DictionaryValue* report_dict;

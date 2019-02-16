@@ -77,8 +77,8 @@ std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
 
 bool DeserializeP2PCandidate(const std::string& candidate_str,
                              cricket::Candidate* candidate) {
-  std::unique_ptr<base::Value> value(
-      base::JSONReader::Read(candidate_str, base::JSON_ALLOW_TRAILING_COMMAS));
+  std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(
+      candidate_str, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!value.get() || !value->is_dict()) {
     return false;
   }

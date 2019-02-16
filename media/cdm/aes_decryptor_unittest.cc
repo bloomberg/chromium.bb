@@ -59,7 +59,8 @@ MATCHER(NotEmpty, "") {
 }
 MATCHER(IsJSONDictionary, "") {
   std::string result(arg.begin(), arg.end());
-  std::unique_ptr<base::Value> root(base::JSONReader().ReadToValue(result));
+  std::unique_ptr<base::Value> root(
+      base::JSONReader().ReadToValueDeprecated(result));
   return (root.get() && root->type() == base::Value::Type::DICTIONARY);
 }
 MATCHER(IsNullTime, "") {

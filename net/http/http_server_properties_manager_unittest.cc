@@ -1242,7 +1242,7 @@ TEST_P(HttpServerPropertiesManagerTest,
 }
 
 TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
-  std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\"},{\"host\":\"example.org\","
@@ -1294,7 +1294,7 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
 
 // Regression test for https://crbug.com/615497.
 TEST_P(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
-  std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\","
       "\"expiration\":\"9223372036854775807\"}]}");
   ASSERT_TRUE(server_value);
@@ -1515,7 +1515,7 @@ TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
-  std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{\"alternative_service\":["
       "{\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
@@ -1686,7 +1686,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   std::string expiration_str =
       base::NumberToString(static_cast<int64_t>(one_day_from_now_.ToTimeT()));
 
-  std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{"
       "\"broken_alternative_services\":["
       "{\"broken_until\":\"" +

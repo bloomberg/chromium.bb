@@ -136,7 +136,7 @@ std::unique_ptr<Value> StringUtil::parseMessage(
         reinterpret_cast<const uint8_t*>(message.data()),
         message.length());
   }
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(message);
   return toProtocolValue(value.get(), 1000);
 }
 

@@ -239,7 +239,7 @@ void CheckHPKPReport(
     const scoped_refptr<X509Certificate>& served_certificate_chain,
     const scoped_refptr<X509Certificate>& validated_certificate_chain,
     const HashValueVector& known_pins) {
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(report));
+  std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(report));
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->is_dict());
 

@@ -403,8 +403,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     if (json_value.size() > kMaxJsonSize)
       return HeaderOutcome::DISCARDED_JSON_TOO_BIG;
 
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(json_value, base::JSON_PARSE_RFC, kMaxJsonDepth);
+    std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+        json_value, base::JSON_PARSE_RFC, kMaxJsonDepth);
     if (!value)
       return HeaderOutcome::DISCARDED_JSON_INVALID;
 
