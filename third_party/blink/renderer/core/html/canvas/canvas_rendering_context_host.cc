@@ -98,7 +98,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         CanvasResourceProvider::ResourceUsage usage;
         if (SharedGpuContext::IsGpuCompositingEnabled()) {
           if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirectResourceUsage;
+            usage = CanvasResourceProvider::kAcceleratedDirect3DResourceUsage;
           else
             usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
         } else {
@@ -125,7 +125,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         CanvasResourceProvider::ResourceUsage usage;
         if (want_acceleration) {
           if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirectResourceUsage;
+            usage = CanvasResourceProvider::kAcceleratedDirect2DResourceUsage;
           else
             usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
         } else {
