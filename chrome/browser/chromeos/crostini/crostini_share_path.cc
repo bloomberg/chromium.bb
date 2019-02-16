@@ -317,10 +317,6 @@ void CrostiniSharePath::SharePath(std::string vm_name,
                                   bool persist,
                                   SharePathCallback callback) {
   DCHECK(callback);
-  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles)) {
-    std::move(callback).Run(path, false, "Flag crostini-files not enabled");
-    return;
-  }
   CallSeneschalSharePath(std::move(vm_name), path, persist,
                          std::move(callback));
 }
@@ -364,8 +360,6 @@ bool CrostiniSharePath::GetAndSetFirstForSession() {
 
 std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths() {
   std::vector<base::FilePath> result;
-  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles))
-    return result;
   PrefService* pref_service = profile_->GetPrefs();
   const base::ListValue* shared_paths =
       pref_service->GetList(prefs::kCrostiniSharedPaths);
@@ -424,8 +418,7 @@ void CrostiniSharePath::RegisterPersistedPath(const base::FilePath& path) {
 
 void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
                                         const file_manager::Volume& volume) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles) ||
-      error_code != chromeos::MountError::MOUNT_ERROR_NONE ||
+  if (error_code != chromeos::MountError::MOUNT_ERROR_NONE ||
       !crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
           kCrostiniDefaultVmName)) {
     return;
@@ -442,8 +435,7 @@ void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
 
 void CrostiniSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
                                           const file_manager::Volume& volume) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles) ||
-      error_code != chromeos::MountError::MOUNT_ERROR_NONE ||
+  if (error_code != chromeos::MountError::MOUNT_ERROR_NONE ||
       !crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
           kCrostiniDefaultVmName)) {
     return;

@@ -3093,10 +3093,6 @@ const char kCrostiniAppSearchDescription[] =
 const char kCrostiniBackupName[] = "Crostini Backup";
 const char kCrostiniBackupDescription[] = "Enable Crostini export and import.";
 
-const char kCrostiniFilesName[] = "Crostini Files";
-const char kCrostiniFilesDescription[] =
-    "Enable Crostini file sharing in Files app.";
-
 const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
 const char kCrostiniUsbSupportDescription[] =
     "Enable mounting Usb devices in Crostini.";

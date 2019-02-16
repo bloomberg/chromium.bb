@@ -1855,9 +1855,6 @@ extern const char kCrostiniAppSearchDescription[];
 extern const char kCrostiniBackupName[];
 extern const char kCrostiniBackupDescription[];
 
-extern const char kCrostiniFilesName[];
-extern const char kCrostiniFilesDescription[];
-
 extern const char kCrostiniUsbSupportName[];
 extern const char kCrostiniUsbSupportDescription[];
 
