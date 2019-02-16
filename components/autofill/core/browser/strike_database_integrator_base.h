@@ -48,6 +48,10 @@ class StrikeDatabaseIntegratorBase {
   // ProtoDatabase.
   void ClearStrikes(const std::string id = kSharedId);
 
+  // Removes all database entries from in-memory cache and underlying
+  // ProtoDatabase for the whole project.
+  void ClearAllStrikes();
+
  protected:
   // Removes all strikes in which it has been longer than GetExpiryTimeMicros()
   // past |last_update_timestamp|.
@@ -62,6 +66,7 @@ class StrikeDatabaseIntegratorBase {
                            GetKeyForStrikeDatabaseIntegratorUniqueIdTest);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            RemoveExpiredStrikesUniqueIdTest);
+  friend class SaveCardInfobarEGTestHelper;
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 

@@ -127,6 +127,7 @@ class CreditCardSaveManager {
   friend class LocalCardMigrationBrowserTest;
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
+  friend class SaveCardInfobarEGTestHelper;
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
