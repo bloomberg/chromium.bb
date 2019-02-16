@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 
+namespace v8 {
+class EmbedderHeapTracer;
+}
+
 namespace blink {
 
 struct WrapperTypeInfo;

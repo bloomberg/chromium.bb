@@ -457,14 +457,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   class Policy {
    public:
-    Policy()
-        : rail_mode_(v8::PERFORMANCE_ANIMATION),
-          should_disable_throttling_(false),
-          frozen_when_backgrounded_(false),
-          compositor_priority_(base::sequence_manager::TaskQueue::
-                                   QueuePriority::kNormalPriority),
-          use_case_(UseCase::kNone) {}
-
+    Policy();
     ~Policy() = default;
 
     TaskQueuePolicy& compositor_queue_policy() {
