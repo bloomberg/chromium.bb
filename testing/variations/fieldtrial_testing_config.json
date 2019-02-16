@@ -4518,7 +4518,7 @@
             ]
         }
     ],
-    "SimpleCachePrefetchExperiment": [
+    "SimpleCachePrefetchExperiment2": [
         {
             "platforms": [
                 "android",
@@ -4527,7 +4527,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PrefetchTrailerHint2",
+                    "name": "PrefetchTrailerHint0",
                     "params": {
                         "FullPrefetchBytes": "0",
                         "TrailerPrefetchHint": "true"
