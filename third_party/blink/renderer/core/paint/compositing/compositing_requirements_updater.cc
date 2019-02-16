@@ -74,7 +74,6 @@ struct OverlapMapContainers {
 };
 
 class CompositingRequirementsUpdater::OverlapMap {
-
  public:
   OverlapMap() {
     // Begin by assuming the root layer will be composited so that there

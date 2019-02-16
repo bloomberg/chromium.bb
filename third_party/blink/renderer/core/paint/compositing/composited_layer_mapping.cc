@@ -3020,12 +3020,13 @@ void CompositedLayerMapping::SetContentsNeedDisplay() {
 }
 
 void CompositedLayerMapping::SetNeedsCheckRasterInvalidation() {
-  ApplyToGraphicsLayers(this,
-                        [](GraphicsLayer* graphics_layer) {
-                          if (graphics_layer->DrawsContent())
-                            graphics_layer->SetNeedsCheckRasterInvalidation();
-                        },
-                        kApplyToAllGraphicsLayers);
+  ApplyToGraphicsLayers(
+      this,
+      [](GraphicsLayer* graphics_layer) {
+        if (graphics_layer->DrawsContent())
+          graphics_layer->SetNeedsCheckRasterInvalidation();
+      },
+      kApplyToAllGraphicsLayers);
 }
 
 const GraphicsLayerPaintInfo* CompositedLayerMapping::ContainingSquashedLayer(

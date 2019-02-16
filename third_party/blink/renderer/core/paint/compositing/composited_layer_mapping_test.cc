@@ -28,9 +28,8 @@ class CompositedLayerMappingTest : public RenderingTest {
         .RecomputeInterestRect(graphics_layer);
   }
 
-  IntRect ComputeInterestRect(
-      GraphicsLayer* graphics_layer,
-      IntRect previous_interest_rect) {
+  IntRect ComputeInterestRect(GraphicsLayer* graphics_layer,
+                              IntRect previous_interest_rect) {
     return static_cast<CompositedLayerMapping&>(graphics_layer->Client())
         .ComputeInterestRect(graphics_layer, previous_interest_rect);
   }
