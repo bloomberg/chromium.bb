@@ -130,7 +130,7 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
 bool DeviceCommandScreenshotJob::ParseCommandPayload(
     const std::string& command_payload) {
   std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValue(command_payload));
+      base::JSONReader().ReadToValueDeprecated(command_payload));
   if (!root.get())
     return false;
   base::DictionaryValue* payload = nullptr;
