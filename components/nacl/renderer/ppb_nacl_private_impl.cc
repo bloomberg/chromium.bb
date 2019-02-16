@@ -1246,7 +1246,7 @@ PP_Bool PPBNaClPrivate::GetPnaclResourceInfo(PP_Instance instance,
   int json_read_error_code;
   std::string json_read_error_msg;
   std::unique_ptr<base::DictionaryValue> json_dict(
-      base::DictionaryValue::From(json_reader.ReadAndReturnError(
+      base::DictionaryValue::From(json_reader.ReadAndReturnErrorDeprecated(
           buffer.get(), base::JSON_PARSE_RFC, &json_read_error_code,
           &json_read_error_msg)));
   if (!json_dict) {

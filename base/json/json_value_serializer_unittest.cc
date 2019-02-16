@@ -76,14 +76,13 @@ void CheckJSONIsStillTheSame(const Value& value) {
 }
 
 void ValidateJsonList(const std::string& json) {
-  std::unique_ptr<ListValue> list = ListValue::From(JSONReader::Read(json));
+  Optional<Value> list = JSONReader::Read(json);
   ASSERT_TRUE(list);
-  ASSERT_EQ(1U, list->GetSize());
-  Value* elt = nullptr;
-  ASSERT_TRUE(list->Get(0, &elt));
-  int value = 0;
-  ASSERT_TRUE(elt && elt->GetAsInteger(&value));
-  ASSERT_EQ(1, value);
+  ASSERT_TRUE(list->is_list());
+  ASSERT_EQ(1U, list->GetList().size());
+  const Value& elt = list->GetList()[0];
+  ASSERT_TRUE(elt.is_int());
+  ASSERT_EQ(1, elt.GetInt());
 }
 
 // Test proper JSON deserialization from string is working.
@@ -378,15 +377,13 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   ValidateJsonList("[ 1 //// ,2\r\n ]");
 
   // It's ok to have a comment in a string.
-  std::unique_ptr<ListValue> list =
-      ListValue::From(JSONReader::Read("[\"// ok\\n /* foo */ \"]"));
+  Optional<Value> list = JSONReader::Read("[\"// ok\\n /* foo */ \"]");
   ASSERT_TRUE(list);
-  ASSERT_EQ(1U, list->GetSize());
-  Value* elt = nullptr;
-  ASSERT_TRUE(list->Get(0, &elt));
-  std::string value;
-  ASSERT_TRUE(elt && elt->GetAsString(&value));
-  ASSERT_EQ("// ok\n /* foo */ ", value);
+  ASSERT_TRUE(list->is_list());
+  ASSERT_EQ(1U, list->GetList().size());
+  const Value& elt = list->GetList()[0];
+  ASSERT_TRUE(elt.is_string());
+  ASSERT_EQ("// ok\n /* foo */ ", elt.GetString());
 
   // You can't nest comments.
   ASSERT_FALSE(JSONReader::Read("/* /* inner */ outer */ [ 1 ]"));

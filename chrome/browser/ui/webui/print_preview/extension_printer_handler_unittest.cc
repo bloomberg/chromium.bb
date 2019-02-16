@@ -324,7 +324,7 @@ std::string RefCountedMemoryToString(
 }
 
 base::Value GetJsonAsValue(base::StringPiece json) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   return base::Value::FromUniquePtrValue(std::move(value));
 }
 

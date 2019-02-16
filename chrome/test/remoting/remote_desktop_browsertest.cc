@@ -748,7 +748,7 @@ void RemoteDesktopBrowserTest::RunJavaScriptTest(
   // Read in the JSON
   base::JSONReader reader;
   std::unique_ptr<base::Value> value =
-      reader.Read(result, base::JSON_ALLOW_TRAILING_COMMAS);
+      reader.ReadDeprecated(result, base::JSON_ALLOW_TRAILING_COMMAS);
 
   // Convert to dictionary
   base::DictionaryValue* dict_value = NULL;

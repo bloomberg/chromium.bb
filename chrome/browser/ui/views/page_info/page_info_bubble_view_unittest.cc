@@ -345,7 +345,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_.profile();
   profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                           *base::JSONReader::Read(kPolicySetting));
+                           *base::JSONReader::ReadDeprecated(kPolicySetting));
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
 
   auto objects = store->GetGrantedObjects(origin, origin);
@@ -397,7 +397,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_.profile();
   profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                           *base::JSONReader::Read(kPolicySetting));
+                           *base::JSONReader::ReadDeprecated(kPolicySetting));
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;

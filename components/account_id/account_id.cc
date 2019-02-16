@@ -241,7 +241,7 @@ std::string AccountId::Serialize() const {
 bool AccountId::Deserialize(const std::string& serialized,
                             AccountId* account_id) {
   base::JSONReader reader;
-  std::unique_ptr<const base::Value> value(reader.Read(serialized));
+  std::unique_ptr<const base::Value> value(reader.ReadDeprecated(serialized));
   const base::DictionaryValue* dictionary_value = nullptr;
 
   if (!value || !value->GetAsDictionary(&dictionary_value))

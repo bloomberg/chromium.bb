@@ -50,6 +50,6 @@ JSONStringValueDeserializer::~JSONStringValueDeserializer() = default;
 std::unique_ptr<Value> JSONStringValueDeserializer::Deserialize(
     int* error_code,
     std::string* error_str) {
-  return base::JSONReader::ReadAndReturnError(json_string_, options_,
-                                              error_code, error_str);
+  return base::JSONReader::ReadAndReturnErrorDeprecated(json_string_, options_,
+                                                        error_code, error_str);
 }

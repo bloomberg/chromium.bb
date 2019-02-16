@@ -342,7 +342,7 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_STREQ("", tc.ToCategoryFilterString().c_str());
 
   std::unique_ptr<Value> default_value(
-      JSONReader::Read(kDefaultTraceConfigString));
+      JSONReader::ReadDeprecated(kDefaultTraceConfigString));
   DCHECK(default_value);
   const DictionaryValue* default_dict = nullptr;
   bool is_dict = default_value->GetAsDictionary(&default_dict);
@@ -355,7 +355,7 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_STREQ("", default_tc.ToCategoryFilterString().c_str());
 
   std::unique_ptr<Value> custom_value(
-      JSONReader::Read(kCustomTraceConfigString));
+      JSONReader::ReadDeprecated(kCustomTraceConfigString));
   DCHECK(custom_value);
   const DictionaryValue* custom_dict = nullptr;
   is_dict = custom_value->GetAsDictionary(&custom_dict);

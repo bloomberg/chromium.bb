@@ -47,28 +47,25 @@ JSONReader::JSONReader(int options, int max_depth)
 JSONReader::~JSONReader() = default;
 
 // static
-std::unique_ptr<Value> JSONReader::Read(StringPiece json,
-                                        int options,
-                                        int max_depth) {
+Optional<Value> JSONReader::Read(StringPiece json, int options, int max_depth) {
   internal::JSONParser parser(options, max_depth);
-  Optional<Value> root = parser.Parse(json);
-  return root ? std::make_unique<Value>(std::move(*root)) : nullptr;
+  return parser.Parse(json);
 }
 
 std::unique_ptr<Value> JSONReader::ReadDeprecated(StringPiece json,
                                                   int options,
                                                   int max_depth) {
-  return Read(json, options, max_depth);
+  Optional<Value> value = Read(json, options, max_depth);
+  return value ? Value::ToUniquePtrValue(std::move(*value)) : nullptr;
 }
 
 // static
-std::unique_ptr<Value> JSONReader::ReadAndReturnError(
-    StringPiece json,
-    int options,
-    int* error_code_out,
-    std::string* error_msg_out,
-    int* error_line_out,
-    int* error_column_out) {
+Optional<Value> JSONReader::ReadAndReturnError(StringPiece json,
+                                               int options,
+                                               int* error_code_out,
+                                               std::string* error_msg_out,
+                                               int* error_line_out,
+                                               int* error_column_out) {
   internal::JSONParser parser(options);
   Optional<Value> root = parser.Parse(json);
   if (!root) {
@@ -82,7 +79,7 @@ std::unique_ptr<Value> JSONReader::ReadAndReturnError(
       *error_column_out = parser.error_column();
   }
 
-  return root ? std::make_unique<Value>(std::move(*root)) : nullptr;
+  return root;
 }
 
 // static
@@ -93,8 +90,10 @@ std::unique_ptr<Value> JSONReader::ReadAndReturnErrorDeprecated(
     std::string* error_msg_out,
     int* error_line_out,
     int* error_column_out) {
-  return ReadAndReturnError(json, options, error_code_out, error_msg_out,
-                            error_line_out, error_column_out);
+  Optional<Value> value =
+      ReadAndReturnError(json, options, error_code_out, error_msg_out,
+                         error_line_out, error_column_out);
+  return value ? Value::ToUniquePtrValue(std::move(*value)) : nullptr;
 }
 
 // static

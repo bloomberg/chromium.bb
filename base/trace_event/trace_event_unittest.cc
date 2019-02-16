@@ -33,7 +33,6 @@
 #include "base/trace_event/event_name_filter.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/trace_buffer.h"
-#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_filter.h"
 #include "base/trace_event/trace_event_filter_test_utils.h"
 #include "base/values.h"
@@ -193,8 +192,8 @@ void TraceEventTestFixture::OnTraceDataCollected(
   trace_buffer_.AddFragment(events_str->data());
   trace_buffer_.Finish();
 
-  std::unique_ptr<Value> root =
-      base::JSONReader::Read(json_output_.json_output, JSON_PARSE_RFC);
+  std::unique_ptr<Value> root = base::JSONReader::ReadDeprecated(
+      json_output_.json_output, JSON_PARSE_RFC);
 
   if (!root.get()) {
     LOG(ERROR) << json_output_.json_output;

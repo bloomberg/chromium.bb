@@ -23,7 +23,7 @@ namespace ct {
 namespace {
 std::unique_ptr<base::Value> ParseJson(const std::string& json) {
   base::JSONReader json_reader;
-  return json_reader.Read(json);
+  return json_reader.ReadDeprecated(json);
 }
 }
 

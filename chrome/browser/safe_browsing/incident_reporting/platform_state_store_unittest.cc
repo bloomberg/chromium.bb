@@ -40,7 +40,7 @@ std::unique_ptr<base::DictionaryValue> CreateTestIncidentsSentPref() {
       "}";
   base::JSONReader reader;
 
-  std::unique_ptr<base::Value> root(reader.Read(kData));
+  std::unique_ptr<base::Value> root(reader.ReadDeprecated(kData));
   EXPECT_TRUE(root);
   base::DictionaryValue* incidents_sent = nullptr;
   EXPECT_TRUE(root->GetAsDictionary(&incidents_sent));
