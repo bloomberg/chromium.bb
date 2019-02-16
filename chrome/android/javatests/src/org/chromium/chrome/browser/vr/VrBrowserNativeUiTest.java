@@ -384,4 +384,29 @@ public class VrBrowserNativeUiTest {
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "file_url_emphasis_browser_ui", mRenderTestRule);
     }
+
+    /**
+     * Tests that the reposition bar does not appear if the keyboard is open.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "RenderTest"})
+    public void testRepositionBarDoesNotAppearWithKeyboardOpen()
+            throws InterruptedException, TimeoutException, IOException {
+        // Use the mock keyboard so it doesn't show, reducing the chance of flakes due to AA.
+        NativeUiUtils.enableMockedKeyboard();
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
+                PAGE_LOAD_TIMEOUT_S);
+        NativeUiUtils.clickContentNode(
+                "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
+        NativeUiUtils.waitForUiQuiescence();
+        NativeUiUtils.hoverElement(UserFriendlyElementName.CONTENT_QUAD, new PointF(0.0f, 0.55f));
+        NativeUiUtils.waitForUiQuiescence();
+        // Due to the way the repositioner works, the reposition bar is technically always visible
+        // in the element hierarchy, so we can't just assert that it's invisible. Instead, we have
+        // to resort to pixel diffing.
+        RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
+                "reposition_bar_keyboard_open", mRenderTestRule);
+    }
 }
