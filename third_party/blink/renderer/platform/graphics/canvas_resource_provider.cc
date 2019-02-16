@@ -549,57 +549,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   scoped_refptr<CanvasResource> resource_;
 };
 
-// This class does nothing except answering to ProduceFrame() by piping it to
-// NewOrRecycledResource().  This ResourceProvider is meant to be used with an
-// imported external CanvasResource, and all drawing and lifetime logic must be
-// kept at a higher level.
-class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
- public:
-  CanvasResourceProviderPassThrough(
-      const IntSize& size,
-      const CanvasColorParams color_params,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-          context_provider_wrapper,
-      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
-      : CanvasResourceProvider(size,
-                               color_params,
-                               std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)) {}
-
-  ~CanvasResourceProviderPassThrough() override = default;
-  bool IsValid() const final { return true; }
-  bool IsAccelerated() const final { return true; }
-  bool SupportsDirectCompositing() const override { return true; }
-  bool SupportsSingleBuffering() const override { return true; }
-
- private:
-  scoped_refptr<CanvasResource> CreateResource() final {
-    // This class has no CanvasResource to provide: this must be imported via
-    // ImportResource() and kept in the parent class.
-    NOTREACHED();
-    return nullptr;
-  }
-
-  scoped_refptr<CanvasResource> ProduceFrame() final {
-    return NewOrRecycledResource();
-  }
-
-  sk_sp<SkSurface> CreateSkSurface() const override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  scoped_refptr<StaticBitmapImage> Snapshot() override {
-    NOTREACHED();
-    return nullptr;
-  }
-};
-
 namespace {
 
 enum class CanvasResourceType {
-  kDirect3DGpuMemoryBuffer,
-  kDirect2DGpuMemoryBuffer,
+  kDirectGpuMemoryBuffer,
   kTextureGpuMemoryBuffer,
   kBitmapGpuMemoryBuffer,
   kSharedBitmap,
@@ -645,40 +598,21 @@ const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
                     kSoftwareCompositedFallbackList.begin(),
                     kSoftwareCompositedFallbackList.end()));
 
-  static const std::vector<CanvasResourceType> kAcceleratedDirect2DFallbackList(
-      {
-          CanvasResourceType::kDirect2DGpuMemoryBuffer,
-          // The rest is equal to |kAcceleratedCompositedFallbackList|.
-          CanvasResourceType::kTextureGpuMemoryBuffer,
-          CanvasResourceType::kTexture,
-          // Fallback to software composited
-          CanvasResourceType::kBitmapGpuMemoryBuffer,
-          CanvasResourceType::kSharedBitmap,
-          // Fallback to no direct compositing support
-          CanvasResourceType::kBitmap,
-      });
-  DCHECK(std::equal(kAcceleratedDirect2DFallbackList.begin() + 1,
-                    kAcceleratedDirect2DFallbackList.end(),
+  static const std::vector<CanvasResourceType> kAcceleratedDirectFallbackList({
+      CanvasResourceType::kDirectGpuMemoryBuffer,
+      // The rest is equal to |kAcceleratedCompositedFallbackList|.
+      CanvasResourceType::kTextureGpuMemoryBuffer,
+      CanvasResourceType::kTexture,
+      // Fallback to software composited
+      CanvasResourceType::kBitmapGpuMemoryBuffer,
+      CanvasResourceType::kSharedBitmap,
+      // Fallback to no direct compositing support
+      CanvasResourceType::kBitmap,
+  });
+  DCHECK(std::equal(kAcceleratedDirectFallbackList.begin() + 1,
+                    kAcceleratedDirectFallbackList.end(),
                     kAcceleratedCompositedFallbackList.begin(),
                     kAcceleratedCompositedFallbackList.end()));
-
-  static const std::vector<CanvasResourceType> kAcceleratedDirect3DFallbackList(
-      {
-          CanvasResourceType::kDirect3DGpuMemoryBuffer,
-          CanvasResourceType::kDirect2DGpuMemoryBuffer,
-          // The rest is equal to |kAcceleratedCompositedFallbackList|.
-          CanvasResourceType::kTextureGpuMemoryBuffer,
-          CanvasResourceType::kTexture,
-          // Fallback to software composited
-          CanvasResourceType::kBitmapGpuMemoryBuffer,
-          CanvasResourceType::kSharedBitmap,
-          // Fallback to no direct compositing support
-          CanvasResourceType::kBitmap,
-      });
-  DCHECK(std::equal(kAcceleratedDirect3DFallbackList.begin() + 1,
-                    kAcceleratedDirect3DFallbackList.end(),
-                    kAcceleratedDirect2DFallbackList.begin(),
-                    kAcceleratedDirect2DFallbackList.end()));
 
   switch (usage) {
     case CanvasResourceProvider::kSoftwareResourceUsage:
@@ -689,10 +623,8 @@ const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
       return kAcceleratedFallbackList;
     case CanvasResourceProvider::kAcceleratedCompositedResourceUsage:
       return kAcceleratedCompositedFallbackList;
-    case CanvasResourceProvider::kAcceleratedDirect2DResourceUsage:
-      return kAcceleratedDirect2DFallbackList;
-    case CanvasResourceProvider::kAcceleratedDirect3DResourceUsage:
-      return kAcceleratedDirect3DFallbackList;
+    case CanvasResourceProvider::kAcceleratedDirectResourceUsage:
+      return kAcceleratedDirectFallbackList;
   }
   NOTREACHED();
 }
@@ -710,55 +642,58 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
   std::unique_ptr<CanvasResourceProvider> provider;
   const std::vector<CanvasResourceType>& fallback_list =
       GetResourceTypeFallbackList(usage);
-
-  const bool is_gpu_memory_buffer_image_allowed =
-      SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&
-      presentation_mode == kAllowImageChromiumPresentationMode &&
-      gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-          gfx::Size(size), color_params.GetBufferFormat()) &&
-      gpu::IsImageFromGpuMemoryBufferFormatSupported(
-          color_params.GetBufferFormat(),
-          context_provider_wrapper->ContextProvider()->GetCapabilities());
-
   for (CanvasResourceType resource_type : fallback_list) {
     // Note: We are deliberately not using std::move() on
     // |context_provider_wrapper| and |resource_dispatcher| to ensure that the
     // pointers remain valid for the next iteration of this loop if necessary.
     switch (resource_type) {
       case CanvasResourceType::kTextureGpuMemoryBuffer:
-        if (!is_gpu_memory_buffer_image_allowed)
+        FALLTHROUGH;
+      case CanvasResourceType::kDirectGpuMemoryBuffer:
+        if (!SharedGpuContext::IsGpuCompositingEnabled())
           continue;
+        if (presentation_mode != kAllowImageChromiumPresentationMode)
+          continue;
+        if (!context_provider_wrapper)
+          continue;
+        if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
+                color_params.GetBufferFormat(),
+                context_provider_wrapper->ContextProvider()
+                    ->GetCapabilities())) {
+          continue;
+        }
+        if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+                gfx::Size(size), color_params.GetBufferFormat())) {
+          continue;
+        }
         DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
                   gpu::InternalFormatForGpuMemoryBufferFormat(
                       color_params.GetBufferFormat()));
-        provider =
-            std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
-                size, msaa_sample_count, color_params, context_provider_wrapper,
-                resource_dispatcher, is_origin_top_left);
-        break;
-      case CanvasResourceType::kDirect2DGpuMemoryBuffer:
-        if (!is_gpu_memory_buffer_image_allowed)
-          continue;
-        DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
-                  gpu::InternalFormatForGpuMemoryBufferFormat(
-                      color_params.GetBufferFormat()));
-        provider =
-            std::make_unique<CanvasResourceProviderDirectGpuMemoryBuffer>(
-                size, msaa_sample_count, color_params, context_provider_wrapper,
-                resource_dispatcher, is_origin_top_left);
-        break;
-      case CanvasResourceType::kDirect3DGpuMemoryBuffer:
-        if (!is_gpu_memory_buffer_image_allowed)
-          continue;
-        DCHECK_EQ(color_params.GLUnsizedInternalFormat(),
-                  gpu::InternalFormatForGpuMemoryBufferFormat(
-                      color_params.GetBufferFormat()));
-        provider = std::make_unique<CanvasResourceProviderPassThrough>(
-            size, color_params, context_provider_wrapper, resource_dispatcher);
+        if (resource_type == CanvasResourceType::kDirectGpuMemoryBuffer) {
+          provider =
+              std::make_unique<CanvasResourceProviderDirectGpuMemoryBuffer>(
+                  size, msaa_sample_count, color_params,
+                  context_provider_wrapper, resource_dispatcher,
+                  is_origin_top_left);
+        } else {
+          provider =
+              std::make_unique<CanvasResourceProviderTextureGpuMemoryBuffer>(
+                  size, msaa_sample_count, color_params,
+                  context_provider_wrapper, resource_dispatcher,
+                  is_origin_top_left);
+        }
         break;
       case CanvasResourceType::kBitmapGpuMemoryBuffer:
-        if (!is_gpu_memory_buffer_image_allowed ||
-            !Platform::Current()->GetGpuMemoryBufferManager()) {
+        if (!SharedGpuContext::IsGpuCompositingEnabled())
+          continue;
+        if (presentation_mode != kAllowImageChromiumPresentationMode)
+          continue;
+        if (!context_provider_wrapper)
+          continue;
+        if (!Platform::Current()->GetGpuMemoryBufferManager())
+          continue;
+        if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
+                gfx::Size(size), color_params.GetBufferFormat())) {
           continue;
         }
         provider =
@@ -1146,15 +1081,6 @@ void CanvasResourceProvider::TryEnableSingleBuffering() {
   if (IsSingleBuffered() || !SupportsSingleBuffering())
     return;
   SetResourceRecyclingEnabled(false);
-}
-
-bool CanvasResourceProvider::ImportResource(
-    scoped_refptr<CanvasResource> resource) {
-  if (!IsSingleBuffered() || !SupportsSingleBuffering())
-    return false;
-  canvas_resources_.clear();
-  canvas_resources_.push_back(std::move(resource));
-  return true;
 }
 
 }  // namespace blink

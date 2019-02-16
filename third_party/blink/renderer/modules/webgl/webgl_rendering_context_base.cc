@@ -1561,31 +1561,14 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   if (!CopyRenderingResultsFromDrawingBuffer(Host()->ResourceProvider(),
                                              source_buffer)) {
-    // Currently, CopyRenderingResultsFromDrawingBuffer is expected to always
+    // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
     // succeed because cases where canvas()-buffer() is not accelerated are
-    // handled before reaching this point.  If that assumption ever stops
-    // holding true, we may need to implement a fallback right here.
+    // handle before reaching this point.  If that assumption ever stops holding
+    // true, we may need to implement a fallback right here.
     NOTREACHED();
     return false;
   }
   return true;
-}
-
-void WebGLRenderingContextBase::ProvideBackBufferToResourceProvider() const {
-  if (isContextLost())
-    return;
-
-  DCHECK(Host()->ResourceProvider());
-  if (Host()->ResourceProvider()->Size() != GetDrawingBuffer()->Size())
-    Host()->DiscardResourceProvider();
-
-  CanvasResourceProvider* resource_provider =
-      Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration);
-  if (!resource_provider || !resource_provider->IsAccelerated())
-    return;
-
-  resource_provider->ImportResource(
-      GetDrawingBuffer()->AsCanvasResource(resource_provider->CreateWeakPtr()));
 }
 
 bool WebGLRenderingContextBase::ContextCreatedOnXRCompatibleAdapter() {
