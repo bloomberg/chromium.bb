@@ -80,14 +80,13 @@ Polymer({
     currentEntry.setAttribute('completed', true);
     this.currentIndex_++;
     if (this.currentIndex_ == 4) {
-      this.$['voice-uploading'].setAttribute('active', true);
+      this.$['voice-match-entries'].hidden = true;
+      this.$['later-button'].hidden = true;
+      this.$['loading-animation'].hidden = false;
     }
   },
 
   voiceMatchDone: function() {
-    this.$['voice-uploading'].removeAttribute('active');
-    this.$['voice-uploading'].setAttribute('completed', true);
-
     this.removeClass_('recording');
     this.addClass_('completed');
 
