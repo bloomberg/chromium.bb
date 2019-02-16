@@ -91,7 +91,7 @@ class ManifestRepository(object):
     self._checkout = checkout
     self._project = project
 
-  def AbsoluteManifestPath(self, path):
+  def _AbsoluteManifestPath(self, path):
     """Returns the full path to the manifest.
 
     Args:
@@ -102,7 +102,7 @@ class ManifestRepository(object):
     """
     return self._checkout.AbsoluteProjectPath(self._project, path)
 
-  def ReadManifest(self, path):
+  def _ReadManifest(self, path):
     """Read the manifest at the given path.
 
     Args:
@@ -115,7 +115,7 @@ class ManifestRepository(object):
         path,
         allow_unsupported_features=True)
 
-  def ListManifests(self, root_manifests):
+  def _ListManifests(self, root_manifests):
     """Finds all manifests included directly or indirectly by root manifests.
 
     For convenience, the returned set includes the root manifests. If any
@@ -130,11 +130,11 @@ class ManifestRepository(object):
     pending = list(root_manifests)
     found = set()
     while pending:
-      path = self.AbsoluteManifestPath(pending.pop())
+      path = self._AbsoluteManifestPath(pending.pop())
       if path in found or not os.path.exists(path):
         continue
       found.add(path)
-      manifest = self.ReadManifest(path)
+      manifest = self._ReadManifest(path)
       pending.extend([inc.name for inc in manifest.Includes()])
     return found
 
@@ -152,7 +152,7 @@ class ManifestRepository(object):
     Returns:
       The repaired repo_manifest.Manifest object.
     """
-    manifest = self.ReadManifest(path)
+    manifest = self._ReadManifest(path)
 
     # Delete the default revision if specified by original manifest.
     default = manifest.Default()
@@ -164,15 +164,23 @@ class ManifestRepository(object):
       if remote.revision:
         del remote.revision
 
-    # Update all project revisions.
+    # Update all project revisions. Note we cannot call CanBranchProject and
+    # related functions because they read the project remote, which may not
+    # be defined in the current manifest file.
     for project in manifest.Projects():
-      if CanBranchProject(project):
-        branch = branches_by_path[project.Path()]
-        project.revision = git.NormalizeRef(branch)
-      elif CanPinProject(project):
-        project.revision = self._checkout.GitRevision(project)
-      else:
+      path = project.Path()
+
+      # If project path is in the dict, the project must've been branched
+      if path in branches_by_path:
+        project.revision = git.NormalizeRef(branches_by_path[path])
+
+      # Otherwise, check if project is explicitly TOT.
+      elif BranchMode(project) == constants.MANIFEST_ATTR_BRANCHING_TOT:
         project.revision = git.NormalizeRef('master')
+
+      # If not, it's pinned.
+      else:
+        project.revision = self._checkout.GitRevision(project)
 
       if project.upstream:
         del project.upstream
@@ -188,7 +196,7 @@ class ManifestRepository(object):
     Args:
       branches: List a ProjectBranches for each branched project.
     """
-    manifest_paths = self.ListManifests(
+    manifest_paths = self._ListManifests(
         [constants.DEFAULT_MANIFEST, constants.OFFICIAL_MANIFEST])
     branches_by_path = {project.Path(): branch for project, branch in branches}
     for manifest_path in manifest_paths:

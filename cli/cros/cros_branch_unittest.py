@@ -93,6 +93,7 @@ REMOTES = AsAttrDict('cros', 'cros-internal')
 # Store commonly used values for convenience.
 EXTERNAL_FILE_NAME = 'external.xml'
 INTERNAL_FILE_NAME = 'internal.xml'
+REMOTES_FILE_NAME = '_remotes.xml'
 
 # Create the raw XML based on the above data. Note that by convention,
 # the leaf directory of the project path MUST end with the project ID.
@@ -101,11 +102,11 @@ DEFAULT_XML = """
 """
 
 REMOTE_EXTERNAL_XML = """
-  <remote name="cros" fetch="ext-fetch"/>
+  <remote name="cros" fetch="ext-fetch" revision="refs/heads/master"/>
 """
 
 REMOTE_INTERNAL_XML = """
-  <remote name="cros-internal" fetch="int-fetch"/>
+  <remote name="cros-internal" fetch="int-fetch" revision="refs/heads/master"/>
 """
 
 PROJECTS_EXTERNAL_XML = """
@@ -152,6 +153,10 @@ PROJECTS_INTERNAL_XML = """
   </project>
 """
 
+INCLUDE_REMOTES_XML = """
+  <include name="_remotes.xml"/>
+"""
+
 INCLUDE_EXTERNAL_XML = """
   <include name="external.xml"/>
 """
@@ -164,16 +169,18 @@ INCLUDE_INTERNAL_XML = """
 # both manifest and manifest-internal projects, once for TOT and once
 # for a branch named new-branch.
 MANIFEST_FILES = {
+    REMOTES_FILE_NAME: ManifestXml(REMOTE_EXTERNAL_XML),
     EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_XML,
-                                    REMOTE_EXTERNAL_XML,
+                                    INCLUDE_REMOTES_XML,
                                     PROJECTS_EXTERNAL_XML),
     constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
 }
 
 MANIFEST_INTERNAL_FILES = {
+    REMOTES_FILE_NAME: ManifestXml(REMOTE_EXTERNAL_XML, REMOTE_INTERNAL_XML),
     EXTERNAL_FILE_NAME: MANIFEST_FILES[EXTERNAL_FILE_NAME],
     INTERNAL_FILE_NAME: ManifestXml(DEFAULT_XML,
-                                    REMOTE_INTERNAL_XML,
+                                    INCLUDE_REMOTES_XML,
                                     PROJECTS_INTERNAL_XML),
     constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
                                              INCLUDE_EXTERNAL_XML),
@@ -244,16 +251,18 @@ PROJECTS_INTERNAL_BRANCHED_XML = """
 """
 
 MANIFEST_BRANCHED_FILES = {
+    REMOTES_FILE_NAME: ManifestXml(REMOTE_EXTERNAL_XML),
     EXTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
-                                    REMOTE_EXTERNAL_XML,
+                                    INCLUDE_REMOTES_XML,
                                     PROJECTS_EXTERNAL_BRANCHED_XML),
     constants.DEFAULT_MANIFEST: ManifestXml(INCLUDE_EXTERNAL_XML),
 }
 
 MANIFEST_INTERNAL_BRANCHED_FILES = {
+    REMOTES_FILE_NAME: ManifestXml(REMOTE_EXTERNAL_XML, REMOTE_INTERNAL_XML),
     EXTERNAL_FILE_NAME: MANIFEST_BRANCHED_FILES[EXTERNAL_FILE_NAME],
     INTERNAL_FILE_NAME: ManifestXml(DEFAULT_BRANCHED_XML,
-                                    REMOTE_INTERNAL_XML,
+                                    INCLUDE_REMOTES_XML,
                                     PROJECTS_INTERNAL_BRANCHED_XML),
     constants.OFFICIAL_MANIFEST: ManifestXml(INCLUDE_INTERNAL_XML,
                                              INCLUDE_EXTERNAL_XML),
@@ -448,17 +457,6 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
     """
     return os.path.basename(path) in MANIFEST_INTERNAL_FILES
 
-  def ExpectedFilePath(self, fname):
-    """Returns the expected absolute path for the file.
-
-    Args:
-      fname: The manifest file name.
-
-    Returns:
-      Expected file path, of the form /root/manifest-internal/<fname>
-    """
-    return os.path.join(self.root, self.project.Path(), fname)
-
   def setUp(self):
     self.PatchObject(CrosCheckout, 'GitRevision', self.GitRevisionMock)
     self.PatchObject(repo_manifest.Manifest, 'FromFile', self.FromFileMock)
@@ -469,33 +467,7 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.project = self.ProjectFor(PROJECTS.MANIFEST_INTERNAL)
     self.manifest_repo = ManifestRepository(self.checkout, self.project)
 
-  def testAbsoluteManifestPath(self):
-    """Test AbsoluteManifestPath joins path with file name."""
-    self.assertEqual(
-        self.manifest_repo.AbsoluteManifestPath('test.xml'),
-        self.ExpectedFilePath('test.xml'))
-
-  def testListManifestsSingleFileNoIncludes(self):
-    """Test ListManifests on a root file with no includes."""
-    roots = expected = [EXTERNAL_FILE_NAME]
-    actual = self.manifest_repo.ListManifests(roots)
-    self.assertItemsEqual(actual, map(self.ExpectedFilePath, expected))
-
-  def testListManifestsSingleFileWithIncludes(self):
-    """Test ListManifests on a root file with unique includes."""
-    roots = [constants.DEFAULT_MANIFEST]
-    expected = roots + [EXTERNAL_FILE_NAME, INTERNAL_FILE_NAME]
-    actual = self.manifest_repo.ListManifests(roots)
-    self.assertItemsEqual(actual, map(self.ExpectedFilePath, expected))
-
-  def testListManifestsMultipleFilesWithIncludes(self):
-    """Test ListManifests on root files with shared includes."""
-    roots = [constants.DEFAULT_MANIFEST, EXTERNAL_FILE_NAME]
-    expected = roots + [INTERNAL_FILE_NAME]
-    actual = self.manifest_repo.ListManifests(roots)
-    self.assertItemsEqual(actual, map(self.ExpectedFilePath, expected))
-
-  def testRepairManifestDeletesDefaultRevisions(self):
+  def testRepairManifestDeletesDefaultRevision(self):
     """Test RepairManifest deletes revision attr on <default> and <remote>."""
     branches = {
         self.PathFor(PROJECTS.MANIFEST_INTERNAL): 'beep',
@@ -503,6 +475,14 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
     }
     actual = self.manifest_repo.RepairManifest(INTERNAL_FILE_NAME, branches)
     self.assertIsNone(actual.Default().revision)
+
+  def testRepairManifestDeletesRemoteRevision(self):
+    """Test RepairManifest deletes revision attr on <default> and <remote>."""
+    branches = {
+        self.PathFor(PROJECTS.MANIFEST_INTERNAL): 'beep',
+        self.PathFor(PROJECTS.EXPLICIT_BRANCH): 'boop',
+    }
+    actual = self.manifest_repo.RepairManifest(REMOTES_FILE_NAME, branches)
     self.assertIsNone(actual.GetRemote(REMOTES.CROS_INTERNAL).revision)
 
   def testRepairManifestUpdatesBranchedProjectRevisions(self):
@@ -562,12 +542,14 @@ class ManifestRepositoryTest(ManifestTestCase, cros_test_lib.MockTestCase):
         mock.call('/root/manifest-internal/official.xml', branches_by_path),
         mock.call('/root/manifest-internal/internal.xml', branches_by_path),
         mock.call('/root/manifest-internal/external.xml', branches_by_path),
+        mock.call('/root/manifest-internal/_remotes.xml', branches_by_path),
     ])
     self.assertItemsEqual(write.call_args_list, [
         mock.call('/root/manifest-internal/default.xml'),
         mock.call('/root/manifest-internal/official.xml'),
         mock.call('/root/manifest-internal/internal.xml'),
         mock.call('/root/manifest-internal/external.xml'),
+        mock.call('/root/manifest-internal/_remotes.xml'),
     ])
 
 
