@@ -3350,9 +3350,10 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		break;
 	case NO_PLANES_WITH_FORMAT:
 		drm_debug(b, "\t\t\t\t[overlay] not placing view %p on overlay: "
-			     "no free overlay planes matching format 0x%lx, "
+			     "no free overlay planes matching format %s (0x%lx) "
 			     "modifier 0x%llx\n",
-			  ev, (unsigned long) fb->format,
+			  ev, fb->format->drm_format_name,
+			  (unsigned long) fb->format,
 			  (unsigned long long) fb->modifier);
 		break;
 	case NO_PLANES_ACCEPTED:
