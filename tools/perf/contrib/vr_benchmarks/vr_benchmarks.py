@@ -37,6 +37,21 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
         'screen leads to locking the phone, which makes Telemetry '
         'not produce valid results.')
     parser.add_option(
+        '--disable-vrcore-install',
+        action='store_true',
+        default=False,
+        help='Disables the automatic installation of VrCore during pre-test '
+             'setup. This is useful for local testing on Pixel devices that '
+             'haven\'t had VrCore removed as a system app.')
+    parser.add_option(
+        '--disable-keyboard-install',
+        action='store_true',
+        default=False,
+        help='Disables the automatic installation of the VR keybaord during '
+             'pre-test setup. This is useful for local testing if you want '
+             'to use whatever version is already installed on the device '
+             'instead of installing whatever is in the test APKs directory.')
+    parser.add_option(
         '--recording-wpr',
         action='store_true',
         default=False,
