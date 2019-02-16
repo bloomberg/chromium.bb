@@ -25,7 +25,7 @@ void JsonUnsafeParser::Parse(const std::string& unsafe_json,
             std::string error_msg;
             int error_line, error_column;
             std::unique_ptr<base::Value> value =
-                base::JSONReader::ReadAndReturnError(
+                base::JSONReader::ReadAndReturnErrorDeprecated(
                     unsafe_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
                     &error_msg, &error_line, &error_column);
             if (value) {

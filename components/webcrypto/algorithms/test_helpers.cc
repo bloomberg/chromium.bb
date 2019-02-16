@@ -162,7 +162,7 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict) {
   re2::RE2::GlobalReplace(&file_contents, re2::RE2("\\s*//.*"), "");
 
   // Parse the JSON to a dictionary.
-  *value = base::JSONReader::Read(file_contents);
+  *value = base::JSONReader::ReadDeprecated(file_contents);
   if (!*value) {
     return ::testing::AssertionFailure()
            << "Couldn't parse test file JSON: " << file_path.value();
@@ -389,7 +389,8 @@ std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json) {
   base::StringPiece json_string(reinterpret_cast<const char*>(json.data()),
                                 json.size());
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(json_string);
   EXPECT_TRUE(value.get());
   EXPECT_TRUE(value->is_dict());
 

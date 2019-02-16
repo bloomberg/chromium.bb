@@ -186,7 +186,7 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
 
   base::Value ReadStats(const std::string& stats_string) {
     std::unique_ptr<base::Value> stats_ptr =
-        base::JSONReader::Read(stats_string);
+        base::JSONReader::ReadDeprecated(stats_string);
     EXPECT_TRUE(stats_ptr);
     base::Value stats = base::Value::FromUniquePtrValue(std::move(stats_ptr));
     EXPECT_TRUE(stats.is_list());

@@ -21,7 +21,7 @@ void ExpectUnableToParsePaymentMethodManifest(const std::string& input) {
   std::vector<url::Origin> actual_supported_origins;
   bool actual_all_origins_supported = false;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
 
   PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
       std::move(value), ErrorLogger(), &actual_web_app_urls,
@@ -42,7 +42,7 @@ void ExpectParsedPaymentMethodManifest(
   std::vector<url::Origin> actual_supported_origins;
   bool actual_all_origins_supported = false;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
 
   PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
       std::move(value), ErrorLogger(), &actual_web_app_urls,
@@ -276,7 +276,7 @@ TEST(PaymentManifestParserTest,
 // Web app manifest parsing:
 
 void ExpectUnableToParseWebAppManifest(const std::string& input) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
   std::vector<WebAppManifestSection> sections;
   PaymentManifestParser::ParseWebAppManifestIntoVector(
       std::move(value), ErrorLogger(), &sections);
@@ -288,7 +288,7 @@ void ExpectParsedWebAppManifest(
     const std::string& expected_id,
     int64_t expected_min_version,
     const std::vector<std::vector<uint8_t>>& expected_fingerprints) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
   std::vector<WebAppManifestSection> sections;
   EXPECT_TRUE(PaymentManifestParser::ParseWebAppManifestIntoVector(
       std::move(value), ErrorLogger(), &sections));
@@ -690,7 +690,7 @@ TEST(PaymentManifestParserTest, TwoDifferentSignaturesWellFormed) {
 }
 
 TEST(PaymentManifestParserTest, TwoRelatedApplicationsWellFormed) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       "{"
       "  \"related_applications\": [{"
       "    \"platform\": \"play\", "
@@ -744,7 +744,7 @@ TEST(PaymentManifestParserTest, TwoRelatedApplicationsWellFormed) {
 // Web app installation information parsing:
 
 void ExpectUnableToParseInstallInfo(const std::string& input) {
-  auto value = base::JSONReader::Read(input);
+  auto value = base::JSONReader::ReadDeprecated(input);
   auto installation_info = std::make_unique<WebAppInstallationInfo>();
   auto icons =
       std::make_unique<std::vector<PaymentManifestParser::WebAppIcon>>();
@@ -756,7 +756,7 @@ void ExpectParsedInstallInfo(
     const std::string& input,
     const WebAppInstallationInfo& expected_installation_info,
     const std::vector<PaymentManifestParser::WebAppIcon>& expected_icons) {
-  auto value = base::JSONReader::Read(input);
+  auto value = base::JSONReader::ReadDeprecated(input);
   WebAppInstallationInfo actual_installation_info;
   std::vector<PaymentManifestParser::WebAppIcon> actual_icons;
   EXPECT_TRUE(PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(

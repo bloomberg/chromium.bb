@@ -106,7 +106,7 @@ TEST_F(ReceiverResponseTest, ParseErrorMessage) {
   EXPECT_EQ(42, response.error->code);
   EXPECT_EQ("it is broke", response.error->description);
   std::unique_ptr<base::Value> parsed_details =
-      base::JSONReader::Read(response.error->details);
+      base::JSONReader::ReadDeprecated(response.error->details);
   ASSERT_TRUE(parsed_details && parsed_details->is_dict());
   EXPECT_EQ(2u, parsed_details->DictSize());
   int fool_value = 0;

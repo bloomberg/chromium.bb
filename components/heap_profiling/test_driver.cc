@@ -631,7 +631,7 @@ bool TestDriver::RunTest(const Options& options) {
   }
 
   std::unique_ptr<base::Value> dump_json =
-      base::JSONReader::Read(serialized_trace_);
+      base::JSONReader::ReadDeprecated(serialized_trace_);
   if (!dump_json) {
     LOG(ERROR) << "Failed to deserialize trace.";
     return false;

@@ -301,7 +301,8 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
-  std::unique_ptr<Value> value = base::JSONReader::Read(upload_report());
+  std::unique_ptr<Value> value =
+      base::JSONReader::ReadDeprecated(upload_report());
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
   EXPECT_TRUE(HasStringValue(*entry, "failure_data.custom_error",
@@ -358,7 +359,8 @@ TEST_F(DomainReliabilityContextTest, NetworkChanged) {
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
-  std::unique_ptr<Value> value = base::JSONReader::Read(upload_report());
+  std::unique_ptr<Value> value =
+      base::JSONReader::ReadDeprecated(upload_report());
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
   EXPECT_TRUE(HasBooleanValue(*entry, "network_changed", true));
@@ -388,7 +390,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
-  std::unique_ptr<Value> value = base::JSONReader::Read(upload_report());
+  std::unique_ptr<Value> value =
+      base::JSONReader::ReadDeprecated(upload_report());
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
 
@@ -421,7 +424,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
-  std::unique_ptr<Value> value = base::JSONReader::Read(upload_report());
+  std::unique_ptr<Value> value =
+      base::JSONReader::ReadDeprecated(upload_report());
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
 
@@ -455,7 +459,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
-  std::unique_ptr<Value> value = base::JSONReader::Read(upload_report());
+  std::unique_ptr<Value> value =
+      base::JSONReader::ReadDeprecated(upload_report());
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
   EXPECT_TRUE(HasBooleanValue(*entry, "quic_broken", true));
@@ -500,7 +505,8 @@ TEST_F(DomainReliabilityContextTest, FractionalSampleRate) {
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
 
-  std::unique_ptr<Value> value = base::JSONReader::Read(upload_report());
+  std::unique_ptr<Value> value =
+      base::JSONReader::ReadDeprecated(upload_report());
   const DictionaryValue* entry;
   ASSERT_TRUE(GetEntryFromReport(value.get(), 0, &entry));
   EXPECT_TRUE(HasDoubleValue(*entry, "sample_rate", 0.5));

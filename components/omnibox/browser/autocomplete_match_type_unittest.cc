@@ -47,7 +47,8 @@ TEST(AutocompleteMatchTypeTest, AccessibilityLabelSearch) {
 namespace {
 
 bool ParseAnswer(const std::string& answer_json, SuggestionAnswer* answer) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(answer_json);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(answer_json);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
     return false;

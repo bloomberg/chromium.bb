@@ -383,7 +383,7 @@ std::unique_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
   std::unique_ptr<base::DictionaryValue> result;
   if (request->GetResponseCode() == net::HTTP_OK) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(request->GetResponseBody());
+        base::JSONReader::ReadDeprecated(request->GetResponseBody());
     if (value && value->is_dict())
       result.reset(static_cast<base::DictionaryValue*>(value.release()));
     else

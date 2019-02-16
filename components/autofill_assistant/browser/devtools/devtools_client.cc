@@ -102,7 +102,7 @@ void DevtoolsClient::DispatchProtocolMessage(
   DCHECK_EQ(agent_host, agent_host_.get());
 
   std::unique_ptr<base::Value> message =
-      base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
+      base::JSONReader::ReadDeprecated(json_message, base::JSON_PARSE_RFC);
   DCHECK(message && message->is_dict());
 
   const base::DictionaryValue* message_dict;

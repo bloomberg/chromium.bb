@@ -196,7 +196,8 @@ Status JwkReader::Init(const CryptoData& bytes,
   base::StringPiece json_string(reinterpret_cast<const char*>(bytes.bytes()),
                                 bytes.byte_length());
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json_string);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(json_string);
   base::DictionaryValue* dict_value = nullptr;
 
   if (!value || !value->GetAsDictionary(&dict_value) || !dict_value)

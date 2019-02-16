@@ -47,7 +47,8 @@ bool ParseReceiverSetupInfo(const std::string& response,
                             base::Value* tags,
                             std::string* receiver_name) {
   DCHECK(tags);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response);
 
   std::string build_version;
   bool is_connected = false;

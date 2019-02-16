@@ -44,7 +44,7 @@ std::unique_ptr<base::Value> GetDictionaryFromCastMessage(
   if (!message.has_payload_utf8())
     return nullptr;
 
-  return base::JSONReader::Read(message.payload_utf8());
+  return base::JSONReader::ReadDeprecated(message.payload_utf8());
 }
 
 CastMessageType GetMessageType(const CastMessage& message) {

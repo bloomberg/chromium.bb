@@ -22,7 +22,7 @@ namespace printer {
 std::string NormalizeJson(const std::string& json) {
   std::string result = json;
   base::ReplaceChars(result, "'", "\"", &result);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(result);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(result);
   base::JSONWriter::Write(*value, &result);
   return result;
 }
@@ -899,7 +899,7 @@ TEST(PrinterDescriptionTest, CddSetDocumentTypeSupported) {
 TEST(PrinterDescriptionTest, CddGetRangeVendorCapability) {
   for (const auto& capacity : kTestRangeCapabilities) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(NormalizeJson(capacity.json_name));
+        base::JSONReader::ReadDeprecated(NormalizeJson(capacity.json_name));
     ASSERT_TRUE(value);
     base::Value description = base::Value::FromUniquePtrValue(std::move(value));
     RangeVendorCapability range_capability;
@@ -914,7 +914,7 @@ TEST(PrinterDescriptionTest, CddGetRangeVendorCapability) {
       kInvalidDefaultValueRangeVendorCapabilityJson};
   for (const char* invalid_json_name : kInvalidJsonNames) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(NormalizeJson(invalid_json_name));
+        base::JSONReader::ReadDeprecated(NormalizeJson(invalid_json_name));
     ASSERT_TRUE(value);
     base::Value description = base::Value::FromUniquePtrValue(std::move(value));
     RangeVendorCapability range_capability;
@@ -937,8 +937,8 @@ TEST(PrinterDescriptionTest, CddSetRangeVendorCapability) {
 
 TEST(PrinterDescriptionTest, CddGetSelectVendorCapability) {
   {
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(NormalizeJson(kSelectVendorCapabilityJson));
+    std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+        NormalizeJson(kSelectVendorCapabilityJson));
     ASSERT_TRUE(value);
     base::Value description = base::Value::FromUniquePtrValue(std::move(value));
     SelectVendorCapability select_capability;
@@ -960,7 +960,7 @@ TEST(PrinterDescriptionTest, CddGetSelectVendorCapability) {
       kSeveralDefaultsSelectVendorCapabilityJson};
   for (const char* invalid_json_name : kInvalidJsonNames) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(NormalizeJson(invalid_json_name));
+        base::JSONReader::ReadDeprecated(NormalizeJson(invalid_json_name));
     ASSERT_TRUE(value);
     base::Value description = base::Value::FromUniquePtrValue(std::move(value));
     SelectVendorCapability select_capability;
@@ -987,7 +987,7 @@ TEST(PrinterDescriptionTest, CddSetSelectVendorCapability) {
 TEST(PrinterDescriptionTest, CddGetTypedValueVendorCapability) {
   for (const auto& capacity : kTestTypedValueCapabilities) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(NormalizeJson(capacity.json_name));
+        base::JSONReader::ReadDeprecated(NormalizeJson(capacity.json_name));
     ASSERT_TRUE(value);
     base::Value description = base::Value::FromUniquePtrValue(std::move(value));
     TypedValueVendorCapability typed_value_capability;
@@ -1002,7 +1002,7 @@ TEST(PrinterDescriptionTest, CddGetTypedValueVendorCapability) {
       kInvalidIntegerTypedValueVendorCapabilityJson};
   for (const char* invalid_json_name : kInvalidJsonNames) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(NormalizeJson(invalid_json_name));
+        base::JSONReader::ReadDeprecated(NormalizeJson(invalid_json_name));
     ASSERT_TRUE(value);
     base::Value description = base::Value::FromUniquePtrValue(std::move(value));
     TypedValueVendorCapability typed_value_capability;

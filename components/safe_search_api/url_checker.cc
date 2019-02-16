@@ -52,7 +52,8 @@ std::string BuildRequestData(const std::string& api_key,
 // Parses a SafeSearch API |response| and stores the result in |is_porn|.
 // On errors, returns false and doesn't set |is_porn|.
 bool ParseResponse(const std::string& response, bool* is_porn) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response);
   const base::DictionaryValue* dict = nullptr;
   if (!value || !value->GetAsDictionary(&dict)) {
     DLOG(WARNING) << "ParseResponse failed to parse global dictionary";

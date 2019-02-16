@@ -97,7 +97,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     DCHECK(pref_name == preference.name());
     base::JSONReader reader;
     std::unique_ptr<base::Value> sync_value(
-        reader.ReadToValue(preference.value()));
+        reader.ReadToValueDeprecated(preference.value()));
     if (!sync_value.get()) {
       LOG(ERROR) << "Failed to deserialize value of preference '" << pref_name
                  << "': " << reader.GetErrorMessage();
@@ -420,7 +420,8 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
 base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference) {
   base::JSONReader reader;
-  std::unique_ptr<base::Value> value(reader.ReadToValue(preference.value()));
+  std::unique_ptr<base::Value> value(
+      reader.ReadToValueDeprecated(preference.value()));
   if (!value.get()) {
     std::string err =
         "Failed to deserialize preference value: " + reader.GetErrorMessage();

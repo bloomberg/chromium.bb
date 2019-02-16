@@ -242,8 +242,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
       ]
      })";
 
-  std::unique_ptr<base::DictionaryValue> response =
-      base::DictionaryValue::From(base::JSONReader::Read(kGoodJSONResponse));
+  std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(kGoodJSONResponse));
   ASSERT_TRUE(response != nullptr);
 
   ACMatches matches;
@@ -288,7 +288,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
      })";
 
   std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::Read(kGoodJSONResponseWithTies));
+      base::JSONReader::ReadDeprecated(kGoodJSONResponseWithTies));
   ASSERT_TRUE(response != nullptr);
 
   ACMatches matches;
@@ -341,7 +341,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
      })";
 
   std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::Read(kGoodJSONResponseWithTies));
+      base::JSONReader::ReadDeprecated(kGoodJSONResponseWithTies));
   ASSERT_TRUE(response != nullptr);
 
   ACMatches matches;
@@ -396,7 +396,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
      })";
 
   std::unique_ptr<base::DictionaryValue> response = base::DictionaryValue::From(
-      base::JSONReader::Read(kGoodJSONResponseWithTies));
+      base::JSONReader::ReadDeprecated(kGoodJSONResponseWithTies));
   ASSERT_TRUE(response != nullptr);
 
   ACMatches matches;
@@ -445,7 +445,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBackoff) {
 
   ASSERT_FALSE(provider_->backoff_for_session_);
   std::unique_ptr<base::DictionaryValue> backoff_response =
-      base::DictionaryValue::From(base::JSONReader::Read(
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
           kBackoffJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(backoff_response != nullptr);
 
@@ -480,7 +480,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
   // First, parse an invalid response - shouldn't prohibit future requests
   // from working but also shouldn't trigger backoff.
   std::unique_ptr<base::DictionaryValue> bad_response =
-      base::DictionaryValue::From(base::JSONReader::Read(
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
           kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(bad_response != nullptr);
   provider_->ParseDocumentSearchResults(*bad_response, &matches);
@@ -488,7 +488,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
 
   // Now parse a response that does trigger backoff.
   std::unique_ptr<base::DictionaryValue> backoff_response =
-      base::DictionaryValue::From(base::JSONReader::Read(
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
           kIneligibleJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS));
   ASSERT_TRUE(backoff_response != nullptr);
   provider_->ParseDocumentSearchResults(*backoff_response, &matches);

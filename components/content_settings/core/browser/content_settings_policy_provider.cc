@@ -322,7 +322,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
       continue;
     }
 
-    std::unique_ptr<base::Value> value = base::JSONReader::Read(
+    std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
         pattern_filter_json, base::JSON_ALLOW_TRAILING_COMMAS);
     if (!value || !value->is_dict()) {
       VLOG(1) << "Ignoring invalid certificate auto select setting. Reason:"

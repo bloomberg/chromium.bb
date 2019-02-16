@@ -246,7 +246,8 @@ bool SpellingServiceClient::ParseResponse(
   // }
   std::unique_ptr<base::DictionaryValue> value(
       static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(data, base::JSON_ALLOW_TRAILING_COMMAS)
+          base::JSONReader::ReadDeprecated(data,
+                                           base::JSON_ALLOW_TRAILING_COMMAS)
               .release()));
   if (!value || !value->is_dict())
     return false;

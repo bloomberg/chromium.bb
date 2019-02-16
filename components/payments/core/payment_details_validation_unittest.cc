@@ -44,7 +44,7 @@ class PaymentDetailsValidationTest
     : public ::testing::TestWithParam<PaymentDetailsValidationTestCase> {};
 
 TEST_P(PaymentDetailsValidationTest, Test) {
-  auto value = base::JSONReader::Read(GetParam().details);
+  auto value = base::JSONReader::ReadDeprecated(GetParam().details);
   ASSERT_NE(nullptr, value.get()) << "Should be in JSON format";
   auto dictionary = base::DictionaryValue::From(std::move(value));
   ASSERT_NE(nullptr, dictionary.get()) << "Should be a dictionary";
