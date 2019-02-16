@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include "msgs/osp_messages.h"
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
+#include "third_party/abseil/src/absl/strings/string_view.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
 namespace openscreen {
@@ -35,7 +37,7 @@ void sigusr1_dump_services(int) {
 }
 
 void sigint_stop(int) {
-  OSP_LOG_INFO << "caught SIGINT, exiting...";
+  OSP_LOG << "caught SIGINT, exiting...";
   g_done = true;
 }
 
@@ -55,8 +57,7 @@ void SignalThings() {
   sigaction(SIGUSR1, &usr1_sa, &unused);
   sigaction(SIGINT, &int_sa, &unused);
 
-  OSP_LOG_INFO << "signal handlers setup";
-  OSP_LOG_INFO << "pid: " << getpid();
+  OSP_LOG << "signal handlers setup" << std::endl << "pid: " << getpid();
 }
 
 class AutoMessage final
@@ -94,13 +95,13 @@ class AutoMessage final
 class ListenerObserver final : public ServiceListener::Observer {
  public:
   ~ListenerObserver() override = default;
-  void OnStarted() override { OSP_LOG_INFO << "listener started!"; }
-  void OnStopped() override { OSP_LOG_INFO << "listener stopped!"; }
-  void OnSuspended() override { OSP_LOG_INFO << "listener suspended!"; }
-  void OnSearching() override { OSP_LOG_INFO << "listener searching!"; }
+  void OnStarted() override { OSP_LOG << "listener started!"; }
+  void OnStopped() override { OSP_LOG << "listener stopped!"; }
+  void OnSuspended() override { OSP_LOG << "listener suspended!"; }
+  void OnSearching() override { OSP_LOG << "listener searching!"; }
 
   void OnReceiverAdded(const ServiceInfo& info) override {
-    OSP_LOG_INFO << "found! " << info.friendly_name;
+    OSP_LOG << "found! " << info.friendly_name;
     if (!auto_message_) {
       auto_message_ = std::make_unique<AutoMessage>();
       auto_message_->TakeRequest(
@@ -109,12 +110,12 @@ class ListenerObserver final : public ServiceListener::Observer {
     }
   }
   void OnReceiverChanged(const ServiceInfo& info) override {
-    OSP_LOG_INFO << "changed! " << info.friendly_name;
+    OSP_LOG << "changed! " << info.friendly_name;
   }
   void OnReceiverRemoved(const ServiceInfo& info) override {
-    OSP_LOG_INFO << "removed! " << info.friendly_name;
+    OSP_LOG << "removed! " << info.friendly_name;
   }
-  void OnAllReceiversRemoved() override { OSP_LOG_INFO << "all removed!"; }
+  void OnAllReceiversRemoved() override { OSP_LOG << "all removed!"; }
   void OnError(ServiceListenerError) override {}
   void OnMetrics(ServiceListener::Metrics) override {}
 
@@ -126,9 +127,9 @@ class PublisherObserver final : public ServicePublisher::Observer {
  public:
   ~PublisherObserver() override = default;
 
-  void OnStarted() override { OSP_LOG_INFO << "publisher started!"; }
-  void OnStopped() override { OSP_LOG_INFO << "publisher stopped!"; }
-  void OnSuspended() override { OSP_LOG_INFO << "publisher suspended!"; }
+  void OnStarted() override { OSP_LOG << "publisher started!"; }
+  void OnStopped() override { OSP_LOG << "publisher stopped!"; }
+  void OnSuspended() override { OSP_LOG << "publisher suspended!"; }
 
   void OnError(ServicePublisherError) override {}
   void OnMetrics(ServicePublisher::Metrics) override {}
@@ -214,7 +215,7 @@ class ConnectionMessageCallback final : public MessageDemuxer::MessageCallback {
         return Error::Code::kCborParsing;
       }
     } else {
-      OSP_LOG_INFO << "message: " << message.message.str;
+      OSP_LOG << "message: " << message.message.str;
       return result;
     }
   }
@@ -249,13 +250,13 @@ void ListenerDemo() {
   NetworkServiceManager::Dispose();
 }
 
-void PublisherDemo(const std::string& friendly_name) {
+void PublisherDemo(absl::string_view friendly_name) {
   SignalThings();
 
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?
   ServicePublisher::Config publisher_config;
-  publisher_config.friendly_name = friendly_name;
+  publisher_config.friendly_name = std::string(friendly_name);
   publisher_config.hostname = "turtle-deadbeef";
   publisher_config.service_instance_name = "deadbeef";
   publisher_config.connection_server_port = 6667;
@@ -269,6 +270,7 @@ void PublisherDemo(const std::string& friendly_name) {
     server_config.connection_endpoints.push_back(
         IPEndpoint{interface.addresses[0].address, 6667});
   }
+
   MessageDemuxer demuxer;
   ConnectionMessageCallback message_callback;
   MessageDemuxer::MessageWatch message_watch = demuxer.WatchMessageType(
@@ -296,14 +298,50 @@ void PublisherDemo(const std::string& friendly_name) {
 }  // namespace
 }  // namespace openscreen
 
+struct InputArgs {
+  absl::string_view friendly_server_name;
+  bool is_verbose;
+};
+
+InputArgs GetInputArgs(int argc, char** argv) {
+  InputArgs args;
+
+  int c;
+  while ((c = getopt(argc, argv, "v")) != -1) {
+    switch (c) {
+      case 'v':
+        args.is_verbose = true;
+        break;
+    }
+  }
+
+  if (optind < argc) {
+    args.friendly_server_name = argv[optind];
+  }
+
+  return args;
+}
+
 int main(int argc, char** argv) {
+  using openscreen::platform::LogLevel;
+
+  std::cout << "Usage: demo [-v] [friendly_name]" << std::endl
+            << "-v: enable more verbose logging" << std::endl
+            << "friendly_name: server name, runs the publisher demo."
+            << std::endl
+            << "               omitting runs the listener demo." << std::endl
+            << std::endl;
+
+  InputArgs args = GetInputArgs(argc, argv);
   openscreen::platform::LogInit(nullptr);
-  openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose,
-                                    1);
+
+  LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
+  openscreen::platform::SetLogLevel(level);
+
   if (argc == 1) {
     openscreen::ListenerDemo();
   } else {
-    openscreen::PublisherDemo(argv[1]);
+    openscreen::PublisherDemo(args.friendly_server_name);
   }
 
   return 0;

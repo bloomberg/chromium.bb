@@ -26,9 +26,8 @@ std::string LogLevelToString(LogLevel level);
 // PLATFORM IMPLEMENTATION
 // The following functions must be implemented by the platform.
 void LogInit(const char* filename);
-void SetLogLevel(LogLevel level, int verbose_level = 0);
+void SetLogLevel(LogLevel level);
 void LogWithLevel(LogLevel level,
-                  int verbose_level,
                   absl::string_view file,
                   int line,
                   absl::string_view msg);
@@ -41,17 +40,13 @@ void Break();
 // base/logging.h.
 class LogMessage {
  public:
-  LogMessage(LogLevel level,
-             int verbose_level,
-             absl::string_view file,
-             int line);
+  LogMessage(LogLevel level, absl::string_view file, int line);
   ~LogMessage();
 
   std::ostream& stream() { return stream_; }
 
  private:
   const LogLevel level_;
-  const int verbose_level_;
 
   // The file here comes from the __FILE__ macro, which should persist while
   // we are doing the logging. Hence, keeping it unmanaged here and not
@@ -61,27 +56,34 @@ class LogMessage {
   std::ostringstream stream_;
 };
 
-// TODO(jophba): Remove magic number logging. We almost always use 1,
-// demarcation of different levels is non-obvious.
-#define OSP_VLOG(l)                                                      \
-  ::openscreen::platform::LogMessage(                                    \
-      ::openscreen::platform::LogLevel::kVerbose, l, __FILE__, __LINE__) \
+// OSP_LOG_* are defined as macros so we can access the handy
+// __FILE__ and __LINE__ expansions.
+
+#define OSP_VLOG                                                             \
+  openscreen::platform::LogMessage(openscreen::platform::LogLevel::kVerbose, \
+                                   __FILE__, __LINE__)                       \
       .stream()
-#define OSP_LOG_INFO                                                          \
-  ::openscreen::platform::LogMessage(::openscreen::platform::LogLevel::kInfo, \
-                                     0, __FILE__, __LINE__)                   \
+
+// Necessary for auto macro in OSP_LOG_IF
+#define OSP_LOG_VERBOSE OSP_VLOG
+
+#define OSP_LOG_INFO                                                      \
+  openscreen::platform::LogMessage(openscreen::platform::LogLevel::kInfo, \
+                                   __FILE__, __LINE__)                    \
       .stream()
-#define OSP_LOG_WARN                                                     \
-  ::openscreen::platform::LogMessage(                                    \
-      ::openscreen::platform::LogLevel::kWarning, 0, __FILE__, __LINE__) \
+#define OSP_LOG OSP_LOG_INFO
+
+#define OSP_LOG_WARN                                                         \
+  openscreen::platform::LogMessage(openscreen::platform::LogLevel::kWarning, \
+                                   __FILE__, __LINE__)                       \
       .stream()
-#define OSP_LOG_ERROR                                                          \
-  ::openscreen::platform::LogMessage(::openscreen::platform::LogLevel::kError, \
-                                     0, __FILE__, __LINE__)                    \
+#define OSP_LOG_ERROR                                                      \
+  openscreen::platform::LogMessage(openscreen::platform::LogLevel::kError, \
+                                   __FILE__, __LINE__)                     \
       .stream()
-#define OSP_LOG_FATAL                                                          \
-  ::openscreen::platform::LogMessage(::openscreen::platform::LogLevel::kFatal, \
-                                     0, __FILE__, __LINE__)                    \
+#define OSP_LOG_FATAL                                                      \
+  openscreen::platform::LogMessage(openscreen::platform::LogLevel::kFatal, \
+                                   __FILE__, __LINE__)                     \
       .stream()
 
 namespace detail {
@@ -95,12 +97,10 @@ class Voidify {
 }  // namespace detail
 
 #define OSP_LAZY_STREAM(stream, condition) \
-  !(condition) ? (void)0 : ::openscreen::platform::detail::Voidify() & (stream)
-#define OSP_EAT_STREAM OSP_LAZY_STREAM(OSP_LOG_INFO, false)
+  !(condition) ? (void)0 : openscreen::platform::detail::Voidify() & (stream)
+#define OSP_EAT_STREAM OSP_LAZY_STREAM(OSP_LOG, false)
 #define OSP_LOG_IF(level, condition) \
   OSP_LAZY_STREAM(OSP_LOG_##level, (condition))
-#define OSP_VLOG_IF(level, condition) \
-  OSP_LAZY_STREAM(OSP_VLOG(level), (condition))
 
 // TODO(btolsch): Add tests for (D)OSP_CHECK and possibly logging.
 #define OSP_CHECK(condition)                   \
@@ -137,24 +137,13 @@ class Voidify {
 #define OSP_DCHECK_GE(a, b) OSP_EAT_STREAM << !((a) >= (b))
 #endif
 
+#define OSP_DVLOG OSP_LOG_IF(VERBOSE, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_INFO OSP_LOG_IF(INFO, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_WARN OSP_LOG_IF(WARN, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_ERROR OSP_LOG_IF(ERROR, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_FATAL OSP_LOG_IF(FATAL, OSP_DCHECK_IS_ON())
 #define OSP_DLOG_IF(level, condition) \
   OSP_LOG_IF(level, OSP_DCHECK_IS_ON() && (condition))
-
-// Verbose logging methods
-// Conventions on log level are:
-// 1 = verbose
-// 2 = very verbose
-// 3 = debugging
-#define OSP_DVLOG OSP_VLOG_IF(1, OSP_DCHECK_IS_ON())
-#define OSP_DVVLOG OSP_VLOG_IF(2, OSP_DCHECK_IS_ON())
-#define OSP_DVLOG_DEBUG OSP_VLOG_IF(3, OSP_DCHECK_IS_ON())
-
-#define OSP_DVLOG_IF(l, condition) \
-  OSP_VLOG_IF(l, OSP_DCHECK_IS_ON() && (condition))
 
 #define OSP_UNIMPLEMENTED() OSP_LOG_ERROR << __func__ << ": unimplemented"
 

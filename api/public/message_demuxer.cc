@@ -36,12 +36,12 @@ MessageDemuxer::MessageWatch::MessageWatch(MessageDemuxer::MessageWatch&& other)
 MessageDemuxer::MessageWatch::~MessageWatch() {
   if (parent_) {
     if (is_default_) {
-      OSP_VLOG(1) << "dropping default handler for type: "
-                  << static_cast<int>(message_type_);
+      OSP_VLOG << "dropping default handler for type: "
+               << static_cast<int>(message_type_);
       parent_->StopDefaultMessageTypeWatch(message_type_);
     } else {
-      OSP_VLOG(1) << "dropping handler for type: "
-                  << static_cast<int>(message_type_);
+      OSP_VLOG << "dropping handler for type: "
+               << static_cast<int>(message_type_);
       parent_->StopWatchingMessageType(endpoint_id_, message_type_);
     }
   }
@@ -117,8 +117,8 @@ void MessageDemuxer::OnStreamData(uint64_t endpoint_id,
                                   uint64_t connection_id,
                                   const uint8_t* data,
                                   size_t data_size) {
-  OSP_VLOG(1) << __func__ << ": [" << endpoint_id << ", " << connection_id
-              << "] - (" << data_size << ")";
+  OSP_VLOG << __func__ << ": [" << endpoint_id << ", " << connection_id
+           << "] - (" << data_size << ")";
   auto& stream_map = buffers_[endpoint_id];
   if (!data_size) {
     stream_map.erase(connection_id);
@@ -157,18 +157,18 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBufferLoop(
   do {
     result = {false, 0};
     if (callbacks_entry != message_callbacks_.end()) {
-      OSP_VLOG(1) << "attempting endpoint-specific handling";
+      OSP_VLOG << "attempting endpoint-specific handling";
       result = HandleStreamBuffer(endpoint_id, connection_id,
                                   &callbacks_entry->second, buffer);
     }
     if (!result.handled) {
       if (!default_callbacks_.empty()) {
-        OSP_VLOG(1) << "attempting generic message handling";
+        OSP_VLOG << "attempting generic message handling";
         result = HandleStreamBuffer(endpoint_id, connection_id,
                                     &default_callbacks_, buffer);
       }
     }
-    OSP_VLOG_IF(1, !result.handled) << "no message handler matched";
+    OSP_LOG_IF(VERBOSE, !result.handled) << "no message handler matched";
   } while (result.consumed && !buffer->empty());
   return result;
 }
@@ -188,7 +188,7 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBuffer(
     if (callback_entry == message_callbacks->end())
       break;
     handled = true;
-    OSP_VLOG(1) << "handling message type " << static_cast<int>(message_type);
+    OSP_VLOG << "handling message type " << static_cast<int>(message_type);
     auto consumed_or_error = callback_entry->second->OnStreamMessage(
         endpoint_id, connection_id, message_type, buffer->data() + 1,
         buffer->size() - 1, clock_->Now());

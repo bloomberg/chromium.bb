@@ -124,11 +124,11 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
   const bool do_filter_using_whitelist = !whitelist.empty();
   std::vector<platform::NetworkInterfaceIndex> index_list;
   for (const auto& interface : addrinfo) {
-    OSP_VLOG(1) << "Found interface: " << interface;
+    OSP_VLOG << "Found interface: " << interface;
     if (do_filter_using_whitelist &&
         std::find(whitelist.begin(), whitelist.end(), interface.info.index) ==
             whitelist.end()) {
-      OSP_VLOG(1) << "Ignoring interface not in whitelist: " << interface.info;
+      OSP_VLOG << "Ignoring interface not in whitelist: " << interface.info;
       continue;
     }
     if (!interface.addresses.empty())

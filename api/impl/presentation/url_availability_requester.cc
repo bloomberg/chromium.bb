@@ -212,7 +212,7 @@ ErrorOr<uint64_t> UrlAvailabilityRequester::ReceiverRequester::SendRequest(
 
   msgs::CborEncodeBuffer buffer;
   if (msgs::EncodePresentationUrlAvailabilityRequest(cbor_request, &buffer)) {
-    OSP_VLOG(1) << "writing presentation-url-availability-request";
+    OSP_VLOG << "writing presentation-url-availability-request";
     connection->Write(buffer.data(), buffer.size());
     watch_by_id.emplace(
         watch_id,

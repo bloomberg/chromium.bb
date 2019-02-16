@@ -184,7 +184,7 @@ std::vector<std::string> ParseTxtResponse(
 }
 
 void MdnsStatusCallback(mDNS* mdns, mStatus result) {
-  OSP_LOG_INFO << "status good? " << (result == mStatus_NoError);
+  OSP_LOG << "status good? " << (result == mStatus_NoError);
 }
 
 }  // namespace

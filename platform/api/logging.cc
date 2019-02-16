@@ -7,14 +7,11 @@
 namespace openscreen {
 namespace platform {
 
-LogMessage::LogMessage(LogLevel level,
-                       int verbose_level,
-                       absl::string_view file,
-                       int line)
-    : level_(level), verbose_level_(verbose_level), file_(file), line_(line) {}
+LogMessage::LogMessage(LogLevel level, absl::string_view file, int line)
+    : level_(level), file_(file), line_(line) {}
 
 LogMessage::~LogMessage() {
-  LogWithLevel(level_, verbose_level_, file_, line_, stream_.str().c_str());
+  LogWithLevel(level_, file_, line_, stream_.str().c_str());
   if (level_ == LogLevel::kFatal)
     Break();
 }

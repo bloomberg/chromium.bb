@@ -14,28 +14,10 @@ namespace openscreen {
 namespace platform {
 namespace {
 
-struct CombinedLogLevel {
-  LogLevel level;
-  int verbose_level;
-};
+LogLevel g_log_level = LogLevel::kInfo;
 
-bool operator<(const CombinedLogLevel& l1, const CombinedLogLevel& l2) {
-  if (l1.level < l2.level) {
-    return true;
-  } else if (l2.level < l1.level) {
-    return false;
-  } else if (l1.level == LogLevel::kVerbose) {
-    return l1.verbose_level > l2.verbose_level;
-  }
-  return false;
-}
-
-CombinedLogLevel g_log_level{LogLevel::kInfo, 0};
-
-std::ostream& operator<<(std::ostream& os, const CombinedLogLevel& level) {
-  os << LogLevelToString(level.level);
-  if (level.level == LogLevel::kVerbose)
-    os << "(" << level.verbose_level << ")";
+std::ostream& operator<<(std::ostream& os, const LogLevel& level) {
+  os << LogLevelToString(level);
 
   return os;
 }
@@ -44,21 +26,19 @@ std::ostream& operator<<(std::ostream& os, const CombinedLogLevel& level) {
 
 int g_log_fd;
 
-void SetLogLevel(LogLevel level, int verbose_level) {
-  g_log_level = CombinedLogLevel{level, verbose_level};
+void SetLogLevel(LogLevel level) {
+  g_log_level = level;
 }
 
 void LogWithLevel(LogLevel level,
-                  int verbose_level,
                   absl::string_view file,
                   int line,
                   absl::string_view msg) {
-  if (CombinedLogLevel{level, verbose_level} < g_log_level)
+  if (level < g_log_level)
     return;
 
   std::stringstream ss;
-  ss << "[" << CombinedLogLevel{level, verbose_level} << ":" << file << ":"
-     << line << "] " << msg << std::endl;
+  ss << "[" << level << ":" << file << ":" << line << "] " << msg << std::endl;
   write(g_log_fd, ss.str().c_str(), ss.str().size());
 }
 

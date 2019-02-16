@@ -57,7 +57,7 @@ void sigusr1_dump_services(int) {
 }
 
 void sigint_stop(int) {
-  OSP_LOG_INFO << "caught SIGINT, exiting...";
+  OSP_LOG << "caught SIGINT, exiting...";
   g_done = true;
 }
 
@@ -92,8 +92,7 @@ void SignalThings() {
   sigaction(SIGUSR1, &usr1_sa, &unused);
   sigaction(SIGINT, &int_sa, &unused);
 
-  OSP_LOG_INFO << "signal handlers setup";
-  OSP_LOG_INFO << "pid: " << getpid();
+  OSP_LOG << "signal handlers setup" << std::endl << "pid: " << getpid();
 }
 
 std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
@@ -131,20 +130,21 @@ std::vector<platform::UdpSocketUniquePtr> SetUpMulticastSockets(
       continue;
     }
 
-    OSP_LOG_INFO << "listening on interface " << ifindex;
+    OSP_LOG << "listening on interface " << ifindex;
     sockets.emplace_back(std::move(socket));
   }
   return sockets;
 }
 
 void LogService(const Service& s) {
-  OSP_LOG_INFO << "PTR: (" << s.service_instance << ")";
-  OSP_LOG_INFO << "SRV: " << s.domain_name << ":" << s.port;
-  OSP_LOG_INFO << "TXT:";
+  OSP_LOG << "PTR: (" << s.service_instance << ")" << std::endl
+          << "SRV: " << s.domain_name << ":" << s.port << std::endl
+          << "TXT:";
+
   for (const auto& l : s.txt) {
-    OSP_LOG_INFO << " | " << l;
+    OSP_LOG << " | " << l;
   }
-  OSP_LOG_INFO << "A: " << s.address;
+  OSP_LOG << "A: " << s.address;
 }
 
 void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
@@ -255,7 +255,7 @@ void BrowseDemo(const std::string& service_name,
   mdns_adapter->SetHostLabel("gigliorononomicon");
   auto interface_addresses = platform::GetInterfaceAddresses();
   for (const auto& ifa : interface_addresses) {
-    OSP_LOG_INFO << "Found interface: " << ifa;
+    OSP_LOG << "Found interface: " << ifa;
   }
 
   std::vector<platform::NetworkInterfaceIndex> index_list;
@@ -298,7 +298,7 @@ void BrowseDemo(const std::string& service_name,
   while (!g_done) {
     HandleEvents(mdns_adapter.get());
     if (g_dump_services) {
-      OSP_LOG_INFO << "num services: " << g_services->size();
+      OSP_LOG << "num services: " << g_services->size();
       for (const auto& s : *g_services) {
         LogService(s.second);
       }
@@ -317,7 +317,7 @@ void BrowseDemo(const std::string& service_name,
                                    packet.socket);
     }
   }
-  OSP_LOG_INFO << "num services: " << g_services->size();
+  OSP_LOG << "num services: " << g_services->size();
   for (const auto& s : *g_services) {
     LogService(s.second);
   }
@@ -335,8 +335,8 @@ void BrowseDemo(const std::string& service_name,
 
 int main(int argc, char** argv) {
   openscreen::platform::LogInit(nullptr);
-  openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose,
-                                    0);
+  openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose);
+
   std::string service_instance;
   std::string service_type("_openscreen._udp");
   if (argc >= 2)

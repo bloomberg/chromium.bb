@@ -117,13 +117,13 @@ mDNSs32 mDNSPlatformUTC() {
 }
 
 void mDNSPlatformWriteDebugMsg(const char* msg) {
-  OSP_DVLOG_DEBUG << __func__ << ": " << msg;
+  OSP_DVLOG << __func__ << ": " << msg;
 }
 
 void mDNSPlatformWriteLogMsg(const char* ident,
                              const char* msg,
                              mDNSLogLevel_t loglevel) {
-  OSP_VLOG(2) << __func__ << ": " << msg;
+  OSP_VLOG << __func__ << ": " << msg;
 }
 
 TCPSocket* mDNSPlatformTCPSocket(mDNS* const m,
