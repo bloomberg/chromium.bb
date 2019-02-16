@@ -1566,6 +1566,11 @@ void FeatureInfo::InitializeFeatures() {
   if (gfx::HasExtension(extensions, "GL_NV_internalformat_sample_query")) {
     feature_flags_.nv_internalformat_sample_query = true;
   }
+
+  if (gfx::HasExtension(extensions,
+                        "GL_AMD_framebuffer_multisample_advanced")) {
+    feature_flags_.amd_framebuffer_multisample_advanced = true;
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

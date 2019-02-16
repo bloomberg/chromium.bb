@@ -579,6 +579,12 @@ void RenderbufferStorageMultisampleCHROMIUM(GLenum target,
                                             GLenum internalformat,
                                             GLsizei width,
                                             GLsizei height) override;
+void RenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                               GLsizei samples,
+                                               GLsizei storageSamples,
+                                               GLenum internalformat,
+                                               GLsizei width,
+                                               GLsizei height) override;
 void RenderbufferStorageMultisampleEXT(GLenum target,
                                        GLsizei samples,
                                        GLenum internalformat,

@@ -1651,6 +1651,19 @@ void GLES2TraceImplementation::RenderbufferStorageMultisampleCHROMIUM(
                                               width, height);
 }
 
+void GLES2TraceImplementation::RenderbufferStorageMultisampleAdvancedAMD(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::RenderbufferStorageMultisampleAdvancedAMD");
+  gl_->RenderbufferStorageMultisampleAdvancedAMD(
+      target, samples, storageSamples, internalformat, width, height);
+}
+
 void GLES2TraceImplementation::RenderbufferStorageMultisampleEXT(
     GLenum target,
     GLsizei samples,

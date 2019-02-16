@@ -279,6 +279,8 @@ void DriverGL::InitializeStaticBindings() {
 
 void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
                                          const gfx::ExtensionSet& extensions) {
+  ext.b_GL_AMD_framebuffer_multisample_advanced =
+      gfx::HasExtension(extensions, "GL_AMD_framebuffer_multisample_advanced");
   ext.b_GL_ANGLE_framebuffer_blit =
       gfx::HasExtension(extensions, "GL_ANGLE_framebuffer_blit");
   ext.b_GL_ANGLE_framebuffer_multisample =
@@ -2243,6 +2245,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glRenderbufferStorageMultisampleFn =
         reinterpret_cast<glRenderbufferStorageMultisampleProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleEXT"));
+  }
+
+  if (ext.b_GL_AMD_framebuffer_multisample_advanced) {
+    fn.glRenderbufferStorageMultisampleAdvancedAMDFn =
+        reinterpret_cast<glRenderbufferStorageMultisampleAdvancedAMDProc>(
+            GetGLProcAddress("glRenderbufferStorageMultisampleAdvancedAMD"));
   }
 
   if (ext.b_GL_EXT_multisampled_render_to_texture) {
@@ -4989,6 +4997,17 @@ void GLApiBase::glRenderbufferStorageMultisampleFn(GLenum target,
                                                    GLsizei height) {
   driver_->fn.glRenderbufferStorageMultisampleFn(target, samples,
                                                  internalformat, width, height);
+}
+
+void GLApiBase::glRenderbufferStorageMultisampleAdvancedAMDFn(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  driver_->fn.glRenderbufferStorageMultisampleAdvancedAMDFn(
+      target, samples, storageSamples, internalformat, width, height);
 }
 
 void GLApiBase::glRenderbufferStorageMultisampleEXTFn(GLenum target,
@@ -8475,6 +8494,19 @@ void TraceGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                 "TraceGLAPI::glRenderbufferStorageMultisample")
   gl_api_->glRenderbufferStorageMultisampleFn(target, samples, internalformat,
                                               width, height);
+}
+
+void TraceGLApi::glRenderbufferStorageMultisampleAdvancedAMDFn(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glRenderbufferStorageMultisampleAdvancedAMD")
+  gl_api_->glRenderbufferStorageMultisampleAdvancedAMDFn(
+      target, samples, storageSamples, internalformat, width, height);
 }
 
 void TraceGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
@@ -12944,6 +12976,22 @@ void DebugGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                               width, height);
 }
 
+void DebugGLApi::glRenderbufferStorageMultisampleAdvancedAMDFn(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  GL_SERVICE_LOG("glRenderbufferStorageMultisampleAdvancedAMD"
+                 << "(" << GLEnums::GetStringEnum(target) << ", " << samples
+                 << ", " << storageSamples << ", "
+                 << GLEnums::GetStringEnum(internalformat) << ", " << width
+                 << ", " << height << ")");
+  gl_api_->glRenderbufferStorageMultisampleAdvancedAMDFn(
+      target, samples, storageSamples, internalformat, width, height);
+}
+
 void DebugGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                        GLsizei samples,
                                                        GLenum internalformat,
@@ -16417,6 +16465,16 @@ void NoContextGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                                         GLsizei width,
                                                         GLsizei height) {
   NoContextHelper("glRenderbufferStorageMultisample");
+}
+
+void NoContextGLApi::glRenderbufferStorageMultisampleAdvancedAMDFn(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  NoContextHelper("glRenderbufferStorageMultisampleAdvancedAMD");
 }
 
 void NoContextGLApi::glRenderbufferStorageMultisampleEXTFn(

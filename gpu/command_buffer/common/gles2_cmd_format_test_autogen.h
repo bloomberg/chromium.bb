@@ -3813,6 +3813,26 @@ TEST_F(GLES2FormatTest, RenderbufferStorageMultisampleCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, RenderbufferStorageMultisampleAdvancedAMD) {
+  cmds::RenderbufferStorageMultisampleAdvancedAMD& cmd =
+      *GetBufferAs<cmds::RenderbufferStorageMultisampleAdvancedAMD>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLsizei>(12),
+              static_cast<GLsizei>(13), static_cast<GLenum>(14),
+              static_cast<GLsizei>(15), static_cast<GLsizei>(16));
+  EXPECT_EQ(static_cast<uint32_t>(
+                cmds::RenderbufferStorageMultisampleAdvancedAMD::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.samples);
+  EXPECT_EQ(static_cast<GLsizei>(13), cmd.storageSamples);
+  EXPECT_EQ(static_cast<GLenum>(14), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.height);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, RenderbufferStorageMultisampleEXT) {
   cmds::RenderbufferStorageMultisampleEXT& cmd =
       *GetBufferAs<cmds::RenderbufferStorageMultisampleEXT>();

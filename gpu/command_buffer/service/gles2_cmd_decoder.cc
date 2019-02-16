@@ -792,6 +792,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                             GLsizei width,
                                             GLsizei height,
                                             ForcedMultisampleMode mode);
+  void RenderbufferStorageMultisampleHelperAMD(GLenum target,
+                                               GLsizei samples,
+                                               GLsizei storageSamples,
+                                               GLenum internal_format,
+                                               GLsizei width,
+                                               GLsizei height,
+                                               ForcedMultisampleMode mode);
   bool RegenerateRenderbufferIfNeeded(Renderbuffer* renderbuffer);
 
   PathManager* path_manager() { return group_->path_manager(); }
@@ -1930,6 +1937,14 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLenum target, GLsizei samples, GLenum internalformat,
       GLsizei width, GLsizei height);
 
+  // Handler for glRenderbufferStorageMultisampleAdvancedAMD.
+  void DoRenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                                   GLsizei samples,
+                                                   GLsizei storageSamples,
+                                                   GLenum internalformat,
+                                                   GLsizei width,
+                                                   GLsizei height);
+
   // Handler for glRenderbufferStorageMultisampleEXT
   // (multisampled_render_to_texture).
   void DoRenderbufferStorageMultisampleEXT(
@@ -1950,6 +1965,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                               GLsizei width,
                                               GLsizei height);
 
+  // validation for multisample AMD extension.
+  bool ValidateRenderbufferStorageMultisampleAMD(GLsizei samples,
+                                                 GLsizei storageSamples,
+                                                 GLenum internalformat,
+                                                 GLsizei width,
+                                                 GLsizei height);
   // Verifies that the currently bound multisample renderbuffer is valid
   // Very slow! Only done on platforms with driver bugs that return invalid
   // buffers under memory pressure
@@ -9271,6 +9292,18 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
   }
 }
 
+void GLES2DecoderImpl::RenderbufferStorageMultisampleHelperAMD(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internal_format,
+    GLsizei width,
+    GLsizei height,
+    ForcedMultisampleMode mode) {
+  api()->glRenderbufferStorageMultisampleAdvancedAMDFn(
+      target, samples, storageSamples, internal_format, width, height);
+}
+
 bool GLES2DecoderImpl::RegenerateRenderbufferIfNeeded(
     Renderbuffer* renderbuffer) {
   if (!renderbuffer->RegenerateAndBindBackingObjectIfNeeded(workarounds())) {
@@ -9319,6 +9352,36 @@ bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
   return true;
 }
 
+bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisampleAMD(
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  if (samples > renderbuffer_manager()->max_samples()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRenderbufferStorageMultisample",
+                       "samples too large");
+    return false;
+  }
+
+  if (width > renderbuffer_manager()->max_renderbuffer_size() ||
+      height > renderbuffer_manager()->max_renderbuffer_size()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRenderbufferStorageMultisample",
+                       "dimensions too large");
+    return false;
+  }
+
+  uint32_t estimated_size = 0;
+  if (!renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
+          width, height, samples, internalformat, &estimated_size)) {
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glRenderbufferStorageMultisample",
+                       "dimensions too large");
+    return false;
+  }
+
+  return true;
+}
+
 void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
@@ -9351,6 +9414,51 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
         LOCAL_SET_GL_ERROR(
             GL_OUT_OF_MEMORY,
             "glRenderbufferStorageMultisampleCHROMIUM", "out of memory");
+        return;
+      }
+    }
+
+    renderbuffer_manager()->SetInfoAndInvalidate(renderbuffer, samples,
+                                                 internalformat, width, height);
+  }
+}
+
+void GLES2DecoderImpl::DoRenderbufferStorageMultisampleAdvancedAMD(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  Renderbuffer* renderbuffer = GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
+  if (!renderbuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "no renderbuffer bound");
+    return;
+  }
+
+  if (!ValidateRenderbufferStorageMultisampleAMD(
+          samples, storageSamples, internalformat, width, height)) {
+    return;
+  }
+
+  GLenum impl_format =
+      renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
+          internalformat);
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(
+      "glRenderbufferStorageMultisampleAdvancedAMD");
+  RenderbufferStorageMultisampleHelperAMD(
+      target, samples, storageSamples, impl_format, width, height, kDoNotForce);
+  GLenum error =
+      LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleAdvancedAMD");
+  if (error == GL_NO_ERROR) {
+    if (workarounds().validate_multisample_buffer_allocation) {
+      if (!VerifyMultisampleRenderbufferIntegrity(renderbuffer->service_id(),
+                                                  impl_format)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY,
+                           "glRenderbufferStorageMultisampleAdvancedAMD",
+                           "out of memory");
         return;
       }
     }

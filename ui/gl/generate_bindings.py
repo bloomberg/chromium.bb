@@ -1638,6 +1638,12 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
+ 'versions' : [{'name': 'glRenderbufferStorageMultisampleAdvancedAMD',
+                'extensions': ['GL_AMD_framebuffer_multisample_advanced'] ,
+                'explicit_only': True}],
+  'arguments': 'GLenum target, GLsizei samples, GLsizei storageSamples, '
+               'GLenum internalformat,GLsizei width, GLsizei height', },
+{ 'return_type': 'void',
  'versions' : [{'name': 'glRenderbufferStorageMultisampleEXT',
                 'extensions': ['GL_EXT_multisampled_render_to_texture'],
                 'explicit_only': True},

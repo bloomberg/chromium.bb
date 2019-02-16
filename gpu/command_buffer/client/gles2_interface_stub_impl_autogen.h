@@ -779,6 +779,13 @@ void GLES2InterfaceStub::RenderbufferStorageMultisampleCHROMIUM(
     GLenum /* internalformat */,
     GLsizei /* width */,
     GLsizei /* height */) {}
+void GLES2InterfaceStub::RenderbufferStorageMultisampleAdvancedAMD(
+    GLenum /* target */,
+    GLsizei /* samples */,
+    GLsizei /* storageSamples */,
+    GLenum /* internalformat */,
+    GLsizei /* width */,
+    GLsizei /* height */) {}
 void GLES2InterfaceStub::RenderbufferStorageMultisampleEXT(
     GLenum /* target */,
     GLsizei /* samples */,

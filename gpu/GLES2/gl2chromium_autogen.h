@@ -245,6 +245,8 @@
 #define glBlitFramebufferCHROMIUM GLES2_GET_FUN(BlitFramebufferCHROMIUM)
 #define glRenderbufferStorageMultisampleCHROMIUM \
   GLES2_GET_FUN(RenderbufferStorageMultisampleCHROMIUM)
+#define glRenderbufferStorageMultisampleAdvancedAMD \
+  GLES2_GET_FUN(RenderbufferStorageMultisampleAdvancedAMD)
 #define glRenderbufferStorageMultisampleEXT \
   GLES2_GET_FUN(RenderbufferStorageMultisampleEXT)
 #define glFramebufferTexture2DMultisampleEXT \

@@ -1142,6 +1142,16 @@ GLES2RenderbufferStorageMultisampleCHROMIUM(GLenum target,
   gles2::GetGLContext()->RenderbufferStorageMultisampleCHROMIUM(
       target, samples, internalformat, width, height);
 }
+void GL_APIENTRY
+GLES2RenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                               GLsizei samples,
+                                               GLsizei storageSamples,
+                                               GLenum internalformat,
+                                               GLsizei width,
+                                               GLsizei height) {
+  gles2::GetGLContext()->RenderbufferStorageMultisampleAdvancedAMD(
+      target, samples, storageSamples, internalformat, width, height);
+}
 void GL_APIENTRY GLES2RenderbufferStorageMultisampleEXT(GLenum target,
                                                         GLsizei samples,
                                                         GLenum internalformat,
@@ -2846,6 +2856,11 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glRenderbufferStorageMultisampleCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glRenderbufferStorageMultisampleCHROMIUM),
+    },
+    {
+        "glRenderbufferStorageMultisampleAdvancedAMD",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glRenderbufferStorageMultisampleAdvancedAMD),
     },
     {
         "glRenderbufferStorageMultisampleEXT",

@@ -11349,6 +11349,81 @@ static_assert(
     offsetof(RenderbufferStorageMultisampleCHROMIUM, height) == 20,
     "offset of RenderbufferStorageMultisampleCHROMIUM height should be 20");
 
+// GL_AMD_framebuffer_multisample_advanced
+struct RenderbufferStorageMultisampleAdvancedAMD {
+  typedef RenderbufferStorageMultisampleAdvancedAMD ValueType;
+  static const CommandId kCmdId = kRenderbufferStorageMultisampleAdvancedAMD;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLsizei _samples,
+            GLsizei _storageSamples,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
+    SetHeader();
+    target = _target;
+    samples = _samples;
+    storageSamples = _storageSamples;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _samples,
+            GLsizei _storageSamples,
+            GLenum _internalformat,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_target, _samples, _storageSamples,
+                                       _internalformat, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t samples;
+  int32_t storageSamples;
+  uint32_t internalformat;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(RenderbufferStorageMultisampleAdvancedAMD) == 28,
+              "size of RenderbufferStorageMultisampleAdvancedAMD should be 28");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleAdvancedAMD, header) == 0,
+    "offset of RenderbufferStorageMultisampleAdvancedAMD header should be 0");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleAdvancedAMD, target) == 4,
+    "offset of RenderbufferStorageMultisampleAdvancedAMD target should be 4");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleAdvancedAMD, samples) == 8,
+    "offset of RenderbufferStorageMultisampleAdvancedAMD samples should be 8");
+static_assert(offsetof(RenderbufferStorageMultisampleAdvancedAMD,
+                       storageSamples) == 12,
+              "offset of RenderbufferStorageMultisampleAdvancedAMD "
+              "storageSamples should be 12");
+static_assert(offsetof(RenderbufferStorageMultisampleAdvancedAMD,
+                       internalformat) == 16,
+              "offset of RenderbufferStorageMultisampleAdvancedAMD "
+              "internalformat should be 16");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleAdvancedAMD, width) == 20,
+    "offset of RenderbufferStorageMultisampleAdvancedAMD width should be 20");
+static_assert(
+    offsetof(RenderbufferStorageMultisampleAdvancedAMD, height) == 24,
+    "offset of RenderbufferStorageMultisampleAdvancedAMD height should be 24");
+
 // GL_EXT_multisampled_render_to_texture
 struct RenderbufferStorageMultisampleEXT {
   typedef RenderbufferStorageMultisampleEXT ValueType;

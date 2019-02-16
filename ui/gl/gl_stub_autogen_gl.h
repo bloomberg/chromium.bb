@@ -1129,6 +1129,12 @@ void glRenderbufferStorageMultisampleFn(GLenum target,
                                         GLenum internalformat,
                                         GLsizei width,
                                         GLsizei height) override {}
+void glRenderbufferStorageMultisampleAdvancedAMDFn(GLenum target,
+                                                   GLsizei samples,
+                                                   GLsizei storageSamples,
+                                                   GLenum internalformat,
+                                                   GLsizei width,
+                                                   GLsizei height) override {}
 void glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                            GLsizei samples,
                                            GLenum internalformat,
