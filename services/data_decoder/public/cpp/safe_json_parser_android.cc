@@ -40,8 +40,9 @@ void SafeJsonParserAndroid::OnSanitizationSuccess(
 
   int error_code;
   std::string error;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      sanitized_json, base::JSON_PARSE_RFC, &error_code, &error);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          sanitized_json, base::JSON_PARSE_RFC, &error_code, &error);
 
   if (!value) {
     error_callback_.Run(error);

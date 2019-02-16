@@ -46,7 +46,8 @@ void TestParseXml(const std::string& xml, const std::string& json) {
   EXPECT_FALSE(error) << "Unexpected error: " << *error;
   EXPECT_TRUE(actual_value);
 
-  std::unique_ptr<base::Value> expected_value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> expected_value =
+      base::JSONReader::ReadDeprecated(json);
   DCHECK(expected_value) << "Bad test, incorrect JSON: " << json;
 
   EXPECT_EQ(*expected_value, *actual_value);

@@ -121,7 +121,8 @@ void NativeMessagingReader::Core::ReadMessage() {
       return;
     }
 
-    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message =
+        base::JSONReader::ReadDeprecated(message_json);
     if (!message) {
       LOG(ERROR) << "Failed to parse JSON message: " << message.get();
       NotifyEof();

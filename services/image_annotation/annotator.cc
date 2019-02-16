@@ -90,7 +90,7 @@ std::map<std::string, std::string> ParseJsonOcrResponse(
     return {};
 
   const std::unique_ptr<base::Value> response =
-      base::JSONReader::Read(*json_response);
+      base::JSONReader::ReadDeprecated(*json_response);
   if (!response || !response->is_dict())
     return {};
 

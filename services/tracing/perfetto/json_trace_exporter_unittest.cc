@@ -79,7 +79,7 @@ class JSONTraceExporterTest : public testing::Test {
     CHECK(!has_more);
 
     parsed_trace_data_ =
-        base::DictionaryValue::From(base::JSONReader::Read(json));
+        base::DictionaryValue::From(base::JSONReader::ReadDeprecated(json));
     EXPECT_TRUE(parsed_trace_data_);
     if (!parsed_trace_data_) {
       LOG(ERROR) << "Couldn't parse json: \n" << json;

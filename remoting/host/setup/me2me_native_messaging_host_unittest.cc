@@ -421,7 +421,8 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
       return nullptr;
     }
 
-    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message =
+        base::JSONReader::ReadDeprecated(message_json);
     if (!message || !message->is_dict()) {
       return nullptr;
     }

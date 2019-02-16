@@ -72,7 +72,7 @@ std::string RefreshTokenStoreOnDisk::FetchRefreshToken() {
   }
 
   std::unique_ptr<base::Value> token_data(
-      base::JSONReader::Read(file_contents));
+      base::JSONReader::ReadDeprecated(file_contents));
   base::DictionaryValue* tokens = nullptr;
   if (!token_data || !token_data->GetAsDictionary(&tokens)) {
     LOG(ERROR) << "Refresh token file contents were not valid JSON, "
@@ -115,7 +115,7 @@ bool RefreshTokenStoreOnDisk::StoreRefreshToken(
   }
 
   std::unique_ptr<base::Value> token_data(
-      base::JSONReader::Read(file_contents));
+      base::JSONReader::ReadDeprecated(file_contents));
   base::DictionaryValue* tokens = nullptr;
   if (!token_data || !token_data->GetAsDictionary(&tokens)) {
     LOG(ERROR) << "Invalid refresh token file format, could not store token.";
