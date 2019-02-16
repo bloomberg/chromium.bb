@@ -2988,13 +2988,6 @@ WebContents* GetEmbedderForGuest(content::WebContents* guest) {
   return static_cast<content::WebContentsImpl*>(guest)->GetOuterWebContents();
 }
 
-bool IsNetworkServiceRunningInProcess() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kSingleProcess) ||
-          base::FeatureList::IsEnabled(features::kNetworkServiceInProcess));
-}
-
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
                      int process_id,

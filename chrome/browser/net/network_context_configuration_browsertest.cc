@@ -46,6 +46,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -589,13 +590,13 @@ class NetworkContextConfigurationBrowserTest
   bool IsRestartStateWithInProcessNetworkService() {
     return GetParam().network_service_state ==
                NetworkServiceState::kRestarted &&
-           content::IsNetworkServiceRunningInProcess();
+           content::IsInProcessNetworkService();
   }
 
  private:
   void SimulateNetworkServiceCrashIfNecessary() {
     if (GetParam().network_service_state != NetworkServiceState::kRestarted ||
-        content::IsNetworkServiceRunningInProcess()) {
+        content::IsInProcessNetworkService()) {
       return;
     }
 

@@ -1543,10 +1543,6 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest);
 
-// Returns true if the network service is enabled and it's running in the
-// browser process.
-bool IsNetworkServiceRunningInProcess();
-
 // Load the given |url| with |network_context| and return the |net::Error| code.
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,

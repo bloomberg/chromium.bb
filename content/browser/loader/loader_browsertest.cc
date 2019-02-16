@@ -30,6 +30,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -311,7 +312,7 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
   // If network service is running in-process, we can't simulate a crash.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      IsNetworkServiceRunningInProcess()) {
+      IsInProcessNetworkService()) {
     return;
   }
 

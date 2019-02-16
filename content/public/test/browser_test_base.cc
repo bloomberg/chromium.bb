@@ -366,7 +366,7 @@ bool BrowserTestBase::AllowFileAccessFromFiles() const {
 
 void BrowserTestBase::SimulateNetworkServiceCrash() {
   CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-  CHECK(!IsNetworkServiceRunningInProcess())
+  CHECK(!IsInProcessNetworkService())
       << "Can't crash the network service if it's running in-process!";
   network::mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(

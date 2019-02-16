@@ -94,8 +94,7 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
 
   // Simulates a network connection change.
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
-    if (network_service_enabled_ &&
-        !content::IsNetworkServiceRunningInProcess()) {
+    if (network_service_enabled_ && !content::IsInProcessNetworkService()) {
       network::mojom::NetworkServiceTestPtr network_service_test;
       content::ServiceManagerConnection::GetForProcess()
           ->GetConnector()

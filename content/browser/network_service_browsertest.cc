@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
                        MemoryPressureSentToNetworkProcess) {
-  if (IsNetworkServiceRunningInProcess())
+  if (IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
