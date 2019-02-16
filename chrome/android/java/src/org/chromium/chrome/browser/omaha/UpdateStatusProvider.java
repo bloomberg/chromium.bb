@@ -33,6 +33,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.AsyncTask.Status;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.inline.InlineUpdateController;
+import org.chromium.chrome.browser.omaha.inline.InlineUpdateControllerFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
@@ -107,6 +108,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
             latestVersion = other.latestVersion;
             latestUnsupportedVersion = other.latestUnsupportedVersion;
             mIsSimulated = other.mIsSimulated;
+            mIsInlineSimulated = other.mIsInlineSimulated;
         }
     }
 
@@ -209,7 +211,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
     }
 
     private UpdateStatusProvider() {
-        mInlineController = new InlineUpdateController(this::resolveStatus);
+        mInlineController = InlineUpdateControllerFactory.create(this::resolveStatus);
         mOmahaQuery = new UpdateQuery(this::resolveStatus);
 
         // Note that as a singleton this class never unregisters.
@@ -228,15 +230,22 @@ public class UpdateStatusProvider implements ActivityStateListener {
         // We pull the Omaha result once as it will never change.
         if (mStatus == null) mStatus = new UpdateStatus(mOmahaQuery.getResult());
 
-        if (!mStatus.mIsSimulated || mStatus.mIsInlineSimulated) {
+        if (mStatus.mIsSimulated) {
+            if (mStatus.mIsInlineSimulated) {
+                @UpdateState
+                int inlineState = mInlineController.getStatus();
+
+                if (inlineState == UpdateState.NONE) {
+                    mStatus.updateState = mOmahaQuery.getResult().updateState;
+                } else {
+                    mStatus.updateState = inlineState;
+                }
+            }
+        } else {
             @UpdateState
             int inlineState = mInlineController.getStatus();
-
-            if (mStatus.updateState == UpdateState.UPDATE_AVAILABLE
-                    && inlineState != UpdateState.NONE) {
+            if (inlineState != UpdateState.NONE) {
                 mStatus.updateState = inlineState;
-            } else {
-                mStatus.updateState = mOmahaQuery.getResult().updateState;
             }
         }
 
@@ -287,9 +296,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
             status.mIsSimulated = true;
             status.updateState = forcedUpdateState;
 
-            // TODO(dtrainor/nyquist): If a fake inline flow is set, set the state to
-            // UPDATE_AVAILABLE here to properly get the flow kicked off and set this to true.
-            status.mIsInlineSimulated = false;
+            status.mIsInlineSimulated = forcedUpdateState == UpdateState.INLINE_UPDATE_AVAILABLE;
 
             // Push custom configurations for certain update states.
             switch (forcedUpdateState) {

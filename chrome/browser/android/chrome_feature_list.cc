@@ -131,6 +131,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHorizontalTabSwitcherAndroid,
     &kImprovedA2HS,
     &kInflateToolbarOnBackgroundThread,
+    &kInlineUpdateFlow,
     &kIntentBlockExternalFormRedirectsNoGesture,
     &kJellyBeanSupported,
     &kLanguagesPreference,
@@ -363,6 +364,9 @@ const base::Feature kImprovedA2HS{"ImprovedA2HS",
 
 const base::Feature kInflateToolbarOnBackgroundThread{
     "BackgroundToolbarInflation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kInlineUpdateFlow{"InlineUpdateFlow",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIntentBlockExternalFormRedirectsNoGesture{
     "IntentBlockExternalFormRedirectsNoGesture",

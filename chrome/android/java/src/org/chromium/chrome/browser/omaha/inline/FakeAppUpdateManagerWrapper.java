@@ -25,15 +25,19 @@ import java.lang.annotation.RetentionPolicy;
  * wrapper isn't meant to be used for a full integration test, but simulating all of the possible
  * error cases is a bit easier to do here.
  */
-class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
+public class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
     private static final int RESULT_IN_APP_UPDATE_FAILED = 1;
     private static final int STEP_DELAY_MS = 5000;
 
     /** A list of inline update end states that this class can simulate. */
-    @IntDef({Type.NONE, Type.SUCCESS, Type.FAIL_DIALOG_CANCEL, Type.FAIL_DIALOG_UPDATE_FAILED,
-            Type.FAIL_DOWNLOAD, Type.FAIL_DOWNLOAD_CANCEL, Type.FAIL_INSTALL})
+    @IntDef({Type.NO_SIMULATION, Type.NONE, Type.SUCCESS, Type.FAIL_DIALOG_CANCEL,
+            Type.FAIL_DIALOG_UPDATE_FAILED, Type.FAIL_DOWNLOAD, Type.FAIL_DOWNLOAD_CANCEL,
+            Type.FAIL_INSTALL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
+        /** No simulation. */
+        int NO_SIMULATION = 0;
+
         /** No update available. */
         int NONE = 1;
 
@@ -53,19 +57,18 @@ class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
         int FAIL_DOWNLOAD_CANCEL = 6;
 
         /** The update will fail because it failed to install. */
-        int FAIL_INSTALL = 6;
+        int FAIL_INSTALL = 7;
     }
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final @Type int mType;
 
     /**
-     *
-     * @param type
+     * @param endState at which point should the inline update flow end.
      */
-    public FakeAppUpdateManagerWrapper(@Type int type) {
+    FakeAppUpdateManagerWrapper(@Type int endState) {
         super(ContextUtils.getApplicationContext());
-        mType = type;
+        mType = endState;
 
         if (mType != Type.NONE) setUpdateAvailable(10000 /* Figure out a better version? */);
     }
@@ -102,10 +105,10 @@ class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
         Task<Void> result = super.completeUpdate();
 
         if (mType == Type.FAIL_INSTALL) {
+            mHandler.postDelayed(this::installFails, STEP_DELAY_MS);
+        } else {
             mHandler.postDelayed(this::installCompletes, STEP_DELAY_MS);
             // This doesn't actually restart Chrome in this case.
-        } else {
-            mHandler.postDelayed(this::installFails, STEP_DELAY_MS);
         }
 
         return result;
