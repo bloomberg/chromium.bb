@@ -224,6 +224,7 @@ void OpenVRDevice::RequestSession(
                                 base::Unretained(render_loop_.get()),
                                 std::move(on_presentation_ended),
                                 std::move(options), std::move(my_callback)));
+  outstanding_session_requests_count_++;
 }
 
 void OpenVRDevice::EnsureInitialized(int render_process_id,
@@ -251,7 +252,7 @@ bool OpenVRDevice::EnsureValidDisplayInfo() {
 }
 
 void OpenVRDevice::OnPresentationEnded() {
-  if (!openvr_) {
+  if (!openvr_ && outstanding_session_requests_count_ == 0) {
     openvr_ = std::make_unique<OpenVRWrapper>(false /* presenting */);
     if (!openvr_->IsInitialized()) {
       openvr_ = nullptr;
@@ -264,6 +265,7 @@ void OpenVRDevice::OnRequestSessionResult(
     mojom::XRRuntime::RequestSessionCallback callback,
     bool result,
     mojom::XRSessionPtr session) {
+  outstanding_session_requests_count_--;
   if (!result) {
     OnPresentationEnded();
     std::move(callback).Run(nullptr, nullptr);

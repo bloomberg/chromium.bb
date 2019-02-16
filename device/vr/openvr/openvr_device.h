@@ -71,6 +71,7 @@ class DEVICE_VR_EXPORT OpenVRDevice
   void OnPresentationEnded();
   bool EnsureValidDisplayInfo();
 
+  int outstanding_session_requests_count_ = 0;
   bool have_real_display_info_ = false;
   std::unique_ptr<XRCompositorCommon> render_loop_;
   std::unique_ptr<OpenVRWrapper> openvr_;

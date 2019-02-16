@@ -47,6 +47,10 @@ class XRCompositorCommon : public base::Thread,
   XRCompositorCommon();
   ~XRCompositorCommon() override;
 
+  // on_presentation_ended will be called when this the compositor stops
+  // presenting to the headset. If new session request comes in, only the new
+  // callback will be called (since we haven't yet stopped presenting to the
+  // headset).
   void RequestSession(base::OnceCallback<void()> on_presentation_ended,
                       mojom::XRRuntimeSessionOptionsPtr options,
                       RequestSessionCallback callback);
