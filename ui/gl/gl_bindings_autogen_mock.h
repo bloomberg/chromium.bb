@@ -1563,6 +1563,13 @@ Mock_glRenderbufferStorageMultisampleANGLE(GLenum target,
                                            GLsizei width,
                                            GLsizei height);
 static void GL_BINDING_CALL
+Mock_glRenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                                 GLsizei samples,
+                                                 GLsizei storageSamples,
+                                                 GLenum internalformat,
+                                                 GLsizei width,
+                                                 GLsizei height);
+static void GL_BINDING_CALL
 Mock_glRenderbufferStorageMultisampleEXT(GLenum target,
                                          GLsizei samples,
                                          GLenum internalformat,

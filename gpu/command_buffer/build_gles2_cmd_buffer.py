@@ -3073,6 +3073,16 @@ _FUNCTION_INFO = {
     'pepper_name': 'RenderbufferStorageMultisampleEXT',
     'trace_level': 1,
   },
+  'RenderbufferStorageMultisampleAdvancedAMD': {
+    'cmd_comment':
+        '// GL_AMD_framebuffer_multisample_advanced\n',
+    'decoder_func': 'DoRenderbufferStorageMultisampleAdvancedAMD',
+    'gl_test_func': 'glRenderbufferStorageMultisampleAdvancedAMD',
+    'unit_test': False,
+    'extension': 'amd_framebuffer_multisample_advanced',
+    'extension_flag': 'amd_framebuffer_multisample_advanced',
+    'trace_level': 1,
+  },
   'RenderbufferStorageMultisampleEXT': {
     'cmd_comment':
         '// GL_EXT_multisampled_render_to_texture\n',

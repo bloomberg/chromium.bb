@@ -2270,6 +2270,19 @@ void RenderbufferStorageMultisampleCHROMIUM(GLenum target,
   }
 }
 
+void RenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                               GLsizei samples,
+                                               GLsizei storageSamples,
+                                               GLenum internalformat,
+                                               GLsizei width,
+                                               GLsizei height) {
+  gles2::cmds::RenderbufferStorageMultisampleAdvancedAMD* c =
+      GetCmdSpace<gles2::cmds::RenderbufferStorageMultisampleAdvancedAMD>();
+  if (c) {
+    c->Init(target, samples, storageSamples, internalformat, width, height);
+  }
+}
+
 void RenderbufferStorageMultisampleEXT(GLenum target,
                                        GLsizei samples,
                                        GLenum internalformat,

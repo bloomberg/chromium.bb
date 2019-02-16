@@ -1303,6 +1303,13 @@ typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleProc)(
     GLenum internalformat,
     GLsizei width,
     GLsizei height);
+typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleAdvancedAMDProc)(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height);
 typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleEXTProc)(
     GLenum target,
     GLsizei samples,
@@ -1777,6 +1784,7 @@ typedef void(GL_BINDING_CALL* glWindowRectanglesEXTProc)(GLenum mode,
                                                          const GLint* box);
 
 struct ExtensionsGL {
+  bool b_GL_AMD_framebuffer_multisample_advanced;
   bool b_GL_ANGLE_framebuffer_blit;
   bool b_GL_ANGLE_framebuffer_multisample;
   bool b_GL_ANGLE_instanced_arrays;
@@ -2214,6 +2222,8 @@ struct ProcsGL {
   glReleaseShaderCompilerProc glReleaseShaderCompilerFn;
   glRenderbufferStorageEXTProc glRenderbufferStorageEXTFn;
   glRenderbufferStorageMultisampleProc glRenderbufferStorageMultisampleFn;
+  glRenderbufferStorageMultisampleAdvancedAMDProc
+      glRenderbufferStorageMultisampleAdvancedAMDFn;
   glRenderbufferStorageMultisampleEXTProc glRenderbufferStorageMultisampleEXTFn;
   glRequestExtensionANGLEProc glRequestExtensionANGLEFn;
   glResumeTransformFeedbackProc glResumeTransformFeedbackFn;
@@ -3489,6 +3499,13 @@ class GL_EXPORT GLApi {
                                                   GLenum internalformat,
                                                   GLsizei width,
                                                   GLsizei height) = 0;
+  virtual void glRenderbufferStorageMultisampleAdvancedAMDFn(
+      GLenum target,
+      GLsizei samples,
+      GLsizei storageSamples,
+      GLenum internalformat,
+      GLsizei width,
+      GLsizei height) = 0;
   virtual void glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                      GLsizei samples,
                                                      GLenum internalformat,
@@ -4421,6 +4438,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glRenderbufferStorageEXTFn
 #define glRenderbufferStorageMultisample \
   ::gl::g_current_gl_context->glRenderbufferStorageMultisampleFn
+#define glRenderbufferStorageMultisampleAdvancedAMD \
+  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleAdvancedAMDFn
 #define glRenderbufferStorageMultisampleEXT \
   ::gl::g_current_gl_context->glRenderbufferStorageMultisampleEXTFn
 #define glRequestExtensionANGLE \

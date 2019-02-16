@@ -736,6 +736,12 @@ error::Error DoRenderbufferStorageMultisampleCHROMIUM(GLenum target,
                                                       GLenum internalformat,
                                                       GLsizei width,
                                                       GLsizei height);
+error::Error DoRenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                                         GLsizei samples,
+                                                         GLsizei storageSamples,
+                                                         GLenum internalformat,
+                                                         GLsizei width,
+                                                         GLsizei height);
 error::Error DoRenderbufferStorageMultisampleEXT(GLenum target,
                                                  GLsizei samples,
                                                  GLenum internalformat,

@@ -3656,6 +3656,19 @@ MockGLInterface::Mock_glRenderbufferStorageMultisampleANGLE(
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glRenderbufferStorageMultisampleAdvancedAMD(
+    GLenum target,
+    GLsizei samples,
+    GLsizei storageSamples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
+  MakeGlMockFunctionUnique("glRenderbufferStorageMultisampleAdvancedAMD");
+  interface_->RenderbufferStorageMultisampleAdvancedAMD(
+      target, samples, storageSamples, internalformat, width, height);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glRenderbufferStorageMultisampleEXT(GLenum target,
                                                           GLsizei samples,
                                                           GLenum internalformat,
@@ -5894,6 +5907,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glRenderbufferStorageMultisampleANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glRenderbufferStorageMultisampleANGLE);
+  if (strcmp(name, "glRenderbufferStorageMultisampleAdvancedAMD") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRenderbufferStorageMultisampleAdvancedAMD);
   if (strcmp(name, "glRenderbufferStorageMultisampleEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glRenderbufferStorageMultisampleEXT);

@@ -2528,6 +2528,18 @@ TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleAdvancedAMD) {
+  struct Cmds {
+    cmds::RenderbufferStorageMultisampleAdvancedAMD cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_RENDERBUFFER, 2, 3, GL_RGBA4, 5, 6);
+
+  gl_->RenderbufferStorageMultisampleAdvancedAMD(GL_RENDERBUFFER, 2, 3,
+                                                 GL_RGBA4, 5, 6);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleEXT) {
   struct Cmds {
     cmds::RenderbufferStorageMultisampleEXT cmd;

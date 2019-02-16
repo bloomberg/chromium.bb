@@ -4313,6 +4313,62 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleAdvancedAMD(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::RenderbufferStorageMultisampleAdvancedAMD& c =
+      *static_cast<const volatile gles2::cmds::
+                       RenderbufferStorageMultisampleAdvancedAMD*>(cmd_data);
+  if (!features().amd_framebuffer_multisample_advanced) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei samples = static_cast<GLsizei>(c.samples);
+  GLsizei storageSamples = static_cast<GLsizei>(c.storageSamples);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  if (!validators_->render_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glRenderbufferStorageMultisampleAdvancedAMD", target, "target");
+    return error::kNoError;
+  }
+  if (samples < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "samples < 0");
+    return error::kNoError;
+  }
+  if (storageSamples < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "storageSamples < 0");
+    return error::kNoError;
+  }
+  if (!validators_->render_buffer_format.IsValid(internalformat)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glRenderbufferStorageMultisampleAdvancedAMD", internalformat,
+        "internalformat");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "height < 0");
+    return error::kNoError;
+  }
+  DoRenderbufferStorageMultisampleAdvancedAMD(target, samples, storageSamples,
+                                              internalformat, width, height);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

@@ -596,6 +596,12 @@ virtual void RenderbufferStorageMultisampleCHROMIUM(GLenum target,
                                                     GLenum internalformat,
                                                     GLsizei width,
                                                     GLsizei height) = 0;
+virtual void RenderbufferStorageMultisampleAdvancedAMD(GLenum target,
+                                                       GLsizei samples,
+                                                       GLsizei storageSamples,
+                                                       GLenum internalformat,
+                                                       GLsizei width,
+                                                       GLsizei height) = 0;
 virtual void RenderbufferStorageMultisampleEXT(GLenum target,
                                                GLsizei samples,
                                                GLenum internalformat,

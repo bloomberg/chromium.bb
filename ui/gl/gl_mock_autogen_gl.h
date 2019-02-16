@@ -1100,6 +1100,13 @@ MOCK_METHOD5(RenderbufferStorageMultisample,
                   GLenum internalformat,
                   GLsizei width,
                   GLsizei height));
+MOCK_METHOD6(RenderbufferStorageMultisampleAdvancedAMD,
+             void(GLenum target,
+                  GLsizei samples,
+                  GLsizei storageSamples,
+                  GLenum internalformat,
+                  GLsizei width,
+                  GLsizei height));
 MOCK_METHOD5(RenderbufferStorageMultisampleEXT,
              void(GLenum target,
                   GLsizei samples,
