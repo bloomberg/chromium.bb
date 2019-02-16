@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_CONTENT_UTIL_H_
-#define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_CONTENT_UTIL_H_
+#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_CONTENT_UTIL_H_
+#define CHROME_BROWSER_PREVIEWS_PREVIEWS_CONTENT_UTIL_H_
 
 #include "components/previews/core/previews_decider.h"
 #include "content/public/common/previews_state.h"
@@ -47,4 +47,4 @@ previews::PreviewsType GetMainFramePreviewsType(
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_CONTENT_UTIL_H_
+#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_CONTENT_UTIL_H_

@@ -9,8 +9,6 @@ static_library("content") {
     "hint_cache_leveldb_store.cc",
     "hint_cache_leveldb_store.h",
     "hint_cache_store.h",
-    "previews_content_util.cc",
-    "previews_content_util.h",
     "previews_decider_impl.cc",
     "previews_decider_impl.h",
     "previews_hints.cc",
@@ -45,7 +43,6 @@ source_set("unit_tests") {
   sources = [
     "hint_cache_leveldb_store_unittest.cc",
     "hint_cache_unittest.cc",
-    "previews_content_util_unittest.cc",
     "previews_decider_impl_unittest.cc",
     "previews_hints_unittest.cc",
     "previews_hints_util_unittest.cc",
