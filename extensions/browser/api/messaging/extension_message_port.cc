@@ -171,17 +171,6 @@ ExtensionMessagePort::ExtensionMessagePort(
 
 ExtensionMessagePort::~ExtensionMessagePort() {}
 
-void ExtensionMessagePort::RevalidatePort() {
-  // Only opener ports need to be revalidated, because these are created in the
-  // renderer before the browser knows about them.
-  DCHECK(!extension_process_);
-  DCHECK_LE(frames_.size(), 1U);
-
-  // If the port is unknown, the renderer will respond by closing the port.
-  SendToPort(std::make_unique<ExtensionMsg_ValidateMessagePort>(
-      MSG_ROUTING_NONE, port_id_));
-}
-
 void ExtensionMessagePort::RemoveCommonFrames(const MessagePort& port) {
   // Avoid overlap in the set of frames to make sure that it does not matter
   // when UnregisterFrame is called.
@@ -200,6 +189,22 @@ bool ExtensionMessagePort::HasFrame(content::RenderFrameHost* rfh) const {
 
 bool ExtensionMessagePort::IsValidPort() {
   return !frames_.empty();
+}
+
+void ExtensionMessagePort::RevalidatePort() {
+  // Checks whether the frames to which this port is tied at its construction
+  // are still aware of this port's existence. Frames that don't know about
+  // the port are removed from the set of frames. This should be used for opener
+  // ports because the frame may be navigated before the port was initialized.
+
+  // Only opener ports need to be revalidated, because these are created in the
+  // renderer before the browser knows about them.
+  DCHECK(!extension_process_);
+  DCHECK_LE(frames_.size(), 1U);
+
+  // If the port is unknown, the renderer will respond by closing the port.
+  SendToPort(std::make_unique<ExtensionMsg_ValidateMessagePort>(
+      MSG_ROUTING_NONE, port_id_));
 }
 
 void ExtensionMessagePort::DispatchOnConnect(
