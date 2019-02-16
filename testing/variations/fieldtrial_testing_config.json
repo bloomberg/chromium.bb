@@ -1828,7 +1828,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20190215",
                     "enable_features": [
                         "ExploreSites"
                     ]
