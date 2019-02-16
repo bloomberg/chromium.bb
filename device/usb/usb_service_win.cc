@@ -193,7 +193,7 @@ class UsbServiceWin::BlockingTaskHelper {
     if (!dev_info.is_valid()) {
       USB_PLOG(ERROR) << "Failed to set up device enumeration";
       service_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&UsbServiceWin::HelperStarted, service_));
+          FROM_HERE, base::BindOnce(&UsbServiceWin::HelperStarted, service_));
       return;
     }
 
@@ -224,16 +224,16 @@ class UsbServiceWin::BlockingTaskHelper {
       }
 
       service_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&UsbServiceWin::CreateDeviceObject, service_, device_path,
-                     hub_path, bus_number, port_number, service_name));
+          FROM_HERE, base::BindOnce(&UsbServiceWin::CreateDeviceObject,
+                                    service_, device_path, hub_path, bus_number,
+                                    port_number, service_name));
     }
 
     if (GetLastError() != ERROR_NO_MORE_ITEMS)
       USB_PLOG(ERROR) << "Failed to enumerate devices";
 
     service_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UsbServiceWin::HelperStarted, service_));
+        FROM_HERE, base::BindOnce(&UsbServiceWin::HelperStarted, service_));
   }
 
   void EnumerateDevicePath(const std::string& device_path) {
@@ -273,9 +273,9 @@ class UsbServiceWin::BlockingTaskHelper {
     }
 
     service_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&UsbServiceWin::CreateDeviceObject, service_, device_path,
-                   hub_path, bus_number, port_number, service_name));
+        FROM_HERE, base::BindOnce(&UsbServiceWin::CreateDeviceObject, service_,
+                                  device_path, hub_path, bus_number,
+                                  port_number, service_name));
   }
 
  private:
@@ -299,8 +299,8 @@ UsbServiceWin::UsbServiceWin()
 
   helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevices,
-                            base::Unretained(helper_.get())));
+      FROM_HERE, base::BindOnce(&BlockingTaskHelper::EnumerateDevices,
+                                base::Unretained(helper_.get())));
 }
 
 UsbServiceWin::~UsbServiceWin() {
@@ -318,8 +318,8 @@ void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::string& device_path) {
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevicePath,
-                            base::Unretained(helper_.get()), device_path));
+      FROM_HERE, base::BindOnce(&BlockingTaskHelper::EnumerateDevicePath,
+                                base::Unretained(helper_.get()), device_path));
 }
 
 void UsbServiceWin::OnDeviceRemoved(const GUID& class_guid,

@@ -134,16 +134,16 @@ void BluetoothRemoteGattCharacteristicMac::ReadRemoteCharacteristic(
     VLOG(1) << *this << ": Characteristic not readable.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_NOT_SUPPORTED));
     return;
   }
   if (HasPendingRead() || HasPendingWrite()) {
     VLOG(1) << *this << ": Characteristic read already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
   VLOG(1) << *this << ": Read characteristic.";
@@ -160,16 +160,16 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
     VLOG(1) << *this << ": Characteristic not writable.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_NOT_PERMITTED));
     return;
   }
   if (HasPendingRead() || HasPendingWrite()) {
     VLOG(1) << *this << ": Characteristic write already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
   VLOG(1) << *this << ": Write characteristic.";
@@ -184,8 +184,8 @@ void BluetoothRemoteGattCharacteristicMac::WriteRemoteCharacteristic(
   if (write_type == CBCharacteristicWriteWithoutResponse) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BluetoothRemoteGattCharacteristicMac::DidWriteValue,
-                   weak_ptr_factory_.GetWeakPtr(), nil));
+        base::BindOnce(&BluetoothRemoteGattCharacteristicMac::DidWriteValue,
+                       weak_ptr_factory_.GetWeakPtr(), nil));
   }
 }
 

@@ -101,8 +101,8 @@ void BluetoothRemoteGattDescriptorMac::ReadRemoteDescriptor(
     VLOG(1) << *this << ": Read failed, already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
   VLOG(1) << *this << ": Read value.";
@@ -119,8 +119,8 @@ void BluetoothRemoteGattDescriptorMac::WriteRemoteDescriptor(
     VLOG(1) << *this << ": Write failed, already in progress.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(error_callback,
-                   BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        base::BindOnce(error_callback,
+                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
   VLOG(1) << *this << ": Write value.";
