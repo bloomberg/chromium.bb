@@ -101,8 +101,17 @@ def main():
   # Insert our modified dimension args in between the 1st and 2nd args of the
   # initial `swarming.py` invocation. This avoids the presence of the special
   # `--` arg from causing swarming.py to ignore them.
+  needs_device_status = True
   for k, v in args.dimensions:
     new_args.extend(['--dimension', k, v])
+    if k == 'device_status':
+      needs_device_status = False
+
+  # Only CrOS device bots with a device_status dimension of "available" should
+  # run tests. So target those explicitly if we aren't already.
+  if needs_device_status:
+    new_args.extend(['--dimension', 'device_status', 'available'])
+
   new_args.extend([
       '--optional-dimension',
       'device_os',
