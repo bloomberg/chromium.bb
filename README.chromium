@@ -283,3 +283,17 @@ D. Local Modifications
   - Fix:
     https://github.com/unicode-org/icu/pull/315
     https://github.com/unicode-org/icu/pull/318
+
+13. Locale fix
+  - patches/uloc1.patch
+  - patches/uloc2.patch
+  - patches/uloc3.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20187
+    https://unicode-org.atlassian.net/browse/ICU-20407
+    https://unicode-org.atlassian.net/browse/ICU-20410
+    https://unicode-org.atlassian.net/browse/ICU-20411
+  - Fix:
+    https://github.com/unicode-org/icu/pull/418
+    https://github.com/unicode-org/icu/pull/414
+    https://github.com/unicode-org/icu/pull/416

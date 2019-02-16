@@ -1,0 +1,525 @@
+diff --git a/icu4c/source/common/putil.cpp b/icu4c/source/common/putil.cpp
+index 6b62b3d79d..a41a4c1094 100644
+--- a/icu4c/source/common/putil.cpp
++++ b/icu4c/source/common/putil.cpp
+@@ -1622,11 +1622,7 @@ The variant cannot have dots in it.
+ The 'rightmost' variant (@xxx) wins.
+ The leftmost codepage (.xxx) wins.
+ */
+-    char *correctedPOSIXLocale = 0;
+     const char* posixID = uprv_getPOSIXIDForDefaultLocale();
+-    const char *p;
+-    const char *q;
+-    int32_t len;
+ 
+     /* Format: (no spaces)
+     ll [ _CC ] [ . MM ] [ @ VV]
+@@ -1634,38 +1630,29 @@ The leftmost codepage (.xxx) wins.
+       l = lang, C = ctry, M = charmap, V = variant
+     */
+ 
+-    if (gCorrectedPOSIXLocale != NULL) {
++    if (gCorrectedPOSIXLocale != nullptr) {
+         return gCorrectedPOSIXLocale;
+     }
+ 
+-    if ((p = uprv_strchr(posixID, '.')) != NULL) {
+-        /* assume new locale can't be larger than old one? */
+-        correctedPOSIXLocale = static_cast<char *>(uprv_malloc(uprv_strlen(posixID)+1));
+-        /* Exit on memory allocation error. */
+-        if (correctedPOSIXLocale == NULL) {
+-            return NULL;
+-        }
+-        uprv_strncpy(correctedPOSIXLocale, posixID, p-posixID);
+-        correctedPOSIXLocale[p-posixID] = 0;
++    // Copy the ID into owned memory.
++    // Over-allocate in case we replace "@" with "__".
++    char *correctedPOSIXLocale = static_cast<char *>(uprv_malloc(uprv_strlen(posixID) + 1 + 1));
++    if (correctedPOSIXLocale == nullptr) {
++        return nullptr;
++    }
++    uprv_strcpy(correctedPOSIXLocale, posixID);
+ 
+-        /* do not copy after the @ */
+-        if ((p = uprv_strchr(correctedPOSIXLocale, '@')) != NULL) {
+-            correctedPOSIXLocale[p-correctedPOSIXLocale] = 0;
++    char *limit;
++    if ((limit = uprv_strchr(correctedPOSIXLocale, '.')) != nullptr) {
++        *limit = 0;
++        if ((limit = uprv_strchr(correctedPOSIXLocale, '@')) != nullptr) {
++            *limit = 0;
+         }
+     }
+ 
+     /* Note that we scan the *uncorrected* ID. */
+-    if ((p = uprv_strrchr(posixID, '@')) != NULL) {
+-        if (correctedPOSIXLocale == NULL) {
+-            /* new locale can be 1 char longer than old one if @ -> __ */
+-            correctedPOSIXLocale = static_cast<char *>(uprv_malloc(uprv_strlen(posixID)+2));
+-            /* Exit on memory allocation error. */
+-            if (correctedPOSIXLocale == NULL) {
+-                return NULL;
+-            }
+-            uprv_strncpy(correctedPOSIXLocale, posixID, p-posixID);
+-            correctedPOSIXLocale[p-posixID] = 0;
+-        }
++    const char *p;
++    if ((p = uprv_strrchr(posixID, '@')) != nullptr) {
+         p++;
+ 
+         /* Take care of any special cases here.. */
+@@ -1674,16 +1661,17 @@ The leftmost codepage (.xxx) wins.
+             /* Don't worry about no__NY. In practice, it won't appear. */
+         }
+ 
+-        if (uprv_strchr(correctedPOSIXLocale,'_') == NULL) {
++        if (uprv_strchr(correctedPOSIXLocale,'_') == nullptr) {
+             uprv_strcat(correctedPOSIXLocale, "__"); /* aa@b -> aa__b (note this can make the new locale 1 char longer) */
+         }
+         else {
+             uprv_strcat(correctedPOSIXLocale, "_"); /* aa_CC@b -> aa_CC_b */
+         }
+ 
+-        if ((q = uprv_strchr(p, '.')) != NULL) {
++        const char *q;
++        if ((q = uprv_strchr(p, '.')) != nullptr) {
+             /* How big will the resulting string be? */
+-            len = (int32_t)(uprv_strlen(correctedPOSIXLocale) + (q-p));
++            int32_t len = (int32_t)(uprv_strlen(correctedPOSIXLocale) + (q-p));
+             uprv_strncat(correctedPOSIXLocale, p, q-p);
+             correctedPOSIXLocale[len] = 0;
+         }
+@@ -1699,28 +1687,15 @@ The leftmost codepage (.xxx) wins.
+          */
+     }
+ 
+-    /* Was a correction made? */
+-    if (correctedPOSIXLocale != NULL) {
+-        posixID = correctedPOSIXLocale;
+-    }
+-    else {
+-        /* copy it, just in case the original pointer goes away.  See j2395 */
+-        correctedPOSIXLocale = (char *)uprv_malloc(uprv_strlen(posixID) + 1);
+-        /* Exit on memory allocation error. */
+-        if (correctedPOSIXLocale == NULL) {
+-            return NULL;
+-        }
+-        posixID = uprv_strcpy(correctedPOSIXLocale, posixID);
+-    }
+-
+-    if (gCorrectedPOSIXLocale == NULL) {
++    if (gCorrectedPOSIXLocale == nullptr) {
+         gCorrectedPOSIXLocale = correctedPOSIXLocale;
+         gCorrectedPOSIXLocaleHeapAllocated = true;
+         ucln_common_registerCleanup(UCLN_COMMON_PUTIL, putil_cleanup);
+-        correctedPOSIXLocale = NULL;
++        correctedPOSIXLocale = nullptr;
+     }
++    posixID = gCorrectedPOSIXLocale;
+ 
+-    if (correctedPOSIXLocale != NULL) {  /* Was already set - clean up. */
++    if (correctedPOSIXLocale != nullptr) {  /* Was already set - clean up. */
+         uprv_free(correctedPOSIXLocale);
+     }
+ 
+diff --git a/icu4c/source/common/ucurr.cpp b/icu4c/source/common/ucurr.cpp
+index 1062a9f309..78716013b1 100644
+--- a/icu4c/source/common/ucurr.cpp
++++ b/icu4c/source/common/ucurr.cpp
+@@ -85,30 +85,14 @@ static const char CURRENCY_MAP[] = "CurrencyMap";
+ // Tag for default meta-data, in CURRENCY_META
+ static const char DEFAULT_META[] = "DEFAULT";
+ 
+-// Variant for legacy pre-euro mapping in CurrencyMap
+-static const char VAR_PRE_EURO[] = "PREEURO";
+-
+-// Variant for legacy euro mapping in CurrencyMap
+-static const char VAR_EURO[] = "EURO";
+-
+ // Variant delimiter
+ static const char VAR_DELIM = '_';
+-static const char VAR_DELIM_STR[] = "_";
+-
+-// Variant for legacy euro mapping in CurrencyMap
+-//static const char VAR_DELIM_EURO[] = "_EURO";
+-
+-#define VARIANT_IS_EMPTY    0
+-#define VARIANT_IS_EURO     0x1
+-#define VARIANT_IS_PREEURO  0x2
+ 
+ // Tag for localized display names (symbols) of currencies
+ static const char CURRENCIES[] = "Currencies";
+ static const char CURRENCIES_NARROW[] = "Currencies%narrow";
+ static const char CURRENCYPLURALS[] = "CurrencyPlurals";
+ 
+-static const UChar EUR_STR[] = {0x0045,0x0055,0x0052,0};
+-
+ // ISO codes mapping table
+ static const UHashtable* gIsoCodes = NULL;
+ static icu::UInitOnce gIsoCodesInitOnce = U_INITONCE_INITIALIZER;
+@@ -360,30 +344,10 @@ _findMetaData(const UChar* currency, UErrorCode& ec) {
+ 
+ // -------------------------------------
+ 
+-/**
+- * @see VARIANT_IS_EURO
+- * @see VARIANT_IS_PREEURO
+- */
+-static uint32_t
++static void
+ idForLocale(const char* locale, char* countryAndVariant, int capacity, UErrorCode* ec)
+ {
+-    uint32_t variantType = 0;
+-    // !!! this is internal only, assumes buffer is not null and capacity is sufficient
+-    // Extract the country name and variant name.  We only
+-    // recognize two variant names, EURO and PREEURO.
+-    char variant[ULOC_FULLNAME_CAPACITY];
+     ulocimp_getRegionForSupplementalData(locale, FALSE, countryAndVariant, capacity, ec);
+-    uloc_getVariant(locale, variant, sizeof(variant), ec);
+-    if (variant[0] != 0) {
+-        variantType = (uint32_t)(0 == uprv_strcmp(variant, VAR_EURO))
+-                   | ((uint32_t)(0 == uprv_strcmp(variant, VAR_PRE_EURO)) << 1);
+-        if (variantType)
+-        {
+-            uprv_strcat(countryAndVariant, VAR_DELIM_STR);
+-            uprv_strcat(countryAndVariant, variant);
+-        }
+-    }
+-    return variantType;
+ }
+ 
+ // ------------------------------------------
+@@ -568,7 +532,7 @@ ucurr_forLocale(const char* locale,
+ 
+     // get country or country_variant in `id'
+     char id[ULOC_FULLNAME_CAPACITY];
+-    uint32_t variantType = idForLocale(locale, id, UPRV_LENGTHOF(id), ec);
++    idForLocale(locale, id, UPRV_LENGTHOF(id), ec);
+     if (U_FAILURE(*ec)) {
+         return 0;
+     }
+@@ -602,20 +566,6 @@ ucurr_forLocale(const char* locale,
+         UResourceBundle *countryArray = ures_getByKey(rb, id, cm, &localStatus);
+         UResourceBundle *currencyReq = ures_getByIndex(countryArray, 0, NULL, &localStatus);
+         s = ures_getStringByKey(currencyReq, "id", &resLen, &localStatus);
+-
+-        // Get the second item when PREEURO is requested, and this is a known Euro country.
+-        // If the requested variant is PREEURO, and this isn't a Euro country,
+-        // assume that the country changed over to the Euro in the future.
+-        // This is probably an old version of ICU that hasn't been updated yet.
+-        // The latest currency is probably correct.
+-        if (U_SUCCESS(localStatus)) {
+-            if ((variantType & VARIANT_IS_PREEURO) && u_strcmp(s, EUR_STR) == 0) {
+-                currencyReq = ures_getByIndex(countryArray, 1, currencyReq, &localStatus);
+-                s = ures_getStringByKey(currencyReq, "id", &resLen, &localStatus);
+-            } else if ((variantType & VARIANT_IS_EURO)) {
+-                s = EUR_STR;
+-            }
+-        }
+         ures_close(currencyReq);
+         ures_close(countryArray);
+     }
+@@ -2305,7 +2255,7 @@ ucurr_countCurrencies(const char* locale,
+         uloc_getKeywordValue(locale, "currency", id, ULOC_FULLNAME_CAPACITY, &localStatus);
+ 
+         // get country or country_variant in `id'
+-        /*uint32_t variantType =*/ idForLocale(locale, id, sizeof(id), ec);
++        idForLocale(locale, id, sizeof(id), ec);
+ 
+         if (U_FAILURE(*ec))
+         {
+@@ -2421,7 +2371,7 @@ ucurr_forLocaleAndDate(const char* locale,
+             resLen = uloc_getKeywordValue(locale, "currency", id, ULOC_FULLNAME_CAPACITY, &localStatus);
+ 
+             // get country or country_variant in `id'
+-            /*uint32_t variantType =*/ idForLocale(locale, id, sizeof(id), ec);
++            idForLocale(locale, id, sizeof(id), ec);
+             if (U_FAILURE(*ec))
+             {
+                 return 0;
+diff --git a/icu4c/source/common/uloc.cpp b/icu4c/source/common/uloc.cpp
+index 6b65c62622..6569452914 100644
+--- a/icu4c/source/common/uloc.cpp
++++ b/icu4c/source/common/uloc.cpp
+@@ -457,8 +457,6 @@ NULL
+ typedef struct CanonicalizationMap {
+     const char *id;          /* input ID */
+     const char *canonicalID; /* canonicalized output ID */
+-    const char *keyword;     /* keyword, or NULL if none */
+-    const char *value;       /* keyword value, or NULL if kw==NULL */
+ } CanonicalizationMap;
+ 
+ /**
+@@ -466,64 +464,14 @@ typedef struct CanonicalizationMap {
+  * different semantic kinds of transformations.
+  */
+ static const CanonicalizationMap CANONICALIZE_MAP[] = {
+-    { "",               "en_US_POSIX", NULL, NULL }, /* .NET name */
+-    { "c",              "en_US_POSIX", NULL, NULL }, /* POSIX name */
+-    { "posix",          "en_US_POSIX", NULL, NULL }, /* POSIX name (alias of C) */
+-    { "art_LOJBAN",     "jbo", NULL, NULL }, /* registered name */
+-    { "az_AZ_CYRL",     "az_Cyrl_AZ", NULL, NULL }, /* .NET name */
+-    { "az_AZ_LATN",     "az_Latn_AZ", NULL, NULL }, /* .NET name */
+-    { "ca_ES_PREEURO",  "ca_ES", "currency", "ESP" },
+-    { "de__PHONEBOOK",  "de", "collation", "phonebook" }, /* Old ICU name */
+-    { "de_AT_PREEURO",  "de_AT", "currency", "ATS" },
+-    { "de_DE_PREEURO",  "de_DE", "currency", "DEM" },
+-    { "de_LU_PREEURO",  "de_LU", "currency", "LUF" },
+-    { "el_GR_PREEURO",  "el_GR", "currency", "GRD" },
+-    { "en_BE_PREEURO",  "en_BE", "currency", "BEF" },
+-    { "en_IE_PREEURO",  "en_IE", "currency", "IEP" },
+-    { "es__TRADITIONAL", "es", "collation", "traditional" }, /* Old ICU name */
+-    { "es_ES_PREEURO",  "es_ES", "currency", "ESP" },
+-    { "eu_ES_PREEURO",  "eu_ES", "currency", "ESP" },
+-    { "fi_FI_PREEURO",  "fi_FI", "currency", "FIM" },
+-    { "fr_BE_PREEURO",  "fr_BE", "currency", "BEF" },
+-    { "fr_FR_PREEURO",  "fr_FR", "currency", "FRF" },
+-    { "fr_LU_PREEURO",  "fr_LU", "currency", "LUF" },
+-    { "ga_IE_PREEURO",  "ga_IE", "currency", "IEP" },
+-    { "gl_ES_PREEURO",  "gl_ES", "currency", "ESP" },
+-    { "hi__DIRECT",     "hi", "collation", "direct" }, /* Old ICU name */
+-    { "it_IT_PREEURO",  "it_IT", "currency", "ITL" },
+-    { "ja_JP_TRADITIONAL", "ja_JP", "calendar", "japanese" }, /* Old ICU name */
+-    { "nb_NO_NY",       "nn_NO", NULL, NULL },  /* "markus said this was ok" :-) */
+-    { "nl_BE_PREEURO",  "nl_BE", "currency", "BEF" },
+-    { "nl_NL_PREEURO",  "nl_NL", "currency", "NLG" },
+-    { "pt_PT_PREEURO",  "pt_PT", "currency", "PTE" },
+-    { "sr_SP_CYRL",     "sr_Cyrl_RS", NULL, NULL }, /* .NET name */
+-    { "sr_SP_LATN",     "sr_Latn_RS", NULL, NULL }, /* .NET name */
+-    { "sr_YU_CYRILLIC", "sr_Cyrl_RS", NULL, NULL }, /* Linux name */
+-    { "th_TH_TRADITIONAL", "th_TH", "calendar", "buddhist" }, /* Old ICU name */
+-    { "uz_UZ_CYRILLIC", "uz_Cyrl_UZ", NULL, NULL }, /* Linux name */
+-    { "uz_UZ_CYRL",     "uz_Cyrl_UZ", NULL, NULL }, /* .NET name */
+-    { "uz_UZ_LATN",     "uz_Latn_UZ", NULL, NULL }, /* .NET name */
+-    { "zh_CHS",         "zh_Hans", NULL, NULL }, /* .NET name */
+-    { "zh_CHT",         "zh_Hant", NULL, NULL }, /* .NET name */
+-    { "zh_GAN",         "gan", NULL, NULL }, /* registered name */
+-    { "zh_GUOYU",       "zh", NULL, NULL }, /* registered name */
+-    { "zh_HAKKA",       "hak", NULL, NULL }, /* registered name */
+-    { "zh_MIN_NAN",     "nan", NULL, NULL }, /* registered name */
+-    { "zh_WUU",         "wuu", NULL, NULL }, /* registered name */
+-    { "zh_XIANG",       "hsn", NULL, NULL }, /* registered name */
+-    { "zh_YUE",         "yue", NULL, NULL }, /* registered name */
+-};
+-
+-typedef struct VariantMap {
+-    const char *variant;          /* input ID */
+-    const char *keyword;     /* keyword, or NULL if none */
+-    const char *value;       /* keyword value, or NULL if kw==NULL */
+-} VariantMap;
+-
+-static const VariantMap VARIANT_MAP[] = {
+-    { "EURO",   "currency", "EUR" },
+-    { "PINYIN", "collation", "pinyin" }, /* Solaris variant */
+-    { "STROKE", "collation", "stroke" }  /* Solaris variant */
++    { "art_LOJBAN",     "jbo" }, /* registered name */
++    { "zh_GAN",         "gan" }, /* registered name */
++    { "zh_GUOYU",       "zh" }, /* registered name */
++    { "zh_HAKKA",       "hak" }, /* registered name */
++    { "zh_MIN_NAN",     "nan" }, /* registered name */
++    { "zh_WUU",         "wuu" }, /* registered name */
++    { "zh_XIANG",       "hsn" }, /* registered name */
++    { "zh_YUE",         "yue" }, /* registered name */
+ };
+ 
+ /* ### BCP47 Conversion *******************************************/
+@@ -643,20 +591,12 @@ compareKeywordStructs(const void * /*context*/, const void *left, const void *ri
+     return uprv_strcmp(leftString, rightString);
+ }
+ 
+-/**
+- * Both addKeyword and addValue must already be in canonical form.
+- * Either both addKeyword and addValue are NULL, or neither is NULL.
+- * If they are not NULL they must be zero terminated.
+- * If addKeyword is not NULL is must have length small enough to fit in KeywordStruct.keyword.
+- */
+ static int32_t
+ _getKeywords(const char *localeID,
+              char prev,
+              char *keywords, int32_t keywordCapacity,
+              char *values, int32_t valuesCapacity, int32_t *valLen,
+              UBool valuesToo,
+-             const char* addKeyword,
+-             const char* addValue,
+              UErrorCode *status)
+ {
+     KeywordStruct keywordList[ULOC_MAX_NO_KEYWORDS];
+@@ -755,33 +695,6 @@ _getKeywords(const char *localeID,
+             }
+         } while(pos);
+ 
+-        /* Handle addKeyword/addValue. */
+-        if (addKeyword != NULL) {
+-            UBool duplicate = FALSE;
+-            U_ASSERT(addValue != NULL);
+-            /* Search for duplicate; if found, do nothing. Explicit keyword
+-               overrides addKeyword. */
+-            for (j=0; j<numKeywords; ++j) {
+-                if (uprv_strcmp(keywordList[j].keyword, addKeyword) == 0) {
+-                    duplicate = TRUE;
+-                    break;
+-                }
+-            }
+-            if (!duplicate) {
+-                if (numKeywords == maxKeywords) {
+-                    *status = U_INTERNAL_PROGRAM_ERROR;
+-                    return 0;
+-                }
+-                uprv_strcpy(keywordList[numKeywords].keyword, addKeyword);
+-                keywordList[numKeywords].keywordLen = (int32_t)uprv_strlen(addKeyword);
+-                keywordList[numKeywords].valueStart = addValue;
+-                keywordList[numKeywords].valueLen = (int32_t)uprv_strlen(addValue);
+-                ++numKeywords;
+-            }
+-        } else {
+-            U_ASSERT(addValue == NULL);
+-        }
+-
+         /* now we have a list of keywords */
+         /* we need to sort it */
+         uprv_sortArray(keywordList, numKeywords, sizeof(KeywordStruct), compareKeywordStructs, NULL, FALSE, status);
+@@ -839,7 +752,7 @@ locale_getKeywords(const char *localeID,
+                    UErrorCode *status) {
+     return _getKeywords(localeID, prev, keywords, keywordCapacity,
+                         values, valuesCapacity, valLen, valuesToo,
+-                        NULL, NULL, status);
++                        status);
+ }
+ 
+ U_CAPI int32_t U_EXPORT2
+@@ -1188,20 +1101,6 @@ uloc_setKeywordValue(const char* keywordName,
+  */
+ #define _isTerminator(a)  ((a==0)||(a=='.')||(a=='@'))
+ 
+-static char* _strnchr(const char* str, int32_t len, char c) {
+-    U_ASSERT(str != 0 && len >= 0);
+-    while (len-- != 0) {
+-        char d = *str;
+-        if (d == c) {
+-            return (char*) str;
+-        } else if (d == 0) {
+-            break;
+-        }
+-        ++str;
+-    }
+-    return NULL;
+-}
+-
+ /**
+  * Lookup 'key' in the array 'list'.  The array 'list' should contain
+  * a NULL entry, followed by more entries, and a second NULL entry.
+@@ -1476,50 +1375,6 @@ _getVariant(const char *localeID,
+     return _getVariantEx(localeID, prev, variant, variantCapacity, FALSE);
+ }
+ 
+-/**
+- * Delete ALL instances of a variant from the given list of one or
+- * more variants.  Example: "FOO_EURO_BAR_EURO" => "FOO_BAR".
+- * @param variants the source string of one or more variants,
+- * separated by '_'.  This will be MODIFIED IN PLACE.  Not zero
+- * terminated; if it is, trailing zero will NOT be maintained.
+- * @param variantsLen length of variants
+- * @param toDelete variant to delete, without separators, e.g.  "EURO"
+- * or "PREEURO"; not zero terminated
+- * @param toDeleteLen length of toDelete
+- * @return number of characters deleted from variants
+- */
+-static int32_t
+-_deleteVariant(char* variants, int32_t variantsLen,
+-               const char* toDelete, int32_t toDeleteLen)
+-{
+-    int32_t delta = 0; /* number of chars deleted */
+-    for (;;) {
+-        UBool flag = FALSE;
+-        if (variantsLen < toDeleteLen) {
+-            return delta;
+-        }
+-        if (uprv_strncmp(variants, toDelete, toDeleteLen) == 0 &&
+-            (variantsLen == toDeleteLen ||
+-             (flag=(variants[toDeleteLen] == '_')) != 0))
+-        {
+-            int32_t d = toDeleteLen + (flag?1:0);
+-            variantsLen -= d;
+-            delta += d;
+-            if (variantsLen > 0) {
+-                uprv_memmove(variants, variants+d, variantsLen);
+-            }
+-        } else {
+-            char* p = _strnchr(variants, variantsLen, '_');
+-            if (p == NULL) {
+-                return delta;
+-            }
+-            ++p;
+-            variantsLen -= (int32_t)(p - variants);
+-            variants = p;
+-        }
+-    }
+-}
+-
+ /* Keyword enumeration */
+ 
+ typedef struct UKeywordsContext {
+@@ -1698,8 +1553,6 @@ _canonicalize(const char* localeID,
+     const char* tmpLocaleID;
+     const char* keywordAssign = NULL;
+     const char* separatorIndicator = NULL;
+-    const char* addKeyword = NULL;
+-    const char* addValue = NULL;
+     char* name;
+     char* variant = NULL; /* pointer into name, or NULL */
+ 
+@@ -1864,27 +1717,6 @@ _canonicalize(const char* localeID,
+             }
+         }
+ 
+-        /* Handle generic variants first */
+-        if (variant) {
+-            for (j=0; j<UPRV_LENGTHOF(VARIANT_MAP); j++) {
+-                const char* variantToCompare = VARIANT_MAP[j].variant;
+-                int32_t n = (int32_t)uprv_strlen(variantToCompare);
+-                int32_t variantLen = _deleteVariant(variant, uprv_min(variantSize, (nameCapacity-len)), variantToCompare, n);
+-                len -= variantLen;
+-                if (variantLen > 0) {
+-                    if (len > 0 && name[len-1] == '_') { /* delete trailing '_' */
+-                        --len;
+-                    }
+-                    addKeyword = VARIANT_MAP[j].keyword;
+-                    addValue = VARIANT_MAP[j].value;
+-                    break;
+-                }
+-            }
+-            if (len > 0 && len <= nameCapacity && name[len-1] == '_') { /* delete trailing '_' */
+-                --len;
+-            }
+-        }
+-
+         /* Look up the ID in the canonicalization map */
+         for (j=0; j<UPRV_LENGTHOF(CANONICALIZE_MAP); j++) {
+             const char* id = CANONICALIZE_MAP[j].id;
+@@ -1894,10 +1726,6 @@ _canonicalize(const char* localeID,
+                     break; /* Don't remap "" if keywords present */
+                 }
+                 len = _copyCount(name, nameCapacity, CANONICALIZE_MAP[j].canonicalID);
+-                if (CANONICALIZE_MAP[j].keyword) {
+-                    addKeyword = CANONICALIZE_MAP[j].keyword;
+-                    addValue = CANONICALIZE_MAP[j].value;
+-                }
+                 break;
+             }
+         }
+@@ -1912,14 +1740,7 @@ _canonicalize(const char* localeID,
+             ++len;
+             ++fieldCount;
+             len += _getKeywords(tmpLocaleID+1, '@', (len<nameCapacity ? name+len : NULL), nameCapacity-len,
+-                                NULL, 0, NULL, TRUE, addKeyword, addValue, err);
+-        } else if (addKeyword != NULL) {
+-            U_ASSERT(addValue != NULL && len < nameCapacity);
+-            /* inelegant but works -- later make _getKeywords do this? */
+-            len += _copyCount(name+len, nameCapacity-len, "@");
+-            len += _copyCount(name+len, nameCapacity-len, addKeyword);
+-            len += _copyCount(name+len, nameCapacity-len, "=");
+-            len += _copyCount(name+len, nameCapacity-len, addValue);
++                                NULL, 0, NULL, TRUE, err);
+         }
+     }
+ 
