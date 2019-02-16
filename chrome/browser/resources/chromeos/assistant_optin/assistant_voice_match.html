@@ -29,26 +29,28 @@
                 i18n-content="assistantVoiceMatchRecording"></div>
             <div class="title" id="title-completed"
                 i18n-content="assistantVoiceMatchCompleted"></div>
-            <voice-match-entry id="voice-entry-0">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction0"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-entry-1">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction1"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-entry-2">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction2"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-entry-3">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction3"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-uploading">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchUploading"></div>
-            </voice-match-entry>
+            <div id="voice-match-entries">
+              <voice-match-entry id="voice-entry-0">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction0"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-1">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction1"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-2">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction2"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-3">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction3"></div>
+              </voice-match-entry>
+            </div>
+            <div id="loading-animation" hidden>
+              <paper-spinner-lite id="loading-spinner" active>
+              </paper-spinner-lite>
+            </div>
             <div class="content" id="footer-text"
                 i18n-content="assistantVoiceMatchFooter"></div>
           </div>
