@@ -47,6 +47,7 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, WasCorrutionDetected);
 class AppCacheDatabaseTest;
 class AppCacheStorageImplTest;
 
+// A wrapper around the SQLite database that serves one StoragePartition.
 class CONTENT_EXPORT AppCacheDatabase {
  public:
   struct CONTENT_EXPORT GroupRecord {
