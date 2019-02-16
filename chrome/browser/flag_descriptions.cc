@@ -1777,10 +1777,6 @@ const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";
 
-const char kSoftwareRasterizerName[] = "3D software rasterizer";
-const char kSoftwareRasterizerDescription[] =
-    "Fall back to a 3D software rasterizer when the GPU cannot be used.";
-
 const char kSoleIntegrationName[] = "Sole integration";
 const char kSoleIntegrationDescription[] =
     "Enable Sole integration for browser customization. You must restart "
