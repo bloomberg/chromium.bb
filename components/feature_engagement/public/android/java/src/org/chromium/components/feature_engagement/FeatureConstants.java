@@ -22,6 +22,8 @@ public final class FeatureConstants {
     public static final String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     public static final String HOMEPAGE_TILE_FEATURE = "IPH_HomepageTile";
 
+    public static final String MEDIA_DOWNLOAD_FEATURE = "IPH_MediaDownload";
+
     public static final String TRANSLATE_MENU_BUTTON_FEATURE = "IPH_TranslateMenuButton";
 
     /**

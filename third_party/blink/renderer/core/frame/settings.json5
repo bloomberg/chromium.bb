@@ -921,6 +921,10 @@
       invalidate: "Paint",
     },
     {
+      name: "mediaDownloadInProductHelpEnabled",
+      initial: false,
+    },
+    {
       name: "navigatorPlatformOverride",
       type: "String",
     },
