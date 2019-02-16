@@ -110,7 +110,7 @@ void UserInfoFetcher::OnFetchComplete(
   DCHECK(unparsed_data);
   DVLOG(1) << "Received UserInfo response: " << *unparsed_data;
   std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::Read(*unparsed_data);
+      base::JSONReader::ReadDeprecated(*unparsed_data);
   base::DictionaryValue* dict;
   if (parsed_value.get() && parsed_value->GetAsDictionary(&dict)) {
     delegate_->OnGetUserInfoSuccess(dict);

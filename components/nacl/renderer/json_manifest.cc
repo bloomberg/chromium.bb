@@ -415,9 +415,10 @@ bool JsonManifest::Init(const std::string& manifest_json_data,
 
   int json_read_error_code;
   std::string json_read_error_msg;
-  std::unique_ptr<base::Value> json_data(base::JSONReader::ReadAndReturnError(
-      manifest_json_data, base::JSON_PARSE_RFC, &json_read_error_code,
-      &json_read_error_msg));
+  std::unique_ptr<base::Value> json_data(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          manifest_json_data, base::JSON_PARSE_RFC, &json_read_error_code,
+          &json_read_error_msg));
   if (!json_data) {
     error_info->error = PP_NACL_ERROR_MANIFEST_PARSING;
     error_info->string =

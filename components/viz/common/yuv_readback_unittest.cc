@@ -102,7 +102,8 @@ class YUVReadbackTest : public testing::Test {
 
     std::string error_msg;
     std::unique_ptr<base::Value> trace_data =
-        base::JSONReader::ReadAndReturnError(json_data, 0, nullptr, &error_msg);
+        base::JSONReader::ReadAndReturnErrorDeprecated(json_data, 0, nullptr,
+                                                       &error_msg);
     CHECK(trace_data) << "JSON parsing failed (" << error_msg
                       << ") JSON data:" << std::endl
                       << json_data;

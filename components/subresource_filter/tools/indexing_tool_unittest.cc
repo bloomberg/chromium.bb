@@ -131,8 +131,8 @@ TEST_F(IndexingToolTest, VersionMetadata) {
   WriteVersionMetadata(version_path, "1.2.3", checksum);
   std::string version_json;
   EXPECT_TRUE(base::ReadFileToString(version_path, &version_json));
-  std::unique_ptr<base::DictionaryValue> json =
-      base::DictionaryValue::From(base::JSONReader::Read(version_json));
+  std::unique_ptr<base::DictionaryValue> json = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(version_json));
 
   std::string actual_content =
       json->FindPath({"subresource_filter", "ruleset_version", "content"})

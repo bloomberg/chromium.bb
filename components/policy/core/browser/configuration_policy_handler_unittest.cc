@@ -746,7 +746,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "  }"
       "}";
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           kPolicyMapJson, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   ASSERT_TRUE(policy_map_value) << error;
 
@@ -805,7 +805,7 @@ TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
       "  }"
       "}";
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           kPolicyMapJson, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   ASSERT_TRUE(policy_map_value) << error;
 
@@ -901,9 +901,9 @@ TEST(SimpleSchemaValidatingPolicyHandlerTest, CheckAndGetValue) {
 TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, ValidEmbeddedJson) {
   std::string error;
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(kPolicyMapJsonValid,
-                                           base::JSON_ALLOW_TRAILING_COMMAS,
-                                           nullptr, &error);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          kPolicyMapJsonValid, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+          &error);
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = nullptr;
@@ -933,9 +933,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, ValidEmbeddedJson) {
 TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, InvalidEmbeddedJson) {
   std::string error;
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(kPolicyMapJsonInvalid,
-                                           base::JSON_ALLOW_TRAILING_COMMAS,
-                                           nullptr, &error);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          kPolicyMapJsonInvalid, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+          &error);
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = nullptr;
@@ -965,9 +965,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, InvalidEmbeddedJson) {
 TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, UnparsableJson) {
   std::string error;
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(kPolicyMapJsonUnparsable,
-                                           base::JSON_ALLOW_TRAILING_COMMAS,
-                                           nullptr, &error);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          kPolicyMapJsonUnparsable, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+          &error);
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = nullptr;
@@ -997,9 +997,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, UnparsableJson) {
 TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongType) {
   std::string error;
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(kPolicyMapJsonWrongTypes,
-                                           base::JSON_ALLOW_TRAILING_COMMAS,
-                                           nullptr, &error);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          kPolicyMapJsonWrongTypes, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+          &error);
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = nullptr;
@@ -1029,9 +1029,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongType) {
 TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongRootType) {
   std::string error;
   std::unique_ptr<base::Value> policy_map_value =
-      base::JSONReader::ReadAndReturnError(kPolicyMapJsonWrongRootType,
-                                           base::JSON_ALLOW_TRAILING_COMMAS,
-                                           nullptr, &error);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          kPolicyMapJsonWrongRootType, base::JSON_ALLOW_TRAILING_COMMAS,
+          nullptr, &error);
   ASSERT_TRUE(policy_map_value) << error;
 
   const base::DictionaryValue* policy_map_dict = nullptr;

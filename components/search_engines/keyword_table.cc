@@ -474,7 +474,7 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
   data->alternate_urls.clear();
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value(
-      json_reader.ReadToValue(s.ColumnString(15)));
+      json_reader.ReadToValueDeprecated(s.ColumnString(15)));
   base::ListValue* alternate_urls_value;
   if (value.get() && value->GetAsList(&alternate_urls_value)) {
     std::string alternate_url;

@@ -172,7 +172,7 @@ std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
 std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
     const std::string& str,
     int* logo_num_bytes) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(str);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
     return nullptr;

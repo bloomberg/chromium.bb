@@ -571,7 +571,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
     int index) {
   std::string parse_error;
   std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &parse_error);
   if (errors && !parse_error.empty()) {
     errors->AddError(policy_name_, ErrorPath(index, ""),

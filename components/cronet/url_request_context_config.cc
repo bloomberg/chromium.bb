@@ -293,7 +293,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
   DVLOG(1) << "Experimental Options:" << experimental_options;
   std::unique_ptr<base::Value> options =
-      base::JSONReader::Read(experimental_options);
+      base::JSONReader::ReadDeprecated(experimental_options);
 
   if (!options) {
     DCHECK(false) << "Parsing experimental options failed: "

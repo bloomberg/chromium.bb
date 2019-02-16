@@ -189,7 +189,7 @@ void QuirksClient::Retry() {
 bool QuirksClient::ParseResult(const std::string& result, std::string* data) {
   std::string data64;
   const base::DictionaryValue* dict;
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(result);
+  std::unique_ptr<base::Value> json = base::JSONReader::ReadDeprecated(result);
   if (!json || !json->GetAsDictionary(&dict) ||
       !dict->GetString("icc", &data64)) {
     VLOG(1) << "Failed to parse JSON icc data";

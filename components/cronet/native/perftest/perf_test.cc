@@ -405,7 +405,7 @@ void PerfTest(const char* json_args) {
   // Parse benchmark options into |g_options|.
   std::string benchmark_options = json_args;
   std::unique_ptr<base::Value> options_value =
-      base::JSONReader::Read(benchmark_options);
+      base::JSONReader::ReadDeprecated(benchmark_options);
   CHECK(options_value) << "Parsing benchmark options failed: "
                        << benchmark_options;
   g_options = base::DictionaryValue::From(std::move(options_value));

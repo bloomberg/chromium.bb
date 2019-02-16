@@ -869,9 +869,10 @@ void CloudPolicyClient::OnRegisterCompleted(
     dm_token_ = response.register_response().device_management_token();
     reregistration_dm_token_.clear();
     if (response.register_response().has_configuration_seed()) {
-      configuration_seed_ = base::DictionaryValue::From(base::JSONReader::Read(
-          response.register_response().configuration_seed(),
-          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
+      configuration_seed_ =
+          base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
+              response.register_response().configuration_seed(),
+              base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
       if (!configuration_seed_)
         LOG(ERROR) << "Failed to parse configuration seed";
     }

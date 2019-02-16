@@ -27,7 +27,7 @@ using ::testing::NotNull;
 std::unique_ptr<RemoteSuggestion> SnippetFromContentSuggestionJSON(
     const std::string& json,
     const base::Time& fetch_date) {
-  auto json_value = base::JSONReader::Read(json);
+  auto json_value = base::JSONReader::ReadDeprecated(json);
   base::DictionaryValue* json_dict;
   if (!json_value->GetAsDictionary(&json_dict)) {
     return nullptr;
@@ -210,7 +210,7 @@ std::unique_ptr<base::DictionaryValue> ContentSuggestionSnippet() {
       "score": 9001
     }
   )";
-  auto json_value = base::JSONReader::Read(kJsonStr);
+  auto json_value = base::JSONReader::ReadDeprecated(kJsonStr);
   base::DictionaryValue* json_dict;
   CHECK(json_value->GetAsDictionary(&json_dict));
   return json_dict->CreateDeepCopy();

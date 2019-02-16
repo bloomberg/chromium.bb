@@ -50,7 +50,7 @@ DomainReliabilityConfig::~DomainReliabilityConfig() {}
 // static
 std::unique_ptr<const DomainReliabilityConfig>
 DomainReliabilityConfig::FromJSON(const base::StringPiece& json) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(json);
   base::JSONValueConverter<DomainReliabilityConfig> converter;
   std::unique_ptr<DomainReliabilityConfig> config(
       new DomainReliabilityConfig());

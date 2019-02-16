@@ -150,8 +150,9 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   std::string error_string;
   int error_line;
   int error_col;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      response_sp, 0, &error_code, &error_string, &error_line, &error_col);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          response_sp, 0, &error_code, &error_string, &error_line, &error_col);
   if (!value) {
     LOG(WARNING) << error_string << " at " << error_line << ":" << error_col;
     return nullptr;

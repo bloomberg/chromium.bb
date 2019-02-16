@@ -341,7 +341,8 @@ TEST(GetHistogramLanguagesTest, FrequencyCutoff) {
 
 // Test with no ULP languages.
 TEST(GetUlpLanguagesTest, Empty) {
-  const auto dict = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto dict =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "confidence": 1.0,
       "preference": []
@@ -353,7 +354,8 @@ TEST(GetUlpLanguagesTest, Empty) {
 
 // Test that ULP profile of insufficient confidence is ignored.
 TEST(GetUlpLanguagesTest, ConfidenceCutoff) {
-  const auto dict = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto dict =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "confidence": 0.5,
       "preference": [{"language": "en", "probability": 1.0}]
@@ -367,7 +369,8 @@ TEST(GetUlpLanguagesTest, ConfidenceCutoff) {
 
 // Test that ULP languages of insufficient probability are ignored.
 TEST(GetUlpLanguagesTest, ProbabilityCutoff) {
-  const auto dict = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto dict =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "confidence": 1.0,
       "preference": [{"language": "en", "probability": 1.00},
@@ -389,24 +392,28 @@ TEST(GetUlpLanguagesTest, ProbabilityCutoff) {
 
 // Test that malformed ULP data is handled gracefully.
 TEST(GetUlpLanguagesTest, Malformed) {
-  const auto empty = base::DictionaryValue::From(base::JSONReader::Read("{}"));
+  const auto empty =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated("{}"));
   EXPECT_THAT(GetUlpLanguages(0.0, 0.0, empty.get()), IsEmpty());
 
-  const auto conf = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto conf =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "preference": [{"language": "en", "probability": 1.00}]
     }
   })"));
   EXPECT_THAT(GetUlpLanguages(0.0, 0.0, conf.get()), IsEmpty());
 
-  const auto no_prefs = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto no_prefs =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "confidence": 1.0
     }
   })"));
   EXPECT_THAT(GetUlpLanguages(0.0, 0.0, no_prefs.get()), IsEmpty());
 
-  const auto bad_prefs = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto bad_prefs =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "confidence": 1.0,
       "preference": [{"language": "en"}, {"probability": 1.0},
@@ -439,7 +446,8 @@ TEST(HeuristicLanguageModelTest, PrefReading) {
 
   // Set up ULP languages.
   registry->RegisterDictionaryPref(ulp_pref);
-  const auto ulp_value = base::DictionaryValue::From(base::JSONReader::Read(R"({
+  const auto ulp_value =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(R"({
     "reading": {
       "confidence": 1.0,
       "preference": [{"language": "en-US", "probability": 1.0}]

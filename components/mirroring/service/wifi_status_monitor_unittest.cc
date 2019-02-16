@@ -30,7 +30,7 @@ bool IsNullMessage(const CastMessage& message) {
 std::string GetMessageType(const CastMessage& message) {
   std::string type;
   std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(message.json_format_data);
+      base::JSONReader::ReadDeprecated(message.json_format_data);
   EXPECT_TRUE(value);
   EXPECT_TRUE(GetString(*value, "type", &type));
   return type;

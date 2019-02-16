@@ -227,7 +227,7 @@ bool TraceStartupConfig::EnableFromBackgroundTracing() {
 
 bool TraceStartupConfig::ParseTraceConfigFileContent(
     const std::string& content) {
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(content));
+  std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(content));
   if (!value || !value->is_dict())
     return false;
 

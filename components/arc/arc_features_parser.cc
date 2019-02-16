@@ -29,8 +29,8 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
   int error_code;
   std::string error_msg;
   std::unique_ptr<base::Value> json_value =
-      base::JSONReader::ReadAndReturnError(input_json, base::JSON_PARSE_RFC,
-                                           &error_code, &error_msg);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          input_json, base::JSON_PARSE_RFC, &error_code, &error_msg);
   if (!json_value || !json_value->is_dict()) {
     LOG(ERROR) << "Error parsing feature JSON: " << error_msg;
     return base::nullopt;

@@ -31,7 +31,8 @@ using testing::SaveArg;
 // TODO(mamir): Create a test_helper.cc file instead of duplicating all this
 // code.
 MATCHER_P(EqualsJSON, json, "equals JSON") {
-  std::unique_ptr<base::Value> expected = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> expected =
+      base::JSONReader::ReadDeprecated(json);
   if (!expected) {
     *result_listener << "INTERNAL ERROR: couldn't parse expected JSON";
     return false;
@@ -39,8 +40,9 @@ MATCHER_P(EqualsJSON, json, "equals JSON") {
 
   std::string err_msg;
   int err_line, err_col;
-  std::unique_ptr<base::Value> actual = base::JSONReader::ReadAndReturnError(
-      arg, base::JSON_PARSE_RFC, nullptr, &err_msg, &err_line, &err_col);
+  std::unique_ptr<base::Value> actual =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          arg, base::JSON_PARSE_RFC, nullptr, &err_msg, &err_line, &err_col);
   if (!actual) {
     *result_listener << "input:" << err_line << ":" << err_col << ": "
                      << "parse error: " << err_msg;

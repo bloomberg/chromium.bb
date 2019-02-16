@@ -125,7 +125,7 @@ std::unique_ptr<base::Value> ConvertRegistryValue(const base::Value& value,
       // Dictionaries may be encoded as JSON strings.
       if (value.GetAsString(&string_value)) {
         std::unique_ptr<base::Value> result =
-            base::JSONReader::Read(string_value);
+            base::JSONReader::ReadDeprecated(string_value);
         if (result && result->type() == schema.type())
           return result;
       }
