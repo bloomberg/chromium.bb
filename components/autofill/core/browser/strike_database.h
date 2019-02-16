@@ -16,6 +16,11 @@
 #include "components/leveldb_proto/public/proto_database.h"
 
 namespace autofill {
+
+namespace {
+const char kKeyDeliminator[] = "__";
+}  // namespace
+
 class StrikeData;
 
 // Manages data on whether different Autofill opportunities should be offered to
@@ -62,6 +67,10 @@ class StrikeDatabase : public KeyedService {
   // ProtoDatabase.
   void ClearStrikes(const std::string key);
 
+  // Removes all database entries from in-memory cache and underlying
+  // ProtoDatabase for the whole project.
+  void ClearAllStrikes(const std::string& project_prefix);
+
  protected:
   friend class StrikeDatabaseIntegratorBase;
   // Constructor for testing that does not initialize a ProtoDatabase.
@@ -92,6 +101,7 @@ class StrikeDatabase : public KeyedService {
                            GetIdForCreditCardSaveTest);
   FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
                            RemoveExpiredStrikesOnLoadTest);
+  friend class SaveCardInfobarEGTestHelper;
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 

@@ -74,6 +74,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           browser_state->GetOriginalChromeBrowserState())),
       autocomplete_history_manager_(
           AutocompleteHistoryManagerFactory::GetForBrowserState(browser_state)),
+      browser_state_(browser_state),
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(IdentityManagerFactory::GetForBrowserState(
@@ -90,8 +91,6 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           payments_client_.get(),
           personal_data_manager_,
           GetApplicationContext()->GetApplicationLocale())),
-      legacy_strike_database_(LegacyStrikeDatabaseFactory::GetForBrowserState(
-          browser_state->GetOriginalChromeBrowserState())),
       infobar_manager_(infobar_manager),
       password_generation_manager_(password_generation_manager),
       unmask_controller_(browser_state->GetPrefs(),
@@ -140,11 +139,13 @@ payments::PaymentsClient* ChromeAutofillClientIOS::GetPaymentsClient() {
 }
 
 LegacyStrikeDatabase* ChromeAutofillClientIOS::GetLegacyStrikeDatabase() {
-  return legacy_strike_database_;
+  return LegacyStrikeDatabaseFactory::GetForBrowserState(
+      browser_state_->GetOriginalChromeBrowserState());
 }
 
 StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {
-  return strike_database_;
+  return StrikeDatabaseFactory::GetForBrowserState(
+      browser_state_->GetOriginalChromeBrowserState());
 }
 
 ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {

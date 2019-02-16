@@ -126,13 +126,12 @@ class ChromeAutofillClientIOS : public AutofillClient {
   syncer::SyncService* sync_service_;
   PersonalDataManager* personal_data_manager_;
   AutocompleteHistoryManager* autocomplete_history_manager_;
+  ios::ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
-  LegacyStrikeDatabase* legacy_strike_database_;
-  StrikeDatabase* strike_database_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;

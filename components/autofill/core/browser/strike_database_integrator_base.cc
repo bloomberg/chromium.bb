@@ -20,10 +20,6 @@
 
 namespace autofill {
 
-namespace {
-const char kKeyDeliminator[] = "__";
-}  // namespace
-
 StrikeDatabaseIntegratorBase::StrikeDatabaseIntegratorBase(
     StrikeDatabase* strike_database)
     : strike_database_(strike_database) {}
@@ -70,6 +66,10 @@ int StrikeDatabaseIntegratorBase::GetStrikes(const std::string id) {
 void StrikeDatabaseIntegratorBase::ClearStrikes(const std::string id) {
   CheckIdUniqueness(id);
   strike_database_->ClearStrikes(GetKey(id));
+}
+
+void StrikeDatabaseIntegratorBase::ClearAllStrikes() {
+  strike_database_->ClearAllStrikes(GetProjectPrefix());
 }
 
 void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {

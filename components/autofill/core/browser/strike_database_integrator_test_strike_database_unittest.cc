@@ -166,6 +166,22 @@ TEST_F(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
 }
 
 TEST_F(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+       StrikeDatabaseIntegratorUniqueIdTestClearAllStrikes) {
+  strike_database_.SetUniqueIdsRequired(true);
+  const std::string unique_id_1 = "1234";
+  const std::string unique_id_2 = "9876";
+  // 1 strike added for |unique_id_1|.
+  strike_database_.AddStrike(unique_id_1);
+  // 3 strikes added for |unique_id_2|.
+  strike_database_.AddStrikes(3, unique_id_2);
+  EXPECT_EQ(1, strike_database_.GetStrikes(unique_id_1));
+  EXPECT_EQ(3, strike_database_.GetStrikes(unique_id_2));
+  strike_database_.ClearAllStrikes();
+  EXPECT_EQ(0, strike_database_.GetStrikes(unique_id_1));
+  EXPECT_EQ(0, strike_database_.GetStrikes(unique_id_2));
+}
+
+TEST_F(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
        AddStrikeForZeroAndNonZeroStrikesUniqueIdTest) {
   strike_database_.SetUniqueIdsRequired(true);
   const std::string unique_id = "1234";
