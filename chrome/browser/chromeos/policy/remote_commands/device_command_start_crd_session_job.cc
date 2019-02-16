@@ -139,7 +139,7 @@ DeviceCommandStartCRDSessionJob::GetType() const {
 bool DeviceCommandStartCRDSessionJob::ParseCommandPayload(
     const std::string& command_payload) {
   std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValue(command_payload));
+      base::JSONReader().ReadToValueDeprecated(command_payload));
   if (!root)
     return false;
   if (!root->is_dict())
