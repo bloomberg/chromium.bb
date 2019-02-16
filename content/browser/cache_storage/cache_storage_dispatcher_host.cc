@@ -90,15 +90,7 @@ class CacheStorageDispatcherHost::CacheImpl
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
              MatchCallback callback) override {
-    content::CacheStorageCache* cache = cache_handle_.value();
-    if (!cache) {
-      std::move(callback).Run(blink::mojom::MatchResult::NewStatus(
-          CacheStorageError::kErrorNotFound));
-      return;
-    }
-
-    cache->Match(
-        std::move(request), std::move(match_options),
+    auto cb =
         base::BindOnce(
             [](blink::mojom::CacheStorageCache::MatchCallback callback,
                blink::mojom::CacheStorageError error,
@@ -111,21 +103,21 @@ class CacheStorageDispatcherHost::CacheImpl
               std::move(callback).Run(
                   blink::mojom::MatchResult::NewResponse(std::move(response)));
             },
-            std::move(callback)));
+            std::move(callback));
+
+    content::CacheStorageCache* cache = cache_handle_.value();
+    if (!cache) {
+      std::move(cb).Run(CacheStorageError::kErrorNotFound, nullptr);
+      return;
+    }
+
+    cache->Match(std::move(request), std::move(match_options), std::move(cb));
   }
 
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
                 blink::mojom::CacheQueryOptionsPtr match_options,
                 MatchAllCallback callback) override {
-    content::CacheStorageCache* cache = cache_handle_.value();
-    if (!cache) {
-      std::move(callback).Run(blink::mojom::MatchAllResult::NewStatus(
-          CacheStorageError::kErrorNotFound));
-      return;
-    }
-
-    cache->MatchAll(
-        std::move(request), std::move(match_options),
+    auto cb =
         base::BindOnce(
             [](blink::mojom::CacheStorageCache::MatchAllCallback callback,
                blink::mojom::CacheStorageError error,
@@ -141,21 +133,23 @@ class CacheStorageDispatcherHost::CacheImpl
                   blink::mojom::MatchAllResult::NewResponses(
                       std::move(responses)));
             },
-            std::move(callback)));
+            std::move(callback));
+
+    content::CacheStorageCache* cache = cache_handle_.value();
+    if (!cache) {
+      std::move(cb).Run(CacheStorageError::kErrorNotFound,
+                        std::vector<blink::mojom::FetchAPIResponsePtr>());
+      return;
+    }
+
+    cache->MatchAll(std::move(request), std::move(match_options),
+                    std::move(cb));
   }
 
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr match_options,
             KeysCallback callback) override {
-    content::CacheStorageCache* cache = cache_handle_.value();
-    if (!cache) {
-      std::move(callback).Run(blink::mojom::CacheKeysResult::NewStatus(
-          CacheStorageError::kErrorNotFound));
-      return;
-    }
-
-    cache->Keys(
-        std::move(request), std::move(match_options),
+    auto cb =
         base::BindOnce(
             [](blink::mojom::CacheStorageCache::KeysCallback callback,
                blink::mojom::CacheStorageError error,
@@ -174,7 +168,15 @@ class CacheStorageDispatcherHost::CacheImpl
               std::move(callback).Run(
                   blink::mojom::CacheKeysResult::NewKeys(std::move(requests_)));
             },
-            std::move(callback)));
+            std::move(callback));
+
+    content::CacheStorageCache* cache = cache_handle_.value();
+    if (!cache) {
+      std::move(cb).Run(CacheStorageError::kErrorNotFound, nullptr);
+      return;
+    }
+
+    cache->Keys(std::move(request), std::move(match_options), std::move(cb));
   }
 
   void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
@@ -184,20 +186,23 @@ class CacheStorageDispatcherHost::CacheImpl
       mojo::ReportBadMessage("CSDH_UNEXPECTED_OPERATION");
       return;
     }
+
+    auto cb = base::BindOnce(
+        [](blink::mojom::CacheStorageCache::BatchCallback callback,
+           blink::mojom::CacheStorageVerboseErrorPtr error) {
+          std::move(callback).Run(std::move(error));
+        },
+        std::move(callback));
+
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
-      std::move(callback).Run(CacheStorageVerboseError::New(
+      std::move(cb).Run(CacheStorageVerboseError::New(
           CacheStorageError::kErrorNotFound, base::nullopt));
       return;
     }
+
     cache->BatchOperation(
-        std::move(batch_operations), fail_on_duplicates,
-        base::BindOnce(
-            [](blink::mojom::CacheStorageCache::BatchCallback callback,
-               blink::mojom::CacheStorageVerboseErrorPtr error) {
-              std::move(callback).Run(std::move(error));
-            },
-            std::move(callback)),
+        std::move(batch_operations), fail_on_duplicates, std::move(cb),
         base::BindOnce(
             [](mojo::ReportBadMessageCallback bad_message_callback) {
               std::move(bad_message_callback).Run("CSDH_UNEXPECTED_OPERATION");
@@ -244,12 +249,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
 
   // Mojo CacheStorage Interface implementation:
   void Keys(blink::mojom::CacheStorage::KeysCallback callback) override {
-    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
-    if (!cache_storage) {
-      std::move(callback).Run(std::vector<base::string16>());
-      return;
-    }
-    cache_storage->EnumerateCaches(base::BindOnce(
+    auto cb = base::BindOnce(
         [](blink::mojom::CacheStorage::KeysCallback callback,
            const CacheStorageIndex& cache_index) {
           std::vector<base::string16> string16s;
@@ -258,52 +258,54 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
           }
           std::move(callback).Run(string16s);
         },
-        std::move(callback)));
+        std::move(callback));
+
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(cb).Run(CacheStorageIndex());
+      return;
+    }
+
+    cache_storage->EnumerateCaches(std::move(cb));
   }
 
   void Delete(const base::string16& cache_name,
               blink::mojom::CacheStorage::DeleteCallback callback) override {
+    auto cb = std::move(callback);
+
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
-      std::move(callback).Run(
-          MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
+      std::move(cb).Run(MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
       return;
     }
-    cache_storage->DoomCache(base::UTF16ToUTF8(cache_name),
-                             std::move(callback));
+    cache_storage->DoomCache(base::UTF16ToUTF8(cache_name), std::move(cb));
   }
 
   void Has(const base::string16& cache_name,
            blink::mojom::CacheStorage::HasCallback callback) override {
+    auto cb = base::BindOnce(
+        [](blink::mojom::CacheStorage::HasCallback callback, bool has_cache,
+           CacheStorageError error) {
+          if (!has_cache)
+            error = CacheStorageError::kErrorNotFound;
+          std::move(callback).Run(error);
+        },
+        std::move(callback));
+
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
-      std::move(callback).Run(
-          MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
+      std::move(cb).Run(/* has_cache = */ false,
+                        MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
       return;
     }
-    cache_storage->HasCache(
-        base::UTF16ToUTF8(cache_name),
-        base::BindOnce(
-            [](blink::mojom::CacheStorage::HasCallback callback, bool has_cache,
-               CacheStorageError error) {
-              if (!has_cache)
-                error = CacheStorageError::kErrorNotFound;
-              std::move(callback).Run(error);
-            },
-            std::move(callback)));
+
+    cache_storage->HasCache(base::UTF16ToUTF8(cache_name), std::move(cb));
   }
 
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::MultiCacheQueryOptionsPtr match_options,
              blink::mojom::CacheStorage::MatchCallback callback) override {
-    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
-    if (!cache_storage) {
-      std::move(callback).Run(blink::mojom::MatchResult::NewStatus(
-          CacheStorageError::kErrorNotFound));
-      return;
-    }
-
-    auto on_match = BindOnce(
+    auto cb = BindOnce(
         [](blink::mojom::CacheStorage::MatchCallback callback,
            CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
@@ -318,28 +320,28 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
         },
         std::move(callback));
 
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(cb).Run(CacheStorageError::kErrorNotFound, nullptr);
+      return;
+    }
+
     if (!match_options->cache_name) {
       cache_storage->MatchAllCaches(std::move(request),
                                     std::move(match_options->query_options),
-                                    std::move(on_match));
+                                    std::move(cb));
       return;
     }
     std::string cache_name = base::UTF16ToUTF8(*match_options->cache_name);
     cache_storage->MatchCache(std::move(cache_name), std::move(request),
                               std::move(match_options->query_options),
-                              std::move(on_match));
+                              std::move(cb));
   }
 
   void Open(const base::string16& cache_name,
             blink::mojom::CacheStorage::OpenCallback callback) override {
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
-    if (!cache_storage) {
-      std::move(callback).Run(blink::mojom::OpenResult::NewStatus(
-          MakeErrorStorage(ErrorStorageType::kStorageHandleNull)));
-      return;
-    }
-    cache_storage->OpenCache(
-        base::UTF16ToUTF8(cache_name),
+    auto cb =
         base::BindOnce(
             [](base::WeakPtr<CacheStorageImpl> self,
                blink::mojom::CacheStorage::OpenCallback callback,
@@ -363,7 +365,15 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
               std::move(callback).Run(
                   blink::mojom::OpenResult::NewCache(std::move(ptr_info)));
             },
-            weak_factory_.GetWeakPtr(), std::move(callback)));
+            weak_factory_.GetWeakPtr(), std::move(callback));
+
+    if (!cache_storage) {
+      std::move(cb).Run(CacheStorageCacheHandle(),
+                        MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
+      return;
+    }
+
+    cache_storage->OpenCache(base::UTF16ToUTF8(cache_name), std::move(cb));
   }
 
  private:
