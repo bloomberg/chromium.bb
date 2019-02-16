@@ -57,7 +57,7 @@ std::string ReplaceSingleQuotes(base::StringPiece str) {
 
 std::unique_ptr<base::Value> ValueFromString(base::StringPiece str) {
   std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(ReplaceSingleQuotes(str));
+      base::JSONReader::ReadDeprecated(ReplaceSingleQuotes(str));
   EXPECT_TRUE(value) << str;
   return value;
 }

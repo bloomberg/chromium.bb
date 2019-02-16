@@ -177,7 +177,8 @@ void GetExtraGainConfig(
   if (!audio_processing_platform_config_json)
     return;
   std::unique_ptr<base::Value> config;
-  config = base::JSONReader::Read(*audio_processing_platform_config_json);
+  config =
+      base::JSONReader::ReadDeprecated(*audio_processing_platform_config_json);
   if (!config) {
     LOG(ERROR) << "Failed to parse platform config JSON.";
     return;

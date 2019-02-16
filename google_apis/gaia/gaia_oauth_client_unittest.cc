@@ -428,7 +428,7 @@ TEST_F(GaiaOAuthClientTest, GetUserInfo) {
   FlushNetwork();
 
   std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(kDummyFullUserInfoResult);
+      base::JSONReader::ReadDeprecated(kDummyFullUserInfoResult);
   DCHECK(value);
   ASSERT_TRUE(value->is_dict());
   base::DictionaryValue* expected_result;

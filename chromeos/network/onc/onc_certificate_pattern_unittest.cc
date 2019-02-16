@@ -67,7 +67,7 @@ TEST_F(OncCertificatePatternTest, ParsePatternFromOnc) {
     })";
   std::string error;
   std::unique_ptr<base::Value> pattern_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           pattern_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   ASSERT_TRUE(pattern_value) << error;
 
@@ -100,7 +100,7 @@ TEST_F(OncCertificatePatternTest, PatternMatchingIssuer) {
     })";
   std::string error;
   std::unique_ptr<base::Value> pattern_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           pattern_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   ASSERT_TRUE(pattern_value) << error;
 
@@ -136,7 +136,7 @@ TEST_F(OncCertificatePatternTest, PatternMatchingSubject) {
     })";
   std::string error;
   std::unique_ptr<base::Value> pattern_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           pattern_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   ASSERT_TRUE(pattern_value) << error;
 
@@ -167,7 +167,7 @@ TEST_F(OncCertificatePatternTest, PatternMatchingIssuerCAPEM) {
     })";
   std::string error;
   std::unique_ptr<base::Value> pattern_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           pattern_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   ASSERT_TRUE(pattern_value) << error;
 

@@ -26,7 +26,7 @@ class OncParsedCertificatesTest : public testing::Test {
       base::StringPiece onc_certificates_json,
       std::unique_ptr<OncParsedCertificates>* out_onc_parsed_certificates) {
     std::unique_ptr<base::Value> onc_certificates =
-        base::JSONReader::Read(onc_certificates_json);
+        base::JSONReader::ReadDeprecated(onc_certificates_json);
     if (!onc_certificates)
       return false;
     *out_onc_parsed_certificates =
@@ -333,7 +333,7 @@ TEST_F(OncParsedCertificatesTest, EqualityChecks) {
       ])";
 
   std::unique_ptr<base::Value> onc_certificates =
-      base::JSONReader::Read(onc_certificates_json);
+      base::JSONReader::ReadDeprecated(onc_certificates_json);
   ASSERT_TRUE(onc_certificates);
 
   OncParsedCertificates master(*onc_certificates);

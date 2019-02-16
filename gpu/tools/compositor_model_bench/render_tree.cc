@@ -456,9 +456,10 @@ std::unique_ptr<RenderNode> BuildRenderTreeFromFile(
 
   int error_code = 0;
   std::string error_message;
-  std::unique_ptr<base::DictionaryValue> root = base::DictionaryValue::From(
-      JSONReader::ReadAndReturnError(contents, base::JSON_ALLOW_TRAILING_COMMAS,
-                                     &error_code, &error_message));
+  std::unique_ptr<base::DictionaryValue> root =
+      base::DictionaryValue::From(JSONReader::ReadAndReturnErrorDeprecated(
+          contents, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
+          &error_message));
   if (!root) {
     if (error_code) {
       LOG(ERROR) << "Failed to parse JSON file " << path.LossyDisplayName()

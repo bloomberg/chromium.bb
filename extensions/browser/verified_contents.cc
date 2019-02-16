@@ -154,7 +154,7 @@ std::unique_ptr<VerifiedContents> VerifiedContents::Create(
   if (!verified_contents->GetPayload(path, &payload))
     return nullptr;
 
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(payload));
+  std::unique_ptr<base::Value> value(base::JSONReader::ReadDeprecated(payload));
   if (!value.get() || !value->is_dict())
     return nullptr;
   DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.get());
@@ -318,7 +318,8 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
   std::string contents;
   if (!base::ReadFileToString(path, &contents))
     return false;
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(contents));
+  std::unique_ptr<base::Value> value(
+      base::JSONReader::ReadDeprecated(contents));
   if (!value.get() || !value->is_list())
     return false;
   ListValue* top_list = static_cast<ListValue*>(value.get());

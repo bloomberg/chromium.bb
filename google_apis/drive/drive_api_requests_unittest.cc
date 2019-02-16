@@ -2022,13 +2022,13 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
-  std::unique_ptr<base::Value> expected = base::JSONReader::Read(
+  std::unique_ptr<base::Value> expected = base::JSONReader::ReadDeprecated(
       "{\"additionalRoles\":[\"commenter\"], \"role\":\"reader\", "
       "\"type\":\"user\",\"value\":\"user@example.com\"}");
   ASSERT_TRUE(expected);
 
   std::unique_ptr<base::Value> result =
-      base::JSONReader::Read(http_request_.content);
+      base::JSONReader::ReadDeprecated(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ(*expected, *result);
 
@@ -2055,11 +2055,11 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
-  expected = base::JSONReader::Read(
+  expected = base::JSONReader::ReadDeprecated(
       "{\"role\":\"writer\", \"type\":\"domain\",\"value\":\"example.com\"}");
   ASSERT_TRUE(expected);
 
-  result = base::JSONReader::Read(http_request_.content);
+  result = base::JSONReader::ReadDeprecated(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ(*expected, *result);
 }

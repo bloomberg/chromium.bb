@@ -29,7 +29,7 @@ MessageResponse StructuredMessageHandler::HandleMessage(
   // Automation messages are stringified before they are sent because the
   // automation channel cannot handle arbitrary objects.  This means we
   // need to decode the json twice to get the original message.
-  std::unique_ptr<base::Value> value = reader.ReadToValue(json);
+  std::unique_ptr<base::Value> value = reader.ReadToValueDeprecated(json);
   if (!value.get())
     return InternalError("Could parse automation JSON: " + json +
                          " because " + reader.GetErrorMessage());
@@ -38,7 +38,7 @@ MessageResponse StructuredMessageHandler::HandleMessage(
   if (!value->GetAsString(&temp))
     return InternalError("Message was not a string: " + json);
 
-  value = reader.ReadToValue(temp);
+  value = reader.ReadToValueDeprecated(temp);
   if (!value.get())
     return InternalError("Could not parse message JSON: " + temp +
                          " because " + reader.GetErrorMessage());

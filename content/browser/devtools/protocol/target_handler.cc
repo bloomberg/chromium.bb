@@ -177,7 +177,8 @@ class BrowserToPageConnector {
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) {
     if (agent_host == page_host_.get()) {
-      std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+      std::unique_ptr<base::Value> value =
+          base::JSONReader::ReadDeprecated(message);
       if (!value || !value->is_dict())
         return;
       // Make sure this is a binding call.

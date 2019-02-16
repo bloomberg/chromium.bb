@@ -598,10 +598,11 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
 // also in the second, and with the same value.
 void CheckJSONIsSubsetOfJSON(base::StringPiece subset_str,
                              base::StringPiece test_str) {
-  std::unique_ptr<base::Value> subset(base::JSONReader::Read(subset_str));
+  std::unique_ptr<base::Value> subset(
+      base::JSONReader::ReadDeprecated(subset_str));
   ASSERT_TRUE(subset);
   ASSERT_TRUE(subset->is_dict());
-  std::unique_ptr<base::Value> test(base::JSONReader::Read(test_str));
+  std::unique_ptr<base::Value> test(base::JSONReader::ReadDeprecated(test_str));
   ASSERT_TRUE(test);
   ASSERT_TRUE(test->is_dict());
 

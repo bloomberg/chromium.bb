@@ -183,7 +183,7 @@ void ContentHash::DidFetchVerifiedContents(
   // the right cookies).  TODO(asargent) - It would be a nice enhancement to
   // move to parsing this in a sandboxed helper (https://crbug.com/372878).
   std::unique_ptr<base::Value> parsed =
-      base::JSONReader::Read(*fetched_contents);
+      base::JSONReader::ReadDeprecated(*fetched_contents);
   if (!parsed) {
     ContentHash::DispatchFetchFailure(key, std::move(created_callback),
                                       is_cancelled);

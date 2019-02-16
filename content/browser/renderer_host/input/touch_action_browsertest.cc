@@ -349,7 +349,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
 
     base::JSONReader json_reader;
     std::unique_ptr<base::Value> params =
-        json_reader.ReadToValue(pointer_actions_json);
+        json_reader.ReadToValueDeprecated(pointer_actions_json);
     ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
     ActionsParser actions_parser(params.get());
 
@@ -388,7 +388,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
 
     base::JSONReader json_reader;
     std::unique_ptr<base::Value> params =
-        json_reader.ReadToValue(pointer_actions_json);
+        json_reader.ReadToValueDeprecated(pointer_actions_json);
     ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
     ActionsParser actions_parser(params.get());
 

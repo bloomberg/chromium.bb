@@ -66,8 +66,9 @@ class MediaInternalsTestBase {
     std::string utf8_update = base::UTF16ToUTF8(update);
     const std::string::size_type first_brace = utf8_update.find('{');
     const std::string::size_type last_brace = utf8_update.rfind('}');
-    std::unique_ptr<base::Value> output_value = base::JSONReader::Read(
-        utf8_update.substr(first_brace, last_brace - first_brace + 1));
+    std::unique_ptr<base::Value> output_value =
+        base::JSONReader::ReadDeprecated(
+            utf8_update.substr(first_brace, last_brace - first_brace + 1));
     CHECK(output_value);
 
     base::DictionaryValue* output_dict = nullptr;

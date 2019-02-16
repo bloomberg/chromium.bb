@@ -251,7 +251,8 @@ void PrivetURLLoader::OnDownloadedToString(
   }
 
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  std::unique_ptr<base::Value> value = json_reader.ReadToValue(*response_body);
+  std::unique_ptr<base::Value> value =
+      json_reader.ReadToValueDeprecated(*response_body);
   if (!value || !value->is_dict()) {
     delegate_->OnError(0, JSON_PARSE_ERROR);
     return;

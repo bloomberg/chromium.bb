@@ -80,7 +80,8 @@ bool ComputedHashes::Reader::InitFromFile(const base::FilePath& path) {
     return false;
 
   base::DictionaryValue* top_dictionary = NULL;
-  std::unique_ptr<base::Value> value(base::JSONReader::Read(contents));
+  std::unique_ptr<base::Value> value(
+      base::JSONReader::ReadDeprecated(contents));
   if (!value.get() || !value->GetAsDictionary(&top_dictionary))
     return false;
 

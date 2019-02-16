@@ -42,7 +42,7 @@ std::unique_ptr<base::Value> DecodeIdToken(const std::string id_token) {
     return nullptr;
   }
   std::unique_ptr<base::Value> decoded_payload =
-      base::JSONReader::Read(payload);
+      base::JSONReader::ReadDeprecated(payload);
   if (!decoded_payload.get() ||
       decoded_payload->type() != base::Value::Type::DICTIONARY) {
     VLOG(1) << "Invalid id_token: paylod is not a well-formed JSON";

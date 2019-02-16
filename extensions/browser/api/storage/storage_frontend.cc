@@ -63,7 +63,8 @@ class DefaultObserver : public SettingsObserver {
   void OnSettingsChanged(const std::string& extension_id,
                          settings_namespace::Namespace settings_namespace,
                          const std::string& change_json) override {
-    std::unique_ptr<base::Value> changes = base::JSONReader::Read(change_json);
+    std::unique_ptr<base::Value> changes =
+        base::JSONReader::ReadDeprecated(change_json);
     DCHECK(changes);
     // TODO(devlin): crbug.com/645500 implies this can sometimes fail. If this
     // safeguard fixes it, that means there's an underlying problem (why are we

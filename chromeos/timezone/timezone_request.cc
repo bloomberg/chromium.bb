@@ -183,8 +183,8 @@ bool ParseServerResponse(const GURL& server_url,
   // Parse the response, ignoring comments.
   std::string error_msg;
   std::unique_ptr<base::Value> response_value =
-      base::JSONReader::ReadAndReturnError(response_body, base::JSON_PARSE_RFC,
-                                           NULL, &error_msg);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
   if (response_value == NULL) {
     PrintTimeZoneError(server_url, "JSONReader failed: " + error_msg, timezone);
     RecordUmaEvent(TIMEZONE_REQUEST_EVENT_RESPONSE_MALFORMED);

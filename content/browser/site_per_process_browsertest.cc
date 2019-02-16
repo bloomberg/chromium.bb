@@ -444,7 +444,7 @@ class TestInterstitialDelegate : public InterstitialPageDelegate {
 };
 
 bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(str);
   if (!value)
     return false;
   base::DictionaryValue* root;
@@ -13613,7 +13613,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDoubleTapZoomBrowserTest,
                          tap_position.y(), tap_position.x(), tap_position.y());
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> params =
-      json_reader.ReadToValue(double_tap_actions_json);
+      json_reader.ReadToValueDeprecated(double_tap_actions_json);
   ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
   ActionsParser actions_parser(params.get());
 
@@ -14272,7 +14272,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       scroll_end_location_in_screen.y());
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> touch_params =
-      json_reader.ReadToValue(touch_move_sequence_json);
+      json_reader.ReadToValueDeprecated(touch_move_sequence_json);
   ASSERT_TRUE(touch_params.get()) << json_reader.GetErrorMessage();
   ActionsParser actions_parser(touch_params.get());
 

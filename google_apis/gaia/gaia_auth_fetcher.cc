@@ -49,7 +49,7 @@ const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
 std::unique_ptr<const GaiaAuthConsumer::ClientOAuthResult>
 ExtractOAuth2TokenPairResponse(const std::string& data) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
     return nullptr;
 
@@ -89,7 +89,7 @@ GetTokenRevocationStatusFromResponseData(const std::string& data,
   if (response_code == net::HTTP_INTERNAL_SERVER_ERROR)
     return GaiaAuthConsumer::TokenRevocationStatus::kServerError;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
     return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 

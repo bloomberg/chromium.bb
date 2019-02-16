@@ -168,7 +168,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
       std::unique_ptr<const base::DictionaryValue> metadata,
       base::RefCountedString* trace_data_string) {
     std::unique_ptr<base::Value> trace_data =
-        base::JSONReader::Read(trace_data_string->data());
+        base::JSONReader::ReadDeprecated(trace_data_string->data());
     ASSERT_TRUE(trace_data);
     trace_data_ = trace_data->Clone();
     runner_->Quit();

@@ -176,8 +176,9 @@ namespace google_apis {
 std::unique_ptr<base::Value> ParseJson(const std::string& json) {
   int error_code = -1;
   std::string error_message;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &error_code, &error_message);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json, base::JSON_PARSE_RFC, &error_code, &error_message);
 
   if (!value.get()) {
     std::string trimmed_json;

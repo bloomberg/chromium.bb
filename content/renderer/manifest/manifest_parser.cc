@@ -63,9 +63,10 @@ void ManifestParser::Parse() {
   std::string error_msg;
   int error_line = 0;
   int error_column = 0;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      data_, base::JSON_PARSE_RFC, nullptr, &error_msg, &error_line,
-      &error_column);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          data_, base::JSON_PARSE_RFC, nullptr, &error_msg, &error_line,
+          &error_column);
 
   if (!value) {
     AddErrorInfo(error_msg, true, error_line, error_column);
