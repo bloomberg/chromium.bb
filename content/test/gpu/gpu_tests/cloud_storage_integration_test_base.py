@@ -28,11 +28,14 @@ default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 
 error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 
-goldctl_bin = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..', '..', 'tools',
-    'skia_goldctl', 'goldctl'))
+chromium_root_dir = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..', '..'))
+goldctl_bin = os.path.join(
+    chromium_root_dir, 'tools', 'skia_goldctl', 'goldctl')
 if sys.platform == 'win32':
   goldctl_bin += '.exe'
+
+SKIA_GOLD_INSTANCE = 'chrome-gpu'
 
 class _ReferenceImageParameters(object):
   def __init__(self):
@@ -438,14 +441,19 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     with open(json_temp_file, 'w+') as f:
       json.dump(gpu_keys, f)
     try:
-      subprocess.check_output([goldctl_bin, 'imgtest', 'add'] + mode +
+      if not self.GetParsedCommandLineOptions().no_luci_auth:
+        subprocess.check_output([goldctl_bin, 'auth', '--luci',
+                                 '--workdir', self._skia_gold_temp_dir],
+            stderr=subprocess.STDOUT)
+      cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
                             ['--test-name', image_name,
-                             '--instance', 'chrome-gpu',
+                             '--instance', SKIA_GOLD_INSTANCE,
                              '--keys-file', json_temp_file,
                              '--png-file', png_temp_file,
                              '--work-dir', self._skia_gold_temp_dir,
                              '--failure-file', failure_file] +
-                            build_id_args, stderr=subprocess.STDOUT)
+                            build_id_args)
+      subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
       contents = ''
       try:
@@ -454,6 +462,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       except Exception:
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
+      self._MaybeOutputSkiaGoldLink()
       raise Exception('goldctl command failed: ' + contents)
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
@@ -474,8 +483,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # An exception raised from self.fail() indicates a failure.
       image_name = self._UrlToImageName(url)
       if self.GetParsedCommandLineOptions().test_machine_name:
-        # TODO(https://crbug.com/850107): Generate a link to Skia Gold on
-        # failure.
         self._UploadTestResultToSkiaGold(
           image_name, screenshot,
           tab, page,
@@ -487,3 +494,19 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           self.GetParsedCommandLineOptions().generated_dir, image_name,
           screenshot, None)
       raise
+
+  def _MaybeOutputSkiaGoldLink(self):
+    # TODO(https://crbug.com/850107): Differentiate between an image mismatch
+    # and an infra/other failure, and only output the link on image mismatch.
+    skia_url = 'https://%s-gold.skia.org/search?' % SKIA_GOLD_INSTANCE
+    patch_issue = self.GetParsedCommandLineOptions().review_patch_issue
+    is_tryjob = patch_issue != None
+    # These URL formats were just taken from links on the Gold instance pointing
+    # to untriaged results.
+    if is_tryjob:
+      skia_url += 'issue=%s&unt=true&master=false' % patch_issue
+    else:
+      skia_url += 'blame=%s&unt=true&head=true&query=source_type%%3D%s' % (
+          self.GetParsedCommandLineOptions().build_revision,
+          SKIA_GOLD_INSTANCE)
+    logging.error('View and triage untriaged images at %s', skia_url)
