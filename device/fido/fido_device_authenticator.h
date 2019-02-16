@@ -48,6 +48,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetTouch(base::OnceCallback<void()> callback) override;
   void GetRetries(GetRetriesCallback callback) override;
   void GetEphemeralKey(GetEphemeralKeyCallback callback) override;
+  void GetPINToken(std::string pin,
+                   const pin::KeyAgreementResponse& peer_key,
+                   GetPINTokenCallback callback) override;
   void SetPIN(const std::string& pin,
               pin::KeyAgreementResponse& peer_key,
               SetPINCallback callback) override;

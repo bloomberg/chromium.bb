@@ -183,6 +183,25 @@ void FidoDeviceAuthenticator::GetEphemeralKey(
   operation_->Start();
 }
 
+void FidoDeviceAuthenticator::GetPINToken(
+    std::string pin,
+    const pin::KeyAgreementResponse& peer_key,
+    GetPINTokenCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
+  DCHECK(Options());
+  DCHECK(Options()->client_pin_availability !=
+         AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+
+  pin::TokenRequest request(pin, peer_key);
+  std::array<uint8_t, 32> shared_key = request.shared_key();
+  operation_ = std::make_unique<
+      Ctap2DeviceOperation<pin::TokenRequest, pin::TokenResponse>>(
+      device_.get(), std::move(request), std::move(callback),
+      base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)));
+  operation_->Start();
+}
+
 void FidoDeviceAuthenticator::SetPIN(const std::string& pin,
                                      pin::KeyAgreementResponse& peer_key,
                                      SetPINCallback callback) {

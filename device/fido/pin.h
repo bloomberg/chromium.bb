@@ -11,11 +11,13 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <string>
 #include <vector>
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "components/cbor/values.h"
 
 namespace device {
 namespace pin {
@@ -117,6 +119,49 @@ struct ResetRequest {
 };
 
 using ResetResponse = EmptyResponse;
+
+// TokenRequest requests a pin-token from an authenticator. These tokens can be
+// used to show user-verification in other operations, e.g. when getting an
+// assertion.
+class TokenRequest {
+ public:
+  TokenRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
+  ~TokenRequest();
+  TokenRequest(const TokenRequest&) = delete;
+
+  // shared_key returns the shared ECDH key that was used to encrypt the PIN.
+  // This is needed to decrypt the response.
+  const std::array<uint8_t, 32>& shared_key() const;
+
+  std::vector<uint8_t> EncodeAsCBOR() const;
+
+ private:
+  std::array<uint8_t, 32> shared_key_;
+  const cbor::Value::MapValue cose_key_;
+  uint8_t pin_hash_[16];
+};
+
+// TokenResponse represents the response to a pin-token request. In order to
+// decrypt a response, the shared key from the request is needed. Once a pin-
+// token has been decrypted, it can be used to calculate the pinAuth parameters
+// needed to show user-verification in future operations.
+class TokenResponse {
+ public:
+  ~TokenResponse();
+  TokenResponse(const TokenResponse&);
+
+  static base::Optional<TokenResponse> Parse(std::array<uint8_t, 32> shared_key,
+                                             base::span<const uint8_t> buffer);
+
+  // PinAuth returns a pinAuth parameter for a request that will use the given
+  // client-data hash.
+  std::vector<uint8_t> PinAuth(const std::array<uint8_t, 32> client_data_hash);
+
+ private:
+  TokenResponse();
+
+  std::vector<uint8_t> token_;
+};
 
 }  // namespace pin
 }  // namespace device
