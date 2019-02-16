@@ -102,6 +102,7 @@
 #import "ios/web/web_state/ui/favicon_util.h"
 #include "ios/web/web_state/ui/web_kit_constants.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
+#import "ios/web/web_state/ui/wk_navigation_action_policy_util.h"
 #import "ios/web/web_state/ui/wk_navigation_action_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_frame_impl.h"
@@ -4701,8 +4702,9 @@ GURL URLEscapedForHistory(const GURL& url) {
         }));
   }
 
-  decisionHandler(allowLoad ? WKNavigationActionPolicyAllow
-                            : WKNavigationActionPolicyCancel);
+  WKNavigationActionPolicy allowPolicy = web::GetAllowNavigationActionPolicy(
+      self.webState->GetBrowserState()->IsOffTheRecord());
+  decisionHandler(allowLoad ? allowPolicy : WKNavigationActionPolicyCancel);
 }
 
 - (void)webView:(WKWebView*)webView

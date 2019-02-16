@@ -2,10 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//ios/build/config.gni")
+import("//ios/features.gni")
+
+buildflag_header("block_universal_links_buildflags") {
+  header = "block_universal_links_buildflags.h"
+  flags = [ "BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE=$block_universal_links_in_off_the_record_mode" ]
+}
 
 source_set("ui") {
   deps = [
+    ":block_universal_links_buildflags",
     ":crw_context_menu_controller",
     ":crw_web_view_navigation_proxy",
     ":crw_wk_script_message_router",
@@ -57,6 +65,8 @@ source_set("ui") {
     "web_kit_constants.h",
     "wk_back_forward_list_item_holder.h",
     "wk_back_forward_list_item_holder.mm",
+    "wk_navigation_action_policy_util.h",
+    "wk_navigation_action_policy_util.mm",
     "wk_navigation_action_util.h",
     "wk_navigation_action_util.mm",
   ]

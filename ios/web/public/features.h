@@ -36,6 +36,10 @@ extern const base::Feature kOutOfWebFullscreen;
 // (crbug.com/887497).
 extern const base::Feature kHistoryClobberWorkaround;
 
+// Used to prevent native apps from being opened when a universal link is tapped
+// and the user is browsing in off the record mode.
+extern const base::Feature kBlockUniversalLinksInOffTheRecordMode;
+
 }  // namespace features
 }  // namespace web
 

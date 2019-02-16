@@ -7,4 +7,8 @@ declare_args() {
   # components/cronet/tools/cr_cronet.py as cronet requires specific
   # gn args to build correctly).
   is_cronet_build = false
+
+  # Controls whether universal links are blocked from opening native apps
+  # when the user is browsing in off the record mode.
+  block_universal_links_in_off_the_record_mode = true
 }
