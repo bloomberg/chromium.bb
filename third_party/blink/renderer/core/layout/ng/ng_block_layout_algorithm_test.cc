@@ -112,18 +112,18 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(30), LayoutUnit(40)),
             result->PhysicalFragment()->Size());
 
-  // Test pointer-equal constraint space
+  // Test pointer-equal constraint space.
   result = block_flow->CachedLayoutResult(space, nullptr);
   EXPECT_NE(result.get(), nullptr);
 
-  // Test identical, but not pointer-equal, constraint space
+  // Test identical, but not pointer-equal, constraint space.
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
   result = block_flow->CachedLayoutResult(space, nullptr);
   EXPECT_NE(result.get(), nullptr);
 
-  // Test different constraint space
+  // Test different constraint space.
   space = ConstructBlockLayoutTestConstraintSpace(
       WritingMode::kHorizontalTb, TextDirection::kLtr,
       NGLogicalSize(LayoutUnit(200), LayoutUnit(100)));
@@ -140,6 +140,52 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
 
   // Test layout invalidation
   block_flow->SetNeedsLayout("");
+  result = block_flow->CachedLayoutResult(space, nullptr);
+  EXPECT_EQ(result.get(), nullptr);
+}
+
+TEST_F(NGBlockLayoutAlgorithmTest, MinInlineSizeCaching) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="box" style="min-width:30%; width: 10px; height:40px;"></div>
+  )HTML");
+
+  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
+
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("box"));
+  NGBlockNode node(block_flow);
+
+  scoped_refptr<NGLayoutResult> result(node.Layout(space, nullptr));
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(30), LayoutUnit(40)),
+            result->PhysicalFragment()->Size());
+
+  // Test pointer-equal constraint space.
+  result = block_flow->CachedLayoutResult(space, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // Test identical, but not pointer-equal, constraint space.
+  space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(100)));
+  result = block_flow->CachedLayoutResult(space, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // Test different constraint space.
+  space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(100), LayoutUnit(200)));
+  result = block_flow->CachedLayoutResult(space, nullptr);
+  EXPECT_NE(result.get(), nullptr);
+
+  // Test a different constraint space that will actually result in a different
+  // size.
+  space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      NGLogicalSize(LayoutUnit(200), LayoutUnit(100)));
   result = block_flow->CachedLayoutResult(space, nullptr);
   EXPECT_EQ(result.get(), nullptr);
 }
