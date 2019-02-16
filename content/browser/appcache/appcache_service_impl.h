@@ -62,9 +62,9 @@ class CONTENT_EXPORT AppCacheStorageReference
   std::unique_ptr<AppCacheStorage> storage_;
 };
 
-// Class that manages the application cache service. Sends notifications
-// to many frontends.  One instance per user-profile. Each instance has
-// exclusive access to its cache_directory on disk.
+// Handles operations that apply to caches across multiple renderer processes
+// for a user-profile. Each instance has exclusive access to its cache_directory
+// on disk.
 class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
  public:
   using OnceCompletionCallback = base::OnceCallback<void(int)>;

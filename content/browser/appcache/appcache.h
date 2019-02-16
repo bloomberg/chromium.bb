@@ -39,7 +39,7 @@ class AppCacheUpdateJobTest;
 
 // Set of cached resources for an application. A cache exists as long as a
 // host is associated with it, the cache is in an appcache group or the
-// cache is being created during an appcache upate.
+// cache is being created during an appcache update.
 class CONTENT_EXPORT AppCache
     : public base::RefCounted<AppCache> {
  public:

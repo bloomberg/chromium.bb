@@ -33,6 +33,7 @@ namespace content {
 class AppCacheStorageImplTest;
 class ChromeAppCacheServiceTest;
 
+// Task scheduler for database read/write operations.
 class AppCacheStorageImpl : public AppCacheStorage {
  public:
   explicit AppCacheStorageImpl(AppCacheServiceImpl* service);

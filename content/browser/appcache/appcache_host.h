@@ -59,7 +59,7 @@ namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
 }
 
-// Server-side representation of an application cache host.
+// The browser-side implementation of the document hosting an application cache.
 class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
                                     public AppCacheStorage::Delegate,
                                     public AppCacheGroup::UpdateObserver,
