@@ -829,7 +829,7 @@ TEST_F(URLLoaderTest, RespectNoSniff) {
   set_sniff();
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/nosniff-test.html")));
   EXPECT_FALSE(did_mime_sniff());
-  ASSERT_TRUE(mime_type().empty());
+  ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
 TEST_F(URLLoaderTest, SniffTextPlainDoesNotResultInHTML) {
