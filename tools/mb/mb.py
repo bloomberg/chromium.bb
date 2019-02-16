@@ -908,16 +908,28 @@ class MetaBuildWrapper(object):
       else:
         runtime_deps_targets = [target + '.runtime_deps']
 
+      # TODO(crbug.com/932700): If there are multiple .runtime_deps files
+      # for a target, it's actually unclear which one is the right one to use.
+      # It's possible to get multiple files because different target types
+      # store them in different places, and if you change the target type
+      # (and don't do a clobber build), you might find an old one and a new
+      # one. The proper fix is to make sure we only get one file.
+      newest_path = None
+      newest_path_mtime = 0
       for r in runtime_deps_targets:
-        runtime_deps_path = self.ToAbsPath(build_dir, r)
-        if self.Exists(runtime_deps_path):
-          break
-      else:
+        path = self.ToAbsPath(build_dir, r)
+        if self.Exists(path):
+          mtime = self.Mtime(path)
+          if mtime > newest_path_mtime:
+              newest_path = path
+              newest_path_mtime = mtime
+
+      if not newest_path:
         raise MBErr('did not generate any of %s' %
                     ', '.join(runtime_deps_targets))
 
       command, extra_files = self.GetIsolateCommand(target, vals)
-      runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
+      runtime_deps = self.ReadFile(newest_path).splitlines()
 
       canonical_target = target.replace(':','_').replace('/','_')
       self.WriteIsolateFiles(build_dir, command, canonical_target, runtime_deps,
@@ -1447,6 +1459,10 @@ class MetaBuildWrapper(object):
   def Exists(self, path):
     # This function largely exists so it can be overridden for testing.
     return os.path.exists(path)
+
+  def Mtime(self, path):
+    # This function largely exists so it can be overridden for testing.
+    return os.stat(path).st_mtime
 
   def Fetch(self, url):
     # This function largely exists so it can be overridden for testing.
