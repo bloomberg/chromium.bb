@@ -52,6 +52,10 @@ class MessagePort {
   // is not used and the channel is closed.
   virtual bool IsValidPort() = 0;
 
+  // Triggers the check of whether the port is still valid. If the port is
+  // determined to be invalid, the channel will be closed.
+  virtual void RevalidatePort();
+
   // Notifies the port that the channel has been opened.
   virtual void DispatchOnConnect(
       const std::string& channel_name,

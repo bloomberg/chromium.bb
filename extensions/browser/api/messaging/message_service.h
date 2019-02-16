@@ -218,12 +218,6 @@ class MessageService : public BrowserContextKeyedAPI,
       PostMessage(port_id, message);
   }
 
-  // Immediate dispatches a disconnect to |source| for |port_id|. Sets source's
-  // runtime.lastMessage to |error_message|, if any.
-  void DispatchOnDisconnect(content::RenderFrameHost* source,
-                            const PortId& port_id,
-                            const std::string& error_message);
-
   void DispatchPendingMessages(const PendingMessagesQueue& queue,
                                const ChannelId& channel_id);
 

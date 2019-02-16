@@ -15,6 +15,8 @@ bool MessagePort::HasFrame(content::RenderFrameHost* rfh) const {
   return false;
 }
 
+void MessagePort::RevalidatePort() {}
+
 void MessagePort::DispatchOnConnect(
     const std::string& channel_name,
     std::unique_ptr<base::DictionaryValue> source_tab,
