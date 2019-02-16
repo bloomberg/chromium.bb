@@ -353,6 +353,9 @@ template("test") {
         data = []
       }
 
+      # We use a special trigger script for CrOS hardware tests.
+      data += [ "//testing/trigger_scripts/chromeos_device_trigger.py" ]
+
       testonly = true
       output_name = target_name
       write_runtime_deps = _runtime_deps_file
