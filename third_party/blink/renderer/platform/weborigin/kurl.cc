@@ -898,4 +898,8 @@ bool operator!=(const String& a, const KURL& b) {
   return a != b.GetString();
 }
 
+std::ostream& operator<<(std::ostream& os, const KURL& url) {
+  return os << url.GetString();
+}
+
 }  // namespace blink
