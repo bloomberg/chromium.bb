@@ -1010,6 +1010,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   CompletionInfo completion_info(dentry.current_file_path,
                                  dentry.bytes_downloaded, entry.url_chain,
                                  entry.response_headers);
+  completion_info.hash256 = "01234567ABCDEF";
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
   EXPECT_CALL(*client_, OnDownloadSucceeded(entry.guid, completion_info))
       .Times(1);
@@ -1026,6 +1027,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   done_dentry.done = true;
   done_dentry.current_file_path = completion_info.path;
   done_dentry.bytes_downloaded = completion_info.bytes_downloaded;
+  done_dentry.hash256 = completion_info.hash256;
   base::Time now = base::Time::Now();
   done_dentry.completion_time = now;
 
@@ -1042,7 +1044,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   EXPECT_EQ(now, updated_entry->completion_time);
   EXPECT_LE(done_dentry.completion_time + config_->file_keep_alive_time,
             now + base::TimeDelta::FromSeconds(start_time));
-
+  EXPECT_EQ(completion_info.hash256, done_dentry.hash256);
   task_runner_->RunUntilIdle();
 }
 
@@ -1050,16 +1052,22 @@ TEST_F(DownloadServiceControllerImplTest, CompletionInfoPropagated) {
   // Create initial Entry and DriverEntry objects.
   Entry succeeded_entry = test::BuildBasicEntry(Entry::State::ACTIVE);
   ASSERT_TRUE(succeeded_entry.response_headers);
+  Entry succeeded_with_hash_entry = test::BuildBasicEntry(Entry::State::ACTIVE);
+  ASSERT_TRUE(succeeded_with_hash_entry.response_headers);
   Entry failed_entry = test::BuildBasicEntry(Entry::State::ACTIVE);
   ASSERT_TRUE(failed_entry.response_headers);
-  std::vector<Entry> entries = {succeeded_entry, failed_entry};
+  std::vector<Entry> entries = {succeeded_entry, succeeded_with_hash_entry,
+                                failed_entry};
 
   DriverEntry succeeded_dentry =
       BuildDriverEntry(succeeded_entry, DriverEntry::State::IN_PROGRESS);
+  DriverEntry succeeded_with_hash_dentry = BuildDriverEntry(
+      succeeded_with_hash_entry, DriverEntry::State::IN_PROGRESS);
   DriverEntry failed_dentry =
       BuildDriverEntry(failed_entry, DriverEntry::State::IN_PROGRESS);
-  driver_->AddTestData(
-      std::vector<DriverEntry>{succeeded_dentry, failed_dentry});
+
+  driver_->AddTestData(std::vector<DriverEntry>{
+      succeeded_dentry, succeeded_with_hash_dentry, failed_dentry});
 
   // Mock expectations.
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
@@ -1067,6 +1075,10 @@ TEST_F(DownloadServiceControllerImplTest, CompletionInfoPropagated) {
   CompletionInfo succeeded_completion_info;
   EXPECT_CALL(*client_, OnDownloadSucceeded(succeeded_entry.guid, _))
       .WillOnce(SaveArg<1>(&succeeded_completion_info));
+
+  CompletionInfo succeeded_with_hash_completion_info;
+  EXPECT_CALL(*client_, OnDownloadSucceeded(succeeded_with_hash_entry.guid, _))
+      .WillOnce(SaveArg<1>(&succeeded_with_hash_completion_info));
 
   CompletionInfo failed_completion_info;
   EXPECT_CALL(*client_, OnDownloadFailed(failed_entry.guid, _, _))
@@ -1084,6 +1096,13 @@ TEST_F(DownloadServiceControllerImplTest, CompletionInfoPropagated) {
   succeeded_done_dentry.current_file_path =
       base::FilePath::FromUTF8Unsafe("abc");
 
+  DriverEntry succeeded_with_hash_done_dentry =
+      BuildDriverEntry(succeeded_with_hash_entry, DriverEntry::State::COMPLETE);
+  succeeded_with_hash_done_dentry.done = true;
+  succeeded_with_hash_done_dentry.current_file_path =
+      base::FilePath::FromUTF8Unsafe("abc");
+  succeeded_with_hash_done_dentry.hash256 = "01234567ABCDEF";
+
   DriverEntry failed_done_dentry =
       BuildDriverEntry(failed_entry, DriverEntry::State::COMPLETE);
   succeeded_done_dentry.current_file_path =
@@ -1091,6 +1110,7 @@ TEST_F(DownloadServiceControllerImplTest, CompletionInfoPropagated) {
   failed_done_dentry.done = true;
 
   driver_->NotifyDownloadSucceeded(succeeded_done_dentry);
+  driver_->NotifyDownloadSucceeded(succeeded_with_hash_done_dentry);
   driver_->NotifyDownloadFailed(failed_done_dentry,
                                 FailureType::NOT_RECOVERABLE);
   task_runner_->RunUntilIdle();
@@ -1101,6 +1121,15 @@ TEST_F(DownloadServiceControllerImplTest, CompletionInfoPropagated) {
             succeeded_entry.response_headers->raw_headers());
   EXPECT_EQ(succeeded_completion_info.path,
             succeeded_done_dentry.current_file_path);
+  EXPECT_EQ(succeeded_completion_info.hash256, "");
+
+  ASSERT_TRUE(succeeded_with_hash_completion_info.response_headers);
+  EXPECT_EQ(succeeded_with_hash_completion_info.response_headers->raw_headers(),
+            succeeded_with_hash_entry.response_headers->raw_headers());
+  EXPECT_EQ(succeeded_with_hash_completion_info.path,
+            succeeded_with_hash_done_dentry.current_file_path);
+  EXPECT_EQ(succeeded_with_hash_completion_info.hash256,
+            succeeded_with_hash_done_dentry.hash256);
 
   ASSERT_TRUE(failed_completion_info.response_headers);
   EXPECT_EQ(failed_completion_info.response_headers->raw_headers(),

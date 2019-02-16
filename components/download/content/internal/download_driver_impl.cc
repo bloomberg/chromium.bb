@@ -5,11 +5,13 @@
 #include "components/download/content/internal/download_driver_impl.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/background_service/driver_entry.h"
@@ -99,6 +101,13 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
         !item->GetETag().empty() || !item->GetLastModifiedTime().empty();
   }
   entry.url_chain = item->GetUrlChain();
+
+  if (item->GetState() == DownloadItem::DownloadState::COMPLETE) {
+    std::string hash = item->GetHash();
+    if (!hash.empty())
+      entry.hash256 = base::HexEncode(hash.data(), hash.size());
+  }
+
   return entry;
 }
 

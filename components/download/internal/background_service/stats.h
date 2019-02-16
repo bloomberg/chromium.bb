@@ -227,6 +227,9 @@ void LogEntryRetryCount(uint32_t retry_count);
 // Records whether the entry was an upload.
 void LogHasUploadData(DownloadClient client, bool has_upload_data);
 
+// Records whether or not a completed entry has a hash value.
+void LogHashPresence(bool hash_exists);
+
 }  // namespace stats
 }  // namespace download
 

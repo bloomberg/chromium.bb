@@ -5023,6 +5023,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="inappropriate_fallback alert"/>
 </enum>
 
+<enum name="BooleanIncludesHash">
+  <int value="0" label="Hash Missing"/>
+  <int value="1" label="Hash Included"/>
+</enum>
+
 <enum name="BooleanIncognito">
   <int value="0" label="Not Incognito"/>
   <int value="1" label="Incognito"/>

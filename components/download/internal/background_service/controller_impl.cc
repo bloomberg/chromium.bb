@@ -1152,6 +1152,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     DCHECK(driver_entry.has_value());
     stats::LogFilePathRenamed(driver_entry->current_file_path !=
                               entry->target_file_path);
+    stats::LogHashPresence(!driver_entry->hash256.empty());
     entry->target_file_path = driver_entry->current_file_path;
     entry->completion_time = driver_entry->completion_time;
     entry->bytes_downloaded = driver_entry->bytes_downloaded;
@@ -1159,6 +1160,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
                                    driver_entry->bytes_downloaded,
                                    entry->url_chain, entry->response_headers);
     completion_info.blob_handle = driver_entry->blob_handle;
+    completion_info.hash256 = driver_entry->hash256;
 
     entry->last_cleanup_check_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(

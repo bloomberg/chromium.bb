@@ -135,6 +135,7 @@ class FakeDownloadItem : public download::DownloadItem {
   void SetIsDone(bool is_done);
   void SetETag(const std::string& etag);
   void SetLastModifiedTime(const std::string& last_modified_time);
+  void SetHash(const std::string& hash);
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;
@@ -163,6 +164,7 @@ class FakeDownloadItem : public download::DownloadItem {
   bool is_done_ = false;
   std::string etag_;
   std::string last_modified_time_;
+  std::string hash_;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;
