@@ -187,6 +187,14 @@ void MediaSessionImpl::DidFinishNavigation(
 
 void MediaSessionImpl::OnWebContentsFocused(RenderWidgetHost*) {
   focused_ = true;
+
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  // If we have just gained focus and we have audio focus we should re-request
+  // system audio focus. This will ensure this media session is towards the top
+  // of the stack if we have multiple sessions active at the same time.
+  if (audio_focus_state_ == State::ACTIVE)
+    RequestSystemAudioFocus(desired_audio_focus_type_);
+#endif
 }
 
 void MediaSessionImpl::OnWebContentsLostFocus(RenderWidgetHost*) {
