@@ -270,10 +270,7 @@ if get_option('backend-rdp')
 
 	dep_frdp = dependency('freerdp2', version: '>= 2.0.0', required: false)
 	if not dep_frdp.found()
-		dep_frdp = dependency('freerdp', version: '>= 1.1.0', required: false)
-	endif
-	if not dep_frdp.found()
-		error('RDP-backend requires freerdp which was not found. Or, you can use \'-Dbackend-rdp=false\'.')
+		error('RDP-backend requires freerdp2 which was not found. Or, you can use \'-Dbackend-rdp=false\'.')
 	endif
 
 	if cc.has_header('freerdp/version.h', dependencies: dep_frdp)
