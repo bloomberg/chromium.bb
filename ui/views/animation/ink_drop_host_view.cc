@@ -113,8 +113,32 @@ class InkDropHostView::InkDropEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(InkDropEventHandler);
 };
 
+class InkDropHostView::InkDropViewObserver : public ViewObserver {
+ public:
+  explicit InkDropViewObserver(InkDropHostView* parent) : parent_(parent) {
+    parent_->AddObserver(this);
+  }
+  ~InkDropViewObserver() override { parent_->RemoveObserver(this); }
+  // ViewObserver:
+  void OnViewFocused(View* observed_view) override {
+    DCHECK_EQ(parent_, observed_view);
+    parent_->GetInkDrop()->SetFocused(true);
+  }
+
+  void OnViewBlurred(View* observed_view) override {
+    DCHECK_EQ(parent_, observed_view);
+    parent_->GetInkDrop()->SetFocused(false);
+  }
+
+ private:
+  InkDropHostView* const parent_;
+
+  DISALLOW_COPY_AND_ASSIGN(InkDropViewObserver);
+};
+
 InkDropHostView::InkDropHostView()
-    : ink_drop_event_handler_(std::make_unique<InkDropEventHandler>(this)) {}
+    : ink_drop_event_handler_(std::make_unique<InkDropEventHandler>(this)),
+      ink_drop_view_observer_(std::make_unique<InkDropViewObserver>(this)) {}
 
 InkDropHostView::~InkDropHostView() {
   // TODO(bruthig): Improve InkDropImpl to be safer about calling back to
@@ -225,16 +249,6 @@ void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
     GetInkDrop()->AnimateToState(InkDropState::HIDDEN);
     GetInkDrop()->SetHovered(false);
   }
-}
-
-void InkDropHostView::OnFocus() {
-  views::View::OnFocus();
-  GetInkDrop()->SetFocused(true);
-}
-
-void InkDropHostView::OnBlur() {
-  views::View::OnBlur();
-  GetInkDrop()->SetFocused(false);
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
