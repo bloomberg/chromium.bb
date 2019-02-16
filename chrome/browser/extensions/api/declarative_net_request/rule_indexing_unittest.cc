@@ -421,7 +421,7 @@ TEST_P(RuleIndexingTest, InvalidJSONRules_Parsed) {
       }
     ]
   )";
-  SetRules(base::JSONReader::Read(kRules));
+  SetRules(base::JSONReader::ReadDeprecated(kRules));
 
   extension_loader()->set_ignore_manifest_warnings(true);
   LoadAndExpectSuccess(1 /* rules count */);

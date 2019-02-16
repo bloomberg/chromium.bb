@@ -226,7 +226,7 @@ TEST_F(JSONParserTest, ErrorMessages) {
   // Error strings should not be modified in case of success.
   std::string error_message;
   int error_code = 0;
-  std::unique_ptr<Value> root = JSONReader::ReadAndReturnError(
+  Optional<Value> root = JSONReader::ReadAndReturnError(
       "[42]", JSON_PARSE_RFC, &error_code, &error_message);
   EXPECT_TRUE(error_message.empty());
   EXPECT_EQ(0, error_code);
@@ -236,7 +236,7 @@ TEST_F(JSONParserTest, ErrorMessages) {
   // error here ----------------------------------^
   root = JSONReader::ReadAndReturnError(big_json, JSON_PARSE_RFC, &error_code,
                                         &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(5, 10, JSONReader::kSyntaxError),
             error_message);
   EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, error_code);
@@ -249,7 +249,7 @@ TEST_F(JSONParserTest, ErrorMessages) {
   // error here ----------------------^
   root = JSONReader::ReadAndReturnError(big_json_crlf, JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(5, 10, JSONReader::kSyntaxError),
             error_message);
   EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, error_code);
@@ -257,7 +257,7 @@ TEST_F(JSONParserTest, ErrorMessages) {
   // Test each of the error conditions
   root = JSONReader::ReadAndReturnError("{},{}", JSON_PARSE_RFC, &error_code,
                                         &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 3,
       JSONReader::kUnexpectedDataAfterRoot), error_message);
   EXPECT_EQ(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, error_code);
@@ -269,55 +269,55 @@ TEST_F(JSONParserTest, ErrorMessages) {
   }
   root = JSONReader::ReadAndReturnError(nested_json, JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 200, JSONReader::kTooMuchNesting),
             error_message);
   EXPECT_EQ(JSONReader::JSON_TOO_MUCH_NESTING, error_code);
 
   root = JSONReader::ReadAndReturnError("[1,]", JSON_PARSE_RFC, &error_code,
                                         &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 4, JSONReader::kTrailingComma),
             error_message);
   EXPECT_EQ(JSONReader::JSON_TRAILING_COMMA, error_code);
 
   root = JSONReader::ReadAndReturnError("{foo:\"bar\"}", JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 2,
       JSONReader::kUnquotedDictionaryKey), error_message);
   EXPECT_EQ(JSONReader::JSON_UNQUOTED_DICTIONARY_KEY, error_code);
 
   root = JSONReader::ReadAndReturnError("{\"foo\":\"bar\",}", JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 14, JSONReader::kTrailingComma),
             error_message);
 
   root = JSONReader::ReadAndReturnError("[nu]", JSON_PARSE_RFC, &error_code,
                                         &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 2, JSONReader::kSyntaxError),
             error_message);
   EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, error_code);
 
   root = JSONReader::ReadAndReturnError("[\"xxx\\xq\"]", JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
             error_message);
   EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, error_code);
 
   root = JSONReader::ReadAndReturnError("[\"xxx\\uq\"]", JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
             error_message);
   EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, error_code);
 
   root = JSONReader::ReadAndReturnError("[\"xxx\\q\"]", JSON_PARSE_RFC,
                                         &error_code, &error_message);
-  EXPECT_FALSE(root.get());
+  EXPECT_FALSE(root);
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
             error_message);
   EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, error_code);
@@ -336,9 +336,9 @@ TEST_F(JSONParserTest, Decode4ByteUtf8Char) {
       "[\"😇\",[],[],[],{\"google:suggesttype\":[]}]";
   std::string error_message;
   int error_code = 0;
-  std::unique_ptr<Value> root = JSONReader::ReadAndReturnError(
+  Optional<Value> root = JSONReader::ReadAndReturnError(
       kUtf8Data, JSON_PARSE_RFC, &error_code, &error_message);
-  EXPECT_TRUE(root.get()) << error_message;
+  EXPECT_TRUE(root) << error_message;
 }
 
 TEST_F(JSONParserTest, DecodeUnicodeNonCharacter) {
@@ -410,24 +410,19 @@ TEST_F(JSONParserTest, ParseNumberErrors) {
     StringPiece input =
         MakeNotNullTerminatedInput(test_case.input, &input_owner);
 
-    std::unique_ptr<Value> result = JSONReader::Read(input);
-    if (test_case.parse_success) {
-      EXPECT_TRUE(result);
-    } else {
-      EXPECT_FALSE(result);
-    }
+    Optional<Value> result = JSONReader::Read(input);
+    EXPECT_EQ(test_case.parse_success, result.has_value());
 
     if (!result)
       continue;
 
-    double double_value = 0;
-    EXPECT_TRUE(result->GetAsDouble(&double_value));
-    EXPECT_EQ(test_case.value, double_value);
+    ASSERT_TRUE(result->is_double() || result->is_int());
+    EXPECT_EQ(test_case.value, result->GetDouble());
   }
 }
 
 TEST_F(JSONParserTest, UnterminatedInputs) {
-  const char* kCases[] = {
+  const char* const kCases[] = {
       // clang-format off
       "/",
       "//",

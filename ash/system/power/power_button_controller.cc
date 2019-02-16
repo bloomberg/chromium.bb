@@ -533,7 +533,7 @@ void PowerButtonController::ParsePowerButtonPositionSwitch() {
     return;
 
   std::unique_ptr<base::DictionaryValue> position_info =
-      base::DictionaryValue::From(base::JSONReader::Read(
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
           cl->GetSwitchValueASCII(switches::kAshPowerButtonPosition)));
   if (!position_info) {
     LOG(ERROR) << switches::kAshPowerButtonPosition << " flag has no value";

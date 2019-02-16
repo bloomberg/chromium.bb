@@ -227,7 +227,7 @@ bool ParseSettings(const base::Value& settings,
     return false;
   }
   std::unique_ptr<base::Value> ticket_value =
-      base::JSONReader::Read(*ticket_opt);
+      base::JSONReader::ReadDeprecated(*ticket_opt);
   if (!ticket_value)
     return false;
 

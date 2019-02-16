@@ -36,19 +36,19 @@ constexpr int kValue = 123;
 constexpr base::TimeDelta kAppLoadTimeout = base::TimeDelta::FromMinutes(5);
 
 MATCHER_P2(HasDouble, key, value, "") {
-  auto v = base::JSONReader::Read(arg);
+  auto v = base::JSONReader::ReadDeprecated(arg);
   return v && v->FindKey(key) && v->FindKey(key)->is_double() &&
          v->FindKey(key)->GetDouble() == value;
 }
 
 MATCHER_P2(HasInt, key, value, "") {
-  auto v = base::JSONReader::Read(arg);
+  auto v = base::JSONReader::ReadDeprecated(arg);
   return v && v->FindKey(key) && v->FindKey(key)->is_int() &&
          v->FindKey(key)->GetInt() == value;
 }
 
 MATCHER_P2(HasString, key, value, "") {
-  auto v = base::JSONReader::Read(arg);
+  auto v = base::JSONReader::ReadDeprecated(arg);
   return v && v->FindKey(key) && v->FindKey(key)->is_string() &&
          v->FindKey(key)->GetString() == value;
 }

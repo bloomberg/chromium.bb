@@ -33,12 +33,12 @@ class TestFileProvider : public CastAudioJsonProvider {
 
   void CallTuningChangedCallback(const std::string& new_config) {
     DCHECK(callback_);
-    callback_.Run(base::JSONReader::Read(new_config));
+    callback_.Run(base::JSONReader::ReadDeprecated(new_config));
   }
 
  private:
   std::unique_ptr<base::Value> GetCastAudioConfig() override {
-    return base::JSONReader::Read(file_contents_);
+    return base::JSONReader::ReadDeprecated(file_contents_);
   }
 
   void SetTuningChangedCallback(TuningChangedCallback callback) override {

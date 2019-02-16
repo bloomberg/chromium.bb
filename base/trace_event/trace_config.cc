@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -408,7 +409,7 @@ void TraceConfig::InitializeFromConfigDict(const DictionaryValue& dict) {
 }
 
 void TraceConfig::InitializeFromConfigString(StringPiece config_string) {
-  auto dict = DictionaryValue::From(JSONReader::Read(config_string));
+  auto dict = DictionaryValue::From(JSONReader::ReadDeprecated(config_string));
   if (dict)
     InitializeFromConfigDict(*dict);
   else

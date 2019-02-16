@@ -79,7 +79,7 @@ ValueStore::Status LeveldbScopedDatabase::Read(const std::string& scope,
        it->Next()) {
     leveldb::Slice descoped_key(it->key());
     descoped_key.remove_prefix(prefix.size());
-    std::unique_ptr<base::Value> value = json_reader.Read(
+    std::unique_ptr<base::Value> value = json_reader.ReadDeprecated(
         base::StringPiece(it->value().data(), it->value().size()));
     if (!value) {
       return ValueStore::Status(ValueStore::CORRUPTION,

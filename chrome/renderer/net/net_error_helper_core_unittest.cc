@@ -428,7 +428,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     base::JSONReader reader;
     std::unique_ptr<base::Value> parsed_body(
-        reader.Read(navigation_correction_request_body));
+        reader.ReadDeprecated(navigation_correction_request_body));
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -493,7 +493,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     base::JSONReader reader;
     std::unique_ptr<base::Value> parsed_body(
-        reader.Read(tracking_request_body));
+        reader.ReadDeprecated(tracking_request_body));
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));

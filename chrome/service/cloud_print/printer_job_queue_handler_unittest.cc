@@ -70,7 +70,8 @@ class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
   void SetUp() override {
     base::JSONReader json_reader;
-    data_ = base::DictionaryValue::From(json_reader.Read(kJobListResponse));
+    data_ = base::DictionaryValue::From(
+        json_reader.ReadDeprecated(kJobListResponse));
   }
 
   const base::DictionaryValue& GetDictionary() const { return *data_; }

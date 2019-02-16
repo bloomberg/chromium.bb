@@ -71,7 +71,7 @@ CastAudioJsonProviderImpl::~CastAudioJsonProviderImpl() {
 std::unique_ptr<base::Value> CastAudioJsonProviderImpl::GetCastAudioConfig() {
   std::string contents;
   base::ReadFileToString(CastAudioJson::GetFilePath(), &contents);
-  return base::JSONReader::Read(contents);
+  return base::JSONReader::ReadDeprecated(contents);
 }
 
 void CastAudioJsonProviderImpl::SetTuningChangedCallback(
@@ -98,7 +98,8 @@ void CastAudioJsonProviderImpl::OnTuningFileChanged(const base::FilePath& path,
 
   std::string contents;
   base::ReadFileToString(path, &contents);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(contents);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(contents);
   if (value) {
     callback_.Run(std::move(value));
     return;

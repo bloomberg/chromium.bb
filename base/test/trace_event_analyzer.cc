@@ -723,21 +723,16 @@ size_t FindMatchingEvents(const std::vector<TraceEvent>& events,
 
 bool ParseEventsFromJson(const std::string& json,
                          std::vector<TraceEvent>* output) {
-  std::unique_ptr<base::Value> root = base::JSONReader::Read(json);
+  base::Optional<base::Value> root = base::JSONReader::Read(json);
 
-  base::ListValue* root_list = nullptr;
-  if (!root.get() || !root->GetAsList(&root_list))
+  if (!root || !root->is_list())
     return false;
 
-  for (size_t i = 0; i < root_list->GetSize(); ++i) {
-    base::Value* item = nullptr;
-    if (root_list->Get(i, &item)) {
-      TraceEvent event;
-      if (event.SetFromJSON(item))
-        output->push_back(std::move(event));
-      else
-        return false;
-    }
+  for (const auto& item : root->GetList()) {
+    TraceEvent event;
+    if (!event.SetFromJSON(&item))
+      return false;
+    output->push_back(std::move(event));
   }
 
   return true;

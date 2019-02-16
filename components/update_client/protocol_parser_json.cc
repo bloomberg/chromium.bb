@@ -282,7 +282,7 @@ bool ProtocolParserJSON::DoParse(const std::string& response_json,
     ParseError("Missing secure JSON prefix.");
     return false;
   }
-  const auto doc = base::JSONReader().Read(
+  const auto doc = base::JSONReader().ReadDeprecated(
       {response_json.begin() + std::char_traits<char>::length(kJSONPrefix),
        response_json.end()});
   if (!doc) {
