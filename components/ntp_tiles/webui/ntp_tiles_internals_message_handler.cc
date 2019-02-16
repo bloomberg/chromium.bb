@@ -100,6 +100,7 @@ void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(
     disabled.SetBoolean("topSites", false);
     disabled.SetBoolean("suggestionsService", false);
     disabled.SetBoolean("popular", false);
+    disabled.SetBoolean("customLinks", false);
     disabled.SetBoolean("whitelist", false);
     client_->CallJavascriptFunction(
         "chrome.ntp_tiles_internals.receiveSourceInfo", disabled);
@@ -208,6 +209,8 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
 
   value.SetBoolean("topSites",
                    most_visited_sites_->DoesSourceExist(TileSource::TOP_SITES));
+  value.SetBoolean("customLinks", most_visited_sites_->DoesSourceExist(
+                                      TileSource::CUSTOM_LINKS));
   value.SetBoolean("whitelist",
                    most_visited_sites_->DoesSourceExist(TileSource::WHITELIST));
 
