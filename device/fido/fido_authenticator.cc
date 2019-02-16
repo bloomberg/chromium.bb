@@ -25,6 +25,13 @@ void FidoAuthenticator::GetEphemeralKey(
   NOTREACHED();
 }
 
+void FidoAuthenticator::GetPINToken(
+    std::string pin,
+    const pin::KeyAgreementResponse& peer_key,
+    FidoAuthenticator::GetPINTokenCallback callback) {
+  NOTREACHED();
+}
+
 void FidoAuthenticator::SetPIN(const std::string& pin,
                                pin::KeyAgreementResponse& peer_key,
                                FidoAuthenticator::SetPINCallback callback) {

@@ -28,6 +28,7 @@ namespace pin {
 struct RetriesResponse;
 struct KeyAgreementResponse;
 struct EmptyResponse;
+class TokenResponse;
 }  // namespace pin
 
 // FidoAuthenticator is an authenticator from the WebAuthn Authenticator model
@@ -47,6 +48,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using GetEphemeralKeyCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<pin::KeyAgreementResponse>)>;
+  using GetPINTokenCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              base::Optional<pin::TokenResponse>)>;
   using SetPINCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<pin::EmptyResponse>)>;
@@ -75,6 +79,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // use in protecting transmitted PINs. It is only valid to call this method if
   // |Options| indicates that the authenticator supports PINs.
   virtual void GetEphemeralKey(GetEphemeralKeyCallback callback);
+  // GetPINToken uses the given PIN to request a PIN-token from an
+  // authenticator. It is only valid to call this method if |Options| indicates
+  // that the authenticator supports PINs.
+  virtual void GetPINToken(std::string pin,
+                           const pin::KeyAgreementResponse& peer_key,
+                           GetPINTokenCallback callback);
   // SetPIN sets a new PIN on a device that does not currently have one. The
   // length of |pin| must respect |pin::kMinLength| and |pin::kMaxLength|. It is
   // only valid to call this method if |Options| indicates that the

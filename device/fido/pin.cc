@@ -397,5 +397,104 @@ std::vector<uint8_t> ResetRequest::EncodeAsCBOR() const {
   return {static_cast<uint8_t>(CtapRequestCommand::kAuthenticatorReset)};
 }
 
+TokenRequest::TokenRequest(const std::string& pin,
+                           const KeyAgreementResponse& peer_key)
+    : cose_key_(CalculateSharedKey(peer_key, shared_key_.data())) {
+  DCHECK_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), shared_key_.size());
+  uint8_t digest[SHA256_DIGEST_LENGTH];
+  SHA256(reinterpret_cast<const uint8_t*>(pin.data()), pin.size(), digest);
+  memcpy(pin_hash_, digest, sizeof(pin_hash_));
+}
+
+TokenRequest::~TokenRequest() = default;
+
+const std::array<uint8_t, 32>& TokenRequest::shared_key() const {
+  return shared_key_;
+}
+
+std::vector<uint8_t> TokenRequest::EncodeAsCBOR() const {
+  EVP_CIPHER_CTX aes_ctx;
+  EVP_CIPHER_CTX_init(&aes_ctx);
+  const uint8_t kZeroIV[AES_BLOCK_SIZE] = {0};
+
+  CHECK(EVP_EncryptInit_ex(&aes_ctx, EVP_aes_256_cbc(), nullptr,
+                           shared_key_.data(), kZeroIV));
+  static_assert((sizeof(pin_hash_) % AES_BLOCK_SIZE) == 0,
+                "pin_hash_ is not a multiple of the AES block size");
+  uint8_t encrypted_pin[sizeof(pin_hash_) + AES_BLOCK_SIZE];
+  CHECK(EVP_Cipher(&aes_ctx, encrypted_pin, pin_hash_, sizeof(pin_hash_)));
+  EVP_CIPHER_CTX_cleanup(&aes_ctx);
+
+  return EncodePINCommand(
+      Subcommand::kGetPINToken,
+      [this, &encrypted_pin](cbor::Value::MapValue* map) {
+        map->emplace(static_cast<int>(CommandKeys::kKeyAgreement),
+                     std::move(this->cose_key_));
+        map->emplace(
+            static_cast<int>(CommandKeys::kPINHashEnc),
+            base::span<const uint8_t>(encrypted_pin, sizeof(pin_hash_)));
+      });
+}
+
+TokenResponse::TokenResponse() = default;
+TokenResponse::~TokenResponse() = default;
+TokenResponse::TokenResponse(const TokenResponse&) = default;
+
+base::Optional<TokenResponse> TokenResponse::Parse(
+    std::array<uint8_t, 32> shared_key,
+    base::span<const uint8_t> buffer) {
+  // The response status code (the first byte) has already been processed by
+  // this point.
+  if (buffer.empty()) {
+    return base::nullopt;
+  }
+
+  base::Optional<cbor::Value> decoded_response =
+      cbor::Reader::Read(buffer.subspan(1));
+  if (!decoded_response || !decoded_response->is_map()) {
+    return base::nullopt;
+  }
+  const auto& response_map = decoded_response->GetMap();
+
+  // The encrypted PIN-token is under key 2.
+  auto it = response_map.find(cbor::Value(2));
+  if (it == response_map.end() || !it->second.is_bytestring()) {
+    return base::nullopt;
+  }
+  const auto& encrypted_token = it->second.GetBytestring();
+  if (encrypted_token.size() % AES_BLOCK_SIZE != 0) {
+    return base::nullopt;
+  }
+
+  EVP_CIPHER_CTX aes_ctx;
+  EVP_CIPHER_CTX_init(&aes_ctx);
+  const uint8_t kZeroIV[AES_BLOCK_SIZE] = {0};
+  CHECK(EVP_DecryptInit_ex(&aes_ctx, EVP_aes_256_cbc(), nullptr,
+                           shared_key.data(), kZeroIV));
+  CHECK(EVP_CIPHER_CTX_set_padding(&aes_ctx, 0 /* no padding */));
+
+  TokenResponse ret;
+  ret.token_.resize(encrypted_token.size());
+  CHECK(EVP_Cipher(&aes_ctx, ret.token_.data(), encrypted_token.data(),
+                   encrypted_token.size()));
+  EVP_CIPHER_CTX_cleanup(&aes_ctx);
+
+  return ret;
+}
+
+std::vector<uint8_t> TokenResponse::PinAuth(
+    const std::array<uint8_t, 32> client_data_hash) {
+  std::vector<uint8_t> pin_auth;
+  pin_auth.resize(SHA256_DIGEST_LENGTH);
+
+  unsigned hmac_bytes;
+  CHECK(HMAC(EVP_sha256(), token_.data(), token_.size(),
+             client_data_hash.data(), client_data_hash.size(), pin_auth.data(),
+             &hmac_bytes));
+  DCHECK_EQ(pin_auth.size(), static_cast<size_t>(hmac_bytes));
+  pin_auth.resize(16);
+  return pin_auth;
+}
+
 }  // namespace pin
 }  // namespace device
