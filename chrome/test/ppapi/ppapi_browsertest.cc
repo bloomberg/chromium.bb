@@ -32,6 +32,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -359,7 +360,7 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsNetworkServiceRunningInProcess())
+      content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
@@ -1260,7 +1261,7 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsNetworkServiceRunningInProcess())
+      content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;

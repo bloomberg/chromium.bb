@@ -27,6 +27,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -73,7 +74,7 @@ std::unique_ptr<net::test_server::HttpResponse> IncrementRequestCount(
 
 void SimulateNetworkChange(network::mojom::ConnectionType type) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !content::IsNetworkServiceRunningInProcess()) {
+      !content::IsInProcessNetworkService()) {
     network::mojom::NetworkServiceTestPtr network_service_test;
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()

@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/network/public/cpp/features.h"
@@ -44,7 +45,7 @@ class ChromeNetworkServiceRestartBrowserTest : public InProcessBrowserTest {
 // after crash.
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
                        StoragePartitionGetNetworkContext) {
-  if (content::IsNetworkServiceRunningInProcess())
+  if (content::IsInProcessNetworkService())
     return;
 #if defined(OS_MACOSX)
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
@@ -74,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
 // after crash.
 IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceRestartBrowserTest,
                        SystemNetworkContextManagerGetContext) {
-  if (content::IsNetworkServiceRunningInProcess())
+  if (content::IsInProcessNetworkService())
     return;
 #if defined(OS_MACOSX)
   // |NetworkServiceTestHelper| doesn't work on browser_tests on macOS.
