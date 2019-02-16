@@ -175,7 +175,11 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
 
   if (!link_) {
     if (rel_attribute_.IsImport() &&
-        origin_trials::HTMLImportsEnabled(&GetDocument())) {
+        origin_trials::HTMLImportsEnabled(&GetDocument()) &&
+        // HTMLImportsOnlyChrome lets the document import only chrome resource.
+        (!RuntimeEnabledFeatures::HTMLImportsOnlyChromeEnabled() ||
+         (Href().Protocol() == "chrome" ||
+          Href().Protocol() == "chrome-extension"))) {
       link_ = LinkImport::Create(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
