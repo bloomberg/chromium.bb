@@ -502,7 +502,8 @@ bool BaseTestServer::SetAndParseServerData(const std::string& server_data,
                                            int* port) {
   VLOG(1) << "Server data: " << server_data;
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value(json_reader.ReadToValue(server_data));
+  std::unique_ptr<base::Value> value(
+      json_reader.ReadToValueDeprecated(server_data));
   if (!value.get() || !value->is_dict()) {
     LOG(ERROR) << "Could not parse server data: "
                << json_reader.GetErrorMessage();

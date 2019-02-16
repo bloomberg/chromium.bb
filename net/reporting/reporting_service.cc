@@ -66,8 +66,9 @@ class ReportingServiceImpl : public ReportingService {
       return;
     }
 
-    std::unique_ptr<base::Value> header_value = base::JSONReader::Read(
-        "[" + header_string + "]", base::JSON_PARSE_RFC, kMaxJsonDepth);
+    std::unique_ptr<base::Value> header_value =
+        base::JSONReader::ReadDeprecated("[" + header_string + "]",
+                                         base::JSON_PARSE_RFC, kMaxJsonDepth);
     if (!header_value) {
       ReportingHeaderParser::RecordHeaderDiscardedForJsonInvalid();
       return;

@@ -983,7 +983,8 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   std::string json;
   debug_info->AppendAsTraceFormat(&json);
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> debug_info_value(json_reader.ReadToValue(json));
+  std::unique_ptr<base::Value> debug_info_value(
+      json_reader.ReadToValueDeprecated(json));
   EXPECT_TRUE(debug_info_value);
   EXPECT_TRUE(debug_info_value->is_dict());
   base::DictionaryValue* dictionary = 0;

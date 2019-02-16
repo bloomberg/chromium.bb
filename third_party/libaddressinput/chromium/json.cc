@@ -28,7 +28,7 @@ namespace {
   // |json| is converted to a |c_str()| here because rapidjson and other parts
   // of the standalone library use char* rather than std::string.
   ::std::unique_ptr<const base::Value> parsed(
-      base::JSONReader::Read(json.c_str()));
+      base::JSONReader::ReadDeprecated(json.c_str()));
   *parser_error = !parsed || !parsed->is_dict();
 
   if (*parser_error)

@@ -104,7 +104,8 @@ class HeadlessProtocolBrowserTest
   // runtime::Observer implementation.
   void OnBindingCalled(const runtime::BindingCalledParams& params) override {
     std::string json_message = params.GetPayload();
-    std::unique_ptr<base::Value> message = base::JSONReader::Read(json_message);
+    std::unique_ptr<base::Value> message =
+        base::JSONReader::ReadDeprecated(json_message);
     const base::DictionaryValue* message_dict;
     const base::DictionaryValue* params_dict;
     std::string method;

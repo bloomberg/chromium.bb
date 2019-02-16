@@ -26,7 +26,7 @@ TEST(TypesTest, IntegerProperty) {
 
 TEST(TypesTest, IntegerPropertyParseError) {
   const char json[] = "{\"entryId\": \"foo\"}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()
@@ -52,7 +52,7 @@ TEST(TypesTest, BooleanProperty) {
 
 TEST(TypesTest, BooleanPropertyParseError) {
   const char json[] = "{\"suppressed\": \"foo\"}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()
@@ -76,7 +76,7 @@ TEST(TypesTest, DoubleProperty) {
 
 TEST(TypesTest, DoublePropertyParseError) {
   const char json[] = "{\"latitude\": \"foo\"}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()
@@ -99,7 +99,7 @@ TEST(TypesTest, StringProperty) {
 
 TEST(TypesTest, StringPropertyParseError) {
   const char json[] = "{\"url\": false}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()
@@ -124,7 +124,7 @@ TEST(TypesTest, EnumProperty) {
 
 TEST(TypesTest, EnumPropertyParseError) {
   const char json[] = "{\"type\": false}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()
@@ -162,7 +162,7 @@ TEST(TypesTest, ArrayProperty) {
 
 TEST(TypesTest, ArrayPropertyParseError) {
   const char json[] = "{\"nodeIds\": true}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()
@@ -191,7 +191,7 @@ TEST(TypesTest, ObjectProperty) {
 
 TEST(TypesTest, ObjectPropertyParseError) {
   const char json[] = "{\"result\": 42}";
-  std::unique_ptr<base::Value> object = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> object = base::JSONReader::ReadDeprecated(json);
   ASSERT_TRUE(object);
 
 #if DCHECK_IS_ON()

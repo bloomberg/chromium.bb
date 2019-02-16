@@ -292,7 +292,8 @@ bool TransportSecurityPersister::LoadEntries(const std::string& serialized,
 bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                                              bool* dirty,
                                              TransportSecurityState* state) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(serialized);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(serialized);
   base::DictionaryValue* dict_value = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict_value))
     return false;

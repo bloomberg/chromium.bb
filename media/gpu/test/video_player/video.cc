@@ -124,7 +124,8 @@ bool Video::LoadMetadata() {
   }
 
   base::JSONReader reader;
-  std::unique_ptr<base::Value> metadata(reader.ReadToValue(json_data));
+  std::unique_ptr<base::Value> metadata(
+      reader.ReadToValueDeprecated(json_data));
   if (!metadata) {
     VLOGF(1) << "Failed to parse video metadata: " << json_path << ": "
              << reader.GetErrorMessage();

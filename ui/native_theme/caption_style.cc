@@ -16,7 +16,7 @@ CaptionStyle::~CaptionStyle() = default;
 // static
 CaptionStyle CaptionStyle::FromSpec(const std::string& spec) {
   CaptionStyle style;
-  std::unique_ptr<base::Value> dict = base::JSONReader::Read(spec);
+  std::unique_ptr<base::Value> dict = base::JSONReader::ReadDeprecated(spec);
 
   if (!dict || !dict->is_dict())
     return style;

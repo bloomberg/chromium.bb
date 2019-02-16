@@ -28,7 +28,8 @@ bool OriginPolicyParser::DoParse(base::StringPiece policy_text) {
   if (policy_text.empty())
     return false;
 
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(policy_text);
+  std::unique_ptr<base::Value> json =
+      base::JSONReader::ReadDeprecated(policy_text);
   if (!json || !json->is_dict())
     return false;
 
