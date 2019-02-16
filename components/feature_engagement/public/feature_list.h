@@ -57,6 +57,7 @@ DEFINE_VARIATION_PARAM(kIPHChromeDuetFeature, "IPH_ChromeDuet");
 DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
 DEFINE_VARIATION_PARAM(kIPHChromeHomePullToRefreshFeature,
                        "IPH_ChromeHomePullToRefresh");
+DEFINE_VARIATION_PARAM(kIPHMediaDownloadFeature, "IPH_MediaDownload");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchWebSearchFeature,
                        "IPH_ContextualSearchWebSearch");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchPromoteTapFeature,
@@ -110,6 +111,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHChromeDuetFeature),
         VARIATION_ENTRY(kIPHChromeHomeExpandFeature),
         VARIATION_ENTRY(kIPHChromeHomePullToRefreshFeature),
+        VARIATION_ENTRY(kIPHMediaDownloadFeature),
         VARIATION_ENTRY(kIPHContextualSearchWebSearchFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromoteTapFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromotePanelOpenFeature),

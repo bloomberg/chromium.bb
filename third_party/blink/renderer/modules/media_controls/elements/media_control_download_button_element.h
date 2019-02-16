@@ -6,13 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_DOWNLOAD_BUTTON_ELEMENT_H_
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
 class Event;
 class MediaControlsImpl;
 
-class MediaControlDownloadButtonElement final
+class MODULES_EXPORT MediaControlDownloadButtonElement final
     : public MediaControlInputElement {
  public:
   explicit MediaControlDownloadButtonElement(MediaControlsImpl&);
@@ -30,6 +31,7 @@ class MediaControlDownloadButtonElement final
 
  protected:
   const char* GetNameForHistograms() const final;
+  void UpdateShownState() final;
 
  private:
   // This is used for UMA histogram (Media.Controls.Download). New values should

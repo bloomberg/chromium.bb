@@ -1928,6 +1928,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void onOrientationChange(int orientation) {
         if (mToolbarManager != null) mToolbarManager.onOrientationChange();
+        Tab tab = getActivityTab();
+        if (tab != null) tab.onOrientationChange();
     }
 
     /**

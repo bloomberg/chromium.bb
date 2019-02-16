@@ -255,6 +255,7 @@ struct CONTENT_EXPORT WebPreferences {
   // Enable 8 (#RRGGBBAA) and 4 (#RGBA) value hex colors in CSS Android
   // WebView quirk (http://crbug.com/618472).
   bool css_hex_alpha_color_enabled;
+  bool enable_media_download_in_product_help;
   // Enable support for document.scrollingElement
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).

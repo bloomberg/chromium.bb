@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -61,6 +62,16 @@ void MediaControlDownloadButtonElement::Trace(blink::Visitor* visitor) {
 
 const char* MediaControlDownloadButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "DownloadOverflowButton" : "DownloadButton";
+}
+
+void MediaControlDownloadButtonElement::UpdateShownState() {
+  MediaControlInputElement::UpdateShownState();
+
+  if (!MediaControlsImpl::IsModern() &&
+      GetMediaControls().DownloadInProductHelp()) {
+    GetMediaControls().DownloadInProductHelp()->SetDownloadButtonVisibility(
+        IsWanted() && DoesFit());
+  }
 }
 
 void MediaControlDownloadButtonElement::DefaultEventHandler(Event& event) {
