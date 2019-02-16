@@ -130,9 +130,20 @@ void AssistantInteractionController::OnDeepLinkReceived(
     return;
   }
 
+  // Explicitly call ShowUi() to set the correct Assistant entry point.
+  // ShowUi() will no-op if UI is already shown.
   assistant_controller_->ui_controller()->ShowUi(
       AssistantEntryPoint::kDeepLink);
-  StartTextInteraction(query.value(), /*allow_tts=*/false,
+
+  // A text query originating from a deep link will carry forward the allowance/
+  // forbiddance of TTS from the previous response. This is predominately aimed
+  // at addressing the use case of tapping a card from a previous query response
+  // in which case we are essentially continuing the preceding interaction. Deep
+  // links are also potentially fired from notifications or other sources. If we
+  // need to allow deep link creators the ability to set |allow_tts| explicitly,
+  // we can expose a deep link parameter when the need arises.
+  StartTextInteraction(query.value(), /*allow_tts=*/model_.response() &&
+                                          model_.response()->has_tts(),
                        /*query_source=*/AssistantQuerySource::kDeepLink);
 }
 
