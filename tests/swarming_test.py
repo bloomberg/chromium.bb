@@ -399,6 +399,71 @@ class TestSwarmingTrigger(NetTestCase):
     }
     self.assertEqual(expected, tasks)
 
+  def test_trigger_task_shard_custom_index(self):
+    task_request = swarming.NewTaskRequest(
+        name=TEST_NAME,
+        parent_task_id=None,
+        pool_task_template='AUTO',
+        priority=101,
+        task_slices=[
+          swarming.TaskSlice(
+              expiration_secs=60*60,
+              properties=swarming.TaskProperties(
+                  caches=[],
+                  cipd_input=None,
+                  command=['a', 'b'],
+                  relative_cwd=None,
+                  dimensions=[('os', 'Mac'), ('pool', 'default')],
+                  env={'GTEST_SHARD_INDEX' : '2', 'GTEST_TOTAL_SHARDS' : '4'},
+                  env_prefixes=[],
+                  execution_timeout_secs=60,
+                  extra_args=[],
+                  grace_period_secs=30,
+                  idempotent=False,
+                  inputs_ref={
+                    'isolated': None,
+                    'isolatedserver': '',
+                    'namespace': 'default-gzip',
+                  },
+                  io_timeout_secs=60,
+                  outputs=[],
+                  secret_bytes=None),
+              wait_for_capacity=False),
+        ],
+        service_account=None,
+        tags=['tag:a', 'tag:b'],
+        user='joe@localhost')
+
+    request_1 = swarming.task_request_to_raw_request(task_request)
+    request_1['name'] = u'unit_tests:2:4'
+    request_1['task_slices'][0]['properties']['env'] = [
+      {'key': 'GTEST_SHARD_INDEX', 'value': '2'},
+      {'key': 'GTEST_TOTAL_SHARDS', 'value': '4'},
+    ]
+    result_1 = gen_request_response(request_1)
+
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/_ah/api/swarming/v1/tasks/new',
+            {'data': request_1},
+            result_1,
+          ),
+        ])
+
+    tasks = swarming.trigger_task_shards(
+        swarming='https://localhost:1',
+        task_request=task_request,
+        shards=1)
+    expected = {
+      u'unit_tests:2:4': {
+        'shard_index': 2,
+        'task_id': '12300',
+        'view_url': 'https://localhost:1/user/task/12300',
+      },
+    }
+    self.assertEqual(expected, tasks)
+
   def test_trigger_task_shards_priority_override(self):
     task_request = swarming.NewTaskRequest(
         name=TEST_NAME,

@@ -241,18 +241,46 @@ def trigger_task_shards(swarming, task_request, shards):
     None in case of failure.
   """
   def convert(index):
+    """
+    Args:
+      index: The index of the task request.
+
+    Returns:
+      raw_request: A swarming compatible JSON dictionary of the request.
+      shard_index: The index of the shard, which may be different than the index
+                   of the task request.
+    """
     req = task_request_to_raw_request(task_request)
+    shard_index = index
     if shards > 1:
       for task_slice in req['task_slices']:
         task_slice['properties']['env'] = setup_googletest(
             task_slice['properties']['env'], shards, index)
       req['name'] += ':%s:%s' % (index, shards)
-    return req
+    else:
+      task_slices = req['task_slices']
+
+      total_shards = None
+      # Multiple tasks slices might exist if there are optional "slices", e.g.
+      # multiple ways of dispatching the task that should be equivalent. These
+      # should be functionally equivalent but we have cannot guarantee that. If
+      # we see the GTEST_SHARD_INDEX env var, we assume that it applies to all
+      # slices.
+      for task_slice in task_slices:
+        for env_var in task_slice['properties']['env']:
+          if env_var['key'] == 'GTEST_SHARD_INDEX':
+            shard_index = int(env_var['value'])
+          if env_var['key'] == 'GTEST_TOTAL_SHARDS':
+            total_shards = int(env_var['value'])
+      if total_shards > 1:
+        req['name'] += ':%s:%s' % (shard_index, total_shards)
+
+    return req, shard_index
 
   requests = [convert(index) for index in xrange(shards)]
   tasks = {}
   priority_warning = False
-  for index, request in enumerate(requests):
+  for request, shard_index in requests:
     task = swarming_trigger(swarming, request)
     if not task:
       break
@@ -263,7 +291,7 @@ def trigger_task_shards(swarming, task_request, shards):
       print >> sys.stderr, (
           'Priority was reset to %s' % task['request']['priority'])
     tasks[request['name']] = {
-      'shard_index': index,
+      'shard_index': shard_index,
       'task_id': task['task_id'],
       'view_url': '%s/user/task/%s' % (swarming, task['task_id']),
     }
