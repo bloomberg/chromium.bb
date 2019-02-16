@@ -283,13 +283,15 @@ void BluetoothAdapterAndroid::PurgeTimedOutDevices() {
   RemoveTimedOutDevices();
   if (IsDiscovering()) {
     ui_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kActivePollInterval));
   } else {
     ui_task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&BluetoothAdapterAndroid::RemoveTimedOutDevices,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&BluetoothAdapterAndroid::RemoveTimedOutDevices,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPassivePollInterval));
   }
 }
@@ -315,8 +317,9 @@ void BluetoothAdapterAndroid::AddDiscoverySession(
       // Using a delayed task in order to give the adapter some time
       // to settle before purging devices.
       ui_task_runner_->PostDelayedTask(
-          FROM_HERE, base::Bind(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
-                                weak_ptr_factory_.GetWeakPtr()),
+          FROM_HERE,
+          base::BindOnce(&BluetoothAdapterAndroid::PurgeTimedOutDevices,
+                         weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kPurgeDelay));
     }
   } else {

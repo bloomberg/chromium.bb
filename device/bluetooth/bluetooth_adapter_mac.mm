@@ -582,8 +582,8 @@ void BluetoothAdapterMac::PollAdapter() {
 
   ui_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&BluetoothAdapterMac::PollAdapter,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&BluetoothAdapterMac::PollAdapter,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPollIntervalMs));
 }
 

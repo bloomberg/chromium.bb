@@ -242,7 +242,7 @@ void UsbServiceImpl::GetDevices(const GetDevicesCallback& callback) {
   if (usb_unavailable_) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(callback, std::vector<scoped_refptr<UsbDevice>>()));
+        base::BindOnce(callback, std::vector<scoped_refptr<UsbDevice>>()));
     return;
   }
 
