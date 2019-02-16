@@ -21,10 +21,6 @@ const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
 const base::Feature kCrostiniBackup{"CrostiniBackup",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini Files.
-const base::Feature kCrostiniFiles{"CrostiniFiles",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Crostini support for usb mounting.
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
