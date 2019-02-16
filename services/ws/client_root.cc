@@ -244,11 +244,13 @@ void ClientRoot::UpdateLocalSurfaceIdAndClientSurfaceEmbedder() {
   const viz::SurfaceId surface_id(
       window_->GetFrameSinkId(),
       proxy_window->local_surface_id_allocation()->local_surface_id());
+  const bool surface_id_changed =
+      surface_id != client_surface_embedder_->GetSurfaceId();
   client_surface_embedder_->SetSurfaceId(surface_id);
 
   // This triggers holding events until the frame has been activated. This
   // ensures smooth resizes.
-  if (ShouldAssignLocalSurfaceId() && window_->GetHost())
+  if (surface_id_changed && ShouldAssignLocalSurfaceId() && window_->GetHost())
     window_->GetHost()->compositor()->OnChildResizing();
 }
 
