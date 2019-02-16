@@ -1383,13 +1383,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   Attach();
   SendCommand("Network.enable", nullptr, true);
   SendCommand("Security.enable", nullptr, false);
-  SendCommand(
-      "Network.setRequestInterception",
-      base::JSONReader::Read("{\"patterns\": [{\"urlPattern\": \"*\"}]}"),
-      true);
+  SendCommand("Network.setRequestInterception",
+              base::JSONReader::ReadDeprecated(
+                  "{\"patterns\": [{\"urlPattern\": \"*\"}]}"),
+              true);
 
   SendCommand("Security.setIgnoreCertificateErrors",
-              base::JSONReader::Read("{\"ignore\": true}"), true);
+              base::JSONReader::ReadDeprecated("{\"ignore\": true}"), true);
 
   SendCommand("Network.clearBrowserCache", nullptr, true);
   SendCommand("Network.clearBrowserCookies", nullptr, true);
@@ -1400,8 +1400,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   std::string interceptionId;
   EXPECT_TRUE(params->GetString("interceptionId", &interceptionId));
   SendCommand("Network.continueInterceptedRequest",
-              base::JSONReader::Read("{\"interceptionId\": \"" +
-                                     interceptionId + "\"}"),
+              base::JSONReader::ReadDeprecated("{\"interceptionId\": \"" +
+                                               interceptionId + "\"}"),
               false);
   continue_observer.Wait();
   EXPECT_EQ(test_url, shell()

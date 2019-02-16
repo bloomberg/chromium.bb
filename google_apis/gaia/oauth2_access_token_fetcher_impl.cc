@@ -151,7 +151,7 @@ std::unique_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
   if (!data)
     return nullptr;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(*data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(*data);
   if (!value.get() || value->type() != base::Value::Type::DICTIONARY)
     value.reset();
 

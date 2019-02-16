@@ -142,7 +142,7 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
     std::string json;
     EXPECT_TRUE(message_queue.WaitForMessage(&json));
     base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-    std::unique_ptr<base::Value> value = reader.ReadToValue(json);
+    std::unique_ptr<base::Value> value = reader.ReadToValueDeprecated(json);
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));
     EXPECT_TRUE(result == "true" || result == "false") << result;

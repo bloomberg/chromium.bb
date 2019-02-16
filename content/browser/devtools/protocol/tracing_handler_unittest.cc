@@ -90,7 +90,7 @@ class TracingHandlerTest : public testing::Test {
 
 TEST_F(TracingHandlerTest, GetTraceConfigFromDevToolsConfig) {
   std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(kCustomTraceConfigStringDevToolsStyle);
+      base::JSONReader::ReadDeprecated(kCustomTraceConfigStringDevToolsStyle);
   std::unique_ptr<base::DictionaryValue> devtools_style_dict(
       static_cast<base::DictionaryValue*>(value.release()));
 

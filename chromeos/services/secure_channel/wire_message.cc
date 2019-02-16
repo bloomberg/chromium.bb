@@ -98,8 +98,8 @@ std::unique_ptr<WireMessage> WireMessage::Deserialize(
   if (!ParseHeader(serialized_message, is_incomplete_message))
     return nullptr;
 
-  std::unique_ptr<base::Value> body_value =
-      base::JSONReader::Read(serialized_message.substr(kHeaderLength));
+  std::unique_ptr<base::Value> body_value = base::JSONReader::ReadDeprecated(
+      serialized_message.substr(kHeaderLength));
   if (!body_value || !body_value->is_dict()) {
     PA_LOG(WARNING) << "Error: Unable to parse message as JSON.";
     return nullptr;

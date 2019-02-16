@@ -40,10 +40,11 @@ std::unique_ptr<base::DictionaryValue> LoadSchemaDictionary(
     const base::StringPiece& schema) {
   std::string error_message;
   std::unique_ptr<base::Value> result(
-      base::JSONReader::ReadAndReturnError(schema,
-                                           base::JSON_PARSE_RFC,  // options
-                                           NULL,                  // error code
-                                           &error_message));
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          schema,
+          base::JSON_PARSE_RFC,  // options
+          NULL,                  // error code
+          &error_message));
 
   // Tracking down http://crbug.com/121424
   char buf[128];

@@ -101,7 +101,7 @@ ValueStore::Status LazyLevelDb::Read(const std::string& key,
     return ToValueStoreError(s);
 
   std::unique_ptr<base::Value> val =
-      base::JSONReader().ReadToValue(value_as_json);
+      base::JSONReader().ReadToValueDeprecated(value_as_json);
   if (!val)
     return ValueStore::Status(ValueStore::CORRUPTION, FixCorruption(&key),
                               kInvalidJson);

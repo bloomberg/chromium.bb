@@ -75,7 +75,7 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
       )";
 
   std::unique_ptr<base::DictionaryValue> dictionary_value =
-      base::DictionaryValue::From(base::JSONReader::Read(data));
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(data));
   result.TryParseCookiesFromValue(dictionary_value.get());
 
   base::Time time_now = base::Time::Now();

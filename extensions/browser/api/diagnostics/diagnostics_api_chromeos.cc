@@ -29,7 +29,8 @@ typedef base::Callback<void(
 
 bool ParseResult(const std::string& status, std::string* ip, double* latency) {
   // Parses the result and returns IP and latency.
-  std::unique_ptr<base::Value> parsed_value(base::JSONReader::Read(status));
+  std::unique_ptr<base::Value> parsed_value(
+      base::JSONReader::ReadDeprecated(status));
   if (!parsed_value)
     return false;
 

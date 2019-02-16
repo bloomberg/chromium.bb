@@ -23,7 +23,7 @@ using extensions::ExtensionFunctionDispatcher;
 namespace {
 
 std::unique_ptr<base::Value> ParseJSON(const std::string& data) {
-  return base::JSONReader::Read(data);
+  return base::JSONReader::ReadDeprecated(data);
 }
 
 std::unique_ptr<base::ListValue> ParseList(const std::string& data) {

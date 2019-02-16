@@ -838,7 +838,8 @@ class PpdProviderImpl : public PpdProvider {
       FailQueuedMetadataResolutions(PpdProvider::SERVER_ERROR);
       return;
     }
-    auto top_list = base::ListValue::From(base::JSONReader::Read(contents));
+    auto top_list =
+        base::ListValue::From(base::JSONReader::ReadDeprecated(contents));
 
     if (top_list.get() == nullptr) {
       // We got something malformed back.
@@ -1051,7 +1052,8 @@ class PpdProviderImpl : public PpdProvider {
       //  [0x5926, "some othercanonical name"]
       // ]
       // So we scan through the response looking for our desired device id.
-      auto top_list = base::ListValue::From(base::JSONReader::Read(buffer));
+      auto top_list =
+          base::ListValue::From(base::JSONReader::ReadDeprecated(buffer));
 
       if (top_list.get() == nullptr) {
         // We got something malformed back.
@@ -1257,7 +1259,8 @@ class PpdProviderImpl : public PpdProvider {
       return fetch_result;
     }
 
-    auto ret_list = base::ListValue::From(base::JSONReader::Read(buffer));
+    auto ret_list =
+        base::ListValue::From(base::JSONReader::ReadDeprecated(buffer));
     if (ret_list == nullptr) {
       return PpdProvider::INTERNAL_ERROR;
     }

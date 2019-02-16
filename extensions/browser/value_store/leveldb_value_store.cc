@@ -103,7 +103,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   std::unique_ptr<leveldb::Iterator> it(db()->NewIterator(read_options()));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    std::unique_ptr<base::Value> value = base::JSONReader::Read(
+    std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
         StringPiece(it->value().data(), it->value().size()));
     if (!value) {
       return ReadResult(Status(CORRUPTION,

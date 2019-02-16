@@ -322,9 +322,9 @@ class ClientCertResolverTest : public testing::Test,
         })";
     std::string error;
     std::unique_ptr<base::Value> onc_pattern_value =
-        base::JSONReader::ReadAndReturnError(test_onc_pattern,
-                                             base::JSON_ALLOW_TRAILING_COMMAS,
-                                             nullptr, &error);
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            test_onc_pattern, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+            &error);
     ASSERT_TRUE(onc_pattern_value) << error;
 
     base::DictionaryValue* onc_pattern_dict;
@@ -366,7 +366,7 @@ class ClientCertResolverTest : public testing::Test,
                                base::StringPiece policy_json) {
     std::string error;
     std::unique_ptr<base::Value> policy_value =
-        base::JSONReader::ReadAndReturnError(
+        base::JSONReader::ReadAndReturnErrorDeprecated(
             policy_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
     ASSERT_TRUE(policy_value) << error;
 

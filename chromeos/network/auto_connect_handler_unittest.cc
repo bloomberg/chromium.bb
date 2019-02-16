@@ -227,9 +227,9 @@ class AutoConnectHandlerTest : public testing::Test {
     if (!network_configs_json.empty()) {
       std::string error;
       std::unique_ptr<base::Value> network_configs_value =
-          base::JSONReader::ReadAndReturnError(network_configs_json,
-                                               base::JSON_ALLOW_TRAILING_COMMAS,
-                                               nullptr, &error);
+          base::JSONReader::ReadAndReturnErrorDeprecated(
+              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
+              &error);
       ASSERT_TRUE(network_configs_value) << error;
       base::ListValue* network_configs_list = nullptr;
       ASSERT_TRUE(network_configs_value->GetAsList(&network_configs_list));

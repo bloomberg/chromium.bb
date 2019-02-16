@@ -6826,7 +6826,8 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
   if (initiator_str.IsNull())
     return nullptr;
   std::unique_ptr<base::DictionaryValue> initiator =
-      base::DictionaryValue::From(base::JSONReader::Read(initiator_str.Utf8()));
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(initiator_str.Utf8()));
   if (!initiator)
     return nullptr;
   // TODO(kozy,caseq): the hack below is due to the fact that initiators include

@@ -20,7 +20,7 @@ Status FindMobileDevice(std::string device_name,
                         std::unique_ptr<MobileDevice>* mobile_device) {
   base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
   std::unique_ptr<base::Value> devices_value =
-      json_reader.ReadToValue(kMobileDevices);
+      json_reader.ReadToValueDeprecated(kMobileDevices);
   if (!devices_value.get())
     return Status(kUnknownError,
                   "could not parse mobile device list because " +

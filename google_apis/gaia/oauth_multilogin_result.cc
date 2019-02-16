@@ -162,7 +162,7 @@ void OAuthMultiloginResult::TryParseCookiesFromValue(
 OAuthMultiloginResult::OAuthMultiloginResult(const std::string& raw_data) {
   base::StringPiece data = StripXSSICharacters(raw_data);
   std::unique_ptr<base::DictionaryValue> dictionary_value =
-      base::DictionaryValue::From(base::JSONReader::Read(data));
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(data));
   if (!dictionary_value) {
     error_ = GoogleServiceAuthError(
         GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);

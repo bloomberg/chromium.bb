@@ -205,7 +205,7 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
     return true;
 
   base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  *result = reader.ReadToValue(json);
+  *result = reader.ReadToValueDeprecated(json);
   if (!*result) {
     DLOG(ERROR) << reader.GetErrorMessage();
     return false;

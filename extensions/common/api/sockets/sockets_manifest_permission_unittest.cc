@@ -42,7 +42,7 @@ static void AssertEmptyPermission(const SocketsManifestPermission* permission) {
 
 static std::unique_ptr<base::Value> ParsePermissionJSON(
     const std::string& json) {
-  std::unique_ptr<base::Value> result(base::JSONReader::Read(json));
+  std::unique_ptr<base::Value> result(base::JSONReader::ReadDeprecated(json));
   EXPECT_TRUE(result) << "Invalid JSON string: " << json;
   return result;
 }

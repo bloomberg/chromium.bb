@@ -262,7 +262,8 @@ bool TracingUI::GetTracingOptions(
     return false;
   }
 
-  std::unique_ptr<base::Value> optionsRaw = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> optionsRaw =
+      base::JSONReader::ReadDeprecated(data);
   if (!optionsRaw) {
     LOG(ERROR) << "Options were not valid JSON";
     return false;

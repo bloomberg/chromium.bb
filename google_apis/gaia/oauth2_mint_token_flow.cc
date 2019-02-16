@@ -70,7 +70,8 @@ static GoogleServiceAuthError CreateAuthError(
   if (body)
     response_body = std::move(*body);
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response_body);
   base::DictionaryValue* response;
   if (!value.get() || !value->GetAsDictionary(&response)) {
     int http_response_code = -1;
@@ -191,7 +192,8 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   std::string response_body;
   if (body)
     response_body = std::move(*body);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(response_body);
   base::DictionaryValue* dict = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict)) {
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(

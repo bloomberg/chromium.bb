@@ -10,7 +10,7 @@
 namespace content {
 
 TEST(ActionsParserTest, ParseMousePointerActionSequence) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 2, "y": 3,
                          "button": 0},
@@ -37,7 +37,7 @@ TEST(ActionsParserTest, ParseMousePointerActionSequence) {
 }
 
 TEST(ActionsParserTest, ParseTouchPointerActionSequence) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 3, "y": 5},
                         {"type": "pointerMove", "x": 30, "y": 30},
@@ -70,7 +70,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequence) {
 }
 
 TEST(ActionsParserTest, ParseTouchPointerActionSequenceIdNotString) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 0, "y": 0},
                         {"type": "pointerMove", "x": 30, "y": 30},
@@ -91,7 +91,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceIdNotString) {
 }
 
 TEST(ActionsParserTest, ParseTouchPointerActionSequenceDuplicateId) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 0, "y": 0},
                         {"type": "pointerMove", "x": 30, "y": 30},
@@ -111,7 +111,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceDuplicateId) {
 }
 
 TEST(ActionsParserTest, ParseMousePointerActionSequenceNoParameters) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 2, "y": 3,
                          "button": 0},
@@ -126,7 +126,7 @@ TEST(ActionsParserTest, ParseMousePointerActionSequenceNoParameters) {
 }
 
 TEST(ActionsParserTest, ParseMousePointerActionSequenceNoPointerType) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 2, "y": 3,
                          "button": 0},
@@ -142,7 +142,7 @@ TEST(ActionsParserTest, ParseMousePointerActionSequenceNoPointerType) {
 }
 
 TEST(ActionsParserTest, ParseMousePointerActionSequenceNoAction) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer", "parameters": {"pointerType": "mouse"},
             "id": "pointer1"}] )");
 
@@ -153,7 +153,7 @@ TEST(ActionsParserTest, ParseMousePointerActionSequenceNoAction) {
 }
 
 TEST(ActionsParserTest, ParseMousePointerActionSequenceUnsupportedButton) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 2, "y": 3,
                          "button": -1},
@@ -169,7 +169,7 @@ TEST(ActionsParserTest, ParseMousePointerActionSequenceUnsupportedButton) {
 }
 
 TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiActionsType) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "key",
             "actions": [{"type":"keyDown","value":"p"},
                         {"type":"keyUp","value":"p"},
@@ -184,7 +184,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiActionsType) {
 }
 
 TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiPointerType) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 3, "y": 5},
                         {"type": "pointerMove", "x": 30, "y": 30},
@@ -205,7 +205,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiPointerType) {
 }
 
 TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiMouse) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"type": "pointer",
             "actions": [{"type": "pointerDown", "x": 3, "y": 5},
                         {"type": "pointerMove", "x": 30, "y": 30},
@@ -226,7 +226,7 @@ TEST(ActionsParserTest, ParseTouchPointerActionSequenceMultiMouse) {
 }
 
 TEST(ActionsParserTest, OldParseMousePointerActionSequence) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "mouse", "id": 0,
             "actions": [{"name": "pointerDown", "x": 2, "y": 3,
                          "button": 0},
@@ -251,7 +251,7 @@ TEST(ActionsParserTest, OldParseMousePointerActionSequence) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequence1) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": 1,
             "actions": [{"name": "pointerDown", "x": 3, "y": 5},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -280,7 +280,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequence1) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceWithoutId) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": 0,
             "actions": [{"name": "pointerDown", "x": 3, "y": 5},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -309,7 +309,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceWithoutId) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceIdNotInt) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": "0",
             "actions": [{"name": "pointerDown", "x": 0, "y": 0},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -325,7 +325,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceIdNotInt) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceIdNegative) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": -1,
             "actions": [{"name": "pointerDown", "x": 0, "y": 0},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -341,7 +341,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceIdNegative) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceDuplicateId) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": 0,
             "actions": [{"name": "pointerDown", "x": 0, "y": 0},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -357,7 +357,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceDuplicateId) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceNoId) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": 0,
             "actions": [{"name": "pointerDown", "x": 0, "y": 0},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -374,7 +374,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceNoId) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMissingId) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch",
             "actions": [{"name": "pointerDown", "x": 0, "y": 0},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -391,7 +391,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMissingId) {
 }
 
 TEST(ActionsParserTest, OldParseMousePointerActionSequenceNoSource) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"id": 0, "actions": [{"name": "pointerDown", "x": 2, "y": 3,
                                   "button": 0},
                                  {"name": "pointerUp", "x": 2, "y": 3,
@@ -404,8 +404,8 @@ TEST(ActionsParserTest, OldParseMousePointerActionSequenceNoSource) {
 }
 
 TEST(ActionsParserTest, OldParseMousePointerActionSequenceNoAction) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
-      R"( [{"source": "mouse", "id": 0}] )");
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadDeprecated(R"( [{"source": "mouse", "id": 0}] )");
 
   ActionsParser actions_parser(value.get());
   EXPECT_FALSE(actions_parser.ParsePointerActionSequence());
@@ -414,7 +414,7 @@ TEST(ActionsParserTest, OldParseMousePointerActionSequenceNoAction) {
 }
 
 TEST(ActionsParserTest, OldParseMousePointerActionSequenceUnsupportedButton) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "mouse", "id": 0,
             "actions": [{"name": "pointerDown", "x": 2, "y": 3,
                          "button": -1},
@@ -428,7 +428,7 @@ TEST(ActionsParserTest, OldParseMousePointerActionSequenceUnsupportedButton) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMultiSource) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "touch", "id": 1,
             "actions": [{"name": "pointerDown", "x": 3, "y": 5},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -445,7 +445,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMultiSource) {
 }
 
 TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMultiMouse) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "mouse", "id": 1,
             "actions": [{"name": "pointerDown", "x": 3, "y": 5},
                         {"name": "pointerMove", "x": 30, "y": 30},
@@ -464,7 +464,7 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMultiMouse) {
 }
 
 TEST(ActionsParserTest, OldParsePointerActionSequenceInvalidKey) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       R"( [{"source": "mouse", "id": 0,
             "actions": [{"name": "pointerDown", "x": 3, "y": 5,
                          "keys": "Ctrl"} ]}] )");

@@ -95,8 +95,8 @@ std::string InputEngine::Process(const std::string& message,
   int error_code;
   std::string error_string;
   std::unique_ptr<base::Value> message_value =
-      base::JSONReader::ReadAndReturnError(message, base::JSON_PARSE_RFC,
-                                           &error_code, &error_string);
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          message, base::JSON_PARSE_RFC, &error_code, &error_string);
   if (!message_value) {
     LOG(ERROR) << "Read message error: " << error_code << "; " << error_string;
     return kFalseResponse;

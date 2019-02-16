@@ -2556,7 +2556,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
       "text/javascript");
 
-  std::unique_ptr<base::Value> result = base::JSONReader::Read(
+  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
       LoadNavigationPreloadTestPage(page_url, worker_url, "RESOLVED"));
 
   // The page request must be sent only once, since the worker responded with
@@ -2613,7 +2613,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
       kWorkerUrl, kEnableNavigationPreloadScript + kPreloadResponseTestScript,
       "text/javascript");
 
-  std::unique_ptr<base::Value> result = base::JSONReader::Read(
+  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
       LoadNavigationPreloadTestPage(page_url, worker_url, "RESOLVED"));
 
   // The page request must be sent only once, since the worker responded with
@@ -3711,7 +3711,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
                                "document.body.textContent");
   ASSERT_TRUE(result.error.empty());
   std::unique_ptr<base::DictionaryValue> dict = base::DictionaryValue::From(
-      base::JSONReader::Read(result.ExtractString()));
+      base::JSONReader::ReadDeprecated(result.ExtractString()));
   ASSERT_TRUE(dict);
 
   // Default headers are present.
