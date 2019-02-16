@@ -114,9 +114,7 @@ component("gvr_shim") {
       "//clank/third_party/gvr_shim",
     ]
   } else {
-    if (!use_custom_libcxx) {
-      cxx_abi_version = "ndk1"
-    } else if (is_component_build) {
+    if (is_component_build) {
       cxx_abi_version = "Cr"
     } else {
       cxx_abi_version = "1"
