@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 namespace scheduler {
@@ -1998,6 +1999,14 @@ void MainThreadSchedulerImpl::TaskQueuePolicy::AsValueInto(
   state->SetBoolean("is_deferred", is_deferred);
   state->SetBoolean("use_virtual_time", use_virtual_time);
 }
+
+MainThreadSchedulerImpl::Policy::Policy()
+    : rail_mode_(v8::PERFORMANCE_ANIMATION),
+      should_disable_throttling_(false),
+      frozen_when_backgrounded_(false),
+      compositor_priority_(
+          base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority),
+      use_case_(UseCase::kNone) {}
 
 void MainThreadSchedulerImpl::Policy::AsValueInto(
     base::trace_event::TracedValue* state) const {

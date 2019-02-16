@@ -534,19 +534,7 @@ class PLATFORM_EXPORT ThreadState final
   MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
   // Implementation for WebRAILModeObserver
-  void OnRAILModeChanged(v8::RAILMode new_mode) override {
-    should_optimize_for_load_time_ = new_mode == v8::RAILMode::PERFORMANCE_LOAD;
-    // When switching RAIL mode to load we try to avoid incremental marking as
-    // the write barrier cost is noticeable on throughput and garbage
-    // accumulated during loading is likely to be alive during that phase. The
-    // same argument holds for unified heap garbage collections with the
-    // difference that these collections are triggered by V8 and should thus be
-    // avoided on that end.
-    if (should_optimize_for_load_time_ && IsIncrementalMarking() &&
-        !IsUnifiedGCMarkingInProgress() &&
-        GetGCState() == GCState::kIncrementalMarkingStepScheduled)
-      ScheduleIncrementalMarkingFinalize();
-  }
+  void OnRAILModeChanged(v8::RAILMode new_mode) override;
 
  private:
   // Stores whether some ThreadState is currently in incremental marking.

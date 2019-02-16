@@ -18,7 +18,6 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
-#include "v8/include/v8.h"
 
 namespace base {
 namespace trace_event {
