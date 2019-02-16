@@ -66,11 +66,13 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
     self._PerformAndroidVrSetup()
 
   def _PerformAndroidVrSetup(self):
-    self._InstallVrCore()
+    if not self._finder_options.disable_vrcore_install:
+      self._InstallVrCore()
     self._ConfigureVrCore(os.path.join(path_util.GetChromiumSrcDir(),
                                        self._finder_options.shared_prefs_file))
     self._InstallNfcApk()
-    self._InstallKeyboardApk()
+    if not self._finder_options.disable_keyboard_install:
+      self._InstallKeyboardApk()
 
   def _InstallVrCore(self):
     """Installs the VrCore APK."""
