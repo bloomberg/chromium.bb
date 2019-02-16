@@ -100,6 +100,12 @@ class PixelIntegrationTest(
       dest='use_skia_gold',
       action='store_true', default=False,
       help='Use the Skia team\'s Gold tool to handle image comparisons')
+    parser.add_option(
+      '--no-luci-auth',
+      action='store_true', default=False,
+      help='Don\'t use the service account provided by LUCI for authentication '
+           'for Skia Gold, instead relying on gsutil to be pre-authenticated. '
+           'Meant for testing locally instead of on the bots.')
 
   @classmethod
   def _CreateExpectations(cls):
@@ -286,7 +292,6 @@ class PixelIntegrationTest(
             is_check_mode=True,
             build_id_args=build_id_args)
         except CalledProcessError:
-          # TODO(kbr): make a nice link from the failures to gold.skia.org.
           self.fail('Gold said the test failed, so fail.')
     finally:
       if do_page_action:
