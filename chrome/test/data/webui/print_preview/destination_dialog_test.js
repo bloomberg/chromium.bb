@@ -235,6 +235,7 @@ cr.define('destination_dialog_test', function() {
 
       // Check that both cloud print promo and dropdown are hidden when cloud
       // print is disabled.
+      dialog.cloudPrintState = print_preview.CloudPrintState.DISABLED;
       assertTrue(dialog.$.cloudprintPromo.hidden);
       assertTrue(dialog.$$('.user-info').hidden);
       const userSelect = dialog.$$('.md-select');

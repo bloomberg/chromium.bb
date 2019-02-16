@@ -60,6 +60,7 @@ Polymer({
     destination_: {
       type: Object,
       notify: true,
+      value: null,
     },
 
     /** @private {?print_preview.DestinationStore} */

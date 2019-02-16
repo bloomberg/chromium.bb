@@ -38,7 +38,6 @@ Polymer({
     noDestinationsFound: {
       type: Boolean,
       value: false,
-      observer: 'updateShouldShowSpinner_',
     },
 
     /** @type {!Array<!print_preview.RecentDestination>} */
@@ -54,23 +53,24 @@ Polymer({
     recentDestinationList_: Array,
 
     /** @private */
-    shouldShowSpinner_: {
+    shouldHideSpinner_: {
       type: Boolean,
-      value: true,
-      observer: 'onShouldShowSpinnerChange_',
+      computed: 'computeShouldHideSpinner_(' +
+          'destination, noDestinationsFound, cloudPrintState)',
     },
 
     /** @private {string} */
     statusText_: {
       type: String,
-      computed: 'computeStatusText_(destination.connectionStatus, ' +
-          'destination.shouldShowInvalidCertificateError)',
+      computed: 'computeStatusText_(destination)',
     },
   },
 
   observers: [
     'updateRecentDestinationList_(' +
         'recentDestinations.*, activeUser, destinationStore)',
+    'updateDestinationSelect_(' +
+        'destination, noDestinationsFound, cloudPrintState)',
   ],
 
   /** @private {!EventTracker} */
@@ -138,7 +138,7 @@ Polymer({
    */
   shouldDisableDropdown_: function() {
     return !this.destinationStore || this.noDestinationsFound ||
-        this.shouldShowSpinner_ ||
+        !this.shouldHideSpinner_ ||
         (this.disabled && this.state != print_preview_new.State.NOT_READY &&
          this.state != print_preview_new.State.INVALID_PRINTER);
   },
@@ -147,10 +147,6 @@ Polymer({
   onCloudPrintStateChanged_: function() {
     if (this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN) {
       return;
-    }
-
-    if (this.destination && this.destination.account !== '') {
-      this.updateDestination_();
     }
 
     // Load docs, in case the user was not signed in previously and signed in
@@ -170,7 +166,6 @@ Polymer({
 
   /** @private */
   onDestinationSet_: function() {
-    this.updateShouldShowSpinner_();
     if (this.cloudPrintState === print_preview.CloudPrintState.ENABLED) {
       // Only try to load the docs destination for now. If this request
       // succeeds, it will trigger a transition to SIGNED_IN, and we can
@@ -182,8 +177,14 @@ Polymer({
   },
 
   /** @private */
-  updateShouldShowSpinner_: function() {
-    this.shouldShowSpinner_ = !this.destination && !this.noDestinationsFound;
+  computeShouldHideSpinner_: function() {
+    if (this.noDestinationsFound) {
+      return true;
+    }
+
+    return !!this.destination &&
+        (this.destination.origin !== print_preview.DestinationOrigin.COOKIES ||
+         this.cloudPrintState === print_preview.CloudPrintState.SIGNED_IN);
   },
 
   /**
@@ -222,14 +223,19 @@ Polymer({
   onDialogClose_: function() {
     // Reset the select value if the user dismissed the dialog without
     // selecting a new destination.
-    if (this.destination) {
-      this.updateDestination_();
-    }
+    this.updateDestinationSelect_();
     this.$.destinationSelect.focus();
   },
 
   /** @private */
-  updateDestination_: function() {
+  updateDestinationSelect_: function() {
+    if (!this.destination ||
+        (this.destination.origin === print_preview.DestinationOrigin.COOKIES &&
+         this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN) ||
+        this.noDestinationsFound) {
+      return;
+    }
+
     // TODO (rbpotter): Remove this conditional when the Polymer 2 migration
     // is completed.
     if (Polymer.DomIf) {
@@ -241,15 +247,5 @@ Polymer({
         this.$.destinationSelect.updateDestination();
       });
     }
-  },
-
-  /** @private */
-  onShouldShowSpinnerChange_: function() {
-    if (this.shouldShowSpinner_ || this.noDestinationsFound ||
-        (this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN &&
-         this.destination.account !== '')) {
-      return;
-    }
-    this.updateDestination_();
   },
 });

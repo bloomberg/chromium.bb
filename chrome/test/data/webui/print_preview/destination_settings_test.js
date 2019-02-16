@@ -60,6 +60,9 @@ cr.define('destination_settings_test', function() {
       destinationSettings.destinationStore = null;
       destinationSettings.recentDestinations = [];
       destinationSettings.state = print_preview_new.State.NOT_READY;
+      destinationSettings.cloudPrintState =
+          print_preview.CloudPrintState.DISABLED;
+      destinationSettings.noDestinationsFound = false;
       // Disabled is true when state is NOT_READY.
       destinationSettings.disabled = true;
       document.body.appendChild(destinationSettings);
@@ -81,11 +84,12 @@ cr.define('destination_settings_test', function() {
     // the state.
     test(assert(TestNames.ChangeDropdownState), function() {
       const dropdown = destinationSettings.$.destinationSelect;
-      // Initial state: No destination store, dropdown should be disabled.
-      assertTrue(dropdown.disabled);
+      // Initial state: No destination store means that there is no destination
+      // yet, so the dropdown is hidden.
+      assertTrue(dropdown.hidden);
 
-      // Set up the destination store, but no destination yet. Dropdown is
-      // disabled.
+      // Set up the destination store, but no destination yet. Dropdown is still
+      // hidden.
       const destinationStore =
           print_preview_test_utils.createDestinationStore();
       destinationStore.init(
@@ -94,17 +98,24 @@ cr.define('destination_settings_test', function() {
           [] /* recentDestinations */);
       destinationSettings.destinationStore = destinationStore;
       destinationSettings.state = print_preview_new.State.NOT_READY;
-      assertTrue(dropdown.disabled);
+      assertTrue(dropdown.hidden);
 
-      // Simulate loading a destination and setting state to ready. The dropdown
-      // is enabled.
+      // Simulate loading a recent destination.
       destinationSettings.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.LOCAL, getLocalOrigin(),
           'FooName', print_preview.DestinationConnectionStatus.ONLINE);
       destinationSettings.recentDestinations = [
         print_preview.makeRecentDestination(destinationSettings.destination),
       ];
+      destinationSettings.cloudPrintState =
+          print_preview.CloudPrintState.NOT_SIGNED_IN;
       destinationSettings.state = print_preview_new.State.READY;
+
+      // Dropdown is visible but disabled due to NOT_READY state.
+      assertTrue(dropdown.disabled);
+      assertFalse(dropdown.hidden);
+
+      // Enable controls.
       destinationSettings.disabled = false;
       return waitForRender(dropdown).then(() => {
         assertFalse(dropdown.disabled);
