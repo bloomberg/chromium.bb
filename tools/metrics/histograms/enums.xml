@@ -51796,6 +51796,7 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Download page paused"/>
   <int value="4" label="Download page resumed"/>
   <int value="5" label="Download page canceled"/>
+  <int value="6" label="Content suggestion settings"/>
 </enum>
 
 <enum name="SystemNotificationType">
