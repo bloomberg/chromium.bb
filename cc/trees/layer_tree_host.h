@@ -496,8 +496,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   PropertyTrees* property_trees() { return &property_trees_; }
   const PropertyTrees* property_trees() const { return &property_trees_; }
 
-  void SetPropertyTreesForTesting(const PropertyTrees* property_trees);
-
   void SetNeedsDisplayOnAllLayers();
 
   void RegisterLayer(Layer* layer);
