@@ -58,7 +58,7 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   void DefaultEventHandler(Event&) override;
 
   // Implements MediaControlElementBase.
-  void UpdateShownState() override;
+  void UpdateShownState() final;
 
   // Updates the value of the Text string shown in the overflow menu.
   void UpdateOverflowString();

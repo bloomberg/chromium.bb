@@ -7,9 +7,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
-#include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
 
 namespace blink {
 
@@ -28,17 +26,6 @@ bool MediaControlOverflowMenuButtonElement::WillRespondToMouseClickEvents() {
 const char* MediaControlOverflowMenuButtonElement::GetNameForHistograms()
     const {
   return "OverflowButton";
-}
-
-void MediaControlOverflowMenuButtonElement::UpdateShownState() {
-  MediaControlInputElement::UpdateShownState();
-
-  if (MediaControlsImpl::IsModern() &&
-      GetMediaControls().DownloadInProductHelp()) {
-    GetMediaControls().DownloadInProductHelp()->SetDownloadButtonVisibility(
-        IsWanted() && DoesFit() &&
-        GetMediaControls().DownloadButton().ShouldDisplayDownloadButton());
-  }
 }
 
 void MediaControlOverflowMenuButtonElement::DefaultEventHandler(Event& event) {
