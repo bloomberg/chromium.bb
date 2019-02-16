@@ -113,6 +113,45 @@ struct GPU_EXPORT VideoEncodeAcceleratorSupportedProfile {
 using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
+enum class ImageDecodeAcceleratorType {
+  kJpeg = 0,
+  kUnknown = 1,
+  kMaxValue = kUnknown,
+};
+
+enum class ImageDecodeAcceleratorSubsampling {
+  k420 = 0,
+  k422 = 1,
+  kMaxValue = k422,
+};
+
+// Specification of an image decoding profile supported by a hardware decoder.
+struct GPU_EXPORT ImageDecodeAcceleratorSupportedProfile {
+  ImageDecodeAcceleratorSupportedProfile();
+  ImageDecodeAcceleratorSupportedProfile(
+      const ImageDecodeAcceleratorSupportedProfile& other);
+  ImageDecodeAcceleratorSupportedProfile(
+      ImageDecodeAcceleratorSupportedProfile&& other);
+  ~ImageDecodeAcceleratorSupportedProfile();
+  ImageDecodeAcceleratorSupportedProfile& operator=(
+      const ImageDecodeAcceleratorSupportedProfile& other);
+  ImageDecodeAcceleratorSupportedProfile& operator=(
+      ImageDecodeAcceleratorSupportedProfile&& other);
+
+  // Fields common to all image types.
+  // Type of image to which this profile applies, e.g., JPEG.
+  ImageDecodeAcceleratorType image_type;
+  // Minimum and maximum supported pixel dimensions of the encoded image.
+  gfx::Size min_encoded_dimensions;
+  gfx::Size max_encoded_dimensions;
+
+  // Fields specific to |image_type| == kJpeg.
+  // The supported chroma subsampling formats, e.g. 4:2:0.
+  std::vector<ImageDecodeAcceleratorSubsampling> subsamplings;
+};
+using ImageDecodeAcceleratorSupportedProfiles =
+    std::vector<ImageDecodeAcceleratorSupportedProfile>;
+
 #if defined(OS_WIN)
 // Common overlay formats that we're interested in. Must match the OverlayFormat
 // enum in //tools/metrics/histograms/enums.xml. Mapped to corresponding DXGI
@@ -294,6 +333,9 @@ struct GPU_EXPORT GPUInfo {
       video_encode_accelerator_supported_profiles;
   bool jpeg_decode_accelerator_supported;
 
+  ImageDecodeAcceleratorSupportedProfiles
+      image_decode_accelerator_supported_profiles;
+
 #if defined(USE_X11)
   VisualID system_visual;
   VisualID rgba_visual;
@@ -334,6 +376,11 @@ struct GPU_EXPORT GPUInfo {
     // being described.
     virtual void BeginVideoEncodeAcceleratorSupportedProfile() = 0;
     virtual void EndVideoEncodeAcceleratorSupportedProfile() = 0;
+
+    // Markers indicating that an ImageDecodeAcceleratorSupportedProfile is
+    // being described.
+    virtual void BeginImageDecodeAcceleratorSupportedProfile() = 0;
+    virtual void EndImageDecodeAcceleratorSupportedProfile() = 0;
 
     // Markers indicating that "auxiliary" attributes of the GPUInfo
     // (according to the DevTools protocol) are being described.

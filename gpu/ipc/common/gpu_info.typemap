@@ -21,4 +21,5 @@ type_mappings = [
   "gpu.mojom.VideoDecodeAcceleratorSupportedProfile=gpu::VideoDecodeAcceleratorSupportedProfile",
   "gpu.mojom.VideoDecodeAcceleratorCapabilities=gpu::VideoDecodeAcceleratorCapabilities",
   "gpu.mojom.VideoEncodeAcceleratorSupportedProfile=gpu::VideoEncodeAcceleratorSupportedProfile",
+  "gpu.mojom.ImageDecodeAcceleratorSupportedProfile=gpu::ImageDecodeAcceleratorSupportedProfile",
 ]
