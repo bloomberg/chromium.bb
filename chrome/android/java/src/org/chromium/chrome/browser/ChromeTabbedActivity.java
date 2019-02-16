@@ -2204,7 +2204,8 @@ public class ChromeTabbedActivity
 
     @Override
     public boolean isInOverviewMode() {
-        return mLayoutManager != null && mLayoutManager.overviewVisible();
+        return (mLayoutManager != null && mLayoutManager.overviewVisible())
+                || (mTabModelSelectorImpl != null && mTabModelSelectorImpl.isInOverviewMode());
     }
 
     /**

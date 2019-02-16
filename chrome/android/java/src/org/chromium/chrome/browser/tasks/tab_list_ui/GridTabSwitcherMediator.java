@@ -64,6 +64,8 @@ class GridTabSwitcherMediator
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
+        mTabModelSelector.setOverviewModeBehavior(this);
+
         mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
 
             @Override

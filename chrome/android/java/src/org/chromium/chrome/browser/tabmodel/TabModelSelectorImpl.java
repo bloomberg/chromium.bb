@@ -102,11 +102,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         if (tab != null) mTabSaver.addTabToSaveQueue(tab);
     }
 
-    /**
-     *
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} that should be used to determine
-     *                             when the app is in overview mode or not.
-     */
+    @Override
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         assert overviewModeBehavior != null;
         mOverviewModeBehavior = overviewModeBehavior;

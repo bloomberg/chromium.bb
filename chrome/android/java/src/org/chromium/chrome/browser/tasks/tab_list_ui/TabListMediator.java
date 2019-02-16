@@ -121,6 +121,7 @@ class TabListMediator {
 
             @Override
             public void didCloseTab(int tabId, boolean incognito) {
+                if (mModel.indexFromId(tabId) == TabModel.INVALID_TAB_INDEX) return;
                 mModel.removeAt(mModel.indexFromId(tabId));
             }
         };
@@ -168,14 +169,14 @@ class TabListMediator {
                         .build();
         mModel.add(tabInfo);
         mFaviconHelper.getLocalFaviconImageForURL(Profile.getLastUsedProfile().getOriginalProfile(),
-                tab.getUrl(), mFaviconSize,
-                (image, iconUrl)
-                        -> mModel.get(mModel.indexFromId(tab.getId()))
-                                   .set(TabProperties.FAVICON, image));
-        mTabContentManager.getTabThumbnailWithCallback(tab,
-                result
-                -> mModel.get(mModel.indexFromId(tab.getId()))
-                           .set(TabProperties.THUMBNAIL_KEY, result));
+                tab.getUrl(), mFaviconSize, (image, iconUrl) -> {
+                    if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
+                    mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.FAVICON, image);
+                });
+        mTabContentManager.getTabThumbnailWithCallback(tab, result -> {
+            if (mModel.indexFromId(tab.getId()) == Tab.INVALID_TAB_ID) return;
+            mModel.get(mModel.indexFromId(tab.getId())).set(TabProperties.THUMBNAIL_KEY, result);
+        });
         tab.addObserver(mTabObserver);
     }
 }
