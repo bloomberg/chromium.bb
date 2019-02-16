@@ -542,18 +542,6 @@
       ]
     },
     {
-      "name": "flapjack",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "gale",
       "configs": [
         {
@@ -1857,6 +1845,33 @@
         {
           "board_name": "fizz-moblab",
           "name": "wukong",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "flapjack",
+      "reference_board_name": "flapjack",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "flapjack",
+          "name": "c18",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "flapjack",
+          "name": "c19",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "flapjack",
+          "name": "flapjack",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
