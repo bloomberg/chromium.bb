@@ -26,6 +26,7 @@
 #include "ios/web/public/features.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
@@ -45,8 +46,10 @@
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
 #import "ios/web/test/wk_web_view_crash_utils.h"
+#include "ios/web/web_state/ui/block_universal_links_buildflags.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/web_view_js_utils.h"
+#import "ios/web/web_state/ui/wk_navigation_action_policy_util.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #import "net/base/mac/url_conversions.h"
@@ -782,6 +785,11 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
     });
     return policy_match;
   }
+
+  // Return an owned BrowserState in order to set off the record state.
+  BrowserState* GetBrowserState() override { return &browser_state_; }
+
+  TestBrowserState browser_state_;
 };
 
 // Tests that App specific URLs in iframes are allowed if the main frame is App
@@ -796,6 +804,44 @@ TEST_P(CRWWebControllerPolicyDeciderTest,
   app_url_request.mainDocumentURL = app_url;
   EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
       app_url_request, WKNavigationActionPolicyAllow));
+}
+
+// Tests that URL is allowed in OffTheRecord mode when the
+// |kBlockUniversalLinksInOffTheRecordMode| feature is disabled.
+TEST_P(CRWWebControllerPolicyDeciderTest, AllowOffTheRecordNavigation) {
+  browser_state_.SetOffTheRecord(true);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      web::features::kBlockUniversalLinksInOffTheRecordMode);
+
+  NSURL* url = [NSURL URLWithString:@(kTestURLString)];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  url_request.mainDocumentURL = url;
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      url_request, WKNavigationActionPolicyAllow));
+}
+
+// Tests that URL is allowed in OffTheRecord mode and that universal links are
+// blocked when the |kBlockUniversalLinksInOffTheRecordMode| feature is enabled
+// and the BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE buildflag is set.
+TEST_P(CRWWebControllerPolicyDeciderTest,
+       AllowOffTheRecordNavigationBlockUniversalLinks) {
+  browser_state_.SetOffTheRecord(true);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      web::features::kBlockUniversalLinksInOffTheRecordMode);
+
+  NSURL* url = [NSURL URLWithString:@(kTestURLString)];
+  NSMutableURLRequest* url_request = [NSMutableURLRequest requestWithURL:url];
+  url_request.mainDocumentURL = url;
+
+  WKNavigationActionPolicy expected_policy = WKNavigationActionPolicyAllow;
+#if BUILDFLAG(BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE)
+  expected_policy = kNavigationActionPolicyAllowAndBlockUniversalLinks;
+#endif  // BUILDFLAG(BLOCK_UNIVERSAL_LINKS_IN_OFF_THE_RECORD_MODE)
+
+  EXPECT_TRUE(
+      VerifyDecidePolicyForNavigationAction(url_request, expected_policy));
 }
 
 // Tests that App specific URLs in iframes are not allowed if the main frame is
