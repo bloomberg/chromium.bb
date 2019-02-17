@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_URL_LOADER_INTERCEPTOR_H_
 
 #include <memory>
+#include <set>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "url/gurl.h"
 
 namespace previews {
 
@@ -54,6 +56,10 @@ class PreviewsLitePageURLLoaderInterceptor
       content::URLLoaderRequestInterceptor::LoaderCallback callback,
       std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader,
       RequestHandler handler);
+
+  // All URLs already seen in this navigation. This prevents redirect loops,
+  // etc.
+  std::set<GURL> urls_processed_;
 
   // While attempting to fetch a lite page, this object manages communication
   // with the lite page server and serving redirects. Once, a decision has been

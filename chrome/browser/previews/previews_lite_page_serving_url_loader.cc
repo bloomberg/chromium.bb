@@ -87,7 +87,8 @@ PreviewsLitePageServingURLLoader::~PreviewsLitePageServingURLLoader() = default;
 
 void PreviewsLitePageServingURLLoader::Fallback() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(result_callback_).Run(ServingLoaderResult::kFallback);
+  std::move(result_callback_)
+      .Run(ServingLoaderResult::kFallback, base::nullopt, nullptr);
 }
 
 RequestHandler PreviewsLitePageServingURLLoader::ServingResponseHandler() {
@@ -148,17 +149,22 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
   resource_response_->head = head;
 
   url_loader_binding_.PauseIncomingMethodCallProcessing();
-  std::move(result_callback_).Run(ServingLoaderResult::kSuccess);
+  std::move(result_callback_)
+      .Run(ServingLoaderResult::kSuccess, base::nullopt, nullptr);
 }
 
 void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
   DCHECK(!forwarding_client_);
-  // We might receive a redirect from the lite page server, and we should treat
-  // that appropriately. For now fallback.
-  // TODO(ryansturm): Handle redirects. https://crbug.com/921744
-  Fallback();
+
+  // Store head and pause new messages until the forwarding client is set up.
+  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
+  resource_response_ = base::MakeRefCounted<network::ResourceResponse>();
+  resource_response_->head = head;
+
+  std::move(result_callback_)
+      .Run(ServingLoaderResult::kRedirect, redirect_info, resource_response_);
 }
 
 void PreviewsLitePageServingURLLoader::OnUploadProgress(

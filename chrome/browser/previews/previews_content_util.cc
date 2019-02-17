@@ -77,9 +77,12 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     has_page_hints = previews_decider->LoadPageHints(url);
   }
 
-  // Note: this is for the beginning of navigation so we should not
+  // Note: this is for the beginning of navigation/redirect so we should not
   // check for https here (since an http request may redirect to https).
-  if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
+  // TODO(robertogden): Add other eligibility reasons and log scheme/other
+  // previews taking precedence, etc. https://crbug.com/921755
+  if (url.SchemeIsCryptographic() &&
+      (!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
       previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
           previews::PreviewsType::LITE_PAGE_REDIRECT)) {
