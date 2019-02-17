@@ -53,7 +53,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
-#include "components/signin/core/browser/child_account_info_fetcher_android.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #endif
@@ -766,15 +765,11 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicySuccess) {
 }
 
 TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
-#if defined(OS_ANDROID)
-  ChildAccountInfoFetcherAndroid::InitializeForTests();
-
   // Explicitly forcing this call is necessary for the clearing of the primary
   // account to result in the account being fully removed in this testing
-  // context.
+  // context
   identity_test_env()
       ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
-#endif
 
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
 
