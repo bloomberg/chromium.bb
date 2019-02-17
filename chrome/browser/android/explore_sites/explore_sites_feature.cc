@@ -16,6 +16,7 @@ const char kExploreSitesVariationParameterName[] = "variation";
 
 const char kExploreSitesVariationExperimental[] = "experiment";
 const char kExploreSitesVariationPersonalized[] = "personalized";
+const char kExploreSitesVariationCondensed[] = "condensed";
 
 ExploreSitesVariation GetExploreSitesVariation() {
   if (base::FeatureList::IsEnabled(kExploreSites)) {
@@ -28,6 +29,11 @@ ExploreSitesVariation GetExploreSitesVariation() {
             kExploreSites, kExploreSitesVariationParameterName) ==
         kExploreSitesVariationPersonalized) {
       return ExploreSitesVariation::PERSONALIZED;
+    }
+    if (base::GetFieldTrialParamValueByFeature(
+            kExploreSites, kExploreSitesVariationParameterName) ==
+        kExploreSitesVariationCondensed) {
+      return ExploreSitesVariation::CONDENSED;
     }
     return ExploreSitesVariation::ENABLED;
   }

@@ -20,6 +20,7 @@ enum class ExploreSitesVariation {
   ENABLED,
   EXPERIMENT,
   PERSONALIZED,
+  CONDENSED,
   DISABLED
 };
 
