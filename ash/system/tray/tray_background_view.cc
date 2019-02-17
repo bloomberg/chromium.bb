@@ -11,6 +11,7 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
@@ -268,15 +269,23 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
       shelf->GetStatusAreaWidget()->status_area_widget_delegate();
   if (!delegate || !delegate->ShouldFocusOut(reverse))
     return;
-  // Focus shelf widget when shift+tab is used and views-based shelf is shown.
-  if (reverse && ShelfWidget::IsUsingViewsShelf()) {
+
+  // At this point, we know we should focus out of the status widget.
+  // If we're not using a views-based shelf, delegate to system tray focus
+  // observers to decide where the focus goes next.
+  if (!ShelfWidget::IsUsingViewsShelf()) {
+    Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
+    return;
+  }
+
+  // If we are using a views-based shelf:
+  // * If we're going in reverse, always focus the shelf.
+  // * If we're going forward, focus the shelf in an active session, and let
+  //   the system tray focus observers focus the lock/login view otherwise.
+  if (reverse) {
     shelf->shelf_widget()->set_default_last_focusable_child(reverse);
     Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
   } else {
-    // Focus should leave the system tray if:
-    // 1) Tab is used, or
-    // 2) Shift+tab is used but views-based shelf is disabled. The shelf is not
-    // part of the system tray in this case.
     Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
   }
 }

@@ -264,6 +264,8 @@ class ASH_EXPORT ShelfView : public views::View,
   const std::vector<aura::Window*> GetOpenWindowsForShelfView(
       views::View* view);
 
+  views::View* FindFirstOrLastFocusableChild(bool last) const;
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
@@ -508,9 +510,12 @@ class ASH_EXPORT ShelfView : public views::View,
   // item in |model_|.
   std::unique_ptr<views::ViewModel> view_model_;
 
-  // Index of the first visible launcher item. This is not always zero because
-  // the overflow view (also a kind of shelf view) only shows a subset of items.
-  int first_visible_index_ = 0;
+  // Index of the first visible launcher item. This is either:
+  // * 0 (back button) for the main shelf when tablet mode is on
+  // * 1 (app list button) for the main shelf when tablet mode is off
+  // * > 1 when this shelf view is the overflow shelf view and only shows a
+  //   subset of items.
+  mutable int first_visible_index_ = 0;
 
   // Last index of a launcher button that is visible
   // (does not go into overflow).
