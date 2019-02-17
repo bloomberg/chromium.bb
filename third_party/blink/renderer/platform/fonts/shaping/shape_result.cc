@@ -1320,11 +1320,53 @@ float ShapeResult::LineRightBounds() const {
 
 void ShapeResult::CopyRange(unsigned start_offset,
                             unsigned end_offset,
-                            ShapeResult* target,
-                            unsigned* start_run_index) const {
+                            ShapeResult* target) const {
+  unsigned run_index = 0;
+  CopyRangeInternal(run_index, start_offset, end_offset, target);
+}
+
+void ShapeResult::CopyRanges(const ShapeRange* ranges,
+                             unsigned num_ranges) const {
+  DCHECK_GT(num_ranges, 0u);
   if (!runs_.size())
     return;
 
+  // Ranges are in logical order so for RTL the ranges are proccessed back to
+  // front to ensure that they're in a sequential visual order with regards to
+  // the runs.
+  if (Rtl()) {
+    unsigned run_index = 0;
+    unsigned last_range = num_ranges - 1;
+    for (unsigned i = 0; i < num_ranges; i++) {
+      const ShapeRange& range = ranges[last_range - i];
+#if DCHECK_IS_ON()
+      DCHECK_GE(range.end, range.start);
+      if (i != last_range)
+        DCHECK_GE(range.start, ranges[last_range - (i + 1)].end);
+#endif
+      run_index =
+          CopyRangeInternal(run_index, range.start, range.end, range.target);
+    }
+    return;
+  }
+
+  unsigned run_index = 0;
+  for (unsigned i = 0; i < num_ranges; i++) {
+    const ShapeRange& range = ranges[i];
+#if DCHECK_IS_ON()
+    DCHECK_GE(range.end, range.start);
+    if (i)
+      DCHECK_GE(range.start, ranges[i - 1].end);
+#endif
+    run_index =
+        CopyRangeInternal(run_index, range.start, range.end, range.target);
+  }
+}
+
+unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
+                                        unsigned start_offset,
+                                        unsigned end_offset,
+                                        ShapeResult* target) const {
 #if DCHECK_IS_ON()
   unsigned target_num_characters_before = target->num_characters_;
 #endif
@@ -1337,7 +1379,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
           : target->EndIndex() - std::max(start_offset, StartIndex());
   unsigned target_run_size_before = target->runs_.size();
   float total_width = 0;
-  unsigned run_index = start_run_index ? *start_run_index : 0;
+  //run_index = 0;
   for (; run_index < runs_.size(); run_index++) {
     const auto& run = runs_[run_index];
     unsigned run_start = run->start_index_;
@@ -1357,11 +1399,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
 
       // No need to process runs after the end of the range.
       if ((!Rtl() && end_offset <= run_end) ||
-          (Rtl() && start_offset > run_start)) {
-        // RTL cannot use |start_run_index| because runs are in the descending
-        // order.
-        if (!Rtl() && start_run_index)
-          *start_run_index = run_index;
+          (Rtl() && start_offset >= run_start)) {
         break;
       }
     }
@@ -1369,7 +1407,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
 
   if (!target->num_glyphs_) {
     target->UpdateStartIndex();
-    return;
+    return run_index;
   }
 
   // Runs in RTL result are in visual order, and that new runs should be
@@ -1406,18 +1444,17 @@ void ShapeResult::CopyRange(unsigned start_offset,
   DCHECK_EQ(
       target->num_characters_ - target_num_characters_before,
       std::min(end_offset, EndIndex()) - std::max(start_offset, StartIndex()));
-
   target->CheckConsistency();
 #endif
+
+  return run_index;
 }
 
-scoped_refptr<ShapeResult> ShapeResult::SubRange(
-    unsigned start_offset,
-    unsigned end_offset,
-    unsigned* start_run_index) const {
+scoped_refptr<ShapeResult> ShapeResult::SubRange(unsigned start_offset,
+                                                 unsigned end_offset) const {
   scoped_refptr<ShapeResult> sub_range =
       Create(primary_font_.get(), 0, Direction());
-  CopyRange(start_offset, end_offset, sub_range.get(), start_run_index);
+  CopyRange(start_offset, end_offset, sub_range.get());
   return sub_range;
 }
 

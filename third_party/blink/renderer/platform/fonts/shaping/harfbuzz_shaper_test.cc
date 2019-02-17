@@ -1269,11 +1269,9 @@ TEST_P(ShapeParameterTest, ShapeResultCopyRangeContextMultiRuns) {
   HarfBuzzShaper shaper(mixed_string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Copy multiple times using |context| from multiple runs
-  unsigned context = 0;
-  scoped_refptr<ShapeResult> sub2to4 = result->SubRange(2, 4, &context);
+  scoped_refptr<ShapeResult> sub2to4 = result->SubRange(2, 4);
   EXPECT_EQ(2u, sub2to4->NumCharacters());
-  scoped_refptr<ShapeResult> sub5to9 = result->SubRange(5, 9, &context);
+  scoped_refptr<ShapeResult> sub5to9 = result->SubRange(5, 9);
   EXPECT_EQ(4u, sub5to9->NumCharacters());
 }
 

@@ -67,6 +67,30 @@ class PLATFORM_EXPORT ShapeResultBloberizerTestInfo {
   }
 };
 
+struct PLATFORM_EXPORT ShapeResultTestGlyphInfo {
+  unsigned character_index;
+  Glyph glyph;
+  float advance;
+};
+
+void PLATFORM_EXPORT AddGlyphInfo(void* context,
+                                  unsigned character_index,
+                                  Glyph,
+                                  FloatSize glyph_offset,
+                                  float advance,
+                                  bool is_horizontal,
+                                  CanvasRotationInVertical,
+                                  const SimpleFontData*);
+
+void PLATFORM_EXPORT ComputeGlyphResults(const ShapeResult&,
+                                         Vector<ShapeResultTestGlyphInfo>*);
+
+bool PLATFORM_EXPORT
+CompareResultGlyphs(const Vector<ShapeResultTestGlyphInfo>& test,
+                    const Vector<ShapeResultTestGlyphInfo>& reference,
+                    unsigned reference_start,
+                    unsigned num_glyphs);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_TEST_INFO_H_

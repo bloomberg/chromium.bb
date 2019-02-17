@@ -113,6 +113,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                     TextDirection direction) {
     return base::AdoptRef(new ShapeResult(font, num_characters, direction));
   }
+  static scoped_refptr<ShapeResult> CreateEmpty(const ShapeResult& other) {
+    return base::AdoptRef(
+        new ShapeResult(other.primary_font_, 0, other.Direction()));
+  }
   static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
     return base::AdoptRef(new ShapeResult(other));
   }
@@ -246,26 +250,25 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   // Append a copy of a range within an existing result to another result.
   //
-  // For sequential copies the opaque_context in/out parameter can be used to
-  // improve performance by avoding a linear scan to find the first run for the
-  // range. It should be set to zero for the first call and the resulting out
-  // value for one call is the appropiate input value for the next.
-  // NOTE: opaque_context assumes non-overlapping ranges.
-  void CopyRange(unsigned start,
-                 unsigned end,
-                 ShapeResult*,
-                 unsigned* opaque_context = nullptr) const;
+  // For sequential copies the vector version below is prefered as it avoid a
+  // linear scan to find the first run for the range.
+  void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
+
+  struct ShapeRange {
+    // ShapeRange(unsigned start, unsigned end, ShapeResult* target)
+    //    : start(start), end(end), target(target){};
+    unsigned start;
+    unsigned end;
+    ShapeResult* target;
+  };
+
+  // Copy a set of sequential ranges. The ranges may not overlap and the offsets
+  // must be sequential and monotically increasing.
+  void CopyRanges(const ShapeRange* ranges, unsigned num_ranges) const;
 
   // Create a new ShapeResult instance from a range within an existing result.
-  //
-  // For sequential copies the opaque_context in/out parameter can be used to
-  // improve performance by avoding a linear scan to find the first run for the
-  // range. It should be set to zero for the first call and the resulting out
-  // value for one call is the appropiate input value for the next.
-  // NOTE: opaque_context assumes non-overlapping ranges.
   scoped_refptr<ShapeResult> SubRange(unsigned start_offset,
-                                      unsigned end_offset,
-                                      unsigned* opaque_context = nullptr) const;
+                                      unsigned end_offset) const;
 
   // Create a new ShapeResult instance with the start offset adjusted.
   scoped_refptr<ShapeResult> CopyAdjustedOffset(unsigned start_offset) const;
@@ -402,6 +405,17 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     friend class ShapeResult;
   };
 
+  // Append a copy of a range within an existing result to another result.
+  //
+  // For sequential copies the run_index argument indicates the run to start at.
+  // If set to zero it will always scan from the first run which is guaranteed
+  // to produce the correct results at the cost of run-time performance.
+  // Returns the appropriate run_index for the next sequential invocation.
+  unsigned CopyRangeInternal(unsigned run_index,
+                             unsigned start,
+                             unsigned end,
+                             ShapeResult* target) const;
+
   template <bool>
   void ComputePositionData() const;
 
@@ -447,6 +461,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   friend class ShapeResultBuffer;
   friend class ShapeResultBloberizer;
   friend class ShapeResultView;
+  friend class ShapeResultTest;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);

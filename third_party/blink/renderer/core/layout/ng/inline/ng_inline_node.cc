@@ -674,6 +674,11 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     TextDirection direction = start_item.Direction();
     unsigned end_index = index + 1;
     unsigned end_offset = start_item.EndOffset();
+
+    // Scan forward until an item is encountered that should trigger a shaping
+    // break. This ensures that adjacent text items are shaped together whenever
+    // possible as this is required for accurate cross-element shaping.
+    unsigned num_text_items = 1;
     for (; end_index < items->size(); end_index++) {
       const NGInlineItem& item = (*items)[end_index];
 
@@ -693,6 +698,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
             !item.EqualsRunSegment(start_item))
           break;
         end_offset = item.EndOffset();
+        num_text_items++;
       } else if (item.Type() == NGInlineItem::kOpenTag ||
                  item.Type() == NGInlineItem::kCloseTag) {
         // These items are opaque to shaping.
@@ -770,7 +776,10 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
     // If the text is from multiple items, split the ShapeResult to
     // corresponding items.
-    unsigned opaque_context = 0;
+    DCHECK_GT(num_text_items, 0u);
+    std::unique_ptr<ShapeResult::ShapeRange[]> text_item_ranges =
+        std::make_unique<ShapeResult::ShapeRange[]>(num_text_items);
+    unsigned range_index = 0;
     for (; index < end_index; index++) {
       NGInlineItem& item = (*items)[index];
       if (item.Type() != NGInlineItem::kText)
@@ -782,12 +791,14 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
       //
       // When multiple code units shape to one glyph, such as ligatures, the
       // item that has its first code unit keeps the glyph.
-      item.shape_result_ = shape_result->SubRange(
-          item.StartOffset(), item.EndOffset(), &opaque_context);
-      DCHECK(item.TextShapeResult());
-      DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
-      DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
+      scoped_refptr<ShapeResult> item_result =
+          ShapeResult::CreateEmpty(*shape_result.get());
+      item.shape_result_ = item_result;
+      text_item_ranges[range_index++] = {item.StartOffset(), item.EndOffset(),
+                                         item_result.get()};
     }
+    DCHECK_EQ(range_index, num_text_items);
+    shape_result->CopyRanges(&text_item_ranges[0], num_text_items);
   }
 
 #if DCHECK_IS_ON()
