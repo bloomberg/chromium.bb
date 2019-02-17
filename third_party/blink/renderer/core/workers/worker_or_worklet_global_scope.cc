@@ -30,6 +30,7 @@ namespace blink {
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
+    V8CacheOptions v8_cache_options,
     WorkerClients* worker_clients,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
@@ -38,6 +39,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
           WorkerOrWorkletScriptController::Create(this, isolate)),
+      v8_cache_options_(v8_cache_options),
       reporting_proxy_(reporting_proxy),
       used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
   if (worker_clients_)

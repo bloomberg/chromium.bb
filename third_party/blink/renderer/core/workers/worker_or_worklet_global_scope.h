@@ -43,6 +43,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   using SecurityContext::GetContentSecurityPolicy;
 
   WorkerOrWorkletGlobalScope(v8::Isolate*,
+                             V8CacheOptions,
                              WorkerClients*,
                              scoped_refptr<WebWorkerFetchContext>,
                              WorkerReportingProxy&);
@@ -115,6 +116,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   WorkerOrWorkletScriptController* ScriptController() {
     return script_controller_.Get();
   }
+  V8CacheOptions GetV8CacheOptions() const { return v8_cache_options_; }
 
   WorkerReportingProxy& ReportingProxy() { return reporting_proxy_; }
 
@@ -170,6 +172,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   Member<SubresourceFilter> subresource_filter_;
 
   Member<WorkerOrWorkletScriptController> script_controller_;
+  const V8CacheOptions v8_cache_options_;
 
   WorkerReportingProxy& reporting_proxy_;
 
