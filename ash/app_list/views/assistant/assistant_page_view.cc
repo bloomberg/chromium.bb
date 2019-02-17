@@ -47,6 +47,12 @@ void AssistantPageView::InitLayout() {
       views::Painter::CreateSolidRoundRectPainter(
           SK_ColorWHITE, search_box::kSearchBoxBorderCornerRadius)));
 
+  mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(
+          SK_ColorBLACK, search_box::kSearchBoxBorderCornerRadius));
+  mask_->layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetMaskLayer(mask_->layer());
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
@@ -64,6 +70,10 @@ gfx::Size AssistantPageView::CalculatePreferredSize() const {
 
 void AssistantPageView::RequestFocus() {
   assistant_main_view_->RequestFocus();
+}
+
+void AssistantPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  mask_->layer()->SetBounds(GetLocalBounds());
 }
 
 void AssistantPageView::OnMouseEvent(ui::MouseEvent* event) {

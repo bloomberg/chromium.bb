@@ -14,6 +14,10 @@ namespace ash {
 class AssistantViewDelegate;
 }  // namespace ash
 
+namespace ui {
+class LayerOwner;
+}  // namespace ui
+
 namespace app_list {
 
 class AssistantMainView;
@@ -33,6 +37,7 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -48,6 +53,9 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
   // Owned by the views hierarchy.
   ContentsView* contents_view_ = nullptr;
   AssistantMainView* assistant_main_view_ = nullptr;
+
+  // Used to enforce round corners on the Assistant view hierarchy.
+  std::unique_ptr<ui::LayerOwner> mask_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantPageView);
 };
