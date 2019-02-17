@@ -36,7 +36,7 @@ namespace {
 // Appearance.
 // TODO(wutao): need to be finalized.
 constexpr int kDialogLeftPaddingDip = 16;
-constexpr int kDialogRightPaddingDip = 8;
+constexpr int kDialogRightPaddingDip = 16;
 constexpr int kSmallIconSizeDip = 18;
 constexpr int kIconSizeDip = 24;
 constexpr int kButtonSizeDip = 32;
@@ -310,13 +310,12 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   keyboard_layout_container_->layer()->SetFillsBoundsOpaquely(false);
   keyboard_layout_container_->layer()->SetOpacity(0.f);
 
-  constexpr int kHorizontalPaddingDip = 16;
-
+  constexpr int kLeftPaddingDip = 16;
   views::BoxLayout* layout_manager =
       keyboard_layout_container_->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(0, kHorizontalPaddingDip)));
+              gfx::Insets(0, kLeftPaddingDip, 0, 0)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -358,21 +357,12 @@ void DialogPlate::InitVoiceLayoutContainer() {
   voice_layout_container_->layer()->SetFillsBoundsOpaquely(false);
   voice_layout_container_->layer()->SetOpacity(0.f);
 
-  constexpr int kLeftPaddingDip = 8;
   views::BoxLayout* layout_manager = voice_layout_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, kLeftPaddingDip, 0, 0)));
+          views::BoxLayout::Orientation::kHorizontal));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
-
-  // Keyboard input toggle.
-  keyboard_input_toggle_ = ash::AssistantButton::Create(
-      this, ash::kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
-      ash::AssistantButtonId::kKeyboardInputToggle);
-  voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   // Spacer.
   views::View* spacer = new views::View();
@@ -403,11 +393,17 @@ void DialogPlate::InitVoiceLayoutContainer() {
       /*back_button_width=*/kButtonSizeDip +
       /*separator_padding=*/kSeparatorPaddingDip +
       /*separator_thickness=*/1 +
-      /*molecule_icon_width=*/kIconSizeDip +
-      /*keyboard_input_toggle_left_padding=*/kLeftPaddingDip +
+      /*molecule_icon_width=*/kIconSizeDip -
       /*keyboard_input_toggle_width*/ kButtonSizeDip;
   spacer->SetPreferredSize(gfx::Size(spacing, 1));
   voice_layout_container_->AddChildView(spacer);
+
+  // Keyboard input toggle.
+  keyboard_input_toggle_ = ash::AssistantButton::Create(
+      this, ash::kKeyboardIcon, kButtonSizeDip, kIconSizeDip,
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_KEYBOARD_ACCNAME,
+      ash::AssistantButtonId::kKeyboardInputToggle);
+  voice_layout_container_->AddChildView(keyboard_input_toggle_);
 
   input_modality_layout_container_->AddChildView(voice_layout_container_);
 }
