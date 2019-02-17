@@ -242,6 +242,7 @@ config("compiler") {
     ":clang_revision",
     ":compiler_cpu_abi",
     ":compiler_codegen",
+    ":compiler_deterministic",
   ]
 
   # In general, Windows is totally different, but all the other builds share
@@ -291,26 +292,6 @@ config("compiler") {
     if (is_clang) {
       # Don't look for includes in %INCLUDE%.
       cflags += [ "/X" ]
-    }
-  }
-
-  # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
-  # deterministic build.  See https://crbug.com/314403
-  if (!is_official_build) {
-    if (is_win && !is_clang) {
-      cflags += [
-        "/wd4117",  # Trying to define or undefine a predefined macro.
-        "/D__DATE__=",
-        "/D__TIME__=",
-        "/D__TIMESTAMP__=",
-      ]
-    } else {
-      cflags += [
-        "-Wno-builtin-macro-redefined",
-        "-D__DATE__=",
-        "-D__TIME__=",
-        "-D__TIMESTAMP__=",
-      ]
     }
   }
 
@@ -523,45 +504,6 @@ config("compiler") {
   # Windows developers rely on it (crbug.com/636109) so only do this on Windows.
   if (msvc_use_absolute_paths && is_clang && is_win) {
     cflags += [ "-fdiagnostics-absolute-paths" ]
-  }
-
-  # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
-    # If debug option is given, clang includes $cwd in debug info by default.
-    # For such build, this flag generates reproducible obj files even we use
-    # different build directory like "out/feature_a" and "out/feature_b" if
-    # we build same files with same compile flag.
-    # Other paths are already given in relative, no need to normalize them.
-    cflags += [
-      "-Xclang",
-      "-fdebug-compilation-dir",
-      "-Xclang",
-      ".",
-    ]
-
-    if (is_win && use_lld) {
-      if (symbol_level == 2 || (is_clang && using_sanitizer)) {
-        # Absolutize source file path for PDB. Pass the real build directory
-        # if the pdb contains source-level debug information.
-        ldflags += [ "/PDBSourcePath:" + rebase_path(root_build_dir) ]
-      } else {
-        # On Windows, (non-sanitizier) symbol_level 1 builds don't contain
-        # debug information in obj files; the linker just creates enough
-        # debug info at link time to produce symbolized stacks (without line
-        # numbers). In that case, there's no downside in using a fake fixed
-        # base directory for paths in the pdb. This makes the pdb output
-        # fully deterministic and independent of the build directory.
-        assert(symbol_level == 1 && !(is_clang && using_sanitizer))
-        ldflags += [ "/PDBSourcePath:o:\fake\prefix" ]
-      }
-    }
-  }
-
-  # Tells the compiler not to use absolute paths when passing the default
-  # paths to the tools it invokes. We don't want this because we don't
-  # really need it and it can mess up the goma cache entries.
-  if (is_clang && !is_nacl) {
-    cflags += [ "-no-canonical-prefixes" ]
   }
 
   # C11/C++11 compiler flags setup.
@@ -1132,6 +1074,77 @@ config("compiler_codegen") {
   }
 
   asmflags = cflags
+}
+
+# This provides options that make the build deterministic, so that the same
+# revision produces the same output, independent of the name of the build
+# directory and of the computer the build is done on.
+# The relative path from build dir to source dir makes it into the build
+# outputs, so it's recommended that you use a build dir two levels deep
+# (e.g. "out/Release") so that you get the same "../.." path as all the bots
+# in your build outputs.
+config("compiler_deterministic") {
+  cflags = []
+  ldflags = []
+
+  # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
+  # deterministic build.  See https://crbug.com/314403
+  if (!is_official_build) {
+    if (is_win && !is_clang) {
+      cflags += [
+        "/wd4117",  # Trying to define or undefine a predefined macro.
+        "/D__DATE__=",
+        "/D__TIME__=",
+        "/D__TIMESTAMP__=",
+      ]
+    } else {
+      cflags += [
+        "-Wno-builtin-macro-redefined",
+        "-D__DATE__=",
+        "-D__TIME__=",
+        "-D__TIMESTAMP__=",
+      ]
+    }
+  }
+
+  # Makes builds independent of absolute file path.
+  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+    # If debug option is given, clang includes $cwd in debug info by default.
+    # For such build, this flag generates reproducible obj files even we use
+    # different build directory like "out/feature_a" and "out/feature_b" if
+    # we build same files with same compile flag.
+    # Other paths are already given in relative, no need to normalize them.
+    cflags += [
+      "-Xclang",
+      "-fdebug-compilation-dir",
+      "-Xclang",
+      ".",
+    ]
+
+    if (is_win && use_lld) {
+      if (symbol_level == 2 || (is_clang && using_sanitizer)) {
+        # Absolutize source file path for PDB. Pass the real build directory
+        # if the pdb contains source-level debug information.
+        ldflags += [ "/PDBSourcePath:" + rebase_path(root_build_dir) ]
+      } else {
+        # On Windows, (non-sanitizier) symbol_level 1 builds don't contain
+        # debug information in obj files; the linker just creates enough
+        # debug info at link time to produce symbolized stacks (without line
+        # numbers). In that case, there's no downside in using a fake fixed
+        # base directory for paths in the pdb. This makes the pdb output
+        # fully deterministic and independent of the build directory.
+        assert(symbol_level == 1 && !(is_clang && using_sanitizer))
+        ldflags += [ "/PDBSourcePath:o:\fake\prefix" ]
+      }
+    }
+  }
+
+  # Tells the compiler not to use absolute paths when passing the default
+  # paths to the tools it invokes. We don't want this because we don't
+  # really need it and it can mess up the goma cache entries.
+  if (is_clang && !is_nacl) {
+    cflags += [ "-no-canonical-prefixes" ]
+  }
 }
 
 config("clang_revision") {
