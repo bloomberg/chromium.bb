@@ -8,6 +8,12 @@ are included.
 
 ## Compromises & Misissuances
 
+### .bd
+
+google.com.bd certificates from Comodo.
+
+  * [487afc8d0d411b2a05561a2a6f35918f4040e5570c4c73ee323cc50583bcfbb7.pem](487afc8d0d411b2a05561a2a6f35918f4040e5570c4c73ee323cc50583bcfbb7.pem)
+
 ### China Internet Network Information Center (CNNIC)
 
 For details, see <https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html>
@@ -18,6 +24,7 @@ removed.
 
   * [1c01c6f4dbb2fefc22558b2bca32563f49844acfc32b7be4b0ff599f9e8c7af7.pem](1c01c6f4dbb2fefc22558b2bca32563f49844acfc32b7be4b0ff599f9e8c7af7.pem)
   * [e28393773da845a679f2080cc7fb44a3b7a1c3792cb7eb7729fdcb6a8d99aea7.pem](e28393773da845a679f2080cc7fb44a3b7a1c3792cb7eb7729fdcb6a8d99aea7.pem)
+  * [2740d956b1127b791aa1b3cc644a4dbedba76186a23638b95102351a834ea861.pem](2740d956b1127b791aa1b3cc644a4dbedba76186a23638b95102351a834ea861.pem)
 
 ### Comodo
 
@@ -37,6 +44,13 @@ misissued, for a variety of online services.
   * [be144b56fb1163c49c9a0e6b5a458df6b29f7e6449985960c178a4744624b7bc.pem](be144b56fb1163c49c9a0e6b5a458df6b29f7e6449985960c178a4744624b7bc.pem)
   * [ead610e6e90b439f2ecb51628b0932620f6ef340bd843fca38d3181b8f4ba197.pem](ead610e6e90b439f2ecb51628b0932620f6ef340bd843fca38d3181b8f4ba197.pem)
   * [f8a5ff189fedbfe34e21103389a68340174439ad12974a4e8d4d784d1f3a0faa.pem](f8a5ff189fedbfe34e21103389a68340174439ad12974a4e8d4d784d1f3a0faa.pem)
+
+### DCSSI
+
+SPKI for an intermediate under the DCSSI root (French government) that was used
+to misissue gstatic.com certificates.
+
+  * [e54e9fc27e7350ff63a77764a40267b7e95ae5df3ed7df5336e8f8541356c845.pem](e54e9fc27e7350ff63a77764a40267b7e95ae5df3ed7df5336e8f8541356c845.pem)
 
 ### DigiNotar
 
@@ -71,6 +85,27 @@ ccTLD namespace.
   * [67ed4b703d15dc555f8c444b3a05a32579cb7599bd19c9babe10c584ea327ae0.pem](67ed4b703d15dc555f8c444b3a05a32579cb7599bd19c9babe10c584ea327ae0.pem)
   * [a8e1dfd9cd8e470aa2f443914f931cfd61c323e94d75827affee985241c35ce5.pem](a8e1dfd9cd8e470aa2f443914f931cfd61c323e94d75827affee985241c35ce5.pem)
   * [e4f9a3235df7330255f36412bc849fb630f8519961ec3538301deb896c953da5.pem](e4f9a3235df7330255f36412bc849fb630f8519961ec3538301deb896c953da5.pem)
+
+### Thawte
+
+A precert that appeared in the CT logs for (www.)google.com, issued by
+Thawte. See https://crt.sh/?id=9314698.
+
+  * [0d90cd8e35209b4cefebdd62b644bed8eb55c74dddff26e75caf8ae70491f0bd.pem](0d90cd8e35209b4cefebdd62b644bed8eb55c74dddff26e75caf8ae70491f0bd.pem)
+
+### Togo
+
+google.tg certificates from Let's Encrypt. https://crt.sh/?id=245397170 and
+others.
+
+  * [0ef7c54a3af101a2cfedb0c9f36fe8214d51a504fdc2ad1e243019cefd7d03c2.pem](0ef7c54a3af101a2cfedb0c9f36fe8214d51a504fdc2ad1e243019cefd7d03c2.pem)
+  * [2a4397aafa6227fa11f9f9d76ecbb022b0a4494852c2b93fb2085c8afb19b62a.pem](2a4397aafa6227fa11f9f9d76ecbb022b0a4494852c2b93fb2085c8afb19b62a.pem)
+  * [5472692abe5d02cd22eae3e0a0077f17802721d6576cde1cba2263ee803410c5.pem](5472692abe5d02cd22eae3e0a0077f17802721d6576cde1cba2263ee803410c5.pem)
+  * [5ccaf9f8f2bb3a0d215922eca383354b6ee3c62407ed32e30f6fb2618edeea10.pem](5ccaf9f8f2bb3a0d215922eca383354b6ee3c62407ed32e30f6fb2618edeea10.pem)
+  * [5e8e77aafdda2ba5ce442f27d8246650bbd6508befbeda35966a4dc7e6174edc.pem](5e8e77aafdda2ba5ce442f27d8246650bbd6508befbeda35966a4dc7e6174edc.pem)
+  * [a2e3bdaacaaf2d2e8204b3bc7eddc805d54d3ab8bdfe7bf102c035f67d8f898a.pem](a2e3bdaacaaf2d2e8204b3bc7eddc805d54d3ab8bdfe7bf102c035f67d8f898a.pem)
+  * [c71f33c36d8efeefbed9d44e85e21cfe96b36fb0e132c52dca2415868492bf8a.pem](c71f33c36d8efeefbed9d44e85e21cfe96b36fb0e132c52dca2415868492bf8a.pem)
+  * [fa5a828c9a7e732692682e60b14c634309cbb2bb79eb12aef44318d853ee97e3.pem](fa5a828c9a7e732692682e60b14c634309cbb2bb79eb12aef44318d853ee97e3.pem)
 
 ### Trustwave
 
@@ -131,6 +166,13 @@ Certain Mitel products shipped with extractable private keys, the public certs f
   * [3ab0fcc7287454c405863e3aa204fea8eb0c50a524d2a7e15524a830cd4ab0fe.pem](3ab0fcc7287454c405863e3aa204fea8eb0c50a524d2a7e15524a830cd4ab0fe.pem)
   * [60911c79835c3739432d08c45df64311e06985c5889dc5420ce3d142c8c7ef58.pem](60911c79835c3739432d08c45df64311e06985c5889dc5420ce3d142c8c7ef58.pem)
 
+### Sennheiser
+
+Certs with disclosed private keys from Sennheiser HeadSetup software.
+
+  * [91e5cc32910686c5cac25c18cc805696c7b33868c280caf0c72844a2a8eb91e2.pem](91e5cc32910686c5cac25c18cc805696c7b33868c280caf0c72844a2a8eb91e2.pem)
+  * [ddd8ab9178c99cbd9685ea4ae66dc28bfdc9a5a8a166f7f69ad0b5042ad6eb28.pem](ddd8ab9178c99cbd9685ea4ae66dc28bfdc9a5a8a166f7f69ad0b5042ad6eb28.pem)
+
 ### sslip.io
 
 For details, see <https://blog.pivotal.io/labs/labs/sslip-io-a-valid-ssl-certificate-for-every-ip-address>
@@ -178,6 +220,12 @@ robustness at their request.
   * [159ca03a88897c8f13817a212629df84ce824709492b8c9adb8e5437d2fc72be.pem](159ca03a88897c8f13817a212629df84ce824709492b8c9adb8e5437d2fc72be.pem)
   * [b8c1b957c077ea76e00b0f45bff5ae3acb696f221d2e062164fe37125e5a8d25.pem](b8c1b957c077ea76e00b0f45bff5ae3acb696f221d2e062164fe37125e5a8d25.pem)
 
+### E-GUVEN
+
+X.509v1 CA cert issued by E-GUVEN.  Removed from some but not all root stores.
+
+  * [8253da6738b60c5c0bb139c78e045428a0c841272abdcb952f95ff05ed1ab476.pem](8253da6738b60c5c0bb139c78e045428a0c841272abdcb952f95ff05ed1ab476.pem)
+
 ### Hacking Team
 
 The following keys were reported as used by Hacking Team to compromise users,
@@ -185,6 +233,14 @@ and are blacklisted for robustness.
 
   * [c4387d45364a313fbfe79812b35b815d42852ab03b06f11589638021c8f2cb44.key](c4387d45364a313fbfe79812b35b815d42852ab03b06f11589638021c8f2cb44.key)
   * [ea08c8d45d52ca593de524f0513ca6418da9859f7b08ef13ff9dd7bf612d6a37.key](ea08c8d45d52ca593de524f0513ca6418da9859f7b08ef13ff9dd7bf612d6a37.key)
+
+### JCSI
+
+"Lost" intermediate from Japan Certification Services.  See
+https://bugzilla.mozilla.org/show_bug.cgi?id=1314464, https://crt.sh/?id=6320.
+
+  * [d0d672c2547d574ae055d9e78a993ddbcc74044c4253fbfaca573a67d368e1db.pem](d0d672c2547d574ae055d9e78a993ddbcc74044c4253fbfaca573a67d368e1db.pem)
+
 
 ### live.fi
 
@@ -197,6 +253,21 @@ live.fi, but conformed to the Baseline Requirements. It was blacklisted for
 robustness.
 
   * [c67d722c1495be02cbf9ef1159f5ca4aa782dc832dc6aa60c9aa076a0ad1e69d.pem](c67d722c1495be02cbf9ef1159f5ca4aa782dc832dc6aa60c9aa076a0ad1e69d.pem)
+
+### Microsoft Dynamics 365
+
+https://bugzilla.mozilla.org/show_bug.cgi?id=1423400
+
+  * [3d3d823fad13dfeef32da580166d4a4992bed5a22d695d12c8b08cc3463c67a2.pem](3d3d823fad13dfeef32da580166d4a4992bed5a22d695d12c8b08cc3463c67a2.pem)
+  * [c43807a64c51a3fbde5421011698013d8b46f4e315c46186dc23aea2670cd34f.pem](c43807a64c51a3fbde5421011698013d8b46f4e315c46186dc23aea2670cd34f.pem)
+
+### revoked.badssl.com
+
+  * [2e0f66a9f9e764c33008482058fe0d92fc0ec0b122fbe994ed7bf6463668cdd4.pem](2e0f66a9f9e764c33008482058fe0d92fc0ec0b122fbe994ed7bf6463668cdd4.pem)
+
+### revoked.grc.com
+
+  * [53d48e7b8869a3314f213fd2e0178219ca09022dbe50053bf6f76fccd61e8112.pem](53d48e7b8869a3314f213fd2e0178219ca09022dbe50053bf6f76fccd61e8112.pem)
 
 ### SECOM
 
@@ -239,3 +310,9 @@ For details, see <https://security.googleblog.com/2016/10/distrusting-wosign-and
   * [d487a56f83b07482e85e963394c1ecc2c9e51d0903ee946b02c301581ed99e16.pem](d487a56f83b07482e85e963394c1ecc2c9e51d0903ee946b02c301581ed99e16.pem)
   * [d6f034bd94aa233f0297eca4245b283973e447aa590f310c77f48fdf83112254.pem](d6f034bd94aa233f0297eca4245b283973e447aa590f310c77f48fdf83112254.pem)
   * [e17890ee09a3fbf4f48b9c414a17d637b7a50647e9bc752322727fcc1742a911.pem](e17890ee09a3fbf4f48b9c414a17d637b7a50647e9bc752322727fcc1742a911.pem)
+  * [4aefc3d39ef59e4d4b0304b20f53a8af2efb69edece66def74494abfc10a2d66.pem](4aefc3d39ef59e4d4b0304b20f53a8af2efb69edece66def74494abfc10a2d66.pem)
+  * [cb954e9d80a3e520ac71f1a84511657f2f309d172d0bb55e0ec2c236e74ff4b4.pem](cb954e9d80a3e520ac71f1a84511657f2f309d172d0bb55e0ec2c236e74ff4b4.pem)
+
+### www.cloudflarechallenge.com
+
+  * [e757fd60d8dd4c26f77aca6a87f63ea4d38d0b736c7f79b56cad932d4c400fb5.pem](e757fd60d8dd4c26f77aca6a87f63ea4d38d0b736c7f79b56cad932d4c400fb5.pem)
