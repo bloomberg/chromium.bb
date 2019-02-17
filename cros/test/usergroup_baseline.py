@@ -174,6 +174,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                         'vm_cicerone'}),
     GroupEntry(group='seneschal-client', gid=417, users={'crosvm',
                                                          'seneschal'}),
+    GroupEntry(group='pluginvm', gid=20128, users={'crosvm', 'pluginvm'}),
 ))
 
 GROUP_BASELINE_LAKITU = dict((e.group, e) for e in (
