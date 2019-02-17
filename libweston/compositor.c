@@ -6645,6 +6645,33 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
 	debug_scene_view_print_buffer(fp, view);
 }
 
+static void
+debug_scene_view_print_tree(struct weston_view *view,
+			    FILE *fp, int view_idx)
+{
+	struct weston_subsurface *sub;
+	struct weston_view *ev;
+
+	/*
+	 * print the view first, then we recursively go on printing
+	 * sub-surfaces. We bail out once no more sub-surfaces are available.
+	 */
+	debug_scene_view_print(fp, view, view_idx++);
+
+	/* no more sub-surfaces */
+	if (wl_list_empty(&view->surface->subsurface_list))
+		return;
+
+	wl_list_for_each(sub, &view->surface->subsurface_list, parent_link) {
+		wl_list_for_each(ev, &sub->surface->views, surface_link) {
+			/* do not print again the parent view */
+			if (view == ev)
+				continue;
+			debug_scene_view_print_tree(ev, fp, view_idx);
+		}
+	}
+}
+
 /**
  * Output information on how libweston is currently composing the scene
  * graph.
@@ -6715,7 +6742,7 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
 		}
 
 		wl_list_for_each(view, &layer->view_list.link, layer_link.link)
-			debug_scene_view_print(fp, view, view_idx++);
+			debug_scene_view_print_tree(view, fp, view_idx);
 
 		if (wl_list_empty(&layer->view_list.link))
 			fprintf(fp, "\t[no views]\n");
