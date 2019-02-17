@@ -28,6 +28,10 @@
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/child_account_info_fetcher_android.h"
+#endif
+
 namespace identity {
 
 class IdentityManagerDependenciesOwner {
@@ -532,6 +536,12 @@ void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
 
 void IdentityTestEnvironment::
     EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks() {
+#if defined(OS_ANDROID)
+  // Enabling network fetches in AccountFetcherService in a testing
+  // context will cause a Java exception to go off on Android if the
+  // below call isn't made.
+  ChildAccountInfoFetcherAndroid::InitializeForTests();
+#endif
   account_fetcher_service_->EnableNetworkFetchesForTest();
 }
 
