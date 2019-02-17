@@ -27,7 +27,7 @@
     # https://crbug.com/900696
     'remoting-webapp.v2.zip',
 
-    # https://crbug.com/918882
+    # https://crbug.com/932914
     'nacl_helper_bootstrap',
   ],
 
