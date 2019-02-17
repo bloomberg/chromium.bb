@@ -20,8 +20,9 @@ if "%1" == "release" (
 )
 
 ::              | Input file             | Entry point  | Type            | Output file           | Debug |
-call:BuildShader flip_vertex_shader.hlsl flip_vertex    vs_4_0_level_9_3  flip_vertex_shader.h    %debug%
+call:BuildShader vertex_shader.hlsl vertex    vs_4_0_level_9_3  vertex_shader.h    %debug%
 call:BuildShader flip_pixel_shader.hlsl  flip_pixel     ps_4_0_level_9_3  flip_pixel_shader.h     %debug%
+call:BuildShader geometry_shader.hlsl  geometry     gs_5_0  geometry_shader.h     %debug%
 
 echo.
 

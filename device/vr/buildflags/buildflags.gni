@@ -13,7 +13,7 @@ declare_args() {
 
   enable_openvr = is_win
 
-  enable_windows_mr = false
+  enable_windows_mr = is_win
 
   # To build with Oculus support, the Oculus SDK for Windows will need to be
   # installed in third_party/libovr/src.  See
@@ -27,6 +27,7 @@ declare_args() {
   # the binary size impact is small and allows many VR tests to run on Linux
   enable_vr =
       enable_gvr_services || enable_openvr || enable_oculus_vr ||
+      enable_windows_mr ||
       (is_desktop_linux && (current_cpu == "x64" || current_cpu == "x86"))
 
   # Whether to include VR extras like test APKs in non-VR-specific targets
@@ -53,7 +54,8 @@ declare_args() {
   # When enabled, host Desktop VR devices (OpenVR and Oculus) in a separate
   # process.  When disabled, and Oculus/OpenVR are enabled, they are hosted
   # in the browser process.
-  enable_isolated_xr_service = enable_oculus_vr || enable_openvr
+  enable_isolated_xr_service =
+      enable_oculus_vr || enable_openvr || enable_windows_mr
 }
 
 declare_args() {
