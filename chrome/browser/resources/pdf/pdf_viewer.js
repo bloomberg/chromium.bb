@@ -493,7 +493,7 @@ PDFViewer.prototype = {
   /**
    * Handles the annotation mode being toggled on or off.
    *
-   * @param {CustomEvent} e
+   * @param {!CustomEvent<{value: boolean}>} e
    * @private
    */
   annotationModeChanged_: async function(e) {
@@ -548,7 +548,10 @@ PDFViewer.prototype = {
   /**
    * Request to change the viewport fitting type.
    *
-   * @param {CustomEvent} e Event received with the new FittingType as detail.
+   * @param {!CustomEvent<{
+   *     fittingType: FittingType,
+   *     userInitiated: boolean
+   * }>} e
    * @private
    */
   fitToChanged_: function(e) {
