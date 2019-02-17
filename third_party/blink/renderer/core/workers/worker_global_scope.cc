@@ -234,7 +234,7 @@ void WorkerGlobalScope::importScriptsFromStrings(
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
                          handler, response_url),
-        sanitize_script_errors, &error_event, v8_cache_options_);
+        sanitize_script_errors, &error_event, GetV8CacheOptions());
     if (error_event) {
       ScriptController()->RethrowExceptionFromImportedScript(error_event,
                                                              exception_state);
@@ -487,7 +487,7 @@ void WorkerGlobalScope::EvaluateClassicScriptInternal(
   bool success = ScriptController()->Evaluate(
       ScriptSourceCode(source_code, handler, script_url),
       SanitizeScriptErrors::kDoNotSanitize, nullptr /* error_event */,
-      v8_cache_options_);
+      GetV8CacheOptions());
   ReportingProxy().DidEvaluateClassicScript(success);
 }
 
@@ -497,6 +497,7 @@ WorkerGlobalScope::WorkerGlobalScope(
     base::TimeTicks time_origin)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
+          creation_params->v8_cache_options,
           creation_params->worker_clients,
           std::move(creation_params->web_worker_fetch_context),
           thread->GetWorkerReportingProxy()),
@@ -504,7 +505,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       script_type_(creation_params->script_type),
       user_agent_(creation_params->user_agent),
       parent_devtools_token_(creation_params->parent_devtools_token),
-      v8_cache_options_(creation_params->v8_cache_options),
       thread_(thread),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
