@@ -1371,10 +1371,10 @@ some less common requirements. See
 
 In order to define the mapping for `gfx::Rect`, we want the following
 `StructTraits` specialization, which we'll define in
-`//ui/gfx/geometry/mojo/geometry_struct_traits.h`:
+`//ui/gfx/geometry/mojo/geometry_mojom_traits.h`:
 
 ``` cpp
-#include "mojo/public/cpp/bindings/struct_traits.h"
+#include "mojo/public/cpp/bindings/mojom_traits.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
 
@@ -1394,10 +1394,10 @@ class StructTraits<gfx::mojom::RectDataView, gfx::Rect> {
 }  // namespace mojo
 ```
 
-And in `//ui/gfx/geometry/mojo/geometry_struct_traits.cc`:
+And in `//ui/gfx/geometry/mojo/geometry_mojom_traits.cc`:
 
 ``` cpp
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojo/geometry_mojom_traits.h"
 
 namespace mojo {
 
@@ -1465,10 +1465,10 @@ Let's place this `geometry.typemap` file alongside our Mojom file:
 mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
 os_whitelist = [ "android" ]
 public_headers = [ "//ui/gfx/geometry/rect.h" ]
-traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
+traits_headers = [ "//ui/gfx/geometry/mojo/geometry_mojom_traits.h" ]
 sources = [
-  "//ui/gfx/geometry/mojo/geometry_struct_traits.cc",
-  "//ui/gfx/geometry/mojo/geometry_struct_traits.h",
+  "//ui/gfx/geometry/mojo/geometry_mojom_traits.cc",
+  "//ui/gfx/geometry/mojo/geometry_mojom_traits.h",
 ]
 public_deps = [ "//ui/gfx/geometry" ]
 type_mappings = [
@@ -1489,9 +1489,9 @@ Let's look at each of the variables above:
   here.
 * `traits_headers`: Headers which contain the relevant `StructTraits`
   specialization(s) for any type mappings described by this file.
-* `sources`: Any implementation sources and headers needed for the
-  `StructTraits` definition. These sources are compiled directly into the
-  generated C++ bindings target for a `mojom` file applying this typemap.
+* `sources`: Any implementation sources needed for the `StructTraits`
+  definition. These sources are compiled directly into the generated C++
+  bindings target for a `mojom` file applying this typemap.
 * `public_deps`: Target dependencies exposed by the `public_headers` and
   `traits_headers`.
 * `deps`: Target dependencies exposed by `sources` but not already covered by
