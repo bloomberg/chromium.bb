@@ -72,14 +72,6 @@ void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
   out->append(tmp);
 }
 
-// These name conveys that a Task is posted to/run by the task scheduler without
-// revealing its implementation details.
-constexpr char kQueueFunctionName[] = "TaskScheduler PostTask";
-constexpr char kRunFunctionName[] = "TaskScheduler RunTask";
-
-constexpr char kTaskSchedulerFlowTracingCategory[] =
-    TRACE_DISABLED_BY_DEFAULT("task_scheduler.flow");
-
 // Constructs a histogram to track latency which is logging to
 // "TaskScheduler.{histogram_name}.{histogram_label}.{task_type_suffix}".
 HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
@@ -443,14 +435,7 @@ bool TaskTracker::WillPostTask(Task* task,
   if (task->delayed_run_time.is_null())
     subtle::NoBarrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, 1);
 
-  {
-    TRACE_EVENT_WITH_FLOW0(
-        kTaskSchedulerFlowTracingCategory, kQueueFunctionName,
-        TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(*task)),
-        TRACE_EVENT_FLAG_FLOW_OUT);
-  }
-
-  task_annotator_.WillQueueTask(nullptr, task);
+  task_annotator_.WillQueueTask("TaskScheduler_PostTask", task);
 
   return true;
 }
@@ -623,7 +608,7 @@ void TaskTracker::RunOrSkipTask(Task task,
     }
 
     if (can_run_task) {
-      TRACE_TASK_EXECUTION(kRunFunctionName, task);
+      TRACE_TASK_EXECUTION("TaskScheduler_RunTask", task);
 
       const char* const execution_mode =
           task.single_thread_task_runner_ref
@@ -633,18 +618,9 @@ void TaskTracker::RunOrSkipTask(Task task,
       // TODO(gab): In a better world this would be tacked on as an extra arg
       // to the trace event generated above. This is not possible however until
       // http://crbug.com/652692 is resolved.
-      TRACE_EVENT1("task_scheduler", "TaskTracker::RunTask", "task_info",
+      TRACE_EVENT1("task_scheduler", "TaskScheduler_TaskInfo", "task_info",
                    std::make_unique<TaskTracingInfo>(traits, execution_mode,
                                                      sequence_token));
-
-      {
-        // Put this in its own scope so it preceeds rather than overlaps with
-        // RunTask() in the trace view.
-        TRACE_EVENT_WITH_FLOW0(
-            kTaskSchedulerFlowTracingCategory, kQueueFunctionName,
-            TRACE_ID_MANGLE(task_annotator_.GetTaskTraceID(task)),
-            TRACE_EVENT_FLAG_FLOW_IN);
-      }
 
       RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);
     }
@@ -935,19 +911,19 @@ void TaskTracker::CallFlushCallbackForTesting() {
 
 NOINLINE void TaskTracker::RunContinueOnShutdown(Task* task) {
   const int line_number = __LINE__;
-  task_annotator_.RunTask(nullptr, task);
+  task_annotator_.RunTask("TaskScheduler_RunTask_ContinueOnShutdown", task);
   base::debug::Alias(&line_number);
 }
 
 NOINLINE void TaskTracker::RunSkipOnShutdown(Task* task) {
   const int line_number = __LINE__;
-  task_annotator_.RunTask(nullptr, task);
+  task_annotator_.RunTask("TaskScheduler_RunTask_SkipOnShutdown", task);
   base::debug::Alias(&line_number);
 }
 
 NOINLINE void TaskTracker::RunBlockShutdown(Task* task) {
   const int line_number = __LINE__;
-  task_annotator_.RunTask(nullptr, task);
+  task_annotator_.RunTask("TaskScheduler_RunTask_BlockShutdown", task);
   base::debug::Alias(&line_number);
 }
 
