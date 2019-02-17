@@ -2,10 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Video player with chrome's native controls.
+ */
 class NativeControlsVideoPlayer {
   constructor() {
+    /**
+     * List of open videos.
+     * @private {Array<!FileEntry>}
+     */
     this.videos_ = null;
+
+    /**
+     * Index of current playing video.
+     * @private {number}
+     */
     this.currentPos_ = 0;
+
+    /**
+     * HTML video element that contains the video player.
+     * @private {HTMLVideoElement}
+     */
     this.videoElement_ = null;
   }
 
@@ -19,7 +36,8 @@ class NativeControlsVideoPlayer {
 
     // TODO: Move these setting to html and css file when
     // we are confident to remove the feature flag
-    this.videoElement_ = document.createElement('video');
+    this.videoElement_ =
+        assertInstanceof(document.createElement('video'), HTMLVideoElement);
     this.videoElement_.controls = true;
     this.videoElement_.controlsList = 'nodownload';
     this.videoElement_.style.pointerEvents = 'auto';
@@ -45,17 +63,20 @@ class NativeControlsVideoPlayer {
    * @private
    */
   preparePlayList_() {
-    let videoPlayerElement = getRequiredElement('video-player');
+    const videoPlayerElement =
+        assertInstanceof(getRequiredElement('video-player'), HTMLDivElement);
     if (this.videos_.length > 1) {
       videoPlayerElement.setAttribute('multiple', true);
     } else {
       videoPlayerElement.removeAttribute('multiple');
     }
 
-    let arrowRight = queryRequiredElement('.arrow-box .arrow.right');
+    const arrowRight = assertInstanceof(
+        queryRequiredElement('.arrow-box .arrow.right'), HTMLDivElement);
     arrowRight.addEventListener(
         'click', this.advance_.bind(this, true /* next track */));
-    let arrowLeft = queryRequiredElement('.arrow-box .arrow.left');
+    const arrowLeft = assertInstanceof(
+        queryRequiredElement('.arrow-box .arrow.left'), HTMLDivElement);
     arrowLeft.addEventListener(
         'click', this.advance_.bind(this, false /* previous track */));
   }
@@ -68,19 +89,19 @@ class NativeControlsVideoPlayer {
   addKeyControls_() {
     document.addEventListener('keydown', (/** KeyboardEvent */ event) => {
       const key =
-          (event.ctrlKey && event.shiftKey ? 'Ctrl-Shift-' : '') + event.key;
+          (event.ctrlKey && event.shiftKey ? 'Ctrl+Shift+' : '') + event.key;
       switch (key) {
           // Handle debug shortcut keys.
-        case 'Ctrl-Shift-I':  // Ctrl+Shift+I
+        case 'Ctrl+Shift+I':
           chrome.fileManagerPrivate.openInspector('normal');
           break;
-        case 'Ctrl-Shift-J':  // Ctrl+Shift+J
+        case 'Ctrl+Shift+J':
           chrome.fileManagerPrivate.openInspector('console');
           break;
-        case 'Ctrl-Shift-C':  // Ctrl+Shift+C
+        case 'Ctrl+Shift+C':
           chrome.fileManagerPrivate.openInspector('element');
           break;
-        case 'Ctrl-Shift-B':  // Ctrl+Shift+B
+        case 'Ctrl+Shift+B':
           chrome.fileManagerPrivate.openInspector('background');
           break;
 
@@ -196,15 +217,15 @@ class NativeControlsVideoPlayer {
    * @private
    */
   onFirstVideoReady_() {
-    let videoWidth = this.videoElement_.videoWidth;
-    let videoHeight = this.videoElement_.videoHeight;
+    const videoWidth = this.videoElement_.videoWidth;
+    const videoHeight = this.videoElement_.videoHeight;
 
-    let aspect = videoWidth / videoHeight;
+    const aspect = videoWidth / videoHeight;
     let newWidth = videoWidth;
     let newHeight = videoHeight;
 
-    let shrinkX = newWidth / window.screen.availWidth;
-    let shrinkY = newHeight / window.screen.availHeight;
+    const shrinkX = newWidth / window.screen.availWidth;
+    const shrinkY = newHeight / window.screen.availHeight;
     if (shrinkX > 1 || shrinkY > 1) {
       if (shrinkY > shrinkX) {
         newHeight = newHeight / shrinkY;
@@ -217,8 +238,8 @@ class NativeControlsVideoPlayer {
 
     let oldLeft = window.screenX;
     let oldTop = window.screenY;
-    let oldWidth = window.innerWidth;
-    let oldHeight = window.innerHeight;
+    const oldWidth = window.innerWidth;
+    const oldHeight = window.innerHeight;
 
     if (!oldWidth && !oldHeight) {
       oldLeft = window.screen.availWidth / 2;
@@ -259,7 +280,7 @@ class NativeControlsVideoPlayer {
    * @private
    */
   advance_(direction) {
-    let newPos = this.currentPos_ + (direction ? 1 : -1);
+    const newPos = this.currentPos_ + (direction ? 1 : -1);
     if (newPos < 0 || newPos >= this.videos_.length) {
       return;
     }
@@ -274,9 +295,11 @@ class NativeControlsVideoPlayer {
    * Reloads the current video.
    *
    * @param {function()=} opt_callback Completion callback.
+   * @private
    */
   reloadCurrentVideo_(opt_callback) {
-    let videoPlayerElement = getRequiredElement('video-player');
+    const videoPlayerElement =
+        assertInstanceof(getRequiredElement('video-player'), HTMLDivElement);
     if (this.currentPos_ == (this.videos_.length - 1)) {
       videoPlayerElement.setAttribute('last-video', true);
     } else {
@@ -289,7 +312,7 @@ class NativeControlsVideoPlayer {
       videoPlayerElement.removeAttribute('first-video');
     }
 
-    let currentVideo = this.videos_[this.currentPos_];
+    const currentVideo = this.videos_[this.currentPos_];
     this.loadVideo_(currentVideo, opt_callback);
   }
 
@@ -360,11 +383,13 @@ class NativeControlsVideoPlayer {
 
 /**
  * 10 seconds should be skipped when J/L key is pressed.
+ * @const {number}
  */
 NativeControlsVideoPlayer.PROGRESS_MAX_SECONDS_TO_SKIP = 10;
 
 /**
  * 20% of duration should be skipped when the video is too short to skip 10
  * seconds.
+ * @const {number}
  */
 NativeControlsVideoPlayer.PROGRESS_MAX_RATIO_TO_SKIP = 0.2;
