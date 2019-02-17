@@ -35,14 +35,14 @@ TaskAnnotator::TaskAnnotator() = default;
 
 TaskAnnotator::~TaskAnnotator() = default;
 
-void TaskAnnotator::WillQueueTask(const char* queue_function,
+void TaskAnnotator::WillQueueTask(const char* trace_event_name,
                                   PendingTask* pending_task) {
-  if (queue_function) {
-    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                           queue_function,
-                           TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
-                           TRACE_EVENT_FLAG_FLOW_OUT);
-  }
+  DCHECK(trace_event_name);
+  DCHECK(pending_task);
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         trace_event_name,
+                         TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(!pending_task->task_backtrace[0])
       << "Task backtrace was already set, task posted twice??";
@@ -58,16 +58,16 @@ void TaskAnnotator::WillQueueTask(const char* queue_function,
   }
 }
 
-void TaskAnnotator::RunTask(const char* queue_function,
+void TaskAnnotator::RunTask(const char* trace_event_name,
                             PendingTask* pending_task) {
+  DCHECK(trace_event_name);
+  DCHECK(pending_task);
+
   ScopedTaskRunActivity task_activity(*pending_task);
 
-  if (queue_function) {
-    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                           queue_function,
-                           TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
-                           TRACE_EVENT_FLAG_FLOW_IN);
-  }
+  TRACE_EVENT_WITH_FLOW0(
+      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
+      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
 
   // Before running the task, store the task backtrace with the chain of
   // PostTasks that resulted in this call and deliberately alias it to ensure
