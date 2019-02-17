@@ -23,14 +23,6 @@
     'fontconfig_caches/df1acc8c-39d5-4a8b-8507-b1a7396ac3ac-le64.cache-7',
   ],
 
-  'linux_component': [
-    # https://crbug.com/900696
-    'remoting-webapp.v2.zip',
-
-    # https://crbug.com/932914
-    'nacl_helper_bootstrap',
-  ],
-
   # https://crbug.com/330262
   'mac': [
     # ld64 in current Xcode versions is not deterministic. Most smaller binaries
@@ -178,11 +170,5 @@
     # them probably should use build_utils.ZipDir() instead.
     'mini_installer_tests.zip',
     'policy_templates.zip',
-
-    # These two started being non-deterministic days 2 out of 3 builds days
-    # after we switched to using two distinct build dirs, for no apparent
-    # reason.
-    'nacl_irt_x86_32.nexe',
-    'nacl_irt_x86_32.nexe.debug',
   ],
 }
