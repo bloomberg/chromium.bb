@@ -417,6 +417,10 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     experiment_query =
         "&x=" + net::EscapeQueryParamValue(experiment_id, true /* use_plus */);
   }
+  std::string fragment;
+  if (original_url.has_ref()) {
+    fragment = "#" + original_url.ref();
+  }
 
   std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
       crypto::SHA256HashString(
@@ -429,7 +433,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
       previews_host.host() +
       (previews_host.has_port() ? (":" + previews_host.port()) : "") + "/p?u=" +
       net::EscapeQueryParamValue(original_url.spec(), true /* use_plus */) +
-      experiment_query);
+      experiment_query + fragment);
   DCHECK(previews_url.is_valid());
   DCHECK_EQ(previews_host.scheme(), previews_url.scheme());
   return previews_url;

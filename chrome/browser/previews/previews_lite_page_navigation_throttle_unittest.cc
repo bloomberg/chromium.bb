@@ -75,7 +75,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
           "previews.host.com/p?u="
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
-          "%23fragment",
+          "%23fragment#fragment",
           "",
       },
       {
@@ -88,7 +88,8 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "enable_HTCPCP",
       },
       {
-          "https://previews.host.com", "https://[::1]:12345",
+          "https://previews.host.com",
+          "https://[::1]:12345",
           "https://2ikmbopbfxagkb7uer2vgfxmbzu2vw4qq3d3ixe3h2hfhgcabvua."
           "previews.host.com/p?u=https%3A%2F%2F%5B%3A%3A1%5D%3A12345%2F",
           "",
