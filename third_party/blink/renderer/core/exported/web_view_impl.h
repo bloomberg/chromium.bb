@@ -627,7 +627,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_ = true;
 
-  // The popup associated with an input/select element.
+  // The popup associated with an input/select element. The popup is owned via
+  // closership (self-owned-but-deleted-via-close) by RenderWidget. We also hold
+  // a reference here because we can extend the lifetime of the popup while
+  // handling input events in order to compare its popup client after it was
+  // closed.
   scoped_refptr<WebPagePopupImpl> page_popup_;
 
   // This stores the last hidden page popup. If a GestureTap attempts to open

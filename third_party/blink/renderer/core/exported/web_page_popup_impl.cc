@@ -77,9 +77,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return MakeGarbageCollected<PagePopupChromeClient>(popup);
   }
 
-  explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {
-    DCHECK(popup_->WidgetClient());
-  }
+  explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {}
 
   void SetWindowRect(const IntRect& rect, LocalFrame&) override {
     popup_->SetWindowRect(rect);
@@ -88,7 +86,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   bool IsPopup() override { return true; }
 
  private:
-  void CloseWindowSoon() override { popup_->ClosePopup(); }
+  void CloseWindowSoon() override {
+    // This skips past the PopupClient by calling ClosePopup() instead of
+    // Cancel().
+    popup_->ClosePopup();
+  }
 
   IntRect RootWindowRect(LocalFrame&) override {
     // There is only one frame/widget in a WebPagePopup, so we can ignore the
@@ -335,9 +337,7 @@ void WebPagePopupImpl::PostMessageToPopup(const String& message) {
 }
 
 void WebPagePopupImpl::DestroyPage() {
-  if (!page_)
-    return;
-
+  page_->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
   page_->WillBeDestroyed();
   page_.Clear();
 }
@@ -400,9 +400,8 @@ void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(
 
 void WebPagePopupImpl::PaintContent(cc::PaintCanvas* canvas,
                                     const WebRect& rect) {
-  if (!closing_) {
+  if (!closing_)
     PageWidgetDelegate::PaintContent(canvas, rect, MainFrame());
-  }
 }
 
 void WebPagePopupImpl::Resize(const WebSize& new_size_in_viewport) {
@@ -515,45 +514,71 @@ WebURL WebPagePopupImpl::GetURLForDebugTrace() {
 }
 
 void WebPagePopupImpl::Close() {
-  // TODO(danakj): |layer_tree_view_| should never be null here.
-  if (page_ && layer_tree_view_)
-    page_->WillCloseLayerTreeView(*layer_tree_view_, nullptr);
+  // If the popup is closed from the renderer via Cancel(), then ClosePopup()
+  // has already run on another stack, and destroyed |page_|. If the popup is
+  // closed from the browser via IPC to RenderWidget, then we come here first
+  // and want to synchronously Cancel() immediately.
+  if (page_) {
+    // We set |closing_| here to inform ClosePopup() that it is being run
+    // synchronously from inside Close().
+    closing_ = true;
+    // This should end up running ClosePopup() though the PopupClient.
+    Cancel();
+  }
 
   is_accelerated_compositing_active_ = false;
   layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
-
-  closing_ = true;
-  // In case closePopup() was not called.
-  if (page_)
-    Cancel();
   widget_client_ = nullptr;
+
+  // Self-delete on Close().
   Release();
 }
 
 void WebPagePopupImpl::ClosePopup() {
+  // There's always a |page_| when we get here because if we Close() this object
+  // due to CloseWidgetSoon(), it will see the |page_| destroyed and not run
+  // this method again. And the renderer does not close the same popup more than
+  // once.
+  DCHECK(page_);
+
+  // If the popup is closed from the renderer via Cancel(), then we want to
+  // initiate closing immediately here, but send a request for completing the
+  // close process through the browser via CloseWidgetSoon(), which will close
+  // the RenderWidget and come back to this class to Close().
+  // If |closing_| is already true, then the browser initiated the close on its
+  // own, via IPC to the RenderWidget, which means ClosePopup() is being run
+  // inside the same stack, and does not need to request the browser to close
+  // the RenderWidget.
+  const bool running_inside_close = closing_;
+  if (!running_inside_close) {
+    // Bounce through the browser to get it to close the RenderWidget, which
+    // will Close() this object too. Only if we're not currently already
+    // responding to the browser closing us though.
+    widget_client_->CloseWidgetSoon();
+  }
+
+  closing_ = true;
+
   {
     // This function can be called in EventDispatchForbiddenScope for the main
     // document, and the following operations dispatch some events.  It's safe
     // because web authors can't listen the events.
     EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
 
-    if (page_) {
-      MainFrame().Loader().StopAllLoaders();
-      PagePopupSupplement::Uninstall(MainFrame());
-    }
-    bool close_already_called = closing_;
-    closing_ = true;
-
+    MainFrame().Loader().StopAllLoaders();
+    PagePopupSupplement::Uninstall(MainFrame());
     DestroyPage();
-
-    // |widget_client_| might be 0 because this widget might be already closed.
-    if (widget_client_ && !close_already_called) {
-      // closeWidgetSoon() will call this->close() later.
-      widget_client_->CloseWidgetSoon();
-    }
   }
+
+  // Informs the client to drop any references to this popup as it will be
+  // destroyed.
   popup_client_->DidClosePopup();
+
+  // Drops the reference to the popup from WebViewImpl, making |this| the only
+  // owner of itself. Note however that WebViewImpl may briefly extend the
+  // lifetime of this object since it owns a reference, but it should only be
+  // to call HasSamePopupClient().
   web_view_->CleanupPagePopup();
 }
 

@@ -369,6 +369,13 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   // If there is a popup open, close it as the user is clicking on the page
   // (outside of the popup). We also save it so we can prevent a click on an
   // element from immediately reopening the same popup.
+  //
+  // The popup would not be destroyed in this stack normally as it is owned by
+  // closership from the RenderWidget, which is owned by the browser via the
+  // Close IPC. However if a nested message loop were to happen then the browser
+  // close of the RenderWidget and WebPagePopupImpl could feasibly occur inside
+  // this method, so holding a reference here ensures we can use the
+  // |page_popup| even if it is closed.
   scoped_refptr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
     page_popup = page_popup_;

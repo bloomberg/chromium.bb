@@ -256,15 +256,21 @@ class ObserveMessageFilter : public BrowserMessageFilter {
 
   bool has_received_message() { return received_; }
 
+  // Spins a RunLoop until the message is observed.
+  void Wait();
+
  protected:
   ~ObserveMessageFilter() override;
 
- private:
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
 
+ private:
+  void QuitWait();
+
   const uint32_t watch_message_id_;
   bool received_ = false;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ObserveMessageFilter);
 };

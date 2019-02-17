@@ -450,10 +450,27 @@ ObserveMessageFilter::ObserveMessageFilter(uint32_t message_class,
 
 ObserveMessageFilter::~ObserveMessageFilter() = default;
 
+void ObserveMessageFilter::Wait() {
+  base::RunLoop loop;
+  quit_closure_ = loop.QuitClosure();
+  loop.Run();
+}
+
 bool ObserveMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() == watch_message_id_)
+  if (message.type() == watch_message_id_) {
+    // Exit the Wait() method if it's being used, but in a fresh stack once the
+    // message is actually handled.
+    if (quit_closure_ && !received_) {
+      base::PostTask(FROM_HERE,
+                     base::BindOnce(&ObserveMessageFilter::QuitWait, this));
+    }
     received_ = true;
+  }
   return false;
+}
+
+void ObserveMessageFilter::QuitWait() {
+  std::move(quit_closure_).Run();
 }
 
 UnresponsiveRendererObserver::UnresponsiveRendererObserver(
