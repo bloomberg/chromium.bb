@@ -108,7 +108,7 @@ if (enable_vr) {
       ]
     }
 
-    if (enable_openvr || enable_oculus_vr) {
+    if (enable_openvr || enable_oculus_vr || enable_windows_mr) {
       sources += [
         "windows/compositor_base.cc",
         "windows/compositor_base.h",
@@ -127,7 +127,8 @@ if (enable_vr) {
         "windows/d3d11_texture_helper.cc",
         "windows/d3d11_texture_helper.h",
         "windows/flip_pixel_shader.h",
-        "windows/flip_vertex_shader.h",
+        "windows/geometry_shader.h",
+        "windows/vertex_shader.h",
       ]
     }
 

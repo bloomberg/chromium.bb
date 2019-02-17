@@ -111,14 +111,76 @@ MixedRealityRenderLoop::~MixedRealityRenderLoop() {
 }
 
 bool MixedRealityRenderLoop::PreComposite() {
-  // Not yet implemented.
-  return false;
+  if (rendering_params_) {
+    Microsoft::WRL::ComPtr<
+        ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface>
+        surface;
+    if (FAILED(rendering_params_->get_Direct3D11BackBuffer(&surface)))
+      return false;
+    Microsoft::WRL::ComPtr<
+        Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>
+        dxgi_interface_access;
+    if (FAILED(surface.As(&dxgi_interface_access)))
+      return false;
+    Microsoft::WRL::ComPtr<ID3D11Resource> native_resource;
+    if (FAILED(dxgi_interface_access->GetInterface(
+            IID_PPV_ARGS(&native_resource))))
+      return false;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    if (FAILED(native_resource.As(&texture)))
+      return false;
+    texture_helper_.SetBackbuffer(texture);
+    D3D11_TEXTURE2D_DESC desc;
+    texture->GetDesc(&desc);
+
+    ABI::Windows::Foundation::Rect viewport;
+    if (FAILED(pose_->get_Viewport(&viewport)))
+      return false;
+
+    gfx::RectF override_viewport =
+        gfx::RectF(viewport.X / desc.Width, viewport.Y / desc.Height,
+                   viewport.Width / desc.Width, viewport.Height / desc.Height);
+
+    texture_helper_.OverrideViewports(override_viewport, override_viewport);
+    texture_helper_.SetDefaultSize(gfx::Size(desc.Width, desc.Height));
+  }
+  return true;
 }
 
 bool MixedRealityRenderLoop::SubmitCompositedFrame() {
-  // Not yet implemented.
-  return false;
+  ABI::Windows::Graphics::Holographic::HolographicFramePresentResult result;
+  if (FAILED(holographic_frame_->PresentUsingCurrentPrediction(&result)))
+    return false;
+  texture_helper_.DiscardView();
+  return true;
 }
+
+namespace {
+
+FARPROC LoadD3D11Function(const char* function_name) {
+  static HMODULE const handle = ::LoadLibrary(L"d3d11.dll");
+  return handle ? ::GetProcAddress(handle, function_name) : nullptr;
+}
+
+decltype(&::CreateDirect3D11DeviceFromDXGIDevice)
+GetCreateDirect3D11DeviceFromDXGIDeviceFunction() {
+  static decltype(&::CreateDirect3D11DeviceFromDXGIDevice) const function =
+      reinterpret_cast<decltype(&::CreateDirect3D11DeviceFromDXGIDevice)>(
+          LoadD3D11Function("CreateDirect3D11DeviceFromDXGIDevice"));
+  return function;
+}
+
+HRESULT WrapperCreateDirect3D11DeviceFromDXGIDevice(IDXGIDevice* in,
+                                                    IInspectable** out) {
+  *out = nullptr;
+  auto func = GetCreateDirect3D11DeviceFromDXGIDeviceFunction();
+  if (!func)
+    return E_FAIL;
+  return func(in, out);
+}
+
+}  // namespace
 
 bool MixedRealityRenderLoop::StartRuntime() {
   initializer_ = std::make_unique<base::win::ScopedWinrtInitializer>();
@@ -148,7 +210,7 @@ bool MixedRealityRenderLoop::StartRuntime() {
     return false;
 
   ComPtr<IInspectable> spInsp;
-  hr = CreateDirect3D11DeviceFromDXGIDevice(dxgi_device.Get(), &spInsp);
+  hr = WrapperCreateDirect3D11DeviceFromDXGIDevice(dxgi_device.Get(), &spInsp);
   if (FAILED(hr))
     return false;
 
@@ -166,6 +228,13 @@ void MixedRealityRenderLoop::StopRuntime() {
     ShowWindow(window_->hwnd(), SW_HIDE);
   holographic_space_ = nullptr;
   origin_ = nullptr;
+
+  holographic_frame_ = nullptr;
+  prediction_ = nullptr;
+  poses_ = nullptr;
+  pose_ = nullptr;
+  rendering_params_ = nullptr;
+  camera_ = nullptr;
 
   if (window_)
     DestroyWindow(window_->hwnd());
@@ -286,7 +355,7 @@ EyeToWorldDecomposed DecomposeViewMatrix(
   DCHECK(decomposable);
 
   gfx::Quaternion world_to_eye_rotation = world_to_view_decomposed.quaternion;
-  return {world_to_eye_rotation, eye_in_world_space};
+  return {world_to_eye_rotation.inverse(), eye_in_world_space};
 }
 
 mojom::VRPosePtr GetMonoViewData(const HolographicStereoTransform& view) {

@@ -79,9 +79,14 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Holographic::IHolographicFramePrediction>
       prediction_;
+
+  // The set of all poses for this frame (there could be multiple headsets or
+  // external cameras).
   Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<
       ABI::Windows::Graphics::Holographic::HolographicCameraPose*>>
       poses_;
+
+  // We only support one headset at a time - this is the one pose.
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Holographic::IHolographicCameraPose>
       pose_;
