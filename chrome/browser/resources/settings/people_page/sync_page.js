@@ -153,16 +153,31 @@ Polymer({
   browserProxy_: null,
 
   /**
-   * The unload callback is needed because the sign-in flow needs to know
-   * if the user has closed the tab with the sync settings. This property is
-   * non-null if the user is currently navigated on the sync settings route.
+   * If unified consent is enabled, the beforeunload callback is used to
+   * show the 'Leave site' dialog. This makes sure that the user has the chance
+   * to go back and confirm the sync opt-in before leaving.
    *
-   * TODO(crbug.com/862983): When unified consent is rolled out to 100% this
-   * should be removed.
+   * If unified consent is disabled, the beforeunload callback is used
+   * to confirm the sync setup before leaving the opt-in flow.
+   *
+   * This property is non-null if the user is currently navigated on the sync
+   * settings route.
    *
    * @private {?Function}
    */
   beforeunloadCallback_: null,
+
+  /**
+   * If unified consent is enabled, the unload callback is used to cancel the
+   * sync setup when the user hits the browser back button after arriving on the
+   * page.
+   * Note: Cases like closing the tab or reloading don't need to be handled,
+   * because they are already caught in |PeopleHandler::~PeopleHandler|
+   * from the C++ code.
+   *
+   * @private {?Function}
+   */
+  unloadCallback_: null,
 
   /**
    * Whether the initial layout for collapsible sections has been computed. It
@@ -210,6 +225,10 @@ Polymer({
     if (this.beforeunloadCallback_) {
       window.removeEventListener('beforeunload', this.beforeunloadCallback_);
       this.beforeunloadCallback_ = null;
+    }
+    if (this.unloadCallback_) {
+      window.removeEventListener('unload', this.unloadCallback_);
+      this.unloadCallback_ = null;
     }
   },
 
@@ -316,8 +335,24 @@ Polymer({
 
     this.browserProxy_.didNavigateToSyncPage();
 
-    this.beforeunloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
-    window.addEventListener('beforeunload', this.beforeunloadCallback_);
+    if (this.unifiedConsentEnabled) {
+      this.beforeunloadCallback_ = event => {
+        // When the user tries to leave the sync setup, show the 'Leave site'
+        // dialog.
+        if (this.unifiedConsentEnabled && this.syncStatus &&
+            !!this.syncStatus.setupInProgress) {
+          event.preventDefault();
+          event.returnValue = '';
+        }
+      };
+      window.addEventListener('beforeunload', this.beforeunloadCallback_);
+
+      this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
+      window.addEventListener('unload', this.unloadCallback_);
+    } else {
+      this.beforeunloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
+      window.addEventListener('beforeunload', this.beforeunloadCallback_);
+    }
   },
 
   /** @private */
@@ -335,6 +370,11 @@ Polymer({
 
     window.removeEventListener('beforeunload', this.beforeunloadCallback_);
     this.beforeunloadCallback_ = null;
+
+    if (this.unloadCallback_) {
+      window.removeEventListener('unload', this.unloadCallback_);
+      this.unloadCallback_ = null;
+    }
   },
 
   /**

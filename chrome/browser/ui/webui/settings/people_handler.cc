@@ -217,8 +217,11 @@ PeopleHandler::~PeopleHandler() {
   if (!web_ui())
     return;
 
-  // Note that if the user left the sync page by closing the tab, refresh,
-  // or via the back navigation, it would first go through OnDidClosePage().
+  // If unified consent is enabled and the user left the sync page by closing
+  // the tab, refresh, or via the back navigation, the sync setup needs to be
+  // closed. If this was the first time setup, sync will be cancelled.
+  // Note, if unified consent is disabled, it will first go through
+  // |OnDidClosePage()|.
   CloseSyncSetup();
 }
 
