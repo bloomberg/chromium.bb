@@ -660,7 +660,7 @@ class RemovableTestVolume : public LocalTestVolume {
 
   const VolumeType volume_type_;
   const chromeos::DeviceType device_type_;
-  const base::FilePath& device_path_;
+  const base::FilePath device_path_;
   const bool read_only_ = false;
   const std::string drive_label_;
 
