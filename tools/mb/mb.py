@@ -783,9 +783,12 @@ class MetaBuildWrapper(object):
       isolate_targets = set(contents.splitlines())
 
       isolate_map = self.ReadIsolateMap()
+      self.RemovePossiblyStaleRuntimeDepsFiles(vals, isolate_targets,
+                                               isolate_map, build_dir)
+
       err, labels = self.MapTargetsToLabels(isolate_map, isolate_targets)
       if err:
-          raise MBErr(err)
+        raise MBErr(err)
 
       gn_runtime_deps_path = self.ToAbsPath(build_dir, 'runtime_deps')
       self.WriteFile(gn_runtime_deps_path, '\n'.join(labels) + '\n')
@@ -793,14 +796,13 @@ class MetaBuildWrapper(object):
 
     ret, _, _ = self.Run(cmd)
     if ret:
-        # If `gn gen` failed, we should exit early rather than trying to
-        # generate isolates. Run() will have already logged any error output.
-        self.Print('GN gen failed: %d' % ret)
-        return ret
+      # If `gn gen` failed, we should exit early rather than trying to
+      # generate isolates. Run() will have already logged any error output.
+      self.Print('GN gen failed: %d' % ret)
+      return ret
 
     if getattr(self.args, 'swarming_targets_file', None):
-      return self.GenerateIsolates(vals, isolate_targets, isolate_map,
-                                   build_dir)
+      self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
 
     return 0
 
@@ -844,7 +846,9 @@ class MetaBuildWrapper(object):
         isolate_targets.append(isolate_dict_map[target]['isolate_key'])
         runtime_deps.append(target)
 
-    # Now we need to run "gn gen" again with --runtime-deps-list-file
+    self.RemovePossiblyStaleRuntimeDepsFiles(vals, isolate_targets,
+                                             isolate_map, build_dir)
+
     gn_runtime_deps_path = self.ToAbsPath(build_dir, 'runtime_deps')
     self.WriteFile(gn_runtime_deps_path, '\n'.join(runtime_deps) + '\n')
     cmd = self.GNCmd('gen', build_dir)
@@ -852,6 +856,35 @@ class MetaBuildWrapper(object):
     self.Run(cmd)
 
     return self.GenerateIsolates(vals, isolate_targets, isolate_map, build_dir)
+
+  def RemovePossiblyStaleRuntimeDepsFiles(self, vals, targets, isolate_map,
+                                          build_dir):
+    # TODO(crbug.com/932700): Because `gn gen --runtime-deps-list-file`
+    # puts the runtime_deps file in different locations based on the actual
+    # type of a target, we may end up with multiple possible runtime_deps
+    # files in a given build directory, where some of the entries might be
+    # stale (since we might be reusing an existing build directory).
+    #
+    # We need to be able to get the right one reliably; you might think
+    # we can just pick the newest file, but because GN won't update timestamps
+    # if the contents of the files change, an older runtime_deps
+    # file might actually be the one we should use over a newer one (see
+    # crbug.com/932387 for a more complete explanation and example).
+    #
+    # In order to avoid this, we need to delete any possible runtime_deps
+    # files *prior* to running GN. As long as the files aren't actually
+    # needed during the build, this hopefully will not cause unnecessary
+    # build work, and so it should be safe.
+    #
+    # Ultimately, we should just make sure we get the runtime_deps files
+    # in predictable locations so we don't have this issue at all, and
+    # that's what crbug.com/932700 is for.
+    possible_rpaths = self.PossibleRuntimeDepsPaths(vals, targets, isolate_map)
+    for rpaths in possible_rpaths.values():
+      for rpath in rpaths:
+        path = self.ToAbsPath(build_dir, rpath)
+        if self.Exists(path):
+          self.RemoveFile(path)
 
   def GenerateIsolates(self, vals, ninja_targets, isolate_map, build_dir):
     """
@@ -862,9 +895,50 @@ class MetaBuildWrapper(object):
     This function assumes that a previous invocation of "mb.py gen" has
     generated runtime deps for all targets.
     """
+    possible_rpaths = self.PossibleRuntimeDepsPaths(vals, ninja_targets,
+                                                    isolate_map)
+
+    for target, rpaths in possible_rpaths.items():
+      # TODO(crbug.com/932700): We don't know where each .runtime_deps
+      # file might be, but assuming we called
+      # RemovePossiblyStaleRuntimeDepsFiles prior to calling `gn gen`,
+      # there should only be one file.
+      found_one = False
+      path_to_use = None
+      for r in rpaths:
+        path = self.ToAbsPath(build_dir, r)
+        if self.Exists(path):
+          if found_one:
+            raise MBErr('Found more than one of %s' % ', '.join(rpaths))
+          path_to_use = path
+          found_one = True
+
+      if not found_one:
+        raise MBErr('Did not find any of %s' % ', '.join(rpaths))
+
+      command, extra_files = self.GetIsolateCommand(target, vals)
+      runtime_deps = self.ReadFile(path_to_use).splitlines()
+
+      canonical_target = target.replace(':','_').replace('/','_')
+      self.WriteIsolateFiles(build_dir, command, canonical_target, runtime_deps,
+                             extra_files)
+
+  def PossibleRuntimeDepsPaths(self, vals, ninja_targets, isolate_map):
+    """Returns a map of targets to possible .runtime_deps paths.
+
+    Each ninja target maps on to a GN label, but depending on the type
+    of the GN target, `gn gen --runtime-deps-list-file` will write
+    the .runtime_deps files into different locations. Unfortunately, in
+    some cases we don't actually know which of multiple locations will
+    actually be used, so we return all plausible candidates.
+
+    The paths that are returned are relative to the build directory.
+    """
+
     android = 'target_os="android"' in vals['gn_args']
     fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
+    possible_runtime_deps_rpaths = {}
     for target in ninja_targets:
       # TODO(https://crbug.com/876065): 'official_tests' use
       # type='additional_compile_target' to isolate tests. This is not the
@@ -873,22 +947,20 @@ class MetaBuildWrapper(object):
           target != 'official_tests'):
         # By definition, additional_compile_targets are not tests, so we
         # shouldn't generate isolates for them.
-        self.Print('Cannot generate isolate for %s since it is an '
-                   'additional_compile_target.' % target)
-        return 1
+        raise MBErr('Cannot generate isolate for %s since it is an '
+                    'additional_compile_target.' % target)
       elif android:
         # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
         # latter will result in runtime_deps associated with the executable.
         label = isolate_map[target]['label']
-        runtime_deps_targets = [
+        rpaths = [
             target + '.runtime_deps',
             'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif fuchsia:
         # Only emit a runtime deps file for the group() target on Fuchsia.
         label = isolate_map[target]['label']
-        runtime_deps_targets = [
-          'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
+        rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif (isolate_map[target]['type'] == 'script' or
             isolate_map[target]['type'] == 'fuzzer' or
             isolate_map[target].get('label_type') == 'group'):
@@ -897,45 +969,19 @@ class MetaBuildWrapper(object):
         # for the label, which lives under the obj/ directory, but it may
         # also be an executable.
         label = isolate_map[target]['label']
-        runtime_deps_targets = [
-            'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
+        rpaths = ['obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
         if win:
-          runtime_deps_targets += [ target + '.exe.runtime_deps' ]
+          rpaths += [ target + '.exe.runtime_deps' ]
         else:
-          runtime_deps_targets += [ target + '.runtime_deps' ]
+          rpaths += [ target + '.runtime_deps' ]
       elif win:
-        runtime_deps_targets = [target + '.exe.runtime_deps']
+        rpaths = [target + '.exe.runtime_deps']
       else:
-        runtime_deps_targets = [target + '.runtime_deps']
+        rpaths = [target + '.runtime_deps']
 
-      # TODO(crbug.com/932700): If there are multiple .runtime_deps files
-      # for a target, it's actually unclear which one is the right one to use.
-      # It's possible to get multiple files because different target types
-      # store them in different places, and if you change the target type
-      # (and don't do a clobber build), you might find an old one and a new
-      # one. The proper fix is to make sure we only get one file.
-      newest_path = None
-      newest_path_mtime = 0
-      for r in runtime_deps_targets:
-        path = self.ToAbsPath(build_dir, r)
-        if self.Exists(path):
-          mtime = self.Mtime(path)
-          if mtime > newest_path_mtime:
-              newest_path = path
-              newest_path_mtime = mtime
+      possible_runtime_deps_rpaths[target] = rpaths
 
-      if not newest_path:
-        raise MBErr('did not generate any of %s' %
-                    ', '.join(runtime_deps_targets))
-
-      command, extra_files = self.GetIsolateCommand(target, vals)
-      runtime_deps = self.ReadFile(newest_path).splitlines()
-
-      canonical_target = target.replace(':','_').replace('/','_')
-      self.WriteIsolateFiles(build_dir, command, canonical_target, runtime_deps,
-                             extra_files)
-
-    return 0
+    return possible_runtime_deps_rpaths
 
   def RunGNIsolate(self, vals):
     target = self.args.target
@@ -943,6 +989,7 @@ class MetaBuildWrapper(object):
     err, labels = self.MapTargetsToLabels(isolate_map, [target])
     if err:
       raise MBErr(err)
+
     label = labels[0]
 
     build_dir = self.args.path
@@ -1459,10 +1506,6 @@ class MetaBuildWrapper(object):
   def Exists(self, path):
     # This function largely exists so it can be overridden for testing.
     return os.path.exists(path)
-
-  def Mtime(self, path):
-    # This function largely exists so it can be overridden for testing.
-    return os.stat(path).st_mtime
 
   def Fetch(self, url):
     # This function largely exists so it can be overridden for testing.
