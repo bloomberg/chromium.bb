@@ -59,26 +59,55 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  public:
   ~WebPagePopupImpl() override;
+
   void Initialize(WebViewImpl*, PagePopupClient*);
+
+  // Cancel informs the PopupClient that it should initiate shutdown of this
+  // popup via ClosePopup(). It is called to indicate the popup was closed due
+  // to a user gesture outside the popup or other such reasons, where a default
+  // cancelled response can be made.
+  //
+  // When the user chooses a value in the popup and thus it is closed, or if the
+  // origin in the DOM disppears, then the Cancel() step would be skipped and go
+  // directly to ClosePopup().
+  void Cancel();
+  // Once ClosePopup() has been called, the WebPagePopupImpl should be disowned
+  // by any clients, and will be reaped when then browser closes its
+  // RenderWidget which closes this object. This will call back to the
+  // PopupClient to say DidClosePopup(), and to the WebViewImpl to cleanup
+  // its reference to the popup.
+  //
+  // Only HasSamePopupClient() may still be called after ClosePopup() runs.
   void ClosePopup();
-  WebWidgetClient* WidgetClient() const { return widget_client_; }
+
+  // Returns whether another WebPagePopupImpl has the same PopupClient as this
+  // instance. May be called after ClosePopup() has run still, in order to
+  // determine if a popup sharing the same client was created immediately after
+  // closing one.
   bool HasSamePopupClient(WebPagePopupImpl* other) {
     return other && popup_client_ == other->popup_client_;
   }
+
+  WebWidgetClient* WidgetClient() const { return widget_client_; }
+
   LocalDOMWindow* Window();
+
+  // WebWidget implementation.
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  WebPoint PositionRelativeToOwner() override;
-  void PostMessageToPopup(const String& message) override;
-  void Cancel();
-
-  // PageWidgetEventHandler functions.
-  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
-
   WebInputEventResult DispatchBufferedTouchEvents() override;
 
+  // WebPagePopup implementation.
+  WebPoint PositionRelativeToOwner() override;
+
+  // PagePopup implementation.
+  void PostMessageToPopup(const String& message) override;
+
+  // PageWidgetEventHandler implementation.
+  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
+
  private:
-  // WebWidget functions
+  // WebWidget implementation.
   void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time,
