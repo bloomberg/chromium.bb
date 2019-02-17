@@ -816,6 +816,16 @@ const std::vector<aura::Window*> ShelfView::GetOpenWindowsForShelfView(
   return open_windows;
 }
 
+views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) const {
+  if (last) {
+    return overflow_button_->visible()
+               ? overflow_button_
+               : view_model_->view_at(last_visible_index());
+  } else {
+    return view_model_->view_at(first_visible_index());
+  }
+}
+
 void ShelfView::DestroyDragIconProxy() {
   drag_image_.reset();
   drag_image_offset_ = gfx::Vector2d(0, 0);
@@ -1192,6 +1202,13 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   last_visible_index_ =
       IndexOfLastItemThatFitsSize(available_size - button_spacing);
   bool show_overflow = last_visible_index_ < model_->item_count() - 1;
+
+  // In the main shelf, the first visible index is either the back button (in
+  // tablet mode) or the launcher button (otherwise).
+  if (!is_overflow_mode()) {
+    first_visible_index_ =
+        IsTabletModeEnabled() ? kBackButtonIndex : kAppListButtonIndex;
+  }
 
   // Create space for the overflow button and place it in the last visible
   // position.

@@ -68,11 +68,6 @@ void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
 }
 
 bool StatusAreaWidgetDelegate::ShouldFocusOut(bool reverse) {
-  if (Shell::Get()->session_controller()->GetSessionState() ==
-      SessionState::ACTIVE) {
-    return false;
-  }
-
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   return (reverse && focused_view == GetFirstFocusableChild()) ||
          (!reverse && focused_view == GetLastFocusableChild());

@@ -264,12 +264,15 @@ void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
 }
 
 views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
-  // If views-based login shelf is shown, we want to focus either its first or
-  // last child, otherwise focus on the first child as default.
-  if (IsUsingViewsShelf())
+  if (!IsUsingViewsShelf())
+    return GetFirstFocusableChild();
+
+  if (shelf_widget_->login_shelf_view_->visible())
     return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
                                          default_last_focusable_child_);
-  return GetFirstFocusableChild();
+  else
+    return shelf_widget_->shelf_view_->FindFirstOrLastFocusableChild(
+        default_last_focusable_child_);
 }
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
