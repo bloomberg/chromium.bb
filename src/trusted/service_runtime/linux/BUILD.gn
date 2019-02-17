@@ -61,12 +61,13 @@ if (current_toolchain == bootstrap_toolchain) {
     # using only the basics that work here.
     configs = []
     configs += [
-      "//build/config/compiler:compiler_cpu_abi",
-      "//build/config/compiler:runtime_library",
       "//build/config/compiler:chromium_code",
       "//build/config/compiler:clang_revision",
+      "//build/config/compiler:compiler_cpu_abi",
+      "//build/config/compiler:compiler_deterministic",
       "//build/config/compiler:default_optimization",
       "//build/config/compiler:default_symbols",
+      "//build/config/compiler:runtime_library",
     ]
 
     include_dirs = [ "//" ]
