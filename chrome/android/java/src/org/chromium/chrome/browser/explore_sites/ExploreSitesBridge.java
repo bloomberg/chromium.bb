@@ -94,11 +94,16 @@ public class ExploreSitesBridge {
 
     public static boolean isEnabled(@ExploreSitesVariation int variation) {
         return variation == ExploreSitesVariation.ENABLED
-                || variation == ExploreSitesVariation.PERSONALIZED;
+                || variation == ExploreSitesVariation.PERSONALIZED
+                || variation == ExploreSitesVariation.CONDENSED;
     }
 
     public static boolean isExperimental(@ExploreSitesVariation int variation) {
         return variation == ExploreSitesVariation.EXPERIMENT;
+    }
+
+    public static boolean isCondensed(@ExploreSitesVariation int variation) {
+        return variation == ExploreSitesVariation.CONDENSED;
     }
 
     /**

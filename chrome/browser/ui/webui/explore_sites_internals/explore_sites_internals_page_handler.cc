@@ -28,6 +28,8 @@ std::string GetChromeFlagsSetupString() {
       return "Experiment";
     case ExploreSitesVariation::PERSONALIZED:
       return "Personalized";
+    case ExploreSitesVariation::CONDENSED:
+      return "Condensed";
     case ExploreSitesVariation::DISABLED:
       return "Disabled";
   }
