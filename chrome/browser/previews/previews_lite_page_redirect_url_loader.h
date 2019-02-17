@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_REDIRECT_URL_LOADER_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -57,13 +60,22 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
   void ResumeReadingBodyFromNet() override;
 
   // Processes |result|. Used as a callback for |serving_url_loader_|.
-  void OnResultDetermined(ServingLoaderResult result);
+  // |redirect_info| and |response| should be present if and only if |result| is
+  // kRedirect.
+  void OnResultDetermined(ServingLoaderResult result,
+                          base::Optional<net::RedirectInfo> redirect_info,
+                          scoped_refptr<network::ResourceResponse> response);
 
   // Called when the lite page can be successfully served.
   void OnLitePageSuccess();
 
-  // Called when a non-200 response is received.
+  // Called when a non-200, non-307 response is received from the previews
+  // server.
   void OnLitePageFallback();
+
+  // Called when a redirect (307) is received from the previews server.
+  void OnLitePageRedirect(const net::RedirectInfo& redirect_info,
+                          const network::ResourceResponseHead& response_head);
 
   // The handler when trying to serve the lite page to the user. Serves a
   // redirect to the lite page server URL.
@@ -74,8 +86,6 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
 
   // Helper method for setting up and serving |redirect_info| to |client|.
   void StartHandlingRedirect(
-      const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& head,
       const network::ResourceRequest& /* resource_request */,
       network::mojom::URLLoaderRequest request,
       network::mojom::URLLoaderClientPtr client);
@@ -90,9 +100,13 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader {
   // The underlying URLLoader that speculatively tries to fetch the lite page.
   std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader_;
 
-  // A copy of the initial resource request that has been modified to fetch the
-  // lite page.
+  // A copy of the initial resource request that has been modified to fetch
+  // the lite page.
   network::ResourceRequest modified_resource_request_;
+
+  // Stores the response when a 307 (redirect) is received from the previews
+  // server.
+  network::ResourceResponseHead response_head_;
 
   // Information about the redirect to the lite page server.
   net::RedirectInfo redirect_info_;

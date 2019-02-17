@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -20,12 +21,17 @@
 namespace previews {
 
 enum class ServingLoaderResult {
-  kSuccess,  // The Preview can be served.
-  kFallback  // The Preview cannot be served and fallback to default URLLoader
-             // should occur.
+  kSuccess,   // The Preview can be served.
+  kFallback,  // The Preview cannot be served and fallback to default URLLoader
+              // should occur.
+  kRedirect,  // The URL returns a redirect, and we should pass that on to the
+              // navigation code.
 };
 
-using ResultCallback = base::OnceCallback<void(ServingLoaderResult)>;
+using ResultCallback =
+    base::OnceCallback<void(ServingLoaderResult,
+                            base::Optional<net::RedirectInfo> redirect_info,
+                            scoped_refptr<network::ResourceResponse> response)>;
 
 using RequestHandler =
     base::OnceCallback<void(const network::ResourceRequest& resource_request,

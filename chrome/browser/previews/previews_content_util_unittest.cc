@@ -249,15 +249,16 @@ TEST_F(PreviewsContentUtilTest,
   bool is_reload = false;
   bool is_redirect = false;
   bool is_data_saver_user = true;
-  // Verify preview is enabled on HTTP and HTTPS.
+  // Verify preview is enabled on HTTPS.
   EXPECT_TRUE(content::LITE_PAGE_REDIRECT_ON &
               previews::DetermineAllowedClientPreviewsState(
                   &user_data, GURL("https://www.google.com"), is_reload,
                   is_redirect, is_data_saver_user, enabled_previews_decider()));
-  EXPECT_TRUE(content::LITE_PAGE_REDIRECT_ON &
-              previews::DetermineAllowedClientPreviewsState(
-                  &user_data, GURL("http://www.google.com"), is_reload,
-                  is_redirect, is_data_saver_user, enabled_previews_decider()));
+  EXPECT_FALSE(content::LITE_PAGE_REDIRECT_ON &
+               previews::DetermineAllowedClientPreviewsState(
+                   &user_data, GURL("http://www.google.com"), is_reload,
+                   is_redirect, is_data_saver_user,
+                   enabled_previews_decider()));
 
   // Verify non-HTTP[S] URL has no previews enabled.
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,

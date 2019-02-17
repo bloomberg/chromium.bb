@@ -58,7 +58,11 @@ class PreviewsLitePageURLLoaderInterceptorTest : public testing::Test {
 
   base::Optional<bool> callback_was_empty() { return callback_was_empty_; }
 
-  void ResetTest() { callback_was_empty_ = base::nullopt; }
+  void ResetTest() {
+    interceptor_ = std::make_unique<PreviewsLitePageURLLoaderInterceptor>(
+        shared_factory_, 1);
+    callback_was_empty_ = base::nullopt;
+  }
 
   PreviewsLitePageURLLoaderInterceptor& interceptor() { return *interceptor_; }
 

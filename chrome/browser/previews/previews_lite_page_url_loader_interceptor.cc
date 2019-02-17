@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
@@ -92,6 +93,14 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
     std::move(callback).Run(std::move(handler));
     return;
   }
+
+  // Do not attempt to serve the same URL multiple times.
+  if (base::ContainsKey(urls_processed_, tentative_resource_request.url)) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  urls_processed_.insert(tentative_resource_request.url);
 
   std::string original_url;
   if (previews::ExtractOriginalURLFromLitePageRedirectURL(
