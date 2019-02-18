@@ -469,24 +469,24 @@ static std::unique_ptr<IDBKey> IdbKeyFromInspectorObject(
     return nullptr;
   String type = key->getType();
 
-  DEFINE_STATIC_LOCAL(String, number, ("number"));
-  DEFINE_STATIC_LOCAL(String, string, ("string"));
-  DEFINE_STATIC_LOCAL(String, date, ("date"));
-  DEFINE_STATIC_LOCAL(String, array, ("array"));
+  DEFINE_STATIC_LOCAL(String, number_type, ("number"));
+  DEFINE_STATIC_LOCAL(String, string_type, ("string"));
+  DEFINE_STATIC_LOCAL(String, date_type, ("date"));
+  DEFINE_STATIC_LOCAL(String, array_type, ("array"));
 
-  if (type == number) {
+  if (type == number_type) {
     if (!key->hasNumber())
       return nullptr;
     idb_key = IDBKey::CreateNumber(key->getNumber(0));
-  } else if (type == string) {
+  } else if (type == string_type) {
     if (!key->hasString())
       return nullptr;
     idb_key = IDBKey::CreateString(key->getString(String()));
-  } else if (type == date) {
+  } else if (type == date_type) {
     if (!key->hasDate())
       return nullptr;
     idb_key = IDBKey::CreateDate(key->getDate(0));
-  } else if (type == array) {
+  } else if (type == array_type) {
     IDBKey::KeyArray key_array;
     auto* array = key->getArray(nullptr);
     for (size_t i = 0; array && i < array->length(); ++i)
