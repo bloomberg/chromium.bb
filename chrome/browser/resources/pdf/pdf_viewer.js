@@ -135,12 +135,7 @@ function PDFViewer(browserApi) {
   /** @private {boolean} */
   this.hasEnteredAnnotationMode_ = false;
 
-  /**
-   * @type {!PDFMetrics}
-   */
-  this.metrics =
-      (chrome.metricsPrivate ? new PDFMetricsImpl() : new PDFMetricsDummy());
-  this.metrics.onDocumentOpened();
+  PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
   // Parse open pdf parameters.
   this.paramsParser_ = new OpenPDFParamsParser(
@@ -268,9 +263,9 @@ function PDFViewer(browserApi) {
   document.body.addEventListener('change-page', e => {
     this.viewport_.goToPage(e.detail.page);
     if (e.detail.origin == 'bookmark') {
-      this.metrics.onFollowBookmark();
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
     } else if (e.detail.origin == 'pageselector') {
-      this.metrics.onPageSelectorNavigation();
+      PDFMetrics.record(PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE);
     }
   });
 
@@ -288,7 +283,7 @@ function PDFViewer(browserApi) {
 
   document.body.addEventListener('dropdown-opened', e => {
     if (e.detail == 'bookmarks') {
-      this.metrics.onOpenBookmarksPanel();
+      PDFMetrics.record(PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL);
     }
   });
 
@@ -566,7 +561,7 @@ PDFViewer.prototype = {
     }
 
     if (e.detail.userInitiated) {
-      this.metrics.onFitTo(e.detail.fittingType);
+      PDFMetrics.recordFitTo(e.detail.fittingType);
     }
   },
 
@@ -637,7 +632,7 @@ PDFViewer.prototype = {
   goToPageAndXY_: function(origin, page, message) {
     this.viewport_.goToPageAndXY(page, message.x, message.y);
     if (origin == 'bookmark') {
-      this.metrics.onFollowBookmark();
+      PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
     }
   },
 
@@ -1376,14 +1371,14 @@ class PluginController extends ContentController {
 
   /** @override */
   rotateClockwise() {
-    this.viewer_.metrics.onRotation();
+    PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
     this.viewport_.rotateClockwise(1);
     this.postMessage({type: 'rotateClockwise'});
   }
 
   /** @override */
   rotateCounterClockwise() {
-    this.viewer_.metrics.onRotation();
+    PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
     this.viewport_.rotateClockwise(3);
     this.postMessage({type: 'rotateCounterclockwise'});
   }
