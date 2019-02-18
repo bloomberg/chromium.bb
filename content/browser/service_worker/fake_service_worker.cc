@@ -172,14 +172,14 @@ void FakeServiceWorker::DispatchPaymentRequestEvent(
 void FakeServiceWorker::DispatchExtendableMessageEvent(
     blink::mojom::ExtendableMessageEventPtr event,
     DispatchExtendableMessageEventCallback callback) {
-  helper_->OnExtendableMessageEventStub(std::move(event), std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchExtendableMessageEventWithCustomTimeout(
     blink::mojom::ExtendableMessageEventPtr event,
     base::TimeDelta timeout,
     DispatchExtendableMessageEventWithCustomTimeoutCallback callback) {
-  helper_->OnExtendableMessageEventStub(std::move(event), std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::Ping(PingCallback callback) {

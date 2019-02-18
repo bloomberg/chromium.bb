@@ -192,10 +192,6 @@ class EmbeddedWorkerTestHelper {
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
       blink::mojom::ServiceWorker::DispatchCookieChangeEventCallback callback);
-  virtual void OnExtendableMessageEvent(
-      blink::mojom::ExtendableMessageEventPtr event,
-      blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
-          callback);
   virtual void OnFetchEvent(
       int embedded_worker_id,
       blink::mojom::FetchAPIRequestPtr request,
