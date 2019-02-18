@@ -30,6 +30,9 @@ class ASH_EXPORT ContainedShellController
   // Binds the mojom::ContainedShellController interface to this object.
   void BindRequest(mojom::ContainedShellControllerRequest request);
 
+  // Returns if the Contained Shell is enabled for the current user.
+  bool IsEnabled();
+
   // Starts the ContainedShell feature by sending LaunchContainedShell
   // request to ContainedShellClient.
   void LaunchContainedShell();
