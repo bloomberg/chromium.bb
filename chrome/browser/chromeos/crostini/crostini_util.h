@@ -165,6 +165,11 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
                                  std::string vm_name,
                                  std::string container_name);
 
+// Returns a string to be displayed in a notification with the estimated time
+// left for an operation to run which started and time |start| and is current
+// at |percent| way through.
+base::string16 GetTimeRemainingMessage(base::Time start, int percent);
+
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
