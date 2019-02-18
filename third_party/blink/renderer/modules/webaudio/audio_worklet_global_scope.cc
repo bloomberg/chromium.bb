@@ -250,7 +250,7 @@ bool AudioWorkletGlobalScope::Process(
 
   // 2nd arg of JS callback: outputs
   v8::Local<v8::Array> outputs = v8::Array::New(isolate, output_buses->size());
-  uint32_t output_bus_index = 0;
+  uint32_t output_bus_counter = 0;
   // |js_output_raw_ptrs| stores raw pointers to underlying array buffers so
   // that we can copy them back to |output_buses|. The raw pointers are valid
   // as long as the v8::ArrayBuffers are alive, i.e. as long as |outputs| is
@@ -265,7 +265,8 @@ bool AudioWorkletGlobalScope::Process(
         v8::Array::New(isolate, output_bus->NumberOfChannels());
     bool success;
     if (!outputs
-             ->CreateDataProperty(current_context, output_bus_index++, channels)
+             ->CreateDataProperty(current_context, output_bus_counter++,
+                                  channels)
              .To(&success)) {
       return false;
     }
