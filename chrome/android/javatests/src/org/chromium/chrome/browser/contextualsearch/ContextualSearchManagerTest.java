@@ -3045,6 +3045,8 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @SmallTest
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.M, message = "Flaky on Lollipop crbug.com/933092")
     @Feature({"ContextualSearch"})
     public void testQuickActionUrl() throws InterruptedException, TimeoutException {
         final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
