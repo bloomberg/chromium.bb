@@ -345,7 +345,8 @@
     "extension_types": ["platform_app", "extension"],
     "whitelist": [
       "63ED55E43214C211F82122ED56407FF1A807F2A3",   // Media Router Dev
-      "226CF815E39A363090A1E547D53063472B8279FA"    // Media Router Stable
+      "226CF815E39A363090A1E547D53063472B8279FA",   // Media Router Stable
+      "A3E3DE9E9F16B41D4A2FAD106BD6CA76B94A0C94"    // Chrome Camera App Prod
     ]
   },
   "networking.config": {
