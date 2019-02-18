@@ -31,11 +31,12 @@
     "tabs",
     "tts",
     "virtualKeyboardPrivate",
+    "chrome://resources/",
     "<all_urls>"
   ],
   "content_scripts": [
     {
-      "matches": [ "<all_urls>" ],
+      "matches": [ "<all_urls>", "chrome://resources/.*" ],
       "exclude_globs": [
 {% if is_webstore is not defined %}
           "chrome-extension://*",
@@ -103,5 +104,6 @@
     "16": "images/chromevox-16.png",
     "48": "images/chromevox-48.png",
     "128": "images/chromevox-128.png"
-  }
+  },
+   "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources; style-src 'unsafe-inline' chrome://resources;"
 }

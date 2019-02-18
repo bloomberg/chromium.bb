@@ -496,11 +496,6 @@ const char kEnableCaptivePortalRandomUrl[] = "Captive Portal url Randomization";
 const char kEnableCaptivePortalRandomUrlDescription[] =
     "Enable Captive Portal URL randomization.";
 
-const char kEnableChromevoxDeveloperOptionName[] =
-    "Enable Chromevox developer option";
-const char kEnableChromevoxDeveloperOptionDescription[] =
-    "This option provides tools for developing in chromevox.";
-
 const char kEnableDataSaverLiteModeRebrandName[] =
     "Data Saver Lite Mode Rebranding";
 const char kEnableDataSaverLiteModeRebrandDescription[] =

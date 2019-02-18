@@ -571,8 +571,8 @@
       <message desc="An option for setting the key combination that will be used as the ChromeVox modifier key (aka, the 'Cvox' key)." name="IDS_CHROMEVOX_OPTIONS_CVOX_MODIFIER_KEY">
         ChromeVox modifier key
       </message>
-      <message desc="List of chromevox developer options." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_OPTIONS">
-        Developer Options
+      <message desc="Labels the checkbox that enables developer options for ChromeVox." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_OPTIONS">
+        Enable Developer Options
       </message>
       <message desc="Enable chromevox earcon logging." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_EARCON_LOGGING">
         Enable earcon logging
@@ -582,6 +582,12 @@
       </message>
       <message desc="Enable event stream logging in chromevox for developer options." name="IDS_CHROMEVOX_OPTIONS_EVENT_STREAM_LOGGING">
         Enable event stream logging
+      </message>
+      <message desc="Show ChromeVox Event Log." name="IDS_CHROMEVOX_OPTIONS_SHOW_LOG">
+        Show Log
+      </message>
+      <message desc="Keyboard shortcut to show the ChromeVox log." name="IDS_CHROMEVOX_OPTIONS_SHOW_LOG_KEY">
+        Search + O + W
       </message>
       <message desc="Show event stream filters options for event stream logging." name="IDS_CHROMEVOX_OPTIONS_SHOW_EVENT_STREAM_FILTERS">
         Show event stream filters

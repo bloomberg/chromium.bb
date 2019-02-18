@@ -36,8 +36,7 @@ h2 {
 }
 
 .container {
-    margin-left: auto;
-    margin-right: auto;
+    margin: auto;
     width: 646px;
 }
 
@@ -64,6 +63,24 @@ h2 {
     margin: 0;
     padding: 0;
     width: 40px;
+}
+
+.option .developerLog {
+  height: 60px;
+  padding-inline-end: 0;
+  width: 666px;
+}
+
+.option .sub-description {
+  color: rgb(95, 99, 104);
+  display: block;
+}
+
+.option .developer-option-icon-button {
+  background-color: #fff;
+  float: right;
+  height: 60px;
+  vertical-align: middle;
 }
 
 .option input[type='checkbox']:checked {
@@ -96,7 +113,7 @@ h2 {
     border-width: 0;
     font-weight: bold;
     height: 30px;
-    margin-left: 20px;
+    margin-inline-start: 20px;
     padding: 0 20px;
 }
 
