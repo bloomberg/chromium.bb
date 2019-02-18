@@ -21,6 +21,7 @@ TestResourceFetcherProperties::TestResourceFetcherProperties(
     : TestResourceFetcherProperties(
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               KURL(),
+              KURL(),
               std::move(origin),
               network::mojom::ReferrerPolicy::kDefault,
               String(),

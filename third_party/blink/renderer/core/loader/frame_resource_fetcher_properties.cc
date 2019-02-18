@@ -100,7 +100,7 @@ FrameResourceFetcherProperties::CreateFetchClientSettingsObject(
   // Once PlzNavigate removes ResourceFetcher usage in navigations, we
   // might be able to remove this FetchClientSettingsObject at all.
   return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-      KURL(),
+      KURL(), KURL(),
 
       // SecurityOrigin. This is actually used via
       // FetchContext::GetSecurityOrigin().

@@ -11,7 +11,8 @@ namespace blink {
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const FetchClientSettingsObject& fetch_client_setting_object)
     : FetchClientSettingsObjectSnapshot(
-          fetch_client_setting_object.BaseURL(),
+          fetch_client_setting_object.GlobalObjectUrl(),
+          fetch_client_setting_object.BaseUrl(),
           fetch_client_setting_object.GetSecurityOrigin(),
           fetch_client_setting_object.GetReferrerPolicy(),
           fetch_client_setting_object.GetOutgoingReferrer(),
@@ -22,6 +23,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData> data)
     : FetchClientSettingsObjectSnapshot(
+          data->global_object_url,
           data->base_url,
           data->security_origin,
           data->referrer_policy,
@@ -31,6 +33,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
           data->address_space) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
+    const KURL& global_object_url,
     const KURL& base_url,
     const scoped_refptr<const SecurityOrigin> security_origin,
     network::mojom::ReferrerPolicy referrer_policy,
@@ -38,7 +41,8 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     HttpsState https_state,
     AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
     base::Optional<mojom::IPAddressSpace> address_space)
-    : base_url_(base_url),
+    : global_object_url_(global_object_url),
+      base_url_(base_url),
       security_origin_(std::move(security_origin)),
       referrer_policy_(referrer_policy),
       outgoing_referrer_(outgoing_referrer),
