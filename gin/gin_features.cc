@@ -14,4 +14,8 @@ const base::Feature kV8OptimizeJavascript{"V8OptimizeJavascript",
 const base::Feature kV8FlushBytecode{"V8FlushBytecode",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables memory reducer for small heaps in V8.
+const base::Feature kV8MemoryReducerForSmallHeaps{
+    "V8MemoryReducerForSmallHeaps", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
