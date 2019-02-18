@@ -103,8 +103,10 @@ PaintImage DragImage::ResizeAndOrientImage(
     return image;
   }
 
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeRasterN32Premul(size.Width(), size.Height());
+  const SkImageInfo info =
+      SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
+                           SkColorSpace::MakeSRGB());
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   if (!surface)
     return PaintImage();
 
@@ -117,10 +119,6 @@ PaintImage DragImage::ResizeAndOrientImage(
                              : kHigh_SkFilterQuality);
 
   SkCanvas* canvas = surface->getCanvas();
-  std::unique_ptr<SkCanvas> color_transform_canvas;
-  color_transform_canvas =
-      SkCreateColorSpaceXformCanvas(canvas, SkColorSpace::MakeSRGB());
-  canvas = color_transform_canvas.get();
   canvas->concat(AffineTransformToSkMatrix(transform));
   canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
 
