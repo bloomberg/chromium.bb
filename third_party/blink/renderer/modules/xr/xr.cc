@@ -455,7 +455,7 @@ void XR::AddedEventListener(const AtomicString& event_type,
         GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
     if (!binding_.is_bound()) {
       device::mojom::blink::VRServiceClientPtr client;
-      binding_.Bind(mojo::MakeRequest(&client, task_runner));
+      binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
       service_->SetClient(std::move(client));
     }
 
