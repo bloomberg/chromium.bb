@@ -453,23 +453,21 @@ RemoteCallFilesApp.prototype.waitUntilTaskExecutes = function(
  */
 RemoteCallFilesApp.prototype.checkNextTabFocus =
     async function(windowId, elementId) {
-  const result = await remoteCall.callRemoteTestUtil(
-      'fakeKeyDown', windowId, ['body', 'Tab', false, false, false]);
-  chrome.test.assertTrue(result);
-  const element =
-      await remoteCall.callRemoteTestUtil('getActiveElement', windowId, []);
-  if (!element || !element.attributes['id']) {
-    return false;
-  }
+  const result = await sendTestMessage({name: 'dispatchTabKey'});
+  chrome.test.assertEq(result, 'tabKeyDispatched', 'Tab key dispatch failure');
 
-  if (element.attributes['id'] === elementId) {
-    return true;
-  } else {
-    console.error(
-        'The ID of the element should be "' + elementId + '", but "' +
-        element.attributes['id'] + '"');
-    return false;
-  }
+  var caller = getCaller();
+  return repeatUntil(async () => {
+    var element =
+        await remoteCall.callRemoteTestUtil('getActiveElement', windowId, []);
+    if (element && element.attributes['id'] === elementId) {
+      return true;
+    }
+    return pending(
+        caller,
+        'Waiting for active element with id: "' + elementId +
+            '", but current is: "' + element.attributes['id'] + '"');
+  });
 };
 
 /**

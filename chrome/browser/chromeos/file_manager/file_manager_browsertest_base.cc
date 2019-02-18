@@ -42,6 +42,8 @@
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
+#include "chrome/browser/ui/views/extensions/extension_dialog.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -80,6 +82,31 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
+
+class SelectFileDialogExtensionTestFactory
+    : public ui::SelectFileDialogFactory {
+ public:
+  SelectFileDialogExtensionTestFactory() = default;
+  ~SelectFileDialogExtensionTestFactory() override = default;
+
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    last_select_ =
+        SelectFileDialogExtension::Create(listener, std::move(policy));
+    return last_select_.get();
+  }
+
+  views::Widget* GetLastWidget() {
+    return last_select_->extension_dialog_->GetWidget();
+  }
+
+ private:
+  scoped_refptr<SelectFileDialogExtension> last_select_;
+};
 
 namespace file_manager {
 namespace {
@@ -1406,6 +1433,14 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   if (IsTabletModeTest()) {
     EnableVirtualKeyboard();
   }
+
+  select_factory_ = new SelectFileDialogExtensionTestFactory();
+  ui::SelectFileDialog::SetFactory(select_factory_);
+}
+
+void FileManagerBrowserTestBase::TearDownOnMainThread() {
+  select_factory_ = nullptr;
+  ui::SelectFileDialog::SetFactory(nullptr);
 }
 
 bool FileManagerBrowserTestBase::GetTabletMode() const {
@@ -1770,6 +1805,30 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
         &key_event, base::BindOnce([](bool) {}));
     *output = "mediaKeyDispatched";
+    return;
+  }
+
+  if (name == "dispatchTabKey") {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, 0);
+
+    // Try to dispatch the event close-to-native without pulling in too many
+    // dependencies (i.e. X11/Ozone/Wayland/Mus). aura::WindowTreeHost is pretty
+    // high up in the dispatch stack, but we might need event_injector.mojom
+    // for a more realistic Mus dispatch.
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    aura::WindowTreeHost* host = nullptr;
+    if (app_windows.empty()) {
+      ASSERT_TRUE(select_factory_);
+      views::Widget* widget = select_factory_->GetLastWidget();
+      ASSERT_TRUE(widget);
+      host = widget->GetNativeWindow()->GetHost();
+    } else {
+      host = app_windows.front()->GetNativeWindow()->GetHost();
+    }
+    ASSERT_TRUE(host);
+    host->DispatchKeyEventPostIME(&key_event, base::BindOnce([](bool) {}));
+    *output = "tabKeyDispatched";
     return;
   }
 

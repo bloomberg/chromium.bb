@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 
 class NotificationDisplayServiceTester;
+class SelectFileDialogExtensionTestFactory;
 
 namespace file_manager {
 
@@ -40,6 +41,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   bool SetUpUserDataDirectory() override;
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   // Mandatory overrides for each File Manager test extension type.
   virtual GuestMode GetGuestMode() const = 0;
@@ -143,6 +145,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
       service_factory_for_test_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+
+  // Not owned.
+  SelectFileDialogExtensionTestFactory* select_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestBase);
 };

@@ -113,7 +113,6 @@ struct TestCase {
 
   const char* test_case_name = nullptr;
   GuestMode guest_mode = NOT_IN_GUEST_MODE;
-  bool trusted_events = false;
   bool tablet_mode = false;
   base::Optional<bool> enable_drivefs;
   base::Optional<bool> enable_myfiles_volume;
@@ -122,13 +121,6 @@ struct TestCase {
   bool offline = false;
   bool enable_native_smb = true;
   bool mount_no_volumes = false;
-};
-
-// EventCase: FilesAppBrowserTest with trusted JS Events.
-struct EventCase : public TestCase {
-  explicit EventCase(const char* name) : TestCase(name) {
-    trusted_events = true;
-  }
 };
 
 // ZipCase: FilesAppBrowserTest with zip/unzip support.
@@ -145,14 +137,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
-
-    // Prevent Blink swallowing Tab key with its default handlers: forward
-    // the Tab key event to the Files.App JS page under test instead.
-    if (GetParam().trusted_events) {
-      command_line->AppendSwitchASCII("disable-blink-features",
-                                      "TrustedEventsDefaultAction");
-    }
-
     // Default mode is clamshell: force Ash into tablet mode if requested,
     // and enable the Ash virtual keyboard sub-system therein.
     if (GetParam().tablet_mode) {
@@ -703,46 +687,44 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("sortColumns").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
-    TabIndex, /* tab_index.js: tabindex tests require trusted JS Events. */
+    TabIndex, /* tab_index.js: */
     FilesAppBrowserTest,
     ::testing::Values(
-        EventCase("tabindexSearchBoxFocus"),
-        EventCase("tabindexSearchBoxFocus").EnableMyFilesVolume(),
-        EventCase("tabindexFocus"),
-        EventCase("tabindexFocus").EnableMyFilesVolume(),
-        EventCase("tabindexFocusDownloads"),
-        EventCase("tabindexFocusDownloads").EnableMyFilesVolume(),
-        EventCase("tabindexFocusDownloads").InGuestMode(),
-        EventCase("tabindexFocusDownloads").InGuestMode().EnableMyFilesVolume(),
-        EventCase("tabindexFocusBreadcrumbBackground"),
-        EventCase("tabindexFocusDirectorySelected"),
-        EventCase("tabindexFocusDirectorySelected").EnableMyFilesVolume(),
-        EventCase("tabindexOpenDialogDrive").WithBrowser().DisableDriveFs(),
-        EventCase("tabindexOpenDialogDrive").WithBrowser().EnableDriveFs(),
-        EventCase("tabindexOpenDialogDrive")
+        TestCase("tabindexSearchBoxFocus"),
+        TestCase("tabindexSearchBoxFocus").EnableMyFilesVolume(),
+        TestCase("tabindexFocus"),
+        TestCase("tabindexFocus").EnableMyFilesVolume(),
+        TestCase("tabindexFocusDownloads"),
+        TestCase("tabindexFocusDownloads").EnableMyFilesVolume(),
+        TestCase("tabindexFocusDownloads").InGuestMode(),
+        TestCase("tabindexFocusDownloads").InGuestMode().EnableMyFilesVolume(),
+        TestCase("tabindexFocusBreadcrumbBackground"),
+        TestCase("tabindexFocusDirectorySelected"),
+        TestCase("tabindexFocusDirectorySelected").EnableMyFilesVolume(),
+        TestCase("tabindexOpenDialogDrive").WithBrowser().DisableDriveFs(),
+        TestCase("tabindexOpenDialogDrive").WithBrowser().EnableDriveFs(),
+        TestCase("tabindexOpenDialogDrive")
             .WithBrowser()
             .EnableDriveFs()
             .EnableMyFilesVolume(),
-        EventCase("tabindexOpenDialogDownloads").WithBrowser(),
-        EventCase("tabindexOpenDialogDownloads")
+        TestCase("tabindexOpenDialogDownloads").WithBrowser(),
+        TestCase("tabindexOpenDialogDownloads")
             .WithBrowser()
             .EnableMyFilesVolume(),
-        EventCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode(),
-        EventCase("tabindexOpenDialogDownloads")
+        TestCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("tabindexOpenDialogDownloads")
             .WithBrowser()
             .InGuestMode()
             .EnableMyFilesVolume(),
-        EventCase("tabindexSaveFileDialogDrive").WithBrowser().DisableDriveFs(),
-        EventCase("tabindexSaveFileDialogDrive").WithBrowser().EnableDriveFs(),
-        EventCase("tabindexSaveFileDialogDrive")
+        TestCase("tabindexSaveFileDialogDrive").WithBrowser().DisableDriveFs(),
+        TestCase("tabindexSaveFileDialogDrive").WithBrowser().EnableDriveFs(),
+        TestCase("tabindexSaveFileDialogDrive")
             .WithBrowser()
             .EnableDriveFs()
             .EnableMyFilesVolume(),
-        EventCase("tabindexSaveFileDialogDownloads").WithBrowser(),
-        EventCase("tabindexSaveFileDialogDownloads")
-            .WithBrowser()
-            .InGuestMode(),
-        EventCase("tabindexSaveFileDialogDownloads")
+        TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
+        TestCase("tabindexSaveFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("tabindexSaveFileDialogDownloads")
             .WithBrowser()
             .InGuestMode()
             .EnableMyFilesVolume()));
