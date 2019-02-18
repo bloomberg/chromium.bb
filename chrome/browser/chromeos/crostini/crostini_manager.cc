@@ -11,6 +11,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -2172,7 +2173,7 @@ void CrostiniManager::OnStartLxdContainer(
                                               CrostiniUISurface::kAppList);
       // signal.
       // Then perform the same steps as for starting.
-      ABSL_FALLTHROUGH_INTENDED;
+      FALLTHROUGH;
     case vm_tools::cicerone::StartLxdContainerResponse::STARTING:
       VLOG(1) << "Awaiting LxdContainerStartingSignal for " << owner_id_ << ", "
               << vm_name << ", " << container_name;
