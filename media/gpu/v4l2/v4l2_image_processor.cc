@@ -600,7 +600,9 @@ void V4L2ImageProcessor::DestroyInputBuffers() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
 
-  input_queue_->DeallocateBuffers();
+  // We may be destroyed before we allocate any buffer.
+  if (input_queue_)
+    input_queue_->DeallocateBuffers();
 }
 
 void V4L2ImageProcessor::DestroyOutputBuffers() {
@@ -609,7 +611,9 @@ void V4L2ImageProcessor::DestroyOutputBuffers() {
 
   output_buffer_map_.clear();
 
-  output_queue_->DeallocateBuffers();
+  // We may be destroyed before we allocate any buffer.
+  if (output_queue_)
+    output_queue_->DeallocateBuffers();
 }
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
@@ -632,6 +636,7 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 void V4L2ImageProcessor::ServiceDeviceTask() {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK(input_queue_);
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
   // so either:
   // * device_poll_thread_ is running normally
@@ -667,6 +672,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
 void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK(input_queue_);
 
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
   if (!EnqueueInputRecord(job_record))
@@ -688,6 +694,7 @@ void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
 void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK(output_queue_);
 
   const int old_outputs_queued = output_buffer_queued_count_;
   if (!EnqueueOutputRecord(job_record))
@@ -709,6 +716,8 @@ void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
 void V4L2ImageProcessor::Dequeue() {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK(input_queue_);
+  DCHECK(output_queue_);
   DCHECK(input_queue_->IsStreaming());
 
   // Dequeue completed input (VIDEO_OUTPUT) buffers,
@@ -799,6 +808,7 @@ void V4L2ImageProcessor::Dequeue() {
 
 bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   DVLOGF(4);
+  DCHECK(input_queue_);
   DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
 
   // Enqueue an input (VIDEO_OUTPUT) buffer for an input video frame.
@@ -920,10 +930,10 @@ void V4L2ImageProcessor::StopDevicePoll() {
     return;
   }
 
-  if (!input_queue_->Streamoff())
+  if (input_queue_ && !input_queue_->Streamoff())
     return;
 
-  if (!output_queue_->Streamoff())
+  if (output_queue_ && !output_queue_->Streamoff())
     return;
 
   // Reset all our accounting info.
