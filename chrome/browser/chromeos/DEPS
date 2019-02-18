@@ -42,6 +42,10 @@ specific_include_rules = {
   "event_rewriter_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",
   ],
+  "file_manager_browsertest_base.cc": [
+    "+chrome/browser/ui/views/extensions/extension_dialog.h",
+    "+chrome/browser/ui/views/select_file_dialog_extension.h",
+  ],
   "input_method_manager_impl\.cc": [
     # For GetInputMethodKeyboardController. TODO(stevenjb/shuchen): Fix this
     # for Mash. https://crbug.com/756059

@@ -78,6 +78,7 @@ class SelectFileDialogExtension
  private:
   friend class SelectFileDialogExtensionBrowserTest;
   friend class SelectFileDialogExtensionTest;
+  friend class SelectFileDialogExtensionTestFactory;
 
   // Object is ref-counted, use Create().
   explicit SelectFileDialogExtension(

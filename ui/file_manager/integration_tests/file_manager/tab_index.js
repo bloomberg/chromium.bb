@@ -105,8 +105,8 @@ testcase.tabindexFocusBreadcrumbBackground = async function() {
       appId, '#breadcrumb-path-0', ['background-color']);
 
   // Press the tab key.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeKeyDown', appId, ['body', 'Tab', false, false, false]));
+  const result = await sendTestMessage({name: 'dispatchTabKey'});
+  chrome.test.assertEq(result, 'tabKeyDispatched', 'Tab key dispatch failure');
 
   // Get background color for breadcrumb with focus.
   const focused = await remoteCall.waitForElementStyles(
@@ -213,10 +213,9 @@ async function tabindexFocus(
       chrome.test.assertTrue(
           await remoteCall.checkNextTabFocus(appId, className), className);
     }
-
-    // Closes the window by pressing Enter.
-    await remoteCall.callRemoteTestUtil(
-        'fakeKeyDown', appId, ['#file-list', 'Enter', false, false, false]);
+    // Closes the window by pressing Escape.
+    chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', appId, ['#file-list', 'Escape', false, false, false]));
   };
 
   await openAndWaitForClosingDialog(
