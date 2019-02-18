@@ -55,9 +55,6 @@ class AccountInvestigator : public KeyedService,
   void Shutdown() override;
 
   // identity::IdentityManager::Observer:
-  void OnAddAccountToCookieCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;

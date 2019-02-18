@@ -73,14 +73,6 @@ void AccountInvestigator::Shutdown() {
   timer_.Stop();
 }
 
-void AccountInvestigator::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  // This hook isn't particularly useful for us. Most cookie jar changes fly by
-  // without invoking this method, and some sign ins cause this method can get
-  // called serveral times.
-}
-
 void AccountInvestigator::OnAccountsInCookieUpdated(
     const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {

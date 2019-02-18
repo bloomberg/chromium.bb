@@ -478,12 +478,6 @@ void AccountConsistencyService::OnBrowsingDataRemoved() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
 }
 
-void AccountConsistencyService::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  AddChromeConnectedCookies();
-}
-
 void AccountConsistencyService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
