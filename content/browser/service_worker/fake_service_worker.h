@@ -100,8 +100,10 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
   void Ping(PingCallback callback) override;
   void SetIdleTimerDelayToZero() override;
 
+  virtual void OnConnectionError();
+
  private:
-  void OnConnectionError();
+  void CallOnConnectionError();
 
   // |helper_| owns |this|.
   EmbeddedWorkerTestHelper* const helper_;

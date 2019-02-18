@@ -90,14 +90,10 @@ class TestBrowserContext;
 // See embedded_worker_instance_unittest.cc for more example usages.
 class EmbeddedWorkerTestHelper {
  public:
-  enum class Event { Install, Activate };
-
   // If |user_data_directory| is empty, the context makes storage stuff in
   // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
   virtual ~EmbeddedWorkerTestHelper();
-
-  std::vector<Event>* dispatched_events() { return &events_; }
 
   ServiceWorkerContextCore* context();
   ServiceWorkerContextWrapper* context_wrapper() { return wrapper_.get(); }
@@ -176,8 +172,6 @@ class EmbeddedWorkerTestHelper {
 
  protected:
   // TODO(falken): Remove these and use FakeServiceWorker instead.
-  virtual void OnActivateEvent(
-      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback);
   virtual void OnBackgroundFetchAbortEvent(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
@@ -202,8 +196,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::ExtendableMessageEventPtr event,
       blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
           callback);
-  virtual void OnInstallEvent(
-      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback);
   virtual void OnFetchEvent(
       int embedded_worker_id,
       blink::mojom::FetchAPIRequestPtr request,
@@ -264,8 +256,6 @@ class EmbeddedWorkerTestHelper {
   class MockRendererInterface;
 
   // TODO(falken): Remove these and use FakeServiceWorker instead.
-  void OnActivateEventStub(
-      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback);
   void OnBackgroundFetchAbortEventStub(
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       blink::mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback
@@ -290,8 +280,6 @@ class EmbeddedWorkerTestHelper {
       blink::mojom::ExtendableMessageEventPtr event,
       blink::mojom::ServiceWorker::DispatchExtendableMessageEventCallback
           callback);
-  void OnInstallEventStub(
-      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback);
   void OnFetchEventStub(
       int embedded_worker_id,
       blink::mojom::FetchAPIRequestPtr request,
@@ -369,7 +357,6 @@ class EmbeddedWorkerTestHelper {
                ServiceWorkerRegistrationObjectInfoPtr /* registration_info */>
       embedded_worker_id_registration_info_map_;
 
-  std::vector<Event> events_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<MockNetworkURLLoaderFactory> default_network_loader_factory_;
 

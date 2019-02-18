@@ -21,7 +21,7 @@ FakeServiceWorker::~FakeServiceWorker() = default;
 void FakeServiceWorker::Bind(blink::mojom::ServiceWorkerRequest request) {
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::BindOnce(
-      &FakeServiceWorker::OnConnectionError, base::Unretained(this)));
+      &FakeServiceWorker::CallOnConnectionError, base::Unretained(this)));
 }
 
 void FakeServiceWorker::RunUntilInitializeGlobalScope() {
@@ -60,12 +60,13 @@ void FakeServiceWorker::InitializeGlobalScope(
 
 void FakeServiceWorker::DispatchInstallEvent(
     DispatchInstallEventCallback callback) {
-  helper_->OnInstallEventStub(std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                          true /* has_fetch_handler */);
 }
 
 void FakeServiceWorker::DispatchActivateEvent(
     DispatchActivateEventCallback callback) {
-  helper_->OnActivateEventStub(std::move(callback));
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
 void FakeServiceWorker::DispatchBackgroundFetchAbortEvent(
@@ -192,6 +193,11 @@ void FakeServiceWorker::SetIdleTimerDelayToZero() {
 void FakeServiceWorker::OnConnectionError() {
   // Destroys |this|.
   helper_->RemoveServiceWorker(this);
+}
+
+void FakeServiceWorker::CallOnConnectionError() {
+  // Call OnConnectionError(), which subclasses can override.
+  OnConnectionError();
 }
 
 }  // namespace content

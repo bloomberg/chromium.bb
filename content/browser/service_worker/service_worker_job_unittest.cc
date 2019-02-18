@@ -301,18 +301,48 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   ASSERT_NE(registration1, registration2);
 }
 
+class RecordInstallActivateWorker : public FakeServiceWorker {
+ public:
+  RecordInstallActivateWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(helper) {}
+  ~RecordInstallActivateWorker() override = default;
+
+  const std::vector<ServiceWorkerMetrics::EventType>& events() const {
+    return events_;
+  }
+
+  void DispatchInstallEvent(
+      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback)
+      override {
+    events_.emplace_back(ServiceWorkerMetrics::EventType::INSTALL);
+    FakeServiceWorker::DispatchInstallEvent(std::move(callback));
+  }
+
+  void DispatchActivateEvent(
+      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback)
+      override {
+    events_.emplace_back(ServiceWorkerMetrics::EventType::ACTIVATE);
+    FakeServiceWorker::DispatchActivateEvent(std::move(callback));
+  }
+
+ private:
+  std::vector<ServiceWorkerMetrics::EventType> events_;
+};
+
 // Make sure basic registration is working.
 TEST_F(ServiceWorkerJobTest, Register) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("https://www.example.com/");
+  auto* worker =
+      helper_->AddNewPendingServiceWorker<RecordInstallActivateWorker>(
+          helper_.get());
   scoped_refptr<ServiceWorkerRegistration> registration = RunRegisterJob(
       GURL("https://www.example.com/service_worker.js"), options);
 
   EXPECT_TRUE(registration);
-  EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Install,
-            helper_->dispatched_events()->at(0));
-  EXPECT_EQ(EmbeddedWorkerTestHelper::Event::Activate,
-            helper_->dispatched_events()->at(1));
+  ASSERT_EQ(2u, worker->events().size());
+  EXPECT_EQ(ServiceWorkerMetrics::EventType::INSTALL, worker->events()[0]);
+  EXPECT_EQ(ServiceWorkerMetrics::EventType::ACTIVATE, worker->events()[1]);
 }
 
 // Make sure registrations are cleaned up when they are unregistered.
@@ -1648,199 +1678,46 @@ TEST_F(ServiceWorkerJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
 }
 
-class EventCallbackHelper : public EmbeddedWorkerTestHelper {
+// A fake service worker for toggling whether a fetch event handler exists.
+class FetchHandlerWorker : public FakeServiceWorker {
  public:
-  EventCallbackHelper()
-      : EmbeddedWorkerTestHelper(base::FilePath()),
-        install_event_result_(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED),
-        activate_event_result_(
-            blink::mojom::ServiceWorkerEventStatus::COMPLETED) {}
+  FetchHandlerWorker(EmbeddedWorkerTestHelper* helper)
+      : FakeServiceWorker(helper) {}
+  ~FetchHandlerWorker() override = default;
 
-  void OnInstallEvent(blink::mojom::ServiceWorker::DispatchInstallEventCallback
-                          callback) override {
-    if (!install_callback_.is_null())
-      std::move(install_callback_).Run();
-    std::move(callback).Run(install_event_result_, has_fetch_handler_);
-  }
-
-  void OnActivateEvent(
-      blink::mojom::ServiceWorker::DispatchActivateEventCallback callback)
-      override {
-    std::move(callback).Run(activate_event_result_);
-  }
-
-  void set_install_callback(base::OnceClosure callback) {
-    install_callback_ = std::move(callback);
-  }
-  void set_install_event_result(blink::mojom::ServiceWorkerEventStatus result) {
-    install_event_result_ = result;
-  }
-  void set_activate_event_result(
-      blink::mojom::ServiceWorkerEventStatus result) {
-    activate_event_result_ = result;
-  }
   void set_has_fetch_handler(bool has_fetch_handler) {
     has_fetch_handler_ = has_fetch_handler;
   }
 
+  void DispatchInstallEvent(
+      blink::mojom::ServiceWorker::DispatchInstallEventCallback callback)
+      override {
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                            has_fetch_handler_);
+  }
+
  private:
-  base::OnceClosure install_callback_;
-  blink::mojom::ServiceWorkerEventStatus install_event_result_;
-  blink::mojom::ServiceWorkerEventStatus activate_event_result_;
-  bool has_fetch_handler_ = true;
+  bool has_fetch_handler_ = false;
 };
 
-TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
-  // S13nServiceWorker: RemoveControllee doesn't affect activation so let's skip
-  // this test.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  EventCallbackHelper* helper = new EventCallbackHelper;
-  helper_.reset(helper);
-
-  GURL script1("https://www.example.com/service_worker.js");
-  GURL script2("https://www.example.com/service_worker.js?new");
-  blink::mojom::ServiceWorkerRegistrationOptions options;
-  options.scope = GURL("https://www.example.com/one/");
-
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      RunRegisterJob(script1, options);
-
-  // Add a controllee and queue an unregister to force the uninstalling state.
-  ServiceWorkerProviderHost* host = CreateControllee();
-  scoped_refptr<ServiceWorkerVersion> old_version =
-      registration->active_version();
-  old_version->AddControllee(host);
-  RunUnregisterJob(options.scope);
-
-  // Register another script. While installing, old_version loses controllee.
-  helper->set_install_callback(
-      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
-                     host->client_uuid()));
-  EXPECT_EQ(registration, RunRegisterJob(script2, options));
-
-  EXPECT_FALSE(registration->is_uninstalling());
-  EXPECT_FALSE(registration->is_uninstalled());
-
-  // Verify the new version is activated.
-  scoped_refptr<ServiceWorkerVersion> new_version =
-      registration->active_version();
-  EXPECT_NE(old_version, new_version);
-  EXPECT_EQ(nullptr, registration->installing_version());
-  EXPECT_EQ(nullptr, registration->waiting_version());
-  EXPECT_EQ(new_version, registration->active_version());
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
-  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
-
-  EXPECT_EQ(registration, FindRegistrationForScope(options.scope));
-}
-
-TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
-  // S13nServiceWorker: RemoveControllee doesn't affect activation so let's skip
-  // this test.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  EventCallbackHelper* helper = new EventCallbackHelper;
-  helper_.reset(helper);
-
-  GURL script1("https://www.example.com/service_worker.js");
-  GURL script2("https://www.example.com/service_worker.js?new");
-  blink::mojom::ServiceWorkerRegistrationOptions options;
-  options.scope = GURL("https://www.example.com/one/");
-
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      RunRegisterJob(script1, options);
-
-  // Add a controllee and queue an unregister to force the uninstalling state.
-  ServiceWorkerProviderHost* host = CreateControllee();
-  scoped_refptr<ServiceWorkerVersion> old_version =
-      registration->active_version();
-  old_version->AddControllee(host);
-  RunUnregisterJob(options.scope);
-
-  // Register another script that fails to install. While installing,
-  // old_version loses controllee.
-  helper->set_install_callback(
-      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
-                     host->client_uuid()));
-  helper->set_install_event_result(
-      blink::mojom::ServiceWorkerEventStatus::REJECTED);
-  EXPECT_EQ(registration, RunRegisterJob(script2, options));
-
-  // Verify the registration was uninstalled.
-  EXPECT_FALSE(registration->is_uninstalling());
-  EXPECT_TRUE(registration->is_uninstalled());
-
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, old_version->running_status());
-  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
-
-  FindRegistrationForScope(options.scope,
-                           blink::ServiceWorkerStatusCode::kErrorNotFound);
-}
-
-TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
-  // S13nServiceWorker: RemoveControllee doesn't affect activation so let's skip
-  // this test.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  EventCallbackHelper* helper = new EventCallbackHelper;
-  helper_.reset(helper);
-
-  GURL script1("https://www.example.com/service_worker.js");
-  GURL script2("https://www.example.com/service_worker.js?new");
-  blink::mojom::ServiceWorkerRegistrationOptions options;
-  options.scope = GURL("https://www.example.com/one/");
-
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      RunRegisterJob(script1, options);
-
-  // Add a controllee and queue an unregister to force the uninstalling state.
-  ServiceWorkerProviderHost* host = CreateControllee();
-  scoped_refptr<ServiceWorkerVersion> old_version =
-      registration->active_version();
-  old_version->AddControllee(host);
-  RunUnregisterJob(options.scope);
-
-  // Register another script that fails to activate. While installing,
-  // old_version loses controllee.
-  helper->set_install_callback(
-      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
-                     host->client_uuid()));
-  helper->set_activate_event_result(
-      blink::mojom::ServiceWorkerEventStatus::REJECTED);
-  EXPECT_EQ(registration, RunRegisterJob(script2, options));
-
-  // Verify the registration remains.
-  EXPECT_FALSE(registration->is_uninstalling());
-  EXPECT_FALSE(registration->is_uninstalled());
-
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, old_version->running_status());
-  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
-
-  FindRegistrationForScope(options.scope, blink::ServiceWorkerStatusCode::kOk);
-}
-
 TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
-  EventCallbackHelper* helper = new EventCallbackHelper;
-  helper_.reset(helper);
-
   GURL script("https://www.example.com/service_worker.js");
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("https://www.example.com/");
   scoped_refptr<ServiceWorkerRegistration> registration;
 
-  helper->set_has_fetch_handler(true);
+  auto* fetch_handler_worker =
+      helper_->AddNewPendingServiceWorker<FetchHandlerWorker>(helper_.get());
+  fetch_handler_worker->set_has_fetch_handler(true);
   RunRegisterJob(script, options);
   registration = FindRegistrationForScope(options.scope);
   EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::EXISTS,
             registration->active_version()->fetch_handler_existence());
   RunUnregisterJob(options.scope);
 
-  helper->set_has_fetch_handler(false);
+  auto* no_fetch_handler_worker =
+      helper_->AddNewPendingServiceWorker<FetchHandlerWorker>(helper_.get());
+  no_fetch_handler_worker->set_has_fetch_handler(false);
   RunRegisterJob(script, options);
   registration = FindRegistrationForScope(options.scope);
   EXPECT_EQ(ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST,
