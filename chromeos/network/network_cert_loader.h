@@ -40,14 +40,37 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
  public:
   class Observer {
    public:
-    // Called when the certificates, passed for convenience as |all_certs|,
-    // have completed loading.
-    virtual void OnCertificatesLoaded(
-        const net::ScopedCERTCertificateList& all_certs) = 0;
+    // Called when the certificates have completed loading or have been updated.
+    virtual void OnCertificatesLoaded() = 0;
 
    protected:
     virtual ~Observer() {}
   };
+
+  // Holds a certificate that can be used in network configs along with
+  // additional information.
+  class NetworkCert final {
+   public:
+    NetworkCert(net::ScopedCERTCertificate cert, bool device_wide);
+    NetworkCert(NetworkCert&& other);
+    ~NetworkCert();
+    NetworkCert& operator=(NetworkCert&& other);
+
+    CERTCertificate* cert() const { return cert_.get(); }
+    // Returns true if this certificate is available device-wide (so it can be
+    // used in shared network configs).
+    bool is_device_wide() const { return device_wide_; }
+    NetworkCert Clone() const;
+
+   private:
+    net::ScopedCERTCertificate cert_;
+    bool device_wide_;
+
+    DISALLOW_COPY_AND_ASSIGN(NetworkCert);
+  };
+
+  // A list of NetworkCerts.
+  using NetworkCertList = std::vector<NetworkCert>;
 
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
@@ -92,19 +115,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
   // (system and user) databases.
   void SetUserNSSDB(net::NSSCertDatabase* user_database);
 
-  // Adds the passed |PolicyCertificateProvider| and starts using the authority
-  // certificates provided by it. NetworkCertLoader registers itself as Observer
-  // on |policy_certificate_provider|, so the caller must ensure to call
-  // |RemovePolicyCertificateProvider| before |policy_certificate_provider| is
-  // destroyed or before |NetworkCertLoader| is shut down.
-  void AddPolicyCertificateProvider(
-      PolicyCertificateProvider* policy_certificate_provider);
+  // Sets the PolicyCertificateProvider for device policy (its authority
+  // certificates will be available device-wide). Call with nullptr to remove it
+  // again.
+  void SetDevicePolicyCertificateProvider(
+      PolicyCertificateProvider* device_policy_certificate_provider);
 
-  // Removes the passed |PolicyCertificateProvider| and stops using authority
-  // certificates provided by it. |policy_certificate_provider| must have been
-  // added using |AddPolicyCertificateProvider| before.
-  void RemovePolicyCertificateProvider(
-      PolicyCertificateProvider* policy_certificate_provider);
+  // Sets the PolicyCertificateProvider for user policy (its authority
+  // certificates will not be available device-wide). Call with nullptr to
+  // remove it again.
+  void SetUserPolicyCertificateProvider(
+      PolicyCertificateProvider* device_user_certificate_provider);
 
   void AddObserver(NetworkCertLoader::Observer* observer);
   void RemoveObserver(NetworkCertLoader::Observer* observer);
@@ -133,19 +154,28 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
   // Returns true if certificates from a user NSS database have been loaded.
   bool user_cert_database_load_finished() const;
 
-  // Returns all certificates. This will be empty until certificates_loaded() is
-  // true.
-  const net::ScopedCERTCertificateList& all_certs() const {
+  // Returns authority certificates usable for network configurations. This will
+  // be empty until certificates_loaded() is true.
+  const NetworkCertList& authority_certs() const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return all_certs_;
+    return all_authority_certs_;
   }
 
-  // Returns certificates from the system token. This will be empty until
-  // certificates_loaded() is true.
-  const net::ScopedCERTCertificateList& system_token_client_certs() const {
+  // Returns client certificates usable for network configuration. This will be
+  // empty until certificates_loaded() is true.
+  const NetworkCertList& client_certs() const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return system_token_client_certs_;
+    return all_client_certs_;
   }
+
+  // Returns all certificates from |network_cert_list|, ignoring if they're
+  // device-wide or not.
+  static net::ScopedCERTCertificateList GetAllCertsFromNetworkCertList(
+      const NetworkCertList& network_cert_list);
+
+  // Clones a vector of |NetworkCert|s.
+  static NetworkCertList CloneNetworkCertList(
+      const NetworkCertList& network_cert_list);
 
   // Called in tests if |IsCertificateHardwareBacked()| should always return
   // true.
@@ -160,13 +190,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
   // Called when |system_cert_cache_| or |user_cert_cache| certificates have
   // potentially changed.
   void OnCertCacheUpdated();
-
-  // Called as a result of |OnCertCacheUpdated|. This is a separate function,
-  // because |OnCertCacheUpdated| may trigger a background task for filtering
-  // certificates.
-  void StoreCertsFromCache(
-      net::ScopedCERTCertificateList all_certs,
-      net::ScopedCERTCertificateList system_token_client_certs);
 
   // Called when policy-provided certificates or cache-based certificates (see
   // |all_certs_from_cache_|) have potentially changed.
@@ -186,24 +209,26 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkCertLoader
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Cache for certificates from the system-token NSSCertDatabase.
-  std::unique_ptr<CertCache> system_cert_cache_;
-  // Cache for certificates from the user-specific NSSCertDatabase.
-  std::unique_ptr<CertCache> user_cert_cache_;
+  std::unique_ptr<CertCache> system_slot_cert_cache_;
+  // Cache for certificates from the user-specific NSSCertDatabase, listing
+  // certificates from the private slot.
+  std::unique_ptr<CertCache> user_private_slot_cert_cache_;
+  // Cache for certificates from the user-specific NSSCertDatabase, listing
+  // certificates from the public slot.
+  std::unique_ptr<CertCache> user_public_slot_cert_cache_;
 
-  // Cached certificates loaded from the database(s) and policy-pushed Authority
-  // certificates.
-  net::ScopedCERTCertificateList all_certs_;
+  // Client certificates.
+  NetworkCertList all_client_certs_;
 
-  // Cached certificates loaded from the database(s).
-  net::ScopedCERTCertificateList all_certs_from_cache_;
-
-  // Cached certificates from system token.
-  net::ScopedCERTCertificateList system_token_client_certs_;
+  // Authority certs from |cached_certs_| extended by authority certs provided
+  // by the policy certificate providers.
+  NetworkCertList all_authority_certs_;
 
   // True if |StoreCertsFromCache()| was called before.
   bool certs_from_cache_loaded_ = false;
 
-  std::vector<const PolicyCertificateProvider*> policy_certificate_providers_;
+  PolicyCertificateProvider* device_policy_certificate_provider_ = nullptr;
+  PolicyCertificateProvider* user_policy_certificate_provider_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
 

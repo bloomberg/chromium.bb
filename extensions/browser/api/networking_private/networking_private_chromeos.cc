@@ -739,7 +739,9 @@ NetworkingPrivateChromeOS::GetCertificateLists() {
 
   std::vector<private_api::Certificate> user_cert_list;
   const std::vector<NetworkCertificateHandler::Certificate>& user_certs =
-      NetworkHandler::Get()->network_certificate_handler()->user_certificates();
+      NetworkHandler::Get()
+          ->network_certificate_handler()
+          ->client_certificates();
   for (const auto& cert : user_certs)
     result.user_certificates.push_back(GetCertDictionary(cert));
 

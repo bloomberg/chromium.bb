@@ -213,7 +213,7 @@ void BrowserPolicyConnectorChromeOS::Init(
           DeviceNetworkConfigurationUpdater::DeviceAssetIDFetcher());
   // NetworkCertLoader may be not initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized()) {
-    chromeos::NetworkCertLoader::Get()->AddPolicyCertificateProvider(
+    chromeos::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(
         device_network_configuration_updater_.get());
   }
 
@@ -247,8 +247,8 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 void BrowserPolicyConnectorChromeOS::Shutdown() {
   // NetworkCertLoader may be not initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized()) {
-    chromeos::NetworkCertLoader::Get()->RemovePolicyCertificateProvider(
-        device_network_configuration_updater_.get());
+    chromeos::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(
+        nullptr);
   }
   device_network_configuration_updater_.reset();
 

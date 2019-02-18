@@ -30,8 +30,10 @@ namespace policy {
 
 UserNetworkConfigurationUpdater::~UserNetworkConfigurationUpdater() {
   // NetworkCertLoader may be not initialized in tests.
-  if (chromeos::NetworkCertLoader::IsInitialized())
-    chromeos::NetworkCertLoader::Get()->RemovePolicyCertificateProvider(this);
+  if (chromeos::NetworkCertLoader::IsInitialized()) {
+    chromeos::NetworkCertLoader::Get()->SetUserPolicyCertificateProvider(
+        nullptr);
+  }
 }
 
 // static
@@ -84,7 +86,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
   // only created for the primary profile. NetworkCertLoader may be not
   // initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized())
-    chromeos::NetworkCertLoader::Get()->AddPolicyCertificateProvider(this);
+    chromeos::NetworkCertLoader::Get()->SetUserPolicyCertificateProvider(this);
 }
 
 void UserNetworkConfigurationUpdater::ImportClientCertificates() {

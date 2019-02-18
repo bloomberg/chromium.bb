@@ -50,13 +50,19 @@ class NetworkCertMigratorTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(test_system_nssdb_.is_open());
     ASSERT_TRUE(test_user_nssdb_.is_open());
-    // Use the same DB for public and private slot.
-    test_system_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot()))));
-    test_user_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
+    // Use the same slot as public and private slot for the user's
+    // NSSCertDatabse for testing.
+    test_user_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_user_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_user_nssdb_.slot()))));
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_user_nssdb_.slot())));
+    // Create a NSSCertDatabase for the system slot. While NetworkCertLoader
+    // does not care about the public slot in this database, NSSCertDatabase
+    // requires a public slot. Pass the system slot there for testing.
+    test_system_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())),
+        crypto::ScopedPK11Slot() /* private_slot */);
+    test_system_nsscertdb_->SetSystemSlot(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
 
     DBusThreadManager::Initialize();
     service_test_ =
