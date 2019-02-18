@@ -76,12 +76,13 @@ void WifiDataProviderChromeOs::DoWifiScanTaskOnNetworkHandlerThread() {
 
   if (GetAccessPointData(&new_data.access_point_data)) {
     client_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&WifiDataProviderChromeOs::DidWifiScanTask, this, new_data));
+        FROM_HERE, base::BindOnce(&WifiDataProviderChromeOs::DidWifiScanTask,
+                                  this, new_data));
   } else {
     client_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&WifiDataProviderChromeOs::DidWifiScanTaskNoResults, this));
+        base::BindOnce(&WifiDataProviderChromeOs::DidWifiScanTaskNoResults,
+                       this));
   }
 }
 
@@ -119,7 +120,7 @@ void WifiDataProviderChromeOs::ScheduleNextScan(int interval) {
   }
   NetworkHandler::Get()->task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &WifiDataProviderChromeOs::DoWifiScanTaskOnNetworkHandlerThread,
           this),
       base::TimeDelta::FromMilliseconds(interval));

@@ -109,9 +109,9 @@ void FileService::BindFileSystemRequest(
     const service_manager::BindSourceInfo& source_info) {
   file_service_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileService::FileSystemObjects::OnFileSystemRequest,
-                 file_system_objects_->AsWeakPtr(), source_info.identity,
-                 base::Passed(&request)));
+      base::BindOnce(&FileService::FileSystemObjects::OnFileSystemRequest,
+                     file_system_objects_->AsWeakPtr(), source_info.identity,
+                     std::move(request)));
 }
 
 void FileService::BindLevelDBServiceRequest(
@@ -119,9 +119,10 @@ void FileService::BindLevelDBServiceRequest(
     const service_manager::BindSourceInfo& source_info) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileService::LevelDBServiceObjects::OnLevelDBServiceRequest,
-                 leveldb_objects_->AsWeakPtr(), source_info.identity,
-                 base::Passed(&request)));
+      base::BindOnce(
+          &FileService::LevelDBServiceObjects::OnLevelDBServiceRequest,
+          leveldb_objects_->AsWeakPtr(), source_info.identity,
+          std::move(request)));
 }
 
 }  // namespace user_service

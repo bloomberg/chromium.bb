@@ -79,8 +79,8 @@ PowerSaveBlocker::PowerSaveBlocker(
 
 PowerSaveBlocker::~PowerSaveBlocker() {
   if (delegate_.get()) {
-    ui_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&Delegate::RemoveBlock, delegate_));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Delegate::RemoveBlock, delegate_));
   }
 }
 

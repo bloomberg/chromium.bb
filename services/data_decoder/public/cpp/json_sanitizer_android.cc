@@ -77,12 +77,12 @@ void JsonSanitizerAndroid::Sanitize(const std::string& unsafe_json) {
 
 void JsonSanitizerAndroid::OnSuccess(const std::string& json) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(success_callback_, json));
+      FROM_HERE, base::BindOnce(success_callback_, json));
 }
 
 void JsonSanitizerAndroid::OnError(const std::string& error) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(error_callback_, error));
+      FROM_HERE, base::BindOnce(error_callback_, error));
 }
 
 }  // namespace

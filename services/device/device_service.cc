@@ -295,8 +295,8 @@ void DeviceService::BindScreenOrientationListenerRequest(
 #if defined(OS_ANDROID)
   if (io_task_runner_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ScreenOrientationListenerAndroid::Create,
-                              base::Passed(&request)));
+        FROM_HERE, base::BindOnce(&ScreenOrientationListenerAndroid::Create,
+                                  std::move(request)));
   }
 #endif
 }
@@ -305,8 +305,8 @@ void DeviceService::BindSensorProviderRequest(
     mojom::SensorProviderRequest request) {
   if (io_task_runner_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&device::SensorProviderImpl::Create,
-                              file_task_runner_, base::Passed(&request)));
+        FROM_HERE, base::BindOnce(&device::SensorProviderImpl::Create,
+                                  file_task_runner_, std::move(request)));
   }
 }
 

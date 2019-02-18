@@ -51,8 +51,8 @@ void PlatformSensorWin::OnReadingUpdated(const SensorReading& reading) {
 
 void PlatformSensorWin::OnSensorError() {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PlatformSensorWin::NotifySensorError,
-                                    weak_factory_.GetWeakPtr()));
+                         base::BindOnce(&PlatformSensorWin::NotifySensorError,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 bool PlatformSensorWin::StartSensor(

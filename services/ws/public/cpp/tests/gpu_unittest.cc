@@ -134,9 +134,9 @@ class GpuTest : public testing::Test {
   mojom::GpuPtr GetPtr() {
     mojom::GpuPtr ptr;
     io_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&TestGpuImpl::BindRequest, base::Unretained(gpu_impl_.get()),
-                   base::Passed(MakeRequest(&ptr))));
+        FROM_HERE, base::BindOnce(&TestGpuImpl::BindRequest,
+                                  base::Unretained(gpu_impl_.get()),
+                                  base::Passed(MakeRequest(&ptr))));
     return ptr;
   }
 
@@ -144,7 +144,7 @@ class GpuTest : public testing::Test {
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(
+        FROM_HERE, base::BindOnce(
                        [](std::unique_ptr<TestGpuImpl> gpu_impl,
                           base::WaitableEvent* event) {
                          gpu_impl.reset();
