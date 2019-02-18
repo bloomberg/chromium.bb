@@ -9,12 +9,25 @@
 
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
 
+class FullscreenController;
+
 @protocol InfobarPositioner;
 
 // ViewController that contains all Infobars. It can contain various at the
 // same time but only the top most one will be visible.
 @interface LegacyInfobarContainerViewController
     : UIViewController <InfobarContainerConsumer>
+
+// |fullscreenController| must not be nullptr.
+- (instancetype)initWithFullscreenController:
+    (FullscreenController*)fullscreenController NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
+
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 // The delegate used to position the InfoBarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;

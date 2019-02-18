@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/procedural_block_types.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -44,6 +45,7 @@ const CGFloat kIconTrailingMargin = 12;
 }  // namespace
 
 @interface TranslateInfobarView () <
+    FullscreenUIElement,
     TranslateInfobarLanguageTabStripViewDelegate>
 
 // Translate icon view.
@@ -63,6 +65,9 @@ const CGFloat kIconTrailingMargin = 12;
 
 // Constraint used to add bottom margin to the view.
 @property(nonatomic, weak) NSLayoutConstraint* bottomAnchorConstraint;
+
+// Last recorded fullscreen progress.
+@property(nonatomic, assign) CGFloat previousFullscreenProgress;
 
 @end
 
@@ -91,32 +96,21 @@ const CGFloat kIconTrailingMargin = 12;
                        view:self.optionsButton]
       .constrainedView = self.optionsButton;
 
+  // The initial bottom padding should be the current height of the secondary
+  // toolbar or the bottom safe area inset, whichever is greater.
+  UILayoutGuide* secondaryToolbarGuide =
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
+  DCHECK(secondaryToolbarGuide);
+  self.bottomAnchorConstraint.constant =
+      MAX(secondaryToolbarGuide.layoutFrame.size.height,
+          self.superview.safeAreaInsets.bottom);
+
   // Increase constraint's priority after the view was added to its superview.
   // TODO(crbug.com/904521): Investigate why this is needed.
   self.bottomAnchorConstraint.priority = UILayoutPriorityDefaultHigh;
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
-  // Calculate the safe area and current Toolbar height. Set the
-  // bottomAnchorConstraint constant to this height to create the bottom
-  // padding.
-  CGFloat bottomSafeAreaInset = self.safeAreaInsets.bottom;
-  CGFloat toolbarHeight = 0;
-  UILayoutGuide* guide = [NamedGuide guideWithName:kSecondaryToolbarGuide
-                                              view:self];
-  UILayoutGuide* guideNoFullscreen =
-      [NamedGuide guideWithName:kSecondaryToolbarNoFullscreenGuide view:self];
-  if (guide && guideNoFullscreen) {
-    CGFloat toolbarHeightCurrent = guide.layoutFrame.size.height;
-    CGFloat toolbarHeightMax = guideNoFullscreen.layoutFrame.size.height;
-    if (toolbarHeightMax > 0) {
-      CGFloat fullscreenProgress = toolbarHeightCurrent / toolbarHeightMax;
-      CGFloat toolbarHeightInSafeArea = toolbarHeightMax - bottomSafeAreaInset;
-      toolbarHeight += fullscreenProgress * toolbarHeightInSafeArea;
-    }
-  }
-  self.bottomAnchorConstraint.constant = toolbarHeight + bottomSafeAreaInset;
-
   // Now that the constraint constant has been set calculate the fitting size.
   CGSize computedSize = [self systemLayoutSizeFittingSize:size];
   return CGSizeMake(size.width, computedSize.height);
@@ -148,6 +142,37 @@ const CGFloat kIconTrailingMargin = 12;
   self.optionsButton.spotlighted = displayed;
   self.optionsButton.dimmed = displayed;
   self.dismissButton.dimmed = displayed;
+}
+
+#pragma mark - FullscreenUIElement methods
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+  // The maximum bottom padding is the maximum height of the secondary toolbar
+  // or the bottom safe area inset, whichever is greater.
+  UILayoutGuide* secondaryToolbarNoFullscreenGuide =
+      [NamedGuide guideWithName:kSecondaryToolbarNoFullscreenGuide view:self];
+  DCHECK(secondaryToolbarNoFullscreenGuide);
+  CGFloat maxBottomPadding =
+      MAX(secondaryToolbarNoFullscreenGuide.layoutFrame.size.height,
+          self.safeAreaInsets.bottom);
+
+  // Calculate the appropriate bottom padding given the fullscreen progress.
+  // Bottom padding can range from the negative value of the infobar's height
+  // in fullscreen mode (i.e., progress == 0), thus hiding the infobar, to the
+  // maximum bottom padding calculated above.
+  CGFloat bottomPadding =
+      progress * (maxBottomPadding + kInfobarHeight) - kInfobarHeight;
+
+  // If the fullscreen progress is greater than the previous progress, i.e., we
+  // are exiting the fullscreen mode, update the bottom padding only if the
+  // calculated value is greater than the current bottom padding. Otherwise,
+  // the infobar will initially hide and then start to fully appear again.
+  self.bottomAnchorConstraint.constant =
+      (progress > self.previousFullscreenProgress)
+          ? MAX(bottomPadding, self.bottomAnchorConstraint.constant)
+          : bottomPadding;
+
+  self.previousFullscreenProgress = progress;
 }
 
 #pragma mark - TranslateInfobarLanguageTabStripViewDelegate

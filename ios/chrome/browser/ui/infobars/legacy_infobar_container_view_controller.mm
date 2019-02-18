@@ -6,6 +6,9 @@
 
 #include "base/ios/block_types.h"
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
@@ -18,15 +21,34 @@ namespace {
 const CGFloat kAlphaChangeAnimationDuration = 0.35;
 }  // namespace
 
-@interface LegacyInfobarContainerViewController ()
+@interface LegacyInfobarContainerViewController () <FullscreenUIElement> {
+  // Observer that notifies this object of fullscreen events.
+  std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
+}
 
 // Whether the controller's view is currently available.
 // YES from viewDidAppear to viewDidDisappear.
 @property(nonatomic, assign, getter=isVisible) BOOL visible;
 
+// Observes scrolling events in the main content area and notifies the observers
+// of the current fullscreen progress value.
+@property(nonatomic, assign) FullscreenController* fullscreenController;
+
 @end
 
 @implementation LegacyInfobarContainerViewController
+
+- (instancetype)initWithFullscreenController:
+    (FullscreenController*)fullscreenController {
+  DCHECK(fullscreenController);
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
+    _fullscreenController = fullscreenController;
+  }
+  return self;
+}
+
+#pragma mark - UIViewController
 
 // Whenever the container or contained views are re-drawn update the layout to
 // match their new size or position.
@@ -38,9 +60,19 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   self.visible = YES;
+
+  if (!_fullscreenObserver) {
+    _fullscreenObserver = std::make_unique<FullscreenUIUpdater>(self);
+    self.fullscreenController->AddObserver(_fullscreenObserver.get());
+  }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
+  if (_fullscreenObserver) {
+    self.fullscreenController->RemoveObserver(_fullscreenObserver.get());
+    _fullscreenObserver = nullptr;
+  }
+
   self.visible = NO;
   [super viewDidDisappear:animated];
 }
@@ -91,6 +123,16 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
   } else {
     frameUpdates();
     completion(YES);
+  }
+}
+
+#pragma mark - FullscreenUIElement methods
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+  for (UIView* view in self.view.subviews) {
+    if ([view conformsToProtocol:@protocol(FullscreenUIElement)]) {
+      [(id<FullscreenUIElement>)view updateForFullscreenProgress:progress];
+    }
   }
 }
 
