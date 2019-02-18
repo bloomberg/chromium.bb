@@ -298,7 +298,7 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
   FetchDescendants(module_script);
 }
 
-void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
+void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   DCHECK(module_script);
 
   // [nospec] Abort the steps if the browsing context is discarded.
@@ -446,7 +446,7 @@ void ModuleTreeLinker::Instantiate() {
   // thus skip FindFirstParseError() call.
   if (!found_parse_error_) {
 #if DCHECK_IS_ON()
-    HeapHashSet<Member<ModuleScript>> discovered_set;
+    HeapHashSet<Member<const ModuleScript>> discovered_set;
     DCHECK(FindFirstParseError(result_, &discovered_set).IsEmpty());
 #endif
 
@@ -465,7 +465,7 @@ void ModuleTreeLinker::Instantiate() {
     // [FDaI] Step 7. Otherwise ...
 
     // [FFPE] Step 2. If discoveredSet was not given, let it be an empty set.
-    HeapHashSet<Member<ModuleScript>> discovered_set;
+    HeapHashSet<Member<const ModuleScript>> discovered_set;
 
     // [FDaI] Step 5. Let parse error be the result of finding the first parse
     // error given result.
@@ -484,8 +484,8 @@ void ModuleTreeLinker::Instantiate() {
 //
 // This returns non-empty ScriptValue iff a parse error is found.
 ScriptValue ModuleTreeLinker::FindFirstParseError(
-    ModuleScript* module_script,
-    HeapHashSet<Member<ModuleScript>>* discovered_set) const {
+    const ModuleScript* module_script,
+    HeapHashSet<Member<const ModuleScript>>* discovered_set) const {
   // FindFirstParseError() is called only when there is no fetch errors, i.e.
   // all module scripts in the graph are non-null.
   DCHECK(module_script);
@@ -528,7 +528,8 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
     // value in moduleMap whose key is given by an item of childURLs.
     //
     // [FFPE] Step 8. For each childModule of childModules:
-    ModuleScript* child_module = modulator_->GetFetchedModuleScript(child_url);
+    const ModuleScript* child_module =
+        modulator_->GetFetchedModuleScript(child_url);
 
     // [FFPE] Step 8.1. Assert: childModule is a module script (i.e., it is not
     // "fetching" or null)

@@ -224,7 +224,8 @@ void ModulatorImplBase::ResolveDynamically(
 ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
     ScriptModule record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
-  ModuleScript* module_script = script_module_resolver_->GetHostDefined(record);
+  const ModuleScript* module_script =
+      script_module_resolver_->GetHostDefined(record);
   DCHECK(module_script);
 
   // <spec step="2">Let urlString be module script's base URL,

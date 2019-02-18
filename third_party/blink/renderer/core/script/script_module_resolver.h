@@ -31,13 +31,13 @@ class CORE_EXPORT ScriptModuleResolver
   // Notifies the ScriptModuleResolver that a ModuleScript exists.
   // This hook gives a chance for the resolver impl to populate module record
   // identifier -> ModuleScript mapping entry.
-  virtual void RegisterModuleScript(ModuleScript*) = 0;
+  virtual void RegisterModuleScript(const ModuleScript*) = 0;
 
   // Notifies the ScriptModuleResolver to clear its ModuleScript mapping.
-  virtual void UnregisterModuleScript(ModuleScript*) = 0;
+  virtual void UnregisterModuleScript(const ModuleScript*) = 0;
 
   // Corresponds to the spec concept "[[HostDefined]]".
-  virtual ModuleScript* GetHostDefined(const ScriptModule&) const = 0;
+  virtual const ModuleScript* GetHostDefined(const ScriptModule&) const = 0;
 
   // Implements "Runtime Semantics: HostResolveImportedModule"
   // https://tc39.github.io/ecma262/#sec-hostresolveimportedmodule

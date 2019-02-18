@@ -101,7 +101,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // Steps 3--7 of [IMSGF], and [FD]/[FDaI] called from [IMSGF].
   // TODO(hiroshige): Currently
   void NotifyModuleLoadFinished(ModuleScript*) override;
-  void FetchDescendants(ModuleScript*);
+  void FetchDescendants(const ModuleScript*);
 
   // Completion of [FD].
   void FinalizeFetchDescendantsForOneModuleScript();
@@ -110,8 +110,9 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   void Instantiate();
 
   // [FFPE]
-  ScriptValue FindFirstParseError(ModuleScript*,
-                                  HeapHashSet<Member<ModuleScript>>*) const;
+  ScriptValue FindFirstParseError(
+      const ModuleScript*,
+      HeapHashSet<Member<const ModuleScript>>*) const;
 
   const Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
 
