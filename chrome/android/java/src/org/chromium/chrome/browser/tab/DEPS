@@ -1,0 +1,13 @@
+noparent = True
+
+specific_include_rules = {
+  'Tab\.java': [
+    "-chrome",
+    "+chrome/android/java/src/org/chromium/chrome/browser/tab",
+    "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/view",
+    "+components/navigation_interception/android/java/src/org/chromium/components/navigation_interception",
+    "+content/public/android/java/src/org/chromium/content_public",
+    "+ui/android/java/src/org/chromium/ui/base",
+    "+ui/android/java/src/org/chromium/ui/mojom",
+  ],
+}
