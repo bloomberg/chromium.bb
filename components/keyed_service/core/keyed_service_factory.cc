@@ -23,12 +23,6 @@ KeyedServiceFactory::~KeyedServiceFactory() {
 
 void KeyedServiceFactory::SetTestingFactory(base::SupportsUserData* context,
                                             TestingFactory testing_factory) {
-  // Destroying the context may cause us to lose data about whether |context|
-  // has our preferences registered on it (since the context object itself
-  // isn't dead). See if we need to readd it once we've gone through normal
-  // destruction.
-  bool add_context = ArePreferencesSetOn(context);
-
   // Ensure that |context| is not marked as stale (e.g., due to it aliasing an
   // instance that was destroyed in an earlier test) in order to avoid accesses
   // to |context| in |BrowserContextShutdown| from causing
@@ -40,9 +34,6 @@ void KeyedServiceFactory::SetTestingFactory(base::SupportsUserData* context,
   // testing service mid-test.
   ContextShutdown(context);
   ContextDestroyed(context);
-
-  if (add_context)
-    MarkPreferencesSetOn(context);
 
   testing_factories_.emplace(context, std::move(testing_factory));
 }
@@ -81,8 +72,6 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
   auto factory_iterator = testing_factories_.find(context);
   if (factory_iterator != testing_factories_.end()) {
     if (factory_iterator->second) {
-      if (!IsOffTheRecord(context))
-        RegisterUserPrefsOnContextForTest(context);
       service = factory_iterator->second.Run(context);
     }
   } else {

@@ -34,7 +34,6 @@ component("core") {
     "//base",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/user_prefs",
   ]
 }
 

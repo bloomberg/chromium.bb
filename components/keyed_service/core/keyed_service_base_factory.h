@@ -12,7 +12,6 @@
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class DependencyManager;
-class PrefService;
 
 namespace base {
 class SupportsUserData;
@@ -37,15 +36,6 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   KeyedServiceBaseFactory(const char* service_name, DependencyManager* manager);
   virtual ~KeyedServiceBaseFactory();
 
-  // Registers preferences used in this service on the pref service associated
-  // with |context|. This is safe to be called multiple times because testing
-  // code can have multiple services of the same type attached to a single
-  // |context|. Only test code is allowed to call this method.
-  //
-  // TODO(gab): This method can be removed entirely when
-  // PrefService::DeprecatedGetPrefRegistry() is phased out.
-  void RegisterUserPrefsOnContextForTest(base::SupportsUserData* context);
-
   // The main public interface for declaring dependencies between services
   // created by factories.
   void DependsOn(KeyedServiceBaseFactory* rhs);
@@ -60,19 +50,6 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   // might be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
   void MarkContextLive(base::SupportsUserData* context);
-
-  // Calls RegisterProfilePrefs() after doing house keeping required to work
-  // alongside RegisterUserPrefsOnContextForTest().
-  // TODO(gab): This method can be replaced by RegisterProfilePrefs() directly
-  // once RegisterUserPrefsOnContextForTest() is phased out.
-  void RegisterPrefsIfNecessaryForContext(
-      base::SupportsUserData* context,
-      user_prefs::PrefRegistrySyncable* registry);
-
-  // Returns the |user_pref::PrefRegistrySyncable| associated with |context|.
-  // The way they are associated is controlled by the embedder.
-  user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
-      base::SupportsUserData* context) const;
 
   // Finds which context (if any) to use.
   virtual base::SupportsUserData* GetContextToUse(
@@ -102,12 +79,6 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   virtual void ContextShutdown(base::SupportsUserData* context) = 0;
   virtual void ContextDestroyed(base::SupportsUserData* context);
 
-  // Returns whether the preferences have been registered on this context.
-  bool ArePreferencesSetOn(base::SupportsUserData* context) const;
-
-  // Mark context has having preferences registered.
-  void MarkPreferencesSetOn(base::SupportsUserData* context);
-
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
@@ -117,7 +88,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   // by all the factories of a given type. Unit tests will use their own copy.
   DependencyManager* dependency_manager_;
 
-  // Registers any preferences used by this service.
+  // Registers any preferences used by this service. This should be overriden by
+  // any services that want to register context-specific preferences.
   virtual void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {}
 
   // Used by DependencyManager to disable creation of the service when the
@@ -129,9 +101,6 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
 
   // Create the service associated with |context|.
   virtual void CreateServiceNow(base::SupportsUserData* context) = 0;
-
-  // Contexts that have this service's preferences registered on them.
-  std::set<base::SupportsUserData*> registered_preferences_;
 
   // A static string passed in to the constructor. Should be unique across all
   // services.

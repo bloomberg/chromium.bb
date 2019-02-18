@@ -115,9 +115,8 @@ class KEYED_SERVICE_EXPORT RefcountedBrowserStateKeyedServiceFactory
   virtual void BrowserStateDestroyed(web::BrowserState* context);
 
  private:
-  // Registers any user preferences on this service. This is called by
-  // RegisterPrefsIfNecessaryForContext() and should be overriden by any service
-  // that wants to register profile-specific preferences.
+  // Registers any user preferences on this service. This should be overriden by
+  // any service that wants to register profile-specific preferences.
   virtual void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) {}
 
