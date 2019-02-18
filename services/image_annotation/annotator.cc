@@ -13,6 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "components/google/core/common/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -133,8 +134,11 @@ std::map<std::string, std::string> ParseJsonOcrResponse(
 
 }  // namespace
 
+constexpr char Annotator::kGoogApiKeyHeader[];
+
 Annotator::Annotator(
     GURL server_url,
+    std::string api_key,
     const base::TimeDelta throttle,
     const int batch_size,
     const double min_ocr_confidence,
@@ -146,6 +150,7 @@ Annotator::Annotator(
           base::BindRepeating(&Annotator::SendRequestBatchToServer,
                               base::Unretained(this))),
       server_url_(std::move(server_url)),
+      api_key_(std::move(api_key)),
       batch_size_(batch_size),
       min_ocr_confidence_(min_ocr_confidence) {}
 
@@ -237,6 +242,7 @@ std::string Annotator::FormatJsonOcrRequest(
 // static
 std::unique_ptr<network::SimpleURLLoader> Annotator::MakeOcrRequestLoader(
     const GURL& server_url,
+    const std::string& api_key,
     const HttpRequestQueue::iterator begin_it,
     const HttpRequestQueue::iterator end_it) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -249,6 +255,13 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeOcrRequestLoader(
   resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
                                  net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
+
+  // Put API key in request's header if a key exists, and the endpoint is
+  // trusted by Google.
+  if (!api_key.empty() && server_url.SchemeIs(url::kHttpsScheme) &&
+      google_util::IsGoogleAssociatedDomainUrl(server_url)) {
+    resource_request->headers.SetHeader(kGoogApiKeyHeader, api_key);
+  }
 
   // TODO(crbug.com/916420): update this annotation to be more general and to
   //                         reflect specfics of the UI when it is implemented.
@@ -332,7 +345,8 @@ void Annotator::SendRequestBatchToServer() {
   }
 
   // Kick off server communication.
-  http_requests_.push_back(MakeOcrRequestLoader(server_url_, begin_it, end_it));
+  http_requests_.push_back(
+      MakeOcrRequestLoader(server_url_, api_key_, begin_it, end_it));
   http_requests_.back()->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&Annotator::OnServerResponseReceived,

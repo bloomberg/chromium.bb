@@ -448,3 +448,29 @@ TEST(GoogleUtilTest, YoutubeDomains) {
                                   google_util::DISALLOW_SUBDOMAIN,
                                   google_util::DISALLOW_NON_STANDARD_PORTS));
 }
+
+TEST(GoogleUtilTest, GoogleAssociatedDomains) {
+  EXPECT_FALSE(google_util::IsGoogleAssociatedDomainUrl(GURL()));
+
+  EXPECT_FALSE(google_util::IsGoogleAssociatedDomainUrl(GURL("invalid")));
+
+  EXPECT_FALSE(
+      google_util::IsGoogleAssociatedDomainUrl(GURL("https://myblog.com.au")));
+
+  // A typical URL for a Google production API.
+  EXPECT_TRUE(google_util::IsGoogleAssociatedDomainUrl(
+      GURL("https://myapi-pa.googleapis.com/v1/myservice")));
+
+  // A typical URL for a test instance of a Google API.
+  EXPECT_TRUE(google_util::IsGoogleAssociatedDomainUrl(
+      GURL("https://daily0-myapi-pa.sandbox.googleapis.com/v1/myservice")));
+
+  // A Google production API with parameters.
+  EXPECT_TRUE(google_util::IsGoogleAssociatedDomainUrl(
+      GURL("https://myapi-pa.googleapis.com/v1/myservice?k1=v1&k2=v2")));
+
+  // A Google test API with parameters.
+  EXPECT_TRUE(google_util::IsGoogleAssociatedDomainUrl(
+      GURL("https://daily0-myapi-pa.sandbox.googleapis.com/v1/"
+           "myservice?k1=v1&k2=v2")));
+}

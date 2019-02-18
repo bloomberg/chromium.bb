@@ -14,15 +14,18 @@ namespace image_annotation {
 
 constexpr base::Feature ImageAnnotationService::kExperiment;
 constexpr base::FeatureParam<std::string> ImageAnnotationService::kServerUrl;
+constexpr base::FeatureParam<std::string> ImageAnnotationService::kApiKey;
 constexpr base::FeatureParam<int> ImageAnnotationService::kThrottleMs;
 constexpr base::FeatureParam<int> ImageAnnotationService::kBatchSize;
 constexpr base::FeatureParam<double> ImageAnnotationService::kMinOcrConfidence;
 
 ImageAnnotationService::ImageAnnotationService(
     service_manager::mojom::ServiceRequest request,
+    std::string api_key,
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
     : service_binding_(this, std::move(request)),
       annotator_(GURL(kServerUrl.Get()),
+                 kApiKey.Get().empty() ? std::move(api_key) : kApiKey.Get(),
                  base::TimeDelta::FromMilliseconds(kThrottleMs.Get()),
                  kBatchSize.Get(),
                  kMinOcrConfidence.Get(),

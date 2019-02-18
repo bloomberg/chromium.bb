@@ -29,6 +29,7 @@ class ImageAnnotationService : public service_manager::Service {
 
   ImageAnnotationService(
       service_manager::mojom::ServiceRequest request,
+      std::string api_key,
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
   ~ImageAnnotationService() override;
 
@@ -39,6 +40,10 @@ class ImageAnnotationService : public service_manager::Service {
   // is empty. This ensures graceful behavior when |kExperiment| is disabled.
   static constexpr base::FeatureParam<std::string> kServerUrl{&kExperiment,
                                                               "server_url", ""};
+  // An override Google API key. If empty, the API key with which the browser
+  // was built (if any) will be used instead.
+  static constexpr base::FeatureParam<std::string> kApiKey{&kExperiment,
+                                                           "api_key", ""};
   static constexpr base::FeatureParam<int> kThrottleMs{&kExperiment,
                                                        "throttle_ms", 300};
   static constexpr base::FeatureParam<int> kBatchSize{&kExperiment,

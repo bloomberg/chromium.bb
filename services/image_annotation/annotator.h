@@ -38,11 +38,17 @@ namespace image_annotation {
 // images) or image pixels to the external server.
 class Annotator : public mojom::Annotator {
  public:
+  // The HTTP request header in which the API key should be transmitted.
+  static constexpr char kGoogApiKeyHeader[] = "X-Goog-Api-Key";
+
   // Constructs an annotator.
   //  |server_url|        : the URL of the server with which the annotator
   //                        communicates. The annotator gracefully handles (i.e.
   //                        returns errors when constructed with) an empty
   //                        server URL.
+  //  |api_key|           : the Google API key used to authenticate
+  //                        communication with the image annotation server. If
+  //                        empty, no API key header will be sent.
   //  |throttle|          : the miminum amount of time to wait between sending
   //                        new HTTP requests to the image annotation server.
   //  |batch_size|        : The maximum number of image annotation requests that
@@ -51,6 +57,7 @@ class Annotator : public mojom::Annotator {
   //  |min_ocr_confidence|: The minimum confidence value needed to return an OCR
   //                        result.
   Annotator(GURL server_url,
+            std::string api_key,
             base::TimeDelta throttle,
             int batch_size,
             double min_ocr_confidence,
@@ -90,6 +97,7 @@ class Annotator : public mojom::Annotator {
   // request for the given images.
   static std::unique_ptr<network::SimpleURLLoader> MakeOcrRequestLoader(
       const GURL& server_url,
+      const std::string& api_key,
       HttpRequestQueue::iterator begin_it,
       HttpRequestQueue::iterator end_it);
 
@@ -148,6 +156,8 @@ class Annotator : public mojom::Annotator {
   base::RepeatingTimer http_request_timer_;
 
   const GURL server_url_;
+
+  const std::string api_key_;
 
   const int batch_size_;
 
