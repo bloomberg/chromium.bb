@@ -7,11 +7,11 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace cc {
@@ -22,8 +22,6 @@ namespace blink {
 
 class PLATFORM_EXPORT CompositorScrollOffsetAnimationCurve
     : public CompositorAnimationCurve {
-  WTF_MAKE_NONCOPYABLE(CompositorScrollOffsetAnimationCurve);
-
  public:
   enum ScrollDurationBehavior {
     kScrollDurationDeltaBased = 0,
@@ -60,6 +58,8 @@ class PLATFORM_EXPORT CompositorScrollOffsetAnimationCurve
   CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
 
   std::unique_ptr<cc::ScrollOffsetAnimationCurve> curve_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorScrollOffsetAnimationCurve);
 };
 
 }  // namespace blink

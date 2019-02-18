@@ -7,12 +7,12 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/animation/keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class KeyframeModel;
@@ -25,8 +25,6 @@ class CompositorFloatAnimationCurve;
 
 // A compositor driven animation.
 class PLATFORM_EXPORT CompositorKeyframeModel {
-  WTF_MAKE_NONCOPYABLE(CompositorKeyframeModel);
-
  public:
   using Direction = cc::KeyframeModel::Direction;
   using FillMode = cc::KeyframeModel::FillMode;
@@ -85,6 +83,8 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
                           int group_id);
 
   std::unique_ptr<cc::KeyframeModel> keyframe_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorKeyframeModel);
 };
 
 }  // namespace blink

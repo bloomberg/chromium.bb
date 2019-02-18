@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "cc/animation/animation_delegate.h"
@@ -14,7 +16,6 @@
 #include "cc/animation/worklet_animation.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace cc {
@@ -30,8 +31,6 @@ class CompositorKeyframeModel;
 
 // A compositor representation for Animation.
 class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
-  WTF_MAKE_NONCOPYABLE(CompositorAnimation);
-
  public:
   static std::unique_ptr<CompositorAnimation> Create();
   static std::unique_ptr<CompositorAnimation> CreateWorkletAnimation(
@@ -85,6 +84,8 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
 
   scoped_refptr<cc::SingleKeyframeEffectAnimation> animation_;
   CompositorAnimationDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorAnimation);
 };
 
 }  // namespace blink
