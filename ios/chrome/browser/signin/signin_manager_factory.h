@@ -12,7 +12,6 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class SigninManager;
-class PrefRegistrySimple;
 
 namespace ios {
 
@@ -34,9 +33,6 @@ class SigninManagerFactory : public BrowserStateKeyedServiceFactory {
   // can call it).
   void RegisterBrowserStatePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-
-  // Registers the browser-global prefs used by SigninManager.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   friend class base::NoDestructor<SigninManagerFactory>;

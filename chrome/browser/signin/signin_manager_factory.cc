@@ -16,7 +16,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/signin_manager.h"
 
 SigninManagerFactory::SigninManagerFactory()
@@ -84,11 +83,6 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
 void SigninManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   SigninManagerBase::RegisterProfilePrefs(registry);
-}
-
-// static
-void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
-  SigninManagerBase::RegisterPrefs(registry);
 }
 
 KeyedService* SigninManagerFactory::BuildServiceInstanceFor(

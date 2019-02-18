@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -57,11 +56,6 @@ SigninManager* WebViewSigninManagerFactory::GetForBrowserStateIfExists(
 WebViewSigninManagerFactory* WebViewSigninManagerFactory::GetInstance() {
   static base::NoDestructor<WebViewSigninManagerFactory> instance;
   return instance.get();
-}
-
-// static
-void WebViewSigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
-  SigninManagerBase::RegisterPrefs(registry);
 }
 
 void WebViewSigninManagerFactory::RegisterBrowserStatePrefs(
