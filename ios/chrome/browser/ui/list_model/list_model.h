@@ -180,6 +180,10 @@ const NSInteger kItemTypeEnumZero = 100;
                    sectionIdentifier:(NSInteger)sectionIdentifier
                              atIndex:(NSUInteger)index;
 
+// Returns the index path for |itemType| in all sections. Returns nil if no
+// item is found.
+- (NSIndexPath*)indexPathForItemType:(NSInteger)itemType;
+
 #pragma mark Query index paths from items
 
 // Returns whether |item| exists in section for |sectionIdentifier|.
