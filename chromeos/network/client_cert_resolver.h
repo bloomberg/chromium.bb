@@ -95,8 +95,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ClientCertResolver
   void NetworkConnectionStateChanged(const NetworkState* network) override;
 
   // NetworkCertLoader::Observer overrides
-  void OnCertificatesLoaded(
-      const net::ScopedCERTCertificateList& cert_list) override;
+  void OnCertificatesLoaded() override;
 
   // NetworkPolicyObserver overrides
   void PolicyAppliedToNetwork(const std::string& service_path) override;
