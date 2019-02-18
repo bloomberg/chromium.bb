@@ -130,6 +130,11 @@ bool MessagePumpLibevent::WatchFileDescriptor(int fd,
   // threadsafe, and your watcher may never be registered.
   DCHECK(watch_file_descriptor_caller_checker_.CalledOnValidThread());
 
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         "MessagePumpLibevent::WatchFileDescriptor",
+                         reinterpret_cast<uintptr_t>(controller) ^ fd,
+                         TRACE_EVENT_FLAG_FLOW_OUT, "fd", fd);
+
   int event_mask = persistent ? EV_PERSIST : 0;
   if (mode & WATCH_READ) {
     event_mask |= EV_READ;
@@ -299,6 +304,12 @@ void MessagePumpLibevent::OnLibeventNotification(int fd,
   FdWatchController* controller = static_cast<FdWatchController*>(context);
   DCHECK(controller);
   TRACE_EVENT0("toplevel", "OnLibevent");
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         "MessagePumpLibevent::OnLibeventNotification",
+                         reinterpret_cast<uintptr_t>(controller) ^ fd,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "fd", fd);
+
   TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION heap_profiler_scope(
       controller->created_from_location().file_name());
 
